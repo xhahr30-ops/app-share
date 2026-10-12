@@ -743,6 +743,13 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
     <small id="shIvMsg" style="color:var(--mute)"></small></div>
    <div class="sbtns"><button id="shTest" type="button" class="btn ol">🔌 연결 테스트</button><button id="shNow" type="button" class="btn em">🔄 지금 동기화</button></div>
    <p class="hint" id="shMsg" style="margin:4px 0 0"></p>
+   <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:6px">
+    <b style="font-size:12.5px">🗺️ 기준자료 공유</b> <small style="color:var(--mute)">소블록 경계 · 상수관로 · 상수도 시설물</small>
+    <p class="hint" style="margin:4px 0">관리자가 [⏫ 올리기]를 한 번 누르면, 공유 키를 넣은 다른 기기는 앱을 열 때 새 버전만 자동으로 받습니다 (같은 버전이면 받지 않음).</p>
+    <label class="ck" style="display:flex;gap:6px;align-items:center;font-size:12px;margin:2px 0 6px"><input type="checkbox" id="shRefAuto" checked> 앱을 열 때 새 기준자료 자동 받기</label>
+    <div class="sbtns"><button id="shRefUp" type="button" class="btn ol">⏫ 이 기기 기준자료 올리기</button><button id="shRefDn" type="button" class="btn ol">⬇️ 지금 받기</button></div>
+    <p class="hint" id="shRefMsg" style="margin:4px 0 0"></p>
+   </div>
   </details>
   <div class="phst" id="phStat"></div>
   <div class="phprog" id="phProg" hidden><i></i></div>
@@ -3738,6 +3745,53 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
  const _save=phSaveMeta;phSaveMeta=function(now){const r=_save(now);if(!SH.busy)shKick(1);return r};
  shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(),4000)})();
 
+/* ===================== 🗺️ 기준자료 공유: 사진 공유 서버(공유 키)에 소블록 경계·상수관로·시설물을 올리고, 다른 기기는 열 때 새 버전만 받음 ===================== */
+/* 버전 = 기준자료의 저장 시각(at). 서버 버전이 이 기기 것보다 새것일 때만 받고, 이 기기 것이 더 새것이면 받지 않고 '올리기 필요'로 알림 */
+const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0]]};
+const refMB=b=>(b/1048576).toFixed(1)+'MB';
+function refSay(t){const m=$('shRefMsg');if(m)m.innerHTML=t}
+async function refLocal(){const o={};for(const [n] of REF.L){try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
+/* 서버·이 기기 상태 한 줄씩 */
+function refState(info,loc){return REF.L.map(([n,t,cnt])=>{const s=info[n],l=loc[n],lc=cnt(l);
+  if(!s)return `${t}: 서버에 없음${lc?' · <b>이 기기 것 올리기 필요</b>':''}`;
+  const same=l&&l.at===s.v,st=same?'✅ 같은 버전':!lc||(l.at||0)<s.v?'⬇️ 서버가 새것':'⏫ 이 기기가 새것 (올리기 필요)';
+  return `${t}: ${st} · 서버 ${s.cnt.toLocaleString()}개 · ${fmtDT(s.v)} 저장${s.by?' · '+esc(s.by):''} · ${refMB(s.size)}`}).join('<br>')}
+async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}
+ REF.busy=true;let up=0;try{
+  if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
+  refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
+  for(const [n,t,cnt] of REF.L){const v=loc[n],c=cnt(v);if(!c||!v.at)continue;if(info[n]&&info[n].v===v.at)continue;
+   refSay(`${t} 압축 중… (${c.toLocaleString()}개)`);const z=new JSZip();z.file('d.json',JSON.stringify(v));
+   const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+   for(let p=0;p<parts;p++){refSay(`⏫ ${t} 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);
+    await shReq('refput',{name:n,v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}up++}
+  const info2=(await shReq('refinfo')).ref||{};refSay((up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
+ catch(e){refSay('<span class="c-rd">⚠️ 기준자료 올리기 실패: '+esc((e&&e.message)||e)+'</span>'+(/알 수 없는 요청/.test(String(e&&e.message))?'<br><small>공유 서버 Code.gs를 2026-10-13 판으로 바꾸고 새 버전으로 다시 배포해 주세요.</small>':''))}
+ finally{REF.busy=false}}
+/* auto=true: 앱을 열 때. 서버가 새것인 기준자료만 받아 이 기기에 저장(이전 것은 되돌리기용 _prev로 보관)하고 지도에 바로 표시 */
+async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=[];try{
+  if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
+  if(!auto)refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
+  for(const [n,t,cnt] of REF.L){const s=info[n],l=loc[n];if(!s||!s.parts)continue;if(cnt(l)&&(l.at||0)>=s.v)continue;
+   const bufs=[];for(let p=0;p<s.parts;p++){refSay(`⬇️ ${t} 받는 중… ${p+1}/${s.parts} (${refMB(s.size)})`);const r=await shReq('refget',{name:n,v:s.v,part:p});bufs.push(shBlob(r.data))}
+   refSay(`${t} 푸는 중…`);const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error(t+' 압축 파일이 비었습니다.');
+   const v=JSON.parse(await e.async('string'));if(cnt(v)!==s.cnt||v.at!==s.v)throw new Error(t+' 받은 자료 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');
+   if(n==='blocks'){const p=await blkSnap();if(p)try{await IDB.set('blocks_prev',p)}catch(_){}await IDB.set('blocks',v);rawFC=null;BLK_HIST=[];await blkRestore()}
+   else if(n==='pipes'){if(l)try{await IDB.set('pipes_prev',l)}catch(_){}await IDB.set('pipes',v);await pipeRestore(true)}
+   else{if(l)try{await IDB.set('facs_prev',l)}catch(_){}await IDB.set('facs',v);await facRestore(true)}
+   stoKeep();got.push(`${t} ${s.cnt.toLocaleString()}개`)}
+  const loc2=await refLocal();
+  if(got.length){refSay(`✅ 공유 서버에서 받았습니다: ${got.join(' · ')}<br><small>${refState(info,loc2)}</small>`);if(typeof phToast==='function')phToast('🗺️ 공유 서버에서 새 기준자료를 받았습니다: '+got.join(' · '))}
+  else refSay((Object.keys(info).length?'✅ 이 기기 기준자료가 최신입니다.':'공유 서버에 아직 올린 기준자료가 없습니다.')+'<br><small>'+refState(info,loc2)+'</small>')}
+ catch(e){const m=String((e&&e.message)||e);refSay('<span class="c-rd">⚠️ 기준자료 받기 실패: '+esc(m)+'</span>'+(/알 수 없는 요청/.test(m)?'<br><small>공유 서버 Code.gs가 예전 판입니다. 관리자가 2026-10-13 판으로 다시 배포하면 받을 수 있습니다.</small>':''))}
+ finally{REF.busy=false}}
+(function(){const a=$('shRefAuto');if(!a)return;a.checked=SH.cfg.refAuto!==false;
+ a.onchange=()=>{SH.cfg.refAuto=a.checked;shSaveCfg()};
+ $('shRefUp').onclick=()=>{$('shKey').dispatchEvent(new Event('change'));refUp()};
+ $('shRefDn').onclick=()=>{$('shKey').dispatchEvent(new Event('change'));if(!SH.on()){refSay('공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}refDown(false)};
+ // 열 때: 이 기기 기준자료를 먼저 띄운 뒤(관로 0.3초·시설물 0.4초) 서버 버전을 확인
+ if(SH.on()&&SH.cfg.refAuto!==false)setTimeout(()=>refDown(true),2500)})();
+
 /* ===================== ✏️ 지도 사진 편집 모드 · 🗂️ 휴지통 (7일) · ↩ 되돌리기 ===================== */
 PH.ed={on:false,mode:'move',pick:new Set(),clu:false,lpAt:0};
 const TR_DAYS=7;
@@ -3930,6 +3984,8 @@ window.__APP_OK=1;
  *
  *  · 공유 키를 아는 사람만 읽고 쓸 수 있습니다. 키는 회사 직원에게만 알려 주세요.
  *  · 키를 바꾸려면 [프로젝트 설정] › [스크립트 속성]의 SHARE_KEY 값을 고치면 됩니다.
+ *  · 기준자료(소블록 경계·상수관로·상수도 시설물)도 같은 서버로 나눕니다: 사진 폴더 안 '기준자료' 폴더에 압축본을 두고,
+ *    앱은 열 때 버전만 물어보고 새 버전일 때만 받습니다 (2026-10-13 판부터).
  *  · 코드를 고친 뒤에는 [배포] › [배포 관리] › 수정(연필) › 버전: 새 버전 으로 다시 배포해야 반영됩니다.
  */
 const COLS = ['id','code','name','dt','ts','lat','lng','dir','alt','src','acc','memo','memoSrc','w','h','map','dot','big','th','by','at','up','del'];
@@ -3954,7 +4010,7 @@ function setup() {
   Logger.log('사진 폴더: ' + fd.getUrl());
 }
 
-function doGet() { return out({ ok: true, app: '스마트 물길주소 사진 공유 서버' }); }
+function doGet() { return out({ ok: true, app: '스마트 물길주소 사진 공유 서버', ref: 1 }); }
 
 function doPost(e) {
   let r;
@@ -4015,6 +4071,9 @@ function route(q) {
       });
       return { imgs };
     }
+    case 'refinfo': return refInfo();
+    case 'refput': return refPut(q, S(q.by));
+    case 'refget': return refGet(q);
     default: throw new Error('알 수 없는 요청: ' + q.op);
   }
 }
@@ -4067,6 +4126,47 @@ function meta(items, by) {
     }
     return { ok: true, done, restored, up: now };
   });
+}
+
+// ---------- 기준자료 공유 (소블록 경계·상수관로·상수도 시설물) ----------
+// 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
+// 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
+const REF_NAMES = ['blocks', 'pipes', 'facs'];
+function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
+function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
+function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
+function refInfo() {
+  const m = refMan(), ref = {};
+  REF_NAMES.forEach(n => { const r = m[n]; if (r) ref[n] = { v: r.v, at: r.at, by: r.by, size: r.size, cnt: r.cnt, parts: r.ids.length }; });
+  return { ref, now: Date.now() };
+}
+function refPut(q, by) {
+  const n = String(q.name || ''), v = Number(q.v), part = Number(q.part), parts = Number(q.parts);
+  if (REF_NAMES.indexOf(n) < 0) throw new Error('알 수 없는 기준자료: ' + n);
+  if (!(v > 0) || !(parts > 0 && parts <= 40) || !(part >= 0 && part < parts) || !q.data) throw new Error('기준자료 조각 정보가 맞지 않습니다.');
+  const f = refFolder().createFile(Utilities.newBlob(Utilities.base64Decode(q.data), 'application/octet-stream', n + '_' + v + '_' + part + '.bin'));
+  return withLock(() => {
+    const key = 'REFUP_' + n; let up = {};
+    try { up = JSON.parse(P().getProperty(key) || '{}') || {}; } catch (_) {}
+    if (up.v !== v) { (up.ids || []).forEach(refTrash); up = { v, ids: [] }; } // 다른 버전을 올리다 끊긴 조각은 버림
+    if (up.ids[part]) refTrash(up.ids[part]);
+    up.ids[part] = f.getId();
+    let have = 0; for (let i = 0; i < parts; i++) if (up.ids[i]) have++;
+    if (have < parts) { P().setProperty(key, JSON.stringify(up)); return { ok: true, part }; }
+    const m = refMan(), old = m[n];
+    m[n] = { v, at: Date.now(), by, size: Number(q.size) || 0, cnt: Number(q.cnt) || 0, ids: up.ids.slice(0, parts) };
+    P().setProperty('REF', JSON.stringify(m)); P().deleteProperty(key);
+    if (old && old.v !== v) (old.ids || []).forEach(refTrash);
+    return Object.assign({ ok: true, done: true }, refInfo());
+  });
+}
+function refGet(q) {
+  const r = refMan()[String(q.name || '')];
+  if (!r) throw new Error('공유 서버에 이 기준자료가 없습니다.');
+  if (q.v && Number(q.v) !== r.v) throw new Error('공유 서버의 기준자료가 방금 바뀌었습니다. 다시 받아 주세요.');
+  const id = r.ids[Number(q.part) || 0];
+  if (!id) throw new Error('기준자료 조각이 없습니다.');
+  return { v: r.v, parts: r.ids.length, data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
 }
 </script>
 </body></html>
