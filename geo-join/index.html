@@ -263,6 +263,7 @@ progress{width:100%;height:10px;accent-color:#4f46e5}
 .savebox{border:1px dashed var(--indb);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--ind) 6%,var(--card))}
 .histbox{max-height:160px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px;margin-top:4px;font-size:11.5px;line-height:1.6}
 .ckrow{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}
+.fkinds{display:flex;flex-direction:column;gap:3px;margin:4px 0 6px;font-size:12px}.fkr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .mute{color:var(--mute)}
 .dfp{position:fixed;left:16px;bottom:16px;z-index:1800;width:min(460px,calc(100vw - 32px));max-height:72vh;overflow:auto;background:var(--card);color:var(--ink);border:2px solid var(--ind);border-radius:14px;box-shadow:0 18px 48px #0f172a59;padding:12px;font-size:13px;line-height:1.55}
 .dfp[hidden]{display:none}.dfh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.dfh b{font-size:14.5px}
@@ -602,8 +603,8 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
 
  <div class="sec">
   <h4>💾 기준자료 백업 · 다른 PC로 옮기기</h4>
-  <p class="hint" style="margin:0">소블록 경계·상수관로·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.</p>
-  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck" title="관리번호·소블록·좌표만 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록)</span></div>
+  <p class="hint" style="margin:0">소블록 경계·상수관로·상수도 시설물·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.</p>
+  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkF" checked> 🔧 상수도 시설물</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck" title="관리번호·소블록·좌표만 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록)</span></div>
   <div class="sbtns"><button id="bkSave" type="button" class="btn ol">💾 백업 파일 만들기</button><label class="btn ol">📂 백업 불러오기<input type="file" id="bkLoad" multiple hidden></label></div>
   <p class="hint" id="bkMsg" style="margin:0"></p>
  </div>
@@ -677,6 +678,24 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
     <p class="hint" style="margin:6px 0 4px">재질·용도가 숫자 코드로 들어 있으면 한 줄에 <code>코드=이름</code>으로 적으세요. 예: <code>MOP001=덕타일주철관(DCIP)</code>, <code>SAA003=배수관</code>. DCIP·SP·PE 같은 약어와 한글 재질명은 자동 인식합니다.</p>
     <textarea id="pCodes" style="height:90px" placeholder="MOP001=덕타일주철관(DCIP)&#10;MOP002=강관(SP)&#10;SAA003=배수관"></textarea>
     <div class="hint" id="pCodeHint" style="margin-top:4px"></div></details>
+  </div>
+ </div>
+
+ <div class="sec">
+  <h4>②-2 상수도 시설물 (SHP ZIP) <small style="font-weight:400;color:var(--mute)">선택 · 밸브·소화전·유량계 등</small></h4>
+  <div id="fSaveBox" class="savebox" hidden><div id="fSaved" class="hint"></div>
+   <div class="sbtns"><label class="btn ol" title="바뀐 시설만 들어 있는 SHP(.zip)를 올리면 관리번호·위치 기준으로 추가·변경합니다">➕ 변경분 반영<input type="file" id="fUpd" accept=".zip" hidden></label><button id="fUndo" type="button" class="btn ol" hidden>↩ 되돌리기</button><button id="fHistBtn" type="button" class="btn ol">📜 이력</button><button id="fForget" type="button" class="btn ol">🗑 저장 지우기</button></div>
+   <div id="fHistBox" class="hint histbox" hidden></div></div>
+  <label class="drop"><input type="file" id="f4" accept=".zip"><div class="ic">🔧</div><b id="fDropT">상수도 시설물 SHP 압축파일(.zip)</b><span>여러 레이어 한 번에 · 파일명의 지물부호(SA200 등)로 종류 자동 분류 · 한 번 올리면 이 PC에 저장</span></label>
+  <label class="f">원본 좌표계 <small style="font-weight:400">(.prj가 없는 레이어에 사용)</small><select id="fCrs"><option>EPSG:5187</option><option>EPSG:5183</option><option>EPSG:5186</option><option>EPSG:5185</option><option>EPSG:5179</option><option>EPSG:4326</option></select></label>
+  <p class="hint" id="fMsg">정수장·배수지·가압장은 항상, 유량계는 줌 13, 소화전·밸브류는 줌 15, 제수밸브는 줌 16부터 지도에 보입니다. 심볼은 올려주신 상수도 시설물 심볼을 쓰고, 닫힌 제수밸브는 검은 심볼, 밸브는 관로 방향으로 돌려 그립니다.</p>
+  <div id="fPanel" hidden>
+   <label class="f">지도 표시<select id="fShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label>
+   <p class="hint" id="fZoomHint" hidden></p>
+   <div id="fKinds" class="fkinds"></div>
+   <details class="x"><summary>📖 시설 이름 대응표 (지물부호=이름)</summary>
+    <p class="hint" style="margin:6px 0 4px">한 줄에 <code>SA207=이름</code>처럼 적으면 지도·목록 이름이 바뀝니다. 파일명 레이어(예: <code>관말1=관말</code>)도 됩니다.</p>
+    <textarea id="fNames" style="height:70px" placeholder="SA207=○○밸브&#10;소블력유량계=소블록 유량계"></textarea></details>
   </div>
  </div>
 
@@ -934,9 +953,9 @@ function uiLblHint(){const h=document.getElementById('uiLblHint');if(!h)return;l
 /* ---------- 표시 모두 끄기 / 다시 켜기 (Alt+H): 배경 지도와 소블록 경계만 남김, 다시 누르면 끄기 직전 상태로 ---------- */
 function uiSel(id,v){const e=document.getElementById(id);if(!e||v==null||e.value===v||![...e.options].some(o=>o.value===v))return;e.value=v;e.dispatchEvent(new Event('change'))}
 function uiAllToggle(){
- if(!UI.allOff){UI.snap={pt:!!PT.off,ph:$('phShow').value,ps:$('pShow').value,lbl:UI.lbl,leg:UI.leg,bc:$('blkColor').value,bl:$('lblMode').value};UI.allOff=true;
-  if(!PT.off)ptToggle();uiSel('phShow','off');uiSel('pShow','off');UI.lbl='off';UI.leg=false;uiSel('blkColor','none');uiSel('lblMode','off')}
- else{const s=UI.snap||{};UI.allOff=false;UI.snap=null;if(!!PT.off!==!!s.pt)ptToggle();uiSel('phShow',s.ph||'on');uiSel('pShow',s.ps||'auto');UI.lbl=s.lbl||'off';UI.leg=s.leg!==false;uiSel('blkColor',s.bc||'none');uiSel('lblMode',s.bl||'auto')}
+ if(!UI.allOff){UI.snap={pt:!!PT.off,ph:$('phShow').value,ps:$('pShow').value,fs:$('fShow').value,lbl:UI.lbl,leg:UI.leg,bc:$('blkColor').value,bl:$('lblMode').value};UI.allOff=true;
+  if(!PT.off)ptToggle();uiSel('phShow','off');uiSel('pShow','off');uiSel('fShow','off');UI.lbl='off';UI.leg=false;uiSel('blkColor','none');uiSel('lblMode','off')}
+ else{const s=UI.snap||{};UI.allOff=false;UI.snap=null;if(!!PT.off!==!!s.pt)ptToggle();uiSel('phShow',s.ph||'on');uiSel('pShow',s.ps||'auto');uiSel('fShow',s.fs||'auto');UI.lbl=s.lbl||'off';UI.leg=s.leg!==false;uiSel('blkColor',s.bc||'none');uiSel('lblMode',s.bl||'auto')}
  if(map)map.closePopup();uiSave();renderLegend();if(polyL)blkColorApply();plblSoon();uiPanelSync()}
 
 /* ---------- 설정 패널 ---------- */
@@ -944,7 +963,7 @@ function uiPanel(show){const p=document.getElementById('uiSet');if(!p)return;p.h
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
- q('uiPShow').value=$('pShow').value;q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';q('uiBlkLbl').value=$('lblMode').value;
+ q('uiPShow').value=$('pShow').value;q('uiFShow').value=$('fShow').value;q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';q('uiBlkLbl').value=$('lblMode').value;
  q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
  const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
 function uiInit(){if(!map)return;plblInit();
@@ -961,6 +980,7 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uir"><input type="checkbox" id="uiPt"> 👥 수용가 점 <small style="color:var(--mute)">Alt+U</small></label>
 <label class="uir"><input type="checkbox" id="uiPh"> 📷 현장 사진 <small style="color:var(--mute)">Alt+P</small></label>
 <label class="uif">🚰 상수관로<select id="uiPShow" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
+<label class="uif">🔧 상수도 시설물<select id="uiFShow" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
 <label class="uir"><input type="checkbox" id="uiLeg"> 🗂️ 지도 범례 (관로 · 블록 색칠)</label>
 <div class="uig">관로 라벨</div>
 <label class="uif">🏷️ 관종 / 구경<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경']])}</select></label>
@@ -970,12 +990,13 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">🟧 경계 색<select id="uiBcol" class="msel">${opt(Object.entries(BCOL).map(([k,v])=>[k,v.name]))}</select></label>
 <label class="uif">🔤 블록명<select id="uiBlkLbl" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
 <div class="uib"><button type="button" id="uiAll" class="btn ol">🙈 표시 모두 끄기</button><button type="button" id="uiFs" class="btn ol">⛶ 전체 지도 모드</button></div>
-<p class="uin">🙈 모두 끄기(Alt+H)는 배경 지도와 소블록 경계만 남기고, 다시 누르면 끄기 직전 상태로 돌아갑니다. 설정은 이 기기(브라우저)에 저장되고 백업 파일에도 함께 들어갑니다.</p>`;
+<p class="uin">🙈 모두 끄기(Alt+H)는 수용가·사진·관로·시설물을 끄고 배경 지도와 소블록 경계만 남기고, 다시 누르면 끄기 직전 상태로 돌아갑니다. 설정은 이 기기(브라우저)에 저장되고 백업 파일에도 함께 들어갑니다.</p>`;
  const q=id=>document.getElementById(id);
  q('uiX').onclick=()=>uiPanel(false);
  q('uiPt').onchange=e=>{if(!!PT.off===e.target.checked)ptToggle()};
  q('uiPh').onchange=e=>{if(($('phShow').value!=='off')!==e.target.checked)phToggle()};
  q('uiPShow').onchange=e=>uiSel('pShow',e.target.value);
+ q('uiFShow').onchange=e=>uiSel('fShow',e.target.value);
  q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply()};
  q('uiLbl').onchange=e=>{UI.lbl=e.target.value;uiSave();plblSoon()};
  q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
@@ -2467,7 +2488,7 @@ function diffOpen(title,html,sets,apply){diffClear();let p=$('diffP');
  p.innerHTML=`<div class="dfh"><b>${title}</b><button type="button" class="hbtn" id="dfX" title="닫기">✕</button></div><div class="dfb">${html}</div><div class="sbtns" style="justify-content:flex-end;margin-top:10px"><button type="button" class="btn ol" id="dfC">취소</button><button type="button" class="btn" id="dfA">✅ 적용</button></div>`;
  p.hidden=false;DIFF.apply=apply;$('dfX').onclick=$('dfC').onclick=diffClear;$('dfA').onclick=async()=>{const f=DIFF.apply;$('dfA').disabled=true;$('dfA').textContent='적용 중…';try{await f()}finally{diffClear()}};
  if(!map)return;const pn=diffPane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined;let bounds=null;
- sets.forEach(([feats,col,dash])=>{if(!feats.length)return;const l=L.geoJSON({type:'FeatureCollection',features:feats.slice(0,20000)},{pane:pn,renderer:rd,interactive:false,style:{color:col,weight:5,opacity:.95,dashArray:dash||null,fillColor:col,fillOpacity:.25}});l.addTo(map);DIFF.layers.push(l);
+ sets.forEach(([feats,col,dash])=>{if(!feats.length)return;const l=L.geoJSON({type:'FeatureCollection',features:feats.slice(0,20000)},{pane:pn,renderer:rd,interactive:false,pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:pn,renderer:rd,radius:7}),style:{color:col,weight:5,opacity:.95,dashArray:dash||null,fillColor:col,fillOpacity:.25}});l.addTo(map);DIFF.layers.push(l);
   try{const b=l.getBounds();if(b&&b.isValid&&b.isValid())bounds=bounds?bounds.extend(b):b}catch(_){}});
  try{if(bounds)map.fitBounds(bounds,{padding:[40,40],maxZoom:17})}catch(_){}}
 const dLegend=`<div class="dleg"><span style="--c:#16a34a">추가</span><span style="--c:#f59e0b">변경</span><span style="--c:#dc2626">삭제</span> <small>지도에 색으로 표시</small></div>`;
@@ -2626,6 +2647,7 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
  try{if($('bkB').checked){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
   if($('bkP').checked){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.feats.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.feats.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
    if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}}
+  if($('bkF').checked){let f=null;try{f=await IDB.get('facs')}catch(_){}if(f&&f.feats&&f.feats.length){o.facs=f;parts.push('상수도 시설물 '+f.feats.length.toLocaleString()+'개')}}
   if($('bkG').checked){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
   if($('bkK').checked){o.settings={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^geo-/.test(k)&&!BK_SKIP.test(k))o.settings[k]=localStorage.getItem(k)}parts.push('API 키·설정')}
   if($('bkU').checked&&UB.m.size){o.ublk=[...UB.m];parts.push('사용자 지정블록 '+UB.m.size.toLocaleString()+'건')}
@@ -2659,14 +2681,15 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
 async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파일 읽는 중… '+f.name;
  try{let txt,zz=null;if(/\.json$/i.test(f.name))txt=await f.text();else{const z=await JSZip.loadAsync(f);zz=z;const e=z.file('backup.json');if(!e)throw new Error('backup.json이 없습니다');txt=await e.async('string')}
   const o=JSON.parse(txt);if(!o||o.app!=='geo-addr-app')throw new Error('이 앱의 백업 파일이 아닙니다.');
-  const use={b:o.blocks&&$('bkB').checked,p:o.pipes&&$('bkP').checked,g:o.gcache&&$('bkG').checked,k:o.settings&&$('bkK').checked,u:Array.isArray(o.ublk)&&$('bkU').checked,r:!!(o.res&&Array.isArray(o.res.rows)&&o.res.rows.length)&&$('bkR').checked,ph:Array.isArray(o.photos)&&!!zz&&$('bkPh').checked};
-  const has=[use.b&&`소블록 경계 ${o.blocks.fc.features.length}개`,use.p&&`상수관로 ${o.pipes.feats.length.toLocaleString()}개`,use.g&&`주소 검색 결과 ${Object.keys(o.gcache).length.toLocaleString()}건 (지금 것과 합침)`,use.k&&'API 키·설정',use.u&&`사용자 지정블록 ${o.ublk.length.toLocaleString()}건 (같은 관리번호는 백업 내용으로)`,use.ph&&`현장 사진 ${o.photos.length.toLocaleString()}장 (지금 것과 합침)`,use.r&&`수용가 좌표 ${o.res.rows.length.toLocaleString()}건 (지금 결과표는 바뀜)`].filter(Boolean);
+  const use={b:o.blocks&&$('bkB').checked,p:o.pipes&&$('bkP').checked,f:!!(o.facs&&o.facs.feats)&&$('bkF').checked,g:o.gcache&&$('bkG').checked,k:o.settings&&$('bkK').checked,u:Array.isArray(o.ublk)&&$('bkU').checked,r:!!(o.res&&Array.isArray(o.res.rows)&&o.res.rows.length)&&$('bkR').checked,ph:Array.isArray(o.photos)&&!!zz&&$('bkPh').checked};
+  const has=[use.b&&`소블록 경계 ${o.blocks.fc.features.length}개`,use.p&&`상수관로 ${o.pipes.feats.length.toLocaleString()}개`,use.f&&`상수도 시설물 ${o.facs.feats.length.toLocaleString()}개`,use.g&&`주소 검색 결과 ${Object.keys(o.gcache).length.toLocaleString()}건 (지금 것과 합침)`,use.k&&'API 키·설정',use.u&&`사용자 지정블록 ${o.ublk.length.toLocaleString()}건 (같은 관리번호는 백업 내용으로)`,use.ph&&`현장 사진 ${o.photos.length.toLocaleString()}장 (지금 것과 합침)`,use.r&&`수용가 좌표 ${o.res.rows.length.toLocaleString()}건 (지금 결과표는 바뀜)`].filter(Boolean);
   if(!has.length){msg.textContent='불러올 항목이 없습니다 (체크 상태와 파일 내용을 확인하세요).';return}
   if(!quiet&&!confirm(`백업(${String(o.at).slice(0,10)})${o.parts>1?` ${o.part}/${o.parts}번 파일`:''}에서 불러옵니다:\n- ${has.join('\n- ')}\n\n이 PC에 저장된 같은 자료는 백업 내용으로 바뀝니다(이전 버전은 되돌리기용으로 보관). 계속할까요?`)){msg.textContent='';return}
   if(use.k){for(const k in o.settings){if(BK_SKIP.test(k))continue;try{localStorage.setItem(k,o.settings[k])}catch(_){}}}
   if(use.g){for(const k in o.gcache)if(!Object.prototype.hasOwnProperty.call(gcStore,k))gcStore[k]=o.gcache[k];try{await IDB.set('gcache',gcStore)}catch(_){}gcInfo()}
   if(use.b){const s=await blkSnap();if(s)try{await IDB.set('blocks_prev',s)}catch(_){}await IDB.set('blocks',o.blocks);rawFC=null;BLK_HIST=[];await blkRestore()}
   if(use.p){let s=null;try{s=await IDB.get('pipes')}catch(_){}if(s)try{await IDB.set('pipes_prev',s)}catch(_){}await IDB.set('pipes',o.pipes);await pipeRestore(true)}
+  if(use.f){let s=null;try{s=await IDB.get('facs')}catch(_){}if(s)try{await IDB.set('facs_prev',s)}catch(_){}await IDB.set('facs',o.facs);await facRestore(true)}
   if(use.ph){const have=new Set(PH.list.map(m=>m.id));for(const m of o.photos){if(have.has(m.id))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id)}catch(_){}}await phSaveMeta(true);phRefresh()}
   if(use.u){o.ublk.forEach(([k,v])=>{if(k&&v)UB.m.set(k,v)});ubSave();ubList();if(out.length){ubSync();renderTable()}}
   if(use.r)await bkResLoad(o.res);
@@ -2697,6 +2720,217 @@ $('bkSave').onclick=bkSave;$('bkLoad').onchange=async e=>{const fs=[...e.target.
  let ok=0;for(let k=0;k<fs.length;k++){if(await bkLoad(fs[k],true))ok++;else break}
  const m=$('bkMsg');if(ok===fs.length)m.innerHTML=`✅ 백업 파일 ${ok}개를 모두 불러왔습니다.`+(bkLoad.k?'<br><small>키 설정이 모두 반영되도록 한 번 <b>새로고침(F5)</b> 하세요.</small>':'')};
 setTimeout(()=>{pipeRestore().catch(()=>{})},300);
+
+/* ===================== 🔧 상수도 시설물 (밸브·소화전·유량계 등 SHP): 기준자료 등록 → 변경분 반영(미리보기 → 반영 → 되돌리기) · 지도 캔버스 1장에 그림 ===================== */
+/* 지물부호: [이름, 심볼(아래 FSVG — 사용자 제공 '심볼' 폴더를 옮겨 그림), 목록·구역 색, 보이기 시작 줌] — 이름은 패널의 대응표로 바꿀 수 있음 */
+const FK={SA113:['정수장','wtp','#0369a1',0],SA114:['배수지','res','#0284c7',0],SA206:['가압장','pump','#dc2626',0],SA117:['유량계','meter','#0d9488',13],
+ SA119:['소화전','hyd','#dc2626',15],SA121:['수압계','wp','#059669',15],SA122:['급수전계량기','meter','#64748b',17],
+ SA200:['제수밸브','gate','#1d4ed8',16],SA201:['역지밸브','check','#4f46e5',15],SA202:['이토밸브','drain','#92400e',15],SA203:['배기밸브','air','#0891b2',15],
+ SA204:['감압밸브','prv','#c026d3',15],SA205:['안전밸브','gate','#be123c',15],SA207:['SA207 (종류 확인 필요)','gate','#475569',15]};
+/* 파일명 레이어(SA 코드 없음)는 이름으로 심볼 추정 */
+const FK_GUESS=[[/관말/,'end'],[/유량계/,'meter'],[/소화전/,'hyd'],[/배수지/,'res'],[/가압/,'pump'],[/정수/,'wtp'],[/수압/,'wp'],[/공기|배기/,'air'],[/이토/,'drain'],[/감압/,'prv'],[/밸브/,'gate']];
+/* 상수도 시설물 심볼 (사용자 제공 SVG 기준. 글꼴만 기기 기본 글꼴로) */
+const FSVG=(()=>{const W=(vb,b)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${b}</svg>`,T='font-family="Malgun Gothic,Noto Sans KR,Apple SD Gothic Neo,sans-serif" font-weight="700" text-anchor="middle"',BOX='<rect x="1" y="1" width="28.5" height="28.5" fill="#fff" stroke="#000" stroke-width="2"/>';
+ return{gate:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  gateC:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  check:W('0 0 28 28','<polygon points="27,6 27,22 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  drain:W('-17 -17 20.5 20.5','<rect x="-17" y="-17" width="20.5" height="20.5" fill="#fff" fill-opacity=".75"/><line x1="-16.3" y1="-4" x2="2.8" y2="-4" stroke="#000" stroke-width="1.4"/><polyline fill="none" stroke="#000" stroke-width="1.4" points="-2.9,0.7 -6.7,0.7 -6.7,-6.7"/><polygon points="-3.5,-1.3 0,0.7 -3.5,2.7"/>'),
+  air:W('0 0 26 26',`<circle cx="13" cy="13" r="12" fill="#fff" stroke="#000" stroke-width="1.6"/><text x="13" y="20.5" font-size="20" ${T}>A</text>`),
+  prv:W('0 0 25 25','<g fill="none" stroke="#ED1C24" stroke-width="1.4" stroke-linejoin="round"><rect x="5.5" y="5.5" width="14" height="14" fill="#fff" transform="rotate(45 12.5 12.5)"/><line x1="0" y1="12.5" x2="25" y2="12.5"/><line x1="12.5" y1="22.4" x2="12.5" y2="2.6"/><line x1="16.4" y1="15.6" x2="16.4" y2="9.4"/><line x1="8.6" y1="15.6" x2="8.6" y2="9.4"/></g>'),
+  hyd:W('0 0 26 26',`<circle cx="13" cy="13" r="12" fill="#fff" stroke="#ED1C24" stroke-width="1.6"/><text x="13" y="19.5" font-size="17" fill="#ED1F24" ${T}>火</text>`),
+  hydG:W('0 0 40.4 40.4',`<circle cx="20.2" cy="20.2" r="19.2" fill="#fff" stroke="#f00" stroke-width="2"/><text x="20.2" y="30" font-size="27" fill="#f00" ${T}>火</text>`),
+  hydU:W('0 0 40.4 40.4',`<rect x="1" y="1" width="38.4" height="38.4" fill="#fff" stroke="#000" stroke-width="2"/><text x="20.2" y="30" font-size="27" ${T}>火</text>`),
+  wtp:W('0 0 30.5 30.5',BOX+'<path d="M15.3 15.3L29.5 1.5v27.6zM1 1.5l14.3 13.8L1 29.1z"/>'),
+  res:W('0 0 30.5 30.5',BOX+'<rect x="1" y="15.3" width="28.5" height="14.2"/>'),
+  pump:W('0 0 25 25','<rect x=".5" y=".5" width="24" height="24" fill="#fff" stroke="#ED1C24"/><circle cx="12.5" cy="12.5" r="3.4" fill="#ED1C24"/>'),
+  meter:W('0 0 30.5 30.5',BOX+`<text x="15.3" y="23.5" font-size="21" ${T}>M</text>`),
+  wp:W('0 0 25 25',`<rect x=".4" y=".5" width="24.2" height="24" fill="#fff" stroke="#000"/><text x="12.5" y="18" font-size="14.5" ${T} textLength="21" lengthAdjust="spacingAndGlyphs">WP</text>`),
+  end:W('0 0 25 25','<rect x="0" y="0" width="25" height="25" fill="#fff" fill-opacity=".7"/><g fill="none" stroke="#000" stroke-width="1.6"><line x1="12.5" y1="12.5" x2="25" y2="12.5"/><polyline points="18.8,.5 24.5,.5 24.5,24.5 18.8,24.5"/></g>')}})();
+const FSYM={img:new Map(),bmp:new Map()};
+function facSymImg(key){let im=FSYM.img.get(key);if(!im&&FSVG[key]){im=new Image();im.onload=()=>{FSYM.bmp.clear();facDraw()};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(FSVG[key]);FSYM.img.set(key,im)}return im}
+/* 크기별 비트맵을 한 번만 만들어 두고 drawImage로 찍음 (수천 개도 빠르게) */
+function facSprite(key,s,dpr){const ck=key+'|'+s+'|'+dpr;let c=FSYM.bmp.get(ck);if(c)return c;const im=facSymImg(key);if(!im||!im.complete||!im.naturalWidth)return null;
+ c=document.createElement('canvas');c.width=c.height=Math.ceil(s*dpr);c.getContext('2d').drawImage(im,0,0,c.width,c.height);FSYM.bmp.set(ck,c);return c}
+const facSymUrl=key=>FSVG[key]?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(FSVG[key]):'';
+const FK_OTHER=['#0f766e','#a16207','#9333ea','#be185d','#15803d','#b45309'];
+const FAC_ID=['관리번호','FTR_IDN','MNG_NO'];
+const FAC={feats:[],kinds:[],ki:new Map(),hidden:new Set(),names:'',n:0,x:null,y:null,px:null,py:null,k:null,cl:null,grid:new Map(),cs:.005,cv:null,ctx:null,raf:0,areaL:null,hit:-1,hint:''};
+/* 속성 줄이기: 빈칸·"-"·0 값과 개인정보 칸(수용가번호 등)은 저장하지 않음 (워커와 같은 함수를 씀) */
+function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/;for(var k in P){var v=P[k];if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
+ v=String(v).trim();if(!v||v==='-'||/^0+(\.0+)?$/.test(v))continue;o[k]=v.length>80?v.slice(0,80):v}return o}
+function facCfg(){let v={};try{v=JSON.parse(localStorage.getItem('geo-fac')||'{}')||{}}catch(_){}return v}
+function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,hidden:[...FAC.hidden]}))}catch(_){}}
+function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/).forEach(l=>{const i=l.indexOf('=');if(i>0){const a=l.slice(0,i).trim(),b=l.slice(i+1).trim();if(a&&b)m.set(a,b)}});return m}
+function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
+ const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
+/* 시설마다 심볼: 닫힌 제수밸브는 검은 심볼, 소화전은 지상·지하 형식별 */
+function facSymOf(I,p){const s=I.sym;if(s==='gate'&&facClosed(p))return 'gateC';if(s==='hyd'){const t=String((p||{})['소화전형식']||'');return /지상/.test(t)?'hydG':/지하/.test(t)?'hydU':'hyd'}return s}
+const FROT=new Set(['gate','gateC','check','drain','prv']);
+function facRot(p){const v=+((p||{}).rotation??(p||{})['회전GIS']);return isFinite(v)&&v!==0?v:NaN}
+/* 레이어 종류: 파일명에 SA000 지물부호가 있으면 그것, 없으면 지물부호 속성의 대표값, 그래도 없으면 파일명 */
+function facKindOf(name,feats){const m=String(name).match(/SA\d{3}/i);if(m)return m[0].toUpperCase();
+ const c=new Map();feats.slice(0,500).forEach(f=>{const v=String((f.p||{})['지물부호']||(f.p||{}).FTR_CDE||'').toUpperCase().match(/SA\d{3}/);if(v)c.set(v[0],(c.get(v[0])||0)+1)});
+ const top=[...c].sort((a,b)=>b[1]-a[1])[0];return top?top[0]:String(name).replace(/\.(shp|dbf)$/i,'')}
+const facClosed=p=>/^(폐|close|closed|닫힘|폐쇄)$/i.test(String((p||{})['개폐여부']??'').trim());
+const facId=p=>{for(const k of FAC_ID){const v=(p||{})[k];if(v!=null&&!badId(v))return String(v).trim()}return ''};
+
+/* ---------- SHP 읽기: Web Worker (속성 파일이 100MB가 넘어도 화면이 멈추지 않게), 안 되면 화면에서 직접 ---------- */
+let FW_URL=null;
+const SHP_URLS=['https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js','https://unpkg.com/shpjs@4.0.4/dist/shp.min.js'];
+const facPack=g=>[].concat(g).map(ly=>({name:String(ly.fileName||'').split('/').pop(),nul:(ly.features||[]).filter(f=>!f.geometry).length,feats:(ly.features||[]).filter(f=>f.geometry).map(f=>({g:f.geometry,p:facSlim(f.properties||{})}))}));
+async function facRead(buf){
+ if(!FW_URL){const src=`var ok=0,U=${JSON.stringify(SHP_URLS)};for(var i=0;i<U.length&&!ok;i++){try{importScripts(U[i]);ok=typeof shp!=='undefined'?1:0}catch(e){}}
+var facSlim=${facSlim.toString()};var facPack=${facPack.toString()};
+onmessage=function(e){if(!ok){postMessage({err:'noshp'});return}shp(e.data).then(function(g){postMessage({layers:facPack(g)})},function(er){postMessage({err:String(er&&er.message||er)})})}`;
+  FW_URL=URL.createObjectURL(new Blob([src],{type:'text/javascript'}))}
+ const main=async()=>facPack(await shp(buf));
+ return new Promise((res,rej)=>{let w;try{w=new Worker(FW_URL)}catch(_){main().then(res,rej);return}
+  const done=()=>{try{w.terminate()}catch(_){}};
+  w.onmessage=e=>{done();const d=e.data||{};if(d.layers)res(d.layers);else if(d.err==='noshp')main().then(res,rej);else rej(new Error(d.err||'읽기 실패'))};
+  w.onerror=ev=>{ev.preventDefault&&ev.preventDefault();done();main().then(res,rej)};
+  w.postMessage(buf)})}
+/* 레이어별 좌표계 판별(.prj 있으면 이미 경위도) → 경위도 점/면으로 정리 */
+async function facParse(buf,msg){msg.textContent='시설물 SHP 읽는 중… (제수밸브처럼 속성이 큰 레이어는 10~30초 걸릴 수 있습니다)';await sleep(20);
+ const layers=await facRead(buf),all=[],info=[],bad=[];let skip=0;
+ for(const ly of layers){skip+=ly.nul||0;const fs=ly.feats.filter(f=>/Point|Polygon/.test(f.g.type));if(!fs.length)continue;
+  const used=detectCrs(fs.map(f=>({geometry:f.g})),$('fCrs').value);if(!used){bad.push(ly.name);continue}
+  const k=facKindOf(ly.name,fs);let n=0;
+  for(const f of fs){const t=f.g.type;
+   if(t==='Point'){const c=used==='EPSG:4326'?f.g.coordinates:proj4(used,'EPSG:4326',f.g.coordinates.slice(0,2));if(!c||!inKR(c)){skip++;continue}all.push({k,c:[+c[0].toFixed(7),+c[1].toFixed(7)],p:f.p});n++}
+   else if(t==='MultiPoint'){f.g.coordinates.forEach(q=>{const c=used==='EPSG:4326'?q:proj4(used,'EPSG:4326',q.slice(0,2));if(c&&inKR(c)){all.push({k,c:[+c[0].toFixed(7),+c[1].toFixed(7)],p:f.p});n++}else skip++})}
+   else{all.push({k,a:{type:t,coordinates:tf(f.g.coordinates,t,used)},p:f.p});n++}}
+  info.push(`${ly.name} ${n.toLocaleString()}${used==='EPSG:4326'?'':' ('+used+')'}`);msg.textContent=`레이어 정리 중… ${info.length}/${layers.length}`;await sleep(0)}
+ return{all,info,bad,skip}}
+
+/* ---------- 지도: 점은 캔버스 1장(격자 색인으로 화면 안 점만), 면(유량계 구역 등)은 캔버스 렌더러 ---------- */
+function facIndex(){const fs=FAC.feats,pts=fs.filter(f=>f.c),n=pts.length;FAC.kinds=[...new Set(fs.map(f=>f.k))].sort((a,b)=>(FK[a]?0:1)-(FK[b]?0:1)||a.localeCompare(b));
+ FAC.ki=new Map(FAC.kinds.map((k,i)=>[k,i]));FAC.n=n;FAC.x=new Float64Array(n);FAC.y=new Float64Array(n);FAC.px=new Float64Array(n);FAC.py=new Float64Array(n);FAC.k=new Uint16Array(n);FAC.cl=new Uint8Array(n);FAC.sk=new Array(n);FAC.rot=new Float32Array(n);FAC.pt=pts;FAC.grid=new Map();const KI=FAC.kinds.map(facKindInfo);
+ pts.forEach((f,i)=>{FAC.x[i]=f.c[0];FAC.y[i]=f.c[1];FAC.k[i]=FAC.ki.get(f.k);FAC.cl[i]=facClosed(f.p)?1:0;const sk=facSymOf(KI[FAC.k[i]],f.p);FAC.sk[i]=sk;FAC.rot[i]=FROT.has(sk)?facRot(f.p):NaN;if(map){const q=map.project([f.c[1],f.c[0]],0);FAC.px[i]=q.x;FAC.py[i]=q.y}
+  const g=Math.floor(f.c[0]/FAC.cs)+','+Math.floor(f.c[1]/FAC.cs);let a=FAC.grid.get(g);if(!a)FAC.grid.set(g,a=[]);a.push(i)});
+ facAreas();facKindsUi();facDraw()}
+function facQuery(w,s,e,n){const cs=FAC.cs,r=[];for(let gx=Math.floor(w/cs);gx<=Math.floor(e/cs);gx++)for(let gy=Math.floor(s/cs);gy<=Math.floor(n/cs);gy++){const a=FAC.grid.get(gx+','+gy);if(a)for(const i of a)r.push(i)}return r}
+function facOn(k,z){if(FAC.hidden.has(k))return false;const m=$('fShow').value;if(m==='off')return false;return m==='on'||z>=facKindInfo(k).z}
+function facR(z){return z>=18?7:z>=17?6:z>=16?5:z>=14?4:3.2}
+const facSz=(z,big)=>Math.round((z>=18?22:z>=17?18:z>=16?15:z>=15?13:z>=13?11:9)+(big?6:0));
+function facShape(g,sh,x,y,r){if(sh==='ci'){g.moveTo(x+r,y);g.arc(x,y,r,0,6.2832)}else if(sh==='di'){g.moveTo(x,y-r*1.25);g.lineTo(x+r*1.25,y);g.lineTo(x,y+r*1.25);g.lineTo(x-r*1.25,y);g.closePath()}
+ else if(sh==='tr'){g.moveTo(x,y-r*1.3);g.lineTo(x+r*1.2,y+r*.9);g.lineTo(x-r*1.2,y+r*.9);g.closePath()}else{const s=sh==='SQ'?r*1.6:r;g.rect(x-s,y-s,s*2,s*2)}}
+function facDraw(){if(!FAC.cv||FAC.raf)return;FAC.raf=requestAnimationFrame(()=>{FAC.raf=0;try{facRender()}catch(e){console.warn('시설물 표시',e)}})}
+function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=Math.min(window.devicePixelRatio||1,2),cv=FAC.cv;
+ const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
+ if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
+ const g=FAC.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();facAreaShow(z);facHintUpd(z);if(!FAC.n)return;
+ const on=FAC.kinds.map(k=>facOn(k,z));if(!on.some(Boolean))return;
+ const b=map.getBounds().pad(pad),sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,R=facR(z),by=FAC.kinds.map(()=>[]);
+ for(const i of facQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth())){const k=FAC.k[i];if(!on[k])continue;const x=FAC.px[i]*sc+ax,y=FAC.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;by[k].push(x,y,i)}
+ /* 심볼(사용자 제공 SVG)로 찍음. 밸브는 관로 방향(rotation 속성: 동쪽 기준 시계방향 각도, 관로 1,500개와 대조해 90%가 10° 이내로 맞음)으로 돌림. 심볼이 없는 종류는 색 점 */
+ const KI=FAC.kinds.map(facKindInfo);g.lineJoin='round';
+ /* 많은 종류(제수밸브)부터 그려서 적은 시설(소화전·정수장 등)이 위에 보이게 */
+ by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s=facSz(z,I.z===0);
+  for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;
+   if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
+   const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})}
+function facHintUpd(z){const h=$('fZoomHint');if(!h)return;let t='';if(FAC.n&&$('fShow').value==='auto'){const late=FAC.kinds.filter(k=>!FAC.hidden.has(k)&&FK[k]&&z<facKindInfo(k).z).map(k=>`${facKindInfo(k).name} 줌 ${facKindInfo(k).z}`);if(late.length)t=`🔍 확대하면 보입니다: ${late.join(' · ')} (현재 ${z})`}
+ h.textContent=t;h.hidden=!t}
+function facAreas(){if(FAC.areaL&&map){map.removeLayer(FAC.areaL)}FAC.areaL=null;const as=FAC.feats.filter(f=>f.a);if(!as.length||!map)return;
+ if(!map.getPane('facA')){const p=map.createPane('facA');p.style.zIndex=397;p.style.pointerEvents='none'}
+ FAC.areaL=L.geoJSON({type:'FeatureCollection',features:as.map(f=>({type:'Feature',properties:{k:f.k},geometry:f.a}))},{pane:'facA',renderer:L.canvas({pane:'facA'}),interactive:false,
+  style:f=>{const I=facKindInfo(f.properties.k);return{color:I.col,weight:2,dashArray:'6 4',opacity:.9,fillColor:I.col,fillOpacity:.05}},
+  filter:f=>!FAC.hidden.has(f.properties.k)})}
+function facAreaShow(z){const l=FAC.areaL;if(!l||!map)return;const on=$('fShow').value!=='off'&&($('fShow').value==='on'||z>=12);if(on&&!map.hasLayer(l))l.addTo(map);else if(!on&&map.hasLayer(l))map.removeLayer(l)}
+function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),R=Math.max(facR(z),5)+4,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
+ const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
+ for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
+const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)']];
+function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen=new Set();
+ FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
+ const b=poly?blkAt(f.c[0],f.c[1]):'';rows.push(['소블록(위치)',b||'-']);
+ return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`+
+  `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
+function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
+ const cv=L.DomUtil.create('canvas','fac-canvas leaflet-zoom-hide',map.getPane('facPane'));cv.style.position='absolute';FAC.cv=cv;FAC.ctx=cv.getContext('2d');
+ map.on('moveend zoomend resize viewreset',facDraw);map.on('zoomstart',()=>{cv.style.visibility='hidden'});map.on('zoomend',()=>{cv.style.visibility=''});
+ /* 클릭: 수용가 점이 우선, 그다음 시설물. 블록(면) 위에서는 지도 click이 오지 않으므로 preclick에서 잡고, 블록·관로 팝업이 열린 뒤에 덮어씀 */
+ map.on('preclick',e=>{const i=(PT.hit>=0||(typeof PH!=='undefined'&&PH.place))?-1:facHitAt(e.containerPoint);if(i<0)return;
+  setTimeout(()=>{if(PT.hit>=0)return;L.popup({maxWidth:300,offset:[0,-4]}).setLatLng([FAC.y[i],FAC.x[i]]).setContent(facPopup(i)).openOn(map)},0)})}
+const facSym=(I,s=16)=>I.sym?`<img src="${facSymUrl(I.sym)}" width="${s}" height="${s}" alt="" style="flex:none;vertical-align:-3px">`:`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${I.col};border:1.5px solid #fff;box-shadow:0 0 0 1px #94a3b8"></span>`;
+function facKindsUi(){const box=$('fKinds');if(!box)return;const cnt=new Map(),clc=new Map();FAC.feats.forEach(f=>{cnt.set(f.k,(cnt.get(f.k)||0)+1);if(f.c&&facClosed(f.p))clc.set(f.k,(clc.get(f.k)||0)+1)});
+ box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a);return `<label class="ck fkr"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span>${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>`}).join('');
+ box.querySelectorAll('input[data-k]').forEach(c=>c.onchange=()=>{const k=c.dataset.k;if(c.checked)FAC.hidden.delete(k);else FAC.hidden.add(k);facCfgSave();facAreas();facDraw()})}
+
+/* ---------- 저장 · 불러오기 (IndexedDB facs / facs_prev) ---------- */
+async function facSave(kind,file,cnt){let prev=null;try{prev=await IDB.get('facs')}catch(_){}
+ if(kind==='전체')kind=prev?'전체 교체':'전체 등록';const full=/^전체/.test(kind);
+ const hist=(prev&&prev.hist||[]).concat([{at:Date.now(),kind,file:file||'',add:cnt&&cnt.add||0,upd:cnt&&cnt.upd||0,del:cnt&&cnt.del||0,n:FAC.feats.length}]).slice(-200);
+ const v={v:1,name:full?(file||'상수도 시설물'):(prev&&prev.name)||file||'상수도 시설물',base:full?baseOf(file):(prev&&prev.base)||baseOf(file),at:Date.now(),layers:FAC.layers||[],feats:FAC.feats,hist};
+ $('fSaveBox').hidden=false;$('fSaved').textContent='💾 이 PC에 저장 중…';
+ try{if(prev&&kind!=='되돌리기')await IDB.set('facs_prev',prev);await IDB.set('facs',v);facSavedShow(v)}
+ catch(e){$('fSaved').innerHTML='<span class="c-rd">이 PC에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span> (브라우저 저장 공간을 확인하세요)'}}
+async function facSavedShow(v){const box=$('fSaveBox');if(!v){box.hidden=true;$('fDropT').textContent='상수도 시설물 SHP 압축파일(.zip)';return}
+ box.hidden=false;$('fDropT').textContent='전체 교체용 시설물 SHP 압축파일(.zip)';
+ $('fSaved').innerHTML=`💾 <b>상수도 시설물 기준자료</b> · ${esc(v.base)} 기준 · ${v.feats.length.toLocaleString()}개${lastChange(v.hist)}<br><small class="mute">${esc(v.name)} · 저장 ${fmtDT(v.at)}</small>`;
+ let has=false;try{has=!!(await IDB.get('facs_prev'))}catch(_){}$('fUndo').hidden=!has;
+ $('fHistBox').innerHTML=(v.hist||[]).slice().reverse().slice(0,30).map(histRow).join('<br>')||'이력 없음'}
+function facSet(feats,layers){FAC.feats=feats;FAC.layers=layers||[];$('fPanel').hidden=!feats.length;facIndex()}
+async function facRestore(force){if(FAC.feats.length&&!force)return;let v=null;try{v=await IDB.get('facs')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;
+ facSet(v.feats,v.layers);$('fMsg').innerHTML=`💾 저장된 기준자료로 지도에 표시했습니다: 시설물 ${v.feats.length.toLocaleString()}개 (종류 ${FAC.kinds.length}개)`;facSavedShow(v)}
+async function facLoad(buf,file){const msg=$('fMsg'),t0=Date.now();
+ const R=await facParse(buf,msg);
+ if(!R.all.length){msg.textContent=R.bad.length?`좌표계를 판별하지 못했습니다(${R.bad.join(', ')}). .prj 파일을 함께 넣거나 원본 좌표계를 고른 뒤 다시 올리세요.`:'점·면 도형이 없습니다. 시설물 SHP인지 확인하세요.';return}
+ if(FAC.feats.length&&!confirm(`지금 시설물 기준자료(${FAC.feats.length.toLocaleString()}개)를 이 파일(${R.all.length.toLocaleString()}개)로 전체 교체할까요?\n일부만 바뀌었으면 [취소] 후 "➕ 변경분 반영"을 쓰세요. (교체해도 ↩ 되돌리기 가능)`)){msg.textContent='전체 교체를 취소했습니다.';return}
+ facSet(R.all,R.info);await facSave('전체',file);
+ msg.innerHTML=`로드 완료: 레이어 ${R.info.length}개 · 시설물 ${R.all.length.toLocaleString()}개 (${Math.round((Date.now()-t0)/1000)}초)<br><small>${R.info.map(esc).join(' · ')}</small>${R.bad.length?`<br><span class="c-rd">좌표계 판별 실패로 제외: ${R.bad.map(esc).join(', ')}</span>`:''}${R.skip?`<br><span class="c-am">도형(좌표)이 비었거나 우리나라 밖인 시설 ${R.skip.toLocaleString()}개는 뺐습니다.</span>`:''}`}
+
+/* ---------- 변경분 반영: 관리번호(종류 안에서 하나뿐일 때) → 없거나 겹치면 위치(0.5m 이내)로 같은 시설 판단 ---------- */
+const facSig=f=>JSON.stringify(Object.keys(f.p||{}).sort().map(k=>[k,f.p[k]]))+(f.c?'|'+f.c[0].toFixed(6)+','+f.c[1].toFixed(6):'|'+geoSig(f.a));
+function facIdCounts(arr){const m=new Map();arr.forEach(f=>{const id=facId(f.p);if(id){const k=f.k+'|'+id;m.set(k,(m.get(k)||0)+1)}});return m}
+async function facUpdate(buf,file){const msg=$('fMsg');if(!FAC.feats.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
+ const R=await facParse(buf,msg);if(!R.all.length){msg.textContent='변경분 파일에서 시설물(점·면)을 찾지 못했습니다.'+(R.bad.length?' 좌표계 판별 실패: '+R.bad.join(', '):'');return}
+ msg.textContent='기준자료와 비교 중…';await sleep(10);
+ const base=FAC.feats,upd=R.all,bc=facIdCounts(base),uc=facIdCounts(upd),bById=new Map(),used=new Uint8Array(base.length);
+ const uKey=f=>{const id=facId(f.p),k=f.k+'|'+id;return id&&(bc.get(k)||0)<=1&&(uc.get(k)||0)===1?k:''};
+ base.forEach((f,i)=>{const id=facId(f.p),k=f.k+'|'+id;if(id&&bc.get(k)===1&&(uc.get(k)||0)<=1)bById.set(k,i)});
+ /* 위치 색인 (미터 격자 1m) */
+ const LC=Math.cos(36*Math.PI/180),mx=c=>c[0]*LC*111320,my=c=>c[1]*110574,cell=new Map();
+ base.forEach((f,i)=>{if(!f.c)return;const g=Math.floor(mx(f.c))+','+Math.floor(my(f.c));let a=cell.get(g);if(!a)cell.set(g,a=[]);a.push(i)});
+ const bySig=new Map();base.forEach((f,i)=>{if(f.a)bySig.set(f.k+'|'+geoSig(f.a),i)});
+ /* 같은 자리에 시설이 겹쳐 있으면(중복 입력) 속성까지 같은 것을 먼저 짝지음 */
+ const near=f=>{const x=mx(f.c),y=my(f.c),gx=Math.floor(x),gy=Math.floor(y),sg=facSig(f);let best=.25,bi=-1;
+  for(let a=gx-1;a<=gx+1;a++)for(let b=gy-1;b<=gy+1;b++){const L2=cell.get(a+','+b);if(!L2)continue;for(const i of L2){if(used[i]||base[i].k!==f.k)continue;const d=(mx(base[i].c)-x)**2+(my(base[i].c)-y)**2;if(d>.25)continue;if(facSig(base[i])===sg)return i;if(d<=best){best=d;bi=i}}}return bi};
+ const add=[],chg=[];let same=0;
+ upd.forEach((f,j)=>{let i=-1;const k=uKey(f);if(k&&bById.has(k)&&!used[bById.get(k)])i=bById.get(k);else if(f.c)i=near(f);else{const s=bySig.get(f.k+'|'+geoSig(f.a));if(s!=null&&!used[s])i=s}
+  if(i<0){add.push(f);return}used[i]=1;if(facSig(base[i])===facSig(f))same++;else chg.push([i,f])});
+ const kinds=new Set(upd.map(f=>f.k)),del=[];base.forEach((f,i)=>{if(!used[i]&&kinds.has(f.k))del.push(i)});
+ msg.textContent='';
+ if(!add.length&&!chg.length&&!del.length){msg.textContent=`변경 사항이 없습니다 (같은 시설 ${same.toLocaleString()}개).`;return}
+ const per=new Map(),bump=(k,c)=>{const o=per.get(k)||{a:0,u:0,d:0};o[c]++;per.set(k,o)};add.forEach(f=>bump(f.k,'a'));chg.forEach(([,f])=>bump(f.k,'u'));del.forEach(i=>bump(base[i].k,'d'));
+ const toF=f=>({type:'Feature',properties:{},geometry:f.c?{type:'Point',coordinates:f.c}:f.a});
+ const html=`<p style="margin:0 0 6px"><b>${esc(file)}</b> · 시설물 ${upd.length.toLocaleString()}개 · 종류 ${kinds.size}개</p>
+  <table class="dft"><tr><td class="c-em">➕ 추가</td><td><b>${add.length.toLocaleString()}</b></td></tr><tr><td class="c-am">✏️ 변경</td><td><b>${chg.length.toLocaleString()}</b></td></tr><tr><td class="mute">＝ 같음</td><td>${same.toLocaleString()}</td></tr></table>
+  <table class="dft" style="margin-top:6px">${[...per].map(([k,o])=>`<tr><td>${esc(facKindInfo(k).name)}</td><td class="c-em">+${o.a}</td><td class="c-am">~${o.u}</td><td class="c-rd">${o.d?'(−'+o.d+')':''}</td></tr>`).join('')}</table>
+  ${del.length?`<label class="ck" style="display:flex;gap:6px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="dfFacDel"><span><b>종류 단위 교체</b>: 이 파일에 들어 있는 종류(${[...kinds].slice(0,6).map(k=>esc(facKindInfo(k).name)).join(', ')}${kinds.size>6?' …':''})의 기존 시설 중 파일에 없는 <b class="c-rd">${del.length.toLocaleString()}개</b>를 지웁니다. 종류 전체를 내려받은 파일일 때만 켜세요.</span></label>`:''}
+  ${dLegend}<p class="hint" style="margin:6px 0 0">적용하면 바로 이전 기준자료를 1개 보관합니다(↩ 되돌리기 가능).</p>`;
+ diffOpen('🔧 상수도 시설물 변경분 반영 미리보기',html,[[add.map(toF),'#16a34a'],[chg.map(([,f])=>toF(f)),'#f59e0b'],[del.map(i=>toF(base[i])),'#dc2626','6 6']],async()=>{
+  const useDel=!!($('dfFacDel')&&$('dfFacDel').checked),rm=new Set(chg.map(([i])=>i));if(useDel)del.forEach(i=>rm.add(i));
+  const next=base.filter((f,i)=>!rm.has(i)).concat(add,chg.map(([,f])=>f));
+  await facApply(next,'변경분 반영',file,{add:add.length,upd:chg.length,del:useDel?del.length:0})})}
+async function facApply(next,kind,file,cnt){const msg=$('fMsg');msg.textContent='반영 중…';await sleep(10);facSet(next,FAC.layers);await facSave(kind,file,cnt);
+ msg.innerHTML=`✅ ${esc(kind)} 완료: <span class="c-em">+${cnt.add}</span> · <span class="c-am">~${cnt.upd}</span> · <span class="c-rd">−${cnt.del}</span> → 시설물 ${next.length.toLocaleString()}개`}
+async function facUndo(){let p=null,cur=null;try{p=await IDB.get('facs_prev');cur=await IDB.get('facs')}catch(_){}
+ if(!p){alert('되돌릴 이전 버전이 없습니다.');return}
+ if(!confirm(`상수도 시설물 기준자료를 바로 이전 버전(${p.feats.length.toLocaleString()}개, ${fmtDT(p.at)} 저장)으로 되돌릴까요?`))return;
+ p.hist=((cur&&cur.hist)||p.hist||[]).concat([{at:Date.now(),kind:'되돌리기',file:'',n:p.feats.length}]);p.at=Date.now();
+ try{await IDB.set('facs',p);await IDB.del('facs_prev')}catch(e){alert('되돌리지 못했습니다: '+((e&&e.message)||e));return}
+ await facRestore(true);$('fMsg').innerHTML='↩ 이전 버전으로 되돌렸습니다. '+$('fMsg').innerHTML}
+const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(typeof shp==='undefined'){$('fMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다.';return}
+ const r=new FileReader();r.onload=ev=>fn(ev.target.result,f.name).catch(err=>{console.error(label,err);$('fMsg').textContent=label+' 실패: '+((err&&err.message)||err)});r.readAsArrayBuffer(f)};
+$('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
+$('fUndo').onclick=facUndo;$('fHistBtn').onclick=()=>{$('fHistBox').hidden=!$('fHistBox').hidden};
+$('fForget').onclick=async()=>{if(!confirm('이 PC에 저장된 상수도 시설물 기준자료(이전 버전 포함)를 지울까요? 지금 지도의 시설물은 그대로 남습니다.'))return;try{await IDB.del('facs');await IDB.del('facs_prev')}catch(_){}facSavedShow(null)};
+{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k))}
+$('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fCrs').onchange=facCfgSave;
+$('fNames').oninput=()=>{clearTimeout(FAC.nt);FAC.nt=setTimeout(()=>{facCfgSave();facAreas();facKindsUi();facDraw()},300)};
+try{facInit()}catch(e){console.warn('시설물 지도',e)}
+setTimeout(()=>{facRestore().catch(()=>{})},400);
 
 /* ===== 상단 중앙 🔎 주소찾기설정 창 ===== */
 function afPos(){const h=document.querySelector('header');const t=h?Math.max(8,h.getBoundingClientRect().bottom+6):64;const p=$('afPanel');p.style.top=t+'px';p.style.maxHeight=`calc(100vh - ${t+12}px)`}
