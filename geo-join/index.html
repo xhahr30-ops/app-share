@@ -674,7 +674,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <div id="cards"><div class="kpi kempty"><p>📊 변환을 실행하면 요약 지표가 표시됩니다.</p></div></div>
  </div>
  <div class="r2">
-  <div class="card" id="mapBox"><h3>🗺️ 좌표 · 소블록 지도 <button type="button" id="mapFsBtn" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="mapBox">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button><button type="button" id="phTog" class="fsb np" title="지도의 현장 사진(📷) 전체 끄기/켜기 (Alt+P)" disabled hidden>📷 사진 끄기</button> <label class="np" style="font-size:11.5px;font-weight:600">점 색 <select id="mColorBy" class="msel"><option value="mode">변환 방식</option><option value="type" class="billOnly" hidden>이상 유형</option><option value="match" class="cmpOnly" hidden>블록 일치</option></select></label> <label class="np" style="font-size:11.5px;font-weight:600">블록 색칠 <select id="blkColor" class="msel" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="none">없음</option><option value="grade">부과 등급</option><option value="wy">유수율</option><option value="abn">현장확인 비율</option></select></label> <small class="np" id="mLegend"></small></h3><div id="map"></div><p class="hint np" id="mapMsg" hidden>배경 지도 타일을 불러오지 못했습니다. 지도 우측 상단 레이어 아이콘에서 다른 배경(위성·OSM)을 고르세요. 폴리곤과 점은 배경 없이도 표시됩니다.</p></div>
+  <div class="card" id="mapBox"><h3>🗺️ 좌표 · 소블록 지도 <button type="button" id="mapFsBtn" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="mapBox">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button><button type="button" id="ptTog" class="fsb np" title="지도의 수용가 점 전체 끄기/켜기 (Alt+U) · 소블록·관로·사진은 그대로" aria-pressed="true">👥 수용가 끄기</button><button type="button" id="phTog" class="fsb np" title="지도의 현장 사진(📷) 전체 끄기/켜기 (Alt+P)" disabled hidden>📷 사진 끄기</button> <label class="np" style="font-size:11.5px;font-weight:600">점 색 <select id="mColorBy" class="msel"><option value="mode">변환 방식</option><option value="type" class="billOnly" hidden>이상 유형</option><option value="match" class="cmpOnly" hidden>블록 일치</option></select></label> <label class="np" style="font-size:11.5px;font-weight:600">블록 색칠 <select id="blkColor" class="msel" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="none">없음</option><option value="grade">부과 등급</option><option value="wy">유수율</option><option value="abn">현장확인 비율</option></select></label> <small class="np" id="mLegend"></small></h3><div id="map"></div><p class="hint np" id="mapMsg" hidden>배경 지도 타일을 불러오지 못했습니다. 지도 우측 상단 레이어 아이콘에서 다른 배경(위성·OSM)을 고르세요. 폴리곤과 점은 배경 없이도 표시됩니다.</p></div>
   <div class="card" id="barCard"><h3>📈 블록별 현황 <select id="blkView" class="msel np" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="addr">주소 결과</option><option value="bill">부과·유수율</option></select> <small id="blkCnt">행을 누르면 해당 블록으로 필터·이동</small> <button type="button" class="fsb np hideBtn" data-hide="barCard">➖ 숨기기</button><button type="button" data-fs="barCard" class="fsb np">⛶ 전체화면</button></h3><div id="bars"><p class="hint">공간결합 결과가 여기에 표시됩니다.</p></div></div>
  </div>
  <div class="card" id="tblCard"><h3>🎯 상세 결과 <small id="tcnt"></small> <button type="button" data-fs="tblCard" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="tblCard">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button></h3>
@@ -773,7 +773,11 @@ function stripPrev(list){if(!list.length)return{list,n:0,isPrev:false};const key
  return{list:res,n,isPrev:true}}const cache=new Map();
 /* ===== [개선] 수용가 점 전용 고속 레이어 — 6만 개 이상도 확대·이동·클릭·검색이 즉시 반응
    (기존: 점마다 Leaflet 원형 마커 → 확대·마우스 이동·클릭 때마다 6만 개를 모두 검사·재계산해 '응답 없음') */
-var PT={n:0,lat:null,lng:null,fill:[],col:[],w:null,r:null,vis:null,base:[],cs:0.004,grid:new Map(),sel:-1,cv:null,ctx:null,raf:0,hit:-1,ok:false};
+var PT={n:0,lat:null,lng:null,fill:[],col:[],w:null,r:null,vis:null,base:[],cs:0.004,grid:new Map(),sel:-1,cv:null,ctx:null,raf:0,hit:-1,ok:false,off:false};
+try{PT.off=localStorage.getItem('geo-ptoff')==='1'}catch(_){}
+/* 수용가 점 전체 끄기/켜기 — 필터(vis)와 따로 두어 켜면 원래 필터 상태 그대로 돌아옴 */
+function ptOffUi(){const b=document.getElementById('ptTog');if(!b)return;b.textContent=PT.off?'👥 수용가 켜기':'👥 수용가 끄기';b.setAttribute('aria-pressed',String(!PT.off));b.style.opacity=PT.off?'.7':''}
+function ptToggle(){PT.off=!PT.off;try{localStorage.setItem('geo-ptoff',PT.off?'1':'0')}catch(_){}if(PT.off&&map)map.closePopup();ptOffUi();ptDraw()}
 function ptRadius(z){return z>=17?6:z>=16?5.5:z>=15?4.5:z>=14?3.5:z>=13?2.8:2.2}
 function ptReset(n){PT.n=n;PT.lat=new Float64Array(n).fill(NaN);PT.lng=new Float64Array(n).fill(NaN);PT.px=new Float64Array(n);PT.py=new Float64Array(n);PT.fill=new Array(n);PT.col=new Array(n);PT.w=new Float32Array(n);PT.r=new Float32Array(n);PT.vis=new Uint8Array(n);PT.base=new Array(n);PT.grid=new Map();PT.sel=-1;mks.length=0}
 function ptAdd(i,lat,lng,st){PT.lat[i]=lat;PT.lng[i]=lng;const q=map.project([lat,lng],0);PT.px[i]=q.x;PT.py[i]=q.y;PT.fill[i]=st.fillColor;PT.col[i]=st.color;PT.w[i]=st.weight;PT.r[i]=0;PT.vis[i]=1;
@@ -786,7 +790,7 @@ function ptDraw(){if(!PT.ok||PT.raf)return;PT.raf=requestAnimationFrame(()=>{PT.
 function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=window.devicePixelRatio||1,cv=PT.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
- const g=PT.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!PT.n)return;
+ const g=PT.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!PT.n||PT.off)return;
  const b=map.getBounds().pad(pad),z=map.getZoom(),R0=ptRadius(z),ox=-sz.x*pad,oy=-sz.y*pad;
  const ids=ptQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth()),groups=new Map();
  const sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y;
@@ -798,7 +802,7 @@ function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Mat
  g.globalAlpha=1;const s=PT.sel;
  if(s>=0&&s<PT.n&&!isNaN(PT.lat[s])){const x=PT.px[s]*sc+ax,y=PT.py[s]*sc+ay,r=PT.r[s]||11;
   g.beginPath();g.arc(x,y,r,0,6.2832);g.fillStyle=PT.fill[s];g.fill();g.lineWidth=4;g.strokeStyle='#facc15';g.stroke()}}
-function ptHitAt(cp){if(!PT.n)return -1;const z=map.getZoom(),R=Math.max(ptRadius(z),5)+3,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
+function ptHitAt(cp){if(!PT.n||PT.off)return -1;const z=map.getZoom(),R=Math.max(ptRadius(z),5)+3,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
  for(const i of ptQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!PT.vis[i])continue;const p=map.latLngToContainerPoint([PT.lat[i],PT.lng[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
 function ptPopupHtml(i){const o=out[i];return `<b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}<div class="acts" style="margin-top:6px">${kLinks(o)}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
@@ -3061,7 +3065,8 @@ fmApply();
 $('phStop').onclick=()=>{PH.stop=true};
 ['phShow','phSize','phR','phT','phXm'].forEach(id=>{try{const v=localStorage.getItem('geo-'+id.toLowerCase());if(v!=null&&[...$(id).options].some(o=>o.value===v))$(id).value=v}catch(_){}
  $(id).addEventListener('change',()=>{try{localStorage.setItem('geo-'+id.toLowerCase(),$(id).value)}catch(_){}if(id==='phR'||id==='phT')phRefresh();else if(id==='phShow')phDraw()})});
-$('phTog').onclick=phToggle;
+$('phTog').onclick=phToggle;$('ptTog').onclick=ptToggle;ptOffUi();
+document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='u'||e.key==='U'||e.key==='ㅕ'||e.code==='KeyU')){e.preventDefault();ptToggle()}});
 document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='p'||e.key==='P'||e.key==='ㅔ'||e.code==='KeyP')&&PH.list.length){e.preventDefault();phToggle()}});
 phTogSync();
 $('phFit').onclick=phFitAll;
