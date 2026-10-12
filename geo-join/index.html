@@ -707,6 +707,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <p class="hint" id="fMsg">정수장·배수지·가압장은 항상, 유량계는 줌 13, 소화전·밸브류는 줌 15, 제수밸브는 줌 16부터 지도에 보입니다. 심볼은 올려주신 상수도 시설물 심볼을 쓰고, 닫힌 제수밸브는 검은 심볼, 밸브는 관로 방향으로 돌려 그립니다.</p>
   <div id="fPanel" hidden>
    <label class="f">지도 표시<select id="fShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label>
+   <label class="f">이름 라벨<select id="fLbl"><option value="on">보이기 (유량계·가압장·배수지·정수장)</option><option value="off">숨김</option></select></label>
    <p class="hint" id="fZoomHint" hidden></p>
    <div id="fKinds" class="fkinds"></div>
    <details class="x"><summary>📖 시설 이름 대응표 (지물부호=이름)</summary>
@@ -1026,7 +1027,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiBlkLbl').onchange=e=>uiSel('lblMode',e.target.value);
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
- q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon()};
+ q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw()};
  q('uiAll').onclick=uiAllToggle;
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -2532,14 +2533,14 @@ async function pipeSave(kind,file,cnt){const msg=$('pSaved');let prev=null;try{p
  const v={v:1,name:full?(file||'상수관로'):(prev&&prev.name)||file||'상수관로',base:full?baseOf(file):(prev&&prev.base)||baseOf(file),at:Date.now(),layers:PIPE.layers||[],
   feats:PIPE.feats.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist};
  $('pSaveBox').hidden=false;msg.textContent='💾 이 PC에 저장 중…';
- try{if(prev&&kind!=='되돌리기')await IDB.set('pipes_prev',prev);await IDB.set('pipes',v);pFieldsKeep();pipeSavedShow(v)}
+ try{if(prev&&kind!=='되돌리기')await IDB.set('pipes_prev',prev);await IDB.set('pipes',v);stoKeep();pFieldsKeep();pipeSavedShow(v)}
  catch(e){msg.innerHTML='<span class="c-rd">이 PC에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span> (브라우저 저장 공간을 확인하세요)'}}
 async function pipeSavedShow(v){const box=$('pSaveBox');if(!v){box.hidden=true;$('pDropT').textContent='상수관로 SHP 압축파일(.zip)';return}
  box.hidden=false;$('pDropT').textContent='전체 교체용 SHP 압축파일(.zip)';
  $('pSaved').innerHTML=`💾 <b>상수관로 기준자료</b> · ${esc(v.base)} 기준 · 관로 ${v.feats.length.toLocaleString()}개${lastChange(v.hist)}<br><small class="mute">${esc(v.name)} · 저장 ${fmtDT(v.at)}</small>`;
  let has=false;try{has=!!(await IDB.get('pipes_prev'))}catch(_){}$('pUndo').hidden=!has;
  $('pHistBox').innerHTML=(v.hist||[]).slice().reverse().slice(0,30).map(histRow).join('<br>')||'이력 없음'}
-async function pipeRestore(force){if(PIPE.feats.length&&!force)return;let v=null;try{v=await IDB.get('pipes')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;
+async function pipeRestore(force){if(PIPE.feats.length&&!force)return;let v=null;try{v=await IDB.get('pipes')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;stoKeep();
  const msg=$('pMsg');msg.textContent='💾 저장된 상수관로 기준자료를 불러오는 중…';await sleep(20);
  PIPE.feats=v.feats;PIPE.fc={type:'FeatureCollection',features:v.feats};PIPE.layers=v.layers||[];PIPE.bad=[];PIPE.crs='저장본';PIPE.ct=null;PIPE.stats=null;
  const ks=new Map();v.feats.slice(0,5000).forEach(f=>Object.keys(f.properties||{}).forEach(k=>ks.set(k,(ks.get(k)||0)+1)));
@@ -2784,7 +2785,7 @@ const FAC={feats:[],kinds:[],ki:new Map(),hidden:new Set(),names:'',n:0,x:null,y
 function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/;for(var k in P){var v=P[k];if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
  v=String(v).trim();if(!v||v==='-'||/^0+(\.0+)?$/.test(v))continue;o[k]=v.length>80?v.slice(0,80):v}return o}
 function facCfg(){let v={};try{v=JSON.parse(localStorage.getItem('geo-fac')||'{}')||{}}catch(_){}return v}
-function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{}}))}catch(_){}}
+function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,lbl:$('fLbl').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{}}))}catch(_){}}
 function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/).forEach(l=>{const i=l.indexOf('=');if(i>0){const a=l.slice(0,i).trim(),b=l.slice(i+1).trim();if(a&&b)m.set(a,b)}});return m}
 function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
  const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
@@ -2828,7 +2829,7 @@ async function facParse(buf,msg){msg.textContent='시설물 SHP 읽는 중… (�
  return{all,info,bad,skip}}
 
 /* ---------- 지도: 점은 캔버스 1장(격자 색인으로 화면 안 점만), 면(유량계 구역 등)은 캔버스 렌더러 ---------- */
-function facIndex(){const fs=FAC.feats,pts=fs.filter(f=>f.c),n=pts.length;FAC.kinds=[...new Set(fs.map(f=>f.k))].sort((a,b)=>(FK[a]?0:1)-(FK[b]?0:1)||a.localeCompare(b));
+function facIndex(){FAC.lt=new Map();const fs=FAC.feats,pts=fs.filter(f=>f.c),n=pts.length;FAC.kinds=[...new Set(fs.map(f=>f.k))].sort((a,b)=>(FK[a]?0:1)-(FK[b]?0:1)||a.localeCompare(b));
  FAC.ki=new Map(FAC.kinds.map((k,i)=>[k,i]));FAC.n=n;FAC.x=new Float64Array(n);FAC.y=new Float64Array(n);FAC.px=new Float64Array(n);FAC.py=new Float64Array(n);FAC.k=new Uint16Array(n);FAC.cl=new Uint8Array(n);FAC.sk=new Array(n);FAC.rot=new Float32Array(n);FAC.pt=pts;FAC.grid=new Map();const KI=FAC.kinds.map(facKindInfo);
  pts.forEach((f,i)=>{FAC.x[i]=f.c[0];FAC.y[i]=f.c[1];FAC.k[i]=FAC.ki.get(f.k);FAC.cl[i]=facClosed(f.p)?1:0;const sk=facSymOf(KI[FAC.k[i]],f.p);FAC.sk[i]=sk;FAC.rot[i]=FROT.has(sk)?facRot(f.p):NaN;if(map){const q=map.project([f.c[1],f.c[0]],0);FAC.px[i]=q.x;FAC.py[i]=q.y}
   const g=Math.floor(f.c[0]/FAC.cs)+','+Math.floor(f.c[1]/FAC.cs);let a=FAC.grid.get(g);if(!a)FAC.grid.set(g,a=[]);a.push(i)});
@@ -2857,7 +2858,25 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
  by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s=facSzK(z,I,FAC.kinds[k]);
   for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;
    if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
-   const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})}
+   const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})
+ facLabels(g,z,by,KI,W,H)}
+/* 시설 이름 라벨: 정수장·배수지·가압장은 이름 칸, 유량계는 이름 칸이 없어 소블록명→블록명→중블록명→관리번호 순으로 씀.
+   글자 크기는 ⚙️ 관로 라벨 글자 크기를 따르고, 겹치면 왼쪽에 다시 놓아 보고 그래도 겹치면 뺌(큰 시설 먼저) */
+const FLBL={wtp:[11,0],res:[11,1],pump:[12,2],meter:[14,3]},FLBL_F=['정수장명','배수지명','가압장명','소블록명','블록명','중블록명','관리번호'];
+function facLblText(i){let t=FAC.lt.get(i);if(t!==undefined)return t;const P=FAC.pt[i].p||{};t='';
+ for(const k of FLBL_F){const v=P[k];if(v!=null&&String(v).trim()&&String(v).trim()!=='-'){t=String(v).trim().slice(0,20);break}}FAC.lt.set(i,t);return t}
+function facLabels(g,z,by,KI,W,H){if($('fLbl').value==='off'||!FAC.lt)return;const fp=+UI.lblPx||11,cand=[];
+ by.forEach((a,k)=>{const L0=FLBL[KI[k].sym];if(!L0||z<L0[0]||!a.length)return;const s=facSzK(z,KI[k],FAC.kinds[k]);
+  for(let j=0;j<a.length;j+=3){const t=facLblText(a[j+2]);if(t)cand.push({x:a[j],y:a[j+1],t,s,o:L0[1]})}});
+ if(!cand.length)return;cand.sort((p,q)=>p.o-q.o);
+ g.save();g.font=`700 ${fp}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3.2*Math.max(1,fp/11*.9);
+ const box=[],hit=(r)=>box.some(b=>r[0]<b[2]&&r[2]>b[0]&&r[1]<b[3]&&r[3]>b[1]);let n=0;
+ for(const c of cand){if(n>=300)break;const w=g.measureText(c.t).width,h=fp+2,gap=c.s/2+3;
+  let r=[c.x+gap,c.y-h/2,c.x+gap+w,c.y+h/2],al='left';
+  if(hit(r)){r=[c.x-gap-w,c.y-h/2,c.x-gap,c.y+h/2];al='right';if(hit(r))continue}
+  if(r[2]<0||r[0]>W||r[3]<0||r[1]>H)continue;box.push(r);n++;
+  g.textAlign=al;const tx=al==='left'?r[0]:r[2];g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(c.t,tx,c.y);g.fillStyle='#0f172a';g.fillText(c.t,tx,c.y)}
+ g.restore();FAC.ln=n}
 function facHintUpd(z){const h=$('fZoomHint');if(!h)return;let t='';if(FAC.n&&$('fShow').value==='auto'){const late=FAC.kinds.filter(k=>!FAC.hidden.has(k)&&FK[k]&&z<facKindInfo(k).z).map(k=>`${facKindInfo(k).name} 줌 ${facKindInfo(k).z}`);if(late.length)t=`🔍 확대하면 보입니다: ${late.join(' · ')} (현재 ${z})`}
  h.textContent=t;h.hidden=!t}
 function facAreas(){if(FAC.areaL&&map){map.removeLayer(FAC.areaL)}FAC.areaL=null;const as=FAC.feats.filter(f=>f.a);if(!as.length||!map)return;
@@ -2890,12 +2909,14 @@ function facKindsUi(){const box=$('fKinds');if(!box)return;const cnt=new Map(),c
  box.querySelectorAll('input[data-k]').forEach(c=>c.onchange=()=>{const k=c.dataset.k;if(c.checked)FAC.hidden.delete(k);else FAC.hidden.add(k);facCfgSave();facAreas();facDraw()})}
 
 /* ---------- 저장 · 불러오기 (IndexedDB facs / facs_prev) ---------- */
+/* 기준자료(관로·시설물)를 브라우저가 공간 부족 때 지우지 않도록 영구 보관 요청 — 지원·허용 안 되면 조용히 넘어감 */
+function stoKeep(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().catch(()=>{})}catch(_){}}
 async function facSave(kind,file,cnt){let prev=null;try{prev=await IDB.get('facs')}catch(_){}
  if(kind==='전체')kind=prev?'전체 교체':'전체 등록';const full=/^전체/.test(kind);
  const hist=(prev&&prev.hist||[]).concat([{at:Date.now(),kind,file:file||'',add:cnt&&cnt.add||0,upd:cnt&&cnt.upd||0,del:cnt&&cnt.del||0,n:FAC.feats.length}]).slice(-200);
  const v={v:1,name:full?(file||'상수도 시설물'):(prev&&prev.name)||file||'상수도 시설물',base:full?baseOf(file):(prev&&prev.base)||baseOf(file),at:Date.now(),layers:FAC.layers||[],feats:FAC.feats,hist};
  $('fSaveBox').hidden=false;$('fSaved').textContent='💾 이 PC에 저장 중…';
- try{if(prev&&kind!=='되돌리기')await IDB.set('facs_prev',prev);await IDB.set('facs',v);facSavedShow(v)}
+ try{if(prev&&kind!=='되돌리기')await IDB.set('facs_prev',prev);await IDB.set('facs',v);stoKeep();facSavedShow(v)}
  catch(e){$('fSaved').innerHTML='<span class="c-rd">이 PC에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span> (브라우저 저장 공간을 확인하세요)'}}
 async function facSavedShow(v){const box=$('fSaveBox');if(!v){box.hidden=true;$('fDropT').textContent='상수도 시설물 SHP 압축파일(.zip)';return}
  box.hidden=false;$('fDropT').textContent='전체 교체용 시설물 SHP 압축파일(.zip)';
@@ -2903,7 +2924,7 @@ async function facSavedShow(v){const box=$('fSaveBox');if(!v){box.hidden=true;$(
  let has=false;try{has=!!(await IDB.get('facs_prev'))}catch(_){}$('fUndo').hidden=!has;
  $('fHistBox').innerHTML=(v.hist||[]).slice().reverse().slice(0,30).map(histRow).join('<br>')||'이력 없음'}
 function facSet(feats,layers){FAC.feats=feats;FAC.layers=layers||[];$('fPanel').hidden=!feats.length;facIndex()}
-async function facRestore(force){if(FAC.feats.length&&!force)return;let v=null;try{v=await IDB.get('facs')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;
+async function facRestore(force){if(FAC.feats.length&&!force)return;let v=null;try{v=await IDB.get('facs')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;stoKeep();
  facSet(v.feats,v.layers);$('fMsg').innerHTML=`💾 저장된 기준자료로 지도에 표시했습니다: 시설물 ${v.feats.length.toLocaleString()}개 (종류 ${FAC.kinds.length}개)`;facSavedShow(v)}
 async function facLoad(buf,file){const msg=$('fMsg'),t0=Date.now();
  const R=await facParse(buf,msg);
@@ -2958,8 +2979,8 @@ const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)
 $('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
 $('fUndo').onclick=facUndo;$('fHistBtn').onclick=()=>{$('fHistBox').hidden=!$('fHistBox').hidden};
 $('fForget').onclick=async()=>{if(!confirm('이 PC에 저장된 상수도 시설물 기준자료(이전 버전 포함)를 지울까요? 지금 지도의 시설물은 그대로 남습니다.'))return;try{await IDB.del('facs');await IDB.del('facs_prev')}catch(_){}facSavedShow(null)};
-{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k));FAC.ksz=v.ksz&&typeof v.ksz==='object'?v.ksz:{}}
-$('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fCrs').onchange=facCfgSave;
+{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(v.lbl)$('fLbl').value=v.lbl;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k));FAC.ksz=v.ksz&&typeof v.ksz==='object'?v.ksz:{}}
+$('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fLbl').onchange=()=>{facCfgSave();facDraw()};$('fCrs').onchange=facCfgSave;
 $('fNames').oninput=()=>{clearTimeout(FAC.nt);FAC.nt=setTimeout(()=>{facCfgSave();facAreas();facKindsUi();facDraw()},300)};
 try{facInit()}catch(e){console.warn('시설물 지도',e)}
 setTimeout(()=>{facRestore().catch(()=>{})},400);
