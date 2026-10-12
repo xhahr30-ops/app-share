@@ -125,6 +125,28 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 #mapBox:-webkit-full-screen{padding:8px;border:0;border-radius:0;width:100%;height:100%;background:var(--card)}
 #mapBox.mapfs{position:fixed;inset:0;z-index:10000;border:0;border-radius:0;padding:8px}
 #mapBox:fullscreen #map{flex:1;height:auto}#mapBox:-webkit-full-screen #map{flex:1;height:auto}#mapBox.mapfs #map{flex:1;height:auto}
+/* ⚙️ 유저설정 패널 · 모바일 전체 지도 모드 */
+#mapBox.mapfs{height:100vh;height:100dvh}
+#mapBox:fullscreen #map,#mapBox:-webkit-full-screen #map,#mapBox.mapfs #map{height:auto!important;min-height:0!important}
+@media screen and (max-width:1023px){
+ #mapBox:fullscreen,#mapBox:-webkit-full-screen,#mapBox.mapfs{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+ #mapBox:fullscreen>h3,#mapBox:-webkit-full-screen>h3,#mapBox.mapfs>h3,#mapBox:fullscreen>#mapMsg,#mapBox.mapfs>#mapMsg{display:none!important}
+ #mapBox:fullscreen #map,#mapBox:-webkit-full-screen #map,#mapBox.mapfs #map{border-radius:0}
+}
+.uiset{position:absolute;z-index:1001;top:10px;left:58px;width:300px;max-width:calc(100% - 70px);max-height:calc(100% - 20px);overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:14px;box-shadow:0 6px 24px rgba(15,23,42,.28);padding:10px 12px;font:12.5px/1.45 inherit;cursor:auto;-webkit-overflow-scrolling:touch}
+.uiset[hidden]{display:none!important}
+.uiset .uih{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}.uiset .uih b{font-size:13.5px}
+.uiset .uix{border:0;background:transparent;font-size:17px;cursor:pointer;color:var(--mute);padding:2px 6px}
+.uiset .uig{font-size:11px;font-weight:700;color:var(--mute);margin:8px 0 2px;border-top:1px dashed var(--line2);padding-top:6px}
+.uiset .uir{display:flex;align-items:center;gap:7px;padding:4px 0;font-weight:600;cursor:pointer}.uiset .uir input{width:16px;height:16px;margin:0}
+.uiset .uif{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-weight:600}
+.uiset .uib{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.uiset .uib .btn{flex:1 1 auto;width:auto;padding:6px 10px;font-size:12px}
+.uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
+.uiset .uidis{opacity:.5}
+.uibtn a{font-size:15px}.uibtn a.on{background:#fef3c7}
+.pleg .plt{cursor:pointer;user-select:none}.pleg.min>:not(b){display:none!important}
+@media (max-width:640px){.uiset{top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;max-height:72%;border-radius:16px 16px 0 0;padding:12px 14px calc(14px + env(safe-area-inset-bottom))}.uiset .uir,.uiset .uif{padding:7px 0}.uiset .uir input{width:20px;height:20px}}
+@media print{.uiset,.uibtn{display:none!important}}
 .fsbtn a{display:flex!important;align-items:center;justify-content:center;font-size:15px;color:#1e293b;cursor:pointer;text-decoration:none}
 /* 지도 주소찾기 (오른쪽 위) */
 .gsrch{background:var(--card);border-radius:10px!important;box-shadow:0 2px 10px rgba(15,23,42,.18);border:1px solid var(--line2)!important;width:300px;max-width:calc(100vw - 90px);font-family:inherit;color:var(--ink)}
@@ -647,8 +669,8 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <p class="hint" id="phRcpMsg" style="margin:0"></p>
   <details class="x" id="shBox" style="margin-top:6px"><summary>☁️ 직원 공유 <small style="font-weight:400;color:var(--mute)">구글 시트·드라이브 · 실시간</small> <b id="shChip" style="font-size:11px;font-weight:700"></b></summary>
    <p class="hint" style="margin:6px 0">사진은 구글 드라이브에, 위치·접수번호·메모는 구글 시트에 모아 직원끼리 같은 사진을 봅니다. 서버는 처음 한 번만 만들면 됩니다 (<a href="#" id="shCodeDl">📄 서버 코드·설치 방법 받기</a>).</p>
-   <label class="f">공유 서버 주소 (Apps Script 웹 앱 …/exec)<input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
-   <div class="g2"><label class="f">공유 키<input id="shKey" type="password" autocomplete="off" placeholder="setup 실행 로그의 키"></label><label class="f">내 이름 (올린 사람)<input id="shBy" type="text" autocomplete="off" placeholder="예: 구병순"></label></div>
+   <label class="f">공유 서버 주소 (Apps Script 웹 앱 …/exec)<input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" title="회사 공유 서버 주소가 기본으로 들어 있습니다. 공유 키만 넣으면 됩니다."></label>
+   <div class="g2"><label class="f">공유 키<input id="shKey" type="password" autocomplete="off" placeholder="관리자에게 받은 공유 키"></label><label class="f">내 이름 (올린 사람)<input id="shBy" type="text" autocomplete="off" placeholder="예: 구병순"></label></div>
    <label class="ck" style="display:flex;gap:6px;align-items:center;font-size:12px;margin:2px 0 6px"><input type="checkbox" id="shAuto" checked> 자동 동기화 (30초마다 · 사진 올리거나 메모 고치면 바로)</label>
    <div class="sbtns"><button id="shTest" type="button" class="btn ol">🔌 연결 테스트</button><button id="shNow" type="button" class="btn em">🔄 지금 동기화</button></div>
    <p class="hint" id="shMsg" style="margin:4px 0 0"></p>
@@ -674,7 +696,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <div id="cards"><div class="kpi kempty"><p>📊 변환을 실행하면 요약 지표가 표시됩니다.</p></div></div>
  </div>
  <div class="r2">
-  <div class="card" id="mapBox"><h3>🗺️ 좌표 · 소블록 지도 <button type="button" id="mapFsBtn" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="mapBox">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button><button type="button" id="ptTog" class="fsb np" title="지도의 수용가 점 전체 끄기/켜기 (Alt+U) · 소블록·관로·사진은 그대로" aria-pressed="true">👥 수용가 끄기</button><button type="button" id="phTog" class="fsb np" title="지도의 현장 사진(📷) 전체 끄기/켜기 (Alt+P)" disabled hidden>📷 사진 끄기</button> <label class="np" style="font-size:11.5px;font-weight:600">점 색 <select id="mColorBy" class="msel"><option value="mode">변환 방식</option><option value="type" class="billOnly" hidden>이상 유형</option><option value="match" class="cmpOnly" hidden>블록 일치</option></select></label> <label class="np" style="font-size:11.5px;font-weight:600">블록 색칠 <select id="blkColor" class="msel" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="none">없음</option><option value="grade">부과 등급</option><option value="wy">유수율</option><option value="abn">현장확인 비율</option></select></label> <small class="np" id="mLegend"></small></h3><div id="map"></div><p class="hint np" id="mapMsg" hidden>배경 지도 타일을 불러오지 못했습니다. 지도 우측 상단 레이어 아이콘에서 다른 배경(위성·OSM)을 고르세요. 폴리곤과 점은 배경 없이도 표시됩니다.</p></div>
+  <div class="card" id="mapBox"><h3>🗺️ 좌표 · 소블록 지도 <button type="button" id="mapFsBtn" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="mapBox">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button><button type="button" id="uiBtn" class="fsb np" title="지도 표시 설정: 범례·관로 라벨·경계 색·전체 지도·모두 끄기">⚙️ 표시 설정</button><button type="button" id="ptTog" class="fsb np" title="지도의 수용가 점 전체 끄기/켜기 (Alt+U) · 소블록·관로·사진은 그대로" aria-pressed="true">👥 수용가 끄기</button><button type="button" id="phTog" class="fsb np" title="지도의 현장 사진(📷) 전체 끄기/켜기 (Alt+P)" disabled hidden>📷 사진 끄기</button> <label class="np" style="font-size:11.5px;font-weight:600">점 색 <select id="mColorBy" class="msel"><option value="mode">변환 방식</option><option value="type" class="billOnly" hidden>이상 유형</option><option value="match" class="cmpOnly" hidden>블록 일치</option></select></label> <label class="np" style="font-size:11.5px;font-weight:600">블록 색칠 <select id="blkColor" class="msel" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="none">없음</option><option value="grade">부과 등급</option><option value="wy">유수율</option><option value="abn">현장확인 비율</option></select></label> <small class="np" id="mLegend"></small></h3><div id="map"></div><p class="hint np" id="mapMsg" hidden>배경 지도 타일을 불러오지 못했습니다. 지도 우측 상단 레이어 아이콘에서 다른 배경(위성·OSM)을 고르세요. 폴리곤과 점은 배경 없이도 표시됩니다.</p></div>
   <div class="card" id="barCard"><h3>📈 블록별 현황 <select id="blkView" class="msel np" disabled title="부과량 자료를 올리면 사용할 수 있습니다"><option value="addr">주소 결과</option><option value="bill">부과·유수율</option></select> <small id="blkCnt">행을 누르면 해당 블록으로 필터·이동</small> <button type="button" class="fsb np hideBtn" data-hide="barCard">➖ 숨기기</button><button type="button" data-fs="barCard" class="fsb np">⛶ 전체화면</button></h3><div id="bars"><p class="hint">공간결합 결과가 여기에 표시됩니다.</p></div></div>
  </div>
  <div class="card" id="tblCard"><h3>🎯 상세 결과 <small id="tcnt"></small> <button type="button" data-fs="tblCard" class="fsb np">⛶ 전체화면</button><button type="button" class="fsb np hideBtn" data-hide="tblCard">➖ 숨기기</button><button type="button" class="fsb np dwBtn" title="요약 지표·블록별 현황·상세 결과를 새 창으로 띄워 다른 모니터에서 함께 봅니다 (Alt+D)">🖥️ 대시보드 새 창</button></h3>
@@ -776,7 +798,7 @@ function stripPrev(list){if(!list.length)return{list,n:0,isPrev:false};const key
 var PT={n:0,lat:null,lng:null,fill:[],col:[],w:null,r:null,vis:null,base:[],cs:0.004,grid:new Map(),sel:-1,cv:null,ctx:null,raf:0,hit:-1,ok:false,off:false};
 try{PT.off=localStorage.getItem('geo-ptoff')==='1'}catch(_){}
 /* 수용가 점 전체 끄기/켜기 — 필터(vis)와 따로 두어 켜면 원래 필터 상태 그대로 돌아옴 */
-function ptOffUi(){const b=document.getElementById('ptTog');if(!b)return;b.textContent=PT.off?'👥 수용가 켜기':'👥 수용가 끄기';b.setAttribute('aria-pressed',String(!PT.off));b.style.opacity=PT.off?'.7':''}
+function ptOffUi(){const b=document.getElementById('ptTog');if(!b)return;b.textContent=PT.off?'👥 수용가 켜기':'👥 수용가 끄기';b.setAttribute('aria-pressed',String(!PT.off));b.style.opacity=PT.off?'.7':'';uiPanelSync()}
 function ptToggle(){PT.off=!PT.off;try{localStorage.setItem('geo-ptoff',PT.off?'1':'0')}catch(_){}if(PT.off&&map)map.closePopup();ptOffUi();ptDraw()}
 function ptRadius(z){return z>=17?6:z>=16?5.5:z>=15?4.5:z>=14?3.5:z>=13?2.8:2.2}
 function ptReset(n){PT.n=n;PT.lat=new Float64Array(n).fill(NaN);PT.lng=new Float64Array(n).fill(NaN);PT.px=new Float64Array(n);PT.py=new Float64Array(n);PT.fill=new Array(n);PT.col=new Array(n);PT.w=new Float32Array(n);PT.r=new Float32Array(n);PT.vis=new Uint8Array(n);PT.base=new Array(n);PT.grid=new Map();PT.sel=-1;mks.length=0}
@@ -823,6 +845,117 @@ function ptInit(){if(!map)return null;if(!map.getPane('ptPane')){const p=map.cre
  let mt=0;map.on('mousemove',e=>{if(mt)return;mt=setTimeout(()=>{mt=0},40);map.getContainer().style.cursor=ptHitAt(e.containerPoint)>=0?'pointer':''});
  return ptLayerShim}
 
+/* ===================== ⚙️ 유저설정 모드: 지도 표시 설정 (이 기기 브라우저에 저장 · geo- 로 시작하므로 백업 파일에도 포함) ===================== */
+var UI={leg:true,legMin:false,lbl:'off',lblZ:17,bcol:'hc',allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
+try{const v=JSON.parse(localStorage.getItem('geo-ui')||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
+function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_){}}
+/* 소블록 경계 색: 파랑 계열 관로(관경 색)와 겹치지 않는 주황이 기본 */
+const BCOL={hc:{name:'고대비 (주황 · 흰 테)',color:'#ea580c',halo:'#ffffff'},sat:{name:'위성용 (노랑 · 검은 테)',color:'#facc15',halo:'#111827'},old:{name:'예전 색 (청록)',color:'#1b8aa6',halo:null}};
+function blkBase(){const b=BCOL[UI.bcol]||BCOL.hc;return b.halo?{color:b.color,weight:2.5,opacity:1,fillColor:b.color,fillOpacity:.06}:{color:b.color,weight:2,opacity:1,fillColor:b.color,fillOpacity:.15}}
+/* 경계 아래 테두리(흰/검은 선)를 따로 한 겹 깔아 어떤 배경에서도 선이 보이게 함 (블록 100여 개라 부담 없음) */
+function blkHaloSync(){if(!map||!shpL)return;if(blkHalo){shpL.removeLayer(blkHalo);blkHalo=null}
+ const b=BCOL[UI.bcol]||BCOL.hc;if(!b.halo||!poly||!polyL||!shpL.hasLayer(polyL))return;
+ if(!map.getPane('blkhalo')){const p=map.createPane('blkhalo');p.style.zIndex=398;p.style.pointerEvents='none'}
+ blkHalo=L.geoJSON(poly,{pane:'blkhalo',renderer:L.canvas({pane:'blkhalo'}),interactive:false,style:{color:b.halo,weight:5.5,opacity:.85,fill:false}});shpL.addLayer(blkHalo)}
+
+/* ---------- 관로 관종/구경 라벨: 확대(기본 줌 17) 때 화면 안 관로만, 최대 300개, 겹치면 생략. 캔버스 한 장에 글자만 그림 ---------- */
+const MAT_SHORT={'덕타일주철관(DCIP)':'DCIP','회주철관(CIP)':'CIP','강관(SP)':'SP','스테인리스관(STS)':'STS','아연도강관':'GSP','PVC관(HI-3P·VP)':'PVC','PE관':'PE','콘크리트관(PC·PCC)':'PC','GRP관':'GRP','석면시멘트관':'ACP','동관':'동관'};
+const PLB={cv:null,cache:new Map(),key:'',raf:0,n:0,MAX:300};
+const fromM=(x,y)=>[y/110574+LY0,x/(LCOS*111320)+LX0];
+function plblText(a){const raw=String(a.matRaw||'').trim(),mt=a.mat==='미상'?'':(MAT_SHORT[a.mat]||(raw&&raw.length<=8?raw:a.mat)),d=a.dia!=null?'Φ'+a.dia:'';
+ return UI.lbl==='mat'?mt:UI.lbl==='dia'?d:[mt,d].filter(Boolean).join(' ')}
+function plblInit(){if(!map||PLB.cv)return;const p=map.createPane('plbl');p.style.zIndex=395;p.style.pointerEvents='none';
+ PLB.cv=L.DomUtil.create('canvas','plbl-cv',p);PLB.cv.style.display='none';
+ map.on('zoomstart',()=>{PLB.cv.style.display='none'});map.on('moveend zoomend resize',plblSoon)}
+function plblSoon(){if(!PLB.cv||PLB.raf)return;PLB.raf=requestAnimationFrame(()=>{PLB.raf=0;try{plblDraw()}catch(e){console.warn('관로 라벨',e)}})}
+function plblDraw(){const cv=PLB.cv;if(!cv||!map)return;PLB.n=0;
+ const z=map.getZoom(),onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS));
+ if(UI.lbl==='off'||UI.allOff||z<UI.lblZ||!PIPE.grid||!PIPE.feats.length||(!onM&&!onS)){cv.style.display='none';uiLblHint();return}
+ const sz=map.getSize(),dpr=Math.min(window.devicePixelRatio||1,2);
+ L.DomUtil.setPosition(cv,map.containerPointToLayerPoint([0,0]));
+ cv.width=Math.round(sz.x*dpr);cv.height=Math.round(sz.y*dpr);cv.style.width=sz.x+'px';cv.style.height=sz.y+'px';cv.style.display='';
+ const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,sz.x,sz.y);
+ const key=[UI.lbl,$('pMat').value,$('pDia').value,$('pUse').value,$('pCodes').value,PIPE.feats.length].join('|');if(key!==PLB.key){PLB.key=key;PLB.cache.clear()}
+ /* 화면 안 격자(100m)만 훑어 관로마다 가장 긴 구간 하나를 고름 */
+ const b=map.getBounds(),p0=toM(b.getWest(),b.getSouth()),p1=toM(b.getEast(),b.getNorth()),C=100,best=new Map();
+ for(let gx=Math.floor(p0[0]/C);gx<=Math.floor(p1[0]/C);gx++)for(let gy=Math.floor(p0[1]/C);gy<=Math.floor(p1[1]/C);gy++){const a=PIPE.grid.get(gx+','+gy);if(!a)continue;
+  for(const si of a){const s=PIPE.segs[si],mx=(s[0]+s[2])/2,my=(s[1]+s[3])/2;if(mx<p0[0]||mx>p1[0]||my<p0[1]||my>p1[1])continue;
+   const l=(s[2]-s[0])**2+(s[3]-s[1])**2,o=best.get(s[4]);if(!o||l>o[1])best.set(s[4],[si,l])}}
+ const cand=[];
+ for(const [fi,[si]] of best){let c=PLB.cache.get(fi);if(!c){const a=attrOf(PIPE.feats[fi]);c={t:plblText(a),s:a.use==='급수관',d:a.dia||0};PLB.cache.set(fi,c)}
+  if(!c.t||(c.s?!onS:!onM))continue;const s=PIPE.segs[si],A=map.latLngToContainerPoint(fromM(s[0],s[1])),B=map.latLngToContainerPoint(fromM(s[2],s[3])),len=Math.hypot(B.x-A.x,B.y-A.y);
+  if(len<24)continue;cand.push({c,A,B,len})}
+ cand.sort((x,y)=>y.c.d-x.c.d||y.len-x.len);/* 굵은 관부터 */
+ g.font='700 11px "Noto Sans KR",sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
+ const occ=new Set(),CS=12;
+ for(const o of cand){if(PLB.n>=PLB.MAX)break;const w=g.measureText(o.c.t).width+6,mx=(o.A.x+o.B.x)/2,my=(o.A.y+o.B.y)/2;
+  let an=Math.atan2(o.B.y-o.A.y,o.B.x-o.A.x);if(an>Math.PI/2)an-=Math.PI;else if(an<-Math.PI/2)an+=Math.PI;
+  const cs=Math.cos(an),sn=Math.sin(an),cells=[];
+  for(let t=-w/2;t<=w/2;t+=6)for(const h of [-13,-7,-1]){const x=mx+cs*t-sn*h,y=my+sn*t+cs*h;cells.push(Math.floor(x/CS)+','+Math.floor(y/CS))}
+  if(cells.some(k=>occ.has(k)))continue;cells.forEach(k=>occ.add(k));
+  g.save();g.translate(mx,my);g.rotate(an);g.lineWidth=3.2;g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(o.c.t,0,-7);g.fillStyle='#0f172a';g.fillText(o.c.t,0,-7);g.restore();PLB.n++}
+ uiLblHint()}
+function uiLblHint(){const h=document.getElementById('uiLblHint');if(!h)return;let t='';
+ if(UI.lbl!=='off'&&!UI.allOff){if(!PIPE.feats.length)t='상수관로 SHP를 올리면 라벨이 붙습니다.';else if(map&&map.getZoom()<UI.lblZ)t=`지도를 줌 ${UI.lblZ} 이상으로 확대하면 라벨이 보입니다 (현재 ${map.getZoom()}).`;else t=`지금 화면 라벨 ${PLB.n.toLocaleString()}개${PLB.n>=PLB.MAX?' (최대치, 더 확대하면 더 보입니다)':''}`}
+ h.textContent=t;h.hidden=!t}
+
+/* ---------- 표시 모두 끄기 / 다시 켜기 (Alt+H): 배경 지도와 소블록 경계만 남김, 다시 누르면 끄기 직전 상태로 ---------- */
+function uiSel(id,v){const e=document.getElementById(id);if(!e||v==null||e.value===v||![...e.options].some(o=>o.value===v))return;e.value=v;e.dispatchEvent(new Event('change'))}
+function uiAllToggle(){
+ if(!UI.allOff){UI.snap={pt:!!PT.off,ph:$('phShow').value,ps:$('pShow').value,lbl:UI.lbl,leg:UI.leg,bc:$('blkColor').value,bl:$('lblMode').value};UI.allOff=true;
+  if(!PT.off)ptToggle();uiSel('phShow','off');uiSel('pShow','off');UI.lbl='off';UI.leg=false;uiSel('blkColor','none');uiSel('lblMode','off')}
+ else{const s=UI.snap||{};UI.allOff=false;UI.snap=null;if(!!PT.off!==!!s.pt)ptToggle();uiSel('phShow',s.ph||'on');uiSel('pShow',s.ps||'auto');UI.lbl=s.lbl||'off';UI.leg=s.leg!==false;uiSel('blkColor',s.bc||'none');uiSel('lblMode',s.bl||'auto')}
+ if(map)map.closePopup();uiSave();renderLegend();if(polyL)blkColorApply();plblSoon();uiPanelSync()}
+
+/* ---------- 설정 패널 ---------- */
+function uiPanel(show){const p=document.getElementById('uiSet');if(!p)return;p.hidden=show==null?!p.hidden:!show;if(!p.hidden)uiPanelSync()}
+function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
+ const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
+ q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
+ q('uiPShow').value=$('pShow').value;q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';q('uiBlkLbl').value=$('lblMode').value;
+ q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
+ const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
+function uiInit(){if(!map)return;plblInit();
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn uibtn');
+  const a1=L.DomUtil.create('a','',d),a2=L.DomUtil.create('a','',d);a1.href=a2.href='#';a1.textContent='⚙️';a1.title='지도 표시 설정';a2.id='uiAllBtn';
+  [a1,a2].forEach(a=>{a.setAttribute('role','button');a.setAttribute('aria-label',a.title)});L.DomEvent.disableClickPropagation(d);
+  L.DomEvent.on(a1,'click',e=>{L.DomEvent.preventDefault(e);uiPanel()});L.DomEvent.on(a2,'click',e=>{L.DomEvent.preventDefault(e);uiAllToggle()});return d}});
+ map.addControl(new Ctl());
+ const p=L.DomUtil.create('div','uiset np',map.getContainer());p.id='uiSet';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','지도 표시 설정');
+ L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p);
+ const opt=(o,v)=>o.map(([k,t])=>`<option value="${k}">${t}</option>`).join('');
+ p.innerHTML=`<div class="uih"><b>⚙️ 지도 표시 설정</b><button type="button" class="uix" id="uiX" aria-label="닫기">✕</button></div>
+<div class="uig">보이기 / 끄기</div>
+<label class="uir"><input type="checkbox" id="uiPt"> 👥 수용가 점 <small style="color:var(--mute)">Alt+U</small></label>
+<label class="uir"><input type="checkbox" id="uiPh"> 📷 현장 사진 <small style="color:var(--mute)">Alt+P</small></label>
+<label class="uif">🚰 상수관로<select id="uiPShow" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
+<label class="uir"><input type="checkbox" id="uiLeg"> 🗂️ 지도 범례 (관로 · 블록 색칠)</label>
+<div class="uig">관로 라벨</div>
+<label class="uif">🏷️ 관종 / 구경<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경']])}</select></label>
+<label class="uif">보이기 시작<select id="uiLblZ" class="msel">${opt([['16','줌 16부터'],['17','줌 17부터 (권장)'],['18','줌 18부터']])}</select></label>
+<p class="uin" id="uiLblHint" hidden></p>
+<div class="uig">소블록</div>
+<label class="uif">🟧 경계 색<select id="uiBcol" class="msel">${opt(Object.entries(BCOL).map(([k,v])=>[k,v.name]))}</select></label>
+<label class="uif">🔤 블록명<select id="uiBlkLbl" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
+<div class="uib"><button type="button" id="uiAll" class="btn ol">🙈 표시 모두 끄기</button><button type="button" id="uiFs" class="btn ol">⛶ 전체 지도 모드</button></div>
+<p class="uin">🙈 모두 끄기(Alt+H)는 배경 지도와 소블록 경계만 남기고, 다시 누르면 끄기 직전 상태로 돌아갑니다. 설정은 이 기기(브라우저)에 저장되고 백업 파일에도 함께 들어갑니다.</p>`;
+ const q=id=>document.getElementById(id);
+ q('uiX').onclick=()=>uiPanel(false);
+ q('uiPt').onchange=e=>{if(!!PT.off===e.target.checked)ptToggle()};
+ q('uiPh').onchange=e=>{if(($('phShow').value!=='off')!==e.target.checked)phToggle()};
+ q('uiPShow').onchange=e=>uiSel('pShow',e.target.value);
+ q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply()};
+ q('uiLbl').onchange=e=>{UI.lbl=e.target.value;uiSave();plblSoon()};
+ q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
+ q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
+ q('uiBlkLbl').onchange=e=>uiSel('lblMode',e.target.value);
+ q('uiAll').onclick=uiAllToggle;
+ q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
+ const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
+ document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.code==='KeyH'||e.key==='h'||e.key==='H'||e.key==='ㅗ')){e.preventDefault();uiAllToggle()}
+  else if(e.key==='Escape'&&!p.hidden&&!document.body.classList.contains('fsOn'))uiPanel(false)});
+ window.addEventListener('orientationchange',()=>setTimeout(()=>{map.invalidateSize();plblSoon()},350));
+ uiPanelSync()}
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
 try{
  map=L.map('map',{preferCanvas:true}).setView([36.019,129.343],11);
@@ -830,7 +963,7 @@ try{
  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
  osm.addTo(map);baseOsm=osm;lyrCtl=L.control.layers({'일반 지도 (OSM)':osm,'위성 (Esri)':esri},{},{collapsed:true}).addTo(map);
  let te=0;[esri,osm].forEach(l=>l.on('tileerror',()=>{if(++te===4)$('mapMsg').hidden=false}));
- shpL=L.featureGroup().addTo(map);lblL=L.layerGroup();initFs();mkL=ptInit();try{initSearch()}catch(e){console.warn('주소찾기',e)}
+ shpL=L.featureGroup().addTo(map);lblL=L.layerGroup();initFs();try{uiInit()}catch(e){console.warn('표시 설정',e)}mkL=ptInit();try{initSearch()}catch(e){console.warn('주소찾기',e)}
  const fix=()=>map.invalidateSize();window.addEventListener('load',fix);setTimeout(fix,300);window.addEventListener('resize',fix);
 }catch(e){$('mapMsg').hidden=false;$('mapMsg').textContent='지도 라이브러리(Leaflet)를 불러오지 못했습니다. 인터넷 연결·보안 프로그램 차단을 확인하세요. 변환·결합·엑셀 저장은 지도 없이 동작합니다.'}
 
@@ -845,7 +978,7 @@ function initFs(){
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn');a=L.DomUtil.create('a','',d);a.href='#';a.setAttribute('role','button');
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);isOn()?off():on()});return d}});
- map.addControl(new Ctl());sync();$('mapFsBtn').onclick=()=>isOn()?off():on();
+ map.addControl(new Ctl());sync();mapFsToggle=()=>isOn()?off():on();$('mapFsBtn').onclick=mapFsToggle;
  document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('mapfs'))off()});
  window.addEventListener('beforeprint',()=>{if(isOn())off()});
@@ -963,7 +1096,7 @@ function buildPoly(){
  if(!used){$('shpMsg').textContent='좌표계를 판별하지 못했습니다(첫 좌표 '+pr.slice(0,2).join(', ')+'). 원본 좌표계를 직접 선택하세요.';return}
  $('crs').value=used;
  poly={type:'FeatureCollection',features:feats.map(f=>{const g=JSON.parse(JSON.stringify(f));g.geometry.coordinates=tf(g.geometry.coordinates,g.geometry.type,used);g.properties=g.properties||{};g.properties._bbox=turf.bbox(g);return g})};
- if(map){shpL.clearLayers();const gl=L.geoJSON(poly,{style:{color:'#1b8aa6',weight:2,fillOpacity:.15},onEachFeature:(ft,l)=>l.bindPopup(Object.entries(ft.properties).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>'))});polyL=gl;shpL.addLayer(gl);map.fitBounds(gl.getBounds())}
+ if(map){shpL.clearLayers();const gl=L.geoJSON(poly,{style:blkBase(),onEachFeature:(ft,l)=>l.bindPopup(Object.entries(ft.properties).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>'))});polyL=gl;shpL.addLayer(gl);blkHaloSync();map.fitBounds(gl.getBounds())}
  const keys=Object.keys(poly.features[0].properties).filter(k=>k!=='_bbox');
  $('blkField').innerHTML=keys.map(k=>`<option>${esc(k)}</option>`).join('');
  $('blkField').value=keys.find(k=>/^BLK_NM$/i.test(k))||keys.find(k=>/소블록|블록|BLK|NM|NAME/i.test(k))||keys[0]||'';
@@ -1576,15 +1709,15 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  if(add&&mkL&&mkL.bringToFront)mkL.bringToFront();
  let st='';if(m!=='off'){if(!onM)st=`🔍 지도를 <b>줌 ${PZ_MAIN} 이상</b>으로 확대하면 관로가 그려집니다 (현재 ${z})`;else if(PIPE.layerS&&!onS)st=`급수관 ${PIPE.nS.toLocaleString()}개는 <b>줌 ${PZ_SVC}부터</b> 그려집니다 (현재 ${z})`}
  const el=PIPE.legend&&PIPE.legend.getContainer?PIPE.legend.getContainer():null,ps=el&&el.querySelector('.pst');if(ps){ps.innerHTML=st;ps.hidden=!st}
- const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}}
-function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
- const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'){el.style.display='none';return}el.style.display='';
+ const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
+function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
+ const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
  const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const a=attrOf(f);const k=by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:a.mat;cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
  let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도'}[by];
- el.innerHTML=`<b>🚰 관로 · ${T}</b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
 async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;renderBlk();return}
  if(!poly._v)poly._v=Math.random();const key=[poly._v,$('blkField').value,$('pYmd').value,PIPE.feats.length].join('|');
@@ -1960,10 +2093,10 @@ function blkFillOf(name){const by=$('blkColor').value,s=BILL.BS&&BILL.BS[bNorm(n
  if(by==='wy'){const v=s.wy&&s.wy.v;if(v==null)return null;return v<60?'#dc2626':v<70?'#f97316':v<80?'#eab308':v<90?'#84cc16':'#16a34a'}
  if(by==='abn')return s.pct>=20?'#dc2626':s.pct>=10?'#f97316':s.pct>=5?'#eab308':'#16a34a';return null}
 function blkColorApply(){if(!polyL||!map||!polyL.setStyle)return;if(BILL.R.length)billBlocks();const fld=$('blkField').value;
- polyL.setStyle(f=>{const c=blkFillOf(f.properties[fld]);return c?{color:'#0f172a',weight:1.5,fillColor:c,fillOpacity:.42}:{color:'#1b8aa6',weight:2,fillColor:'#1b8aa6',fillOpacity:.15}});
+ polyL.setStyle(f=>{const c=blkFillOf(f.properties[fld]);return c?{color:'#0f172a',weight:1.5,fillColor:c,fillOpacity:.42}:blkBase()});blkHaloSync();
  polyL.eachLayer(l=>l.bindPopup(()=>polyPopup(l.feature)));
  const by=$('blkColor').value;if(!blkLeg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);return d}});blkLeg=new C();map.addControl(blkLeg)}
- const el=blkLeg.getContainer?blkLeg.getContainer():null;if(!el)return;if(by==='none'||!BILL.R.length){el.style.display='none';return}el.style.display='';
+ const el=blkLeg.getContainer?blkLeg.getContainer():null;if(!el)return;if(by==='none'||!BILL.R.length||!UI.leg){el.style.display='none';return}el.style.display='';
  const items=by==='grade'?Object.values(B_GR).map(([k,c])=>[k,c]):by==='wy'?[['90% 이상','#16a34a'],['80~90%','#84cc16'],['70~80%','#eab308'],['60~70%','#f97316'],['60% 미만','#dc2626']]:[['5% 미만','#16a34a'],['5~10%','#eab308'],['10~20%','#f97316'],['20% 이상','#dc2626']];
  el.innerHTML=`<b>블록 · ${{grade:'부과 등급',wy:'유수율('+BILL.M[BILL.mi]+')',abn:'현장확인 비율'}[by]}</b>`+items.map(([k,c])=>`<div><i style="background:${c};height:9px"></i>${k}</div>`).join('')}
 function polyPopup(f){const P=f.properties,fld=$('blkField').value,nm=String(P[fld]??'').trim(),s=BILL.BS&&BILL.BS[bNorm(nm)];
@@ -2766,7 +2899,7 @@ function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat
  return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}">${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':'📷'}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
- b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':''}
+ b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
 function phToggle(){const sh=$('phShow');sh.value=sh.value==='off'?'on':'off';if(sh.value==='off'&&PH.pop&&map)map.closePopup();sh.dispatchEvent(new Event('change'))}
 function phDraw(){phTogSync();if(!map)return;if(!PH.L)PH.L=L.layerGroup();const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
@@ -3132,6 +3265,8 @@ hideApply();
 const SH={cfg:{url:'',key:'',by:'',auto:true},since:0,busy:false,timer:null,kickT:null,del:new Set(),last:0,err:'',n:0,
  on(){return !!(this.cfg.url&&this.cfg.key)}};
 try{Object.assign(SH.cfg,JSON.parse(localStorage.getItem('geo-share')||'{}'))}catch(_){}
+/* 회사 공유 서버 주소를 기본값으로 넣음 (직원은 공유 키만 입력). 공유 키는 앱에 넣지 않음. 직원이 따로 넣은 주소가 있으면 그것을 우선 */
+const SH_URL0='https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec';if(!SH.cfg.url)SH.cfg.url=SH_URL0;
 try{SH.since=+localStorage.getItem('geo-share-since')||0}catch(_){}
 try{(JSON.parse(localStorage.getItem('geo-share-del')||'[]')||[]).forEach(id=>SH.del.add(id))}catch(_){}
 const shSaveCfg=()=>{try{localStorage.setItem('geo-share',JSON.stringify(SH.cfg))}catch(_){}};
