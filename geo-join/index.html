@@ -671,7 +671,9 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
    <p class="hint" style="margin:6px 0">사진은 구글 드라이브에, 위치·접수번호·메모는 구글 시트에 모아 직원끼리 같은 사진을 봅니다. 서버는 처음 한 번만 만들면 됩니다 (<a href="#" id="shCodeDl">📄 서버 코드·설치 방법 받기</a>).</p>
    <label class="f">공유 서버 주소 (Apps Script 웹 앱 …/exec)<input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" title="회사 공유 서버 주소가 기본으로 들어 있습니다. 공유 키만 넣으면 됩니다."></label>
    <div class="g2"><label class="f">공유 키<input id="shKey" type="password" autocomplete="off" placeholder="관리자에게 받은 공유 키"></label><label class="f">내 이름 (올린 사람)<input id="shBy" type="text" autocomplete="off" placeholder="예: 구병순"></label></div>
-   <label class="ck" style="display:flex;gap:6px;align-items:center;font-size:12px;margin:2px 0 6px"><input type="checkbox" id="shAuto" checked> 자동 동기화 (30초마다 · 사진 올리거나 메모 고치면 바로)</label>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin:2px 0 6px"><label class="ck" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="shAuto" checked> 자동 동기화</label>
+    <select id="shIv" title="자동: 바뀐 것이 있으면 30초마다, 5분 동안 없으면 2분, 15분 동안 없으면 5분마다 확인 (데이터·서버 사용량 절약). 사진을 올리거나 메모를 고치면 간격과 관계없이 바로 올립니다."><option value="auto">간격 자동 (30초~5분)</option><option value="30">30초마다</option><option value="60">1분마다</option><option value="300">5분마다</option></select>
+    <small id="shIvMsg" style="color:var(--mute)"></small></div>
    <div class="sbtns"><button id="shTest" type="button" class="btn ol">🔌 연결 테스트</button><button id="shNow" type="button" class="btn em">🔄 지금 동기화</button></div>
    <p class="hint" id="shMsg" style="margin:4px 0 0"></p>
   </details>
@@ -2658,7 +2660,7 @@ function bkApplySettings(){try{const vw=JSON.parse(localStorage.getItem('geo-vw'
  try{const k=localStorage.getItem('geo-kjs');if(k)KEYS.sdk=KEYS.sdk||k}catch(_){}
  try{const m=localStorage.getItem('geo-mode');if(m&&[...$('gcMode').options].some(o=>o.value===m)){curMode=null;$('gcMode').value=m;$('gcMode').onchange()}}catch(_){}
  // 직원 공유 설정도 바로 반영 (새로고침 없이 사진 목록 받기)
- try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
+ try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
 $('bkSave').onclick=bkSave;$('bkLoad').onchange=async e=>{const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));e.target.value='';if(!fs.length)return;
  bkLoad.k=false;if(fs.length===1)return bkLoad(fs[0]);
  if(!confirm(`백업 파일 ${fs.length}개를 차례로 불러옵니다.\n(첫 파일의 기준자료와 모든 파일의 현장 사진을 합칩니다)\n\n계속할까요?`))return;
@@ -3262,7 +3264,7 @@ hideApply();
    서버: share-server/Code.gs (앱의 "서버 코드 받기"). 사진 원본·썸네일은 드라이브, 목록·메모는 시트.
    올리기: 아직 안 올린 사진(m.shUp 없음) → put / 메모·위치 바뀜(m.shSig 다름) → meta / 지운 사진 → meta del
    받기: list(since) → 새 사진은 썸네일만 받고, 큰 사진은 볼 때 받음(phBig) */
-const SH={cfg:{url:'',key:'',by:'',auto:true},since:0,busy:false,timer:null,kickT:null,del:new Set(),last:0,err:'',n:0,
+const SH={cfg:{url:'',key:'',by:'',auto:true,iv:'auto'},since:0,busy:false,timer:null,kickT:null,del:new Set(),last:0,err:'',n:0,act:Date.now(),
  on(){return !!(this.cfg.url&&this.cfg.key)}};
 try{Object.assign(SH.cfg,JSON.parse(localStorage.getItem('geo-share')||'{}'))}catch(_){}
 /* 회사 공유 서버 주소를 기본값으로 넣음 (직원은 공유 키만 입력). 공유 키는 앱에 넣지 않음. 직원이 따로 넣은 주소가 있으면 그것을 우선 */
@@ -3272,7 +3274,7 @@ try{(JSON.parse(localStorage.getItem('geo-share-del')||'[]')||[]).forEach(id=>SH
 const shSaveCfg=()=>{try{localStorage.setItem('geo-share',JSON.stringify(SH.cfg))}catch(_){}};
 const shSaveDel=()=>{try{localStorage.setItem('geo-share-del',JSON.stringify([...SH.del]))}catch(_){}};
 const shSig=m=>[m.memo||'',m.memoSrc||'',m.lat??'',m.lng??'',m.src||'',m.acc??''].join('|');
-function shMarkDel(ids){if(!SH.on())return;let k=0;ids.forEach(id=>{const m=PH.byId.get(id);if(m&&m.shUp){SH.del.add(id);k++}});if(k){shSaveDel();shKick()}}
+function shMarkDel(ids){if(!SH.on())return;let k=0;ids.forEach(id=>{const m=PH.byId.get(id);if(m&&m.shUp){SH.del.add(id);k++}});if(k){shSaveDel();shKick(1)}}
 async function shReq(op,data){if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(SH.cfg.url))throw new Error('공유 서버 주소(https://script.google.com/macros/s/…/exec)를 넣어 주세요.');
  let r;try{r=await fetch(SH.cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({op,key:SH.cfg.key,by:SH.cfg.by},data||{}))})}
  catch(_){throw new Error('공유 서버에 연결할 수 없습니다. 인터넷 연결과 배포 설정(액세스: 모든 사용자)을 확인하세요.')}
@@ -3286,7 +3288,7 @@ function shStatus(){const chip=$('shChip'),msg=$('shMsg');if(!chip)return;
  const wait=PH.list.filter(m=>!m.shUp).length+PH.list.filter(m=>m.shUp&&m.shSig!==shSig(m)).length+SH.del.size,t=SH.last?new Date(SH.last).toTimeString().slice(0,8):'-';
  chip.textContent=SH.err?'⚠️ 오류':SH.busy?'🔄 동기화 중':wait?`⏫ ${wait}건 대기`:'✅ 연결됨';chip.style.color=SH.err?'#dc2626':'#0f766e';
  if(!SH.busy)msg.innerHTML=SH.err?`<span class="c-rd">⚠️ ${esc(SH.err)}</span>`:`공유 사진 <b>${SH.n.toLocaleString()}</b>장 · 이 기기 사진 ${PH.list.length.toLocaleString()}장 · 올릴 것 ${wait.toLocaleString()}건 · 마지막 동기화 ${t}`}
-function shKick(){if(!SH.on()||!SH.cfg.auto)return;clearTimeout(SH.kickT);SH.kickT=setTimeout(()=>shSync(),1500)}
+function shKick(act){if(!SH.on()||!SH.cfg.auto)return;if(act){SH.act=Date.now();shTimer()}clearTimeout(SH.kickT);SH.kickT=setTimeout(()=>shSync(),1500)}
 async function shFetchBig(id){const m=PH.byId.get(id);if(!SH.on()||!m||!m.shUp)return null;
  try{const r=await shReq('img',{kind:'big',ids:[id]}),b=r.imgs&&r.imgs[id]?shBlob(r.imgs[id]):null;if(b)await idbPut([['ph:'+id,b]]);return b}catch(_){return null}}
 // 공유 서버에서 사진 여러 장 받기 (kind: th=작은 사진, big=원본) → 이 기기에 저장
@@ -3312,13 +3314,14 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
    if(o.del){if(m)rm.push(o.id);continue}
    if(m){if(!m.shUp||m.shSig===shSig(m)){let d=false;['memo','memoSrc','src'].forEach(k=>{const v=o[k]||'';if((m[k]||'')!==v){if(v)m[k]=v;else delete m[k];d=true}});
       ['lat','lng','acc'].forEach(k=>{const v=o[k]!=null&&isFinite(o[k])?o[k]:null;if((m[k]??null)!==v){m[k]=v;d=true}});
-      if(o.by&&!m.by)m.by=o.by;m.shUp=1;m.shSig=shSig(m);changed=true}continue}
+      if(d)SH.act=Date.now();if(o.by&&!m.by)m.by=o.by;m.shUp=1;m.shSig=shSig(m);changed=true}continue}
    const n={id:o.id,name:o.name||o.id,dt:o.dt||'',ts:o.ts||phTs(o.dt||''),lat:o.lat??null,lng:o.lng??null,dir:o.dir??null,alt:o.alt??null,src:o.src||(o.lat!=null?'GPS':'없음'),
     memo:o.memo||'',w:o.w||0,h:o.h||0,at:o.at||Date.now(),by:o.by||'',shUp:1};if(o.memoSrc)n.memoSrc=o.memoSrc;if(o.acc!=null)n.acc=o.acc;if(o.map){n.map=true;if(o.dot)n.dot=o.dot}
    n.shSig=shSig(n);add.push(n)}
   // 사진 목록(위치·메모)만 먼저 넣고, 작은 사진은 화면에 보일 때 받음 (shThumbGet)
   add.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++}});if(add.length)changed=true;
   if(rm.length){await phDelete(rm,{remote:1});delN=rm.length}
+  if(dnN||delN)SH.act=Date.now();
   // 받은 목록은 바로 저장 → 중간에 끊겨도 다음엔 이어서 받음
   SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
   if(changed){await phSaveMeta(true);phRefresh(dnN>0&&manual);changed=false;if(dnN)say(`☁️ 새 사진 ${dnN.toLocaleString()}장 목록 받음 · 작은 사진은 화면에 보이는 것부터 받습니다`)}
@@ -3337,25 +3340,33 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
   SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
   try{const pg=await shReq('ping');SH.n=pg.n||0}catch(_){}
   SH.last=Date.now();
-  if(changed){await phSaveMeta(true);phRefresh()}
+  if(changed){SH.act=Date.now();await phSaveMeta(true);phRefresh()}
   if(manual||upN||dnN||delN)toastShare(upN,dnN,delN)}
  catch(e){SH.err=(e&&e.message)||String(e)}
  finally{SH.busy=false;shStatus()}}
 function toastShare(u,d,x){const t=[u&&`올림 ${u}장`,d&&`새 사진 ${d}장`,x&&`지워짐 ${x}장`].filter(Boolean).join(' · ')||'바뀐 것 없음';const m=$('phMsg');if(m)m.textContent='☁️ 직원 공유 동기화: '+t}
-function shTimer(){clearInterval(SH.timer);SH.timer=null;if(SH.on()&&SH.cfg.auto)SH.timer=setInterval(()=>{if(document.visibilityState==='visible')shSync()},30000)}
+/* 자동 동기화 간격: 고른 간격, 또는 '자동'이면 마지막 변경(내가 올림·메모 고침·지움, 다른 직원 사진·메모 받음) 뒤
+   5분까지 30초 → 15분까지 2분 → 그 뒤 5분. 바뀐 것이 생기면 다시 30초. 화면이 안 보이면 쉼 */
+function shIvSec(){const v=SH.cfg.iv;if(v&&v!=='auto'&&+v>0)return +v;const idle=Date.now()-SH.act;return idle<3e5?30:idle<9e5?120:300}
+const shIvTxt=s=>s<60?s+'초':(s/60)+'분';
+function shIvUI(){const e=$('shIv');if(e)e.value=['auto','30','60','300'].includes(String(SH.cfg.iv))?String(SH.cfg.iv):'auto'}
+function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
+ if(!SH.on()||!SH.cfg.auto){if(m)m.textContent='';return}
+ const sec=shIvSec();if(m)m.textContent=`지금 ${shIvTxt(sec)}마다 확인`;
+ SH.timer=setTimeout(async()=>{if(document.visibilityState==='visible')await shSync();shTimer()},sec*1000)}
 // 화면 연결
-(function(){const u=$('shUrl');if(!u)return;$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;
- const read=()=>{const old=SH.cfg.url;SH.cfg.url=$('shUrl').value.trim();SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();SH.cfg.auto=$('shAuto').checked;
+(function(){const u=$('shUrl');if(!u)return;$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();
+ const read=()=>{const old=SH.cfg.url;SH.cfg.url=$('shUrl').value.trim();SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();SH.cfg.auto=$('shAuto').checked;SH.cfg.iv=$('shIv').value;
   if(old&&old!==SH.cfg.url){SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}PH.list.forEach(m=>{delete m.shUp;delete m.shSig});SH.del.clear();shSaveDel()}
   shSaveCfg();shTimer();shStatus()};
- ['shUrl','shKey','shBy'].forEach(id=>$(id).addEventListener('change',read));$('shAuto').onchange=read;
+ ['shUrl','shKey','shBy'].forEach(id=>$(id).addEventListener('change',read));$('shAuto').onchange=read;$('shIv').onchange=read;
  $('shTest').onclick=async()=>{read();const m=$('shMsg');m.textContent='연결 확인 중…';try{const r=await shReq('ping');SH.err='';SH.n=r.n||0;m.innerHTML=`✅ 연결됨 · 공유 사진 <b>${(r.n||0).toLocaleString()}</b>장. [지금 동기화]를 누르면 이 기기 사진을 올리고 다른 직원 사진을 받습니다.`;$('shChip').textContent='✅ 연결됨'}catch(e){m.innerHTML='<span class="c-rd">⚠️ '+esc(e.message)+'</span>'}};
  $('shNow').onclick=()=>{read();if(!SH.on()){$('shMsg').textContent='공유 서버 주소와 공유 키를 넣어 주세요.';return}shSync(true)};
  $('shCodeDl').onclick=e=>{e.preventDefault();const t=$('shCode').textContent.replace(/^\n/,'');dlBlob(new Blob([t],{type:'text/plain;charset=utf-8'}),'스마트물길주소_사진공유서버_Code.gs')};
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')shKick()});
  // 사진 올리기·메모 저장 뒤 자동 동기화
- const _add=phAdd;phAdd=async function(){const r=await _add.apply(this,arguments);shKick();return r};
- const _save=phSaveMeta;phSaveMeta=function(now){const r=_save(now);if(!SH.busy)shKick();return r};
+ const _add=phAdd;phAdd=async function(){const r=await _add.apply(this,arguments);shKick(1);return r};
+ const _save=phSaveMeta;phSaveMeta=function(now){const r=_save(now);if(!SH.busy)shKick(1);return r};
  shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(),4000)})();
 
 window.__APP_OK=1;
