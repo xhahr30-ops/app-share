@@ -2506,7 +2506,9 @@ function bkApplySettings(){try{const vw=JSON.parse(localStorage.getItem('geo-vw'
  try{const r=localStorage.getItem('geo-region');if(r!=null)$('region').value=r}catch(_){}
  try{Object.assign(KEYS,JSON.parse(localStorage.getItem('geo-keys')||'{}'))}catch(_){}
  try{const k=localStorage.getItem('geo-kjs');if(k)KEYS.sdk=KEYS.sdk||k}catch(_){}
- try{const m=localStorage.getItem('geo-mode');if(m&&[...$('gcMode').options].some(o=>o.value===m)){curMode=null;$('gcMode').value=m;$('gcMode').onchange()}}catch(_){}}
+ try{const m=localStorage.getItem('geo-mode');if(m&&[...$('gcMode').options].some(o=>o.value===m)){curMode=null;$('gcMode').value=m;$('gcMode').onchange()}}catch(_){}
+ // 직원 공유 설정도 바로 반영 (새로고침 없이 사진 목록 받기)
+ try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
 $('bkSave').onclick=bkSave;$('bkLoad').onchange=async e=>{const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));e.target.value='';if(!fs.length)return;
  bkLoad.k=false;if(fs.length===1)return bkLoad(fs[0]);
  if(!confirm(`백업 파일 ${fs.length}개를 차례로 불러옵니다.\n(첫 파일의 기준자료와 모든 파일의 현장 사진을 합칩니다)\n\n계속할까요?`))return;
