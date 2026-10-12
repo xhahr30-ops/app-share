@@ -551,7 +551,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
  <div class="sec">
   <h4>💾 기준자료 백업 · 다른 PC로 옮기기</h4>
   <p class="hint" style="margin:0">소블록 경계·상수관로·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.</p>
-  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span></div>
+  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck" title="관리번호·소블록·좌표만 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록)</span></div>
   <div class="sbtns"><button id="bkSave" type="button" class="btn ol">💾 백업 파일 만들기</button><label class="btn ol">📂 백업 불러오기<input type="file" id="bkLoad" accept=".zip,.json" multiple hidden></label></div>
   <p class="hint" id="bkMsg" style="margin:0"></p>
  </div>
@@ -2460,6 +2460,7 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
   if($('bkG').checked){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
   if($('bkK').checked){o.settings={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^geo-/.test(k)&&!BK_SKIP.test(k))o.settings[k]=localStorage.getItem(k)}parts.push('API 키·설정')}
   if($('bkU').checked&&UB.m.size){o.ublk=[...UB.m];parts.push('사용자 지정블록 '+UB.m.size.toLocaleString()+'건')}
+  if($('bkR').checked&&out.length){o.res=bkResSnap();parts.push('수용가 좌표 '+o.res.rows.length.toLocaleString()+'건 (주소 제외)')}
   const phs=$('bkPh').checked&&PH.list.length?PH.list.map(m=>{const c={...m};if(typeof c.th==='string'&&c.th.startsWith('data:'))delete c.th;return c}):[];
   if(phs.length)parts.push('현장 사진 '+phs.length.toLocaleString()+'장');
   if(!parts.length){msg.textContent='백업할 자료가 없습니다.';return}
@@ -2489,8 +2490,8 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
 async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파일 읽는 중… '+f.name;
  try{let txt,zz=null;if(/\.json$/i.test(f.name))txt=await f.text();else{const z=await JSZip.loadAsync(f);zz=z;const e=z.file('backup.json');if(!e)throw new Error('backup.json이 없습니다');txt=await e.async('string')}
   const o=JSON.parse(txt);if(!o||o.app!=='geo-addr-app')throw new Error('이 앱의 백업 파일이 아닙니다.');
-  const use={b:o.blocks&&$('bkB').checked,p:o.pipes&&$('bkP').checked,g:o.gcache&&$('bkG').checked,k:o.settings&&$('bkK').checked,u:Array.isArray(o.ublk)&&$('bkU').checked,ph:Array.isArray(o.photos)&&!!zz&&$('bkPh').checked};
-  const has=[use.b&&`소블록 경계 ${o.blocks.fc.features.length}개`,use.p&&`상수관로 ${o.pipes.feats.length.toLocaleString()}개`,use.g&&`주소 검색 결과 ${Object.keys(o.gcache).length.toLocaleString()}건 (지금 것과 합침)`,use.k&&'API 키·설정',use.u&&`사용자 지정블록 ${o.ublk.length.toLocaleString()}건 (같은 관리번호는 백업 내용으로)`,use.ph&&`현장 사진 ${o.photos.length.toLocaleString()}장 (지금 것과 합침)`].filter(Boolean);
+  const use={b:o.blocks&&$('bkB').checked,p:o.pipes&&$('bkP').checked,g:o.gcache&&$('bkG').checked,k:o.settings&&$('bkK').checked,u:Array.isArray(o.ublk)&&$('bkU').checked,r:!!(o.res&&Array.isArray(o.res.rows)&&o.res.rows.length)&&$('bkR').checked,ph:Array.isArray(o.photos)&&!!zz&&$('bkPh').checked};
+  const has=[use.b&&`소블록 경계 ${o.blocks.fc.features.length}개`,use.p&&`상수관로 ${o.pipes.feats.length.toLocaleString()}개`,use.g&&`주소 검색 결과 ${Object.keys(o.gcache).length.toLocaleString()}건 (지금 것과 합침)`,use.k&&'API 키·설정',use.u&&`사용자 지정블록 ${o.ublk.length.toLocaleString()}건 (같은 관리번호는 백업 내용으로)`,use.ph&&`현장 사진 ${o.photos.length.toLocaleString()}장 (지금 것과 합침)`,use.r&&`수용가 좌표 ${o.res.rows.length.toLocaleString()}건 (지금 결과표는 바뀜)`].filter(Boolean);
   if(!has.length){msg.textContent='불러올 항목이 없습니다 (체크 상태와 파일 내용을 확인하세요).';return}
   if(!quiet&&!confirm(`백업(${String(o.at).slice(0,10)})${o.parts>1?` ${o.part}/${o.parts}번 파일`:''}에서 불러옵니다:\n- ${has.join('\n- ')}\n\n이 PC에 저장된 같은 자료는 백업 내용으로 바뀝니다(이전 버전은 되돌리기용으로 보관). 계속할까요?`)){msg.textContent='';return}
   if(use.k){for(const k in o.settings){if(BK_SKIP.test(k))continue;try{localStorage.setItem(k,o.settings[k])}catch(_){}}}
@@ -2499,9 +2500,21 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(use.p){let s=null;try{s=await IDB.get('pipes')}catch(_){}if(s)try{await IDB.set('pipes_prev',s)}catch(_){}await IDB.set('pipes',o.pipes);await pipeRestore(true)}
   if(use.ph){const have=new Set(PH.list.map(m=>m.id));for(const m of o.photos){if(have.has(m.id))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id)}catch(_){}}await phSaveMeta(true);phRefresh()}
   if(use.u){o.ublk.forEach(([k,v])=>{if(k&&v)UB.m.set(k,v)});ubSave();ubList();if(out.length){ubSync();renderTable()}}
+  if(use.r)await bkResLoad(o.res);
   if(use.k){bkApplySettings();bkLoad.k=true}
   msg.innerHTML=`✅ 불러오기 완료: ${has.join(' · ')}${use.k?'<br><small>키 설정이 모두 반영되도록 한 번 <b>새로고침(F5)</b> 하세요.</small>':''}`}
  catch(e){msg.textContent='불러오기 실패: '+bkErr(e);return false}return true}
+/* 수용가 좌표 백업: 관리번호·소블록·좌표·변환방식만 담음 (이름·주소·연락처·검색주소·비고는 넣지 않음) */
+const BK_RES_KEEP=['관리번호','소블록'],BK_RES_OUT=['_방식','_위도','_경도'];
+function bkResSnap(){const base=BK_RES_KEEP.filter(k=>out.some(o=>k in o)),cols=base.concat(BK_RES_OUT);
+ return{v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,rows:out.map(o=>cols.map(k=>o[k]??''))}}
+async function bkResLoad(res){const cols=res.cols||[],base=cols.filter(k=>!/^_/.test(k));
+ const R=res.rows.map(a=>{const r={};base.forEach(k=>{r[k]=a[cols.indexOf(k)]??''});return r});
+ BILLMODE=!!res.bill;setRows(R,(res.name||'백업')+' (백업 · 주소 제외)');
+ out=res.rows.map((a,i)=>{const o={...R[i],'_비고':'','_검색주소':'','_방식':'','_위도':'','_경도':'','_수정주소':'','_결합블록':'','_결합방식':''};BK_RES_OUT.forEach(k=>{const j=cols.indexOf(k);if(j>=0)o[k]=a[j]??''});return o});
+ TB_LIM=300;pks.length=0;for(const k in drafts)delete drafts[k];$('tb').innerHTML='';
+ $('progMsg').textContent=`백업에서 수용가 좌표 ${out.length.toLocaleString()}건을 불러왔습니다 (이름·주소는 없음 · 주소 엑셀을 다시 올리면 전체 정보로 바뀝니다)`;
+ await joinAll()}
 function bkApplySettings(){try{const vw=JSON.parse(localStorage.getItem('geo-vw')||'null');if(vw&&vw.key){$('vwKey').value=vw.key;$('vwDom').value=vw.dom||'';setupVworld()}}catch(_){}
  try{const r=localStorage.getItem('geo-region');if(r!=null)$('region').value=r}catch(_){}
  try{Object.assign(KEYS,JSON.parse(localStorage.getItem('geo-keys')||'{}'))}catch(_){}
