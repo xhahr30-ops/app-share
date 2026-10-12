@@ -263,7 +263,8 @@ progress{width:100%;height:10px;accent-color:#4f46e5}
 .savebox{border:1px dashed var(--indb);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--ind) 6%,var(--card))}
 .histbox{max-height:160px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px;margin-top:4px;font-size:11.5px;line-height:1.6}
 .ckrow{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}
-.fkinds{display:flex;flex-direction:column;gap:3px;margin:4px 0 6px;font-size:12px}.fkr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fkinds{display:flex;flex-direction:column;gap:3px;margin:4px 0 6px;font-size:12px}.fkr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.fkl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+.fszc{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:none}.fszc button{width:24px;height:24px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-weight:700;cursor:pointer;line-height:1;padding:0}.fszc b{min-width:38px;text-align:center;font-size:11.5px}
 .mute{color:var(--mute)}
 .dfp{position:fixed;left:16px;bottom:16px;z-index:1800;width:min(460px,calc(100vw - 32px));max-height:72vh;overflow:auto;background:var(--card);color:var(--ink);border:2px solid var(--ind);border-radius:14px;box-shadow:0 18px 48px #0f172a59;padding:12px;font-size:13px;line-height:1.55}
 .dfp[hidden]{display:none}.dfh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.dfh b{font-size:14.5px}
@@ -897,7 +898,7 @@ function ptInit(){if(!map)return null;if(!map.getPane('ptPane')){const p=map.cre
  return ptLayerShim}
 
 /* ===================== ⚙️ 유저설정 모드: 지도 표시 설정 (이 기기 브라우저에 저장 · geo- 로 시작하므로 백업 파일에도 포함) ===================== */
-var UI={leg:true,legMin:false,lbl:'off',lblZ:17,bcol:'hc',allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
+var UI={leg:true,legMin:false,lbl:'off',lblZ:17,bcol:'hc',fsz:1,pw:1,lblPx:11,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
 try{const v=JSON.parse(localStorage.getItem('geo-ui')||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
 function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_){}}
 /* 소블록 경계 색: 파랑 계열 관로(관경 색)와 겹치지 않는 주황이 기본 */
@@ -919,7 +920,7 @@ function plblInit(){if(!map||PLB.cv)return;const p=map.createPane('plbl');p.styl
  PLB.cv=L.DomUtil.create('canvas','plbl-cv',p);PLB.cv.style.display='none';
  map.on('zoomstart',()=>{PLB.cv.style.display='none'});map.on('moveend zoomend resize',plblSoon)}
 function plblSoon(){if(!PLB.cv||PLB.raf)return;PLB.raf=requestAnimationFrame(()=>{PLB.raf=0;try{plblDraw()}catch(e){console.warn('관로 라벨',e)}})}
-function plblDraw(){const cv=PLB.cv;if(!cv||!map)return;PLB.n=0;
+function plblDraw(){const cv=PLB.cv;if(!cv||!map)return;PLB.n=0;const fp=+UI.lblPx||11,fk=fp/11;
  const z=map.getZoom(),onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS));
  if(UI.lbl==='off'||UI.allOff||z<UI.lblZ||!PIPE.grid||!PIPE.feats.length||(!onM&&!onS)){cv.style.display='none';uiLblHint();return}
  const sz=map.getSize(),dpr=Math.min(window.devicePixelRatio||1,2);
@@ -935,16 +936,17 @@ function plblDraw(){const cv=PLB.cv;if(!cv||!map)return;PLB.n=0;
  const cand=[];
  for(const [fi,[si]] of best){let c=PLB.cache.get(fi);if(!c){const a=attrOf(PIPE.feats[fi]);c={t:plblText(a),s:a.use==='급수관',d:a.dia||0};PLB.cache.set(fi,c)}
   if(!c.t||(c.s?!onS:!onM))continue;const s=PIPE.segs[si],A=map.latLngToContainerPoint(fromM(s[0],s[1])),B=map.latLngToContainerPoint(fromM(s[2],s[3])),len=Math.hypot(B.x-A.x,B.y-A.y);
-  if(len<24)continue;cand.push({c,A,B,len})}
+  if(len<24*fk)continue;cand.push({c,A,B,len})}
  cand.sort((x,y)=>y.c.d-x.c.d||y.len-x.len);/* 굵은 관부터 */
- g.font='700 11px "Noto Sans KR",sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
- const occ=new Set(),CS=12;
+ /* 라벨 글자 크기(⚙️ 크기 설정): 겹침 판정 칸도 글자 크기에 맞춰 늘림 */
+ g.font=`700 ${fp}px "Noto Sans KR",sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
+ const occ=new Set(),CS=12*fk;
  for(const o of cand){if(PLB.n>=PLB.MAX)break;const w=g.measureText(o.c.t).width+6,mx=(o.A.x+o.B.x)/2,my=(o.A.y+o.B.y)/2;
   let an=Math.atan2(o.B.y-o.A.y,o.B.x-o.A.x);if(an>Math.PI/2)an-=Math.PI;else if(an<-Math.PI/2)an+=Math.PI;
   const cs=Math.cos(an),sn=Math.sin(an),cells=[];
-  for(let t=-w/2;t<=w/2;t+=6)for(const h of [-13,-7,-1]){const x=mx+cs*t-sn*h,y=my+sn*t+cs*h;cells.push(Math.floor(x/CS)+','+Math.floor(y/CS))}
+  for(let t=-w/2;t<=w/2;t+=6*fk)for(const h of [-13*fk,-7*fk,-1*fk]){const x=mx+cs*t-sn*h,y=my+sn*t+cs*h;cells.push(Math.floor(x/CS)+','+Math.floor(y/CS))}
   if(cells.some(k=>occ.has(k)))continue;cells.forEach(k=>occ.add(k));
-  g.save();g.translate(mx,my);g.rotate(an);g.lineWidth=3.2;g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(o.c.t,0,-7);g.fillStyle='#0f172a';g.fillText(o.c.t,0,-7);g.restore();PLB.n++}
+  g.save();g.translate(mx,my);g.rotate(an);g.lineWidth=3.2*Math.max(1,fk*.9);g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(o.c.t,0,-7*fk);g.fillStyle='#0f172a';g.fillText(o.c.t,0,-7*fk);g.restore();PLB.n++}
  uiLblHint()}
 function uiLblHint(){const h=document.getElementById('uiLblHint');if(!h)return;let t='';
  if(UI.lbl!=='off'&&!UI.allOff){if(!PIPE.feats.length)t='상수관로 SHP를 올리면 라벨이 붙습니다.';else if(map&&map.getZoom()<UI.lblZ)t=`지도를 줌 ${UI.lblZ} 이상으로 확대하면 라벨이 보입니다 (현재 ${map.getZoom()}).`;else t=`지금 화면 라벨 ${PLB.n.toLocaleString()}개${PLB.n>=PLB.MAX?' (최대치, 더 확대하면 더 보입니다)':''}`}
@@ -963,7 +965,7 @@ function uiPanel(show){const p=document.getElementById('uiSet');if(!p)return;p.h
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
- q('uiPShow').value=$('pShow').value;q('uiFShow').value=$('fShow').value;q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';q('uiBlkLbl').value=$('lblMode').value;
+ q('uiPShow').value=$('pShow').value;const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiFShow').value=$('fShow').value;q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';q('uiBlkLbl').value=$('lblMode').value;
  q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
  const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
 function uiInit(){if(!map)return;plblInit();
@@ -986,6 +988,11 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">🏷️ 관종 / 구경<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경']])}</select></label>
 <label class="uif">보이기 시작<select id="uiLblZ" class="msel">${opt([['16','줌 16부터'],['17','줌 17부터 (권장)'],['18','줌 18부터']])}</select></label>
 <p class="uin" id="uiLblHint" hidden></p>
+<div class="uig">크기</div>
+<label class="uif">🔧 시설물 아이콘<select id="uiFsz" class="msel">${opt([['0.75','작게 (75%)'],['1','보통'],['1.3','크게 (130%)'],['1.6','아주 크게 (160%)']])}</select></label>
+<label class="uif">🚰 관로 굵기<select id="uiPw" class="msel">${opt([['0.7','가늘게 (70%)'],['1','보통'],['1.4','굵게 (140%)'],['1.8','아주 굵게 (180%)']])}</select></label>
+<label class="uif">🏷️ 라벨 글자<select id="uiLblPx" class="msel">${opt([['10','작게'],['11','보통'],['13','크게'],['15','아주 크게']])}</select></label>
+<p class="uin">시설물은 왼쪽 ②-2 목록의 −/＋로 종류마다 따로 키우거나 줄일 수 있습니다.</p>
 <div class="uig">소블록</div>
 <label class="uif">🟧 경계 색<select id="uiBcol" class="msel">${opt(Object.entries(BCOL).map(([k,v])=>[k,v.name]))}</select></label>
 <label class="uif">🔤 블록명<select id="uiBlkLbl" class="msel">${opt([['auto','표시 (확대 시)'],['on','항상 표시'],['off','숨김']])}</select></label>
@@ -1002,6 +1009,9 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
  q('uiBlkLbl').onchange=e=>uiSel('lblMode',e.target.value);
+ q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
+ q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
+ q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon()};
  q('uiAll').onclick=uiAllToggle;
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -1731,7 +1741,7 @@ function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  if(by==='age')col=a.age==null?'#94a3b8':band(AGE_BANDS,a.age)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
  else if(by==='use')col=USE_COL[a.use]||catCol(a.use);else col=MAT_COL[a.mat]||catCol(a.mat);
- const w=a.dia==null?1.8:band(DIA_BANDS,a.dia)[3];return{color:col,weight:w,opacity:.9}}
+ const w=(a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);return{color:col,weight:w,opacity:.9}}
 const catMap=new Map();function catCol(k){if(k==='미상')return '#94a3b8';if(!catMap.has(k))catMap.set(k,OTHER_COL[catMap.size%OTHER_COL.length]);return catMap.get(k)}
 function pipePopup(f){const a=attrOf(f),P=f.properties;
  const rows=[['레이어',a.layer||'-'],['관리번호',a.id],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];
@@ -2759,7 +2769,7 @@ const FAC={feats:[],kinds:[],ki:new Map(),hidden:new Set(),names:'',n:0,x:null,y
 function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/;for(var k in P){var v=P[k];if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
  v=String(v).trim();if(!v||v==='-'||/^0+(\.0+)?$/.test(v))continue;o[k]=v.length>80?v.slice(0,80):v}return o}
 function facCfg(){let v={};try{v=JSON.parse(localStorage.getItem('geo-fac')||'{}')||{}}catch(_){}return v}
-function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,hidden:[...FAC.hidden]}))}catch(_){}}
+function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{}}))}catch(_){}}
 function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/).forEach(l=>{const i=l.indexOf('=');if(i>0){const a=l.slice(0,i).trim(),b=l.slice(i+1).trim();if(a&&b)m.set(a,b)}});return m}
 function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
  const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
@@ -2812,6 +2822,10 @@ function facQuery(w,s,e,n){const cs=FAC.cs,r=[];for(let gx=Math.floor(w/cs);gx<=
 function facOn(k,z){if(FAC.hidden.has(k))return false;const m=$('fShow').value;if(m==='off')return false;return m==='on'||z>=facKindInfo(k).z}
 function facR(z){return z>=18?7:z>=17?6:z>=16?5:z>=14?4:3.2}
 const facSz=(z,big)=>Math.round((z>=18?22:z>=17?18:z>=16?15:z>=15?13:z>=13?11:9)+(big?6:0));
+/* 실제 그릴 크기 = 줌별 기본 × ⚙️ 시설물 아이콘 배율 × 종류별 배율(목록의 −/＋) */
+const FKS_STEPS=[.5,.75,1,1.25,1.5,2,2.5];
+const facKS=k=>+((FAC.ksz||{})[k])||1;
+const facSzK=(z,I,k)=>Math.max(6,Math.round(facSz(z,I.z===0)*(+UI.fsz||1)*facKS(k)));
 function facShape(g,sh,x,y,r){if(sh==='ci'){g.moveTo(x+r,y);g.arc(x,y,r,0,6.2832)}else if(sh==='di'){g.moveTo(x,y-r*1.25);g.lineTo(x+r*1.25,y);g.lineTo(x,y+r*1.25);g.lineTo(x-r*1.25,y);g.closePath()}
  else if(sh==='tr'){g.moveTo(x,y-r*1.3);g.lineTo(x+r*1.2,y+r*.9);g.lineTo(x-r*1.2,y+r*.9);g.closePath()}else{const s=sh==='SQ'?r*1.6:r;g.rect(x-s,y-s,s*2,s*2)}}
 function facDraw(){if(!FAC.cv||FAC.raf)return;FAC.raf=requestAnimationFrame(()=>{FAC.raf=0;try{facRender()}catch(e){console.warn('시설물 표시',e)}})}
@@ -2825,7 +2839,7 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
  /* 심볼(사용자 제공 SVG)로 찍음. 밸브는 관로 방향(rotation 속성: 동쪽 기준 시계방향 각도, 관로 1,500개와 대조해 90%가 10° 이내로 맞음)으로 돌림. 심볼이 없는 종류는 색 점 */
  const KI=FAC.kinds.map(facKindInfo);g.lineJoin='round';
  /* 많은 종류(제수밸브)부터 그려서 적은 시설(소화전·정수장 등)이 위에 보이게 */
- by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s=facSz(z,I.z===0);
+ by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s=facSzK(z,I,FAC.kinds[k]);
   for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;
    if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
    const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})}
@@ -2837,9 +2851,9 @@ function facAreas(){if(FAC.areaL&&map){map.removeLayer(FAC.areaL)}FAC.areaL=null
   style:f=>{const I=facKindInfo(f.properties.k);return{color:I.col,weight:2,dashArray:'6 4',opacity:.9,fillColor:I.col,fillOpacity:.05}},
   filter:f=>!FAC.hidden.has(f.properties.k)})}
 function facAreaShow(z){const l=FAC.areaL;if(!l||!map)return;const on=$('fShow').value!=='off'&&($('fShow').value==='on'||z>=12);if(on&&!map.hasLayer(l))l.addTo(map);else if(!on&&map.hasLayer(l))map.removeLayer(l)}
-function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),R=Math.max(facR(z),5)+4,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
+function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),RK=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),k)/2,5)+3),R=Math.max(5,...RK),ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
- for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
+ for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=RK[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
 const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)']];
 function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen=new Set();
  FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
@@ -2854,7 +2868,10 @@ function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=ma
   setTimeout(()=>{if(PT.hit>=0)return;L.popup({maxWidth:300,offset:[0,-4]}).setLatLng([FAC.y[i],FAC.x[i]]).setContent(facPopup(i)).openOn(map)},0)})}
 const facSym=(I,s=16)=>I.sym?`<img src="${facSymUrl(I.sym)}" width="${s}" height="${s}" alt="" style="flex:none;vertical-align:-3px">`:`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${I.col};border:1.5px solid #fff;box-shadow:0 0 0 1px #94a3b8"></span>`;
 function facKindsUi(){const box=$('fKinds');if(!box)return;const cnt=new Map(),clc=new Map();FAC.feats.forEach(f=>{cnt.set(f.k,(cnt.get(f.k)||0)+1);if(f.c&&facClosed(f.p))clc.set(f.k,(clc.get(f.k)||0)+1)});
- box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a);return `<label class="ck fkr"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span>${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>`}).join('');
+ box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span>${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
+ box.querySelectorAll('button[data-sz]').forEach(bt=>bt.onclick=()=>{const k=bt.dataset.k,cur=facKS(k);let i=FKS_STEPS.findIndex(v=>Math.abs(v-cur)<.01);if(i<0)i=2;i=Math.max(0,Math.min(FKS_STEPS.length-1,i+(+bt.dataset.sz)));
+  FAC.ksz=FAC.ksz||{};if(FKS_STEPS[i]===1)delete FAC.ksz[k];else FAC.ksz[k]=FKS_STEPS[i];facCfgSave();facKindsUi();facDraw()});
+ const rs=box.querySelector('#fSzReset');if(rs)rs.onclick=()=>{FAC.ksz={};facCfgSave();facKindsUi();facDraw()};
  box.querySelectorAll('input[data-k]').forEach(c=>c.onchange=()=>{const k=c.dataset.k;if(c.checked)FAC.hidden.delete(k);else FAC.hidden.add(k);facCfgSave();facAreas();facDraw()})}
 
 /* ---------- 저장 · 불러오기 (IndexedDB facs / facs_prev) ---------- */
@@ -2926,7 +2943,7 @@ const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)
 $('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
 $('fUndo').onclick=facUndo;$('fHistBtn').onclick=()=>{$('fHistBox').hidden=!$('fHistBox').hidden};
 $('fForget').onclick=async()=>{if(!confirm('이 PC에 저장된 상수도 시설물 기준자료(이전 버전 포함)를 지울까요? 지금 지도의 시설물은 그대로 남습니다.'))return;try{await IDB.del('facs');await IDB.del('facs_prev')}catch(_){}facSavedShow(null)};
-{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k))}
+{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k));FAC.ksz=v.ksz&&typeof v.ksz==='object'?v.ksz:{}}
 $('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fCrs').onchange=facCfgSave;
 $('fNames').oninput=()=>{clearTimeout(FAC.nt);FAC.nt=setTimeout(()=>{facCfgSave();facAreas();facKindsUi();facDraw()},300)};
 try{facInit()}catch(e){console.warn('시설물 지도',e)}
