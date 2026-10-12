@@ -426,9 +426,10 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phed button i{font-style:normal;background:#dc2626;color:#fff;border-radius:999px;padding:0 5px;margin-left:3px;font-size:10px}.phed button i:empty{display:none}
 .phed .h{margin-top:4px;font-size:11px;color:var(--mute)}.phed .r2{margin-top:4px;padding-top:4px;border-top:1px dashed var(--line2)}
 #map.phadd,#map.phadd .leaflet-interactive{cursor:copy!important}
-.phaddpop{display:flex;flex-direction:column;gap:5px;min-width:190px;font:12px 'Noto Sans KR',sans-serif}.phaddpop b{font-size:12.5px}
-.phaddpop button{font:700 12.5px 'Noto Sans KR',sans-serif;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
+.phaddpop{display:flex;flex-direction:column;gap:4px;min-width:190px;font:12px 'Noto Sans KR',sans-serif}.phaddpop b{font-size:12.5px}
+.phaddpop button{font:700 12.5px 'Noto Sans KR',sans-serif;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
 .phaddpop button.hl{background:#0f766e;border-color:#0f766e;color:#fff}.phaddpop small{color:var(--mute)}
+.phaddpop .f{display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:700}.phaddpop .f input,.phaddpop .f select{flex:1;min-width:0;font:600 12.5px 'Noto Sans KR',sans-serif;padding:6px 8px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink)}.phaddpop .pv{color:#0f766e;font-weight:700}
 #phToast{position:fixed;z-index:100002;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;background:#111827;color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 6px 20px rgba(0,0,0,.35);font:600 12.5px/1.4 'Noto Sans KR',sans-serif}
 #phToast[hidden]{display:none}#phToast button{border:0;border-radius:8px;padding:5px 10px;background:#facc15;color:#111;font:800 12px 'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}#phToast .x{background:transparent;color:#cbd5e1;padding:2px 4px}
 .phtr{position:fixed;z-index:100001;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -3753,19 +3754,36 @@ async function phEdMove(g,ll){const n=g.ids.length;
  phToast(`📍 사진 ${n.toLocaleString()}장 위치를 옮겼습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,a,b,s,no,ac])=>{const m=PH.byId.get(id);if(!m)return;m.lat=a;m.lng=b;m.src=s;if(no)m.note=no;else delete m.note;if(ac!=null)m.acc=ac;else delete m.acc});
   if(ref){PH.ref.set(ref[0],ref[1]);try{await IDB.set('phref',[...PH.ref])}catch(_){}}await phSaveMeta(true);phRefresh();phToast('↩ 위치를 되돌렸습니다.',{ms:4000})}})}
 /* ---------- 이 자리에 사진 넣기 (카메라 / 앨범) ---------- */
-function phEdAddAt(ll){if(!map||!ll)return;const E=PH.ed;
+/* 사진번호 이름 붙이기 — 민원대장 규칙: 위치도 = 긴급250.png · 단수밸브 상세도 = 긴급250-6-n · 현장사진 = 긴급250-n (n은 이미 있는 번호 다음부터) */
+const PH_NOTY={site:'현장사진',valve:'단수밸브 상세도',map:'위치도'};
+function phNoNames(code,ty,files){const ext=f=>{const x=/\.[^.]+$/.exec(f.name);return x?x[0].toLowerCase():(/png/.test(f.type)?'.png':'.jpg')},low=code.normalize('NFC').toLowerCase(),
+  esc2=low.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),names=PH.list.map(m=>String(m.name||'').normalize('NFC').toLowerCase().replace(/\.[^.]+$/,''));
+ if(ty==='map'){let k=names.filter(n=>n===low||new RegExp('^'+esc2+'\\s*\\(\\d+\\)$').test(n)).length;return files.map(f=>code+(k++?` (${k})`:'')+ext(f))}
+ const re=ty==='valve'?new RegExp('^'+esc2+'-6-(\\d+)'):new RegExp('^'+esc2+'-(\\d+)(?![\\d-])');let n=0;names.forEach(x=>{const r=re.exec(x);if(r&&+r[1]>n)n=+r[1]});
+ return files.map(f=>code+(ty==='valve'?'-6-':'-')+(++n)+ext(f))}
+function phEdAddAt(ll){if(!map||!ll)return;const E=PH.ed;let last={c:'',t:'site'};try{Object.assign(last,JSON.parse(localStorage.getItem('geo-phno')||'{}'))}catch(_){}
  const box=document.createElement('div');box.className='phaddpop';
- box.innerHTML=`<b>📍 이 자리에 사진 넣기</b><small>${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}</small><button type="button" class="hl" data-k="cam">📸 카메라로 찍기</button><button type="button" data-k="alb">🖼️ 앨범·파일에서 고르기 (여러 장)</button><small>GPS가 든 사진은 사진 GPS 위치에, GPS 없는 사진만 이 자리에 놓입니다.</small><button type="button" data-k="no">취소</button>`;
- const pop=L.popup({className:'phpop',minWidth:200,maxWidth:260,autoPanPadding:[30,30]}).setLatLng(ll).setContent(box);
- box.onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k;if(k==='no'){map.closePopup(pop);return}
+ box.innerHTML=`<b>📍 이 자리에 사진 넣기</b><small>${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}</small>
+<div class="f"><input data-f="no" value="${esc(last.c)}" placeholder="🏷️ 사진번호 (예: 긴급250)" aria-label="사진번호" autocomplete="off"><select data-f="ty" aria-label="사진 종류" style="flex:0 0 auto;width:auto">${Object.entries(PH_NOTY).map(([k,t])=>`<option value="${k}"${k===last.t?' selected':''}>${t}</option>`).join('')}</select></div><small class="pv"></small>
+<button type="button" class="hl" data-k="cam">📸 카메라로 찍기</button><button type="button" data-k="alb">🖼️ 앨범·파일에서 고르기 (여러 장)</button><small>GPS 있는 사진은 GPS 위치에 놓입니다.</small><button type="button" data-k="cancel">취소</button>`;
+ const noI=box.querySelector('[data-f="no"]'),tyS=box.querySelector('[data-f="ty"]'),pv=box.querySelector('.pv');
+ const cur=()=>({c:noI.value.trim().replace(/[\\/:*?"<>|]/g,''),t:tyS.value});
+ const prev=()=>{const {c,t}=cur();pv.textContent=c?`→ 파일 이름: ${phNoNames(c,t,[{name:'',type:''}])[0].replace(/\.[^.]+$/,'')}${t==='map'?'':', 다음 번호…'} (확장자는 원래대로)`:'번호를 비우면 파일 이름 그대로 넣습니다 (나중에 메모에 번호를 적어도 묶입니다).'};
+ noI.oninput=prev;tyS.onchange=prev;noI.onkeydown=e=>{if(e.key!=='Escape')e.stopPropagation()};prev();
+ const pop=L.popup({className:'phpop',minWidth:220,maxWidth:280,autoPanPadding:[20,20]}).setLatLng(ll).setContent(box),bar=document.getElementById('phEd');
+ /* 지도가 작으면 편집 줄이 창을 가리므로 창이 열려 있는 동안 편집 줄을 숨김 */
+ pop.on('add',()=>{if(bar)bar.style.visibility='hidden'});pop.on('remove',()=>{if(bar)bar.style.visibility=''});
+ box.onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;const k=b.dataset.k;if(k==='cancel'){map.closePopup(pop);return}
   let inp=document.getElementById(k==='cam'?'phCamIn':'phAlbIn');
   if(!inp){inp=document.createElement('input');inp.type='file';inp.id=k==='cam'?'phCamIn':'phAlbIn';inp.hidden=true;
    if(k==='cam'){inp.accept='image/*';inp.setAttribute('capture','environment')}else{inp.accept=$('phFile').accept;inp.multiple=true}document.body.appendChild(inp)}
-  inp.onchange=async()=>{const f=inp.files;if(!f||!f.length)return;map.closePopup(pop);const n0=PH.list.length;
+  inp.onchange=async()=>{let f=[...(inp.files||[])];if(!f.length)return;map.closePopup(pop);const n0=PH.list.length,{c,t}=cur();
+   if(c){try{localStorage.setItem('geo-phno',JSON.stringify({c,t:t==='map'?'site':t}))}catch(_){}const img=f.filter(x=>/^image\//.test(x.type)||/\.(jpe?g|png)$/i.test(x.name)),nm=phNoNames(c,t,img);
+    f=f.map(x=>{const i=img.indexOf(x);return i<0?x:new File([x],nm[i],{type:x.type,lastModified:x.lastModified})})}
    try{await phAdd(f,ll,{all:true})}finally{inp.value=''}const n=PH.list.length-n0;if(E.mode==='add')phEdMode('add');
-   phToast(n?`📷 사진 ${n.toLocaleString()}장을 넣었습니다.`:'넣은 사진이 없습니다 (이미 있는 사진이거나 읽지 못한 사진). 아래 현장 사진 칸의 안내를 확인하세요.',n?{ms:5000}:{ms:8000})};
+   phToast(n?`📷 사진 ${n.toLocaleString()}장을 넣었습니다`+(c?` (${c} · ${PH_NOTY[t]})`:'')+'.':'넣은 사진이 없습니다 (이미 있는 사진이거나 읽지 못한 사진). 아래 현장 사진 칸의 안내를 확인하세요.',n?{ms:5000}:{ms:8000})};
   inp.click()};
- L.DomEvent.disableClickPropagation(box);setTimeout(()=>pop.openOn(map),0)}
+ L.DomEvent.disableClickPropagation(box);setTimeout(()=>{pop.openOn(map);if(!last.c)setTimeout(()=>{try{noI.focus({preventScroll:true})}catch(_){}},50)},0)}
 /* ---------- 지도 휴지통 창 ---------- */
 function phTrashOpen(){phTrashLoad().then(()=>{let w=document.getElementById('phTr');
  if(!w){w=document.createElement('div');w.id='phTr';w.className='phtr np';w.setAttribute('role','dialog');w.setAttribute('aria-label','사진 휴지통');
