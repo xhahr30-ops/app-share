@@ -2584,7 +2584,10 @@ const TC={m:new Map(),q:new Map(),t:0},BC=new Map();
 const phThumbNow=id=>TC.m.get(id)||'';
 function phThumb(id){const u=TC.m.get(id);if(u){TC.m.delete(id);TC.m.set(id,u);return Promise.resolve(u)}const w=TC.q.get(id);if(w)return w.p;let r;const p=new Promise(x=>{r=x});TC.q.set(id,{p,r});if(!TC.t)TC.t=setTimeout(phThumbFlush,0);return p}
 async function phThumbFlush(){TC.t=0;const q=[...TC.q];TC.q.clear();let v=[];try{v=await idbMany(q.map(([id])=>'pt:'+id))}catch(_){}
- q.forEach(([id,o],i)=>{const b=v[i];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}o.r(u)});
+ const miss=[];
+ q.forEach(([id,o],i)=>{const b=v[i];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}
+  else{const m=PH.byId.get(id);if(m&&m.shUp&&typeof shThumbGet==='function'){miss.push([id,o]);return}}o.r(u)});
+ if(miss.length)shThumbGet(miss);
  while(TC.m.size>900){const [k,u]=TC.m.entries().next().value;TC.m.delete(k);URL.revokeObjectURL(u)}}
 async function phBig(id){let u=BC.get(id);if(u){BC.delete(id);BC.set(id,u);return u}let b=null;try{b=await IDB.get('ph:'+id)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(id);if(!b)return '';
  u=BC.get(id);if(u)return u;u=URL.createObjectURL(b);BC.set(id,u);while(BC.size>12){const [k,x]=BC.entries().next().value;BC.delete(k);URL.revokeObjectURL(x)}return u}
@@ -2793,7 +2796,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
    `<button type="button" data-a="dl">⬇ 저장</button><button type="button" class="del" data-a="del">🗑 삭제</button>`};
  q('.nav.p').onclick=e=>{e.stopPropagation();v.go(v.i-1)};q('.nav.n').onclick=e=>{e.stopPropagation();v.go(v.i+1)};
  strip.onclick=e=>{const im=e.target.closest('img[data-k]');if(im)v.go(+im.dataset.k)};
- img.onclick=async()=>{if(!v.pid)return;let b=null;try{b=await IDB.get('ph:'+v.pid)}catch(_){}if(!b)return;const u=URL.createObjectURL(b);W.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),120000)};
+ img.onclick=async()=>{if(!v.pid)return;let b=null;try{b=await IDB.get('ph:'+v.pid)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(v.pid);if(!b)return;const u=URL.createObjectURL(b);W.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),120000)};
  let sx=null;const st=q('.stage');st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});st.addEventListener('touchend',e=>{if(sx==null)return;const d=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(d)>40)v.go(v.i+(d<0?1:-1))});
  ta.onchange=()=>{const m=PH.byId.get(v.pid);if(!m)return;m.memo=ta.value.trim();delete m.memoSrc;const g=PH.gOf.get(m.id);if(g)g.memo=g.ids.some(id=>PH.byId.get(id).memo);phSaveMeta();phView();phViewsRefresh(v)};
  ta.onkeydown=e=>e.stopPropagation();
@@ -2801,7 +2804,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   if(a==='gal')phGalOpen(m.id);else if(a==='map'){phGoMap(m.id);try{window.focus()}catch(_){}}
   else if(a==='place')phPlace(m.id,doc);
   else if(a==='solo'){m.solo=!m.solo;phSaveMeta();phRefresh();v.show(m.id)}
-  else if(a==='dl'){let bl=null;try{bl=await IDB.get('ph:'+m.id)}catch(_){}if(bl)dlBlob(bl,m.name.replace(/\.[^.]+$/,'')+(/png/.test(bl.type)?'.png':'.jpg'))}
+  else if(a==='dl'){let bl=null;try{bl=await IDB.get('ph:'+m.id)}catch(_){}if(!bl&&typeof shFetchBig==='function')bl=await shFetchBig(m.id);if(bl)dlBlob(bl,m.name.replace(/\.[^.]+$/,'')+(/png/.test(bl.type)?'.png':'.jpg'))}
   else if(a==='del'){if(!W.confirm(m.shUp&&SH.on()?`사진 "${m.name}"은(는) 직원 공유 중입니다.\n지우면 모든 직원의 화면과 공유 드라이브(휴지통으로 이동)에서도 지워집니다. 지울까요?`:`사진 "${m.name}"을(를) 이 PC에서 지울까요?`))return;await phDelete([m.id]);}};
  return v}
 function phViewsRefresh(except){PH.views.forEach(x=>{if(x!==except)try{x.refresh()}catch(_){}})}
@@ -2976,7 +2979,10 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
  try{const crs=$('shpCrs').value,pj=(lat,lng)=>crs==='EPSG:4326'?[lng,lat]:proj4('EPSG:4326',crs,[lng,lat]);
   const want=new Set(ids),G=PH.G.filter(g=>g.ids.some(id=>want.has(id))).sort((a,b)=>(a.t0||9e15)-(b.t0||9e15)),gNo=new Map(G.map((g,i)=>[g.id,i+1]));
   const order=G.flatMap(g=>g.ids.filter(id=>want.has(id))).concat(PH.nog.filter(id=>want.has(id)));
-  let blobs=[];if(withImg){btn.textContent='⏳ 사진 확인 중…';blobs=await idbMany(order.map(id=>'ph:'+id))}
+  let blobs=[];if(withImg){btn.textContent='⏳ 사진 확인 중…';blobs=await idbMany(order.map(id=>'ph:'+id));
+   const need=order.map((id,k)=>[id,k]).filter(([id,k])=>!blobs[k]&&PH.byId.get(id)&&PH.byId.get(id).shUp);
+   if(need.length&&typeof shFetchMany==='function'){for(let a=0;a<need.length;a+=5){btn.textContent=`⏳ 공유 서버에서 원본 받는 중… ${Math.min(a+5,need.length)}/${need.length}`;
+     const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0]),'big');sl.forEach(([id,k])=>{if(got[id])blobs[k]=got[id]})}}}
   const LIM=300*1048576,parts=[];let cur=[],sum=0;order.forEach((id,k)=>{const s=withImg&&blobs[k]?blobs[k].size:0;if(cur.length&&sum+s>LIM){parts.push(cur);cur=[];sum=0}cur.push(k);sum+=s});if(cur.length)parts.push(cur);
   const partOf=new Map();parts.forEach((p,pi)=>p.forEach(k=>partOf.set(k,pi+1)));
   const rows=[],pts=[];order.forEach((id,k)=>{const m=PH.byId.get(id),g=PH.gOf.get(id),how=PH.inf.get(id),loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?[m.lat,m.lng]:g&&g.lat!=null?[g.lat,g.lng]:null;
@@ -3128,6 +3134,20 @@ function shStatus(){const chip=$('shChip'),msg=$('shMsg');if(!chip)return;
 function shKick(){if(!SH.on()||!SH.cfg.auto)return;clearTimeout(SH.kickT);SH.kickT=setTimeout(()=>shSync(),1500)}
 async function shFetchBig(id){const m=PH.byId.get(id);if(!SH.on()||!m||!m.shUp)return null;
  try{const r=await shReq('img',{kind:'big',ids:[id]}),b=r.imgs&&r.imgs[id]?shBlob(r.imgs[id]):null;if(b)await idbPut([['ph:'+id,b]]);return b}catch(_){return null}}
+// 공유 서버에서 사진 여러 장 받기 (kind: th=작은 사진, big=원본) → 이 기기에 저장
+async function shFetchMany(ids,kind){const out={};if(!SH.on()||!ids.length)return out;
+ try{const r=await shReq('img',{kind,ids}),puts=[];ids.forEach(id=>{const s=r.imgs&&r.imgs[id];if(s){const b=shBlob(s);out[id]=b;puts.push([(kind==='big'?'ph:':'pt:')+id,b])}});if(puts.length)await idbPut(puts)}catch(_){}
+ return out}
+// 화면에 보이는 작은 사진만 서버에서 받음: 40장씩 묶어 동시에 2건까지, 실패한 사진은 1분 뒤에 다시 시도
+const SHT={q:new Map(),run:0,fail:new Map(),t:0};
+function shThumbGet(list){const now=Date.now();
+ list.forEach(([id,o])=>{const f=SHT.fail.get(id);if(f&&now-f<60000){o.r('');return}const w=SHT.q.get(id);if(w)w.push(o);else SHT.q.set(id,[o])});
+ if(!SHT.t)SHT.t=setTimeout(shThumbPump,30)}
+async function shThumbPump(){SHT.t=0;
+ while(SHT.run<2&&SHT.q.size){const ids=[...SHT.q.keys()].slice(-40),ws=ids.map(id=>{const w=SHT.q.get(id);SHT.q.delete(id);return w});SHT.run++;
+  shFetchMany(ids,'th').then(got=>{ids.forEach((id,k)=>{const b=got[id];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}else SHT.fail.set(id,Date.now());ws[k].forEach(o=>o.r(u))});
+   while(TC.m.size>900){const [k,u]=TC.m.entries().next().value;TC.m.delete(k);URL.revokeObjectURL(u)}})
+  .finally(()=>{SHT.run--;if(SHT.q.size&&!SHT.t)SHT.t=setTimeout(shThumbPump,0)})}}
 async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();return}
  SH.busy=true;SH.err='';shStatus();const msg=$('shMsg'),say=t=>{if(msg)msg.textContent=t};let changed=false,upN=0,dnN=0,delN=0;
  try{
@@ -3141,10 +3161,12 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
    const n={id:o.id,name:o.name||o.id,dt:o.dt||'',ts:o.ts||phTs(o.dt||''),lat:o.lat??null,lng:o.lng??null,dir:o.dir??null,alt:o.alt??null,src:o.src||(o.lat!=null?'GPS':'없음'),
     memo:o.memo||'',w:o.w||0,h:o.h||0,at:o.at||Date.now(),by:o.by||'',shUp:1};if(o.memoSrc)n.memoSrc=o.memoSrc;if(o.acc!=null)n.acc=o.acc;if(o.map){n.map=true;if(o.dot)n.dot=o.dot}
    n.shSig=shSig(n);add.push(n)}
-  for(let i=0;i<add.length;i+=40){const sl=add.slice(i,i+40);say(`☁️ 새 사진 받는 중… ${Math.min(i+40,add.length)}/${add.length}`);
-   const t=await shReq('img',{kind:'th',ids:sl.map(n=>n.id)}),puts=[];sl.forEach(n=>{const b=t.imgs&&t.imgs[n.id];if(b)puts.push(['pt:'+n.id,shBlob(b)])});
-   if(puts.length)await idbPut(puts);sl.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++}});changed=true}
+  // 사진 목록(위치·메모)만 먼저 넣고, 작은 사진은 화면에 보일 때 받음 (shThumbGet)
+  add.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++}});if(add.length)changed=true;
   if(rm.length){await phDelete(rm,{remote:1});delN=rm.length}
+  // 받은 목록은 바로 저장 → 중간에 끊겨도 다음엔 이어서 받음
+  SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
+  if(changed){await phSaveMeta(true);phRefresh(dnN>0&&manual);changed=false;if(dnN)say(`☁️ 새 사진 ${dnN.toLocaleString()}장 목록 받음 · 작은 사진은 화면에 보이는 것부터 받습니다`)}
   // 2) 새 사진 올리기 (한 번에 최대 약 8MB)
   const news=PH.list.filter(m=>!m.shUp),t0=Date.now();
   for(let i=0;i<news.length;){const batch=[];let bytes=0;
@@ -3160,7 +3182,7 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
   SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
   try{const pg=await shReq('ping');SH.n=pg.n||0}catch(_){}
   SH.last=Date.now();
-  if(changed){await phSaveMeta(true);phRefresh(dnN>0&&manual)}
+  if(changed){await phSaveMeta(true);phRefresh()}
   if(manual||upN||dnN||delN)toastShare(upN,dnN,delN)}
  catch(e){SH.err=(e&&e.message)||String(e)}
  finally{SH.busy=false;shStatus()}}
