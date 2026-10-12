@@ -750,7 +750,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <button id="phStop" type="button" class="btn ol" hidden style="border-color:#fca5a5;color:#dc2626">⏹ 올리기 멈춤</button>
   <div class="sbtns"><button id="phGalBtn" type="button" class="btn em" disabled>🖼️ 사진 갤러리 (전체화면)</button><button id="phWinBtn" type="button" class="btn ol" disabled title="듀얼 모니터용 — 새 창에서 사진을 고르면 원래 창 지도가 그 위치로 이동">🖥️ 갤러리 새 창</button></div>
   <div class="g2"><label class="f">내보낼 내용<select id="phXm"><option value="img">사진 + 목록 엑셀 + SHP</option><option value="list">목록 엑셀 + SHP만 (빠름)</option></select></label><span></span></div>
-  <div class="sbtns"><button id="phZip" type="button" class="btn ol" disabled>🗜️ 전체 내보내기</button><button id="phFit" type="button" class="btn ol" disabled>🔍 사진 전체 보기</button><button id="phClear" type="button" class="btn ol" style="border-color:#fca5a5;color:#dc2626" disabled>🗑 모두 지우기</button></div>
+  <div class="sbtns"><button id="phZip" type="button" class="btn ol" disabled>🗜️ 전체 내보내기</button><button id="phMw" type="button" class="btn ol" disabled title="접수번호가 붙은 사진만 접수번호별로 묶어 ZIP으로 저장 → 민원대장관리 앱 🗒️ 대응관리 일지에서 📥 사진 묶음 불러오기. 기간을 고르면 그 기간 사진만. 주소·메모·좌표는 넣지 않음">📤 민원대장용</button><button id="phFit" type="button" class="btn ol" disabled>🔍 사진 전체 보기</button><button id="phClear" type="button" class="btn ol" style="border-color:#fca5a5;color:#dc2626" disabled>🗑 모두 지우기</button></div>
   <p class="hint" style="margin:0">묶음 기준: 정한 거리·시간 안이면 한 곳으로 묶고, 파일명이 비슷하면(예: 마산리누수1·2·3) 거리 2배까지 묶습니다. 위치 없는 사진은 파일명이 비슷하거나 10분 안에 찍은 사진의 묶음에 <b>위치 추정</b>으로 넣습니다. 휴대폰 GPS는 5~20m 오차가 있어 표시 위치는 참고용입니다.</p>
   <p class="hint" style="margin:0" id="phUse"></p>
  </div>
@@ -3365,7 +3365,7 @@ function phWinOpen(pid){if(!PH.list.length)return;
 /* ---------- 전체 갱신 ---------- */
 function phStats(){const n=PH.list.length,el=$('phStat');
  el.innerHTML=n?`<div><b>${n.toLocaleString()}</b>사진</div><div><b>${PH.G.length.toLocaleString()}</b>위치 묶음</div><div><b>${PH.inf.size.toLocaleString()}</b>위치 추정</div><div><b style="color:${PH.nog.length?'#d97706':''}">${PH.nog.length.toLocaleString()}</b>위치 없음</div>`:'';
- ['phZip','phZip2','phGalBtn','phWinBtn'].forEach(id=>$(id).disabled=!n);$('phClear').disabled=!n;$('phFit').disabled=!PH.G.length;
+ ['phZip','phZip2','phGalBtn','phWinBtn','phMw'].forEach(id=>$(id).disabled=!n);$('phClear').disabled=!n;$('phFit').disabled=!PH.G.length;
  try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{if(e&&e.usage!=null)$('phUse').textContent=`💽 브라우저 저장 공간: ${(e.usage/1048576).toLocaleString(undefined,{maximumFractionDigits:0})}MB 사용`+(e.quota?` / 약 ${(e.quota/1073741824).toFixed(0)}GB 가능`:'')})}catch(_){}}
 /* ---------- 접수 리스트(긴급누수민원 대응관리 리스트) → 사진 메모 ----------
    리스트(매크로용) 시트: 접수번호(C열) · 현장내용(Q열). 같은 접수번호 사진의 '빈 메모'에 현장내용을 넣음.
@@ -3485,6 +3485,40 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
    if(pi+1<P)await new Promise(r=>setTimeout(r,1200))}
   $('phMsg').textContent=`🗜️ 사진 ${order.length.toLocaleString()}장${withImg?(P>1?` (ZIP ${P}개로 나눔)`:''):'의 목록'} · 목록 엑셀 · 좌표 SHP(${crs}, 사진 ${pts.length.toLocaleString()}점·묶음 ${G.length.toLocaleString()}곳)를 저장했습니다.`}
  catch(e){W.alert('내보내기 실패: '+((e&&e.message)||e))}finally{btn.textContent=t0;btn.disabled=false}}
+/* ---------- 📤 민원대장용 사진 묶음 (민원대장관리 앱 🗒️ 대응관리 일지 → 📥 사진 묶음 불러오기) ----------
+   접수번호(긴급159, 1956-1.jpg)가 붙은 사진만 1400px JPEG로 줄여 접수번호별 폴더에 담음.
+   목록(minwon_photos.json)에는 접수번호·촬영일시·칸 종류·소블록만 — 주소·메모·좌표·원본 파일명은 넣지 않음 */
+const PH_MW_VALVE=/밸브|상세|단수|valve/i;
+/* 민원대장 양식의 파일명 규칙(2026 대장 '대장' 시트): 긴급250.png=위치도 · 긴급250-6-1.png=단수밸브 상세도 1번 · 긴급250-1.jpg=현장사진 1 */
+function phMwSlot(m,c){const st=String(m.name||'').normalize('NFC').replace(/\.[^.]+$/,'').trim();
+ const x=/(\d+)((?:\s*[-_]\s*\d{1,3}){0,2})\s*$/.exec(st);
+ if(x&&+x[1]===phCodeNum(c)){const p=x[2].split(/[-_]/).map(v=>v.trim()).filter(Boolean).map(Number);
+  if(!p.length)return{k:'loc',sl:'loc'};if(p.length===2&&p[0]===6)return{k:'valve',sl:p[1]>=1&&p[1]<=4?'v'+p[1]:'x'};if(p.length===1)return{k:'site',sl:p[0]>=1&&p[0]<=4?'p'+p[0]:'x'}} // x = 규칙은 맞지만 칸 번호 밖 → 사진함
+ if(m.map)return{k:'loc',sl:'loc'}; // 파일명 규칙이 없을 때만 위치도(빨간 점) 판정을 씀 — 빨간색이 많은 현장사진이 위치도로 잘못 잡혀도 파일명이 우선
+ return{k:PH_MW_VALVE.test(m.name||'')?'valve':'site',sl:''}}
+async function phMwExport(ids,btn){
+ const L=ids.map(id=>PH.byId.get(id)).filter(m=>m&&PH.code.get(m.id));
+ if(!L.length){alert('접수번호가 붙은 사진이 없습니다.\n파일명을 1956-1.jpg처럼 접수번호로 하거나, 🏷️ 분류 이름(긴급 등)+번호로 해 주세요.');return}
+ const t0=btn.textContent;btn.disabled=true;
+ try{if(typeof JSZip==='undefined')throw new Error('ZIP 기능(JSZip)을 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+  const cd=m=>PH.code.get(m.id);L.sort((a,b)=>cd(a).localeCompare(cd(b),'ko',{numeric:true})||(a.ts||9e15)-(b.ts||9e15));
+  const LIM=200*1048576,day=fmtD(Date.now()).replace(/-/g,''),seq=new Map();let z=new JSZip(),items=[],sum=0,part=0,miss=0,done=0;
+  const flush=async()=>{if(!items.length)return;part++;z.file('minwon_photos.json',JSON.stringify({app:'스마트물길주소',kind:'bsst-minwon-photos',v:1,at:Date.now(),part,items}));
+   btn.textContent=`⏳ ZIP 묶는 중 (${part}번째)…`;dlBlob(await z.generateAsync({type:'blob',compression:'STORE'}),`민원대장_사진묶음_${day}_${part}.zip`);
+   z=new JSZip();items=[];sum=0;await new Promise(r=>setTimeout(r,1200))};
+  for(let a=0;a<L.length;a+=30){const sl=L.slice(a,a+30);let bl=[];try{bl=await idbMany(sl.map(m=>'ph:'+m.id))}catch(_){}
+   const need=sl.map((m,i)=>[m,i]).filter(([m,i])=>!bl[i]&&m.shUp);
+   if(need.length&&typeof shFetchMany==='function'){const got=await shFetchMany(need.map(x=>x[0].id),'big');need.forEach(([m,i])=>{if(got[m.id])bl[i]=got[m.id]})}
+   for(let i=0;i<sl.length;i++){const m=sl[i],b=bl[i];done++;if(!b){miss++;continue}
+    let out=b;try{const d=await phDecode(b,1400);out=d.big}catch(_){}
+    const c=cd(m),n=(seq.get(c)||0)+1;seq.set(c,n);const f=`사진/${fileSafe(c)}/${fileSafe(c)}_${n}.${/png/.test(out.type)?'png':'jpg'}`;
+    const g=PH.gOf.get(m.id);
+    items.push({f,no:c,ts:m.ts||null,dt:(m.dt||'').slice(0,16),...phMwSlot(m,c),blk:g?phGBlk(g):'',h:String(m.id)});
+    z.file(f,out);sum+=out.size;if(sum>LIM)await flush()}
+   btn.textContent=`⏳ 사진 줄이는 중… ${done.toLocaleString()}/${L.length.toLocaleString()}`}
+  await flush();
+  $('phMsg').textContent=`📤 민원대장용 사진 묶음: 접수번호 ${seq.size.toLocaleString()}건 · 사진 ${(L.length-miss).toLocaleString()}장${part>1?` (ZIP ${part}개로 나눔)`:''}${miss?` · 원본이 없어 뺀 사진 ${miss}장`:''}. 민원대장관리 앱 🗒️ 대응관리 일지에서 📥 사진 묶음 불러오기로 넣으세요.`}
+ catch(e){alert('민원대장용 내보내기 실패: '+((e&&e.message)||e))}finally{btn.textContent=t0;btn.disabled=false}}
 /* ---------- 이벤트 연결 ---------- */
 $('phFile').onchange=e=>{const f=e.target.files;if(f&&f.length)phAdd(f).finally(()=>{e.target.value=''})};
 /* ===== 현장 모드: 휴대폰·태블릿 자동 (헤더 📱 버튼으로 켜고 끄기, 기억함) ===== */
@@ -3540,6 +3574,7 @@ $('phRcpClr').onclick=async()=>{if(!PH.rcp.size){$('phRcpMsg').textContent='불�
  PH.rcp=new Map();try{await IDB.del('phrcp')}catch(_){}PH.list.forEach(m=>{if(m.memoSrc==='list'){m.memo='';delete m.memoSrc}});phSaveMeta(true);phRefresh();$('phRcpMsg').textContent='접수 리스트를 지웠습니다.'};
 $('phRefClr').onclick=async()=>{if(!PH.ref.size||!confirm(`기준 위치 ${PH.ref.size}곳을 지울까요?`))return;PH.ref.clear();try{await IDB.del('phref')}catch(_){}phRefresh();$('phRefMsg').textContent='기준 위치를 지웠습니다.'};$('phPK').onchange=()=>phSetPer(PH.per.u,$('phPK').value);phPerUI();$('phGalBtn').onclick=()=>phGalOpen();$('phWinBtn').onclick=()=>phWinOpen();
 $('phZip').onclick=()=>phExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phZip'));$('phZip2').onclick=()=>phExport(PH.list.map(m=>m.id),$('phZip2'));
+$('phMw').onclick=()=>phMwExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phMw'));
 $('phClear').onclick=async()=>{if(!confirm(`이 PC에 저장된 현장 사진 ${PH.list.length.toLocaleString()}장을 모두 지울까요? 먼저 🗜️ 내보내기로 받아 두는 것을 권합니다.`))return;
  const ids=PH.list.map(m=>m.id);if(map)map.closePopup();for(let k=0;k<ids.length;k+=500){try{await idbDel(ids.slice(k,k+500).flatMap(id=>['ph:'+id,'pt:'+id]))}catch(_){}}
  ids.forEach(phForget);PH.list=[];await phSaveMeta(true);phRefresh();if(PH.gal&&PH.gal.isOpen())PH.gal.close();$('phMsg').textContent='모두 지웠습니다.'};
