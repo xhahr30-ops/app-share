@@ -191,6 +191,17 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .shv{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 3px;box-sizing:border-box;border-radius:999px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);color:#fff;font:700 11px/1 'Noto Sans KR',sans-serif;background:#1d4ed8;cursor:pointer}
 .shv.cl{background:#111827}.shv.br{background:#94a3b8;border:2px dashed #dc2626}.shv.st{background:#f59e0b;cursor:default}
 @media (max-width:640px){.uiset.shutp{left:0;right:0;bottom:0;width:auto;max-height:48%}}
+/* ✏️ 단수 범위 그리기 · 🔒 화면 고정 */
+.shdraw{position:absolute;inset:0;z-index:640;touch-action:none;cursor:crosshair;-webkit-user-select:none;user-select:none}
+.shdraw .shdt{position:absolute;left:50%;top:10px;transform:translateX(-50%);max-width:calc(100% - 120px);background:rgba(15,23,42,.86);color:#fff;font:700 12.5px/1.4 'Noto Sans KR',sans-serif;padding:6px 12px;border-radius:12px;pointer-events:none;text-align:center}
+.shutp .shm{display:flex;margin:4px 0 2px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}.shutp .shm button{flex:1;border:0;background:var(--sub);padding:6px 4px;font:700 12px 'Noto Sans KR',sans-serif;color:var(--ink);cursor:pointer}.shutp .shm button.on{background:var(--ind);color:#fff}
+.uibtn a.lk{background:#fee2e2!important;box-shadow:inset 0 0 0 2px #dc2626}
+.mlocked .leaflet-control-zoom{opacity:.4;pointer-events:none}
+/* 단수구역 패널 접기: 머리줄을 누르면 접고 펴기 (폰에서 지도를 가리지 않게) */
+.shutp .uih.shfh{cursor:pointer;-webkit-user-select:none;user-select:none}.shutp .shfb{font-size:14px!important;font-weight:800}
+.shutp .shsum{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;margin:0 0 2px}.shutp .shsum b{font-size:13px}
+.uiset.shutp.fold{max-height:none;overflow:visible}
+@media (max-width:640px){.uiset.shutp.fold{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}}
 .fsbtn a{display:flex!important;align-items:center;justify-content:center;font-size:15px;color:#1e293b;cursor:pointer;text-decoration:none}
 /* 지도 주소찾기 (오른쪽 위) */
 .gsrch{background:var(--card);border-radius:10px!important;box-shadow:0 2px 10px rgba(15,23,42,.18);border:1px solid var(--line2)!important;width:300px;max-width:calc(100vw - 90px);font-family:inherit;color:var(--ink)}
@@ -745,6 +756,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <p class="hint" id="fMsg">정수장·배수지·가압장은 항상, 유량계는 줌 13, 소화전·밸브류는 줌 15, 제수밸브는 줌 16부터 지도에 보입니다. 밸브는 올려주신 나비 모양 심볼을 관로 방향으로 돌려 그리고(닫힌 제수밸브는 검은 심볼), 소화전·유량계·정수장·배수지·가압장·관말은 색 원 배지 아이콘으로 그립니다.</p>
   <div id="fPanel" hidden>
    <label class="f">지도 표시<select id="fShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label>
+   <label class="f">심볼 모양<select id="fSym"><option value="badge">색 원 배지 (지금 기본)</option><option value="orig">처음 첨부한 SVG 심볼</option></select></label>
    <label class="f">이름 라벨<select id="fLbl"><option value="on">보이기 (유량계·가압장·배수지·정수장)</option><option value="off">숨김</option></select></label>
    <p class="hint" id="fZoomHint" hidden></p>
    <div id="fKinds" class="fkinds"></div>
@@ -1039,7 +1051,7 @@ function uiMove(){const lab=id=>{const el=$(id);return el?(el.closest('label,.ck
  const G=[
   {box:'uiBlkBox',tab:'map',btn:'⚙️ 블록명 표시 · 글자 크기',n:[lab('lblMode'),lab('lblSize')]},
   {box:'uiPipeBox',tab:'pipe',btn:'⚙️ 관로 보기 설정 (표시·색상·원거리)',n:[lab('pShow'),$('pZoomHint'),lab('pBy'),lab('pFar'),lab('pPrint')]},
-  {box:'uiFacBox',tab:'pipe',btn:'⚙️ 시설물 보기 설정 (종류별 켜기·크기)',n:[lab('fShow'),lab('fLbl'),$('fZoomHint'),$('fKinds')]},
+  {box:'uiFacBox',tab:'pipe',btn:'⚙️ 시설물 보기 설정 (종류별 켜기·크기)',n:[lab('fShow'),lab('fSym'),lab('fLbl'),$('fZoomHint'),$('fKinds')]},
   {box:'uiPhBox',tab:'ph',btn:'⚙️ 사진 보기 설정 (표시·묶음·기간)',n:[lab('phShow'),lab('phCol'),lab('phR'),lab('phT'),lab('phPU'),lab('phPK'),$('phPerInfo'),$('phYrLeg')]},
   {box:'uiPhSzBox',n:[lab('phSize')]},
   {box:'uiShBox',tab:'app',btn:'🔑 공유 키·서버 주소 → ⚙️ 앱 설정',n:[lab('shUrl'),$('shKey')&&$('shKey').closest('.g2'),$('shIv')&&$('shIv').parentElement,lab('shRefAuto')]},
@@ -2857,7 +2869,7 @@ const FK_GUESS=[[/관말/,'end'],[/유량계/,'meter'],[/소화전/,'hyd'],[/배
 const FSVG=(()=>{const W=(vb,b)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${b}</svg>`,T='font-family="Malgun Gothic,Noto Sans KR,Apple SD Gothic Neo,sans-serif" font-weight="700" text-anchor="middle"',BOX='<rect x="1" y="1" width="28.5" height="28.5" fill="#fff" stroke="#000" stroke-width="2"/>';
  /* 점 시설(소화전·유량계·정수장·배수지·가압장·관말)은 Temaki 아이콘(CC0, github.com/rapideditor/temaki)을 색 원 배지에 흰색으로. 지하 소화전은 흰 바탕·빨간 테두리. 밸브류는 관로 방향으로 도는 나비 모양 그대로 */
  const BG=(col,d,u)=>W('0 0 32 32',`<circle cx="16" cy="16" r="14.6" fill="${u?'#fff':col}" stroke="${u?col:'#fff'}" stroke-width="${u?2.4:1.8}"/><g transform="translate(6.6 6.6) scale(1.253)" fill="${u?col:'#fff'}">${d}</g>`);
- return{gate:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+ const S={gate:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   gateC:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   check:W('0 0 28 28','<polygon points="27,6 27,22 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   drain:W('-17 -17 20.5 20.5','<rect x="-17" y="-17" width="20.5" height="20.5" fill="#fff" fill-opacity=".75"/><line x1="-16.3" y1="-4" x2="2.8" y2="-4" stroke="#000" stroke-width="1.4"/><polyline fill="none" stroke="#000" stroke-width="1.4" points="-2.9,0.7 -6.7,0.7 -6.7,-6.7"/><polygon points="-3.5,-1.3 0,0.7 -3.5,2.7"/>'),
@@ -2871,8 +2883,13 @@ const FSVG=(()=>{const W=(vb,b)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBo
   pump:BG('#b91c1c',`<path d="M1 13L1 6C1 5.67 1 5.33 1 5C1 3.9 1.9 3 3 3C3.33 3 3.67 3 4 3L5 3L5 2L3.5 2C3.22 2 3 1.78 3 1.5C3 1.22 3.22 1 3.5 1L7.5 1C7.78 1 8 1.22 8 1.5C8 1.78 7.78 2 7.5 2L6 2L6 3L8 3C9.1 3 10 3.9 10 5L10 8L14.2 8.84C14.66 8.93 15 9.34 15 9.82L15 10L11.5 10C11.22 10 11 10.22 11 10.5C11 10.78 11.22 11 11.5 11L15 11L15 12L11.5 12C11.22 12 11 12.22 11 12.5C11 12.78 11.22 13 11.5 13L15 13C15 13.55 14.55 14 14 14L7 14C5.67 13.33 5 12.33 5 11C5 9.67 5.67 8.67 7 8L7 6C5.69 6 4 6 4 6L4 13L4.5 13C4.78 13 5 13.22 5 13.5C5 13.78 4.78 14 4.5 14L0.5 14C0.22 14 0 13.78 0 13.5C0 13.22 0.22 13 0.5 13L1 13Z"/>`),
   meter:BG('#0d9488',`<path d="M6 0.5C6 0.5 6 2 6 2C6 2 8.5 2 8.5 2C9 2 9 2.5 9 2.5L9 12.5C9 12.5 9 13 8.5 13C8.5 13 6 13 6 13L6 14.5C6 15 3 15 3 14.5L3 13C3 13 0.5 13 0.5 13C0 13 0 12.5 0 12.5L0 2.5C0 2.5 0 2 0.5 2C0.5 2 3 2 3 2C3 2 3 0.5 3 0.5C3 0 6 0 6 0.5zM4.5 4C2.5 4 1 5.5 1 7.5C1 9.5 2.5 11 4.5 11C6.5 11 8 9.5 8 7.5C8 5.5 6.5 4 4.5 4z"/> <path d="M3 9C3 9 6 9 6 9C6.5 9 6.5 10 6 10C6 10 3 10 3 10C2.5 10 2.5 9 3 9zM2.5 5.5C2.25 5.75 3.6 7.1 3.6 7.1C3.6 7.1 3.5 7.3 3.5 7.5C3.5 8 3.88 8.5 4.5 8.5C5.13 8.5 5.5 8 5.5 7.5C5.5 7 5.13 6.5 4.5 6.5C4.2 6.5 4.1 6.6 4.1 6.6C4.1 6.6 2.75 5.25 2.5 5.5z"/> <path d="M12.5 3.5C12.75 3.5 15 6.5 15 8.5C15 10 13.5 11 12.5 11C11.5 11 10 10 10 8.5C10 6.5 12.25 3.5 12.5 3.5zM10.5 8.5C10.5 9.5 11.5 10.5 12.5 10.5C11.5 10 11 9.5 10.5 8.5z"/>`),
   wp:W('0 0 25 25',`<rect x=".4" y=".5" width="24.2" height="24" fill="#fff" stroke="#000"/><text x="12.5" y="18" font-size="14.5" ${T} textLength="21" lengthAdjust="spacingAndGlyphs">WP</text>`),
-  end:BG('#64748b',`<path d="M14 2C15 2 14.5 3 14 3C12 3 11.5 3.5 10 7C8 11.5 6.75 13 3 13C0.5 13 0.5 11 0.5 10C0.5 9 0.5 8.25 0.75 7.5C1.25 7.75 1.75 8 3 8C4.25 8 4.75 7.75 5.25 7.5C5.5 8.25 5.5 9 5.5 10C5.5 10 7.5 9.5 9 6.5C10.5 3 11.5 2 14 2zM5 7C5 6.75 3 6.75 3 6.75C3 6.75 1 6.75 1 7C1 7.25 2 7.5 3 7.5C4 7.5 5 7.25 5 7z"/>`)}})();
+  end:BG('#64748b',`<path d="M14 2C15 2 14.5 3 14 3C12 3 11.5 3.5 10 7C8 11.5 6.75 13 3 13C0.5 13 0.5 11 0.5 10C0.5 9 0.5 8.25 0.75 7.5C1.25 7.75 1.75 8 3 8C4.25 8 4.75 7.75 5.25 7.5C5.5 8.25 5.5 9 5.5 10C5.5 10 7.5 9.5 9 6.5C10.5 3 11.5 2 14 2zM5 7C5 6.75 3 6.75 3 6.75C3 6.75 1 6.75 1 7C1 7.25 2 7.5 3 7.5C4 7.5 5 7.25 5 7z"/>`)};
+ /* 처음 첨부하신 심볼 SVG(점 시설 8종) — ⚙️ 시설물 보기 설정에서 "원래 첨부 SVG"를 고르면 이것으로 바꿔 그림 */
+ S._O={hyd:W('0 0 26 26',`<circle cx="13" cy="13" r="12" fill="#fff" stroke="#ED1C24" stroke-width="1.6"/><text x="13" y="19.5" font-size="17" fill="#ED1F24" ${T}>火</text>`),hydG:W('0 0 40.4 40.4',`<circle cx="20.2" cy="20.2" r="19.2" fill="#fff" stroke="#f00" stroke-width="2"/><text x="20.2" y="30" font-size="27" fill="#f00" ${T}>火</text>`),hydU:W('0 0 40.4 40.4',`<rect x="1" y="1" width="38.4" height="38.4" fill="#fff" stroke="#000" stroke-width="2"/><text x="20.2" y="30" font-size="27" ${T}>火</text>`),wtp:W('0 0 30.5 30.5',BOX+'<path d="M15.3 15.3L29.5 1.5v27.6zM1 1.5l14.3 13.8L1 29.1z"/>'),res:W('0 0 30.5 30.5',BOX+'<rect x="1" y="15.3" width="28.5" height="14.2"/>'),pump:W('0 0 25 25','<rect x=".5" y=".5" width="24" height="24" fill="#fff" stroke="#ED1C24"/><circle cx="12.5" cy="12.5" r="3.4" fill="#ED1C24"/>'),meter:W('0 0 30.5 30.5',BOX+`<text x="15.3" y="23.5" font-size="21" ${T}>M</text>`),end:W('0 0 25 25','<rect x="0" y="0" width="25" height="25" fill="#fff" fill-opacity=".7"/><g fill="none" stroke="#000" stroke-width="1.6"><line x1="12.5" y1="12.5" x2="25" y2="12.5"/><polyline points="18.8,.5 24.5,.5 24.5,24.5 18.8,24.5"/></g>')};
+ S._B={};for(const k in S._O)S._B[k]=S[k];return S})();
 const FSYM={img:new Map(),bmp:new Map()};
+/* 시설물 심볼 모양: 'badge' = 색 원 배지(Temaki, 기본) · 'orig' = 처음 첨부하신 SVG. 밸브류는 둘 다 같은 나비 모양 */
+function facSymSet(v){Object.assign(FSVG,v==='orig'?FSVG._O:FSVG._B);FSYM.img.clear();FSYM.bmp.clear();if(typeof facDraw==='function'&&FAC.n)facDraw();if(typeof facKindsUi==='function')facKindsUi()}
 function facSymImg(key){let im=FSYM.img.get(key);if(!im&&FSVG[key]){im=new Image();im.onload=()=>{FSYM.bmp.clear();facDraw()};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(FSVG[key]);FSYM.img.set(key,im)}return im}
 /* 크기별 비트맵을 한 번만 만들어 두고 drawImage로 찍음 (수천 개도 빠르게) */
 function facSprite(key,s,dpr){const ck=key+'|'+s+'|'+dpr;let c=FSYM.bmp.get(ck);if(c)return c;const im=facSymImg(key);if(!im||!im.complete||!im.naturalWidth)return null;
@@ -2885,7 +2902,7 @@ const FAC={feats:[],kinds:[],ki:new Map(),hidden:new Set(),names:'',n:0,x:null,y
 function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/;for(var k in P){var v=P[k];if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
  v=String(v).trim();if(!v||v==='-'||/^0+(\.0+)?$/.test(v))continue;o[k]=v.length>80?v.slice(0,80):v}return o}
 function facCfg(){let v={};try{v=JSON.parse(localStorage.getItem('geo-fac')||'{}')||{}}catch(_){}return v}
-function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,lbl:$('fLbl').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{}}))}catch(_){}}
+function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,lbl:$('fLbl').value,sym:$('fSym').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{}}))}catch(_){}}
 function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/).forEach(l=>{const i=l.indexOf('=');if(i>0){const a=l.slice(0,i).trim(),b=l.slice(i+1).trim();if(a&&b)m.set(a,b)}});return m}
 function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
  const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
@@ -3097,8 +3114,8 @@ const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)
 $('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
 $('fUndo').onclick=facUndo;$('fHistBtn').onclick=()=>{$('fHistBox').hidden=!$('fHistBox').hidden};
 $('fForget').onclick=async()=>{if(!confirm('이 PC에 저장된 상수도 시설물 기준자료(이전 버전 포함)를 지울까요? 지금 지도의 시설물은 그대로 남습니다.'))return;try{await IDB.del('facs');await IDB.del('facs_prev')}catch(_){}facSavedShow(null)};
-{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(v.lbl)$('fLbl').value=v.lbl;if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k));FAC.ksz=v.ksz&&typeof v.ksz==='object'?v.ksz:{}}
-$('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fLbl').onchange=()=>{facCfgSave();facDraw()};$('fCrs').onchange=facCfgSave;
+{const v=facCfg();if(v.show)$('fShow').value=v.show;if(v.crs)$('fCrs').value=v.crs;if(v.names!=null)$('fNames').value=v.names;if(v.lbl)$('fLbl').value=v.lbl;if(v.sym==='orig'){$('fSym').value='orig';facSymSet('orig')}if(Array.isArray(v.hidden))v.hidden.forEach(k=>FAC.hidden.add(k));FAC.ksz=v.ksz&&typeof v.ksz==='object'?v.ksz:{}}
+$('fShow').onchange=()=>{facCfgSave();facDraw();uiPanelSync()};$('fLbl').onchange=()=>{facCfgSave();facDraw()};$('fSym').onchange=()=>{facCfgSave();facSymSet($('fSym').value)};$('fCrs').onchange=facCfgSave;
 $('fNames').oninput=()=>{clearTimeout(FAC.nt);FAC.nt=setTimeout(()=>{facCfgSave();facAreas();facKindsUi();facDraw()},300)};
 try{facInit()}catch(e){console.warn('시설물 지도',e)}
 setTimeout(()=>{facRestore().catch(()=>{})},400);
@@ -4133,7 +4150,7 @@ function mapShotDeco(S,secret){const {g,k,W,Hm,used}=S,ctr=map.getCenter();
    고른 관로 조각에서 넓이 우선으로 따라감. 사용자가 조각을 넣고/빼고, 밸브를 '못 닫음'으로 바꾸면 다시 계산. */
 function shutPlainSync(){const v=!!(SHUT.on&&SHUT.opt.plain!==false);if(v===SHUT_PL)return;SHUT_PL=v;[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&l.setStyle)l.setStyle(pipeStyle)})}
 const SHUT={opt:{tol:.1,vtol:.5,bigQ:500,bigD:0,plain:true},net:null,netP:null,netF:null,netK:'',busy:null,busyK:'',
- on:false,pick:false,mode:'',e0:-1,ll:null,add:new Set(),del:new Set(),broken:new Set(),seen:null,res:null,L:null,box:null,rowE:null,rowK:'',rowRun:0,flash:null};
+ on:false,pick:false,mode:'',e0:-1,ll:null,area:null,drawing:false,add:new Set(),del:new Set(),broken:new Set(),seen:null,res:null,L:null,box:null,rowE:null,rowK:'',rowRun:0,flash:null};
 try{Object.assign(SHUT.opt,JSON.parse(localStorage.getItem('geo-shut')||'{}')||{})}catch(_){}
 /* 2026-10-13 대수용가 기준 = 월평균 500㎥ 이상(구경 조건 안 씀). 이전 기본값(100㎥·50mm)으로 저장된 기기는 새 기준으로 바꿈 */
 if((SHUT.opt.bv||0)<2){SHUT.opt.bigQ=500;SHUT.opt.bigD=0;SHUT.opt.bv=2;try{localStorage.setItem('geo-shut',JSON.stringify(SHUT.opt))}catch(_){}}
@@ -4208,23 +4225,42 @@ function shutEB(e){const N=SHUT.net;if(SHUT.ebN!==N||SHUT.ebP!==poly||SHUT.ebF!=
  SHUT.eb.set(e,b);return b}
 const shutSb=P=>{for(const k of ['소블록명','소블록','SBLK_NM','SBK_NM'])if(P&&P[k]!=null&&String(P[k]).trim()!=='')return String(P[k]).trim();return ''};
 /* 추적: 밸브 노드에서 멈춤('못 닫음'은 통과) → 직접 넣은 조각 더하고 뺀 조각 뺌 */
-function shutCalc(){const N=SHUT.net,E=N.ea.length,seen=new Uint8Array(E);
- if(SHUT.e0>=0){const q=[SHUT.e0];seen[SHUT.e0]=1;
-  for(let h=0;h<q.length;h++){const e=q[h];for(const n of [N.ea[e],N.eb[e]]){if(N.nv[n]>=0&&!SHUT.broken.has(n))continue;for(let j=N.ao[n];j<N.ao[n+1];j++){const e2=N.ae[j];if(!seen[e2]){seen[e2]=1;q.push(e2)}}}}}
+/* ✏️ 그린 범위: 꼭짓점 또는 선분 가운데가 범위 안인 관로 조각 (관망 연결표마다 한 번) */
+function shutAreaOf(lls){const m=[];let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity,cx=0,cy=0;
+ lls.forEach(l=>{const q=toM(l.lng,l.lat);m.push(q[0],q[1]);cx+=q[0];cy+=q[1];if(q[0]<x0)x0=q[0];if(q[0]>x1)x1=q[0];if(q[1]<y0)y0=q[1];if(q[1]>y1)y1=q[1]});
+ return{ll:lls,m,bb:[x0,y0,x1,y1],c:[cx/lls.length,cy/lls.length],inN:null,inE:null}}
+function shutAreaIn(){const A=SHUT.area,N=SHUT.net;if(A.inN===N)return A.inE;const E=N.ea.length,r=new Uint8Array(E),RG=[A.m],[x0,y0,x1,y1]=A.bb,
+  ins=(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1&&pipIn(x,y,RG);
+ for(let e=0;e<E;e++)for(let v=N.eo[e];v<N.eo[e+1];v++){const x=N.exy[2*v],y=N.exy[2*v+1];
+  if(ins(x,y)||(v<N.eo[e+1]-1&&ins((x+N.exy[2*v+2])/2,(y+N.exy[2*v+3])/2))){r[e]=1;break}}
+ A.inN=N;A.inE=r;return r}
+const shutAMode=()=>SHUT.area?(SHUT.opt.amode==='area'?'area':'valve'):'';
+function shutCalc(){const N=SHUT.net,E=N.ea.length,A=SHUT.area,inE=A?shutAreaIn():null;let seen=new Uint8Array(E);const q=[];
+ if(inE){for(let e=0;e<E;e++)if(inE[e]){seen[e]=1;q.push(e)}}else if(SHUT.e0>=0){q.push(SHUT.e0);seen[SHUT.e0]=1}
+ for(let h=0;h<q.length;h++){const e=q[h];for(const n of [N.ea[e],N.eb[e]]){if(N.nv[n]>=0&&!SHUT.broken.has(n))continue;for(let j=N.ao[n];j<N.ao[n+1];j++){const e2=N.ae[j];if(!seen[e2]){seen[e2]=1;q.push(e2)}}}}
+ /* 범위대로: 지도·길이·수용가는 범위 안 관로만, 닫을 밸브는 밸브까지 따라간 결과(tr)로 */
+ const tr=shutAMode()==='area'?seen:null;if(tr)seen=Uint8Array.from(inE);
  SHUT.add.forEach(e=>seen[e]=1);SHUT.del.forEach(e=>seen[e]=0);
- let len=0,ne=0;const fs=new Set(),vn=new Map(),blk=new Map();
- for(let e=0;e<E;e++){if(!seen[e])continue;ne++;len+=N.el[e];fs.add(N.ef[e]);for(const n of [N.ea[e],N.eb[e]])if(N.nv[n]>=0&&!vn.has(n))vn.set(n,N.nv[n]);
+ let len=0,ne=0,ovl=0;const fs=new Set(),vn=new Map(),blk=new Map(),vs=tr||seen;
+ for(let e=0;e<E;e++){if(!seen[e])continue;ne++;len+=N.el[e];fs.add(N.ef[e]);if(inE&&!inE[e])ovl+=N.el[e];
   const b=shutEB(e);blk.set(b,(blk.get(b)||0)+N.el[e])}
- /* 밸브: 닫을 것(열림·미상) → 이미 닫힘 → 못 닫음 순, 같은 상태는 시작점에서 가까운 순 */
- const s0=SHUT.ll?toM(SHUT.ll.lng,SHUT.ll.lat):[0,0],V=[...vn].map(([n,i])=>({n,i,st:SHUT.broken.has(n)?2:FAC.cl[i]?1:0,d:Math.hypot(N.nx[n]-s0[0],N.ny[n]-s0[1])}));
+ /* 범위로 정할 때는 구역 안에 갇힌 밸브(붙은 관로가 모두 단수)는 닫을 필요가 없어 뺌 */
+ const outer=n=>{for(let j=N.ao[n];j<N.ao[n+1];j++)if(!vs[N.ae[j]])return true;return false};
+ for(let e=0;e<E;e++){if(!vs[e])continue;for(const n of [N.ea[e],N.eb[e]])if(N.nv[n]>=0&&!vn.has(n)&&(!A||outer(n)))vn.set(n,N.nv[n])}
+ /* 밸브: 닫을 것(열림·미상) → 이미 닫힘 → 못 닫음 순, 같은 상태는 시작점(범위는 가운데)에서 가까운 순 */
+ const s0=SHUT.ll?toM(SHUT.ll.lng,SHUT.ll.lat):A?A.c:[0,0],V=[...vn].map(([n,i])=>({n,i,st:SHUT.broken.has(n)?2:FAC.cl[i]?1:0,d:Math.hypot(N.nx[n]-s0[0],N.ny[n]-s0[1])}));
  V.sort((a,b)=>a.st-b.st||a.d-b.d);V.forEach((v,k)=>v.no=k+1);
- SHUT.seen=seen;SHUT.res={len,ne,nf:fs.size,V,blk:[...blk].sort((a,b)=>b[1]-a[1])}}
-function shutDraw(){if(!map)return;if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=396;p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}
- SHUT.L.clearLayers();if(!SHUT.on||!SHUT.res)return;const N=SHUT.net,seen=SHUT.seen,ls=[],la=[],ld=[],o={pane:'shut',renderer:SHUT.rd,interactive:false};
- for(let e=0;e<seen.length;e++)if(seen[e])(SHUT.add.has(e)?la:ls).push(shutLL(e));SHUT.del.forEach(e=>ld.push(shutLL(e)));
+ SHUT.seen=seen;SHUT.res={len,ne,nf:fs.size,V,ovl,blk:[...blk].sort((a,b)=>b[1]-a[1])}}
+function shutLayer(){if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=396;p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}}
+function shutDraw(){if(!map)return;shutLayer();
+ SHUT.L.clearLayers();if(!SHUT.on||!SHUT.res)return;const N=SHUT.net,seen=SHUT.seen,ls=[],la=[],ld=[],lo=[],o={pane:'shut',renderer:SHUT.rd,interactive:false},inE=SHUT.area&&shutAMode()==='valve'?SHUT.area.inE:null;
+ for(let e=0;e<seen.length;e++)if(seen[e])(SHUT.add.has(e)?la:inE&&!inE[e]?lo:ls).push(shutLL(e));SHUT.del.forEach(e=>ld.push(shutLL(e)));
  const w=+UI.pw||1;
- if(ls.length||la.length)L.polyline(ls.concat(la),{...o,color:'#fff',weight:10*w,opacity:.85}).addTo(SHUT.L);
+ /* 그린 범위: 남색 점선 (캡처에도 들어감) */
+ if(SHUT.area)L.polygon(SHUT.area.ll,{...o,color:'#4338ca',weight:2.5*w,dashArray:'8 6',fillColor:'#6366f1',fillOpacity:.07}).addTo(SHUT.L);
+ if(ls.length||la.length||lo.length)L.polyline(ls.concat(la,lo),{...o,color:'#fff',weight:10*w,opacity:.85}).addTo(SHUT.L);
  if(ls.length)L.polyline(ls,{...o,color:'#dc2626',weight:5*w,opacity:.95}).addTo(SHUT.L);
+ if(lo.length)L.polyline(lo,{...o,color:'#ea580c',weight:5*w,opacity:.95}).addTo(SHUT.L);
  if(la.length)L.polyline(la,{...o,color:'#9333ea',weight:5*w,opacity:.95,dashArray:'9 6'}).addTo(SHUT.L);
  if(ld.length)L.polyline(ld,{...o,color:'#64748b',weight:4*w,opacity:.9,dashArray:'3 7'}).addTo(SHUT.L);
  /* 단수 대상 수용가 점(가장 가까운 관로 기준): 파랑 = 수용가, 주황 = 대수용가. 이름·주소 없음. 같은 캔버스라 📷 캡처에도 들어감 */
@@ -4247,7 +4283,7 @@ async function shutRows(){if(!shutSrc().length||!SHUT.net)return null;const k=(o
  SHUT.rowE=r;SHUT.rowK=k;SHUT.rowN=SHUT.net;SHUT.rowA=shutSrc();return r}
 const shutNum=v=>{if(v==null||v==='')return null;const n=+String(v).replace(/[^\d.\-]/g,'');return isFinite(n)&&String(v).trim()!==''?n:null};
 function shutRowKey(o,re){for(const k in o)if(re.test(k))return k;return ''}
-function shutRowStats(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen||SHUT.rowA!==shutSrc())return null;const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);
+function shutRowStats(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen||SHUT.rowA!==shutSrc())return null;const I=shutCustIdx();
  const o0=shutSrc()[0]||{},kQ=('월평균(㎥)' in o0)?'월평균(㎥)':shutRowKey(o0,/월평균|평균사용량/),kD=('구경' in o0)?'구경':shutRowKey(o0,/^구경|관경/),kU=('업종' in o0)?'업종':shutRowKey(o0,/업종|용도/),kH=('가구수' in o0)?'가구수':shutRowKey(o0,/가구수/);
  let qs=0,qn=0,hh=0;const ind=new Map(),big=[],bq=+SHUT.opt.bigQ||0,bd=+SHUT.opt.bigD||0,blk=new Map();
  I.forEach(i=>{const o=shutSrc()[i],q=kQ?shutNum(o[kQ]):null,d=kD?shutNum(o[kD]):null;if(q!=null){qs+=q;qn++}if(kH){const h=shutNum(o[kH]);hh+=h!=null&&h>0?h:1}
@@ -4264,7 +4300,13 @@ let telRK=null;function telRowKey(){const o=shutSrc()[0]||{};if(telRK&&telRK[0]=
 function telOf(o){const id=telId(o);if(id&&TEL.ed[id])return{t:TEL.ed[id].t,ed:1};const m=TEL.src&&TEL.src.map,v=id&&m?m[id]:'';if(v)return{t:v,ed:0};const k=telRowKey();return{t:k?String(o[k]??'').trim():'',ed:0}}
 const telLinks=t=>t?String(t).split(/\s*[\/,;]\s*/).filter(Boolean).map(x=>`<a href="tel:${esc(x.replace(/[^\d+]/g,''))}" class="shtl">📞 ${esc(x)}</a>`).join(' '):'<span class="mute">번호 없음</span>';
 const telAddr=o=>String(o['_검색주소']||o['주소(도로명)']||o['구주소(지번)']||'').trim();
-function telRows(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen||SHUT.rowA!==shutSrc())return[];const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);return I}
+function telRows(){return shutCustIdx()}
+/* 단수 대상 수용가: 가장 가까운 관로 조각이 단수 관로인 곳. ✏️ 범위대로이면 수용가 점이 범위 안인 곳 */
+function shutCustIdx(){const r=SHUT.rowE,seen=SHUT.seen,src=shutSrc();if(!r||!seen||SHUT.rowA!==src)return[];const I=[],A=SHUT.area;
+ if(A&&shutAMode()==='area'){if(A.rA===src&&A.rI)return A.rI;const RG=[A.m],[x0,y0,x1,y1]=A.bb;
+  for(let i=0;i<src.length;i++){const o=src[i];if(o['_위도']===''||o['_위도']==null)continue;const q=toM(+o['_경도'],+o['_위도']);if(q[0]>=x0&&q[0]<=x1&&q[1]>=y0&&q[1]<=y1&&pipIn(q[0],q[1],RG))I.push(i)}
+  A.rA=src;A.rI=I;return I}
+ for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);return I}
 function telList(){const el=document.getElementById('shTelList');if(!el)return;const q=(SHUT.telQ||'').replace(/\s/g,'').toLowerCase(),I=telRows();
  const L=I.map(i=>{const o=shutSrc()[i],id=telId(o),t=telOf(o);return{i,o,id,t,c:id&&TEL.call[id]||0,big:SHUT.res&&SHUT.bigSet&&SHUT.bigSet.has(i)}})
   .filter(x=>!q||[x.id,x.o['관리번호'],x.o['업종'],x.t.t,telAddr(x.o)].some(v=>String(v??'').replace(/\s/g,'').toLowerCase().includes(q)))
@@ -4302,10 +4344,10 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
   SHUT.bigSet.forEach(i=>{const r=src[i],mg=String(r&&r['관리번호']||'').trim();if(!mg)return;const p=map.latLngToContainerPoint([+r['_위도'],+r['_경도']]);if(p.x<0||p.y<0||p.x>R.width||p.y>R.height)return;
    const x=(p.x+9)*k,y=p.y*k,w=g.measureText(mg).width+8*k;g.fillStyle='rgba(255,255,255,.9)';g.fillRect(x,y-8*k,w,16*k);g.strokeStyle='#f59e0b';g.lineWidth=1*k;g.strokeRect(x,y-8*k,w,16*k);g.fillStyle='#92400e';g.fillText(mg,x+4*k,y+.5*k)})}
  mapShotDeco(B,true);
- const ctr=SHUT.ll||map.getCenter();let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
+ const ctr=SHUT.ll||(SHUT.area?L.latLng(...fromM(SHUT.area.c[0],SHUT.area.c[1])):map.getCenter());let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
  let y=Hm;g.fillStyle='#fff';g.fillRect(0,y,W,g.canvas.height-Hm);g.fillStyle='#dc2626';g.fillRect(0,y,W,4*k);y+=14*k;
  const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`;g.textBaseline='middle';
- g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(`💧 단수구역${blk?' · 소블록 '+blk:''}`,12*k,y+12*k,W*.62);
+ g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(`💧 단수구역${blk?' · 소블록 '+blk:''}${SHUT.area?' · ✏️ '+(shutAMode()==='area'?'범위대로':'범위→밸브까지'):''}`,12*k,y+12*k,W*.62);
  g.textAlign='right';g.font=F(700,14);g.fillStyle='#334155';g.fillText(fmtDT(Date.now()),W-12*k,y+12*k);
  if(showC&&two){const dw=g.measureText(fmtDT(Date.now())).width;let lx=W-12*k-dw-18*k;g.font=F(600,12);const it=[['대수용가','#f59e0b',6],['단수 대상 수용가','#0284c7',4.5]];
   it.forEach(([t,c,r])=>{const tw=g.measureText(t).width;g.fillStyle='#334155';g.fillText(t,lx,y+12*k);lx-=tw+8*k;g.beginPath();g.arc(lx,y+12*k,r*k,0,7);g.fillStyle=c;g.fill();g.lineWidth=1.5*k;g.strokeStyle='#fff';g.stroke();lx-=r*k+14*k})}
@@ -4336,7 +4378,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
  if(SHUT.shot&&SHUT.shot.url)URL.revokeObjectURL(SHUT.shot.url);const d=new Date(),pd=v=>String(v).padStart(2,'0');
  SHUT.shot={blob,url:URL.createObjectURL(blob),note:B.note,name:`단수구역_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}.jpg`,
-  text:[`[단수구역]${blk?' 소블록 '+blk:''} · ${fmtDT(Date.now())}`,`단수 관로 ${(R0.len/1000).toFixed(2)}km · 닫을 밸브 ${c0}개${S?` · 영향 급수전 ${S.n}곳`:''}`,...V.filter(v=>v.st===0).map(v=>`🔒 ${v.no}번 ${(FAC.pt[v.i].p||{})['관리번호']??''}: https://map.kakao.com/link/map/${encodeURIComponent('제수밸브 '+v.no)},${FAC.y[v.i]},${FAC.x[v.i]}`)].join('\n')};
+  text:[`[단수구역]${blk?' 소블록 '+blk:''}${SHUT.area?' · '+(shutAMode()==='area'?'그린 범위대로':'그린 범위→밸브까지'):''} · ${fmtDT(Date.now())}`,`단수 관로 ${(R0.len/1000).toFixed(2)}km${SHUT.area&&shutAMode()==='valve'&&R0.ovl>=1?` (그린 범위 밖 ${(R0.ovl/1000).toFixed(2)}km 포함)`:''} · 닫을 밸브 ${c0}개${S?` · 영향 급수전 ${S.n}곳`:''}`,...V.filter(v=>v.st===0).map(v=>`🔒 ${v.no}번 ${(FAC.pt[v.i].p||{})['관리번호']??''}: https://map.kakao.com/link/map/${encodeURIComponent('제수밸브 '+v.no)},${FAC.y[v.i]},${FAC.x[v.i]}`)].join('\n')};
  shutRender()}
 function shutShotFile(){const s=SHUT.shot;return new File([s.blob],s.name,{type:'image/jpeg'})}
 async function shutShotShare(){const s=SHUT.shot;if(!s)return;const f=shutShotFile();try{if(navigator.clipboard&&s.text)await navigator.clipboard.writeText(s.text)}catch(_){}
@@ -4417,8 +4459,10 @@ async function kpCheck(id,on){await telLoad();const k='kp:'+id;if(on)TEL.call[k]
 function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset shutp np',map.getContainer());p.id='shutBox';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','단수구역');
  L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p);SHUT.box=p;
  p.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
-  if(a==='x')shutClose();else if(a==='add'||a==='del'){SHUT.mode=SHUT.mode===a?'':a;SHUT.pick=false;shutRender()}
+  if(a==='x')shutClose();else if(a==='fold'){if(SHUT.drawing)return;SHUT.opt.fold=!SHUT.opt.fold;shutSave();shutRender()}else if(a==='add'||a==='del'){SHUT.mode=SHUT.mode===a?'':a;SHUT.pick=false;shutRender()}
   else if(a==='pick'){SHUT.pick=!SHUT.pick;SHUT.mode='';shutRender()}
+  else if(a==='draw')shutDrawStart();else if(a==='dcan'){if(SHUT.drawX)SHUT.drawX()}
+  else if(a==='am'){SHUT.opt.amode=b.dataset.m;shutSave();shutUpdate()}
   else if(a==='reset'){SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutUpdate()}
   else if(a==='fit')shutFit();
   else if(a==='v'){const i=+b.dataset.i;map.setView([FAC.y[i],FAC.x[i]],Math.max(map.getZoom(),18))}
@@ -4452,14 +4496,23 @@ async function shutBillRows(){if(out.length||!BILL.R.length)return null;
    if(i%3000===2999){const el=document.getElementById('shRowMsg2');if(el)el.textContent=`저장된 부과량 자료에서 수용가 위치 찾는 중… ${(i+1).toLocaleString()}/${BILL.R.length.toLocaleString()}`;await tick()}}
   SHUT.bro={k,rows,N:BILL.R.length,name:BILL.name};return SHUT.bro})();
  try{return await SHUT.broP}finally{SHUT.broP=null}}
-function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pick&&!SHUT.busy;if(p.hidden)return;
- const R=SHUT.res,km=v=>(v/1000).toFixed(v<10000?2:1)+'km';let h=`<div class="uih"><b>💧 단수구역 <small style="color:var(--mute);font-weight:600">자료상 추정</small></b><button type="button" class="uix" data-a="x" aria-label="닫기">✕</button></div>`;
+function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pick&&!SHUT.busy&&!SHUT.drawing&&!SHUT.dMsg;if(p.hidden)return;
+ const R=SHUT.res,km=v=>(v/1000).toFixed(v<10000?2:1)+'km',fold=!!(SHUT.opt.fold||SHUT.drawing);p.classList.toggle('fold',fold);
+ let h=`<div class="uih shfh" data-a="fold" title="${fold?'펼치기':'접기'}"><b>💧 단수구역 <small style="color:var(--mute);font-weight:600">자료상 추정</small></b><span><button type="button" class="uix shfb" data-a="fold" aria-expanded="${!fold}" aria-label="${fold?'정보창 펼치기':'정보창 접기'}">${fold?'▴ 펼치기':'▾ 접기'}</button><button type="button" class="uix" data-a="x" aria-label="닫기">✕</button></span></div>`;
  if(SHUT.busyMsg)h+=`<p class="uin" style="margin-top:2px">${esc(SHUT.busyMsg)}</p>`;
- if(SHUT.pick)h+=`<p class="shh">👆 단수구역을 볼 <b>관로를 누르세요</b> (관로가 보이는 줌에서). <button type="button" class="btn ol" data-a="pick" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 0 0 4px">취소</button></p>`;
+ if(SHUT.drawing)h+=`<p class="shh">✏️ 지도 위에 <b>단수할 범위를 손가락(마우스)으로 둘러 그리세요</b>. 손을 떼면 시작점과 이어져 완성됩니다. 그리는 동안 화면은 🔒 고정됩니다. <button type="button" class="btn ol" data-a="dcan" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 0 0 4px">취소</button></p>`;
+ else if(SHUT.pick)h+=`<p class="shh">👆 단수구역을 볼 <b>관로를 누르세요</b> (관로가 보이는 줌에서). 또는 <button type="button" class="btn ol" data-a="draw" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 2px">✏️ 범위 그리기</button><button type="button" class="btn ol" data-a="pick" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 0 0 2px">취소</button></p>`;
+ if(SHUT.dMsg&&!SHUT.drawing)h+=`<p class="uin c-am" style="margin:2px 0">${esc(SHUT.dMsg)}</p>`;
+ if(fold){if(SHUT.on&&R){const S=shutRowStats(),c0=R.V.filter(v=>v.st===0).length;
+   h+=`<div class="shsum"><span>단수 관로 <b>${km(R.len)}</b></span><span>닫을 밸브 <b class="c-ind">${c0}개</b></span>${S?`<span>급수전 <b>${S.n.toLocaleString()}</b>곳</span>`:''}${SHUT.area&&shutAMode()==='valve'&&R.ovl>=1?`<span class="c-am">범위 밖 ${km(R.ovl)}</span>`:''}</div>`;
+   if(SHUT.mode)h+=`<p class="shh" style="margin:2px 0 0">${SHUT.mode==='add'?'＋ 넣기: 지도에서 <b>넣을 관로</b>를 누르세요.':'－ 빼기: 지도에서 <b>뺄 관로</b>를 누르세요.'} <button type="button" class="btn ol" data-a="${SHUT.mode}" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 0 0 4px">끝</button></p>`}
+  p.innerHTML=h;return}
  if(SHUT.on&&R){const V=R.V,c0=V.filter(v=>v.st===0).length,c1=V.filter(v=>v.st===1).length,c2=V.filter(v=>v.st===2).length,S=shutRowStats();
   h+=`<div class="shk"><div><small>단수 관로</small><b>${km(R.len)}</b><small>${R.nf.toLocaleString()}개 관로</small></div><div><small>닫을 제수밸브</small><b class="c-ind">${c0}개</b><small>${c1?'이미 닫힘 '+c1:'이미 닫힘 없음'}${c2?' · 못 닫음 '+c2:''}</small></div>`+
-   `<div><small>영향 급수전</small><b>${S?S.n.toLocaleString()+'곳':shutSrc().length?'…':'-'}</b><small id="shRowMsg">${S?(S.avg!=null?'월평균 '+S.avg.toFixed(1)+'㎥':'사용량 열 없음'):shutSrc().length?'계산 중…':'주소 결과 없음'}</small></div></div>`;
-  h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button></div>`;
+   `<div><small>영향 급수전${SHUT.area&&shutAMode()==='area'?' (범위 안)':''}</small><b>${S?S.n.toLocaleString()+'곳':shutSrc().length?'…':'-'}</b><small id="shRowMsg">${S?(S.avg!=null?'월평균 '+S.avg.toFixed(1)+'㎥':'사용량 열 없음'):shutSrc().length?'계산 중…':'주소 결과 없음'}</small></div></div>`;
+  if(SHUT.area){const am=shutAMode();h+=`<div class="shm" role="group" aria-label="그린 범위 계산 방법"><button type="button" data-a="am" data-m="valve" class="${am==='valve'?'on':''}" title="범위 안 관로에서 제수밸브까지 따라간 실제 단수 범위">💧 밸브까지</button><button type="button" data-a="am" data-m="area" class="${am==='area'?'on':''}" title="그린 범위 안 관로·수용가만 단수구역으로 셈">✏️ 범위대로</button></div>`+
+   `<p class="shh" style="margin-top:2px">${am==='valve'?(R.ovl>=1?`밸브 위치 때문에 <b class="c-am">범위 밖으로 ${km(R.ovl)}</b> 넘칩니다(주황). 이 범위만 끊으려면 밸브가 부족합니다.`:'그린 범위 안에서 밸브로 끊깁니다(범위 밖으로 넘친 관로 없음).'):'지도·관로 길이·수용가는 <b>그린 범위 안</b>만 셉니다. 닫을 밸브는 밸브까지 따라간 기준(범위 밖 밸브 포함)입니다.'}</p>`}
+  h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol${SHUT.drawing?' on':''}" data-a="draw" title="손가락(마우스)으로 단수할 범위를 둘러 그림">✏️ 범위 그리기</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button></div>`;
   if(SHUT.shot)h+=`<div class="shshot"><img src="${SHUT.shot.url}" alt="단수구역 캡처" data-a="shotv"><div class="shedb"><button type="button" class="btn" data-a="shots">${navigator.canShare?'📤 공유 (카톡 등)':'💾 저장'}</button>${navigator.canShare?'<button type="button" class="btn ol" data-a="shotd">💾 저장</button>':''}<button type="button" class="btn ol" data-a="shotx">✕</button></div>${SHUT.shot.note?`<small class="c-am">${esc(SHUT.shot.note)}</small>`:''}<small class="mute">공유할 때 밸브 위치 카카오맵 링크 글도 함께 복사됩니다.</small></div>`;
   h+=`<p class="shh">${SHUT.mode==='add'?'＋ 넣기: 지도에서 <b>넣을 관로</b>를 누르세요 (다시 누르면 끝).':SHUT.mode==='del'?'－ 빼기: 지도에서 <b>뺄 관로</b>를 누르세요 (다시 누르면 끝).':'밸브 번호를 누르면 <b>못 닫음</b>(고장·찾지 못함)으로 바뀌고 그 너머까지 구역이 넓어집니다.'}${SHUT.add.size||SHUT.del.size?` <small>직접 넣음 ${SHUT.add.size} · 뺌 ${SHUT.del.size}</small>`:''}</p>`;
   h+=`<label class="uir" style="padding:2px 0;font-size:11.5px"><input type="checkbox" data-a="plain"${SHUT.opt.plain!==false?' checked':''}> 🎨 삽도용: 다른 관로는 구경별 색 없이 회색으로</label>`;
@@ -4488,7 +4541,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
    return r}).join('')}</table><p class="uin" style="margin-top:4px">✏️로 고친 값은 이 기기 시설물 자료에 저장됩니다(직원 공유는 ⏫ 올리기). "못 닫음"은 이번 단수 계산에만 씁니다.</p>`;
   else h+=`<p class="uin">구역 둘레에 제수밸브가 없습니다 (밸브가 관로에서 멀리 찍혔거나 망이 끊긴 곳일 수 있음).</p>`;
   h+=`<div class="uig">🗺️ 소블록 <small>(${poly?'소블록 경계 기준':'관로 속성 기준'})</small></div><div class="shc">${R.blk.slice(0,12).map(([b,m])=>`<span>${esc(b)} <b>${km(m)}</b></span>`).join('')}</div>`;
-  h+=`<p class="uin">빨강 = 단수 관로 · 보라 점선 = 직접 넣음 · 회색 점선 = 뺌 · 파랑 번호 = 닫을 밸브 · 검정 = 이미 닫힘 · 회색 = 못 닫음. 관로·밸브 위치 오차로 실제와 다를 수 있으니 현장 판단이 우선입니다.</p>`}
+  h+=`<p class="uin">빨강 = 단수 관로${SHUT.area?' · 남색 점선 = 그린 범위'+(shutAMode()==='valve'?' · 주황 = 범위 밖으로 넘친 관로':''):''} · 보라 점선 = 직접 넣음 · 회색 점선 = 뺌 · 파랑 번호 = 닫을 밸브 · 검정 = 이미 닫힘 · 회색 = 못 닫음. 관로·밸브 위치 오차로 실제와 다를 수 있으니 현장 판단이 우선입니다.</p>`}
  const qf=document.activeElement&&['shTelQ','kpQ'].includes(document.activeElement.id)?document.activeElement.id:'';p.innerHTML=h;if(document.getElementById('shTelList')){telList();if(!TEL.ldDone)telLoad().then(()=>{if(!TEL.ldDone){TEL.ldDone=1;shutRender()}})}if(qf){const q=document.getElementById(qf);if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}}}
 let shutRowT=0;
 async function shutUpdate(fit){shutCalc();shutPlainSync();shutDraw();shutRender();if(fit)shutFit();
@@ -4496,15 +4549,47 @@ async function shutUpdate(fit){shutCalc();shutPlainSync();shutDraw();shutRender(
  if(shutSrc().length){const t=++shutRowT,had=SHUT.rowE;const r=await shutRows();if(r&&t===shutRowT&&SHUT.on&&r!==had){shutRender();shutDraw()}}}
 function shutRefresh(){if(SHUT.on&&SHUT.net){shutCalc();shutDraw();shutRender()}}
 function shutBroken(n){if(SHUT.broken.has(n))SHUT.broken.delete(n);else SHUT.broken.add(n);shutUpdate()}
-async function shutStartAt(ll){if(!map)return;shutUi();
- if(!PIPE.segs||!PIPE.feats.length){alert('상수관로 SHP가 없습니다. 왼쪽 ③ 상수관로를 먼저 올려 주세요.');return}
- if(!FAC.n||!shutValveIdx().length){alert('제수밸브(SA200) 자료가 없습니다. 왼쪽 상수도 시설물 SHP를 먼저 올려 주세요. 밸브가 없으면 단수구역을 정할 수 없습니다.');return}
- SHUT.pick=false;map.closePopup();
+function shutHasData(){
+ if(!PIPE.segs||!PIPE.feats.length){alert('상수관로 SHP가 없습니다. 왼쪽 ③ 상수관로를 먼저 올려 주세요.');return false}
+ if(!FAC.n||!shutValveIdx().length){alert('제수밸브(SA200) 자료가 없습니다. 왼쪽 상수도 시설물 SHP를 먼저 올려 주세요. 밸브가 없으면 단수구역을 정할 수 없습니다.');return false}
+ return true}
+async function shutNetReady(){if(!shutHasData())return false;SHUT.pick=false;map.closePopup();
  if(!SHUT.net||SHUT.netP!==PIPE.feats||SHUT.netF!==FAC.pt||SHUT.netK!==(+SHUT.opt.tol||.1)+'|'+(+SHUT.opt.vtol||.5)){SHUT.busyMsg='관망 연결표를 만드는 중… (처음 한 번, 관로가 많으면 몇 초~수십 초)';shutRender()}
- try{await shutNet()}catch(e){SHUT.busyMsg='';alert('관망 연결표를 만들지 못했습니다: '+(e&&e.message||e));shutRender();return}
- SHUT.busyMsg='';const e0=shutEdgeAt(ll);if(e0<0){SHUT.pick=true;shutRender();return}
- SHUT.on=true;SHUT.e0=e0;SHUT.ll=ll;SHUT.mode='';SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();SHUT.bigAll=false;shutUpdate(true)}
-function shutClose(){SHUT.on=false;SHUT.pick=false;SHUT.mode='';SHUT.res=null;SHUT.seen=null;SHUT.e0=-1;SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutRowT++;if(SHUT.L)SHUT.L.clearLayers();shutPlainSync();shutRender()}
+ try{await shutNet()}catch(e){SHUT.busyMsg='';alert('관망 연결표를 만들지 못했습니다: '+(e&&e.message||e));shutRender();return false}
+ SHUT.busyMsg='';return true}
+async function shutStartAt(ll){if(!map)return;shutUi();if(!await shutNetReady())return;
+ const e0=shutEdgeAt(ll);if(e0<0){SHUT.pick=true;shutRender();return}
+ SHUT.on=true;SHUT.e0=e0;SHUT.ll=ll;SHUT.area=null;SHUT.dMsg='';SHUT.mode='';SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();SHUT.bigAll=false;shutUpdate(true)}
+/* ✏️ 그린 범위로 단수구역: 범위 안 관로 조각을 모두 출발점으로 */
+async function shutStartArea(lls){if(!map)return;shutUi();if(!await shutNetReady())return;
+ const A=shutAreaOf(lls),prev=SHUT.area;SHUT.area=A;shutAreaIn();
+ if(!A.inE.some(v=>v)){SHUT.area=prev;SHUT.dMsg='그린 범위 안에 상수관로가 없습니다. 관로가 지나가는 곳을 둘러 그려 주세요.';shutRender();return}
+ SHUT.e0=-1;SHUT.ll=null;SHUT.on=true;SHUT.dMsg='';SHUT.mode='';SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();SHUT.bigAll=false;shutUpdate(true)}
+/* 🔒 화면 고정: 끌기·확대(두 손가락·휠·두 번 누르기·키보드·＋－)를 멈춤. 사용자가 켠 고정(user) 또는 범위 그리기 중 자동 고정(auto) */
+const MLOCK={user:false,auto:false,on:false,prev:null},MLOCK_H=['dragging','touchZoom','doubleClickZoom','scrollWheelZoom','boxZoom','keyboard'];
+function mapLockSync(){if(!map)return;const on=MLOCK.user||MLOCK.auto;
+ if(on!==MLOCK.on){MLOCK.on=on;if(on){MLOCK.prev={};MLOCK_H.forEach(h=>{const H=map[h];if(H){MLOCK.prev[h]=H.enabled();H.disable()}})}
+  else{MLOCK_H.forEach(h=>{const H=map[h];if(H&&MLOCK.prev&&MLOCK.prev[h])H.enable()});MLOCK.prev=null}
+  map.getContainer().classList.toggle('mlocked',on)}
+ const a=document.getElementById('lockBtn');if(a){a.classList.toggle('lk',on);a.textContent=on?'🔒':'🔓';
+  a.title=on?(MLOCK.auto&&!MLOCK.user?'화면 고정됨 (범위 그리는 동안 자동)':'화면 고정됨 — 누르면 풀림'):'화면 고정: 누르면 지도가 끌리거나 확대·축소되지 않게 멈춤';a.setAttribute('aria-label',a.title);a.setAttribute('aria-pressed',String(on))}}
+function shutDrawStart(){if(!map||SHUT.drawing)return;shutUi();if(!shutHasData())return;
+ const mc=map.getContainer(),ov=L.DomUtil.create('div','shdraw',mc);ov.innerHTML='<div class="shdt">✏️ 단수할 범위를 둘러 그리세요 · 손을 떼면 완성</div>';
+ L.DomEvent.disableClickPropagation(ov);L.DomEvent.disableScrollPropagation(ov);map.closePopup();shutLayer();
+ SHUT.drawing=true;SHUT.pick=false;SHUT.mode='';SHUT.dMsg='';MLOCK.auto=true;mapLockSync();shutRender();
+ let pts=[],line=null,pid=null,last=null;
+ const cp=e=>{const r=mc.getBoundingClientRect();return L.point(e.clientX-r.left,e.clientY-r.top)};
+ const end=lls=>{ov.remove();if(line)line.remove();SHUT.drawing=false;SHUT.drawX=null;MLOCK.auto=false;mapLockSync();document.removeEventListener('keydown',esc);
+  if(!lls){shutRender();return}
+  const b=lls.length>=3?L.latLngBounds(lls):null,m0=b&&toM(b.getWest(),b.getSouth()),m1=b&&toM(b.getEast(),b.getNorth());
+  if(!b||Math.abs(m1[0]-m0[0])<3||Math.abs(m1[1]-m0[1])<3){SHUT.dMsg='범위가 너무 작습니다. 단수할 곳을 크게 둘러 그려 주세요.';shutRender();return}
+  shutStartArea(lls)};
+ const esc=e=>{if(e.key==='Escape')end(null)};document.addEventListener('keydown',esc);SHUT.drawX=()=>end(null);
+ ov.addEventListener('pointerdown',e=>{if(pid!=null)return;e.preventDefault();pid=e.pointerId;try{ov.setPointerCapture(pid)}catch(_){}
+  last=cp(e);pts=[map.containerPointToLatLng(last)];line=L.polyline(pts,{pane:'shut',renderer:SHUT.rd,color:'#4338ca',weight:3,dashArray:'7 5',interactive:false}).addTo(map)});
+ ov.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;e.preventDefault();const p=cp(e);if(p.distanceTo(last)<5)return;last=p;pts.push(map.containerPointToLatLng(p));line.setLatLngs(pts)});
+ const up=e=>{if(e.pointerId!==pid)return;pid=null;end(pts.length>=3?pts:[])};ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up)}
+function shutClose(){if(SHUT.drawX)SHUT.drawX();SHUT.area=null;SHUT.dMsg='';SHUT.on=false;SHUT.pick=false;SHUT.mode='';SHUT.res=null;SHUT.seen=null;SHUT.e0=-1;SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutRowT++;if(SHUT.L)SHUT.L.clearLayers();shutPlainSync();shutRender()}
 /* 단수구역 고르기·넣기·빼기 중에는 지도 클릭을 여기서 받고 다른 팝업(수용가·시설물·블록·관로)은 막음 */
 function shutEat(e){if(typeof SHUT==='undefined')return false;if(SHUT.pick||SHUT.mode)return true;const t=e&&e.originalEvent&&e.originalEvent.target;return !!(t&&t.closest&&t.closest('.shvi'))}
 function shutTap(ll){if(SHUT.pick){shutStartAt(ll);return}if(!SHUT.on||!SHUT.net)return;const e=shutEdgeAt(ll);if(e<0)return;
@@ -4513,12 +4598,15 @@ window.shutFromPopup=(lat,lng)=>shutStartAt(L.latLng(lat,lng));
 if(map){
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn uibtn np'),a=L.DomUtil.create('a','',d);a.href='#';a.textContent='💧';a.id='shutBtn';
   a.title='단수구역: 관로 하나를 누르면 제수밸브까지 따라가 단수 범위·닫을 밸브·영향 수용가를 보여 줍니다';a.setAttribute('role','button');a.setAttribute('aria-label',a.title);L.DomEvent.disableClickPropagation(d);
-  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);shutUi();if(SHUT.on&&!SHUT.pick){SHUT.box.hidden=!SHUT.box.hidden;return}SHUT.pick=!SHUT.pick;SHUT.mode='';shutRender()});return d}});
+  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);shutUi();if(SHUT.drawing)return;if(SHUT.on&&!SHUT.pick){SHUT.box.hidden=!SHUT.box.hidden;return}SHUT.pick=!SHUT.pick;SHUT.mode='';SHUT.dMsg='';shutRender()});return d}});
  map.addControl(new Ctl());
+ const LockCtl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn uibtn np'),a=L.DomUtil.create('a','',d);a.href='#';a.id='lockBtn';a.setAttribute('role','button');L.DomEvent.disableClickPropagation(d);
+  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);MLOCK.user=!MLOCK.user;mapLockSync()});return d}});
+ map.addControl(new LockCtl());mapLockSync();
  map.on('preclick',e=>{if(!shutEat(e))return;PT.hit=-1;const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest('.shvi'))return;setTimeout(()=>map.closePopup(),0);shutTap(e.latlng)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(SHUT.pick||SHUT.mode)){SHUT.pick=false;SHUT.mode='';shutRender()}});
  const q=id=>document.getElementById(id),bind=(id,k,re)=>{const el=q(id);if(!el)return;el.value=String(SHUT.opt[k]);if(el.value!==String(SHUT.opt[k]))el.value=el.options[0].value;
-  el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
+  el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
  bind('shTol','tol',1);bind('shVtol','vtol',1);bind('shBigQ','bigQ',0);bind('shBigD','bigD',0)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
