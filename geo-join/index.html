@@ -252,7 +252,11 @@ html.dark .ubbar{background:rgba(124,58,237,.12);border-color:rgba(167,139,250,.
 .fmctl{display:none!important}
 body.touch .fmctl,body.fm .fmctl{display:flex!important;flex-direction:column;gap:8px;background:none;border:0;box-shadow:none}
 .fmctl button{width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:#0f766e;color:#fff;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button:disabled{opacity:.6}
+.fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button.shot{background:#7c3aed;font-size:20px}
+#mshot{position:fixed;inset:0;z-index:10100;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:12px}#mshot[hidden]{display:none}
+#mshot .ms{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;padding:10px;width:min(96vw,720px);max-height:96vh;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#mshot img{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}
+#mshot .mb{display:flex;gap:6px;flex-wrap:wrap}#mshot .mb .btn{flex:1 1 auto}#mshot small{display:block;font-size:12px;line-height:1.45}.fmctl button:disabled{opacity:.6}
 .fm-me{background:none;border:0}.fm-me span{display:block;width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 2px #2563eb55,0 1px 4px #0006}
 #fmBtn.on{background:#0f766e;color:#fff}
 body.touch .btn,body.touch .hbtn,body.touch select:not(.msel),body.touch input[type=text],body.touch input[type=search],body.touch input[type=password],body.touch input[type=number],body.touch input:not([type]),body.touch textarea{min-height:40px}
@@ -3676,8 +3680,8 @@ function fmLocate(btn){if(!navigator.geolocation){alert('이 브라우저는 위
   e=>{btn.disabled=false;alert(location.protocol==='file:'?'파일로 연 앱(file://)에서는 위치를 쓸 수 없습니다. 깃허브 페이지(https) 주소로 여세요.':e&&e.code===1?'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.':'현재 위치를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:10000})}
 if(map){const C=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-control fmctl');
-  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기">📷</button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동">📍</button>';
-  L.DomEvent.disableClickPropagation(d);d.querySelector('.cam').onclick=()=>$('phFile').click();d.querySelector('.loc').onclick=e=>fmLocate(e.currentTarget);return d}});
+  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기">📷</button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동">📍</button><button type="button" class="shot" title="지금 보이는 지도 화면을 사진 한 장으로 (공유·저장)" aria-label="지도 화면 캡처">🖼️</button>';
+  L.DomEvent.disableClickPropagation(d);d.querySelector('.cam').onclick=()=>$('phFile').click();d.querySelector('.loc').onclick=e=>fmLocate(e.currentTarget);d.querySelector('.shot').onclick=e=>mapShot(e.currentTarget);return d}});
  map.addControl(new C())}
 fmApply();
 
@@ -4302,6 +4306,31 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
 function shutShotFile(){const s=SHUT.shot;return new File([s.blob],s.name,{type:'image/jpeg'})}
 async function shutShotShare(){const s=SHUT.shot;if(!s)return;const f=shutShotFile();try{if(navigator.clipboard&&s.text)await navigator.clipboard.writeText(s.text)}catch(_){}
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:s.text,title:'단수구역'})}catch(e){if(e&&e.name!=='AbortError')dlBlob(s.blob,s.name)}}else dlBlob(s.blob,s.name)}
+/* 🖼️ 지도 화면 캡처 (현장 모드 버튼): 지금 보이는 지도(배경·소블록 경계·관로·시설물·단수구역)를 사진 한 장으로. 수용가 점·사진 아이콘·이름·주소·전화는 넣지 않음 */
+const MSHOT={busy:false,s:null};
+async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='⏳'}
+ try{const bh=30,B=await mapShotBase(['ptPane','mkPane'],k=>Math.round(bh*k)),{g,k,W,Hm}=B,secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));
+  mapShotDeco(B,secret);const ctr=map.getCenter();let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
+  const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`,y=Hm+bh*k/2+1.5*k;
+  g.fillStyle='#fff';g.fillRect(0,Hm,W,g.canvas.height-Hm);g.fillStyle='#0f766e';g.fillRect(0,Hm,W,3*k);g.textBaseline='middle';
+  g.textAlign='left';g.fillStyle='#111827';g.font=F(700,13);g.fillText(`${fmtDT(Date.now())}${blk?' · 소블록 '+blk:''}`,10*k,y,W*.58);
+  g.textAlign='right';g.fillStyle='#64748b';g.font=F(400,11);g.fillText('스마트 물길주소 · 포항이 · 만든이: 구병순',W-10*k,y,W*.4);
+  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
+  if(MSHOT.s&&MSHOT.s.url)URL.revokeObjectURL(MSHOT.s.url);const d=new Date(),pd=v=>String(v).padStart(2,'0');
+  MSHOT.s={blob,url:URL.createObjectURL(blob),note:B.note,secret,name:`지도화면_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}${pd(d.getSeconds())}.jpg`};
+  mapShotView()}
+ catch(e){alert('지도 화면을 캡처하지 못했습니다: '+(e&&e.message||e))}
+ finally{MSHOT.busy=false;if(btn){btn.disabled=false;btn.textContent=t0}}}
+function mapShotView(){const s=MSHOT.s;if(!s)return;let o=$('mshot');
+ if(!o){o=document.createElement('div');o.id='mshot';o.setAttribute('role','dialog');o.setAttribute('aria-label','지도 화면 캡처');
+  o.onclick=e=>{const a=e.target.closest('[data-m]');if(!a){if(e.target===o)mapShotClose();return}const m=a.dataset.m;if(m==='s')mapShotShare();else if(m==='d')dlBlob(MSHOT.s.blob,MSHOT.s.name);else mapShotClose()};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!o.hidden){e.stopPropagation();mapShotClose()}},true)}
+ /* 지도가 브라우저 전체화면이면 그 안에 붙여야 보임 */
+ (document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(o);const sh=!!navigator.canShare;
+ o.innerHTML=`<div class="ms"><img src="${s.url}" alt="지도 화면 캡처"><div class="mb"><button type="button" class="btn" data-m="s">${sh?'📤 공유 (카톡 등)':'💾 저장'}</button>${sh?'<button type="button" class="btn ol" data-m="d">💾 저장</button>':''}<button type="button" class="btn ol" data-m="x">✕ 닫기</button></div>${s.note?`<small class="c-am">${esc(s.note)}</small>`:''}<small class="mute">수용가 점·현장 사진 아이콘·고객 정보는 넣지 않았습니다.${s.secret?' 상수관로가 보여 왼쪽 위에 대외비 표시를 넣었습니다.':''}</small></div>`;o.hidden=false}
+function mapShotClose(){const o=$('mshot');if(o)o.hidden=true}
+async function mapShotShare(){const s=MSHOT.s;if(!s)return;const f=new File([s.blob],s.name,{type:'image/jpeg'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'지도 화면'})}catch(e){if(e&&e.name!=='AbortError')dlBlob(s.blob,s.name)}}else dlBlob(s.blob,s.name)}
 /* 패널 */
 /* 🏢 단수구역 공개 전화: 카카오 장소검색(JS SDK · 🚶 로드뷰 키)으로 구역 안 관리사무소·병원·어린이집·업소의 대표번호를 찾음.
    개인 번호가 아님. 업소 위치에서 가장 가까운 관로가 단수구역이면 넣음(수용가와 같은 기준). 결과는 이 화면과 연락처 엑셀에만(저장 안 함) */
