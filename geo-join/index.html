@@ -279,6 +279,20 @@ body.touch select,body.touch input[type=text],body.touch input[type=search],body
 body.touch input[type=checkbox]{width:20px;height:20px}
 body.touch .fsb{min-height:32px;padding-left:9px;padding-right:9px}body.touch .msel{min-height:34px;padding:2px 6px}
 body.touch .leaflet-bar a{width:40px!important;height:40px!important;line-height:40px!important;font-size:20px!important}
+/* 폰 가로 모드(높이 낮음): 왼쪽 위 버튼이 화면 밖으로 밀리지 않게 두 줄로 접고, 왼쪽 아래 범례는 버튼 줄 오른쪽으로 비켜 둠 (mapCornerFix) */
+@media (orientation:landscape) and (max-height:520px){
+ .leaflet-top.leaflet-left{bottom:0;display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;align-items:flex-start}
+ .leaflet-top.leaflet-left>.leaflet-control{margin-top:8px}
+ body.touch .leaflet-bar a{width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
+ body.touch .fmctl,body.fm .fmctl{gap:6px}.fmctl button{width:42px;height:42px;font-size:19px}.fmctl button.loc,.fmctl button.shot{font-size:18px}
+ .leaflet-bottom .pleg{font-size:10.5px;line-height:1.4;padding:4px 8px;max-height:calc(50vh - 16px);overflow:auto}
+ .gsrch{width:230px}.gsrch .gsb{padding:6px 8px}
+}
+/* 가로 모드: 단수구역 창은 오른쪽 세로 칸(검색창 아래~바닥), ⚙️ 설정 창은 두 줄 버튼 오른쪽에서 시작 */
+@media (orientation:landscape) and (max-height:520px) and (min-width:641px){
+ .uiset.shutp{top:70px;bottom:8px;left:auto;right:8px;width:300px;max-height:none}.uiset.shutp.fold{bottom:auto}
+ .uiset:not(.shutp){left:112px;max-width:calc(100% - 124px)}
+}
 body.touch .dwBtn,body.touch #phWinBtn{display:none!important}
 
 @media screen and (max-width:1023px){
@@ -1139,7 +1153,14 @@ function uiInit(){if(!map)return;plblInit();
   else if(e.key==='Escape'&&!p.hidden&&!document.body.classList.contains('fsOn'))uiPanel(false)});
  const mo=new MutationObserver(()=>uiPanelSync());['pPanel','fPanel'].forEach(id=>{const el=$(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden']})});
  window.addEventListener('orientationchange',()=>setTimeout(()=>{map.invalidateSize();plblSoon()},350));
+ mapCornerFix();window.addEventListener('orientationchange',()=>setTimeout(mapCornerFix,400));map.on('resize',mapCornerFix);
+ try{new ResizeObserver(()=>mapCornerFix()).observe(map._controlCorners.topleft)}catch(_){}
  uiPanelSync()}
+/* 폰 가로 모드: 왼쪽 위 버튼 줄(두 줄로 접힘)이 끝나는 곳 오른쪽에서 왼쪽 아래 범례(촬영 연도·블록 색)를 시작 → 📍·🖼️ 버튼을 가리지 않음 */
+const MAP_SHORT=matchMedia('(orientation:landscape) and (max-height:520px)');
+function mapCornerFix(){if(!map||!map._controlCorners)return;const C=map._controlCorners,bl=C.bottomleft;let x=0;
+ if(MAP_SHORT.matches){const r0=map.getContainer().getBoundingClientRect();for(const e of C.topleft.children){if(!e.offsetWidth)continue;x=Math.max(x,e.getBoundingClientRect().right-r0.left)}}
+ const v=x?Math.round(x)+'px':'';if(bl.style.left!==v)bl.style.left=v}
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
 try{
  map=L.map('map',{preferCanvas:true}).setView([36.019,129.343],11);
@@ -4121,10 +4142,11 @@ function phEdInit(){if(!map)return;
 function mapShotSrcs(){if(typeof mkBaseSrcs==='function'){try{return mkBaseSrcs().filter(s=>LOC_SRC[s])}catch(_){}}
  let u='';map.eachLayer(l=>{if(!u&&l instanceof L.TileLayer&&l._url)u=l._url});const hasKey=!!(($('vwKey')||{}).value||'').trim();
  return[...new Set([/vworld/.test(u)&&hasKey?'vw':'',LOC_SRC.osm?'osm':'','esri'])].filter(s=>s&&LOC_SRC[s])}
-async function mapShotBase(skip,bandH){
- const mc=map.getContainer(),R=mc.getBoundingClientRect(),cw=Math.round(R.width),ch=Math.round(R.height),k=Math.min(2,Math.max(1,1600/Math.max(cw,ch)));
- const Z=Math.round(map.getZoom()),c0=map.containerPointToLatLng([0,0]),W=Math.round(cw*k),Hm=Math.round(ch*k),bh=typeof bandH==='function'?bandH(k):bandH||0;
- const cv=document.createElement('canvas');cv.width=W;cv.height=Hm+bh;const g=cv.getContext('2d');g.fillStyle='#e5e7eb';g.fillRect(0,0,W,Hm);
+/* ext(k,Hm) → {w,h}: 지도 오른쪽·아래에 더 붙일 칸(단수구역 가로 캡처의 오른쪽 정보 칸), kk: 배율 직접 지정 */
+async function mapShotBase(skip,bandH,ext,kk){
+ const mc=map.getContainer(),R=mc.getBoundingClientRect(),cw=Math.round(R.width),ch=Math.round(R.height),k=kk||Math.min(2,Math.max(1,1600/Math.max(cw,ch)));
+ const Z=Math.round(map.getZoom()),c0=map.containerPointToLatLng([0,0]),W=Math.round(cw*k),Hm=Math.round(ch*k),bh=typeof bandH==='function'?bandH(k):bandH||0,ex=ext?ext(k,Hm):{w:0,h:0};
+ const cv=document.createElement('canvas');cv.width=W+ex.w;cv.height=Hm+bh+ex.h;const g=cv.getContext('2d');g.fillStyle='#e5e7eb';g.fillRect(0,0,W,Hm);
  let used=null,note='';
  for(const src of mapShotSrcs()){const max=LOC_SRC[src].max,Zt=Math.min(max,k>1.4?Z+1:Z),f=2**(Zt-Z),o=map.project(c0,Z),ox=o.x*f,oy=o.y*f,tiles=[];
   for(let ty=Math.floor(oy/256);ty<=Math.floor((oy+ch*f)/256);ty++)for(let tx=Math.floor(ox/256);tx<=Math.floor((ox+cw*f)/256);tx++)tiles.push({z:Zt,x:tx,y:ty});
@@ -4364,57 +4386,77 @@ function shutInfoItems(){const I=SHUT.info||{},rl=shutRefLL(),tm=rl&&shutTM(rl);
 function shutWrap(g,items,maxW){const out=[];let cur='';items.forEach(t=>{const n=cur?cur+'  ·  '+t:t;if(!cur||g.measureText(n).width<=maxW)cur=n;else{out.push(cur);cur=t}});if(cur)out.push(cur);return out}
 async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V,S=shutRowStats(),c0=V.filter(v=>v.st===0).length,c1=V.filter(v=>v.st===1).length,c2=V.filter(v=>v.st===2).length;
  const MAXR=12,list=V.slice(0,V.length>MAXR?MAXR-1:MAXR),more=V.length-list.length,lh=22;
- /* 아래 띠: 왼쪽 밸브 목록 · 오른쪽 수용가 현황(급수전·가구·월평균·합계, 업종 막대, 대수용가 상위 5 — 관리번호만, 이름·주소·전화 없음). 좁은 화면은 아래로 이어 붙임 */
- const Wl=map.getSize().x,two=Wl>=640,IND=S?S.ind.slice(0,5):[],BIG=S?S.big.slice(0,5):[],rh=19;
+ /* 아래 띠: 왼쪽 밸브 목록 · 오른쪽 수용가 현황(급수전·가구·월평균·합계, 업종 막대, 대수용가 상위 5 — 관리번호만, 이름·주소·전화 없음). 좁은 화면은 아래로 이어 붙임
+    가로 화면(지도 폭 > 높이, B안 2026-10-13): 같은 내용을 지도 오른쪽 세로 칸(SW)에 붙임 — 지도는 보이는 그대로. 칸이 지도보다 길면 칸 글씨 배율(q)을 줄이고 지도 배율(k)을 높여 맞춤 */
+ const MS=map.getSize(),side=MS.x>MS.y&&MS.x>=560,SW=380,Wl=side?SW:MS.x,two=!side&&Wl>=640,IND=S?S.ind.slice(0,5):[],BIG=S?S.big.slice(0,5):[],rh=19;
  const rightH=S?22+22+(IND.length?IND.length*rh+6:0)+(BIG.length?22+rh+BIG.length*rh:22):44,leftH=(list.length+(more?1:0))*lh;
- const INF=shutInfoItems(),infF=k=>`600 ${13*k}px "Noto Sans KR","Malgun Gothic",sans-serif`;let INL=[];
- const B=await mapShotBase(['ptPane','mkPane'],k=>{const t=document.createElement('canvas').getContext('2d');t.font=infF(k);INL=shutWrap(t,INF,(Wl-24)*k);
-  return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)});const {g,k,W,Hm,R}=B;
- const badge=(x,y,t,bg,dash)=>{g.font=`800 ${11*k}px sans-serif`;const w=Math.max(22*k,g.measureText(t).width+8*k),h=22*k;g.beginPath();if(g.roundRect)g.roundRect(x-w/2,y-h/2,w,h,h/2);else g.rect(x-w/2,y-h/2,w,h);g.fillStyle=bg;g.fill();
-  g.lineWidth=2*k;g.strokeStyle=dash?'#dc2626':'#fff';if(dash)g.setLineDash([3*k,2*k]);g.stroke();g.setLineDash([]);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y+.5*k)};
+ const INF=shutInfoItems(),Fq=(w,sz,q)=>`${w} ${sz*q}px "Noto Sans KR","Malgun Gothic",sans-serif`,showC=SHUT.opt.cust!==false&&!!S;
+ const ctr=SHUT.ll||(SHUT.area?L.latLng(...fromM(SHUT.area.c[0],SHUT.area.c[1])):map.getCenter());let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
+ const ttl=`💧 단수구역${blk?' · 소블록 '+blk:''}${SHUT.area?' · ✏️ '+(shutAMode()==='area'?'범위대로':'범위→밸브까지'):''}`,now=fmtDT(Date.now());
+ const sumP=[`단수 관로 ${(R0.len/1000).toFixed(2)}km (${R0.nf.toLocaleString()}개)`,`닫을 밸브 ${c0}개`,...(c1?['이미 닫힘 '+c1]:[]),...(c2?['못 닫음 '+c2]:[]),...(S?[`영향 급수전 ${S.n.toLocaleString()}곳`+(S.big.length?` (대수용가 ${S.big.length})`:'')]:[])];
+ const foot='스마트 물길주소 · 포항이 단수구역 (자료상 추정 — 현장 판단 우선) · 만든이: 구병순',t=document.createElement('canvas').getContext('2d');
+ let INL=[],TL=[],FL=[],hs=0,q=0;
+ if(side){const w=SW-24;t.font=Fq(600,13,1);INL=shutWrap(t,INF,w);t.font=Fq(700,14,1);TL=shutWrap(t,sumP,w);t.font=Fq(400,11.5,1);FL=shutWrap(t,foot.split(' · '),w);
+  hs=14+26+20+(showC?20:0)+6+INL.length*20+(INL.length?4:0)+TL.length*20+6+leftH+10+rightH+8+FL.length*16+10}
+ const B=await mapShotBase(['ptPane','mkPane'],side?0:k=>{t.font=Fq(600,13,k);INL=shutWrap(t,INF,(Wl-24)*k);
+  return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
+  side?(k,Hm)=>{q=Math.max(k*.72,Math.min(k,Hm/hs));return{w:Math.round(SW*q),h:Math.max(0,Math.round(hs*q)-Hm)}}:null,side&&(window.devicePixelRatio||1)>1?Math.min(2.5,window.devicePixelRatio):0);
+ const {g,k,W,Hm,R}=B;if(!side)q=k;
+ const badge=(x,y,t,bg,dash,s)=>{s=s||k;g.font=`800 ${11*s}px sans-serif`;const w=Math.max(22*s,g.measureText(t).width+8*s),h=22*s;g.beginPath();if(g.roundRect)g.roundRect(x-w/2,y-h/2,w,h,h/2);else g.rect(x-w/2,y-h/2,w,h);g.fillStyle=bg;g.fill();
+  g.lineWidth=2*s;g.strokeStyle=dash?'#dc2626':'#fff';if(dash)g.setLineDash([3*s,2*s]);g.stroke();g.setLineDash([]);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y+.5*s)};
  const col=v=>v.st===2?'#94a3b8':v.st===1?'#111827':'#1d4ed8';
  V.forEach(v=>{const p=map.latLngToContainerPoint([FAC.y[v.i],FAC.x[v.i]]);if(p.x<0||p.y<0||p.x>R.width||p.y>R.height)return;badge(p.x*k,p.y*k,String(v.no),col(v),v.st===2)});
  {const rl=shutRefLL();if(rl){const p=map.latLngToContainerPoint(rl);if(p.x>=0&&p.y>=0&&p.x<=R.width&&p.y<=R.height)badge(p.x*k,p.y*k,'!','#f59e0b')}}
- const showC=SHUT.opt.cust!==false&&!!S;
  if(showC&&SHUT.bigSet){const src=shutSrc();g.font=`700 ${10.5*k}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.textAlign='left';
   SHUT.bigSet.forEach(i=>{const r=src[i],mg=String(r&&r['관리번호']||'').trim();if(!mg)return;const p=map.latLngToContainerPoint([+r['_위도'],+r['_경도']]);if(p.x<0||p.y<0||p.x>R.width||p.y>R.height)return;
    const x=(p.x+9)*k,y=p.y*k,w=g.measureText(mg).width+8*k;g.fillStyle='rgba(255,255,255,.9)';g.fillRect(x,y-8*k,w,16*k);g.strokeStyle='#f59e0b';g.lineWidth=1*k;g.strokeRect(x,y-8*k,w,16*k);g.fillStyle='#92400e';g.fillText(mg,x+4*k,y+.5*k)})}
  mapShotDeco(B,true);
- const ctr=SHUT.ll||(SHUT.area?L.latLng(...fromM(SHUT.area.c[0],SHUT.area.c[1])):map.getCenter());let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
- let y=Hm;g.fillStyle='#fff';g.fillRect(0,y,W,g.canvas.height-Hm);g.fillStyle='#dc2626';g.fillRect(0,y,W,4*k);y+=14*k;
- const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`;g.textBaseline='middle';
- g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(`💧 단수구역${blk?' · 소블록 '+blk:''}${SHUT.area?' · ✏️ '+(shutAMode()==='area'?'범위대로':'범위→밸브까지'):''}`,12*k,y+12*k,W*.62);
- g.textAlign='right';g.font=F(700,14);g.fillStyle='#334155';g.fillText(fmtDT(Date.now()),W-12*k,y+12*k);
- if(showC&&two){const dw=g.measureText(fmtDT(Date.now())).width;let lx=W-12*k-dw-18*k;g.font=F(600,12);const it=[['대수용가','#f59e0b',6],['단수 대상 수용가','#0284c7',4.5]];
-  it.forEach(([t,c,r])=>{const tw=g.measureText(t).width;g.fillStyle='#334155';g.fillText(t,lx,y+12*k);lx-=tw+8*k;g.beginPath();g.arc(lx,y+12*k,r*k,0,7);g.fillStyle=c;g.fill();g.lineWidth=1.5*k;g.strokeStyle='#fff';g.stroke();lx-=r*k+14*k})}
- y+=28*k;
- if(INL.length){g.textAlign='left';g.font=infF(k);g.fillStyle='#1e3a8a';INL.forEach(t=>{g.fillText(t,12*k,y+9*k,W-24*k);y+=20*k});y+=4*k}
- g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';
- g.fillText(`단수 관로 ${(R0.len/1000).toFixed(2)}km (${R0.nf.toLocaleString()}개) · 닫을 밸브 ${c0}개${c1?' · 이미 닫힘 '+c1:''}${c2?' · 못 닫음 '+c2:''}${S?` · 영향 급수전 ${S.n.toLocaleString()}곳`+(S.big.length?` (대수용가 ${S.big.length})`:''):''}`,12*k,y+12*k,W-24*k);y+=24*k;
- const y0=y;list.forEach(v=>{const P=FAC.pt[v.i].p||{};badge(24*k,y+lh*k/2,String(v.no),col(v),v.st===2);g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(600,14);
-  g.fillText(`제수밸브 ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,44*k,y+lh*k/2,(two?Wl*.5-52:Wl-56)*k);y+=lh*k});
- if(more){g.fillStyle='#475569';g.font=F(600,14);g.fillText(`외 ${more}개 (지도에 번호로 표시)`,44*k,y+lh*k/2);y+=lh*k}
- {const x0=(two?Wl*.52:12)*k,cw=(two?Wl*.48-12:Wl-24)*k;let yy=two?y0:y+10*k;
-  if(two){g.fillStyle='#e2e8f0';g.fillRect(x0-10*k,y0,1*k,Math.max(leftH,rightH)*k)}else{g.fillStyle='#e2e8f0';g.fillRect(12*k,yy-5*k,(Wl-24)*k,1*k)}
-  g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(800,14);g.fillText('👥 단수구역 수용가 현황',x0,yy+11*k,cw);
-  g.font=F(400,11);g.fillStyle='#64748b';g.textAlign='right';g.fillText('가장 가까운 관로 기준 추정',x0+cw,yy+11*k);g.textAlign='left';yy+=22*k;
-  if(!S){g.font=F(600,13);g.fillStyle='#b45309';g.fillText('확인 필요 — 부과량 자료나 수용가 좌표가 없어 계산하지 못했습니다.',x0,yy+11*k,cw);yy+=22*k}
-  else{const fx=v=>v==null?'확인 필요':v.toLocaleString(undefined,{maximumFractionDigits:1});
-   g.font=F(700,13);g.fillStyle='#111827';g.fillText(`급수전 ${S.n.toLocaleString()}곳${S.hh!=null?' · 가구 '+S.hh.toLocaleString():''} · 월평균 ${S.avg!=null?fx(S.avg)+'㎥/곳':'확인 필요'} · 합계 ${S.avg!=null?Math.round(S.qs).toLocaleString()+'㎥/월':'확인 필요'}`,x0,yy+11*k,cw);yy+=22*k;
-   if(IND.length){const mx=IND[0][1]||1,lw=86*k,bw=cw-lw-44*k;IND.forEach(([u,n])=>{g.font=F(600,12);g.fillStyle='#334155';g.textAlign='left';g.fillText(String(u),x0,yy+rh*k/2,lw-6*k);
-     g.fillStyle='#e0e7ff';g.fillRect(x0+lw,yy+4*k,bw,(rh-8)*k);g.fillStyle='#6366f1';g.fillRect(x0+lw,yy+4*k,Math.max(2*k,bw*n/mx),(rh-8)*k);
-     g.fillStyle='#111827';g.font=F(700,12);g.textAlign='right';g.fillText(n.toLocaleString(),x0+cw,yy+rh*k/2);yy+=rh*k});g.textAlign='left';yy+=6*k}
-   g.font=F(800,13);g.fillStyle='#111827';g.fillText(`🏭 대수용가 ${S.big.length}곳${S.big.length>BIG.length?' (월평균 상위 '+BIG.length+')':''}`,x0,yy+11*k,cw);yy+=22*k;
-   if(BIG.length){const cx=[0,.38,.66,.82].map(f=>x0+f*cw),hd=['관리번호','업종','구경','월평균㎥'];g.fillStyle='#f1f5f9';g.fillRect(x0,yy,cw,rh*k);g.font=F(700,11.5);g.fillStyle='#475569';
-    hd.forEach((t,i)=>{g.textAlign=i>=2?'right':'left';g.fillText(t,i>=2?(i===3?x0+cw-4*k:cx[3]-8*k):cx[i]+4*k,yy+rh*k/2)});yy+=rh*k;
-    BIG.forEach(x=>{g.font=F(600,12);g.fillStyle='#111827';g.textAlign='left';g.fillText(String(x.mg||'확인 필요'),cx[0]+4*k,yy+rh*k/2,cx[1]-cx[0]-8*k);g.fillText(String(x.u||'-'),cx[1]+4*k,yy+rh*k/2,cx[2]-cx[1]-8*k);
-     g.textAlign='right';g.fillText(x.d!=null?String(x.d):'-',cx[3]-8*k,yy+rh*k/2);g.fillText(x.q!=null?x.q.toFixed(1):'-',x0+cw-4*k,yy+rh*k/2);g.fillStyle='#e2e8f0';g.fillRect(x0,yy+rh*k-1*k,cw,1*k);yy+=rh*k});g.textAlign='left'}
-   else{g.font=F(600,12);g.fillStyle='#64748b';g.fillText('없음',x0,yy+rh*k/2);yy+=rh*k}}
-  y=two?Math.max(y,y0+Math.max(leftH,rightH)*k):yy}
- y+=8*k;g.font=F(400,11.5);g.fillStyle='#64748b';g.fillText('스마트 물길주소 · 포항이 단수구역 (자료상 추정 — 현장 판단 우선) · 만든이: 구병순',12*k,y+11*k,W-24*k);
+ const F=(w,sz)=>Fq(w,sz,q);g.textBaseline='middle';
+ /* 밸브 목록 (x0 = 칸 왼쪽, tw = 글자 칸 폭) */
+ const drawValves=(x0,y,tw)=>{list.forEach(v=>{const P=FAC.pt[v.i].p||{};badge(x0+12*q,y+lh*q/2,String(v.no),col(v),v.st===2,q);g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(600,14);
+   g.fillText(`제수밸브 ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,x0+32*q,y+lh*q/2,tw);y+=lh*q});
+  if(more){g.fillStyle='#475569';g.font=F(600,14);g.fillText(`외 ${more}개 (지도에 번호로 표시)`,x0+32*q,y+lh*q/2);y+=lh*q}return y};
+ /* 수용가 현황 칸 */
+ const drawCust=(x0,cw,yy)=>{g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(800,14);g.fillText('👥 단수구역 수용가 현황',x0,yy+11*q,cw);
+  g.font=F(400,11);g.fillStyle='#64748b';g.textAlign='right';g.fillText('가장 가까운 관로 기준 추정',x0+cw,yy+11*q);g.textAlign='left';yy+=22*q;
+  if(!S){g.font=F(600,13);g.fillStyle='#b45309';g.fillText('확인 필요 — 부과량 자료나 수용가 좌표가 없어 계산하지 못했습니다.',x0,yy+11*q,cw);yy+=22*q;return yy}
+  const fx=v=>v==null?'확인 필요':v.toLocaleString(undefined,{maximumFractionDigits:1});
+  g.font=F(700,13);g.fillStyle='#111827';g.fillText(`급수전 ${S.n.toLocaleString()}곳${S.hh!=null?' · 가구 '+S.hh.toLocaleString():''} · 월평균 ${S.avg!=null?fx(S.avg)+'㎥/곳':'확인 필요'} · 합계 ${S.avg!=null?Math.round(S.qs).toLocaleString()+'㎥/월':'확인 필요'}`,x0,yy+11*q,cw);yy+=22*q;
+  if(IND.length){const mx=IND[0][1]||1,lw=86*q,bw=cw-lw-44*q;IND.forEach(([u,n])=>{g.font=F(600,12);g.fillStyle='#334155';g.textAlign='left';g.fillText(String(u),x0,yy+rh*q/2,lw-6*q);
+    g.fillStyle='#e0e7ff';g.fillRect(x0+lw,yy+4*q,bw,(rh-8)*q);g.fillStyle='#6366f1';g.fillRect(x0+lw,yy+4*q,Math.max(2*q,bw*n/mx),(rh-8)*q);
+    g.fillStyle='#111827';g.font=F(700,12);g.textAlign='right';g.fillText(n.toLocaleString(),x0+cw,yy+rh*q/2);yy+=rh*q});g.textAlign='left';yy+=6*q}
+  g.font=F(800,13);g.fillStyle='#111827';g.fillText(`🏭 대수용가 ${S.big.length}곳${S.big.length>BIG.length?' (월평균 상위 '+BIG.length+')':''}`,x0,yy+11*q,cw);yy+=22*q;
+  if(BIG.length){const cx=[0,.38,.66,.82].map(f=>x0+f*cw),hd=['관리번호','업종','구경','월평균㎥'];g.fillStyle='#f1f5f9';g.fillRect(x0,yy,cw,rh*q);g.font=F(700,11.5);g.fillStyle='#475569';
+   hd.forEach((t,i)=>{g.textAlign=i>=2?'right':'left';g.fillText(t,i>=2?(i===3?x0+cw-4*q:cx[3]-8*q):cx[i]+4*q,yy+rh*q/2)});yy+=rh*q;
+   BIG.forEach(x=>{g.font=F(600,12);g.fillStyle='#111827';g.textAlign='left';g.fillText(String(x.mg||'확인 필요'),cx[0]+4*q,yy+rh*q/2,cx[1]-cx[0]-8*q);g.fillText(String(x.u||'-'),cx[1]+4*q,yy+rh*q/2,cx[2]-cx[1]-8*q);
+    g.textAlign='right';g.fillText(x.d!=null?String(x.d):'-',cx[3]-8*q,yy+rh*q/2);g.fillText(x.q!=null?x.q.toFixed(1):'-',x0+cw-4*q,yy+rh*q/2);g.fillStyle='#e2e8f0';g.fillRect(x0,yy+rh*q-1*q,cw,1*q);yy+=rh*q});g.textAlign='left'}
+  else{g.font=F(600,12);g.fillStyle='#64748b';g.fillText('없음',x0,yy+rh*q/2);yy+=rh*q}return yy};
+ const legC=(rx,y)=>{let lx=rx;g.font=F(600,12);g.textAlign='right';[['대수용가','#f59e0b',6],['단수 대상 수용가','#0284c7',4.5]].forEach(([t,c,r])=>{const tw=g.measureText(t).width;g.fillStyle='#334155';g.fillText(t,lx,y);lx-=tw+8*q;g.beginPath();g.arc(lx,y,r*q,0,7);g.fillStyle=c;g.fill();g.lineWidth=1.5*q;g.strokeStyle='#fff';g.stroke();lx-=r*q+14*q})};
+ const CH=g.canvas.height;
+ if(side){const X=W,x=X+14*q,cw=(SW-26)*q;g.fillStyle='#fff';g.fillRect(X,0,g.canvas.width-X,CH);if(CH>Hm){g.fillStyle='#f1f5f9';g.fillRect(0,Hm,X,CH-Hm)}g.fillStyle='#dc2626';g.fillRect(X,0,4*q,CH);
+  let y=14*q;g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(ttl,x,y+12*q,cw);y+=26*q;
+  g.font=F(700,14);g.fillStyle='#334155';g.fillText(now,x,y+10*q,cw);y+=20*q;
+  if(showC){legC(x+cw,y+10*q);y+=20*q}y+=6*q;
+  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,x,y+9*q,cw);y+=20*q});y+=4*q}
+  g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';TL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});y+=6*q;
+  y=drawValves(x-2*q,y,cw-30*q);g.fillStyle='#e2e8f0';g.fillRect(x,y+5*q,cw,1*q);y=drawCust(x,cw,y+10*q)+8*q;
+  g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';FL.forEach(s=>{g.fillText(s,x,y+8*q,cw);y+=16*q})}
+ else{let y=Hm;g.fillStyle='#fff';g.fillRect(0,y,W,CH-Hm);g.fillStyle='#dc2626';g.fillRect(0,y,W,4*k);y+=14*k;
+  g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(ttl,12*k,y+12*k,W*.62);
+  g.textAlign='right';g.font=F(700,14);g.fillStyle='#334155';g.fillText(now,W-12*k,y+12*k);
+  if(showC&&two){const dw=g.measureText(now).width;legC(W-12*k-dw-18*k,y+12*k)}
+  y+=28*k;
+  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y+=4*k}
+  g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';g.fillText(sumP.join(' · '),12*k,y+12*k,W-24*k);y+=24*k;
+  const y0=y;y=drawValves(12*k,y,(two?Wl*.5-52:Wl-56)*k);
+  {const x0=(two?Wl*.52:12)*k,cw=(two?Wl*.48-12:Wl-24)*k;let yy=two?y0:y+10*k;
+   if(two){g.fillStyle='#e2e8f0';g.fillRect(x0-10*k,y0,1*k,Math.max(leftH,rightH)*k)}else{g.fillStyle='#e2e8f0';g.fillRect(12*k,yy-5*k,(Wl-24)*k,1*k)}
+   yy=drawCust(x0,cw,yy);y=two?Math.max(y,y0+Math.max(leftH,rightH)*k):yy}
+  y+=8*k;g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';g.fillText(foot,12*k,y+11*k,W-24*k)}
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
+ let clip=false;try{const bb=shutBounds();clip=!!bb&&!map.getBounds().contains(bb)}catch(_){}
  if(SHUT.shot&&SHUT.shot.url)URL.revokeObjectURL(SHUT.shot.url);const d=new Date(),pd=v=>String(v).padStart(2,'0');
- SHUT.shot={blob,url:URL.createObjectURL(blob),note:B.note,name:`단수구역_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}.jpg`,
+ SHUT.shot={blob,url:URL.createObjectURL(blob),note:B.note,clip,name:`단수구역_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}.jpg`,
   text:[`[단수구역]${blk?' 소블록 '+blk:''}${SHUT.area?' · '+(shutAMode()==='area'?'그린 범위대로':'그린 범위→밸브까지'):''} · ${fmtDT(Date.now())}`,...(INF.length?[INF.join(' · ')]:[]),`단수 관로 ${(R0.len/1000).toFixed(2)}km${SHUT.area&&shutAMode()==='valve'&&R0.ovl>=1?` (그린 범위 밖 ${(R0.ovl/1000).toFixed(2)}km 포함)`:''} · 닫을 밸브 ${c0}개${S?` · 영향 급수전 ${S.n}곳`:''}`,...V.filter(v=>v.st===0).map(v=>`🔒 ${v.no}번 ${(FAC.pt[v.i].p||{})['관리번호']??''}: https://map.kakao.com/link/map/${encodeURIComponent('제수밸브 '+v.no)},${FAC.y[v.i]},${FAC.x[v.i]}`)].join('\n')};
  shutRender()}
 function shutShotFile(){const s=SHUT.shot;return new File([s.blob],s.name,{type:'image/jpeg'})}
@@ -4509,6 +4551,8 @@ function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset
   else if(a==='br')shutBroken(+b.dataset.n);
   else if(a==='more'){SHUT.bigAll=!SHUT.bigAll;shutRender()}
   else if(a==='shot'){b.disabled=true;b.textContent='📷 만드는 중…';shutShot().catch(e=>{alert('캡처를 만들지 못했습니다: '+(e&&e.message||e));shutRender()})}
+  else if(a==='shotfit'){const bb=shutBounds();if(!bb)return;b.disabled=true;b.textContent='🔍 맞추는 중…';let done=false;const go=()=>{if(done)return;done=true;shutShot().catch(e=>{alert('캡처를 만들지 못했습니다: '+(e&&e.message||e));shutRender()})};
+   map.once('moveend',()=>setTimeout(go,700));setTimeout(go,2000);map.fitBounds(bb,{maxZoom:18,padding:[30,30]})}
   else if(a==='shots')shutShotShare();else if(a==='shotd'){if(SHUT.shot)dlBlob(SHUT.shot.blob,SHUT.shot.name)}else if(a==='shotv'){if(SHUT.shot)window.open(SHUT.shot.url,'_blank')}
   else if(a==='shotx'){if(SHUT.shot)URL.revokeObjectURL(SHUT.shot.url);SHUT.shot=null;shutRender()}
   else if(a==='ved'){SHUT.vEd=SHUT.vEd===+b.dataset.i?-1:+b.dataset.i;shutRender();const f=p.querySelector('.shedf input');if(f)f.focus()}
@@ -4553,7 +4597,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   if(SHUT.area){const am=shutAMode();h+=`<div class="shm" role="group" aria-label="그린 범위 계산 방법"><button type="button" data-a="am" data-m="valve" class="${am==='valve'?'on':''}" title="범위 안 관로에서 제수밸브까지 따라간 실제 단수 범위">💧 밸브까지</button><button type="button" data-a="am" data-m="area" class="${am==='area'?'on':''}" title="그린 범위 안 관로·수용가만 단수구역으로 셈">✏️ 범위대로</button></div>`+
    `<p class="shh" style="margin-top:2px">${am==='valve'?(R.ovl>=1?`밸브 위치 때문에 <b class="c-am">범위 밖으로 ${km(R.ovl)}</b> 넘칩니다(주황). 이 범위만 끊으려면 밸브가 부족합니다.`:'그린 범위 안에서 밸브로 끊깁니다(범위 밖으로 넘친 관로 없음).'):'지도·관로 길이·수용가는 <b>그린 범위 안</b>만 셉니다. 닫을 밸브는 밸브까지 따라간 기준(범위 밖 밸브 포함)입니다.'}</p>`}
   h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol${SHUT.drawing?' on':''}" data-a="draw" title="손가락(마우스)으로 단수할 범위를 둘러 그림">✏️ 범위 그리기</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button></div>`;
-  if(SHUT.shot)h+=`<div class="shshot"><img src="${SHUT.shot.url}" alt="단수구역 캡처" data-a="shotv"><div class="shedb"><button type="button" class="btn" data-a="shots">${navigator.canShare?'📤 공유 (카톡 등)':'💾 저장'}</button>${navigator.canShare?'<button type="button" class="btn ol" data-a="shotd">💾 저장</button>':''}<button type="button" class="btn ol" data-a="shotx">✕</button></div>${SHUT.shot.note?`<small class="c-am">${esc(SHUT.shot.note)}</small>`:''}<small class="mute">공유할 때 밸브 위치 카카오맵 링크 글도 함께 복사됩니다.</small></div>`;
+  if(SHUT.shot)h+=`<div class="shshot"><img src="${SHUT.shot.url}" alt="단수구역 캡처" data-a="shotv"><div class="shedb"><button type="button" class="btn" data-a="shots">${navigator.canShare?'📤 공유 (카톡 등)':'💾 저장'}</button>${navigator.canShare?'<button type="button" class="btn ol" data-a="shotd">💾 저장</button>':''}<button type="button" class="btn ol" data-a="shotx">✕</button></div>${SHUT.shot.note?`<small class="c-am">${esc(SHUT.shot.note)}</small>`:''}${SHUT.shot.clip?'<small class="c-am">⚠️ 단수구역 일부가 사진 밖에 있습니다. <button type="button" class="btn ol" data-a="shotfit">🔍 구역에 맞춰 다시 찍기</button></small>':''}<small class="mute">공유할 때 밸브 위치 카카오맵 링크 글도 함께 복사됩니다.</small></div>`;
   h+=`<p class="shh">${SHUT.mode==='loc'?'📍 위치 바꾸기: 지도에서 <b>기준 위치(누수 지점 등)</b>를 누르세요.':SHUT.mode==='add'?'＋ 넣기: 지도에서 <b>넣을 관로</b>를 누르세요 (다시 누르면 끝).':SHUT.mode==='del'?'－ 빼기: 지도에서 <b>뺄 관로</b>를 누르세요 (다시 누르면 끝).':'밸브 번호를 누르면 <b>못 닫음</b>(고장·찾지 못함)으로 바뀌고 그 너머까지 구역이 넓어집니다.'}${SHUT.add.size||SHUT.del.size?` <small>직접 넣음 ${SHUT.add.size} · 뺌 ${SHUT.del.size}</small>`:''}</p>`;
   {const I=SHUT.info||{},ll=shutRefLL(),tm=I.tm||(ll&&shutTM(ll));
    h+=`<div class="uig">🧾 캡처 정보 <small>(📷 캡처·공유 글에 들어감 · 고칠 수 있음)</small></div><div class="shif">`+
