@@ -1672,7 +1672,10 @@ $('rStart').onclick=rptRun;$('rStop').onclick=()=>{RPT.stop=true;$('rMsg').textC
 $('rptClose').onclick=()=>{$('rptModal').hidden=true};$('rptModal').addEventListener('click',e=>{if(e.target.id==='rptModal')$('rptModal').hidden=true});$('locBtn').onclick=()=>locRun();$('locBtn2').onclick=()=>locRun();
 $('locClose').onclick=()=>{$('locModal').hidden=true};$('locModal').addEventListener('click',e=>{if(e.target.id==='locModal')$('locModal').hidden=true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('locModal').hidden)$('locModal').hidden=true});
-$('bFile').onchange=e=>{const f=e.target.files[0];if(f)billLoadFile(f)};
+/* 📱 폰·태블릿: 안드로이드·아이폰 파일 선택기는 accept의 확장자를 MIME으로 바꿔 거르는데 .xlsm(매크로 엑셀)은 MIME을 모르는 경우가 많아
+   파일이 흐리게 나오고 고를 수 없음 → 터치 기기에서는 엑셀 입력칸의 accept를 빼고, 고른 뒤 확장자로 확인 */
+if(matchMedia('(pointer:coarse)').matches)['bFile','impFile','f1','phRefFile','phRcpFile'].forEach(id=>{const el=$(id);if(el)el.removeAttribute('accept')});
+$('bFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(!/\.xls[mxb]?$/i.test(f.name)){$('bMsg').textContent=`엑셀 파일(.xlsm·.xlsx)이 아닙니다: ${f.name}`;e.target.value='';return}billLoadFile(f)};
 $('bMonth').onchange=()=>{BILL.mi=+$('bMonth').value;billRefresh();if(BILLMODE&&out.length)$('bTInfo').innerHTML+=' <span class="c-am">· 기준월을 바꿨습니다. 이상 유형을 새 기준월로 다시 받으려면 "변환 대상 만들기"를 다시 누르세요(주소 변환 결과는 재사용).</span>'};
 ['bTarget','bBlk'].forEach(id=>$(id).onchange=billTargetInfo);$('bMake').onclick=billMake;
 $('bForget').onclick=async()=>{if(!confirm('이 PC에 저장된 부과량 자료를 지울까요? 지금 화면의 자료는 그대로 남습니다.'))return;try{await IDB.del('bill')}catch(_){}$('bSaved').hidden=true;$('bForget').hidden=true};
