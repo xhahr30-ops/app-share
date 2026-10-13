@@ -765,7 +765,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <p class="hint" id="phRcpMsg" style="margin:0"></p>
   <details class="x" id="shBox" style="margin-top:6px"><summary>☁️ 직원 공유 <small style="font-weight:400;color:var(--mute)">구글 시트·드라이브 · 실시간</small> <b id="shChip" style="font-size:11px;font-weight:700"></b></summary>
    <p class="hint" style="margin:6px 0">사진은 구글 드라이브에, 위치·접수번호·메모는 구글 시트에 모아 직원끼리 같은 사진을 봅니다. 서버는 처음 한 번만 만들면 됩니다 (<a href="#" id="shCodeDl">📄 서버 코드·설치 방법 받기</a>).</p>
-   <label class="f">공유 서버 주소 (Apps Script 웹 앱 …/exec)<input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" title="회사 공유 서버 주소가 기본으로 들어 있습니다. 공유 키만 넣으면 됩니다."></label>
+   <label class="f">공유 서버 주소 (Apps Script 웹 앱 …/exec)<input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" title="회사 공유 서버 주소가 기본으로 들어 있습니다. 공유 키만 넣으면 됩니다. 칸을 비우거나 형식이 틀리면 기본 주소로 돌아갑니다."></label>
    <div class="g2"><label class="f">공유 키<input id="shKey" type="password" autocomplete="off" placeholder="관리자에게 받은 공유 키"></label><label class="f">내 이름 (올린 사람)<input id="shBy" type="text" autocomplete="off" placeholder="예: 구병순"></label></div>
    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin:2px 0 6px"><label class="ck" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="shAuto" checked> 자동 동기화</label>
     <select id="shIv" title="자동: 바뀐 것이 있으면 30초마다, 5분 동안 없으면 2분, 15분 동안 없으면 5분마다 확인 (데이터·서버 사용량 절약). 사진을 올리거나 메모를 고치면 간격과 관계없이 바로 올립니다."><option value="auto">간격 자동 (30초~5분)</option><option value="30">30초마다</option><option value="60">1분마다</option><option value="300">5분마다</option></select>
@@ -2824,7 +2824,7 @@ function bkApplySettings(){try{const vw=JSON.parse(localStorage.getItem('geo-vw'
  try{const k=localStorage.getItem('geo-kjs');if(k)KEYS.sdk=KEYS.sdk||k}catch(_){}
  try{const m=localStorage.getItem('geo-mode');if(m&&[...$('gcMode').options].some(o=>o.value===m)){curMode=null;$('gcMode').value=m;$('gcMode').onchange()}}catch(_){}
  // 직원 공유 설정도 바로 반영 (새로고침 없이 사진 목록 받기)
- try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
+ try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);SH.cfg.url=shUrlFix(SH.cfg.url);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
 $('bkSave').onclick=bkSave;$('bkLoad').onchange=async e=>{const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));e.target.value='';if(!fs.length)return;
  bkLoad.k=false;if(fs.length===1)return bkLoad(fs[0]);
  if(!confirm(`백업 파일 ${fs.length}개를 차례로 불러옵니다.\n(첫 파일의 기준자료와 모든 파일의 현장 사진을 합칩니다)\n\n계속할까요?`))return;
@@ -3730,7 +3730,10 @@ const SH={cfg:{url:'',key:'',by:'',auto:true,iv:'auto'},since:0,busy:false,timer
  on(){return !!(this.cfg.url&&this.cfg.key)}};
 try{Object.assign(SH.cfg,JSON.parse(localStorage.getItem('geo-share')||'{}'))}catch(_){}
 /* 회사 공유 서버 주소를 기본값으로 넣음 (직원은 공유 키만 입력). 공유 키는 앱에 넣지 않음. 직원이 따로 넣은 주소가 있으면 그것을 우선 */
-const SH_URL0='https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec';if(!SH.cfg.url)SH.cfg.url=SH_URL0;
+const SH_URL0='https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec';
+/* 주소 정리: 앞뒤 글자·/u/0/·/dev·?뒤 글자를 정리하고, 비었거나 틀린 주소면 회사 기본 주소로 되돌림 */
+function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);return m?`https://script.google.com/macros/s/${m[1]}/exec`:SH_URL0}
+SH.cfg.url=shUrlFix(SH.cfg.url);
 try{SH.since=+localStorage.getItem('geo-share-since')||0}catch(_){}
 try{(JSON.parse(localStorage.getItem('geo-share-del')||'[]')||[]).forEach(id=>SH.del.add(id))}catch(_){}
 /* 휴지통에서 되살린 공유 사진 (서버에 '되살리기'를 보낼 것) · 지운 시각(10초 동안은 서버에 안 보내 되돌리기 가능) */
@@ -3829,7 +3832,7 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
  SH.timer=setTimeout(async()=>{if(document.visibilityState==='visible')await shSync();shTimer()},sec*1000)}
 // 화면 연결
 (function(){const u=$('shUrl');if(!u)return;$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();
- const read=()=>{const old=SH.cfg.url;SH.cfg.url=$('shUrl').value.trim();SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();SH.cfg.auto=$('shAuto').checked;SH.cfg.iv=$('shIv').value;
+ const read=()=>{const old=SH.cfg.url;SH.cfg.url=shUrlFix($('shUrl').value);$('shUrl').value=SH.cfg.url;SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();SH.cfg.auto=$('shAuto').checked;SH.cfg.iv=$('shIv').value;
   if(old&&old!==SH.cfg.url){SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}PH.list.forEach(m=>{delete m.shUp;delete m.shSig});SH.del.clear();shSaveDel();SH.res.clear();shSaveRes()}
   shSaveCfg();shTimer();shStatus()};
  ['shUrl','shKey','shBy'].forEach(id=>$(id).addEventListener('change',read));$('shAuto').onchange=read;$('shIv').onchange=read;
