@@ -4164,6 +4164,13 @@ function shutEdgeOfF(fi,px,py){const N=SHUT.net;let bd=Infinity,be=-1;
 function shutEdgeAt(ll){if(!PIPE.segs||!SHUT.net)return -1;const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*12,h=nearestPipe(ll.lng,ll.lat,Math.max(r,1));if(!h)return -1;
  const m=toM(ll.lng,ll.lat);return shutEdgeOfF(h.fi,m[0],m[1])}
 function shutLL(e){const N=SHUT.net,a=[];for(let v=N.eo[e];v<N.eo[e+1];v++)a.push(fromM(N.exy[2*v],N.exy[2*v+1]));return a}
+/* 소블록: 소블록 경계(면)가 있으면 경계로 판단. 관로 SHP의 소블록명은 '대상지역외'가 많아(관로 9만 5천 개 중 약 4만 5천 개) 경계가 없을 때만 씀 */
+function shutEB(e){const N=SHUT.net;if(SHUT.ebN!==N||SHUT.ebP!==poly||SHUT.ebF!==$('blkField').value){SHUT.ebN=N;SHUT.ebP=poly;SHUT.ebF=$('blkField').value;SHUT.eb=new Map()}
+ let b=SHUT.eb.get(e);if(b!==undefined)return b;
+ if(poly){const v0=N.eo[e],v1=N.eo[e+1]-1,vm=v1-v0>=2?(v0+v1)>>1:-1,x=vm>=0?N.exy[2*vm]:(N.exy[2*v0]+N.exy[2*v1])/2,y=vm>=0?N.exy[2*vm+1]:(N.exy[2*v0+1]+N.exy[2*v1+1])/2,ll=fromM(x,y);
+  try{b=blkAt(ll[1],ll[0])}catch(_){b=''}b=String(b||'').trim()||'(블록 경계 밖)'}
+ else b=shutSb(PIPE.feats[N.ef[e]].properties)||'(소블록 속성 없음)';
+ SHUT.eb.set(e,b);return b}
 const shutSb=P=>{for(const k of ['소블록명','소블록','SBLK_NM','SBK_NM'])if(P&&P[k]!=null&&String(P[k]).trim()!=='')return String(P[k]).trim();return ''};
 /* 추적: 밸브 노드에서 멈춤('못 닫음'은 통과) → 직접 넣은 조각 더하고 뺀 조각 뺌 */
 function shutCalc(){const N=SHUT.net,E=N.ea.length,seen=new Uint8Array(E);
@@ -4172,7 +4179,7 @@ function shutCalc(){const N=SHUT.net,E=N.ea.length,seen=new Uint8Array(E);
  SHUT.add.forEach(e=>seen[e]=1);SHUT.del.forEach(e=>seen[e]=0);
  let len=0,ne=0;const fs=new Set(),vn=new Map(),blk=new Map();
  for(let e=0;e<E;e++){if(!seen[e])continue;ne++;len+=N.el[e];fs.add(N.ef[e]);for(const n of [N.ea[e],N.eb[e]])if(N.nv[n]>=0&&!vn.has(n))vn.set(n,N.nv[n]);
-  const b=shutSb(PIPE.feats[N.ef[e]].properties)||'(소블록 속성 없음)';blk.set(b,(blk.get(b)||0)+N.el[e])}
+  const b=shutEB(e);blk.set(b,(blk.get(b)||0)+N.el[e])}
  /* 밸브: 닫을 것(열림·미상) → 이미 닫힘 → 못 닫음 순, 같은 상태는 시작점에서 가까운 순 */
  const s0=SHUT.ll?toM(SHUT.ll.lng,SHUT.ll.lat):[0,0],V=[...vn].map(([n,i])=>({n,i,st:SHUT.broken.has(n)?2:FAC.cl[i]?1:0,d:Math.hypot(N.nx[n]-s0[0],N.ny[n]-s0[1])}));
  V.sort((a,b)=>a.st-b.st||a.d-b.d);V.forEach((v,k)=>v.no=k+1);
@@ -4195,17 +4202,17 @@ function shutBounds(){const N=SHUT.net,seen=SHUT.seen;if(!seen)return null;let w
 function shutFit(){const b=shutBounds();if(!b||!map)return;const p=SHUT.box,mob=innerWidth<=640,w=p&&!p.hidden?p.offsetWidth:0,h=p&&!p.hidden?p.offsetHeight:0;
  map.fitBounds(b,{maxZoom:18,paddingTopLeft:[40,40],paddingBottomRight:mob?[20,h+20]:[w+30,30]})}
 /* 수용가: 좌표에서 가장 가까운 관로 조각(500m 안) — 한 번 계산해 두고 주소 결과가 바뀌면 다시 */
-async function shutRows(){if(!out.length||!SHUT.net)return null;const k=out.length+'|'+SHUT.netK+'|'+(out[0]&&out[0]['_위도'])+'|'+(out[out.length-1]&&out[out.length-1]['_위도']);
- if(SHUT.rowE&&SHUT.rowK===k&&SHUT.rowN===SHUT.net)return SHUT.rowE;const run=++SHUT.rowRun,r=new Int32Array(out.length).fill(-1);
- for(let i=0;i<out.length;i++){const o=out[i];if(o['_위도']!==''&&o['_위도']!=null){const h=nearestPipe(+o['_경도'],+o['_위도'],500);if(h){const m=toM(+o['_경도'],+o['_위도']);r[i]=shutEdgeOfF(h.fi,m[0],m[1])}}
-  if(i%4000===3999){const el=document.getElementById('shRowMsg');if(el)el.textContent=`수용가 연결 계산 중… ${(i+1).toLocaleString()}/${out.length.toLocaleString()}`;await tick();if(run!==SHUT.rowRun)return null}}
- SHUT.rowE=r;SHUT.rowK=k;SHUT.rowN=SHUT.net;return r}
+async function shutRows(){if(!shutSrc().length||!SHUT.net)return null;const k=(out.length?'o':'b')+shutSrc().length+'|'+SHUT.netK+'|'+(shutSrc()[0]&&shutSrc()[0]['_위도'])+'|'+(shutSrc()[shutSrc().length-1]&&shutSrc()[shutSrc().length-1]['_위도']);
+ if(SHUT.rowE&&SHUT.rowK===k&&SHUT.rowN===SHUT.net&&SHUT.rowA===shutSrc())return SHUT.rowE;const run=++SHUT.rowRun,r=new Int32Array(shutSrc().length).fill(-1);
+ for(let i=0;i<shutSrc().length;i++){const o=shutSrc()[i];if(o['_위도']!==''&&o['_위도']!=null){const h=nearestPipe(+o['_경도'],+o['_위도'],500);if(h){const m=toM(+o['_경도'],+o['_위도']);r[i]=shutEdgeOfF(h.fi,m[0],m[1])}}
+  if(i%4000===3999){const el=document.getElementById('shRowMsg');if(el)el.textContent=`수용가 연결 계산 중… ${(i+1).toLocaleString()}/${shutSrc().length.toLocaleString()}`;await tick();if(run!==SHUT.rowRun)return null}}
+ SHUT.rowE=r;SHUT.rowK=k;SHUT.rowN=SHUT.net;SHUT.rowA=shutSrc();return r}
 const shutNum=v=>{if(v==null||v==='')return null;const n=+String(v).replace(/[^\d.\-]/g,'');return isFinite(n)&&String(v).trim()!==''?n:null};
 function shutRowKey(o,re){for(const k in o)if(re.test(k))return k;return ''}
-function shutRowStats(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen)return null;const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);
- const o0=out[0]||{},kQ=('월평균(㎥)' in o0)?'월평균(㎥)':shutRowKey(o0,/월평균|평균사용량/),kD=('구경' in o0)?'구경':shutRowKey(o0,/^구경|관경/),kU=('업종' in o0)?'업종':shutRowKey(o0,/업종|용도/),kH=('가구수' in o0)?'가구수':shutRowKey(o0,/가구수/);
+function shutRowStats(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen||SHUT.rowA!==shutSrc())return null;const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);
+ const o0=shutSrc()[0]||{},kQ=('월평균(㎥)' in o0)?'월평균(㎥)':shutRowKey(o0,/월평균|평균사용량/),kD=('구경' in o0)?'구경':shutRowKey(o0,/^구경|관경/),kU=('업종' in o0)?'업종':shutRowKey(o0,/업종|용도/),kH=('가구수' in o0)?'가구수':shutRowKey(o0,/가구수/);
  let qs=0,qn=0,hh=0;const ind=new Map(),big=[],bq=+SHUT.opt.bigQ||0,bd=+SHUT.opt.bigD||0,blk=new Map();
- I.forEach(i=>{const o=out[i],q=kQ?shutNum(o[kQ]):null,d=kD?shutNum(o[kD]):null;if(q!=null){qs+=q;qn++}if(kH){const h=shutNum(o[kH]);hh+=h!=null&&h>0?h:1}
+ I.forEach(i=>{const o=shutSrc()[i],q=kQ?shutNum(o[kQ]):null,d=kD?shutNum(o[kD]):null;if(q!=null){qs+=q;qn++}if(kH){const h=shutNum(o[kH]);hh+=h!=null&&h>0?h:1}
   const u=kU?String(o[kU]||'').trim()||'(빈칸)':'';if(kU)ind.set(u,(ind.get(u)||0)+1);const b=String(o['소블록']||o['_결합블록']||'').trim()||'(블록 없음)';blk.set(b,(blk.get(b)||0)+1);
   if((bq&&q!=null&&q>=bq)||(bd&&d!=null&&d>=bd))big.push({i,q,d,u:kU?o[kU]:'',mg:o['관리번호']||'',b})});
  big.sort((a,b)=>(b.q??-1)-(a.q??-1));SHUT.bigSet=new Set(big.map(x=>x.i));
@@ -4215,28 +4222,28 @@ function shutRowStats(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen)return nul
 const TEL={src:null,ed:{},call:{},ld:null};
 function telLoad(){return TEL.ld||(TEL.ld=(async()=>{try{TEL.src=await IDB.get('tel')}catch(_){}try{TEL.ed=await IDB.get('telEdit')||{}}catch(_){TEL.ed={}}try{TEL.call=await IDB.get('telCall')||{}}catch(_){TEL.call={}}})())}
 const telId=o=>String(o['수용가번호']||o['관리번호']||'').trim();
-let telRK=null;function telRowKey(){const o=out[0]||{};if(telRK&&telRK[0]===o)return telRK[1];let k='';for(const x in o)if(!/^_/.test(x)&&/전화|휴대|연락처|핸드폰/.test(x)){k=x;break}telRK=[o,k];return k}
+let telRK=null;function telRowKey(){const o=shutSrc()[0]||{};if(telRK&&telRK[0]===o)return telRK[1];let k='';for(const x in o)if(!/^_/.test(x)&&/전화|휴대|연락처|핸드폰/.test(x)){k=x;break}telRK=[o,k];return k}
 function telOf(o){const id=telId(o);if(id&&TEL.ed[id])return{t:TEL.ed[id].t,ed:1};const m=TEL.src&&TEL.src.map,v=id&&m?m[id]:'';if(v)return{t:v,ed:0};const k=telRowKey();return{t:k?String(o[k]??'').trim():'',ed:0}}
 const telLinks=t=>t?String(t).split(/\s*[\/,;]\s*/).filter(Boolean).map(x=>`<a href="tel:${esc(x.replace(/[^\d+]/g,''))}" class="shtl">📞 ${esc(x)}</a>`).join(' '):'<span class="mute">번호 없음</span>';
 const telAddr=o=>String(o['_검색주소']||o['주소(도로명)']||o['구주소(지번)']||'').trim();
-function telRows(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen)return[];const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);return I}
+function telRows(){const r=SHUT.rowE,seen=SHUT.seen;if(!r||!seen||SHUT.rowA!==shutSrc())return[];const I=[];for(let i=0;i<r.length;i++)if(r[i]>=0&&seen[r[i]])I.push(i);return I}
 function telList(){const el=document.getElementById('shTelList');if(!el)return;const q=(SHUT.telQ||'').replace(/\s/g,'').toLowerCase(),I=telRows();
- const L=I.map(i=>{const o=out[i],id=telId(o),t=telOf(o);return{i,o,id,t,c:id&&TEL.call[id]||0,big:SHUT.res&&SHUT.bigSet&&SHUT.bigSet.has(i)}})
+ const L=I.map(i=>{const o=shutSrc()[i],id=telId(o),t=telOf(o);return{i,o,id,t,c:id&&TEL.call[id]||0,big:SHUT.res&&SHUT.bigSet&&SHUT.bigSet.has(i)}})
   .filter(x=>!q||[x.id,x.o['관리번호'],x.o['업종'],x.t.t,telAddr(x.o)].some(v=>String(v??'').replace(/\s/g,'').toLowerCase().includes(q)))
   .sort((a,b)=>(a.c?1:0)-(b.c?1:0)||(b.big?1:0)-(a.big?1:0)||String(a.o['관리번호']||a.id).localeCompare(String(b.o['관리번호']||b.id),'ko',{numeric:true}));
- const lim=SHUT.telLim||50,nc=I.filter(i=>{const id=telId(out[i]);return id&&TEL.call[id]}).length,nt=I.filter(i=>telOf(out[i]).t).length;
+ const lim=SHUT.telLim||50,nc=I.filter(i=>{const id=telId(shutSrc()[i]);return id&&TEL.call[id]}).length,nt=I.filter(i=>telOf(shutSrc()[i]).t).length;
  const hd=document.getElementById('shTelHd');if(hd)hd.innerHTML=`📞 단수 홍보 연락처 <small>(번호 있음 ${nt.toLocaleString()}/${I.length.toLocaleString()} · 통화 ✓ ${nc.toLocaleString()})</small>`;
  el.innerHTML=(L.length?`<table class="sht shtel"><tr><th>✓</th><th>관리번호 · 주소</th><th>전화</th><th></th></tr>${L.slice(0,lim).map(x=>`<tr class="${x.c?'done':''}"><td><input type="checkbox" data-a="tck" data-id="${esc(x.id)}"${x.c?' checked':''}${x.id?'':' disabled'} aria-label="통화 확인"></td>`+
   `<td><b>${esc(x.o['관리번호']||x.id||'-')}</b>${x.big?' <span class="c-am" title="대수용가">🏭</span>':''}<br><small class="mute">${esc(telAddr(x.o))}${x.o['업종']?' · '+esc(x.o['업종']):''}</small></td>`+
   `<td>${telLinks(x.t.t)}${x.t.ed?' <small class="c-ind" title="직접 고친 번호">✏️</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="ted" data-i="${x.i}"${x.id?'':' disabled'} title="번호 고쳐 저장 (이 기기)">✏️</button></td></tr>`).join('')}</table>`
   +(L.length>lim?`<button type="button" class="btn ol shbr" data-a="tmore" style="margin-top:4px!important">더 보기 (${(L.length-lim).toLocaleString()}곳 남음)</button>`:''):`<p class="uin">${q?'찾는 수용가가 없습니다.':'단수구역 안 수용가가 없습니다.'}</p>`)}
-async function telEdit(i){const o=out[i],id=telId(o);if(!id)return;await telLoad();const cur=telOf(o).t,v=prompt(`${o['관리번호']||id} 전화번호 (여러 개는 / 로 구분 · 비우면 원래 번호로 되돌림)`,cur);if(v==null)return;
+async function telEdit(i){const o=shutSrc()[i],id=telId(o);if(!id)return;await telLoad();const cur=telOf(o).t,v=prompt(`${o['관리번호']||id} 전화번호 (여러 개는 / 로 구분 · 비우면 원래 번호로 되돌림)`,cur);if(v==null)return;
  const t=v.trim();if(t)TEL.ed[id]={t,at:Date.now()};else delete TEL.ed[id];try{await IDB.set('telEdit',TEL.ed)}catch(_){alert('이 브라우저에 저장하지 못했습니다.')}shutRender()}
 async function telCheck(id,on){await telLoad();if(on)TEL.call[id]=Date.now();else delete TEL.call[id];try{await IDB.set('telCall',TEL.call)}catch(_){}telList()}
-async function telClear(){if(!confirm('이 단수구역 수용가의 통화 ✓ 표시를 모두 지울까요?'))return;telRows().forEach(i=>{const id=telId(out[i]);if(id)delete TEL.call[id]});try{await IDB.set('telCall',TEL.call)}catch(_){}telList()}
+async function telClear(){if(!confirm('이 단수구역 수용가의 통화 ✓ 표시를 모두 지울까요?'))return;telRows().forEach(i=>{const id=telId(shutSrc()[i]);if(id)delete TEL.call[id]});try{await IDB.set('telCall',TEL.call)}catch(_){}telList()}
 function telXlsx(){const I=telRows();if(!I.length)return;if(!confirm(`연락처 ${I.length.toLocaleString()}곳을 엑셀로 저장합니다.\n전화번호(개인정보)가 들어 있으니 단수 홍보가 끝나면 파일을 지워 주세요.`))return;
  const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'),fmt=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
- const rows=I.map((i,k)=>{const o=out[i],id=telId(o),t=telOf(o);return{'순번':k+1,'관리번호':o['관리번호']||'','수용가번호':o['수용가번호']||'','소블록':o['소블록']||o['_결합블록']||'','업종':o['업종']||'','구경':o['구경']??'','월평균(㎥)':o['월평균(㎥)']??'','대수용가':SHUT.bigSet&&SHUT.bigSet.has(i)?'Y':'','전화번호':t.t,'번호 수정':t.ed?'Y':'','통화 확인':id&&TEL.call[id]?fmt(TEL.call[id]):''}});
+ const rows=I.map((i,k)=>{const o=shutSrc()[i],id=telId(o),t=telOf(o);return{'순번':k+1,'관리번호':o['관리번호']||'','수용가번호':o['수용가번호']||'','소블록':o['소블록']||o['_결합블록']||'','업종':o['업종']||'','구경':o['구경']??'','월평균(㎥)':o['월평균(㎥)']??'','대수용가':SHUT.bigSet&&SHUT.bigSet.has(i)?'Y':'','전화번호':t.t,'번호 수정':t.ed?'Y':'','통화 확인':id&&TEL.call[id]?fmt(TEL.call[id]):''}});
  const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();ws['!cols']=[{wch:5},{wch:12},{wch:12},{wch:10},{wch:8},{wch:5},{wch:9},{wch:7},{wch:28},{wch:7},{wch:11}];XLSX.utils.book_append_sheet(wb,ws,'단수구역 연락처');
  dlBlob(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array',compression:true})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),`단수구역_연락처_개인정보_${ymd}.xlsx`)}
 /* 📷 단수구역 캡처: 지도(배경·관로·단수구역) + 밸브 번호 + 아래 요약 띠. 수용가 점·이름·주소·전화는 넣지 않음 */
@@ -4257,7 +4264,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';
  g.fillText(`단수 관로 ${(R0.len/1000).toFixed(2)}km (${R0.nf.toLocaleString()}개) · 닫을 밸브 ${c0}개${c1?' · 이미 닫힘 '+c1:''}${c2?' · 못 닫음 '+c2:''}${S?` · 영향 급수전 ${S.n.toLocaleString()}곳`+(S.big.length?` (대수용가 ${S.big.length})`:''):''}`,12*k,y+12*k,W-24*k);y+=24*k;
  list.forEach(v=>{const P=FAC.pt[v.i].p||{};badge(24*k,y+lh*k/2,String(v.no),col(v),v.st===2);g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(600,14);
-  g.fillText(`제수밸브 ${P['관리번호']??'-'} · 구경 ${P['구경']??'-'} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,44*k,y+lh*k/2,W-56*k);y+=lh*k});
+  g.fillText(`제수밸브 ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,44*k,y+lh*k/2,W-56*k);y+=lh*k});
  if(more){g.fillStyle='#475569';g.font=F(600,14);g.fillText(`외 ${more}개 (지도에 번호로 표시)`,44*k,y+lh*k/2);y+=lh*k}
  y+=8*k;g.font=F(400,11.5);g.fillStyle='#64748b';g.fillText('스마트 물길주소 · 포항이 단수구역 (자료상 추정 — 현장 판단 우선) · 만든이: 구병순',12*k,y+11*k,W-24*k);
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
@@ -4288,41 +4295,64 @@ function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset
   else if(a==='ted')telEdit(+b.dataset.i);else if(a==='tmore'){SHUT.telLim=(SHUT.telLim||50)+100;telList()}else if(a==='telx')telXlsx();else if(a==='tclr')telClear()});
  p.addEventListener('change',e=>{const b=e.target;if(b.dataset&&b.dataset.a==='tck')telCheck(b.dataset.id,b.checked);else if(b.dataset&&b.dataset.a==='plain'){SHUT.opt.plain=b.checked;shutSave();shutPlainSync()}});
  p.addEventListener('input',e=>{if(e.target.id==='shTelQ'){SHUT.telQ=e.target.value;SHUT.telLim=50;telList()}})}
+const shutVE=(P,k)=>P[k]==null||String(P[k]).trim()==='';
+const shutVF=(P,k)=>shutVE(P,k)?'<span class="c-am" title="시설물 SHP에 이 값이 없습니다">확인 필요</span>':esc(P[k]);
+/* 밸브 노드에 붙은 관로들의 구경 (밸브 구경이 빈칸일 때 참고용) */
+function shutVPipeD(n){const N=SHUT.net;if(!N||n==null)return '';const s=new Set();for(let j=N.ao[n];j<N.ao[n+1];j++){const P=PIPE.feats[N.ef[N.ae[j]]].properties||{},d=P['구경']??P['관경'];if(d!=null&&String(d).trim()!==''&&+d!==0)s.add(String(d).trim())}return [...s].join('/')}
+/* 수용가 원본: 이번 주소 변환 결과(out)가 있으면 그것, 없으면 저장된 부과량 자료(IDB 'bill') + 이 기기에 저장된 주소 검색 좌표(이전 변환·가져온 결과). API 호출 없음 */
+function shutSrc(){return out.length?out:SHUT.bro&&SHUT.bro.rows||[]}
+async function shutBillRows(){if(out.length||!BILL.R.length)return null;
+ const k=BILL.at+'|'+BILL.R.length+'|'+$('region').value+'|'+Object.keys(gcStore).length+'|'+IMP.size;
+ if(SHUT.bro&&SHUT.bro.k===k)return SHUT.bro;if(SHUT.broP)return SHUT.broP;
+ SHUT.broP=(async()=>{try{await gcReady}catch(_){}
+  const L=billAnalyze(),rows=[],base=q=>/\s\d+-\d+$/.test(q)?q.replace(/-\d+$/,''):'';
+  const look=q=>{if(!q||q.length<3)return null;const h=IMP.get(q);if(h)return h;let c=gcGet(mk('a',q));if(Array.isArray(c)&&(hasLot(q)||/(로|길)\s/.test(q)))return c;c=gcGet(mk('k',q));return Array.isArray(c)?c:null};
+  for(let i=0;i<BILL.R.length;i++){const c=BILL.R[i],a1=prep(c.ji),a2=prep(c.ad);let p=look(a1)||look(a2);
+   if(!p)for(const q of [base(a1),base(a2)]){if(!q)continue;const v=gcGet(mk('a',q));if(Array.isArray(v)){p=v;break}}
+   if(p){const x=L[i];rows.push({'수용가번호':c.id,'관리번호':c.mg,'구주소(지번)':c.ji,'주소(도로명)':c.ad,'소블록':c.b,'업종':c.u,'구경':c.d,'가구수':c.h,'월평균(㎥)':x&&!x.st?+x.a6.toFixed(1):'','_위도':+p[0],'_경도':+p[1]})}
+   if(i%3000===2999){const el=document.getElementById('shRowMsg2');if(el)el.textContent=`저장된 부과량 자료에서 수용가 위치 찾는 중… ${(i+1).toLocaleString()}/${BILL.R.length.toLocaleString()}`;await tick()}}
+  SHUT.bro={k,rows,N:BILL.R.length,name:BILL.name};return SHUT.bro})();
+ try{return await SHUT.broP}finally{SHUT.broP=null}}
 function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pick&&!SHUT.busy;if(p.hidden)return;
  const R=SHUT.res,km=v=>(v/1000).toFixed(v<10000?2:1)+'km';let h=`<div class="uih"><b>💧 단수구역 <small style="color:var(--mute);font-weight:600">자료상 추정</small></b><button type="button" class="uix" data-a="x" aria-label="닫기">✕</button></div>`;
  if(SHUT.busyMsg)h+=`<p class="uin" style="margin-top:2px">${esc(SHUT.busyMsg)}</p>`;
  if(SHUT.pick)h+=`<p class="shh">👆 단수구역을 볼 <b>관로를 누르세요</b> (관로가 보이는 줌에서). <button type="button" class="btn ol" data-a="pick" style="width:auto;padding:3px 10px;font-size:11.5px;margin:0 0 0 4px">취소</button></p>`;
  if(SHUT.on&&R){const V=R.V,c0=V.filter(v=>v.st===0).length,c1=V.filter(v=>v.st===1).length,c2=V.filter(v=>v.st===2).length,S=shutRowStats();
   h+=`<div class="shk"><div><small>단수 관로</small><b>${km(R.len)}</b><small>${R.nf.toLocaleString()}개 관로</small></div><div><small>닫을 제수밸브</small><b class="c-ind">${c0}개</b><small>${c1?'이미 닫힘 '+c1:'이미 닫힘 없음'}${c2?' · 못 닫음 '+c2:''}</small></div>`+
-   `<div><small>영향 급수전</small><b>${S?S.n.toLocaleString()+'곳':out.length?'…':'-'}</b><small id="shRowMsg">${S?(S.avg!=null?'월평균 '+S.avg.toFixed(1)+'㎥':'사용량 열 없음'):out.length?'계산 중…':'주소 결과 없음'}</small></div></div>`;
+   `<div><small>영향 급수전</small><b>${S?S.n.toLocaleString()+'곳':shutSrc().length?'…':'-'}</b><small id="shRowMsg">${S?(S.avg!=null?'월평균 '+S.avg.toFixed(1)+'㎥':'사용량 열 없음'):shutSrc().length?'계산 중…':'주소 결과 없음'}</small></div></div>`;
   h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button></div>`;
   if(SHUT.shot)h+=`<div class="shshot"><img src="${SHUT.shot.url}" alt="단수구역 캡처" data-a="shotv"><div class="shedb"><button type="button" class="btn" data-a="shots">${navigator.canShare?'📤 공유 (카톡 등)':'💾 저장'}</button>${navigator.canShare?'<button type="button" class="btn ol" data-a="shotd">💾 저장</button>':''}<button type="button" class="btn ol" data-a="shotx">✕</button></div>${SHUT.shot.note?`<small class="c-am">${esc(SHUT.shot.note)}</small>`:''}<small class="mute">공유할 때 밸브 위치 카카오맵 링크 글도 함께 복사됩니다.</small></div>`;
   h+=`<p class="shh">${SHUT.mode==='add'?'＋ 넣기: 지도에서 <b>넣을 관로</b>를 누르세요 (다시 누르면 끝).':SHUT.mode==='del'?'－ 빼기: 지도에서 <b>뺄 관로</b>를 누르세요 (다시 누르면 끝).':'밸브 번호를 누르면 <b>못 닫음</b>(고장·찾지 못함)으로 바뀌고 그 너머까지 구역이 넓어집니다.'}${SHUT.add.size||SHUT.del.size?` <small>직접 넣음 ${SHUT.add.size} · 뺌 ${SHUT.del.size}</small>`:''}</p>`;
   h+=`<label class="uir" style="padding:2px 0;font-size:11.5px"><input type="checkbox" data-a="plain"${SHUT.opt.plain!==false?' checked':''}> 🎨 삽도용: 다른 관로는 구경별 색 없이 회색으로</label>`;
-  if(S){h+=`<div class="uig">👥 단수구역 수용가 현황 <small>(가장 가까운 관로 기준 추정)</small></div><div class="shs">`+
+  if(S){h+=`<div class="uig">👥 단수구역 수용가 현황 <small>(가장 가까운 관로 기준 추정)</small></div>`+(!out.length&&SHUT.bro?`<p class="uin" style="margin:0 0 4px">📂 저장된 부과량 자료(${esc(SHUT.bro.name||'')}) + 이 기기에 저장된 주소 좌표로 계산 · 위치를 아는 수용가 ${SHUT.bro.rows.length.toLocaleString()}/${SHUT.bro.N.toLocaleString()}명만 셈${SHUT.bro.rows.length<SHUT.bro.N?' (나머지는 ⚡ 변환으로 좌표를 찾으면 포함)':''}</p>`:'')+`<div class="shs">`+
     `<span>급수전 <b>${S.n.toLocaleString()}</b>곳</span>${S.hh!=null?`<span>가구 <b>${S.hh.toLocaleString()}</b></span>`:''}${S.avg!=null?`<span>월평균 <b>${S.avg.toFixed(1)}</b>㎥/곳</span><span>합계 <b>${Math.round(S.qs).toLocaleString()}</b>㎥/월</span>`:''}</div>`;
    if(S.blk.length>1||S.blk.length&&S.blk[0][0]!=='(블록 없음)')h+=`<div class="shc">${S.blk.slice(0,12).map(([b,n])=>`<span>${esc(b)} <b>${n.toLocaleString()}</b></span>`).join('')}</div>`;
    if(S.ind.length)h+=`<div class="shc">${S.ind.slice(0,8).map(([u,n])=>`<span>${esc(u)} <b>${n.toLocaleString()}</b></span>`).join('')}</div>`;
    const bq=+SHUT.opt.bigQ||0,bd=+SHUT.opt.bigD||0,bl=SHUT.bigAll?S.big:S.big.slice(0,10);
    h+=`<div class="uig">🏭 대수용가 ${S.big.length}곳 <small>(${[bq&&S.kQ?'월평균 '+bq+'㎥ 이상':'',bd&&S.kD?'구경 '+bd+'mm 이상':''].filter(Boolean).join(' 또는 ')||'기준 열 없음'} · ⚙️ 관로 탭에서 바꿈)</small></div>`;
-   if(S.big.length)h+=`<table class="sht"><tr><th>관리번호</th><th>업종</th><th>구경</th><th>월평균㎥</th><th>전화</th></tr>${bl.map(x=>`<tr><td>${esc(x.mg||'-')}<br><small class="mute">${esc(x.b)}</small></td><td>${esc(x.u||'-')}</td><td>${x.d??'-'}</td><td>${x.q!=null?x.q.toFixed(1):'-'}</td><td>${telLinks(telOf(out[x.i]).t)}</td></tr>`).join('')}</table>${S.big.length>10?`<button type="button" class="btn ol" data-a="more" style="width:auto;padding:3px 10px;font-size:11.5px">${SHUT.bigAll?'접기':'모두 보기 ('+S.big.length+')'}</button>`:''}`}
+   if(S.big.length)h+=`<table class="sht"><tr><th>관리번호</th><th>업종</th><th>구경</th><th>월평균㎥</th><th>전화</th></tr>${bl.map(x=>`<tr><td>${esc(x.mg||'-')}<br><small class="mute">${esc(x.b)}</small></td><td>${esc(x.u||'-')}</td><td>${x.d??'-'}</td><td>${x.q!=null?x.q.toFixed(1):'-'}</td><td>${telLinks(telOf(shutSrc()[x.i]).t)}</td></tr>`).join('')}</table>${S.big.length>10?`<button type="button" class="btn ol" data-a="more" style="width:auto;padding:3px 10px;font-size:11.5px">${SHUT.bigAll?'접기':'모두 보기 ('+S.big.length+')'}</button>`:''}`}
   if(S){h+=`<div class="uig" id="shTelHd">📞 단수 홍보 연락처</div><div class="shtq"><input type="search" id="shTelQ" placeholder="관리번호·주소·업종·번호로 찾기" value="${esc(SHUT.telQ||'')}" autocomplete="off"><button type="button" class="btn ol shbr" data-a="telx" title="전화번호 목록 엑셀 (개인정보 — 홍보 후 지우기)">📥 엑셀</button><button type="button" class="btn ol shbr" data-a="tclr" title="이 구역 통화 ✓ 모두 지우기">✓ 지우기</button></div><div id="shTelList"></div>`}
-  else if(out.length)h+=`<p class="uin" id="shRowMsg2">수용가를 관로에 잇는 중…</p>`;
-  else h+=`<p class="uin">왼쪽에서 주소·부과량 자료를 돌리면 단수구역 수용가 현황(급수전수·평균 사용량·대수용가)이 함께 나옵니다.</p>`;
+  else if(shutSrc().length)h+=`<p class="uin" id="shRowMsg2">수용가를 관로에 잇는 중…</p>`;
+  else if(BILL.R.length&&!SHUT.bro)h+=`<p class="uin" id="shRowMsg2">저장된 부과량 자료에서 수용가 위치 찾는 중…</p>`;
+  else if(BILL.R.length)h+=`<p class="uin c-am">👥 수용가 현황: 저장된 부과량 자료(${BILL.R.length.toLocaleString()}명)는 있지만 이 기기에 저장된 주소 좌표가 없어 위치를 모릅니다. 왼쪽 부과량에서 대상을 <b>전체</b>로 골라 <b>📋 변환 대상 만들기 → ⚡ 변환 · 공간결합 시작</b>을 한 번 하면, 다음부터는 앱을 다시 열어도 바로 나옵니다(이미 찾은 주소는 다시 검색하지 않음).</p>`;
+  else h+=`<p class="uin">👥 수용가 현황·연락처는 수용가 위치가 있어야 나옵니다. 왼쪽에서 <b>부과량 xlsm</b>(또는 주소 엑셀)을 올리고 ⚡ 변환 · 공간결합 시작을 하면 단수구역 급수전수·평균 사용량·대수용가·전화번호가 함께 나옵니다.</p>`;
   h+=`<div class="uig">🔧 제수밸브 (번호 = 지도 번호)</div>`;
+  {const ne=V.filter(v=>{const P=FAC.pt[v.i].p||{};return shutVE(P,'관리번호')&&shutVE(P,'구경')&&shutVE(P,'개폐여부')}).length;
+   if(ne)h+=`<p class="uin c-am" style="margin:2px 0 4px">⚠️ 시설물 SHP에 관리번호·구경·개폐가 모두 빈 밸브 ${ne}개 — 자료에 없는 값이라 "확인 필요"로 표시했습니다. 현장 값은 ✏️로 넣을 수 있습니다.</p>`}
   if(V.length)h+=`<table class="sht shvt"><tr><th>#</th><th>관리번호</th><th>구경</th><th>개폐</th><th></th><th></th></tr>${V.map(v=>{const P=FAC.pt[v.i].p||{},ed=P['_현장수정'],o=P['_원본']||{},mk=k=>k in o?' class="shmod" title="원래: '+esc(o[k]==null||o[k]===''?'빈칸':o[k])+'"':'';
-   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${esc(P['관리번호']??'-')}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${esc(P['구경']??'-')}</td><td${mk('개폐여부')}>${esc(P['개폐여부']??'-')}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button></td></tr>`;
+   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button></td></tr>`;
    if(SHUT.vEd===v.i){const cur=String(P['개폐여부']??''),ops=[...new Set(['개','폐','미분류',cur].filter(Boolean))];
     r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">현장 메모<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
      `<div class="shedb"><button type="button" class="btn" data-a="vsave">💾 저장</button>${ed?`<button type="button" class="btn ol" data-a="vorig" title="${esc(facOrigTxt(P))}">↩ SHP 원래대로</button>`:''}<button type="button" class="btn ol" data-a="vcan">취소</button></div>${ed?`<small class="mute">✏️ 현장 수정 ${esc(ed)} · 원래 ${esc(facOrigTxt(P))}</small>`:''}</div></td></tr>`}
    return r}).join('')}</table><p class="uin" style="margin-top:4px">✏️로 고친 값은 이 기기 시설물 자료에 저장됩니다(직원 공유는 ⏫ 올리기). "못 닫음"은 이번 단수 계산에만 씁니다.</p>`;
   else h+=`<p class="uin">구역 둘레에 제수밸브가 없습니다 (밸브가 관로에서 멀리 찍혔거나 망이 끊긴 곳일 수 있음).</p>`;
-  h+=`<div class="uig">🗺️ 소블록 (관로 속성 기준)</div><div class="shc">${R.blk.slice(0,12).map(([b,m])=>`<span>${esc(b)} <b>${km(m)}</b></span>`).join('')}</div>`;
+  h+=`<div class="uig">🗺️ 소블록 <small>(${poly?'소블록 경계 기준':'관로 속성 기준'})</small></div><div class="shc">${R.blk.slice(0,12).map(([b,m])=>`<span>${esc(b)} <b>${km(m)}</b></span>`).join('')}</div>`;
   h+=`<p class="uin">빨강 = 단수 관로 · 보라 점선 = 직접 넣음 · 회색 점선 = 뺌 · 파랑 번호 = 닫을 밸브 · 검정 = 이미 닫힘 · 회색 = 못 닫음. 관로·밸브 위치 오차로 실제와 다를 수 있으니 현장 판단이 우선입니다.</p>`}
  const qf=document.activeElement&&document.activeElement.id==='shTelQ';p.innerHTML=h;if(document.getElementById('shTelList')){telList();if(!TEL.ldDone)telLoad().then(()=>{if(!TEL.ldDone){TEL.ldDone=1;shutRender()}})}if(qf){const q=document.getElementById('shTelQ');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}}}
 let shutRowT=0;
 async function shutUpdate(fit){shutCalc();shutPlainSync();shutDraw();shutRender();if(fit)shutFit();
- if(out.length){const t=++shutRowT,had=SHUT.rowE;const r=await shutRows();if(r&&t===shutRowT&&SHUT.on&&r!==had)shutRender()}}
+ if(!out.length&&BILL.R.length){const had=SHUT.bro,b=await shutBillRows();if(b!==had&&SHUT.on)shutRender()}
+ if(shutSrc().length){const t=++shutRowT,had=SHUT.rowE;const r=await shutRows();if(r&&t===shutRowT&&SHUT.on&&r!==had)shutRender()}}
 function shutRefresh(){if(SHUT.on&&SHUT.net){shutCalc();shutDraw();shutRender()}}
 function shutBroken(n){if(SHUT.broken.has(n))SHUT.broken.delete(n);else SHUT.broken.add(n);shutUpdate()}
 async function shutStartAt(ll){if(!map)return;shutUi();
