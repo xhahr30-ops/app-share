@@ -407,6 +407,10 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .ph-ic{background:none;border:0}
 .phb{position:relative;width:32px;height:32px;border-radius:50%;background:#0f766e;border:2px solid #fff;box-shadow:0 1px 5px #0007;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer}
 .phb.man{background:#7c3aed}.phb.ref{background:#dc2626}
+.phb.yc.man{border-style:dashed}.phc.yc{text-shadow:0 0 3px #000,0 0 2px #000}
+.phyl i,.phleg i.yr{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px;border:1px solid #fff;box-shadow:0 0 0 1px #0003}
+.phyl span{display:inline-block;margin-right:9px;white-space:nowrap}
+.phleg div{cursor:pointer;white-space:nowrap;border-radius:4px;padding:0 3px}.phleg div:hover{background:#94a3b833}.phleg div.on{font-weight:800;background:#facc1544}
 .phcd.no{color:#0f766e;border-color:#0f766e}
 .phcd{position:absolute;left:50%;top:31px;transform:translateX(-50%);background:#fff;color:#b91c1c;border:1px solid #dc2626;border-radius:4px;font:800 10.5px/1.3 'Noto Sans KR',sans-serif;padding:0 4px;white-space:nowrap;font-style:normal;pointer-events:none}.phb.sel{box-shadow:0 0 0 4px #facc15,0 1px 5px #0007}
 .phb b{position:absolute;right:-11px;top:-9px;background:#f59e0b;color:#111;border-radius:999px;font-size:10px;padding:0 4px;line-height:15px;border:1px solid #fff;font-weight:800;min-width:9px;text-align:center}
@@ -753,10 +757,12 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <div class="g2"><label class="f">묶음 거리<select id="phR"><option value="10">10m 이내</option><option value="20" selected>20m 이내</option><option value="30">30m 이내</option><option value="50">50m 이내</option></select></label>
   <label class="f">촬영 시간 간격<select id="phT"><option value="30">30분 이내</option><option value="120" selected>2시간 이내</option><option value="1440">같은 날</option><option value="0">따지지 않음</option></select></label>
   <label class="f">저장 크기<select id="phSize"><option value="1600">보통 (1600px)</option><option value="2400">크게 (2400px)</option><option value="0">원본 그대로</option></select></label>
-  <label class="f">지도 표시<select id="phShow"><option value="on">표시</option><option value="off">숨김</option></select></label></div>
+  <label class="f">지도 표시<select id="phShow"><option value="on">표시</option><option value="off">숨김</option></select></label>
+  <label class="f">아이콘 색<select id="phCol"><option value="year">연도별 색</option><option value="one">한 가지 색</option></select></label></div>
   <label class="ck" style="margin:2px 0 4px;display:flex;gap:6px;align-items:flex-start;font-size:12px"><input type="checkbox" id="phHereOn"> <span>📍 GPS 없는 사진은 <b>휴대폰 현재 위치</b>로 표시 <small style="color:var(--mute)">(찍은 지 3시간 이내 사진만 · 위치 권한 필요)</small></span></label>
   <div class="g2"><label class="f">📅 기간 단위<select id="phPU"><option value="all">전체 기간</option><option value="year">연도별</option><option value="month">월별</option><option value="week">주별</option></select></label><label class="f" hidden>기간 고르기<select id="phPK"></select></label></div>
   <p class="hint" id="phPerInfo" style="margin:2px 0 0"></p>
+  <p class="hint phyl" id="phYrLeg" style="margin:2px 0 0"></p>
   <div class="g2"><label class="f">🏷️ 분류 이름 (번호 앞 글자)<input id="phCodeP" value="긴급" placeholder="예: 긴급, 누수, 민원" title="쉼표로 여러 개. 파일명(없으면 메모)에서 '긴급208'처럼 이름+숫자를 찾아 같은 번호끼리 묶습니다"></label>
   <label class="f">좌표계 (월드 파일·엑셀)<select id="phRefCrs"><option value="EPSG:5186">EPSG:5186 (중부원점)</option><option value="EPSG:5187">EPSG:5187 (동부원점)</option><option value="EPSG:5185">EPSG:5185 (서부원점)</option><option value="EPSG:5179">EPSG:5179 (UTM-K)</option></select></label></div>
   <div class="sbtns"><label class="btn ol" style="cursor:pointer" title="번호(긴급208 등)가 든 점 SHP(ZIP) 또는 엑셀(번호·위도·경도 / X·Y)">📍 기준 위치 파일<input type="file" id="phRefFile" accept=".zip,.xlsx,.xls,.csv" hidden></label><button id="phRefClr" type="button" class="btn ol">기준 위치 지우기</button></div>
@@ -1030,7 +1036,7 @@ function uiMove(){const lab=id=>{const el=$(id);return el?(el.closest('label,.ck
   {box:'uiBlkBox',tab:'map',btn:'⚙️ 블록명 표시 · 글자 크기',n:[lab('lblMode'),lab('lblSize')]},
   {box:'uiPipeBox',tab:'pipe',btn:'⚙️ 관로 보기 설정 (표시·색상·원거리)',n:[lab('pShow'),$('pZoomHint'),lab('pBy'),lab('pFar'),lab('pPrint')]},
   {box:'uiFacBox',tab:'pipe',btn:'⚙️ 시설물 보기 설정 (종류별 켜기·크기)',n:[lab('fShow'),lab('fLbl'),$('fZoomHint'),$('fKinds')]},
-  {box:'uiPhBox',tab:'ph',btn:'⚙️ 사진 보기 설정 (표시·묶음·기간)',n:[lab('phShow'),lab('phR'),lab('phT'),lab('phPU'),lab('phPK'),$('phPerInfo')]},
+  {box:'uiPhBox',tab:'ph',btn:'⚙️ 사진 보기 설정 (표시·묶음·기간)',n:[lab('phShow'),lab('phCol'),lab('phR'),lab('phT'),lab('phPU'),lab('phPK'),$('phPerInfo'),$('phYrLeg')]},
   {box:'uiPhSzBox',n:[lab('phSize')]},
   {box:'uiShBox',tab:'app',btn:'🔑 공유 키·서버 주소 → ⚙️ 앱 설정',n:[lab('shUrl'),$('shKey')&&$('shKey').closest('.g2'),$('shIv')&&$('shIv').parentElement,lab('shRefAuto')]},
   {box:'uiVwBox',tab:'app',btn:'🗺️ 브이월드 인증키 → ⚙️ 앱 설정',n:[lab('vwKey'),lab('vwDom'),$('vwBtn'),$('vwMsg')],at:$('vwKey')&&$('vwKey').closest('details')}];
@@ -1099,7 +1105,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiX').onclick=()=>uiPanel(false);
  q('uiPt').onchange=e=>{if(!!PT.off===e.target.checked)ptToggle()};
  q('uiPh').onchange=e=>{if(($('phShow').value!=='off')!==e.target.checked)phToggle()};
- q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply()};
+ q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply();if(typeof phDraw==='function')phDraw()};
  q('uiLbl').onchange=e=>{UI.lbl=e.target.value;uiSave();plblSoon()};
  q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
@@ -3318,23 +3324,40 @@ function phGTime(g){if(!g.t0)return '촬영시각 없음';const a=phYMD(g.t0),b=
 const phGLabel=g=>g.lbl||(g.lbl=phGLabel0(g));
 function phGLabel0(g){if(g.code)return phRcpLbl(g.code);if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
  const b=phGBlk(g),d=g.t0?new Date(g.t0):null;return (b?b+' ':'')+'현장'+(d?` ${d.getMonth()+1}/${d.getDate()} ${phHM(g.t0)}`:'')}
+/* ---------- 촬영 연도별 아이콘 색 — 연도마다 고정 색(2025=청록, 2026=파랑 …), 촬영시각 없으면 회색 ---------- */
+const PH_YC=['#0f766e','#1d4ed8','#c2410c','#be185d','#4d7c0f','#78350f','#6d28d9','#334155'],PH_YC0='#6b7280';
+const phYr=g=>g.t0?new Date(g.t0).getFullYear():0;
+const phYC=y=>y?PH_YC[((y-2025)%8+8)%8]:PH_YC0;
+const phColOn=()=>$('phCol').value!=='one',sel0=()=>PH.V&&PH.per.u==='year'?PH.V.k:'';
+function phYrLeg(MG){const on=phColOn()&&$('phShow').value!=='off'&&MG.length>0,cnt=new Map(),sel=sel0();
+ if(on)for(const g of PH.G)if(g.lat!=null)for(const id of g.ids){const t=PH.byId.get(id).ts,y=t?new Date(t).getFullYear():0;cnt.set(y,(cnt.get(y)||0)+1)}
+ const ys=[...cnt.keys()].sort((a,b)=>(b||-1)-(a||-1)),key=ys.map(y=>y+':'+cnt.get(y)).join(',')+'|'+sel+'|'+!!UI.leg+'|'+!!PH.legMin;
+ if(PH.yrKey===key)return;PH.yrKey=key;
+ const lb=y=>y?y+'년':'시각 없음',P=$('phYrLeg');
+ if(P)P.innerHTML=ys.length?'🎨 '+ys.map(y=>`<span><i style="background:${phYC(y)}"></i>${lb(y)} ${cnt.get(y).toLocaleString()}장</span>`).join(''):'';
+ if(!map)return;if(!PH.leg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg phleg');L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);
+   d.addEventListener('click',e=>{if(e.target.closest('.plt')){PH.legMin=!PH.legMin;try{localStorage.setItem('geo-phlegmin',PH.legMin?'1':'0')}catch(_){}phYrLeg(PH.V?PH.V.mapG:PH.G);return}
+    const r=e.target.closest('[data-y]');if(!r)return;const k=r.dataset.y==='0'?'none':'Y'+r.dataset.y;phSetPer('year',sel0()===k?'*':k)});return d}});PH.leg=new C();map.addControl(PH.leg);try{PH.legMin=localStorage.getItem('geo-phlegmin')==='1'}catch(_){}}
+ const el=PH.leg.getContainer();if(!ys.length||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!PH.legMin);
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">📷 촬영 연도 <span style="color:var(--mute)">${PH.legMin?'▸':'▾'}</span></b>`+ys.map(y=>{const k=y?'Y'+y:'none';return `<div data-y="${y}" class="${sel===k?'on':''}" title="눌러서 ${lb(y)} 사진만 보기 (다시 누르면 전체)"><i class="yr" style="background:${phYC(y)}"></i>${lb(y)} <small>${cnt.get(y).toLocaleString()}장</small></div>`}).join('')}
 /* ---------- 지도: 화면 안 묶음만, 많으면 칸별로 합쳐 표시 ---------- */
-function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map;
- return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}">${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':'📷'}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
+function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn();
+ return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${yc?' yc':''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${yc?` style="background:${phYC(phYr(g))}"`:''}>${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':'📷'}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
 function phToggle(){const sh=$('phShow');sh.value=sh.value==='off'?'on':'off';if(sh.value==='off'&&PH.pop&&map)map.closePopup();sh.dispatchEvent(new Event('change'))}
-function phDraw(){phTogSync();if(!map)return;if(!PH.L)PH.L=L.layerGroup();const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;
+function phDraw(){phTogSync();const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);if(!map)return;if(!PH.L)PH.L=L.layerGroup();
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
  const b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])),z=map.getZoom();
  const ed=PH.ed&&PH.ed.on;if(ed)PH.ed.clu=false;
  if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:phIcon(g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
    k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else phPopOpen(g.id)});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
  if(ed){PH.ed.clu=true;phEdHint()}
- const cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,la:0,ln:0,b:L.latLngBounds([])});c.n+=g.n;c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
- bk.forEach(c=>{const s=c.n<10?36:c.n<100?42:c.n<1000?50:58;
-  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc" style="width:${s}px;height:${s}px"><i>📷</i>${c.n.toLocaleString()}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장 · 위치 ${c.g.toLocaleString()}곳 — 눌러서 확대`});
+ const yc=phColOn(),cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,la:0,ln:0,b:L.latLngBounds([]),y:new Map()});c.n+=g.n;if(yc){const y=phYr(g);c.y.set(y,(c.y.get(y)||0)+g.n)}c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
+ bk.forEach(c=>{const s=c.n<10?36:c.n<100?42:c.n<1000?50:58;let bg='';
+  if(yc){const ys=[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1));if(ys.length===1)bg=`;background:${phYC(ys[0])}`;else{let a=0;bg=';background:conic-gradient('+ys.map(y=>{const b=a+c.y.get(y)/c.n*360,t=`${phYC(y)} ${a.toFixed(1)}deg ${b.toFixed(1)}deg`;a=b;return t}).join(',')+')'}}
+  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc${yc?' yc':''}" style="width:${s}px;height:${s}px${bg}"><i>📷</i>${c.n.toLocaleString()}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장 · 위치 ${c.g.toLocaleString()}곳${yc&&c.y.size>1?' · '+[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1)).map(y=>(y?y+'년 ':'시각 없음 ')+c.y.get(y).toLocaleString()+'장').join(', '):''} — 눌러서 확대`});
   k.on('click',()=>{if(c.g===1)map.setView(c.b.getCenter(),Math.max(z+2,17));else map.fitBounds(c.b,{padding:[40,40],maxZoom:19})});k.addTo(PH.L)})}
 function phDrawSoon(){clearTimeout(PH.drawT);PH.drawT=setTimeout(phDraw,60)}
 function phPopOpen(gid,pid){const g=PH.V.mapG.find(x=>x.id===gid);if(!g||!map)return;PH.sel=gid;const box=document.createElement('div');
@@ -3659,8 +3682,8 @@ if(map){const C=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L
 fmApply();
 
 $('phStop').onclick=()=>{PH.stop=true};
-['phShow','phSize','phR','phT','phXm'].forEach(id=>{try{const v=localStorage.getItem('geo-'+id.toLowerCase());if(v!=null&&[...$(id).options].some(o=>o.value===v))$(id).value=v}catch(_){}
- $(id).addEventListener('change',()=>{try{localStorage.setItem('geo-'+id.toLowerCase(),$(id).value)}catch(_){}if(id==='phR'||id==='phT')phRefresh();else if(id==='phShow')phDraw()})});
+['phShow','phCol','phSize','phR','phT','phXm'].forEach(id=>{try{const v=localStorage.getItem('geo-'+id.toLowerCase());if(v!=null&&[...$(id).options].some(o=>o.value===v))$(id).value=v}catch(_){}
+ $(id).addEventListener('change',()=>{try{localStorage.setItem('geo-'+id.toLowerCase(),$(id).value)}catch(_){}if(id==='phR'||id==='phT')phRefresh();else if(id==='phShow'||id==='phCol')phDraw()})});
 $('phTog').onclick=phToggle;$('ptTog').onclick=ptToggle;ptOffUi();
 document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='u'||e.key==='U'||e.key==='ㅕ'||e.code==='KeyU')){e.preventDefault();ptToggle()}});
 document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='p'||e.key==='P'||e.key==='ㅔ'||e.code==='KeyP')&&PH.list.length){e.preventDefault();phToggle()}});
