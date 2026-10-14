@@ -133,7 +133,13 @@ details.x summary{cursor:pointer;font-weight:700;font-size:12.5px}
 /* map */
 #mapBox{display:flex;flex-direction:column}
 #map{height:440px;border-radius:12px;background:#dce6ea;z-index:0}
-#map{-webkit-touch-callout:none}#map .leaflet-map-pane{-webkit-user-select:none;user-select:none}#map .leaflet-popup{-webkit-user-select:text;user-select:text}
+#map{-webkit-touch-callout:none}
+.leaflet-control-zoom .zlv{display:block;width:30px;height:18px;line-height:18px;text-align:center;font:700 11px/18px sans-serif;color:#334155;background:#f1f5f9;border-bottom:1px solid #ccc;cursor:default}
+.leaflet-control-zoom .zlv.hi{background:#fde68a;color:#92400e}
+.bgbtn a.hi{background:#fde68a}
+#map.bgoff{background:#fff}
+html.dark #map.bgoff{background:#111827}
+html.dark .leaflet-control-zoom .zlv{background:#1f2937;color:#e5e7eb;border-color:#374151}#map .leaflet-map-pane{-webkit-user-select:none;user-select:none}#map .leaflet-popup{-webkit-user-select:text;user-select:text}
 html.dark #map{background:#1a2539}
 .fsb{margin-left:8px;padding:2px 8px;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}.fsb:hover{background:#e0e7ff}
 html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
@@ -963,7 +969,7 @@ try{PT.off=localStorage.getItem('geo-ptoff')==='1'}catch(_){}
 /* 수용가 점 전체 끄기/켜기 — 필터(vis)와 따로 두어 켜면 원래 필터 상태 그대로 돌아옴 */
 function ptOffUi(){const b=document.getElementById('ptTog');if(!b)return;b.textContent=PT.off?'👥 수용가 켜기':'👥 수용가 끄기';b.setAttribute('aria-pressed',String(!PT.off));b.style.opacity=PT.off?'.7':'';uiPanelSync()}
 function ptToggle(){PT.off=!PT.off;try{localStorage.setItem('geo-ptoff',PT.off?'1':'0')}catch(_){}if(PT.off&&map)map.closePopup();ptOffUi();ptDraw()}
-function ptRadius(z){return z>=17?6:z>=16?5.5:z>=15?4.5:z>=14?3.5:z>=13?2.8:2.2}
+function ptRadius(z){return z>=21?8:z>=20?7:z>=17?6:z>=16?5.5:z>=15?4.5:z>=14?3.5:z>=13?2.8:2.2}
 function ptReset(n){PT.n=n;PT.lat=new Float64Array(n).fill(NaN);PT.lng=new Float64Array(n).fill(NaN);PT.px=new Float64Array(n);PT.py=new Float64Array(n);PT.fill=new Array(n);PT.col=new Array(n);PT.w=new Float32Array(n);PT.r=new Float32Array(n);PT.vis=new Uint8Array(n);PT.base=new Array(n);PT.grid=new Map();PT.sel=-1;mks.length=0}
 function ptAdd(i,lat,lng,st){PT.lat[i]=lat;PT.lng[i]=lng;const q=map.project([lat,lng],0);PT.px[i]=q.x;PT.py[i]=q.y;PT.fill[i]=st.fillColor;PT.col[i]=st.color;PT.w[i]=st.weight;PT.r[i]=0;PT.vis[i]=1;
  const k=Math.floor(lng/PT.cs)+','+Math.floor(lat/PT.cs);let a=PT.grid.get(k);if(!a)PT.grid.set(k,a=[]);a.push(i);mks[i]=ptProxy(i)}
@@ -1182,14 +1188,18 @@ const MAP_SHORT=matchMedia('(orientation:landscape) and (max-height:520px)');
 function mapCornerFix(){if(!map||!map._controlCorners)return;const C=map._controlCorners,bl=C.bottomleft;let x=0;
  if(MAP_SHORT.matches){const r0=map.getContainer().getBoundingClientRect();for(const e of C.topleft.children){if(!e.offsetWidth)continue;x=Math.max(x,e.getBoundingClientRect().right-r0.left)}}
  const v=x?Math.round(x)+'px':'';if(bl.style.left!==v)bl.style.left=v}
+/* 배경 타일은 19단계까지만 있어 그 위(20~22)는 19단계 그림을 늘려 보여 줌. 관로·점·시설물(캔버스)·지적도(WMS)는 선명하게 다시 그림 */
+const MAP_MAXZ=22,TILE_NZ=19;
+const BG={off:false,keep:[],ctl:null,a:null,z:null};
+const BG_FILL=()=>document.documentElement.classList.contains('dark')?'#111827':'#ffffff';
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
 try{
- map=L.map('map',{preferCanvas:true}).setView([36.019,129.343],11);
- const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri',maxZoom:19});
- const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+ map=L.map('map',{preferCanvas:true,maxZoom:MAP_MAXZ,zoomSnap:.5}).setView([36.019,129.343],11);
+ const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri',maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ});
+ const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ});
  osm.addTo(map);baseOsm=osm;lyrCtl=L.control.layers({'일반 지도 (OSM)':osm,'위성 (Esri)':esri},{},{collapsed:true}).addTo(map);
  let te=0;[esri,osm].forEach(l=>l.on('tileerror',()=>{if(++te===4)$('mapMsg').hidden=false}));
- shpL=L.featureGroup().addTo(map);lblL=L.layerGroup();initFs();try{uiInit()}catch(e){console.warn('표시 설정',e)}mkL=ptInit();try{initSearch()}catch(e){console.warn('주소찾기',e)}
+ shpL=L.featureGroup().addTo(map);lblL=L.layerGroup();try{bgInit()}catch(e){console.warn('배경 끄기',e)}initFs();try{uiInit()}catch(e){console.warn('표시 설정',e)}mkL=ptInit();try{initSearch()}catch(e){console.warn('주소찾기',e)}
  const fix=()=>map.invalidateSize();window.addEventListener('load',fix);setTimeout(fix,300);window.addEventListener('resize',fix);
 }catch(e){$('mapMsg').hidden=false;$('mapMsg').textContent='지도 라이브러리(Leaflet)를 불러오지 못했습니다. 인터넷 연결·보안 프로그램 차단을 확인하세요. 변환·결합·엑셀 저장은 지도 없이 동작합니다.'}
 
@@ -1292,15 +1302,33 @@ function lblShow(){if(!map||!lblL)return;const m=$('lblMode').value,n=lblL.getLa
  const on=m==='on'||(m==='auto'&&(n<=40||map.getZoom()>=14));
  if(on&&!map.hasLayer(lblL))lblL.addTo(map);else if(!on&&map.hasLayer(lblL))map.removeLayer(lblL)}
 /* ===== 브이월드: 일반·위성 배경, 지명·도로, 지적도 ===== */
+/* ===== 배경지도 끄기: 많이 확대하면(줌 20 이상) 배경 타일이 흐려지므로, 흰 바탕에 관로·밸브·수용가만 보이게 =====
+   지도 왼쪽 위 +/− 사이에 현재 줌 표시(19 넘으면 주황), 그 아래 🗺️ 단추로 배경 끄기/켜기. 이 화면에서만 유지(다시 열면 켜짐) */
+function bgSync(){if(!map)return;const z=map.getZoom(),blur=z>TILE_NZ&&!BG.off;
+ if(BG.z){BG.z.textContent=String(Math.round(z*2)/2);BG.z.classList.toggle('hi',blur);BG.z.title=blur?`줌 ${z}: 배경지도는 ${TILE_NZ}단계까지라 늘려서 보여 줍니다(흐림). 관로·점은 선명합니다. 🗺️ 단추로 배경을 끌 수 있습니다.`:`현재 줌 ${z} (최대 ${MAP_MAXZ})`}
+ if(BG.a){BG.a.textContent=BG.off?'⬜':'🗺️';BG.a.title=BG.off?'배경지도 켜기 (지금: 흰 바탕)':'배경지도 끄기: 흰 바탕에 관로·밸브·수용가만 보기 (많이 확대했을 때 선명하게)';BG.a.setAttribute('aria-label',BG.a.title);BG.a.setAttribute('aria-pressed',String(BG.off));BG.a.classList.toggle('hi',blur)}
+ map.getContainer().classList.toggle('bgoff',BG.off)}
+function bgToggle(off){if(!map)return;off=off==null?!BG.off:!!off;if(off===BG.off)return;
+ if(off){BG.keep=[];map.eachLayer(l=>{if(l instanceof L.TileLayer&&!(l instanceof L.TileLayer.WMS)&&!(lyrCtl&&lyrCtl._layers.some(o=>o.layer===l&&o.overlay))){BG.keep.push(l)}});BG.off=true;BG.keep.forEach(l=>map.removeLayer(l))}
+ else{BG.off=false;const k=BG.keep.length?BG.keep:[baseOsm].filter(Boolean);BG.keep=[];let has=false;map.eachLayer(l=>{if(l instanceof L.TileLayer&&!(l instanceof L.TileLayer.WMS)&&!(lyrCtl&&lyrCtl._layers.some(o=>o.layer===l&&o.overlay)))has=true});if(!has)k.forEach(l=>map.addLayer(l))}
+ bgSync()}
+function bgInit(){
+ const zc=map.zoomControl&&map.zoomControl.getContainer();
+ if(zc){BG.z=L.DomUtil.create('span','zlv');zc.insertBefore(BG.z,zc.lastChild)}
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn bgbtn'),a=L.DomUtil.create('a','',d);a.href='#';a.setAttribute('role','button');BG.a=a;
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);bgToggle()});return d}});
+ BG.ctl=new Ctl();map.addControl(BG.ctl);
+ if(zc){const c=BG.ctl.getContainer();zc.parentNode.insertBefore(c,zc.nextSibling)} // +/− 바로 아래
+ map.on('zoomend',bgSync);map.on('baselayerchange',()=>{if(BG.off){BG.off=false;BG.keep=[]}bgSync()});bgSync()}
 function setupVworld(){const key=$('vwKey').value.trim(),dom=$('vwDom').value.trim()||location.origin;
  try{localStorage.setItem('geo-vw',JSON.stringify({key,dom}))}catch(_){}
  if(!map||!lyrCtl){$('vwMsg').textContent='지도를 불러오지 못해 적용할 수 없습니다.';return}
  vwL.forEach(l=>{lyrCtl.removeLayer(l);if(map.hasLayer(l))map.removeLayer(l)});vwL=[];
  if(!key){$('vwMsg').textContent='인증키를 넣으면 지도 오른쪽 위 레이어 메뉴에 브이월드 지도와 지적도가 추가됩니다.';return}
  const W=t=>`https://api.vworld.kr/req/wmts/1.0.0/${encodeURIComponent(key)}/${t}/{z}/{y}/{x}.${t==='Satellite'?'jpeg':'png'}`,at='© 국토교통부 브이월드';
- const base=L.tileLayer(W('Base'),{maxZoom:19,attribution:at}),sat=L.tileLayer(W('Satellite'),{maxZoom:19,attribution:at}),hyb=L.tileLayer(W('Hybrid'),{maxZoom:19,attribution:at});
- const cad=L.tileLayer.wms('https://api.vworld.kr/req/wms',{layers:'lp_pa_cbnd_bubun,lp_pa_cbnd_bonbun',styles:'lp_pa_cbnd_bubun_line,lp_pa_cbnd_bonbun_line',format:'image/png',transparent:true,version:'1.3.0',key,domain:dom,minZoom:15,maxZoom:19,attribution:at});
- lyrCtl.addBaseLayer(base,'브이월드 일반');lyrCtl.addBaseLayer(sat,'브이월드 위성');if(baseOsm&&map.hasLayer(baseOsm)){map.removeLayer(baseOsm);base.addTo(map)}lyrCtl.addOverlay(hyb,'브이월드 지명·도로');lyrCtl.addOverlay(cad,'지적도 (확대 시 표시)');vwL=[base,sat,hyb,cad];
+ const base=L.tileLayer(W('Base'),{maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ,attribution:at}),sat=L.tileLayer(W('Satellite'),{maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ,attribution:at}),hyb=L.tileLayer(W('Hybrid'),{maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ,attribution:at});
+ const cad=L.tileLayer.wms('https://api.vworld.kr/req/wms',{layers:'lp_pa_cbnd_bubun,lp_pa_cbnd_bonbun',styles:'lp_pa_cbnd_bubun_line,lp_pa_cbnd_bonbun_line',format:'image/png',transparent:true,version:'1.3.0',key,domain:dom,minZoom:15,maxZoom:MAP_MAXZ,attribution:at});
+ lyrCtl.addBaseLayer(base,'브이월드 일반');lyrCtl.addBaseLayer(sat,'브이월드 위성');if(baseOsm&&map.hasLayer(baseOsm)){map.removeLayer(baseOsm);base.addTo(map)}else if(BG.off&&BG.keep.includes(baseOsm))BG.keep=BG.keep.map(l=>l===baseOsm?base:l);lyrCtl.addOverlay(hyb,'브이월드 지명·도로');lyrCtl.addOverlay(cad,'지적도 (확대 시 표시)');vwL=[base,sat,hyb,cad];
  let er=0;[base,sat,cad].forEach(l=>l.on('tileerror',()=>{if(++er===3)$('vwMsg').textContent='브이월드 지도를 받지 못했습니다. 인증키, 등록 도메인('+dom+'), 키의 서비스 사용 설정을 확인하세요.'}));
  $('vwMsg').textContent='적용됨: 지도 오른쪽 위 레이어 메뉴에서 "브이월드 일반·위성"과 "지적도"를 고르세요. 지적도는 많이 확대해야(줌 15 이상) 보입니다.'}
 /* ===== 설정 창 숨기기/보이기 ===== */
@@ -4467,15 +4495,16 @@ function mapShotSrcs(){if(typeof mkBaseSrcs==='function'){try{return mkBaseSrcs(
 /* ext(k,Hm) → {w,h}: 지도 오른쪽·아래에 더 붙일 칸(단수구역 가로 캡처의 오른쪽 정보 칸), kk: 배율 직접 지정 */
 async function mapShotBase(skip,bandH,ext,kk){
  const mc=map.getContainer(),R=mc.getBoundingClientRect(),cw=Math.round(R.width),ch=Math.round(R.height),k=kk||Math.min(2,Math.max(1,1600/Math.max(cw,ch)));
- const Z=Math.round(map.getZoom()),c0=map.containerPointToLatLng([0,0]),W=Math.round(cw*k),Hm=Math.round(ch*k),bh=typeof bandH==='function'?bandH(k):bandH||0,ex=ext?ext(k,Hm):{w:0,h:0};
+ const Z=map.getZoom(),c0=map.containerPointToLatLng([0,0]),W=Math.round(cw*k),Hm=Math.round(ch*k),bh=typeof bandH==='function'?bandH(k):bandH||0,ex=ext?ext(k,Hm):{w:0,h:0};
  const cv=document.createElement('canvas');cv.width=W+ex.w;cv.height=Hm+bh+ex.h;const g=cv.getContext('2d');g.fillStyle='#e5e7eb';g.fillRect(0,0,W,Hm);
  let used=null,note='';
- for(const src of mapShotSrcs()){const max=LOC_SRC[src].max,Zt=Math.min(max,k>1.4?Z+1:Z),f=2**(Zt-Z),o=map.project(c0,Z),ox=o.x*f,oy=o.y*f,tiles=[];
+ if(BG.off){g.fillStyle=BG_FILL();g.fillRect(0,0,W,Hm)}
+ for(const src of BG.off?[]:mapShotSrcs()){const max=LOC_SRC[src].max,Zt=Math.min(max,Math.round(k>1.4?Z+1:Z)),f=2**(Zt-Z),o=map.project(c0,Zt),ox=o.x,oy=o.y,tiles=[];
   for(let ty=Math.floor(oy/256);ty<=Math.floor((oy+ch*f)/256);ty++)for(let tx=Math.floor(ox/256);tx<=Math.floor((ox+cw*f)/256);tx++)tiles.push({z:Zt,x:tx,y:ty});
   if(tiles.length>120)continue;let r;try{r=await fetchTiles(src,tiles)}catch(_){continue}
   const ok=r.ims.filter(Boolean).length;if(ok<tiles.length*.6)continue;
   tiles.forEach((t,i)=>{if(r.ims[i])g.drawImage(r.ims[i],(t.x*256-ox)/f*k,(t.y*256-oy)/f*k,256/f*k+.6,256/f*k+.6)});used=src;if(ok<tiles.length)note='배경지도 일부 조각을 받지 못했습니다.';break}
- if(!used)note='배경지도를 이미지로 받지 못해 회색 바탕으로 만들었습니다 (관로·밸브는 그대로).';
+ if(!used&&!BG.off)note='배경지도를 이미지로 받지 못해 회색 바탕으로 만들었습니다 (관로·밸브는 그대로).';
  const mp=map.getPane('mapPane'),sk=(skip||[]).map(n=>map.getPane(n)).filter(Boolean),zOf=c=>{let e=c;while(e&&e.parentElement!==mp)e=e.parentElement;return e?+getComputedStyle(e).zIndex||0:0};
  [...mp.querySelectorAll('canvas')].filter(c=>c.width&&c.height&&!sk.some(p=>p.contains(c))&&getComputedStyle(c).visibility!=='hidden'&&getComputedStyle(c).display!=='none')
   .map((c,i)=>({c,i,z:zOf(c)})).sort((a,b)=>a.z-b.z||a.i-b.i).forEach(({c})=>{const r=c.getBoundingClientRect();if(r.right<R.left||r.left>R.right||r.bottom<R.top||r.top>R.bottom)return;
@@ -4492,7 +4521,7 @@ function mapShotDeco(S,secret){const {g,k,W,Hm,used}=S,ctr=map.getCenter();
  const mpp=156543.03392*Math.cos(ctr.lat*Math.PI/180)/2**map.getZoom(),len=niceLen(mpp*90),px=len/mpp*k;
  g.fillStyle='rgba(255,255,255,.9)';g.fillRect(8*k,Hm-30*k,px+52*k,22*k);g.fillStyle='#111';g.fillRect(14*k,Hm-17*k,px,4*k);g.fillRect(14*k,Hm-23*k,2*k,10*k);g.fillRect(14*k+px-2*k,Hm-23*k,2*k,10*k);
  g.font=`${11*k}px sans-serif`;g.textAlign='left';g.textBaseline='middle';g.fillText(len+'m',20*k+px,Hm-18*k);
- const at=(used?LOC_SRC[used].attr:'배경지도 없음');g.font=`${10*k}px sans-serif`;const aw=g.measureText(at).width+10*k;g.fillStyle='rgba(255,255,255,.85)';g.fillRect(W-aw-4*k,Hm-18*k,aw,15*k);g.fillStyle='#111';g.textAlign='right';g.fillText(at,W-9*k,Hm-10.5*k)}
+ const at=(used?LOC_SRC[used].attr:BG.off?'배경지도 끔':'배경지도 없음');g.font=`${10*k}px sans-serif`;const aw=g.measureText(at).width+10*k;g.fillStyle='rgba(255,255,255,.85)';g.fillRect(W-aw-4*k,Hm-18*k,aw,15*k);g.fillStyle='#111';g.textAlign='right';g.fillText(at,W-9*k,Hm-10.5*k)}
 /* ===== 💧 단수구역: 관로 하나를 고르면 관망을 따라가다 제수밸브에서 멈춤 (자료상 추정) =====
    관로 끝이 다른 관로 중간에 붙은 곳(T자)과 관로 중간에 찍힌 밸브 위치에서 관로를 잘라 연결표를 만든 뒤(Web Worker),
    고른 관로 조각에서 넓이 우선으로 따라감. 사용자가 조각을 넣고/빼고, 밸브를 '못 닫음'으로 바꾸면 다시 계산. */
