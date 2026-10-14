@@ -814,7 +814,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <p class="hint phyl" id="phYrLeg" style="margin:2px 0 0"></p>
   <div class="g2"><label class="f">🏷️ 분류 이름 (번호 앞 글자)<input id="phCodeP" value="긴급" placeholder="예: 긴급, 누수, 민원" title="쉼표로 여러 개. 파일명(없으면 메모)에서 '긴급208'처럼 이름+숫자를 찾아 같은 번호끼리 묶습니다"></label>
   <label class="f">좌표계 (월드 파일·엑셀)<select id="phRefCrs"><option value="EPSG:5186">EPSG:5186 (중부원점)</option><option value="EPSG:5187">EPSG:5187 (동부원점)</option><option value="EPSG:5185">EPSG:5185 (서부원점)</option><option value="EPSG:5179">EPSG:5179 (UTM-K)</option></select></label></div>
-  <div class="sbtns"><label class="btn ol" style="cursor:pointer" title="번호(긴급208 등)가 든 점 SHP(ZIP) 또는 엑셀(번호·위도·경도 / X·Y)">📍 기준 위치 파일<input type="file" id="phRefFile" accept=".zip,.xlsx,.xls,.csv" hidden></label><button id="phRefClr" type="button" class="btn ol">기준 위치 지우기</button></div>
+  <div class="sbtns"><label class="btn ol" style="cursor:pointer" title="접수번호(긴급208·1956 등)가 든 점 SHP(ZIP) 또는 엑셀(접수번호·위도·경도 / X·Y). 민원지점.zip처럼 2025년·2026년 폴더가 있으면 연도별로 따로 저장 — 사진은 촬영일에 맞는 해의 위치로 갑니다">📍 기준 위치 파일<input type="file" id="phRefFile" accept=".zip,.xlsx,.xls,.csv" hidden></label><button id="phRefClr" type="button" class="btn ol">기준 위치 지우기</button><button id="phChkBtn" type="button" class="btn ol" title="접수번호 사진 묶음을 기준 위치(민원지점)와 비교 — 어긋난 묶음 · 연도 모름 · 기준 위치에 없는 번호">🔎 위치 점검</button></div>
   <p class="hint" id="phRefMsg" style="margin:0"></p>
   <div class="sbtns"><label class="btn ol" style="cursor:pointer" title="긴급누수민원 대응관리 리스트(xlsm) — 리스트(매크로용) 시트의 접수날짜(B열)·접수번호(C열)·현장내용(Q열)을 읽어, 같은 접수번호 사진의 빈 메모에 현장내용을 넣습니다. 2025·2026처럼 여러 해 파일을 함께 올리면 촬영일에 맞는 해의 내용을 씁니다">📋 접수 리스트 → 메모<input type="file" id="phRcpFile" accept=".xlsm,.xlsx,.xls,.csv" multiple hidden></label><button id="phRcpClr" type="button" class="btn ol">리스트 지우기</button></div>
   <p class="hint" id="phRcpMsg" style="margin:0"></p>
@@ -3382,7 +3382,25 @@ function phSaveMeta(now){clearTimeout(PH.saveT);const go=async()=>{try{await IDB
 function phIndex(){PH.byId=new Map(PH.list.map(m=>[m.id,m]))}
 /* ---------- 묶기: 거리(격자 색인) + 시간 + 파일명 ---------- */
 /* 분류 번호 (예: 긴급208) — 파일명(없으면 메모)에서 "분류 이름 + 숫자"를 찾음. 같은 번호는 거리와 상관없이 한 묶음 */
-PH.ref=new Map();PH.code=new Map();
+PH.ref=new Map();PH.refAt=0;PH.code=new Map();
+/* 기준 위치(민원지점): PH.ref = Map('연도|번호' → [[위도,경도,접수일(ms)|null],…]). 같은 번호를 해마다 다시 쓰므로(긴급7이 2025·2026 모두 있음) 연도를 붙여 둠.
+   연도 ''(0)은 연도를 모르는 예전 기준 위치. IDB 'phref' = {at,ent:[[키,점들]]} — at은 직원 공유(🗺️ 기준자료 공유) 버전 */
+const phRefK=(y,c)=>(y||'')+'|'+c;
+function phRefSet(o){PH.ref=new Map();PH.refAt=0;if(!o)return;
+ if(Array.isArray(o)){for(const [c,v] of o){if(Array.isArray(v)&&typeof v[0]==='number')PH.ref.set(String(c).includes('|')?c:phRefK(0,c),[[v[0],v[1],null]])}return} // 예전 판(번호 → [위도,경도])
+ if(Array.isArray(o.ent)){PH.ref=new Map(o.ent);PH.refAt=o.at||0}}
+const phRefObj=()=>({at:PH.refAt,ent:[...PH.ref]});
+async function phRefSave(){PH.refAt=Date.now();try{await IDB.set('phref',phRefObj())}catch(_){}}
+/* 번호별 기준 위치 목록 {y,k,i,la,ln,d} */
+function phRefIdx(){const R=new Map();PH.ref.forEach((a,k)=>{const j=k.indexOf('|'),y=+k.slice(0,j)||0,c=k.slice(j+1);let l=R.get(c);if(!l)R.set(c,l=[]);a.forEach((p,i)=>l.push({y,k,i,la:p[0],ln:p[1],d:p[2]??null}))});return R}
+/* 사진 한 장 → 기준 위치 고르기: 촬영일이 있으면 접수일 ≤ 촬영일+3일 · 120일 이내(접수일 없으면 같은 해), 없으면 연도 힌트(직접 고른 연도 > 같은 번호 사진의 촬영 연도)
+   돌려줌: 점 / {amb:'이유'} / null */
+function phRefPick(L,ts,yh){if(!L||!L.length)return null;const day=864e5,cur=L.filter(e=>e.y),old=L.filter(e=>!e.y);
+ const one=ok=>{if(ok.length<2)return ok[0]||null;const dd=ok.filter(e=>e.d!=null);if(dd.length){const mx=Math.max(...dd.map(e=>e.d)),t=dd.filter(e=>e.d===mx);if(t.length===1)return t[0]}return {amb:'같은 해 번호 겹침',ys:[...new Set(ok.map(e=>e.y))]}};
+ if(yh){const ok=cur.filter(e=>e.y===yh);if(ok.length&&ts){const t=ok.filter(e=>e.d==null||(e.d<=ts+3*day&&ts-e.d<=400*day));return one(t.length?t:ok)}return ok.length?one(ok):one(old)}
+ if(ts){const yr=new Date(ts).getFullYear();let ok=cur.filter(e=>e.d!=null?(e.d<=ts+3*day&&ts-e.d<=120*day):e.y===yr);if(!ok.length)ok=cur.filter(e=>e.y===yr&&(e.d==null||e.d<=ts+3*day));
+ if(!ok.length&&ts-new Date(yr,0,1).getTime()<=120*day)ok=cur.filter(e=>e.y===yr-1&&e.d==null); /* 1월 사진 → 지난해 12월 접수건(접수일 없는 점) */return ok.length?one(ok):one(old)}
+ const ys=[...new Set(cur.map(e=>e.y))];if(ys.length===1)return one(cur);if(ys.length>1)return {amb:'연도 모름',ys:ys.sort()};return one(old)}
 function phCodeRe(){const p=String(($('phCodeP')||{}).value||'').split(/[,\s]+/).map(s=>s.trim()).filter(Boolean);if(!p.length)return null;
  return new RegExp('('+p.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\s*[-_#.:]?\\s*(\\d{1,7})','i')}
 /* 접수번호: ① 분류 이름+숫자(긴급159) ② 파일명이 숫자 접수번호 형식(1956.png, 1956-1.jpg, 1956-6-2.png) — 민원 대응관리 리스트의 '접수번호'와 같은 값 */
@@ -3409,11 +3427,20 @@ function phGroup(){
  const gm=new Map();A.forEach((m,i)=>{const r=fd(i);let g=gm.get(r);if(!g)gm.set(r,g={ids:[],la:0,ln:0,k:0});g.ids.push(m.id);g.la+=m.lat;g.ln+=m.lng;g.k++});
  const groups=[...gm.values()].map(g=>({ids:g.ids,code:'',lat:g.la/g.k,lng:g.ln/g.k,ref:false}));
  /* 분류 번호 묶음 — 위치: ① 기준 위치 파일 ② 같은 번호 사진의 GPS·직접 찍은 위치 평균 ③ 없음(사진 하나에 위치를 찍으면 같은 번호 전체에 적용) */
- const inf=new Map(),cg=new Map();code.forEach((c,id)=>{let a=cg.get(c);if(!a)cg.set(c,a=[]);a.push(id)});
- cg.forEach((ids,c)=>{const ref=PH.ref.get(c);let la=0,ln=0,k=0,ma=0,mn=0,mk=0;for(const id of ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.map){ma+=m.lat;mn+=m.lng;mk++}else{la+=m.lat;ln+=m.lng;k++}}
-  let lat=null,lng=null,how='',src='';if(mk){lat=ma/mk;lng=mn/mk;how=`위치도 빨간 점(${c})`;src='map'}else if(ref){lat=ref[0];lng=ref[1];how=`기준 위치 파일(${c})`;src='ref'}else if(k){lat=la/k;lng=ln/k;how=`같은 번호(${c}) 사진 GPS`;src='gps'}
-  if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&!m.map))inf.set(id,how)}
-  groups.push({ids,code:c,lat,lng,ref:src==='map'||src==='ref',src})});
+ /* 같은 번호라도 해가 다르면 다른 현장 → 번호+연도(기준 위치가 있으면 그 점)로 나눠 묶음. 위치: ① 같은 해 기준 위치(민원지점) ② 위치도 빨간 점 ③ 같은 번호·같은 해 사진 GPS 평균 ④ 연도 없는 예전 기준 위치 */
+ const RI=phRefIdx(),cy=new Map(),inf=new Map(),cg=new Map();
+ code.forEach((c,id)=>{const m=PH.byId.get(id);if(m.ts&&!m.yr){let s=cy.get(c);if(!s)cy.set(c,s=new Set());s.add(new Date(m.ts).getFullYear())}});
+ code.forEach((c,id)=>{const m=PH.byId.get(id);let yh=+m.yr||0;if(!yh&&!m.ts){const s=cy.get(c);if(s&&s.size===1)yh=[...s][0]}
+  const r=m.refOff?null:phRefPick(RI.get(c),m.ts,yh),hit=r&&!r.amb?r:null,y=hit?hit.y:(+m.yr||(m.ts?new Date(m.ts).getFullYear():yh));
+  const gk=hit&&hit.y?c+'@'+hit.k+'#'+hit.i:c+'@'+(y||'?')+(m.refOff?'@gps':'');
+  let a=cg.get(gk);if(!a)cg.set(gk,a={c,ids:[],r:hit,y,amb:'',ys:null,off:!!m.refOff});a.ids.push(id);if(r&&r.amb&&!a.amb){a.amb=r.amb;a.ys=r.ys}});
+ cg.forEach((a,gk)=>{const {c,ids,r}=a;let la=0,ln=0,k=0,ma=0,mn=0,mk=0;for(const id of ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.map){ma+=m.lat;mn+=m.lng;mk++}else{la+=m.lat;ln+=m.lng;k++}}
+  let lat=null,lng=null,how='',src='';
+  if(r&&r.y){lat=r.la;lng=r.ln;how=`기준 위치 ${r.y}년(${c})`;src='ref'}
+  else if(mk){lat=ma/mk;lng=mn/mk;how=`위치도 빨간 점(${c})`;src='map'}else if(r){lat=r.la;lng=r.ln;how=`기준 위치 파일(${c})`;src='ref'}else if(k){lat=la/k;lng=ln/k;how=`같은 번호(${c}) 사진 GPS`;src='gps'}
+  if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&(r.y||!m.map)))inf.set(id,how)}
+  groups.push({ids,code:c,gk,yr:a.y||0,rk:r?r.k:'',ri:r?r.i:-1,amb:a.amb,ys:a.ys,off:a.off,lat,lng,ref:src==='map'||src==='ref',src})});
+ {const nc=new Map();groups.forEach(g=>{if(g.code)nc.set(g.code,(nc.get(g.code)||0)+1)});groups.forEach(g=>{if(g.code)g.ymul=nc.get(g.code)>1||(RI.get(g.code)||[]).some(e=>e.y&&e.y!==g.yr)})}
  /* 번호도 GPS도 없는 사진 → 파일명이 같은 줄기 또는 10분 안에 찍은 사진의 묶음에 '위치 추정'으로 */
  const stemMap=new Map(),anc=[];
  groups.forEach((g,gi)=>{if(g.lat==null)return;for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.ts)anc.push([m.ts,gi]);if(!g.code){const s=phStem(m.name);if(s){let l=stemMap.get(s);if(!l)stemMap.set(s,l=[]);l.push([m.ts||0,gi])}}}});
@@ -3429,36 +3456,68 @@ function phGroup(){
  const mp=id=>PH.byId.get(id).map?0:1;
  PH.G=groups.map(g=>{g.ids.sort((a,b)=>mp(a)-mp(b)||ts(a)-ts(b)||nm(a).localeCompare(nm(b),'ko',{numeric:true}));
   let t0=0,t1=0,memo=false,hasInf=false,man=!g.ref,stem='';for(const id of g.ids){const m=PH.byId.get(id);if(m.ts){if(!t0||m.ts<t0)t0=m.ts;if(m.ts>t1)t1=m.ts}if(m.memo)memo=true;if(inf.has(id))hasInf=true;else if(m.src!=='수동')man=false;if(!stem&&!g.code)stem=phStem(m.name)}
-  return{id:g.code?'c:'+g.code:'g'+g.ids[0],ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
+  return{id:g.code?'c:'+g.gk:'g'+g.ids[0],ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,yr:g.yr||0,ymul:!!g.ymul,rk:g.rk||'',ri:g.ri??-1,amb:g.amb||'',ys:g.ys||null,off:!!g.off,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
  PH.G.sort((a,b)=>(b.t1||0)-(a.t1||0)||b.n-a.n);
  /* 사진 번호(묶음 번호): 촬영 시각 순 1,2,3… — 🗜️ 전체 내보내기 엑셀의 '묶음 번호'와 같은 번호 */
  [...PH.G].sort((a,b)=>(a.t0||9e15)-(b.t0||9e15)).forEach((g,i)=>{g.no=i+1});
  PH.nog=nog.sort((a,b)=>ts(a)-ts(b));PH.inf=inf;PH.gById=new Map();PH.gOf=new Map();PH.G.forEach(g=>{PH.gById.set(g.id,g);g.ids.forEach(id=>PH.gOf.set(id,g))})}
-/* 기준 위치 파일 (SHP ZIP 점 / 엑셀·CSV) → 분류 번호별 좌표 */
-async function phRefLoad(f){const msg=$('phRefMsg'),re=phCodeRe();if(!re){msg.textContent='먼저 분류 이름(예: 긴급)을 넣어 주세요.';return}
- msg.textContent='기준 위치 파일 읽는 중…';const crs=$('phRefCrs').value,out=new Map();let rows=0,noCode=0,bad=0;
+/* 기준 위치 파일 (SHP ZIP 점 / 엑셀·CSV) → 연도|접수번호별 좌표. 예: 민원지점.zip = 2025년/·2026년/ 폴더별 "민원대응 위치도" 점 SHP
+   번호: '접수번호' 칸 먼저(긴급7·1956 모두), 없으면 분류 이름+숫자. 연도: 파일·폴더 이름(2025년) > 접수날짜 > '연도' 칸.
+   주소·이름 같은 다른 칸은 읽지 않고 저장하지 않음 */
+async function phRefParse(f){const re=phCodeRe(),crs=$('phRefCrs').value,out=[],cnt={rows:0,noCode:0,bad:0,noYr:0};
  const toLL=(x,y)=>{x=+x;y=+y;if(!isFinite(x)||!isFinite(y))return null;if(Math.abs(x)<=180&&Math.abs(y)<=90){const ll=inKR([x,y])?[y,x]:inKR([y,x])?[x,y]:null;return ll}
   try{const [ln,la]=proj4(crs,'EPSG:4326',[x,y]);return inKR([ln,la])?[la,ln]:null}catch(_){return null}};
- const codeIn=vals=>{for(const v of vals){const x=re.exec(String(v??'').normalize('NFC'));if(x)return x[1]+(+x[2])}return ''};
- try{const buf=await f.arrayBuffer();
-  if(/\.zip$/i.test(f.name)){let gj=await shp(buf);const fs=(Array.isArray(gj)?gj:[gj]).flatMap(c=>c.features||[]);
-   for(const ft of fs){rows++;const c=codeIn(Object.values(ft.properties||{}));if(!c){noCode++;continue}const g=ft.geometry;if(!g){bad++;continue}
-    let p=g.type==='Point'?g.coordinates:g.type==='MultiPoint'?g.coordinates[0]:null;if(!p&&g.coordinates){let a=g.coordinates;while(Array.isArray(a[0]))a=a[0];p=a}
-    const ll=p&&toLL(p[0],p[1]);if(ll)out.set(c,ll);else bad++}}
-  else{const wb=XLSX.read(buf,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],js=XLSX.utils.sheet_to_json(ws,{defval:''});
-   const ks=js.length?Object.keys(js[0]):[],fk=r=>ks.find(k=>r.test(String(k).replace(/\s/g,'')));
-   const kLa=fk(/^(위도|lat|latitude)$/i),kLn=fk(/^(경도|lon|lng|long|longitude)$/i),kX=fk(/^(x|x좌표|xcoord|좌표x|tm_x|東)$/i),kY=fk(/^(y|y좌표|ycoord|좌표y|tm_y)$/i);
-   for(const r of js){rows++;const c=codeIn(Object.values(r));if(!c){noCode++;continue}
-    const ll=kLa&&kLn?toLL(r[kLn],r[kLa]):kX&&kY?toLL(r[kX],r[kY]):null;if(ll)out.set(c,ll);else bad++}
-   if(!(kLa&&kLn)&&!(kX&&kY)){msg.innerHTML='<span class="c-rd">좌표 열을 찾지 못했습니다.</span> 머리글을 <b>위도·경도</b> 또는 <b>X·Y</b>로 맞춰 주세요.';return}}
-  if(!out.size){msg.innerHTML=`<span class="c-rd">분류 번호(${esc($('phCodeP').value)}+숫자)가 든 위치를 찾지 못했습니다.</span> (읽은 ${rows.toLocaleString()}건)`;return}
-  out.forEach((v,k)=>PH.ref.set(k,v));try{await IDB.set('phref',[...PH.ref])}catch(_){}
-  const used=[...out.keys()].filter(c=>[...PH.code.values()].includes(c)).length;phRefresh();
-  msg.innerHTML=`✅ 기준 위치 ${out.size.toLocaleString()}곳 등록 (전체 ${PH.ref.size.toLocaleString()}곳)`+(noCode?` · 번호 없는 행 ${noCode.toLocaleString()}`:'')+(bad?` · 좌표 오류 ${bad}`:'')+`<br>지금 사진과 맞는 번호: ${[...new Set(PH.code.values())].filter(c=>PH.ref.has(c)).length.toLocaleString()}개`}
- catch(e){msg.innerHTML='<span class="c-rd">읽기 실패: '+esc((e&&e.message)||e)+'</span>'}}
-function phCodeInfo(){const el=$('phRefMsg');if(!el||el.dataset.busy)return;const cs=new Set(PH.code.values());if(!cs.size&&!PH.ref.size){el.textContent='';return}
- const noLoc=PH.G.filter(g=>g.code&&g.lat==null).length;
- el.innerHTML=`🏷️ 분류 번호 ${cs.size.toLocaleString()}개 (사진 ${PH.code.size.toLocaleString()}장) · 기준 위치 ${PH.ref.size.toLocaleString()}곳`+(noLoc?` · <b class="c-am">위치 없는 번호 ${noLoc}개</b> — 사진 하나에 📍 위치를 찍거나 기준 위치 파일을 넣으세요`:'')}
+ const fyr=t=>{const x=/(20\d\d)\s*년/.exec(String(t||'').normalize('NFC'))||/(?:^|[^\d])(20\d\d)(?:[^\d]|$)/.exec(String(t||''));return x?+x[1]:0};
+ const kOf=(ks,r)=>ks.find(k=>r.test(String(k).normalize('NFC').replace(/\s/g,'')));
+ const dOf=v=>{if(typeof v==='string'&&/^\d{8}$/.test(v.trim())){const t=v.trim();if(t==='00000000')return null;v=t.slice(0,4)+'-'+t.slice(4,6)+'-'+t.slice(6)}const d=phRcpDate(v);if(d==null)return null;const y=new Date(d).getUTCFullYear();return y>=2000&&y<=2100?d:null};
+ const row=(o,ks,ll,fy)=>{cnt.rows++;const kc=kOf(ks,/^(접수번|접수no|민원번호)/i);let c='';
+  if(kc){const k=phRcpKey(o[kc]);if(k&&/\d$/.test(k))c=k}
+  if(!c&&re)for(const v of Object.values(o)){const x=re.exec(String(v??'').normalize('NFC'));if(x){c=x[1]+(+x[2]);break}}
+  if(!c){cnt.noCode++;return}if(!ll){cnt.bad++;return}
+  const kd=kOf(ks,/^(접수날|접수일)/),d=kd?dOf(o[kd]):null,ky=kOf(ks,/^(연도|년도)$/);
+  const y=fy||(d!=null?new Date(d).getUTCFullYear():0)||(ky?(+String(o[ky]).slice(0,4)||0):0);if(!y)cnt.noYr++;
+  out.push({y,c,la:+ll[0].toFixed(7),ln:+ll[1].toFixed(7),d})};
+ const buf=await f.arrayBuffer();
+ if(/\.zip$/i.test(f.name)){const gj=await shp(buf);
+  for(const fc of (Array.isArray(gj)?gj:[gj])){const fy=fyr(fc.fileName)||fyr(f.name);
+   for(const ft of fc.features||[]){const g=ft.geometry,o=ft.properties||{};let p=null;
+    if(g){p=g.type==='Point'?g.coordinates:g.type==='MultiPoint'?g.coordinates[0]:null;if(!p&&g.coordinates){let a=g.coordinates;while(Array.isArray(a[0]))a=a[0];p=a}}
+    row(o,Object.keys(o),p&&toLL(p[0],p[1]),fy)}}}
+ else{const wb=XLSX.read(buf,{type:'array',cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],js=XLSX.utils.sheet_to_json(ws,{defval:''});
+  const ks=js.length?Object.keys(js[0]):[],fk=r=>kOf(ks,r),fy=fyr(f.name);
+  const kLa=fk(/^(위도|lat|latitude)$/i),kLn=fk(/^(경도|lon|lng|long|longitude)$/i),kX=fk(/^(x|x좌표|xcoord|좌표x|tm_x|東)$/i),kY=fk(/^(y|y좌표|ycoord|좌표y|tm_y)$/i);
+  if(!(kLa&&kLn)&&!(kX&&kY))return {err:'좌표 열을 찾지 못했습니다. 머리글을 <b>위도·경도</b> 또는 <b>X·Y</b>로 맞춰 주세요.'};
+  for(const r of js)row(r,ks,kLa&&kLn?toLL(r[kLn],r[kLa]):toLL(r[kX],r[kY]),fy)}
+ return {out,cnt}}
+/* 미리보기용: 새 기준 위치로 바꾸면 사진 위치가 어떻게 달라지는지 (실제 저장은 하지 않음) */
+function phRefDiff(nw){const pos=()=>{const o=new Map();PH.G.forEach(g=>g.ids.forEach(id=>o.set(id,g.lat!=null?[g.lat,g.lng,g.src==='ref'&&g.yr?1:0]:null)));return o};
+ const kx=111320*Math.cos(36.2*Math.PI/180),ky=110574,dm=(a,b)=>Math.hypot((a[1]-b[1])*kx,(a[0]-b[0])*ky);
+ const old=PH.ref,p0=pos();let p1,amb=0;PH.ref=nw;try{phGroup();p1=pos();amb=PH.G.filter(g=>g.amb).reduce((s,g)=>s+g.n,0)}finally{PH.ref=old;phGroup()}
+ let mv=0,gain=0,lost=0,on=0;p1.forEach((b,id)=>{const a=p0.get(id);if(b&&b[2])on++;if(b&&!a)gain++;else if(a&&!b)lost++;else if(a&&b&&dm(a,b)>30)mv++});return {mv,gain,lost,on,amb}}
+async function phRefLoad(f){const msg=$('phRefMsg');msg.dataset.busy=1;msg.textContent='기준 위치 파일 읽는 중…';
+ try{const P=await phRefParse(f);if(P.err){msg.innerHTML='<span class="c-rd">'+P.err+'</span>';return}const {out,cnt}=P;
+  if(!out.length){msg.innerHTML=`<span class="c-rd">접수번호가 든 위치를 찾지 못했습니다.</span> (읽은 ${cnt.rows.toLocaleString()}건 · 번호 없음 ${cnt.noCode.toLocaleString()} · 좌표 없음 ${cnt.bad.toLocaleString()})`;return}
+  /* 같은 해는 새 파일로 바꾸고 다른 해는 그대로 둠 → 해마다 따로 올려도 되고, 고친 파일을 다시 올려도 겹치지 않음 */
+  const ys=new Set(out.map(e=>e.y)),nw=new Map();PH.ref.forEach((a,k)=>{if(!ys.has(+k.split('|')[0]||0))nw.set(k,a.map(p=>p.slice()))});
+  let dup=0;const byY=new Map();
+  for(const e of out){const k=phRefK(e.y,e.c);let a=nw.get(k);if(!a)nw.set(k,a=[]);if(a.some(p=>Math.abs(p[0]-e.la)<2e-5&&Math.abs(p[1]-e.ln)<2e-5))continue;if(a.length)dup++;a.push([e.la,e.ln,e.d]);byY.set(e.y,(byY.get(e.y)||0)+1)}
+  const yl=[...byY].sort((a,b)=>a[0]-b[0]).map(([y,n])=>`${y?y+'년':'연도 모름'} ${n.toLocaleString()}곳`).join(' · ');
+  const pv=PH.list.length?phRefDiff(nw):null;
+  msg.innerHTML=`📍 <b>${esc(f.name)}</b> — ${yl}`+(cnt.noCode?` · 번호 없는 행 ${cnt.noCode.toLocaleString()}`:'')+(cnt.bad?` · 좌표 없는 점 ${cnt.bad.toLocaleString()}`:'')+(dup?` · 같은 해 같은 번호 ${dup}곳`:'')+(cnt.noYr?` · <b class="c-am">연도 모르는 점 ${cnt.noYr.toLocaleString()}</b>`:'')+
+   (pv?`<br>반영하면: 기준 위치에 놓이는 사진 <b>${pv.on.toLocaleString()}</b>장 · 위치가 30m 넘게 바뀌는 사진 <b>${pv.mv.toLocaleString()}</b>장 · 위치가 새로 생기는 사진 <b>${pv.gain.toLocaleString()}</b>장`+(pv.lost?` · 위치가 없어지는 사진 ${pv.lost.toLocaleString()}장`:'')+(pv.amb?` · 연도를 골라야 하는 사진 ${pv.amb.toLocaleString()}장`:''):'')+
+   `<div class="sbtns" style="margin-top:4px"><button type="button" class="btn em" data-ra="ok">✅ 반영</button><button type="button" class="btn ol" data-ra="no">취소</button></div>`;
+  delete msg.dataset.busy;
+  await new Promise(res=>{msg.onclick=async e=>{const b=e.target.closest('[data-ra]');if(!b)return;msg.onclick=null;
+   if(b.dataset.ra!=='ok'){msg.textContent='기준 위치 파일을 반영하지 않았습니다.';phCodeInfo();res();return}
+   const prev=phRefObj();try{await IDB.set('phref_prev',prev)}catch(_){}PH.ref=nw;await phRefSave();phRefresh();
+   msg.innerHTML=`✅ 기준 위치를 반영했습니다 — ${yl}<br><small>같은 접수번호라도 연도가 다르면 다른 현장으로 묶습니다. 🔎 위치 점검에서 어긋난 묶음을 확인하세요.${SH.on&&SH.on()?' 직원 공유는 ☁️ 직원 공유 › 🗺️ 기준자료 공유 ⏫ 올리기로 퍼집니다.':''}</small>`;
+   phToast(`📍 기준 위치 ${yl} 반영`,{btn:'↩ 되돌리기',ms:15000,fn:async()=>{phRefSet(prev);await phRefSave();phRefresh();phToast('↩ 기준 위치를 이전으로 되돌렸습니다.',{ms:4000})}});res()}})}
+ catch(e){msg.innerHTML='<span class="c-rd">읽기 실패: '+esc((e&&e.message)||e)+'</span>'}
+ finally{delete msg.dataset.busy}}
+function phCodeInfo(){const el=$('phRefMsg');if(!el||el.dataset.busy||el.querySelector('[data-ra]'))return;const cs=new Set(PH.code.values());if(!cs.size&&!PH.ref.size){el.textContent='';return}
+ const noLoc=PH.G.filter(g=>g.code&&g.lat==null).length,amb=PH.G.filter(g=>g.amb).length,yc=new Map();PH.ref.forEach((a,k)=>{const y=+k.split('|')[0]||0;yc.set(y,(yc.get(y)||0)+a.length)});
+ const yl=[...yc].sort((a,b)=>a[0]-b[0]).map(([y,n])=>`${y||'연도 모름'} ${n.toLocaleString()}`).join(' · ');
+ el.innerHTML=`🏷️ 분류 번호 ${cs.size.toLocaleString()}개 (사진 ${PH.code.size.toLocaleString()}장) · 기준 위치 ${yl||'0'}곳`+(amb?` · <b class="c-am">연도 모름 ${amb}묶음</b>`:'')+(noLoc?` · <b class="c-am">위치 없는 번호 ${noLoc}개</b> — 🔎 위치 점검에서 확인하거나 기준 위치 파일을 넣으세요`:'')}
 
 /* 위치도(빨간 점) 이미지 — 가운데 빨간 점을 찾아 월드 파일(.pgw)로 좌표 계산 */
 function phRedDot(src,W,H){try{const s=Math.min(1,800/Math.max(W,H)),w=Math.max(1,Math.round(W*s)),h=Math.max(1,Math.round(H*s));
@@ -3518,7 +3577,7 @@ const phHM=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+'
 const phYMD=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function phGTime(g){if(!g.t0)return '촬영시각 없음';const a=phYMD(g.t0),b=phYMD(g.t1);return a===b?(g.t0===g.t1?`${a} ${phHM(g.t0)}`:`${a} ${phHM(g.t0)}~${phHM(g.t1)}`):`${a} ~ ${b}`}
 const phGLabel=g=>g.lbl||(g.lbl=phGLabel0(g));
-function phGLabel0(g){if(g.code)return phRcpLbl(g.code);if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
+function phGLabel0(g){if(g.code)return phRcpLbl(g.code)+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
  const b=phGBlk(g),d=g.t0?new Date(g.t0):null;return (b?b+' ':'')+'현장'+(d?` ${d.getMonth()+1}/${d.getDate()} ${phHM(g.t0)}`:'')}
 /* ---------- 촬영 연도별 아이콘 색 — 연도마다 고정 색(2025=청록, 2026=파랑 …), 촬영시각 없으면 회색 ---------- */
 const PH_YC=['#0f766e','#1d4ed8','#c2410c','#be185d','#4d7c0f','#78350f','#6d28d9','#334155'],PH_YC0='#6b7280';
@@ -3631,7 +3690,7 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
   for(let i=a;i<gal.rows.length;i++){const r=gal.rows[i],y=gal.top[i];if(y>st+h+RH*6)break;
    if(r.hdr){s+=`<div class="row hdr${PH.V.k===r.key?' on':''}" data-i="${i}" style="top:${y}px;height:${HH}px" title="누르면 이 기간만 보기"><b>📅 ${esc(r.label)}</b><small>${r.g.toLocaleString()}곳 · ${r.n.toLocaleString()}장<u>▸</u></small></div>`;continue}
    const c=r.ids[0],blk=r.nog?'':phGBlk(r);
-   s+=`<div class="row${r.nog||r.lat==null?' nog':''}${gal.sel===r.id?' on':''}" data-i="${i}" style="top:${y}px"><img data-pid="${c}" src="${phThumbNow(c)}" alt=""><div><b>${r.nog?'📍 위치 없는 사진':esc(phGLabel(r))}</b><small><span class="n">${r.n.toLocaleString()}장</span>${r.nog?'사진을 열고 📍 위치 찍기':esc(phGTime(r))}</small><small>${r.nog?'':esc([r.lat==null&&'📍 위치 없음',r.src==='map'&&'🎯 위치도 기준',r.src==='ref'&&'🎯 기준 위치 파일',blk&&'🗺️ '+blk,r.inf&&'위치 추정 포함',r.memo&&'📝 메모'].filter(Boolean).join(' · ')||' ')}</small></div></div>`}
+   s+=`<div class="row${r.nog||r.lat==null?' nog':''}${gal.sel===r.id?' on':''}" data-i="${i}" style="top:${y}px"><img data-pid="${c}" src="${phThumbNow(c)}" alt=""><div><b>${r.nog?'📍 위치 없는 사진':esc(phGLabel(r))}</b><small><span class="n">${r.n.toLocaleString()}장</span>${r.nog?'사진을 열고 📍 위치 찍기':esc(phGTime(r))}</small><small>${r.nog?'':esc([r.lat==null&&'📍 위치 없음',r.src==='map'&&'🎯 위치도 기준',r.src==='ref'&&(r.yr?'🎯 기준 위치 '+r.yr+'년':'🎯 기준 위치 파일'),r.amb&&'❓ '+r.amb,blk&&'🗺️ '+blk,r.inf&&'위치 추정 포함',r.memo&&'📝 메모'].filter(Boolean).join(' · ')||' ')}</small></div></div>`}
   sz.innerHTML=s;sz.querySelectorAll('img').forEach(im=>{if(!im.getAttribute('src'))phThumb(im.dataset.pid).then(u=>{if(u)im.src=u})})};
  const paintSoon=()=>{if(!raf)raf=W.requestAnimationFrame(paint)};
  gal.build=()=>{const V=PH.V,qs=q('.gq').value.trim().toLowerCase(),f=q('.gf').value,o=q('.go').value;gal.perUI();
@@ -3785,15 +3844,15 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
      const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0]),'big');sl.forEach(([id,k])=>{if(got[id])blobs[k]=got[id]})}}}
   const LIM=300*1048576,parts=[];let cur=[],sum=0;order.forEach((id,k)=>{const s=withImg&&blobs[k]?blobs[k].size:0;if(cur.length&&sum+s>LIM){parts.push(cur);cur=[];sum=0}cur.push(k);sum+=s});if(cur.length)parts.push(cur);
   const partOf=new Map();parts.forEach((p,pi)=>p.forEach(k=>partOf.set(k,pi+1)));
-  const rows=[],pts=[];order.forEach((id,k)=>{const m=PH.byId.get(id),g=PH.gOf.get(id),how=PH.inf.get(id),loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?[m.lat,m.lng]:g&&g.lat!=null?[g.lat,g.lng]:null;
+  const rows=[],pts=[];order.forEach((id,k)=>{const m=PH.byId.get(id),g=PH.gOf.get(id),how=PH.inf.get(id),loc=m.lat!=null&&!(g&&(g.src==='map'&&!m.map||g.src==='ref'&&g.yr))?[m.lat,m.lng]:g&&g.lat!=null?[g.lat,g.lng]:null;
    const fn=`${String(k+1).padStart(5,'0')}_${(m.dt||'').slice(0,10).replace(/-/g,'')||'시각없음'}_${fileSafe(m.name.replace(/\.[^.]+$/,''))}${withImg&&blobs[k]&&/png/.test(blobs[k].type)?'.png':'.jpg'}`;
    const r={'번호':k+1,'묶음 번호':g?(g.no||gNo.get(g.id)):'','분류':PH.code.get(id)||'','사진 파일':withImg?fn:'','ZIP':withImg&&parts.length>1?`${partOf.get(k)}번째`:'','원본 파일명':m.name,'촬영일시':m.dt,'위도':loc?+loc[0].toFixed(7):'','경도':loc?+loc[1].toFixed(7):'',
     '위치 출처':m.map&&m.lat!=null?'위치도 빨간 점':how?'추정('+how+')':m.lat!=null?(m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'):'위치 없음','촬영방향(°)':m.dir??'','고도(m)':m.alt??'','위치상 소블록':g?phGBlk(g):'','메모':m.memo||'','로드뷰':loc?`https://map.kakao.com/link/roadview/${loc[0].toFixed(6)},${loc[1].toFixed(6)}`:''};
    rows.push(r);if(loc){const [x,y]=pj(loc[0],loc[1]);pts.push({x,y,r})}});
-  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?'기준 위치 파일':g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
+  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','연도':g.code?(g.yr||'모름'):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
   btn.textContent='⏳ 목록·SHP 만드는 중…';const z0=new JSZip();
   const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:6},{wch:7},{wch:10},{wch:36},{wch:8},{wch:24},{wch:18},{wch:11},{wch:11},{wch:16},{wch:8},{wch:7},{wch:12},{wch:30},{wch:40}];
-  XLSX.utils.book_append_sheet(wb,ws,'현장사진');const ws2=XLSX.utils.json_to_sheet(grows);ws2['!cols']=[{wch:7},{wch:22},{wch:7},{wch:17},{wch:17},{wch:11},{wch:11},{wch:12},{wch:10},{wch:40}];XLSX.utils.book_append_sheet(wb,ws2,'위치묶음');
+  XLSX.utils.book_append_sheet(wb,ws,'현장사진');const ws2=XLSX.utils.json_to_sheet(grows);ws2['!cols']=[{wch:7},{wch:22},{wch:7},{wch:17},{wch:17},{wch:11},{wch:11},{wch:6},{wch:14},{wch:10},{wch:10},{wch:40}];XLSX.utils.book_append_sheet(wb,ws2,'위치묶음');
   z0.file('현장사진_목록.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
   if(pts.length){const F=[['NO','N',6,0],['GRP','N',6,0],['CODE','C'],['PHOTO','C'],['ORG','C'],['DT','C'],['LAT','N',19,10],['LON','N',19,10],['DIR','N',4,0],['SRC','C'],['BLK_NM','C'],['MEMO','C']];
    const sh=buildShp(pts.map(p=>({x:p.x,y:p.y})));z0.file('SHP/photo_points.shp',sh.shp);z0.file('SHP/photo_points.shx',sh.shx);
@@ -3895,7 +3954,8 @@ $('phRcpFile').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs
 $('phRcpClr').onclick=async()=>{if(!PH.rcp.size){$('phRcpMsg').textContent='불러온 접수 리스트가 없습니다.';return}
  const k=PH.list.filter(m=>m.memoSrc==='list').length;if(!confirm(`접수 리스트(${phRcpInfo().ys})를 모두 지울까요?`+(k?`\n리스트로 채운 메모 ${k.toLocaleString()}장도 비웁니다 (직접 쓴 메모는 그대로).`:'')))return;
  PH.rcp=new Map();try{await IDB.del('phrcp')}catch(_){}PH.list.forEach(m=>{if(m.memoSrc==='list'){m.memo='';delete m.memoSrc}});phSaveMeta(true);phRefresh();$('phRcpMsg').textContent='접수 리스트를 지웠습니다.'};
-$('phRefClr').onclick=async()=>{if(!PH.ref.size||!confirm(`기준 위치 ${PH.ref.size}곳을 지울까요?`))return;PH.ref.clear();try{await IDB.del('phref')}catch(_){}phRefresh();$('phRefMsg').textContent='기준 위치를 지웠습니다.'};$('phPK').onchange=()=>phSetPer(PH.per.u,$('phPK').value);phPerUI();$('phGalBtn').onclick=()=>phGalOpen();$('phWinBtn').onclick=()=>phWinOpen();
+$('phRefClr').onclick=async()=>{const n=[...PH.ref.values()].reduce((s,a)=>s+a.length,0);if(!n||!confirm(`기준 위치 ${n.toLocaleString()}곳을 지울까요?`))return;const prev=phRefObj();PH.ref=new Map();await phRefSave();phRefresh();$('phRefMsg').textContent='기준 위치를 지웠습니다.';
+ phToast('기준 위치를 지웠습니다.',{btn:'↩ 되돌리기',fn:async()=>{phRefSet(prev);await phRefSave();phRefresh();phToast('↩ 기준 위치를 되살렸습니다.',{ms:4000})}})};$('phChkBtn').onclick=()=>phChkOpen();$('phPK').onchange=()=>phSetPer(PH.per.u,$('phPK').value);phPerUI();$('phGalBtn').onclick=()=>phGalOpen();$('phWinBtn').onclick=()=>phWinOpen();
 $('phZip').onclick=()=>phExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phZip'));$('phZip2').onclick=()=>phExport(PH.list.map(m=>m.id),$('phZip2'));
 $('phMw').onclick=()=>phMwExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phMw'));
 $('phClear').onclick=async()=>{if(!confirm(`이 PC에 저장된 현장 사진 ${PH.list.length.toLocaleString()}장을 모두 지울까요? 먼저 🗜️ 내보내기로 받아 두는 것을 권합니다.`))return;
@@ -3915,7 +3975,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PH.place){phPlaceEn
 window.addEventListener('beforeunload',()=>{try{PH.win&&PH.win.w.close()}catch(_){}});
 new MutationObserver(()=>{clearTimeout(PH.refT);PH.refT=setTimeout(()=>{if(PH.list.length){PH.G.forEach(g=>{g.blk=undefined;g.lbl=undefined});phView();phDraw();PH.views.forEach(x=>{try{x.refresh()}catch(_){}})}},300)}).observe($('shpMsg'),{childList:true,characterData:true,subtree:true});
 /* 저장된 사진 불러오기 (이전 판의 썸네일 형식은 자동으로 옮김) */
-setTimeout(async()=>{try{const r=await IDB.get('phref');if(Array.isArray(r))PH.ref=new Map(r)}catch(_){}try{const r=await IDB.get('phrcp');if(Array.isArray(r)&&r.length){PH.rcp=new Map(r.map(([k,v])=>[k,Array.isArray(v)?v:[{d:null,t:String(v)}]]));$('phRcpMsg').textContent=`접수 리스트 사용 중: ${phRcpInfo().ys} — 같은 접수번호 사진의 빈 메모에 현장내용이 자동으로 들어갑니다.`}}catch(_){}try{const v=await IDB.get('photos');if(!Array.isArray(v)||!v.length){phStats();return}
+setTimeout(async()=>{try{phRefSet(await IDB.get('phref'))}catch(_){}try{const r=await IDB.get('phrcp');if(Array.isArray(r)&&r.length){PH.rcp=new Map(r.map(([k,v])=>[k,Array.isArray(v)?v:[{d:null,t:String(v)}]]));$('phRcpMsg').textContent=`접수 리스트 사용 중: ${phRcpInfo().ys} — 같은 접수번호 사진의 빈 메모에 현장내용이 자동으로 들어갑니다.`}}catch(_){}try{const v=await IDB.get('photos');if(!Array.isArray(v)||!v.length){phStats();return}
  const old=v.filter(m=>m.th);if(old.length){for(const m of old){try{const b=await (await fetch(m.th)).blob();await IDB.set('pt:'+m.id,b)}catch(_){}delete m.th}}
  v.forEach(m=>{if(m.ts==null)m.ts=phTs(m.dt)});PH.list=v;if(old.length)await phSaveMeta(true);phRefresh();$('phMsg').textContent=`💾 저장된 현장 사진 ${v.length.toLocaleString()}장을 불러왔습니다.`}catch(_){phStats()}},250);
 /* ===== [추가] 🔗 유수율 연동 엑셀 — 관리번호 기준, 주소·이름 제외 (공유·포항시 유수율 분석 앱 연동용) ===== */
@@ -4066,7 +4126,7 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
 
 /* ===================== 🗺️ 기준자료 공유: 사진 공유 서버(공유 키)에 소블록 경계·상수관로·시설물을 올리고, 다른 기기는 열 때 새 버전만 받음 ===================== */
 /* 버전 = 기준자료의 저장 시각(at). 서버 버전이 이 기기 것보다 새것일 때만 받고, 이 기기 것이 더 새것이면 받지 않고 '올리기 필요'로 알림 */
-const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0]]};
+const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0]]};
 const refMB=b=>(b/1048576).toFixed(1)+'MB';
 function refSay(t){const m=$('shRefMsg');if(m)m.innerHTML=t}
 async function refLocal(){const o={};for(const [n] of REF.L){try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
@@ -4076,7 +4136,7 @@ function refState(info,loc){return REF.L.map(([n,t,cnt])=>{const s=info[n],l=loc
   const same=l&&l.at===s.v,st=same?'✅ 같은 버전':!lc||(l.at||0)<s.v?'⬇️ 서버가 새것':'⏫ 이 기기가 새것 (올리기 필요)';
   return `${t}: ${st} · 서버 ${s.cnt.toLocaleString()}개 · ${fmtDT(s.v)} 저장${s.by?' · '+esc(s.by):''} · ${refMB(s.size)}`}).join('<br>')}
 async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}
- REF.busy=true;REF.old=false;let up=0;try{
+ REF.busy=true;REF.old=false;REF.oldN=[];let up=0;try{
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
   for(const [n,t,cnt] of REF.L){const v=loc[n],c=cnt(v);if(!c||!v.at)continue;if(info[n]&&info[n].v===v.at)continue;
@@ -4084,8 +4144,8 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    try{for(let p=0;p<parts;p++){refSay(`⏫ ${t} 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);
     await shReq('refput',{name:n,v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}}
-   catch(e){if(n==='elev'&&/알 수 없는 기준자료/.test(String(e&&e.message))){REF.old=true;continue}throw e}up++}
-  const info2=(await shReq('refinfo')).ref||{};refSay((REF.old?'<span class="c-am">⛰️ 표고는 공유 서버가 예전 판이라 올리지 못했습니다. 공유 서버 Code.gs를 2026-10-14 판으로 바꾸고 새 버전으로 배포해 주세요.</span><br>':'')+(up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
+   catch(e){if((n==='elev'||n==='phref')&&/알 수 없는 기준자료/.test(String(e&&e.message))){(REF.oldN=REF.oldN||[]).push(t);REF.old=true;continue}throw e}up++}
+  const info2=(await shReq('refinfo')).ref||{};refSay((REF.old?`<span class="c-am">${esc(REF.oldN.join('·'))}은(는) 공유 서버가 예전 판이라 올리지 못했습니다. 공유 서버 Code.gs를 최신 판으로 바꾸고 새 버전으로 배포해 주세요.</span><br>`:'')+(up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
  catch(e){refSay('<span class="c-rd">⚠️ 기준자료 올리기 실패: '+esc((e&&e.message)||e)+'</span>'+(/알 수 없는 요청/.test(String(e&&e.message))?'<br><small>공유 서버 Code.gs를 2026-10-13 판으로 바꾸고 새 버전으로 다시 배포해 주세요.</small>':''))}
  finally{REF.busy=false}}
 /* auto=true: 앱을 열 때. 서버가 새것인 기준자료만 받아 이 기기에 저장(이전 것은 되돌리기용 _prev로 보관)하고 지도에 바로 표시 */
@@ -4099,6 +4159,7 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
    if(n==='blocks'){const p=await blkSnap();if(p)try{await IDB.set('blocks_prev',p)}catch(_){}await IDB.set('blocks',v);rawFC=null;BLK_HIST=[];await blkRestore()}
    else if(n==='pipes'){if(l)try{await IDB.set('pipes_prev',l)}catch(_){}await IDB.set('pipes',v);await pipeRestore(true)}
    else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}await IDB.set('elev',v);await elevRestore(true)}
+   else if(n==='phref'){if(cnt(l))try{await IDB.set('phref_prev',l)}catch(_){}await IDB.set('phref',v);phRefSet(v);if(PH.list.length)phRefresh()}
    else{if(l)try{await IDB.set('facs_prev',l)}catch(_){}await IDB.set('facs',v);await facRestore(true)}
    stoKeep();got.push(`${t} ${s.cnt.toLocaleString()}개`)}
   const loc2=await refLocal();
@@ -4157,12 +4218,12 @@ async function phEdDelPicked(){const ids=[...PH.ed.pick].filter(id=>PH.byId.has(
 async function phEdMove(g,ll){const n=g.ids.length;
  if(!confirm(`📷 ${phGLabel(g)} · 사진 ${n.toLocaleString()}장의 위치를 여기로 옮길까요?\n${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`)){phDraw();return}
  const lat=+ll.lat.toFixed(7),lng=+ll.lng.toFixed(7),prev=g.ids.map(id=>{const m=PH.byId.get(id);return m?[id,m.lat,m.lng,m.src,m.note,m.acc]:null}).filter(Boolean);
- const ref=g.code&&PH.ref.has(g.code)?[g.code,PH.ref.get(g.code)]:null;
+ const ra=g.src==='ref'&&g.rk&&PH.ref.get(g.rk),ref=ra&&ra[g.ri]?[g.rk,g.ri,ra[g.ri].slice()]:null;
  prev.forEach(([id])=>{const m=PH.byId.get(id);m.lat=lat;m.lng=lng;m.src='수동';delete m.note;delete m.acc});
- if(ref){PH.ref.set(ref[0],[lat,lng]);try{await IDB.set('phref',[...PH.ref])}catch(_){}}/* 기준 위치 파일로 자리 잡은 번호 묶음은 기준 위치도 함께 옮김 */
+ if(ref){PH.ref.get(ref[0])[ref[1]]=[lat,lng,ref[2][2]??null];await phRefSave()}/* 기준 위치 파일로 자리 잡은 번호 묶음은 기준 위치도 함께 옮김 */
  await phSaveMeta(true);phRefresh();
  phToast(`📍 사진 ${n.toLocaleString()}장 위치를 옮겼습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,a,b,s,no,ac])=>{const m=PH.byId.get(id);if(!m)return;m.lat=a;m.lng=b;m.src=s;if(no)m.note=no;else delete m.note;if(ac!=null)m.acc=ac;else delete m.acc});
-  if(ref){PH.ref.set(ref[0],ref[1]);try{await IDB.set('phref',[...PH.ref])}catch(_){}}await phSaveMeta(true);phRefresh();phToast('↩ 위치를 되돌렸습니다.',{ms:4000})}})}
+  if(ref){const a=PH.ref.get(ref[0]);if(a&&a[ref[1]]){a[ref[1]]=ref[2];await phRefSave()}}await phSaveMeta(true);phRefresh();phToast('↩ 위치를 되돌렸습니다.',{ms:4000})}})}
 /* ---------- 이 자리에 사진 넣기 (카메라 / 앨범) ---------- */
 /* 사진번호 이름 붙이기 — 민원대장 규칙: 위치도 = 긴급250.png · 단수밸브 상세도 = 긴급250-6-n · 현장사진 = 긴급250-n (n은 이미 있는 번호 다음부터) */
 const PH_NOTY={site:'현장사진',valve:'단수밸브 상세도',map:'위치도'};
@@ -4217,6 +4278,51 @@ function phTrashRender(){const w=document.getElementById('phTr');if(!w||w.hidden
   (T.length>max?`<div class="empty"><button type="button" class="btn ol" data-t="more" style="width:auto">더 보기 (${(T.length-max).toLocaleString()}장 남음)</button></div>`:'');
  const ims=[...tl.querySelectorAll('img[data-id]')];(async()=>{for(let k=0;k<ims.length;k+=60){const part=ims.slice(k,k+60);let v=[];try{v=await idbMany(part.map(im=>'pt:'+im.dataset.id))}catch(_){}
   part.forEach((im,i)=>{if(v[i]){const u=URL.createObjectURL(v[i]);im.onload=()=>URL.revokeObjectURL(u);im.src=u}})}})()}
+/* ---------- 🔎 위치 점검 — 접수번호 묶음 ↔ 기준 위치(민원지점). 기준은 기준 위치 파일(사용자 결정 2026-10-14) ---------- */
+const PH_CHK_M=50;
+function phChkList(){const kx=111320*Math.cos(36.2*Math.PI/180),ky=110574,dm=(a,b,c,d)=>Math.hypot((b-d)*kx,(a-c)*ky),RI=phRefIdx(),L=[];
+ for(const g of PH.G){if(!g.code)continue;let far=0,k=0;
+  if(g.src==='ref'&&g.yr){for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;k++;far=Math.max(far,dm(m.lat,m.lng,g.lat,g.lng))}
+   if(far>PH_CHK_M)L.push({t:'far',g,far,k});continue}
+  if(g.amb)L.push({t:'amb',g});else if(g.off)L.push({t:'off',g});else if(!RI.has(g.code))L.push({t:'none',g});else L.push({t:'noyr',g})}
+ const o={far:0,amb:1,noyr:2,off:3,none:4};L.sort((a,b)=>o[a.t]-o[b.t]||(b.far||0)-(a.far||0)||b.g.n-a.g.n);return L}
+const PH_CHK_T={far:['어긋남','사진 위치가 기준 위치와'],amb:['연도 모름','촬영시각이 없어 연도를 모름 — 연도를 고르세요'],noyr:['해당 해 없음','촬영 연도의 기준 위치에 이 번호가 없음'],off:['사진 GPS 사용','사람이 고른 묶음 — 기준 위치를 쓰지 않음'],none:['기준 위치에 없음','기준 위치 파일에 이 번호가 없음']};
+function phChkOpen(){let w=document.getElementById('phChk');
+ if(!w){w=document.createElement('div');w.id='phChk';w.className='phtr np';w.setAttribute('role','dialog');w.setAttribute('aria-label','사진 위치 점검');
+  w.innerHTML=`<div><div class="th"><b>🔎 사진 위치 점검 — 기준: 기준 위치(민원지점)</b><button type="button" data-t="x" aria-label="닫기">✕</button></div><div class="tb" data-t="tabs"></div><p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
+  document.body.appendChild(w);w.onclick=async e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t,g=b.dataset.g&&PH.gById.get(b.dataset.g);
+   if(t==='x')w.hidden=true;
+   else if(t==='f'){PH.chkF=b.dataset.f;phChkRender()}
+   else if(t==='more'){PH.chkMax=(PH.chkMax||200)+300;phChkRender()}
+   else if(t==='xl')phChkXlsx();
+   else if(t==='ally'){const y=+b.dataset.y,G=PH.G.filter(x=>x.amb&&(x.ys||[]).includes(y)),ids=G.flatMap(x=>x.ids);if(!ids.length||!confirm(`연도 모름 ${G.length.toLocaleString()}묶음(사진 ${ids.length.toLocaleString()}장)을 모두 ${y}년 접수건으로 정할까요?`))return;
+    const prev=ids.map(id=>[id,PH.byId.get(id).yr]);ids.forEach(id=>{PH.byId.get(id).yr=y});await phSaveMeta(true);phRefresh();phChkRender();
+    phToast(`📅 사진 ${ids.length.toLocaleString()}장을 ${y}년 접수건으로 정했습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,v])=>{const m=PH.byId.get(id);if(!m)return;if(v)m.yr=v;else delete m.yr});await phSaveMeta(true);phRefresh();phChkRender()}})}
+   else if(t==='go'&&g){w.hidden=true;if(g.lat!=null)phGoMap(g.ids[0]);else phGalOpen(g.ids[0])}
+   else if(g&&(t==='yr'||t==='gps'||t==='ref')){const ids=g.ids.slice(),prev=ids.map(id=>{const m=PH.byId.get(id);return [id,m.yr,m.refOff]});
+    ids.forEach(id=>{const m=PH.byId.get(id);if(t==='yr')m.yr=+b.dataset.y;else if(t==='gps')m.refOff=1;else{delete m.refOff;delete m.yr}});
+    await phSaveMeta(true);phRefresh();phChkRender();
+    phToast(t==='yr'?`📅 ${phRcpLbl(g.code)} 사진 ${ids.length}장을 ${b.dataset.y}년 접수건으로 정했습니다.`:t==='gps'?`📷 ${phRcpLbl(g.code)} 묶음은 사진 GPS를 씁니다.`:`📍 ${phRcpLbl(g.code)} 묶음을 기준 위치로 되돌렸습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,y,o])=>{const m=PH.byId.get(id);if(!m)return;if(y)m.yr=y;else delete m.yr;if(o)m.refOff=o;else delete m.refOff});await phSaveMeta(true);phRefresh();phChkRender()}})}};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
+ PH.chkMax=200;PH.chkF=PH.chkF||'far';w.hidden=false;phChkRender()}
+function phChkRender(){const w=document.getElementById('phChk');if(!w||w.hidden)return;const L=phChkList(),c={};L.forEach(x=>c[x.t]=(c[x.t]||0)+1);
+ if(!c[PH.chkF]&&L.length)PH.chkF=L[0].t;const F=L.filter(x=>x.t===PH.chkF),max=PH.chkMax||200,tl=w.querySelector('.tl');
+ const refN=[...PH.ref.values()].reduce((s,a)=>s+a.length,0),okN=PH.G.filter(g=>g.code&&g.src==='ref'&&g.yr).length;
+ w.querySelector('[data-t="tabs"]').innerHTML=Object.keys(PH_CHK_T).filter(t=>c[t]).map(t=>`<button type="button" class="btn ${PH.chkF===t?'em':'ol'}" data-t="f" data-f="${t}">${PH_CHK_T[t][0]} ${c[t].toLocaleString()}</button>`).join('')+(PH.chkF==='amb'?[...new Set(F.flatMap(x=>x.g.ys||[]))].sort().map(y=>`<button type="button" class="btn ol" data-t="ally" data-y="${y}" title="연도 모름 묶음을 한꺼번에 정함 (되돌리기 가능)">전부 ${y}년</button>`).join(''):'')+`<button type="button" class="btn ol" data-t="xl" ${L.length?'':'disabled'}>📊 엑셀</button>`;
+ w.querySelector('[data-t="inf"]').textContent=refN?`기준 위치 ${refN.toLocaleString()}곳 · 기준 위치에 놓인 묶음 ${okN.toLocaleString()}개 · 사진 위치가 ${PH_CHK_M}m 넘게 떨어진 묶음은 '어긋남' (지도에는 기준 위치로 표시됨)`:'기준 위치 파일이 없습니다. 📍 기준 위치 파일(예: 민원지점.zip)을 먼저 넣어 주세요.';
+ if(!L.length){tl.innerHTML='<div class="empty">점검할 묶음이 없습니다.</div>';return}
+ tl.innerHTML=F.slice(0,max).map(x=>{const g=x.g,d=PH_CHK_T[x.t][1],id=esc(g.id);
+  const sub=x.t==='far'?`${d} 최대 ${Math.round(x.far).toLocaleString()}m (위치 있는 사진 ${x.k}장)`:d;
+  const btn=x.t==='amb'?(g.ys||[]).map(y=>`<button type="button" data-t="yr" data-g="${id}" data-y="${y}">${y}년</button>`).join(''):x.t==='far'?`<button type="button" data-t="gps" data-g="${id}" title="이 묶음만 기준 위치 대신 사진 GPS를 씀">사진 GPS 쓰기</button>`:x.t==='off'?`<button type="button" data-t="ref" data-g="${id}">기준 위치로</button>`:'';
+  return `<div class="it"><img alt="" data-id="${esc(g.ids[0])}"><div class="t"><b>${esc(phGLabel(g))}${g.yr&&!g.ymul?' · '+g.yr+'년':''}</b><small>${g.n.toLocaleString()}장 · ${esc(sub)}${g.blk?' · '+esc(g.blk):''}</small></div>${btn}<button type="button" data-t="go" data-g="${id}">${g.lat!=null?'🗺️ 보기':'📷 열기'}</button></div>`}).join('')+
+  (F.length>max?`<div class="empty"><button type="button" class="btn ol" data-t="more" style="width:auto">더 보기 (${(F.length-max).toLocaleString()}개 남음)</button></div>`:'');
+ const ims=[...tl.querySelectorAll('img[data-id]')];(async()=>{for(let k=0;k<ims.length;k+=60){const part=ims.slice(k,k+60);let v=[];try{v=await idbMany(part.map(im=>'pt:'+im.dataset.id))}catch(_){}
+  part.forEach((im,i)=>{if(v[i]){const u=URL.createObjectURL(v[i]);im.onload=()=>URL.revokeObjectURL(u);im.src=u}})}})()}
+/* 점검표 엑셀 — 접수번호·연도·소블록·거리만 (주소·이름·메모 없음) */
+function phChkXlsx(){if(typeof XLSX==='undefined'){alert('엑셀 기능(SheetJS)을 불러오지 못했습니다.');return}
+ const rows=phChkList().map(x=>{const g=x.g;return {'구분':PH_CHK_T[x.t][0],'접수번호':g.code,'연도':g.yr||'','사진 수':g.n,'첫 촬영':g.t0?phYMD(g.t0):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','위치 기준':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.src==='map'?'위치도 빨간 점':g.lat==null?'위치 없음':'사진 GPS','사진과 거리(m)':x.far?Math.round(x.far):'','위치상 소블록':phGBlk(g)||'','설명':PH_CHK_T[x.t][1]}});
+ const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:12},{wch:10},{wch:6},{wch:7},{wch:11},{wch:11},{wch:11},{wch:14},{wch:12},{wch:12},{wch:36}];XLSX.utils.book_append_sheet(wb,ws,'위치 점검');
+ XLSX.writeFile(wb,`사진위치_점검_${phYMD(Date.now()).replace(/-/g,'')}.xlsx`)}
 /* ---------- 지도 버튼 · 편집 줄 · 길게 누르기 ---------- */
 function phEdInit(){if(!map)return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control phedbtn'),a=L.DomUtil.create('a','',d);
@@ -5012,10 +5118,10 @@ function meta(items, by) {
   });
 }
 
-// ---------- 기준자료 공유 (소블록 경계·상수관로·상수도 시설물) ----------
+// ---------- 기준자료 공유 (소블록 경계·상수관로·상수도 시설물·표고·사진 기준 위치) ----------
 // 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
 // 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
-const REF_NAMES = ['blocks', 'pipes', 'facs', 'elev'];
+const REF_NAMES = ['blocks', 'pipes', 'facs', 'elev', 'phref'];
 function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
 function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
 function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
