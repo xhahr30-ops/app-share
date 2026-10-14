@@ -133,6 +133,7 @@ details.x summary{cursor:pointer;font-weight:700;font-size:12.5px}
 /* map */
 #mapBox{display:flex;flex-direction:column}
 #map{height:440px;border-radius:12px;background:#dce6ea;z-index:0}
+#map{-webkit-touch-callout:none}#map .leaflet-map-pane{-webkit-user-select:none;user-select:none}#map .leaflet-popup{-webkit-user-select:text;user-select:text}
 html.dark #map{background:#1a2539}
 .fsb{margin-left:8px;padding:2px 8px;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}.fsb:hover{background:#e0e7ff}
 html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
@@ -426,8 +427,9 @@ h3 label.np{display:inline-flex!important;align-items:center;gap:4px;margin:0 0 
 select.msel{display:inline-block!important;width:auto!important;min-width:0!important;height:auto!important;margin:0!important;padding:2px 6px!important;font-size:11.5px!important;line-height:1.4;border-radius:6px;border:1px solid var(--line2);background:var(--card);color:var(--ink);vertical-align:middle}
 #mLegend{display:block;margin-top:4px;font-weight:500}
 /* 카카오 로드뷰 패널 */
-.kvp{position:fixed;right:16px;bottom:16px;z-index:1600;width:min(460px,calc(100vw - 32px));height:min(470px,70vh);min-width:300px;min-height:300px;resize:both;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:var(--card);border:1px solid var(--line2);box-shadow:0 18px 40px #0f172a55}
+.kvp{position:fixed;right:16px;bottom:16px;z-index:10050;width:min(460px,calc(100vw - 32px));height:min(470px,70vh);min-width:300px;min-height:300px;resize:both;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:var(--card);border:1px solid var(--line2);box-shadow:0 18px 40px #0f172a55}
 .kvp[hidden]{display:none}
+.kvwk{pointer-events:none!important;background:transparent;border:0}.kvwk .kvwk-f{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -32deg,rgba(37,99,235,.55) 0 64deg,transparent 64deg)}.kvwk .kvwk-d{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#2563eb;border:2.5px solid #fff;box-shadow:0 1px 4px #0006}
 .kvh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.kvt{min-width:0}.kvt b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kvt small{display:block;font-size:11.5px;color:var(--mute)}
 .kvnav{display:flex;align-items:center;gap:4px;flex-shrink:0}.kvnav .hbtn{background:var(--sub2);color:var(--ink);border-color:var(--line2);padding:3px 8px}.kvnav .hbtn:disabled{opacity:.4}.kvnav span{font-size:11px;color:var(--mute);min-width:44px;text-align:center}
 .kvtabs{display:flex;gap:4px;align-items:center}.kvtabs button{border:1px solid var(--line2);background:var(--sub);color:var(--ink2);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer}.kvtabs button.on{background:#fee500;color:#191919;border-color:#e6cf00}
@@ -890,7 +892,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
 <section id="kvPanel" class="kvp np" hidden aria-label="카카오 로드뷰·스카이뷰 패널">
  <div class="kvh"><div class="kvt"><b id="kvTitle">카카오 로드뷰</b><small id="kvSub"></small></div>
   <div class="kvnav"><button type="button" id="kvPrev" class="hbtn" title="표의 이전 행 ([)" aria-label="이전 행">◀</button><span id="kvPos"></span><button type="button" id="kvNext" class="hbtn" title="표의 다음 행 (])" aria-label="다음 행">▶</button><button type="button" id="kvClose" class="hbtn" aria-label="패널 닫기">✕</button></div></div>
- <div class="kvtabs" id="kvTabs"><button type="button" data-t="rv" class="on">🚶 로드뷰</button><button type="button" data-t="sky">🛰️ 스카이뷰</button><button type="button" data-t="map">🗺️ 지도</button><a id="kvExt" href="#" target="_blank" rel="noopener" class="kvext">새 창 ↗</a></div>
+ <div class="kvtabs" id="kvTabs"><button type="button" data-t="rv" class="on">🚶 로드뷰</button><button type="button" data-t="sky">🛰️ 스카이뷰</button><button type="button" data-t="map">🗺️ 지도</button><a id="kvExt" href="#" target="_blank" rel="noopener" class="kvext">새 창 ↗</a><a id="kvTo" class="kl" href="#" target="_blank" rel="noopener" title="카카오맵 길찾기(현장 가기)">🚗 길찾기</a></div>
  <div class="kvbody"><div id="kvRv"></div><div id="kvMap" hidden></div></div>
  <p id="kvMsg" class="hint">표의 행이나 지도의 점을 누르세요.</p>
  <div id="kvSetup" hidden><label class="f">카카오 JavaScript 키<input id="kvKey" type="password" autocomplete="off" placeholder="Kakao Developers › 앱 › 플랫폼 키 › JavaScript 키"></label>
@@ -1938,7 +1940,7 @@ const PZ_MAIN=13,PZ_SVC=16;
 function pipePane(){if(!map||!map.createPane)return 'overlayPane';if(!map.getPane('pipes')){const p=map.createPane('pipes');p.style.zIndex=390;p.style.pointerEvents='none'}return 'pipes'}
 function pipeHitAt(ll){if(!PIPE.segs||!map)return null;const onM=PIPE.layer&&map.hasLayer(PIPE.layer),onS=PIPE.layerS&&map.hasLayer(PIPE.layerS);if(!onM&&!onS)return null;
  const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*7,h=nearestPipe(ll.lng,ll.lat,r);if(!h)return null;const f=PIPE.feats[h.fi],svc=attrOf(f).use==='급수관';return(svc?onS:onM)?f:null}
-function pipeClick(e){if(typeof shutEat==='function'&&shutEat(e))return;const f=pipeHitAt(e.latlng);if(f)L.popup({maxWidth:280}).setLatLng(e.latlng).setContent(pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<button type="button" class="kl" style="margin-top:6px" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button>`).openOn(map)}
+function pipeClick(e){if(typeof shutEat==='function'&&shutEat(e))return;const f=pipeHitAt(e.latlng);if(f)L.popup({maxWidth:280}).setLatLng(e.latlng).setContent(pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · ')))(attrOf(f))}</div>`).openOn(map)}
 function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
  const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle},main=[],svc=[];
@@ -2367,7 +2369,7 @@ function renderBillBlk(){const S=billBlocks(),rows=Object.values(S),{k,d}=bSort,
 
 /* ===================== 카카오 로드뷰·스카이뷰 패널 ===================== */
 /* 표 행·지도 점을 고르면 화면 옆 패널에서 로드뷰/스카이뷰/지도로 바로 확인. JavaScript 키 + SDK 도메인 등록 필요 */
-const KV={on:false,tab:'rv',i:null,pos:null,rv:null,rvc:null,map:null,mk:null,dots:[],ready:false};
+const KV={on:false,tab:'rv',i:null,at:null,seq:0,pos:null,rv:null,rvc:null,map:null,mk:null,dots:[],wk:null,ready:false};
 function kvKey(){let k='';try{k=localStorage.getItem('geo-kjs')||''}catch(_){}if(!k&&$('gcMode').value==='sdk')k=$('kakao').value.trim();return k.trim()}
 function kvSetupUi(show,msg){$('kvSetup').hidden=!show;$('kvOrigin').textContent=location.origin;if(msg)$('kvMsg').innerHTML=msg}
 async function kvInit(){if(KV.ready)return true;const key=kvKey();if(!key){kvSetupUi(true,'카카오 <b>JavaScript 키</b>를 넣고 적용을 누르세요.');return false}
@@ -2375,6 +2377,7 @@ async function kvInit(){if(KV.ready)return true;const key=kvKey();if(!key){kvSet
  catch(e){kvSetupUi(true,`카카오 지도를 불러오지 못했습니다. JavaScript 키와 <b>JavaScript SDK 도메인</b> 등록을 확인하세요. (${esc(e.message)})`);return false}
  KV.rv=new kakao.maps.Roadview($('kvRv'));KV.rvc=new kakao.maps.RoadviewClient();
  kakao.maps.event.addListener(KV.rv,'panoid_changed',kvAim);kakao.maps.event.addListener(KV.rv,'init',kvAim);
+ ['position_changed','viewpoint_changed','init'].forEach(t=>kakao.maps.event.addListener(KV.rv,t,kvWalk));
  KV.map=new kakao.maps.Map($('kvMap'),{center:new kakao.maps.LatLng(36.03,129.36),level:2});
  KV.map.addControl(new kakao.maps.ZoomControl(),kakao.maps.ControlPosition.RIGHT);
  KV.ready=true;kvSetupUi(false);return true}
@@ -2384,23 +2387,43 @@ function kvAim(){if(!KV.rv||!KV.pos)return;const p=KV.rv.getPosition();if(!p)ret
  if(d>3)KV.rv.setViewpoint({pan:kvBearing(p,KV.pos),tilt:0,zoom:-1});$('kvMsg').textContent=`로드뷰 촬영 지점에서 대상까지 약 ${Math.round(d)}m · 화면을 끌어 방향을 돌려 볼 수 있습니다.`}
 function kvOpen(){KV.on=true;$('kvPanel').hidden=false;$('kvBtn').classList.add('on');$('kvBtn').setAttribute('aria-pressed','true');
  const i=selI!=null?selI:(()=>{const tr=document.querySelector('#tb tr[data-i]');return tr?+tr.dataset.i:null})();if(i!=null)kvShow(i);else kvInit()}
-function kvClose(){KV.on=false;$('kvPanel').hidden=true;$('kvBtn').classList.remove('on');$('kvBtn').setAttribute('aria-pressed','false')}
+function kvClose(){KV.on=false;$('kvPanel').hidden=true;$('kvBtn').classList.remove('on');$('kvBtn').setAttribute('aria-pressed','false');kvWalkOff()}
+/* 본 지도에 로드뷰 서 있는 자리 + 보는 방향(파란 부채꼴) */
+function kvWalk(){if(!map||!KV.rv||!KV.on||KV.tab!=='rv'||!KV.pos){kvWalkOff();return}const p=KV.rv.getPosition();if(!p)return;let pan=0;try{pan=KV.rv.getViewpoint().pan||0}catch(_){}
+ const ll=[p.getLat(),p.getLng()];if(!KV.wk)KV.wk=L.marker(ll,{icon:L.divIcon({className:'kvwk',html:'<span class="kvwk-f"></span><span class="kvwk-d"></span>',iconSize:[64,64],iconAnchor:[32,32]}),interactive:false,keyboard:false,zIndexOffset:900}).addTo(map);else KV.wk.setLatLng(ll);
+ const f=KV.wk.getElement()&&KV.wk.getElement().querySelector('.kvwk-f');if(f)f.style.transform=`rotate(${pan}deg)`}
+function kvWalkOff(){if(KV.wk){if(map)map.removeLayer(KV.wk);KV.wk=null}}
+/* 좌표로 열기: 📍 길게 누르기 핀·관로·시설물·사진·단수구역 밸브에서 부름. JavaScript 키가 없으면 카카오맵 새 창 */
+const kvU=v=>encodeURIComponent(String(v||'')).replace(/'/g,'%27');
+function kvLinkRv(la,ln){return `https://map.kakao.com/link/roadview/${(+la).toFixed(6)},${(+ln).toFixed(6)}`}
+function kvLinkTo(nm,la,ln){return `https://map.kakao.com/link/to/${encodeURIComponent(String(nm||'목적지').replace(/^[^0-9A-Za-z가-힣#]+/u,'').replace(/[,/]/g,' ').slice(0,40)||'목적지')},${(+la).toFixed(6)},${(+ln).toFixed(6)}`}
+function kvBtns(la,ln,t,sub,to){if(!isFinite(+la)||!isFinite(+ln))return '';return `<button type="button" class="kl" onclick="kvGo(${(+la).toFixed(7)},${(+ln).toFixed(7)},'${kvU(t)}','${kvU(sub)}')" title="이 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`+(to?`<a class="kl" href="${kvLinkTo(t,la,ln)}" target="_blank" rel="noopener" title="카카오맵 길찾기">🚗 길찾기</a>`:'')}
+function kvGoAt(la,ln,t,sub){la=+la;ln=+ln;if(!isFinite(la)||!isFinite(ln))return;
+ if(!kvKey()){window.open(kvLinkRv(la,ln),'_blank','noopener');return}
+ KV.on=true;$('kvPanel').hidden=false;$('kvBtn').classList.add('on');$('kvBtn').setAttribute('aria-pressed','true');
+ KV.i=null;KV.at={la,ln,t:t||'선택 지점',s:sub||''};kvAt()}
+window.kvGo=(la,ln,t,s)=>kvGoAt(la,ln,t?decodeURIComponent(t):'',s?decodeURIComponent(s):'');
+function kvAt(){const A=KV.at;if(!A||!KV.on)return;$('kvTitle').textContent=A.t;$('kvSub').textContent=A.s;kvNavState();kvPlace(A.la,A.ln,A.t,null)}
 function kvFrom(i){if(!KV.on)kvOpen();selectRow(i,'map')}
 window.kvFrom=kvFrom;
 function kvTab(t){KV.tab=t;document.querySelectorAll('#kvTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('kvRv').hidden=t!=='rv';$('kvMap').hidden=t==='rv';
- try{localStorage.setItem('geo-kvtab',t)}catch(_){}if(KV.i!=null)kvShow(KV.i)}
-async function kvShow(i){if(!KV.on)return;KV.i=i;const o=out[i];if(!o)return;
+ try{localStorage.setItem('geo-kvtab',t)}catch(_){}if(KV.i!=null)kvShow(KV.i);else if(KV.at)kvAt();if(t!=='rv')kvWalkOff();else kvWalk()}
+async function kvShow(i){if(!KV.on)return;KV.i=i;KV.at=null;const o=out[i];if(!o)return;
  const ty=BILLMODE&&o['이상유형']?` · <b style="color:#dc2626">${esc(o['이상유형'])}</b>`:'';
  $('kvTitle').textContent=`#${i+1} ${o['_검색주소']||(BILLMODE?o['구주소(지번)']:'')||''}`;
  $('kvSub').innerHTML=`${esc(o['_결합블록']||'블록 없음')}${BILLMODE&&o['수용가번호']?' · '+esc(o['수용가번호']):''}${BILLMODE&&o['관리번호']?' · 관리 '+esc(o['관리번호']):''}${ty}${o['_방식']==='인근대체'?' · <span style="color:#9333ea">인근대체(위치 오차 가능)</span>':''}`;
  kvNavState();
- if(o['_위도']===''){$('kvMsg').textContent='이 행은 좌표가 없습니다. 주소를 고쳐 재검색하거나 📮 주소찾기를 이용하세요.';return}
- if(!await kvInit())return;
- const pos=new kakao.maps.LatLng(+o['_위도'],+o['_경도']);KV.pos=pos;
- const la=pos.getLat().toFixed(6),ln=pos.getLng().toFixed(6);$('kvExt').href=KV.tab==='rv'?`https://map.kakao.com/link/roadview/${la},${ln}`:`https://map.kakao.com/link/map/${encodeURIComponent(String(o['_검색주소']||'위치').replace(/[,/]/g,' ').slice(0,60))},${la},${ln}`;
+ if(o['_위도']===''){KV.pos=null;kvWalkOff();$('kvMsg').textContent='이 행은 좌표가 없습니다. 주소를 고쳐 재검색하거나 📮 주소찾기를 이용하세요.';return}
+ kvPlace(+o['_위도'],+o['_경도'],o['_검색주소']||'위치',i)}
+/* 공통: 그 좌표의 로드뷰/스카이뷰/지도. i=표 행(없으면 null) */
+async function kvPlace(lat,lng,nm,i){const seq=++KV.seq;
+ $('kvExt').href=KV.tab==='rv'?kvLinkRv(lat,lng):`https://map.kakao.com/link/map/${encodeURIComponent(String(nm||'위치').replace(/[,/]/g,' ').slice(0,60))},${(+lat).toFixed(6)},${(+lng).toFixed(6)}`;$('kvTo').href=kvLinkTo(nm,lat,lng);
+ if(!await kvInit()){if(seq===KV.seq)$('kvMsg').insertAdjacentHTML('beforeend',` <a class="kl" href="${kvLinkRv(lat,lng)}" target="_blank" rel="noopener">🚶 카카오맵에서 로드뷰</a>`);return}
+ if(seq!==KV.seq)return;
+ const pos=new kakao.maps.LatLng(+lat,+lng);KV.pos=pos;
  if(KV.tab==='rv'){KV.rv.relayout();$('kvMsg').textContent='가까운 로드뷰를 찾는 중…';let found=false;
-  for(const r of [50,100,200]){const id=await new Promise(res=>KV.rvc.getNearestPanoId(pos,r,res));if(KV.i!==i)return;if(id){KV.rv.setPanoId(id,pos);found=true;break}}
-  if(!found){$('kvMsg').innerHTML='반경 200m 안에 로드뷰가 없습니다. <button type="button" class="kl" id="kvToSky">🛰️ 스카이뷰로 보기</button>';$('kvToSky').onclick=()=>kvTab('sky')}
+  for(const r of [50,100,200]){const id=await new Promise(res=>KV.rvc.getNearestPanoId(pos,r,res));if(seq!==KV.seq)return;if(id){KV.rv.setPanoId(id,pos);found=true;break}}
+  if(!found){kvWalkOff();$('kvMsg').innerHTML='반경 200m 안에 로드뷰가 없습니다. <button type="button" class="kl" id="kvToSky">🛰️ 스카이뷰로 보기</button>';$('kvToSky').onclick=()=>kvTab('sky')}
   return}
  KV.map.setMapTypeId(KV.tab==='sky'?kakao.maps.MapTypeId.HYBRID:kakao.maps.MapTypeId.ROADMAP);KV.map.relayout();KV.map.setLevel(KV.tab==='sky'?2:3);KV.map.setCenter(pos);
  if(KV.mk)KV.mk.setMap(null);KV.mk=new kakao.maps.Marker({position:pos,map:KV.map});
@@ -3077,6 +3100,7 @@ function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen
  const b=poly?blkAt(f.c[0],f.c[1]):'';rows.push(['소블록(위치)',b||'-']);
  return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`+
   (I.sym==='gate'?facOpUi(i):'')+
+  `<div class="acts" style="margin-top:6px">${kvBtns(FAC.y[i],FAC.x[i],I.name+(P['관리번호']?' '+P['관리번호']:''),b?'소블록 '+b:'',true)}</div>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).filter(([k])=>!/^_/.test(k)).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 제수밸브 현장 수정: 관리번호·구경·개폐여부·현장메모를 고치고 SHP 원래 값은 '_원본'에 보관 → 시설물 저장(이력 '현장 수정', ↶ 되돌리기 가능).
    직원에게 퍼뜨리려면 기준자료 공유에서 ⏫ 올리기. 시설물 SHP를 새로 올리면 SHP 값으로 바뀜 */
@@ -3648,7 +3672,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
    (blk?`<br>🗺️ 위치상 블록 <b>${esc(blk)}</b>`:'')+(g&&g.n>1?`<br>📚 묶음: ${esc(phGLabel(g))} · ${g.n}장 · ${esc(phGTime(g))}`:'')+(m.solo?'<br><small>✂️ 묶음에서 따로 뺀 사진</small>':'')+(m.note?`<br><span style="color:#dc2626">${esc(m.note)}</span>`:'');
   ta.value=m.memo||'';
   acts.innerHTML=(opts.compact?`<button type="button" class="hl" data-a="gal">🖼️ 크게 보기</button>`:loc&&g&&g.lat!=null?`<button type="button" class="hl" data-a="map">🗺️ 지도에서 보기</button>`:'')+
-   (loc?`<a href="https://map.kakao.com/link/roadview/${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}" target="_blank" rel="noopener">🚶 로드뷰</a>`:'')+
+   (loc?(doc===document&&kvKey()?`<button type="button" data-a="rv" title="이 사진 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`:`<a href="https://map.kakao.com/link/roadview/${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}" target="_blank" rel="noopener">🚶 로드뷰</a>`):'')+
    `<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+
    ((g&&g.n>1)||m.solo?`<button type="button" data-a="solo">${m.solo?'🔗 다시 묶기':'✂️ 묶음에서 빼기'}</button>`:'')+
    `<button type="button" data-a="dl">⬇ 저장</button><button type="button" class="del" data-a="del">🗑 삭제</button>`+(g&&g.n>1?`<button type="button" class="del" data-a="delg">🗑 이 묶음 ${g.n}장 모두</button>`:'')};
@@ -3661,6 +3685,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
  acts.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const m=PH.byId.get(v.pid);if(!m)return;const a=b.dataset.a;
   if(a==='gal')phGalOpen(m.id);else if(a==='map'){phGoMap(m.id);try{window.focus()}catch(_){}}
   else if(a==='place')phPlace(m.id,doc);
+  else if(a==='rv'){const g=OF().get(v.pid),loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?{lat:m.lat,lng:m.lng}:g&&g.lat!=null?{lat:g.lat,lng:g.lng}:null;if(loc)kvGoAt(loc.lat,loc.lng,'📷 '+(g?phGLabel(g):m.name),g?phGBlk(g):'')}
   else if(a==='goto'){const g=OF().get(m.id),n=g?g.n:1;
    acts.innerHTML=`<div class="phgo"><input type="text" data-g="q" placeholder="접수번호(긴급88·1956) 또는 주소·좌표" enterkeyhint="go" autocomplete="off">`+(n>1?`<label><input type="radio" name="phgs" value="g" checked>이 묶음 ${n}장</label><label><input type="radio" name="phgs" value="1">이 사진만</label>`:'')+
     `<button type="button" class="go" data-a="go1">옮기기</button><button type="button" data-a="gox">취소</button><div class="h">접수번호 → 기준 위치(민원지점)로 · 주소 → 카카오 검색 위치로 · 좌표(36.02, 129.34)도 됩니다. 넣은 주소는 저장하지 않습니다.</div></div>`;
@@ -4852,6 +4877,7 @@ function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset
    map.once('moveend',()=>setTimeout(go,700));setTimeout(go,2000);map.fitBounds(bb,{maxZoom:18,padding:[30,30]})}
   else if(a==='shots')shutShotShare();else if(a==='shotd'){if(SHUT.shot)dlBlob(SHUT.shot.blob,SHUT.shot.name)}else if(a==='shotv'){if(SHUT.shot)window.open(SHUT.shot.url,'_blank')}
   else if(a==='shotx'){if(SHUT.shot)URL.revokeObjectURL(SHUT.shot.url);SHUT.shot=null;shutRender()}
+  else if(a==='vrv'){const i=+b.dataset.i,P=FAC.pt[i].p||{},bl=poly?blkAt(FAC.x[i],FAC.y[i]):'';kvGoAt(FAC.y[i],FAC.x[i],'🔧 밸브 '+(P['관리번호']||'#'+i),bl?'소블록 '+bl:'')}
   else if(a==='ved'){SHUT.vEd=SHUT.vEd===+b.dataset.i?-1:+b.dataset.i;shutRender();const f=p.querySelector('.shedf input');if(f)f.focus()}
   else if(a==='vcan'){SHUT.vEd=-1;shutRender()}
   else if(a==='vsave'||a==='vorig'){const box=b.closest('.shedf'),i=+box.dataset.i;SHUT.vEd=-1;if(a==='vorig')facEdit(i,'orig','원래대로');else{const pt={};box.querySelectorAll('[data-k]').forEach(el=>pt[el.dataset.k]=el.value);facEdit(i,pt,'현장 수정').then(()=>shutRender());shutRender()}}
@@ -4923,7 +4949,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   {const ne=V.filter(v=>{const P=FAC.pt[v.i].p||{};return shutVE(P,'관리번호')&&shutVE(P,'구경')&&shutVE(P,'개폐여부')}).length;
    if(ne)h+=`<p class="uin c-am" style="margin:2px 0 4px">⚠️ 시설물 SHP에 관리번호·구경·개폐가 모두 빈 밸브 ${ne}개 — 자료에 없는 값이라 "확인 필요"로 표시했습니다. 현장 값은 ✏️로 넣을 수 있습니다.</p>`}
   if(V.length)h+=`<table class="sht shvt"><tr><th>#</th><th>관리번호</th><th>구경</th><th>개폐</th><th></th><th></th></tr>${V.map(v=>{const P=FAC.pt[v.i].p||{},ed=P['_현장수정'],o=P['_원본']||{},mk=k=>k in o?' class="shmod" title="원래: '+esc(o[k]==null||o[k]===''?'빈칸':o[k])+'"':'';
-   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button></td></tr>`;
+   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
    if(SHUT.vEd===v.i){const cur=String(P['개폐여부']??''),ops=[...new Set(['개','폐','미분류',cur].filter(Boolean))];
     r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">현장 메모<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
      `<div class="shedb"><button type="button" class="btn" data-a="vsave">💾 저장</button>${ed?`<button type="button" class="btn ol" data-a="vorig" title="${esc(facOrigTxt(P))}">↩ SHP 원래대로</button>`:''}<button type="button" class="btn ol" data-a="vcan">취소</button></div>${ed?`<small class="mute">✏️ 현장 수정 ${esc(ed)} · 원래 ${esc(facOrigTxt(P))}</small>`:''}</div></td></tr>`}
@@ -4998,6 +5024,42 @@ if(map){
  const q=id=>document.getElementById(id),bind=(id,k,re)=>{const el=q(id);if(!el)return;el.value=String(SHUT.opt[k]);if(el.value!==String(SHUT.opt[k]))el.value=el.options[0].value;
   el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
  bind('shTol','tol',1);bind('shVtol','vtol',1);bind('shBigQ','bigQ',0);bind('shBigD','bigD',0)}
+/* 지도 길게 누르기(PC 오른쪽 클릭) → 그 지점 주소 핀: 지번·도로명, 소블록, 표고, 좌표. 주소는 화면에만 보이고 저장·내보내기 안 함 */
+const LPA={pin:null,at:0,cache:new Map()};
+function lpaBusy(){return(typeof PH!=='undefined'&&(PH.ed&&PH.ed.on||PH.place))||(typeof SHUT!=='undefined'&&(SHUT.drawing||SHUT.pick||SHUT.mode))||(typeof MLOCK!=='undefined'&&MLOCK.on)||document.querySelector('#map.mkon,.mkon #map')}
+async function lpaAddr(ll){const k=ll.lat.toFixed(5)+','+ll.lng.toFixed(5);if(LPA.cache.has(k))return LPA.cache.get(k);
+ const mode=$('gcMode').value,key=$('kakao').value.trim();let r=null;
+ const pick=d=>{const x=d&&d[0];return x?{j:x.address&&x.address.address_name||'',d:x.road_address&&x.road_address.address_name||''}:{j:'',d:''}};
+ if(mode==='rest'&&key){const res=await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${ll.lng}&y=${ll.lat}`,{headers:{Authorization:'KakaoAK '+key}});if(!res.ok)throw new Error('카카오 좌표→주소 오류('+res.status+')');r=pick((await res.json()).documents)}
+ else{const jk=mode==='sdk'&&key?key:kvKey();
+  if(jk){const gc=await loadSdk(jk),S=kakao.maps.services.Status;const [d,st]=await new Promise(z=>gc.coord2Address(ll.lng,ll.lat,(d,st)=>z([d,st])));if(st===S.OK)r=pick(d);else if(st===S.ZERO_RESULT)r={j:'',d:''};else throw new Error('카카오 좌표→주소 오류')}
+  else if(mode==='osm'){const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ko&lat=${ll.lat}&lon=${ll.lng}`);const d=await res.json();r={j:d&&d.display_name||'',d:''}}
+  else throw new Error('주소를 찾으려면 카카오 키가 필요합니다(① 주소 검색 설정의 REST 키, 또는 🚶 로드뷰 패널의 JavaScript 키).')}
+ if(LPA.cache.size>300)LPA.cache.clear();LPA.cache.set(k,r);return r}
+function lpaClear(){if(LPA.pin){map.removeLayer(LPA.pin);LPA.pin=null}}
+window.lpaClear=lpaClear;
+window.lpaCopy=(a,t)=>{const v=decodeURIComponent(t);const ok=()=>{a.textContent='복사됨'};try{navigator.clipboard.writeText(v).then(ok,()=>prompt('복사하세요',v))}catch(_){prompt('복사하세요',v)}return false};
+function lpaBody(ll,r,err){const xy=ll.lat.toFixed(6)+', '+ll.lng.toFixed(6),blk=typeof blkAt==='function'?blkAt(ll.lng,ll.lat):'',cp=v=>` <a href="#" onclick="return lpaCopy(this,'${encodeURIComponent(v)}')">복사</a>`;
+ let h='<div style="font-size:12.5px;line-height:1.55;min-width:190px"><b>📍 이 지점 주소</b><br>';
+ if(err)h+=`<span style="color:#b91c1c">${esc(err)}</span><br>`;else if(!r)h+='<span style="color:#64748b">주소 찾는 중…</span><br>';
+ else if(!r.j&&!r.d)h+='<span style="color:#64748b">주소 없음(산·바다·도로 위 등)</span><br>';
+ else{if(r.d)h+=`도로명: <b>${esc(r.d)}</b>${cp(r.d)}<br>`;if(r.j)h+=`지번: <b>${esc(r.j)}</b>${cp(r.j)}<br>`}
+ h+=`소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy}${cp(xy)}`;
+ h+=(typeof elevPop==='function'?elevPop(ll.lat,ll.lng):'')+`<div class="acts" style="margin-top:6px">${kvBtns(ll.lat,ll.lng,'📍 '+(r&&(r.d||r.j)||'선택 지점'),blk?'소블록 '+blk:'',true)}</div>`+'<a href="#" onclick="lpaClear();return false" style="display:inline-block;margin-top:4px">핀 지우기</a></div>';return h}
+async function lpaShow(ll){if(!map||lpaBusy())return;LPA.at=Date.now();lpaClear();
+ const p=LPA.pin=L.marker(ll,{icon:L.divIcon({className:'gs-pin',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,26],popupAnchor:[0,-24]}),zIndexOffset:1000}).addTo(map);
+ p.bindPopup(lpaBody(ll,null),{maxWidth:300,autoPan:true}).openPopup();
+ let r=null,err='';try{r=await lpaAddr(ll)}catch(e){err=e.message||String(e)}
+ if(LPA.pin===p)p.setPopupContent(lpaBody(ll,r,err))}
+(function(){if(!map)return;const C=map.getContainer();let lp=0,sx=0,sy=0,fired=0;const stop=()=>{clearTimeout(lp);lp=0};
+ map.on('contextmenu',e=>{if(lpaBusy())return;if(Date.now()-LPA.at<900)return;lpaShow(e.latlng)});
+ C.addEventListener('touchstart',e=>{stop();if(e.touches.length!==1||lpaBusy())return;if(e.target.closest('.leaflet-marker-icon,.leaflet-control,.leaflet-popup,.phed,.uiset'))return;
+  const t=e.touches[0];sx=t.clientX;sy=t.clientY;lp=setTimeout(()=>{lp=0;if(lpaBusy()||Date.now()-LPA.at<900)return;fired=Date.now();const r=C.getBoundingClientRect();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}
+   lpaShow(map.containerPointToLatLng([sx-r.left,sy-r.top]))},600)},{passive:true});
+ C.addEventListener('touchmove',e=>{if(!lp)return;const t=e.touches[0];if(e.touches.length!==1||Math.hypot(t.clientX-sx,t.clientY-sy)>10)stop()},{passive:true});
+ C.addEventListener('touchend',stop,{passive:true});C.addEventListener('touchcancel',stop,{passive:true});map.on('movestart zoomstart',stop);
+ /* 손을 뗄 때 따라오는 탭(click)이 수용가·관로·블록 팝업을 열어 주소 창을 덮지 않게 막음 */
+ C.addEventListener('click',e=>{if(fired&&Date.now()-fired<1500){fired=0;e.stopPropagation();e.preventDefault()}},true)})();
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
