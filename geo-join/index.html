@@ -1229,8 +1229,8 @@ const MAP_SHORT=matchMedia('(orientation:landscape) and (max-height:520px)');
 function mapCornerFix(){if(!map||!map._controlCorners)return;const C=map._controlCorners,bl=C.bottomleft;let x=0;
  if(MAP_SHORT.matches){const r0=map.getContainer().getBoundingClientRect();for(const e of C.topleft.children){if(!e.offsetWidth)continue;x=Math.max(x,e.getBoundingClientRect().right-r0.left)}}
  const v=x?Math.round(x)+'px':'';if(bl.style.left!==v)bl.style.left=v}
-/* 배경 타일은 19단계까지만 있어 그 위(20~22)는 19단계 그림을 늘려 보여 줌. 관로·점·시설물(캔버스)·지적도(WMS)는 선명하게 다시 그림 */
-const MAP_MAXZ=22,TILE_NZ=19;
+/* 배경 타일은 19단계까지만 있어 그 위(20~30)는 19단계 그림을 늘려 보여 줌. 관로·점·시설물(캔버스)·지적도(WMS)는 선명하게 다시 그림 */
+const MAP_MAXZ=30,TILE_NZ=19;
 const BG={off:false,keep:[],ctl:null,a:null,z:null};
 const BG_FILL=()=>document.documentElement.classList.contains('dark')?'#111827':'#ffffff';
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
