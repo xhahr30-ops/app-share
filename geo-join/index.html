@@ -509,6 +509,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .febar .feg input,.febar .feg select{font:12px 'Noto Sans KR',sans-serif;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink);min-width:0}
 .febar .ferot{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .febar .feb{font-size:10.5px;font-weight:700;color:#7c3aed;background:#ede9fe;border-radius:6px;padding:1px 6px}
+.febar .pefold summary{cursor:pointer;font-weight:700;font-size:11.5px;color:var(--mute);margin:3px 0}
 .febar .feb.add{color:#15803d;background:#dcfce7}.febar .feb.del{color:#b91c1c;background:#fee2e2}
 .febar select{font:700 11.5px 'Noto Sans KR',sans-serif;padding:3px 4px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink)}
 .fecross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;z-index:650;pointer-events:none}
@@ -796,7 +797,8 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <h4>②-1 상수관로 (SHP ZIP) <small style="font-weight:400;color:var(--mute)">선택</small></h4>
   <div id="pSaveBox" class="savebox" hidden><div id="pSaved" class="hint"></div>
    <div class="sbtns"><label class="btn ol" title="신설·교체된 관로만 들어 있는 SHP(.zip)를 올리면 관리번호 기준으로 추가·변경합니다">➕ 변경분 반영<input type="file" id="pUpd" accept=".zip" hidden></label><label class="btn ol" title="폐관된 관리번호 목록(엑셀·CSV)을 올려 지웁니다">🗑 폐관 목록<input type="file" id="pDelF" accept=".xlsx,.xls,.csv" hidden></label><button id="pUndo" type="button" class="btn ol" hidden>↩ 되돌리기</button><button id="pHistBtn" type="button" class="btn ol">📜 이력</button><button id="pForget" type="button" class="btn ol">🗑 저장 지우기</button></div>
-   <div id="pHistBox" class="hint histbox" hidden></div></div>
+   <div id="pHistBox" class="hint histbox" hidden></div>
+   <div id="pedBox" class="hint" hidden style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--line2)"><div id="pedSum"></div><div class="sbtns" style="margin-top:4px"><button type="button" class="btn ol" onclick="peOpen(-1)">🛠 관로 편집</button><button type="button" class="btn ol" onclick="pedXlsx()">📋 수정 목록 엑셀</button><button type="button" class="btn ol" onclick="pedSync('both')">⏫ 수정분 공유</button></div><div id="pedMsg"></div></div></div>
   <label class="drop"><input type="file" id="f3" accept=".zip"><div class="ic">🚰</div><b id="pDropT">상수관로 SHP 압축파일(.zip)</b><span>선 레이어 · 브라우저 안에서만 처리 · 한 번 올리면 이 PC에 저장</span></label>
   <label class="f">원본 좌표계 <small style="font-weight:400">(.prj가 있으면 자동)</small><select id="pCrs"><option>EPSG:5187</option><option>EPSG:5183</option><option>EPSG:5186</option><option>EPSG:5185</option><option>EPSG:5179</option><option>EPSG:4326</option></select></label>
   <p class="hint" id="pMsg">관로를 올리면 수용가별 가장 가까운 관로 거리, 블록별 관로 연장·노후도를 계산합니다.</p>
@@ -1921,7 +1923,7 @@ function analyze(){
  hStat(`${ok}/${n}건 변환 · ${joined}건 결합`,'ok');$('pd').textContent=`작성일 ${new Date().toLocaleDateString('ko-KR')} · 원본 ${fname} · ${n}행`}
 /* ===================== 상수관로 (SHP) ===================== */
 /* 재질 약어: 환경부 「상수관로 정밀조사 매뉴얼」(2020) 관종 표기 기준. 노후 기준 30년(경과연수 구간 10·20·30년). */
-const PIPE={fc:null,feats:[],segs:null,grid:null,o:null,crs:'',stats:null,layer:null,legend:null};
+const PIPE={fc:null,feats:[],raw:[],segs:null,grid:null,o:null,crs:'',stats:null,layer:null,legend:null};
 const MAT_RULES=[
  [/CML.?DCIP|DCIP|DIP|덕타일|닥타일|DUCTILE/,'덕타일주철관(DCIP)'],[/STS|스테인|STAINLESS/,'스테인리스관(STS)'],
  [/아연|GSP|백관|SGP/,'아연도강관'],[/^CIP|회주철|^주철|CASTIRON/,'회주철관(CIP)'],
@@ -1962,11 +1964,11 @@ async function loadPipes(buf,file){
  const msg=$('pMsg'),t0=Date.now();msg.textContent='상수관로 SHP 읽는 중... (레이어가 많거나 속성 파일이 크면 1~2분 걸릴 수 있습니다)';await sleep(30);
  const R0=await pipeParse(buf,msg),all=R0.all,info=R0.info,bad=R0.bad,ks=R0.ks;
  if(!all.length){msg.textContent=bad.length?`좌표계를 판별하지 못했습니다(${bad.join(', ')}). .prj 파일을 함께 넣거나 원본 좌표계를 직접 선택한 뒤 다시 올리세요.`:'선(LineString) 도형이 없습니다. 상수관로 레이어 SHP인지 확인하세요.';return}
- PIPE.crs='레이어별';PIPE.feats=all;PIPE.fc={type:'FeatureCollection',features:all};PIPE.layers=info;PIPE.bad=bad;
- const keys=[...ks.keys(),'_레이어'];const feats=all;
+ await pedLoad();PIPE.crs='레이어별';PIPE.raw=all;PIPE.feats=pedApply(all);PIPE.fc={type:'FeatureCollection',features:PIPE.feats};PIPE.layers=info;PIPE.bad=bad;
+ const keys=[...ks.keys(),'_레이어'];const feats=all;const pedN=pedLive().length;
  pFillSelects(keys,ks,{});
  buildPipeIndex();renderPipes();const sec=Math.round((Date.now()-t0)/1000);
- msg.innerHTML=`로드 완료: 레이어 ${info.length}개 · 관로 ${feats.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km (${sec}초)<br><small>${info.map(esc).join(' · ')}</small>${bad.length?`<br><span class="c-rd">좌표계 판별 실패로 제외: ${bad.map(esc).join(', ')}</span>`:''}${feats.length>3000?'<br>관로가 많아 지도를 <b>줌 15 이상으로 확대</b>하면 그려집니다(또는 지도 표시: 항상).':''}${sec>40?'<br><span class="c-am">읽는 데 오래 걸렸습니다. 필요한 속성만 남긴 경량 SHP를 쓰면 훨씬 빨라집니다.</span>':''}`;
+ msg.innerHTML=`로드 완료: 레이어 ${info.length}개 · 관로 ${feats.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km (${sec}초)<br><small>${info.map(esc).join(' · ')}</small>${bad.length?`<br><span class="c-rd">좌표계 판별 실패로 제외: ${bad.map(esc).join(', ')}</span>`:''}${feats.length>3000?'<br>관로가 많아 지도를 <b>줌 15 이상으로 확대</b>하면 그려집니다(또는 지도 표시: 항상).':''}${pedN?`<br>🛠 관로 현장 수정 ${pedN}개를 새 자료 위에 다시 덧씌웠습니다${PED.orph.length?` <span class="c-am">(못 찾음 ${PED.orph.length}개 → 📋 수정 목록 엑셀)</span>`:''}.`:''}${sec>40?'<br><span class="c-am">읽는 데 오래 걸렸습니다. 필요한 속성만 남긴 경량 SHP를 쓰면 훨씬 빨라집니다.</span>':''}`;
  $('pPanel').hidden=false;pipeSave('전체',file);if(out.length)joinAll(true);else pipeBlockStats()}
 const PALIAS={dia:['구경','구경2','관경','PIP_DIP','STD_DIP'],mat:['관재질','MOP_CDE','PIP_MOP'],ymd:['설치일자','IST_YMD'],use:['상수관용도','SAA_CDE'],id:['관리번호','FTR_IDN']};
 const pv=(P,k,r)=>{if(k&&P[k]!=null&&P[k]!=='')return P[k];for(const a of PALIAS[r])if(P[a]!=null&&String(P[a]).trim()!=='')return P[a];return null};
@@ -1980,9 +1982,9 @@ function buildPipeIndex(){const fs=PIPE.feats;let sx=0,sy=0,n=0;
    const gx0=Math.floor(Math.min(a[0],b[0])/C),gx1=Math.floor(Math.max(a[0],b[0])/C),gy0=Math.floor(Math.min(a[1],b[1])/C),gy1=Math.floor(Math.max(a[1],b[1])/C);
    for(let gx=gx0;gx<=gx1;gx++)for(let gy=gy0;gy<=gy1;gy++){const key=gx+','+gy;let a2=grid.get(key);if(!a2)grid.set(key,a2=[]);a2.push(si)}}});f._len=len;tot+=len});
  PIPE.segs=segs;PIPE.grid=grid;PIPE.totalM=tot}
-function nearestPipe(lng,lat,maxR){const [px,py]=toM(lng,lat),C=100,gx=Math.floor(px/C),gy=Math.floor(py/C);let best=Infinity,bf=-1;const seen=new Set();
+function nearestPipe(lng,lat,maxR,all){const [px,py]=toM(lng,lat),C=100,gx=Math.floor(px/C),gy=Math.floor(py/C);let best=Infinity,bf=-1;const seen=new Set();
  for(let r=0;r<=Math.ceil(maxR/C);r++){for(let x=gx-r;x<=gx+r;x++)for(let y=gy-r;y<=gy+r;y++){if(Math.max(Math.abs(x-gx),Math.abs(y-gy))!==r)continue;
-   const a=PIPE.grid.get(x+','+y);if(!a)continue;for(const si of a){if(seen.has(si))continue;seen.add(si);const d=segDist(px,py,PIPE.segs[si]);if(d<best){best=d;bf=PIPE.segs[si][4]}}}
+   const a=PIPE.grid.get(x+','+y);if(!a)continue;for(const si of a){if(seen.has(si))continue;seen.add(si);const s=PIPE.segs[si],d=segDist(px,py,s);if(d<best){const fi=s[4];if(fi<0||!all&&PIPE.feats[fi]&&PIPE.feats[fi].properties._폐관)continue;best=d;bf=fi}}}
   if(best<=(r)*C)break}
  return best<=maxR?{d:best,fi:bf}:null}
 const PKEYS=['_관로거리m','_관로관경','_관로재질','_관로설치연도','_관로경과연수','_관로ID'];
@@ -1998,22 +2000,22 @@ function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  if(by==='age')col=a.age==null?'#94a3b8':band(AGE_BANDS,a.age)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
  else if(by==='use')col=USE_COL[a.use]||catCol(a.use);else col=MAT_COL[a.mat]||catCol(a.mat);
- const w=(a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};return{color:col,weight:w,opacity:.9}}
+ const w=(a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};return{color:col,weight:w,opacity:.9}}
 const catMap=new Map();function catCol(k){if(k==='미상')return '#94a3b8';if(!catMap.has(k))catMap.set(k,OTHER_COL[catMap.size%OTHER_COL.length]);return catMap.get(k)}
 function pipePopup(f){const a=attrOf(f),P=f.properties;
- const rows=[['레이어',a.layer||'-'],['관리번호',a.id],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];
- return `<b>🚰 상수관로</b><table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${k}</td><td>${k==='재질'?v:esc(v)}</td></tr>`).join('')}</table>`+
+ const rows=[['레이어',a.layer||'-'],['관리번호',a.id||P._임시번호||''],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];
+ return `<b>🚰 상수관로</b>${P._ped||P._폐관?` <span style="font-size:11px;font-weight:700;color:${P._폐관?'#b91c1c':'#7c3aed'}">${P._폐관?'🗑 폐관 표시':P._추가?'🆕 현장 추가':'✏️ 현장 수정'} ${esc(P._현장수정||'')}</span>`:''}${P['현장메모']?`<div style="font-size:11.5px;color:#7c3aed">📝 ${esc(P['현장메모'])}</div>`:''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${k}</td><td>${k==='재질'?v:esc(v)}</td></tr>`).join('')}</table>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 관로가 많을 때: 배수관 등 본관은 줌 13부터, 급수관은 줌 16부터 그림 (모두 그리면 시가지 전체 화면에서 느려짐) */
 const PZ_MAIN=13,PZ_SVC=16;
 function pipePane(){if(!map||!map.createPane)return 'overlayPane';if(!map.getPane('pipes')){const p=map.createPane('pipes');p.style.zIndex=390;p.style.pointerEvents='none'}return 'pipes'}
-function pipeHitAt(ll){if(!PIPE.segs||!map)return null;const onM=PIPE.layer&&map.hasLayer(PIPE.layer),onS=PIPE.layerS&&map.hasLayer(PIPE.layerS);if(!onM&&!onS)return null;
- const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*7,h=nearestPipe(ll.lng,ll.lat,r);if(!h)return null;const f=PIPE.feats[h.fi],svc=attrOf(f).use==='급수관';return(svc?onS:onM)?f:null}
-function pipeClick(e){if(typeof shutEat==='function'&&shutEat(e))return;const f=pipeHitAt(e.latlng);if(f)L.popup({maxWidth:280}).setLatLng(e.latlng).setContent(pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · ')))(attrOf(f))}</div>`).openOn(map)}
+function pipeHitAt(ll){/* 폐관 표시 관로도 누르면 정보가 보이게 (all) */if(!PIPE.segs||!map)return null;const onM=PIPE.layer&&map.hasLayer(PIPE.layer),onS=PIPE.layerS&&map.hasLayer(PIPE.layerS);if(!onM&&!onS)return null;
+ const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*7,h=nearestPipe(ll.lng,ll.lat,r,true);if(!h)return null;const f=PIPE.feats[h.fi],svc=attrOf(f).use==='급수관';return(svc?onS:onM)?f:null}
+function pipeClick(e){if(typeof shutEat==='function'&&shutEat(e))return;const f=pipeHitAt(e.latlng);if(f)L.popup({maxWidth:280}).setLatLng(e.latlng).setContent(pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · ')))(attrOf(f))}</div>`).openOn(map)}
 function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
  const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle},main=[],svc=[];
- PIPE.feats.forEach(f=>(attrOf(f).use==='급수관'?svc:main).push(f));PIPE.nMain=main.length;PIPE.nS=svc.length;
+ PIPE.feats.forEach(f=>{if(f.properties&&f.properties._빈)return;(attrOf(f).use==='급수관'?svc:main).push(f)});PIPE.nMain=main.length;PIPE.nS=svc.length;
  PIPE.layer=L.geoJSON({type:'FeatureCollection',features:main},opt);PIPE.layerS=svc.length?L.geoJSON({type:'FeatureCollection',features:svc},opt):null;
  renderLegend();pipeShow();pipeUnknown()}
 function pipeUnknown(){const um=new Map(),uu=new Map(),mk=$('pMat').value,uk=$('pUse').value;
@@ -2794,10 +2796,10 @@ function pFillSelects(keys,ks,saved){
 function pFieldsKeep(){try{const v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{};v.fields=pFields();localStorage.setItem('geo-pipe',JSON.stringify(v))}catch(_){}}
 async function pipeSave(kind,file,cnt){const msg=$('pSaved');let prev=null;try{prev=await IDB.get('pipes')}catch(_){}
  if(kind==='전체')kind=prev?'전체 교체':'전체 등록';
- const hist=(prev&&prev.hist||[]).concat([{at:Date.now(),kind,file:file||'',add:cnt&&cnt.add||0,upd:cnt&&cnt.upd||0,del:cnt&&cnt.del||0,n:PIPE.feats.length}]).slice(-200);
+ const hist=(prev&&prev.hist||[]).concat([{at:Date.now(),kind,file:file||'',add:cnt&&cnt.add||0,upd:cnt&&cnt.upd||0,del:cnt&&cnt.del||0,n:PIPE.raw.length}]).slice(-200);
  const full=/^전체/.test(kind);
  const v={v:1,name:full?(file||'상수관로'):(prev&&prev.name)||file||'상수관로',base:full?baseOf(file):(prev&&prev.base)||baseOf(file),at:Date.now(),layers:PIPE.layers||[],
-  feats:PIPE.feats.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist};
+  feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist};
  $('pSaveBox').hidden=false;msg.textContent='💾 이 PC에 저장 중…';
  try{if(prev&&kind!=='되돌리기')await IDB.set('pipes_prev',prev);await IDB.set('pipes',v);stoKeep();pFieldsKeep();pipeSavedShow(v)}
  catch(e){msg.innerHTML='<span class="c-rd">이 PC에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span> (브라우저 저장 공간을 확인하세요)'}}
@@ -2808,18 +2810,18 @@ async function pipeSavedShow(v){const box=$('pSaveBox');if(!v){box.hidden=true;$
  $('pHistBox').innerHTML=(v.hist||[]).slice().reverse().slice(0,30).map(histRow).join('<br>')||'이력 없음'}
 async function pipeRestore(force){if(PIPE.feats.length&&!force)return;let v=null;try{v=await IDB.get('pipes')}catch(_){return}if(!v||!v.feats||!v.feats.length)return;stoKeep();
  const msg=$('pMsg');msg.textContent='💾 저장된 상수관로 기준자료를 불러오는 중…';await sleep(20);
- PIPE.feats=v.feats;PIPE.fc={type:'FeatureCollection',features:v.feats};PIPE.layers=v.layers||[];PIPE.bad=[];PIPE.crs='저장본';PIPE.ct=null;PIPE.stats=null;
+ await pedLoad();PIPE.raw=v.feats;PIPE.feats=pedApply(v.feats);PIPE.fc={type:'FeatureCollection',features:PIPE.feats};PIPE.layers=v.layers||[];PIPE.bad=[];PIPE.crs='저장본';PIPE.ct=null;PIPE.stats=null;
  const ks=new Map();v.feats.slice(0,5000).forEach(f=>Object.keys(f.properties||{}).forEach(k=>ks.set(k,(ks.get(k)||0)+1)));
  let sf={};try{sf=(JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}).fields||{}}catch(_){}
  pFillSelects([...ks.keys()],ks,sf);buildPipeIndex();renderPipes();$('pPanel').hidden=false;
  msg.innerHTML=`💾 저장된 기준자료로 지도에 표시했습니다: 관로 ${v.feats.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km${v.feats.length>3000?'<br>관로가 많아 지도를 확대하면(배수관 줌 13, 급수관 줌 16 이상) 그려집니다.':''}`;
- pipeSavedShow(v);if(out.length)joinAll(true);else pipeBlockStats()}
+ pipeSavedShow(v);pedInfo();if(out.length)joinAll(true);else pipeBlockStats()}
 
 /* ---------- 상수관로: 변경분 반영 ---------- */
-async function pipeUpdate(buf,file){const msg=$('pMsg');if(!PIPE.feats.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
+async function pipeUpdate(buf,file){const msg=$('pMsg');if(!PIPE.raw.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
  const R=await pipeParse(buf,msg);if(!R.all.length){msg.textContent='변경분 파일에서 관로(선)를 찾지 못했습니다.'+(R.bad.length?' 좌표계 판별 실패: '+R.bad.join(', '):'');return}
  msg.textContent='기준자료와 비교 중…';await sleep(10);
- const base=PIPE.feats,bKeys=base.map(pKeyOf),bG=new Map();bKeys.forEach((k,i)=>{let a=bG.get(k);if(!a)bG.set(k,a=[]);a.push(base[i])});
+ const base=PIPE.raw,bKeys=base.map(pKeyOf),bG=new Map();bKeys.forEach((k,i)=>{let a=bG.get(k);if(!a)bG.set(k,a=[]);a.push(base[i])});
  const uG=groupBy(R.all,pKeyOf),add=[],upd=[];let same=0;
  for(const [k,arr] of uG){const b=bG.get(k);if(!b)add.push(k);else if(sigsOf(b)!==sigsOf(arr))upd.push(k);else same++}
  /* 구역 단위 교체 후보: 변경분 파일에 포함된 소블록 안의 기존 관로 중 파일에 없는 것 */
@@ -2839,22 +2841,22 @@ async function pipeUpdate(buf,file){const msg=$('pMsg');if(!PIPE.feats.length){m
   <tr><td class="mute">＝ 같음</td><td>${same.toLocaleString()}</td><td></td></tr></table>
   ${upd.length?`<p class="hint" style="margin:4px 0 0">변경: 기존 선 ${upd.reduce((a,k)=>a+bG.get(k).length,0).toLocaleString()}개를 새 선 ${fUpd.length.toLocaleString()}개로 바꿉니다 (같은 관리번호의 선은 묶어서 교체).</p>`:''}
   ${areas.size?`<label class="ck" style="display:flex;gap:6px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="dfArea"><span><b>구역 단위 교체</b>: 이 파일에 들어 있는 소블록 ${areas.size}개(${[...areas].slice(0,6).map(esc).join(', ')}${areas.size>6?' …':''}) 안의 기존 관로 중 파일에 없는 <b class="c-rd">${delA.length.toLocaleString()}개 삭제</b><br><small class="mute">공사 구역 단위로 GIS를 다시 뽑아 받은 경우에만 켜세요. 기준: ${esc(areaHow)}</small></span></label>`:'<p class="hint">구역 정보(소블록명)가 없어 삭제는 반영하지 않습니다. 폐관은 🗑 폐관 목록으로 지우세요.</p>'}
-  ${dLegend}<p class="hint" style="margin:6px 0 0">적용하면 바로 이전 기준자료를 1개 보관합니다(↩ 되돌리기 가능).</p>`;
+  ${pedKeepHtml()}${dLegend}<p class="hint" style="margin:6px 0 0">적용하면 바로 이전 기준자료를 1개 보관합니다(↩ 되돌리기 가능).</p>`;
  diffOpen('🚰 상수관로 변경분 반영 미리보기',html,[[fAdd,'#16a34a'],[fUpd,'#f59e0b'],[fDel,'#dc2626','6 6']],async()=>{
-  const useDel=!!($('dfArea')&&$('dfArea').checked),rm=new Set([...upd,...(useDel?delA:[])]);
+  const useDel=!!($('dfArea')&&$('dfArea').checked),rm=new Set([...upd,...(useDel?delA:[])]);if($('dfPed')&&!$('dfPed').checked)await pedDropAll();
   const next=base.filter((f,i)=>!rm.has(bKeys[i])).concat(fAdd,fUpd);
   await pipeApply(next,'변경분 반영',file,{add:add.length,upd:upd.length,del:useDel?delA.length:0})})}
 async function pipeApply(next,kind,file,cnt){const msg=$('pMsg');msg.textContent='반영 중…';await sleep(10);
- PIPE.feats=next;PIPE.fc={type:'FeatureCollection',features:next};PIPE.ct=null;PIPE.stats=null;buildPipeIndex();renderPipes();
- await pipeSave(kind,file,cnt);
- msg.innerHTML=`✅ ${esc(kind)} 완료: <span class="c-em">+${cnt.add}</span> · <span class="c-am">~${cnt.upd}</span> · <span class="c-rd">−${cnt.del}</span> → 관로 ${next.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km`;
+ PIPE.raw=next;PIPE.feats=pedApply(next);PIPE.fc={type:'FeatureCollection',features:PIPE.feats};PIPE.ct=null;PIPE.stats=null;buildPipeIndex();renderPipes();
+ await pipeSave(kind,file,cnt);pedInfo();
+ msg.innerHTML=`✅ ${esc(kind)} 완료: <span class="c-em">+${cnt.add}</span> · <span class="c-am">~${cnt.upd}</span> · <span class="c-rd">−${cnt.del}</span> → 관로 ${next.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km${pedLive().length?` · 🛠 현장 수정 ${(pedLive().length-PED.orph.length).toLocaleString()}개 다시 덧씌움${PED.orph.length?` <span class="c-am">(못 찾음 ${PED.orph.length})</span>`:''}`:''}`;
  if(out.length)joinAll(true);else pipeBlockStats()}
-async function pipeDelList(buf,file){const msg=$('pMsg');if(!PIPE.feats.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
+async function pipeDelList(buf,file){const msg=$('pMsg');if(!PIPE.raw.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
  const wb=XLSX.read(new Uint8Array(buf),{type:'array'}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
  if(!rows.length){msg.textContent='폐관 목록이 비어 있습니다.';return}
  const cols=Object.keys(rows[0]),col=cols.find(k=>/관리번호|FTR_IDN|IDN|^ID$/i.test(k))||cols[0];
  const ids=new Set(rows.map(r=>String(r[col]??'').trim()).filter(Boolean));
- const base=PIPE.feats,bKeys=base.map(pKeyOf),hit=new Set(),fDel=[];bKeys.forEach((k,i)=>{const id=keyId(k);if(id&&ids.has(id)){hit.add(id);fDel.push(base[i])}});
+ const base=PIPE.raw,bKeys=base.map(pKeyOf),hit=new Set(),fDel=[];bKeys.forEach((k,i)=>{const id=keyId(k);if(id&&ids.has(id)){hit.add(id);fDel.push(base[i])}});
  const miss=[...ids].filter(x=>!hit.has(x));
  if(!hit.size){msg.textContent=`목록의 관리번호 ${ids.size}개 중 기준자료와 일치하는 관로가 없습니다 (열: ${col}).`;return}
  const html=`<p style="margin:0 0 6px"><b>${esc(file)}</b> · 열 "${esc(col)}" · 번호 ${ids.size.toLocaleString()}개</p>
@@ -2937,8 +2939,9 @@ async function bkZip(z,msg,label){return z.generateAsync({type:'blob',streamFile
 async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)return;btn.disabled=true;msg.textContent='백업 파일 만드는 중… (관로가 많으면 10~30초)';await sleep(30);
  const o={app:'geo-addr-app',ver:1,at:new Date().toISOString()},parts=[],day=fmtD(Date.now()).replace(/-/g,'');
  try{if($('bkB').checked){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
-  if($('bkP').checked){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.feats.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.feats.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
-   if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}}
+  if($('bkP').checked){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.raw.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
+   if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}
+   try{await pedLoad();if(PED.recs.length){o.pedit={v:1,at:PED.at,recs:PED.recs};parts.push('관로 현장 수정 '+pedLive().length.toLocaleString()+'개')}}catch(_){}}
   if($('bkF').checked){let f=null;try{f=await IDB.get('facs')}catch(_){}if(f&&f.feats&&f.feats.length){o.facs=f;parts.push('상수도 시설물 '+f.feats.length.toLocaleString()+'개')}}
   if($('bkE').checked){let e=null;try{e=await IDB.get('elev')}catch(_){}if(e&&e.z&&e.z.length){o.elev=e;parts.push('표고 '+e.z.length.toLocaleString()+'개')}}
   if($('bkG').checked){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
@@ -2982,6 +2985,7 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(use.g){for(const k in o.gcache)if(!Object.prototype.hasOwnProperty.call(gcStore,k))gcStore[k]=o.gcache[k];try{await IDB.set('gcache',gcStore)}catch(_){}gcInfo()}
   if(use.b){const s=await blkSnap();if(s)try{await IDB.set('blocks_prev',s)}catch(_){}await IDB.set('blocks',o.blocks);rawFC=null;BLK_HIST=[];await blkRestore()}
   if(use.p){let s=null;try{s=await IDB.get('pipes')}catch(_){}if(s)try{await IDB.set('pipes_prev',s)}catch(_){}await IDB.set('pipes',o.pipes);await pipeRestore(true)}
+  if(o.pedit&&Array.isArray(o.pedit.recs)&&$('bkP').checked){await pedLoad();const n=pedMerge(o.pedit.recs);if(n){PED.dirty=true;PED.at=Date.now();await pedStore();pedReapply()}}
   if(use.f){let s=null;try{s=await IDB.get('facs')}catch(_){}if(s)try{await IDB.set('facs_prev',s)}catch(_){}await IDB.set('facs',o.facs);await facRestore(true)}
   if(use.e){let s=null;try{s=await IDB.get('elev')}catch(_){}if(s)try{await IDB.set('elev_prev',s)}catch(_){}await IDB.set('elev',o.elev);await elevRestore(true)}
   if(use.ph){const have=new Set(PH.list.map(m=>m.id));for(const m of o.photos){if(have.has(m.id))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id)}catch(_){}}await phSaveMeta(true);phRefresh()}
@@ -4291,7 +4295,7 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
 
 /* ===================== 🗺️ 기준자료 공유: 사진 공유 서버(공유 키)에 소블록 경계·상수관로·시설물을 올리고, 다른 기기는 열 때 새 버전만 받음 ===================== */
 /* 버전 = 기준자료의 저장 시각(at). 서버 버전이 이 기기 것보다 새것일 때만 받고, 이 기기 것이 더 새것이면 받지 않고 '올리기 필요'로 알림 */
-const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0]]};
+const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['pedit','상수관로 현장 수정',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0]]};
 const refMB=b=>(b/1048576).toFixed(1)+'MB';
 function refSay(t){const m=$('shRefMsg');if(m)m.innerHTML=t}
 async function refLocal(){const o={};for(const [n] of REF.L){try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
@@ -4304,7 +4308,8 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
  REF.busy=true;REF.old=false;REF.oldN=[];let up=0;try{
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
-  for(const [n,t,cnt] of REF.L){const v=loc[n],c=cnt(v);if(!c||!v.at)continue;if(info[n]&&info[n].v===v.at)continue;
+  for(const [n,t,cnt] of REF.L){if(n==='pedit'){const r=await pedSync('both',true);if(r.old){REF.oldN.push(t);REF.old=true}else if(r.err&&!r.busy)throw new Error(r.err);if(r.sent)up++;continue}
+   const v=loc[n],c=cnt(v);if(!c||!v.at)continue;if(info[n]&&info[n].v===v.at)continue;
    refSay(`${t} 압축 중… (${c.toLocaleString()}개)`);const z=new JSZip();z.file('d.json',JSON.stringify(v));
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    try{for(let p=0;p<parts;p++){refSay(`⏫ ${t} 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);
@@ -4317,7 +4322,8 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
 async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=[];try{
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   if(!auto)refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
-  for(const [n,t,cnt] of REF.L){const s=info[n],l=loc[n];if(!s||!s.parts)continue;if(cnt(l)&&(l.at||0)>=s.v)continue;
+  for(const [n,t,cnt] of REF.L){if(n==='pedit'){if(info.pedit){const r=await pedSync('down',true);if(r.got)got.push(`${t} ${r.got}건`)}continue}
+   const s=info[n],l=loc[n];if(!s||!s.parts)continue;if(cnt(l)&&(l.at||0)>=s.v)continue;
    const bufs=[];for(let p=0;p<s.parts;p++){refSay(`⬇️ ${t} 받는 중… ${p+1}/${s.parts} (${refMB(s.size)})`);const r=await shReq('refget',{name:n,v:s.v,part:p});bufs.push(shBlob(r.data))}
    refSay(`${t} 푸는 중…`);const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error(t+' 압축 파일이 비었습니다.');
    const v=JSON.parse(await e.async('string'));if(cnt(v)!==s.cnt||v.at!==s.v)throw new Error(t+' 받은 자료 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');
@@ -4640,9 +4646,9 @@ function shutBuild(D){
  const pa=ao.slice(0,N),pf=fo.slice(0,nf);for(let e=0;e<E;e++){ae[pa[EA[e]]++]=e;ae[pa[EB[e]]++]=e;fe[pf[EF[e]]++]=e}
  return{nx:Float64Array.from(NX),ny:Float64Array.from(NY),nv:Int32Array.from(NV),ea:Int32Array.from(EA),eb:Int32Array.from(EB),ef:Int32Array.from(EF),el:Float32Array.from(EL),eo:Int32Array.from(EO),exy:Float64Array.from(EXY),ao,ae,fo,fe,tj,vOn,vAll:vid.length}}
 function shutValveIdx(){const KI=FAC.kinds.map(facKindInfo),r=[];for(let i=0;i<FAC.n;i++)if(KI[FAC.k[i]]&&KI[FAC.k[i]].sym==='gate'&&!(FAC.dl&&FAC.dl[i]))r.push(i);return r}
-function shutPrep(){const P=PIPE.feats;let nv=0,nl=0;P.forEach(f=>lineParts(f.geometry).forEach(p=>{if(p.length>=2){nl++;nv+=p.length}}));
+function shutPrep(){const P=PIPE.feats,live=f=>!(f.properties&&f.properties._폐관);let nv=0,nl=0;P.forEach(f=>{if(live(f))lineParts(f.geometry).forEach(p=>{if(p.length>=2){nl++;nv+=p.length}})});
  const xy=new Float64Array(nv*2),off=new Int32Array(nl+1),lf=new Int32Array(nl);let v=0,l=0;
- P.forEach((f,fi)=>lineParts(f.geometry).forEach(p=>{if(p.length<2)return;off[l]=v;lf[l++]=fi;for(const c of p){const m=toM(c[0],c[1]);xy[2*v]=m[0];xy[2*v+1]=m[1];v++}}));off[nl]=v;
+ P.forEach((f,fi)=>live(f)&&lineParts(f.geometry).forEach(p=>{if(p.length<2)return;off[l]=v;lf[l++]=fi;for(const c of p){const m=toM(c[0],c[1]);xy[2*v]=m[0];xy[2*v+1]=m[1];v++}}));off[nl]=v;
  const vs=shutValveIdx(),vxy=new Float64Array(vs.length*2);vs.forEach((i,j)=>{const m=toM(FAC.x[i],FAC.y[i]);vxy[2*j]=m[0];vxy[2*j+1]=m[1]});
  return{xy,off,lf,vxy,vid:Int32Array.from(vs),tol:+SHUT.opt.tol||.1,vtol:+SHUT.opt.vtol||.5,nf:P.length}}
 function shutNet(){const key=(+SHUT.opt.tol||.1)+'|'+(+SHUT.opt.vtol||.5);
@@ -5163,13 +5169,13 @@ async function lpaShow(ll){if(!map||lpaBusy())return;LPA.at=Date.now();lpaClear(
    🧲 자석: 누른 곳(또는 ⊕ 십자선 가운데)에서 화면 25픽셀 안의 가장 가까운 관로 선 위로 붙임. 관로 끝·접합점이 8픽셀 안이면 그 점에 우선.
    밸브류(제수·역지·이토·감압)는 붙은 관로 구간 방향으로 회전값(rotation: 동쪽 기준 시계방향 °)을 자동으로 넣음.
    고친 시설은 원래 값(_원본)·원래 위치(_원좌표)를 보관 → ↩ 원래대로, 시설물 저장 이력 ↶ 되돌리기, 📋 현장 수정 목록 엑셀(고객 정보 없음). */
-var FE={on:false,tool:'sel',addK:'',snap:true,cross:false,sel:-1,drag:null,justDrag:0,ghost:null,hl:null,hlFi:-1,last:null,dirI:0,raf:0,bar:null,a:null,cx:null};
+var FE={on:false,obj:'fac',tool:'sel',addK:'',snap:true,cross:false,sel:-1,drag:null,justDrag:0,ghost:null,hl:null,hlFi:-1,last:null,dirI:0,raf:0,bar:null,a:null,cx:null};
 const FE_R=25,FE_VR=8,FE_JR=1,FE_FILL_R=3,FE_FILL_JR=.3;
 const segAng=s=>{let a=-Math.atan2(s[3]-s[1],s[2]-s[0])*180/Math.PI;a=((a%360)+360)%360;a=Math.round(a*10)/10;return a<.05?360:a};
 /* 관로 선 위 가장 가까운 점 (미터 격자 색인). R·VR은 미터. 관로 끝·꺾인 점이 VR 안이면 그 점 */
-function pipeSnap(lng,lat,R,VR){if(!PIPE.segs||!PIPE.grid||!PIPE.segs.length)return null;const [px,py]=toM(lng,lat),C=100,S=PIPE.segs;let best=Infinity,bs=-1,fx=0,fy=0,bv=Infinity,vx=0,vy=0;
+function pipeSnap(lng,lat,R,VR,ex){if(!PIPE.segs||!PIPE.grid||!PIPE.segs.length)return null;const [px,py]=toM(lng,lat),C=100,S=PIPE.segs;let best=Infinity,bs=-1,fx=0,fy=0,bv=Infinity,vx=0,vy=0;
  for(let gx=Math.floor((px-R)/C);gx<=Math.floor((px+R)/C);gx++)for(let gy=Math.floor((py-R)/C);gy<=Math.floor((py+R)/C);gy++){const a=PIPE.grid.get(gx+','+gy);if(!a)continue;
-  for(const si of a){const s=S[si],dx=s[2]-s[0],dy=s[3]-s[1],L2=dx*dx+dy*dy;let t=L2?((px-s[0])*dx+(py-s[1])*dy)/L2:0;t=t<0?0:t>1?1:t;const qx=s[0]+t*dx,qy=s[1]+t*dy,d=Math.hypot(px-qx,py-qy);
+  for(const si of a){const s=S[si];if(s[4]<0||s[4]===ex||PIPE.feats[s[4]]&&PIPE.feats[s[4]].properties._폐관)continue;const dx=s[2]-s[0],dy=s[3]-s[1],L2=dx*dx+dy*dy;let t=L2?((px-s[0])*dx+(py-s[1])*dy)/L2:0;t=t<0?0:t>1?1:t;const qx=s[0]+t*dx,qy=s[1]+t*dy,d=Math.hypot(px-qx,py-qy);
    if(d<best){best=d;bs=si;fx=qx;fy=qy}
    if(VR>0){let e=Math.hypot(px-s[0],py-s[1]);if(e<bv){bv=e;vx=s[0];vy=s[1]}e=Math.hypot(px-s[2],py-s[3]);if(e<bv){bv=e;vx=s[2];vy=s[3]}}}}
  if(bs<0||best>R)return null;let x=fx,y=fy,v=false;if(VR>0&&bv<=VR){x=vx;y=vy;v=true}
@@ -5177,7 +5183,7 @@ function pipeSnap(lng,lat,R,VR){if(!PIPE.segs||!PIPE.grid||!PIPE.segs.length)ret
 /* 한 점(미터 좌표)에서 r m 안에 지나는 관로들의 방향(0~180°로 접어 15° 넘게 다른 것만) — 2개 이상이면 접합점 */
 function pipeDirs(x,y,r){const C=100,S=PIPE.segs,out=[];if(!S)return out;
  for(let gx=Math.floor((x-r)/C);gx<=Math.floor((x+r)/C);gx++)for(let gy=Math.floor((y-r)/C);gy<=Math.floor((y+r)/C);gy++){const a=PIPE.grid.get(gx+','+gy);if(!a)continue;
-  for(const si of a){const s=S[si];if(segDist(x,y,s)>r)continue;const g=segAng(s),f=g%180;if(!out.some(o=>{const d=Math.abs(o%180-f);return Math.min(d,180-d)<15}))out.push(g)}}
+  for(const si of a){const s=S[si];if(s[4]<0||PIPE.feats[s[4]]&&PIPE.feats[s[4]].properties._폐관||segDist(x,y,s)>r)continue;const g=segAng(s),f=g%180;if(!out.some(o=>{const d=Math.abs(o%180-f);return Math.min(d,180-d)<15}))out.push(g)}}
  return out}
 const feMpp=()=>156543.03392*Math.cos(map.getCenter().lat*Math.PI/180)/2**map.getZoom();
 /* 화면 점 → 놓을 자리 (자석 켜짐이면 관로에 붙임) */
@@ -5196,10 +5202,11 @@ function feSet(on){FE.on=!!on;if(!map)return;FE.sel=-1;FE.drag=null;
  if(FE.on){if(typeof PH!=='undefined'&&PH.ed&&PH.ed.on&&typeof phEdSet==='function')phEdSet(false);
   if(typeof SHUT!=='undefined'&&(SHUT.pick||SHUT.mode)){SHUT.pick=false;SHUT.mode='';try{shutRender()}catch(_){}}map.closePopup()}
  else{feShow(null)}
- FE.bar.hidden=!FE.on;FE.a.classList.toggle('on',FE.on);FE.a.setAttribute('aria-pressed',String(FE.on));map.getContainer().classList.toggle('feon',FE.on);feCrossSync();feUi();facDraw()}
+ if(!FE.on){PE.drag=null;PE.draw=[];PE.v=null}
+ FE.bar.hidden=!FE.on;FE.a.classList.toggle('on',FE.on);FE.a.setAttribute('aria-pressed',String(FE.on));map.getContainer().classList.toggle('feon',FE.on);feCrossSync();feUi();facDraw();try{peMarks();peDraw()}catch(_){}}
 window.feOpen=i=>{if(!FE.on)feSet(true);FE.sel=i;FE.tool='sel';feUi();facDraw()};
 function feCrossSync(){const on=FE.on&&FE.cross;FE.cx.hidden=!on;if(on)feCrossUpd();else if(!FE.drag)feShow(null)}
-function feCrossUpd(){if(FE.raf)return;FE.raf=requestAnimationFrame(()=>{FE.raf=0;if(!FE.on||!FE.cross)return;const sz=map.getSize(),s=feSnapAt(L.point(sz.x/2,sz.y/2));FE.last=s;feShow(s);feMsg(feSnapTxt(s))})}
+function feCrossUpd(){if(FE.raf)return;FE.raf=requestAnimationFrame(()=>{FE.raf=0;if(!FE.on||!FE.cross)return;if(FE.obj==='pipe'){peCrossUpd();return}const sz=map.getSize(),s=feSnapAt(L.point(sz.x/2,sz.y/2));FE.last=s;feShow(s);feMsg(feSnapTxt(s))})}
 /* 선택한 시설 고치기 칸 */
 function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKindInfo(f.k),has=k=>P[k]!=null;
  const dia=has('소화전구경')?'소화전구경':'구경',typ=['밸브류형식','소화전형식','유량계형식','가압형식','형식'].find(has)||(I.sym==='hyd'?'소화전형식':FROT.has(I.sym)||I.sym==='gate'?'밸브류형식':I.sym==='meter'?'유량계형식':'형식');
@@ -5211,11 +5218,15 @@ function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKi
   ${feRotKind(i)?`<label>회전</label><span class="ferot"><input data-k="rotation" value="${esc(P.rotation??'')}" inputmode="decimal" style="width:64px">° <button type="button" data-e="pdir" title="가까운 관로 방향으로 (접합점이면 누를 때마다 다른 관로)">🧭 관로 방향</button><button type="button" data-e="r90">↻ 90°</button></span>`:''}</div>
   <div class="r"><button type="button" data-e="save" class="on">💾 저장</button>${P._추가?`<button type="button" data-e="rm" class="del">🗑 추가 취소</button>`:`<button type="button" data-e="dl" class="${P._삭제?'':'del'}">${P._삭제?'♻ 되살리기':'🗑 삭제 표시'}</button>`}${P._현장수정&&!P._추가?`<button type="button" data-e="orig" title="SHP 원래 값·위치로">↩ 원래대로</button>`:''}<button type="button" data-e="desel">닫기</button></div></div>`}
 function feUi(){if(!FE.bar)return;const b=FE.bar,n=FAC.feats.filter(f=>f.p&&(f.p._현장수정||f.p._추가)).length,ks=feKinds();if(!FE.addK||!ks.includes(FE.addK))FE.addK=ks.includes('SA200')?'SA200':ks[0]||'';
- b.innerHTML=`<div class="r"><b>🛠 시설물 편집</b><button type="button" data-t="sel" class="${FE.tool==='sel'?'on':''}" title="시설을 눌러 고르고, 고른 시설을 끌어 옮깁니다">✋ 고르기·옮기기</button><button type="button" data-t="add" class="${FE.tool==='add'?'on':''}">➕ 추가</button>${FE.tool==='add'?`<select data-e="addk" aria-label="추가할 시설 종류">${ks.map(k=>`<option value="${esc(k)}"${k===FE.addK?' selected':''}>${esc(facKindInfo(k).name)}</option>`).join('')}</select>`:''}<button type="button" data-e="end">✕ 끝내기</button></div>
+ const tabs=`<div class="r"><b>🛠 편집</b><button type="button" data-o="fac" class="${FE.obj==='fac'?'on':''}" aria-pressed="${FE.obj==='fac'}">🔧 시설물</button><button type="button" data-o="pipe" class="${FE.obj==='pipe'?'on':''}" aria-pressed="${FE.obj==='pipe'}">🚰 관로</button><button type="button" data-e="end">✕ 끝내기</button></div>`;
+ if(FE.obj==='pipe'){b.innerHTML=tabs+peUiHtml();if(FE.cross)feCrossUpd();return}
+ b.innerHTML=tabs+`<div class="r"><button type="button" data-t="sel" class="${FE.tool==='sel'?'on':''}" title="시설을 눌러 고르고, 고른 시설을 끌어 옮깁니다">✋ 고르기·옮기기</button><button type="button" data-t="add" class="${FE.tool==='add'?'on':''}">➕ 추가</button>${FE.tool==='add'?`<select data-e="addk" aria-label="추가할 시설 종류">${ks.map(k=>`<option value="${esc(k)}"${k===FE.addK?' selected':''}>${esc(facKindInfo(k).name)}</option>`).join('')}</select>`:''}</div>
  <div class="r"><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="관로 선 위에 자동으로 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${FE.cross?'on':''}" aria-pressed="${FE.cross}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${FE.cross?`<button type="button" data-e="place" class="on">📍 여기에 놓기</button>`:''}<button type="button" data-e="xls" title="현장에서 고친 시설 목록 (GIS 담당자 전달용)">📋 수정 목록<i${n?'':' hidden'}>${n}</i></button><button type="button" data-e="fill" title="회전값이 없는 밸브를 가까운 관로 방향으로 채우기">🧭 회전 채우기</button></div>
  <div class="fem hint">${FE.sel>=0?'':FE.tool==='add'?(FE.cross?'지도를 움직여 십자선을 놓을 자리에 맞추고 📍 여기에 놓기를 누르세요.':'지도에서 놓을 자리를 누르세요. 관로 가까이 누르면 관로 위에 붙습니다.'):(FE.cross?'시설을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 여기에 놓기를 누르세요.':'시설을 눌러 고르세요. 고른 시설은 끌어서 옮길 수 있습니다.')}</div>${FE.sel>=0?feFormHtml(FE.sel):''}`;
  if(FE.cross)feCrossUpd()}
 async function feAct(e,btn){const E=btn.dataset.e,T=btn.dataset.t;
+ if(btn.dataset.o){FE.obj=btn.dataset.o;FE.sel=-1;FE.last=null;PE.sel=-1;PE.v=null;PE.draw=[];feShow(null);feUi();facDraw();peMarks();peDraw();return}
+ if(FE.obj==='pipe'&&(btn.dataset.pe||btn.dataset.pt))return peAct(btn);
  if(T){FE.tool=T;FE.sel=-1;feUi();facDraw();return}
  if(E==='end')return feSet(false);
  if(E==='snap'){FE.snap=!FE.snap;feUi();return}
@@ -5247,7 +5258,7 @@ const feCp=i=>map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]);
 function feInit(){if(!map)return;if(!map.getPane('fePane')){const p=map.createPane('fePane');p.style.zIndex=445;p.style.pointerEvents='none'}
  const C=map.getContainer();
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn febtn np'),a=L.DomUtil.create('a','',d);a.href='#';a.textContent='🛠';FE.a=a;
-  a.title='🛠 시설물 편집 (옮기기 · 추가 · 삭제 표시 · 속성 · 관로에 붙이기)';a.setAttribute('role','button');a.setAttribute('aria-label','시설물 편집 모드');a.setAttribute('aria-pressed','false');
+  a.title='🛠 편집: 시설물(옮기기·추가·삭제 표시·속성) · 상수관로(꼭짓점·나누기·새 관로·폐관 표시·속성)';a.setAttribute('role','button');a.setAttribute('aria-label','시설물 편집 모드');a.setAttribute('aria-pressed','false');
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);feSet(!FE.on)});return d}});
  map.addControl(new Ctl());
  const bar=L.DomUtil.create('div','phed febar np',C);bar.hidden=true;bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','시설물 편집');FE.bar=bar;
@@ -5261,16 +5272,20 @@ function feInit(){if(!map)return;if(!map.getPane('fePane')){const p=map.createPa
  /* 편집 중 탭: 시설 고르기 / 새 시설 놓기 — 수용가·관로·블록 팝업은 열지 않음 */
  C.addEventListener('click',e=>{if(!FE.on||skip(e.target))return;e.stopPropagation();e.preventDefault();if(Date.now()-FE.justDrag<400)return;
   const cp=map.mouseEventToContainerPoint(e);
+  if(FE.obj==='pipe'){peClick(cp);return}
   if(FE.tool==='add'){if(FE.cross){feMsg('십자선 켜짐: 지도를 움직여 맞춘 뒤 📍 여기에 놓기를 누르세요.');return}feAdd(feSnapAt(cp)).catch(er=>feMsg('<span class="c-rd">추가 실패: '+esc(er.message||er)+'</span>'));return}
   const i=facHitAt(cp);FE.sel=i;feUi();facDraw()},true);
  /* 고른 시설 끌어 옮기기 (마우스·손가락 공통) */
- C.addEventListener('pointerdown',e=>{if(!FE.on||FE.tool!=='sel'||FE.sel<0||skip(e.target)||e.button>0)return;const cp=map.mouseEventToContainerPoint(e),q=feCp(FE.sel);if(Math.hypot(cp.x-q.x,cp.y-q.y)>26)return;
+ C.addEventListener('pointerdown',e=>{if(FE.on&&FE.obj==='pipe'){if(skip(e.target)||e.button>0)return;if(peDown(e,map.mouseEventToContainerPoint(e)))e.stopPropagation();return}
+  if(!FE.on||FE.tool!=='sel'||FE.sel<0||skip(e.target)||e.button>0)return;const cp=map.mouseEventToContainerPoint(e),q=feCp(FE.sel);if(Math.hypot(cp.x-q.x,cp.y-q.y)>26)return;
   e.stopPropagation();const de=map.dragging.enabled();if(de)map.dragging.disable();FE.drag={id:e.pointerId,de,s:null,moved:false};map.closePopup()},true);
- window.addEventListener('pointermove',e=>{const D=FE.drag;if(!D||e.pointerId!==D.id)return;D.moved=true;D.s=feSnapAt(map.mouseEventToContainerPoint(e));feShow(D.s);feMsg(feSnapTxt(D.s))});
- const up=e=>{const D=FE.drag;if(!D||e.pointerId!==D.id)return;FE.drag=null;if(D.de)map.dragging.enable();FE.justDrag=Date.now();
+ window.addEventListener('pointermove',e=>{if(PE.drag){peMove(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;D.moved=true;D.s=feSnapAt(map.mouseEventToContainerPoint(e));feShow(D.s);feMsg(feSnapTxt(D.s))});
+ const up=e=>{if(PE.drag){peUp(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;FE.drag=null;if(D.de)map.dragging.enable();FE.justDrag=Date.now();
   if(e.type==='pointerup'&&D.moved&&D.s)feMove(FE.sel,D.s).catch(er=>feMsg('<span class="c-rd">옮기기 실패: '+esc(er.message||er)+'</span>'));if(!FE.cross)feShow(null)};
  window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&FE.on&&FE.sel>=0&&!e.target.matches('input,select,textarea')){FE.sel=-1;feUi();facDraw()}})}
+ document.addEventListener('keydown',e=>{if(!FE.on||e.target.matches('input,select,textarea'))return;
+  if(FE.obj==='pipe'){if(e.key==='Escape'&&(PE.sel>=0||PE.draw.length)){PE.sel=-1;PE.v=null;PE.draw=[];feUi();peDraw()}else if((e.key==='Delete'||e.key==='Backspace')&&PE.v){e.preventDefault();peVDel()}return}
+  if(e.key==='Escape'&&FE.sel>=0){FE.sel=-1;feUi();facDraw()}})}
 /* 편집 중 표시: 고른 시설 테두리, 현장 수정 보라 점, 삭제 표시 빨간 ✕ */
 function feMarks(g,by){if(!FE.on)return;g.save();
  for(const a of by)for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1];
@@ -5304,6 +5319,234 @@ function facRotFill(){if(!FAC.n){alert('시설물 자료가 없습니다.');retu
   for(const [i,a] of use){const P=FAC.pt[i].p||(FAC.pt[i].p={});facPatch(P,{rotation:String(a)});facMark(P);FAC.rot[i]=a;FAC.ed[i]=1}
   facDraw();await facSave('현장 수정',`밸브 회전값 채우기 ${use.length.toLocaleString()}개`,{upd:use.length});feUi();
   const m=$('fMsg');if(m)m.innerHTML=`🧭 밸브 ${use.length.toLocaleString()}개의 회전값을 관로 방향으로 채웠습니다.${tot-use.length?` 확인 필요 ${(tot-use.length).toLocaleString()}개는 그대로 두었습니다.`:''}`})}
+/* ===================== 🚰 상수관로 현장 편집 (🛠 편집 모드의 🚰 관로 탭) =====================
+ 기준자료(IDB 'pipes' = PIPE.raw)는 그대로 두고, 고친 관로만 IDB 'pedit'에 따로 저장해 덧씌움(PIPE.feats) → 9만 5천 개를 다시 저장·다시 그리지 않음.
+ 기록 1건 = 관로 1개 {id,t,by,lb, o:{i,gs,k}(원래 관로 찾기: 번호 자리 → 모양 서명 → 관리번호), p:{칸:새 값}, op:{칸:원래 값}, g:새 모양, del:폐관 표시 시각,
+  add:{속성}(현장 추가·나눈 관로), from:나눈 원래 기록 id, rv:1(원래대로·추가 취소)}
+ 직원 공유: 공유 서버 기준자료 'pedit'(작은 파일) — 먼저 받아 기록별 최신 시각으로 합친 뒤 올림. */
+var PED={recs:[],at:0,sv:0,dirty:false,loaded:false,fi:new Map(),orph:[],conf:[],undo:[],busy:false,tm:0};
+var PE={tool:'sel',sel:-1,v:null,drag:null,draw:[],tapAt:0,hL:null,eL:null,last:null};
+const PED_DEAD=[1e12,1e12,1e12,1e12,-1],PE_HIT=12,PE_VHIT=20,PE_MHIT=14;
+const pedId=()=>'E'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pedTs=t=>{const d=new Date(t||Date.now());return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+const pedGs=f=>f._gs||(f._gs=geoSig(f.geometry));
+const pedBy=()=>(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';
+const pedLive=()=>PED.recs.filter(r=>!r.rv);
+function pedLen(g){let L=0;lineParts(g).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);L+=Math.hypot(b[0]-a[0],b[1]-a[1])}});return L}
+async function pedLoad(){if(PED.loaded)return;PED.loaded=true;let v=null;try{v=await IDB.get('pedit')}catch(_){}
+ if(v&&Array.isArray(v.recs)){PED.recs=v.recs;PED.at=v.at||0;PED.sv=v.sv||0;PED.dirty=!!v.dirty}}
+async function pedStore(){try{await IDB.set('pedit',{v:1,at:PED.at,sv:PED.sv,dirty:PED.dirty,recs:PED.recs});stoKeep()}catch(e){feMsg('<span class="c-rd">관로 수정 저장 실패: '+esc((e&&e.message)||e)+'</span>')}}
+/* 이 기기에서 고친 뒤 저장 (+ 자동 동기화가 켜져 있으면 20초 뒤 받기 → 올리기) */
+async function pedSave(){PED.at=Date.now();PED.dirty=true;await pedStore();pedInfo();
+ clearTimeout(PED.tm);if(typeof SH!=='undefined'&&SH.on()&&SH.cfg.auto)PED.tm=setTimeout(()=>pedSync('both',true).then(r=>{if(r&&r.sent)pedInfo()}),20000)}
+/* 고친 관로 하나의 지도용 모양 */
+function pedFeat(r,rf){const P={...(r.add||rf.properties||{}),...(r.p||{})};P._ped=r.id;P._현장수정=pedTs(r.t);if(r.del)P._폐관=pedTs(r.del);else delete P._폐관;if(r.add)P._추가=1;
+ return{type:'Feature',properties:P,geometry:r.g||rf.geometry}}
+const pedEmpty=()=>({type:'Feature',properties:{_빈:1},geometry:{type:'LineString',coordinates:[]}});
+/* 기준자료 위에 현장 수정 덧씌우기 (같은 관로에 기록이 둘이면 최신 것) */
+function pedApply(raw){const fs=raw.slice();PED.fi=new Map();PED.orph=[];PED.conf=[];if(!PED.recs.length)return fs;
+ let gsM=null,kM=null;const used=new Set();
+ for(const r of PED.recs.slice().sort((a,b)=>b.t-a.t)){if(r.rv||r.add)continue;const o=r.o||{};let j=-1;
+  if(raw[o.i]&&pedGs(raw[o.i])===o.gs)j=o.i;
+  else{if(!gsM){gsM=new Map();raw.forEach((f,i)=>{const g=pedGs(f);gsM.set(g,gsM.has(g)?-2:i)})}const g=gsM.get(o.gs);if(g>=0)j=g;
+   else if(o.k&&!/^G:/.test(o.k)){if(!kM){kM=new Map();raw.forEach((f,i)=>{const k=pKeyOf(f);kM.set(k,kM.has(k)?-2:i)})}const q=kM.get(o.k);if(q>=0)j=q}}
+  if(j<0){PED.orph.push(r);continue}if(used.has(j)){PED.conf.push(r);continue}used.add(j);o.i=j;fs[j]=pedFeat(r,raw[j]);PED.fi.set(r.id,j)}
+ for(const r of PED.recs){if(!r.add||r.rv)continue;PED.fi.set(r.id,fs.length);fs.push(pedFeat(r,null))}
+ return fs}
+/* 다시 덧씌우기(받기·백업·SHP 교체 뒤): 색인·지도를 한 번에 새로 */
+function pedReapply(){if(!PIPE.raw||!PIPE.raw.length&&!PED.recs.some(r=>r.add&&!r.rv)){pedInfo();return}
+ PIPE.feats=pedApply(PIPE.raw||[]);PIPE.fc={type:'FeatureCollection',features:PIPE.feats};PIPE.stats=null;buildPipeIndex();renderPipes();pedInfo();peMarks();peDraw()}
+/* ---- 한 관로만 바꾸기: 선분 색인·지도 레이어·라벨 캐시를 그 관로만 ---- */
+function pedSegsOff(fi,old){const S=PIPE.segs,G=PIPE.grid,C=100;lineParts(old.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);
+  for(let gx=Math.floor(Math.min(a[0],b[0])/C);gx<=Math.floor(Math.max(a[0],b[0])/C);gx++)for(let gy=Math.floor(Math.min(a[1],b[1])/C);gy<=Math.floor(Math.max(a[1],b[1])/C);gy++){const arr=G.get(gx+','+gy);if(!arr)continue;
+   for(let j=arr.length-1;j>=0;j--){const si=arr[j];if(S[si][4]===fi||S[si]===PED_DEAD){S[si]=PED_DEAD;arr.splice(j,1)}}}}})}
+function pedSegsOn(fi,f){const S=PIPE.segs,G=PIPE.grid,C=100;let len=0;lineParts(f.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]),si=S.push([a[0],a[1],b[0],b[1],fi])-1;len+=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  for(let gx=Math.floor(Math.min(a[0],b[0])/C);gx<=Math.floor(Math.max(a[0],b[0])/C);gx++)for(let gy=Math.floor(Math.min(a[1],b[1])/C);gy<=Math.floor(Math.max(a[1],b[1])/C);gy++){const key=gx+','+gy;let arr=G.get(key);if(!arr)G.set(key,arr=[]);arr.push(si)}}});f._len=len;return len}
+function pedLayerSwap(old,nf){if(!map||!PIPE.layer)return;
+ if(old)for(const g of [PIPE.layer,PIPE.layerS]){if(!g)continue;let hit=null;g.eachLayer(l=>{if(l.feature===old)hit=l});if(hit){g.removeLayer(hit);break}}
+ if(nf&&!nf.properties._빈){const g=attrOf(nf).use==='급수관'?PIPE.layerS:PIPE.layer;if(!g){renderPipes();return}g.addData(nf)}}
+function pedSwap(fi,old,nf){if(!nf)nf=pedEmpty();const feats=PIPE.feats.slice();feats[fi]=nf;PIPE.feats=feats;PIPE.fc={type:'FeatureCollection',features:feats};
+ if(PIPE.segs){if(old){pedSegsOff(fi,old);PIPE.totalM-=old._len||0}PIPE.totalM+=pedSegsOn(fi,nf)}
+ pedLayerSwap(old,nf);if(typeof PLB!=='undefined'&&PLB.cache)PLB.cache.delete(fi);plblSoon()}
+function pedRefresh(r){if(r.add){let fi=PED.fi.get(r.id);const nf=r.rv?null:pedFeat(r,null);
+  if(fi==null){if(!nf)return;fi=PIPE.feats.length;PED.fi.set(r.id,fi);pedSwap(fi,null,nf);return}pedSwap(fi,PIPE.feats[fi],nf);if(!nf)PED.fi.delete(r.id);return}
+ const fi=r.o&&r.o.i,raw=PIPE.raw&&PIPE.raw[fi];if(!raw)return;pedSwap(fi,PIPE.feats[fi],r.rv?raw:pedFeat(r,raw));if(r.rv)PED.fi.delete(r.id);else PED.fi.set(r.id,fi)}
+/* ---- 기록 만들기·고치기·되돌리기 ---- */
+function pedRecOf(fi){const f=PIPE.feats[fi],id=f&&f.properties&&f.properties._ped;return id?PED.recs.find(x=>x.id===id&&!x.rv)||null:null}
+function pedBegin(fi){let r=pedRecOf(fi),b=r?JSON.stringify(r):null;
+ if(!r){const rf=PIPE.raw[fi];if(!rf)throw new Error('관로를 찾지 못했습니다.');r={id:pedId(),t:Date.now(),o:{i:fi,gs:pedGs(rf),k:pKeyOf(rf)},p:{},op:{}};PED.recs.push(r)}
+ PED.undo.push([{id:r.id,b}]);if(PED.undo.length>30)PED.undo.shift();return r}
+function pedCancel(){const e=PED.undo.pop();if(e)e.forEach(({id,b})=>{if(b==null){const j=PED.recs.findIndex(x=>x.id===id);if(j>=0)PED.recs.splice(j,1)}})}
+const pedBase=r=>r.add?r.add:((PIPE.raw[r.o.i]||{}).properties||{});
+async function pedCommit(list,label){const t=Date.now();for(const r of list){r.t=t;r.by=pedBy();r.lb=label;if(!r.add&&!r.rv&&!Object.keys(r.p||{}).length&&!r.g&&!r.del)r.rv=1;pedRefresh(r)}
+ await pedSave();peMarks();feUi();peDraw();feMsg('✅ '+esc(label)+' · 저장했습니다'+(PED.undo.length?' (↶ 되돌리기 가능)':''))}
+async function pedUndo(){const e=PED.undo.pop();if(!e){feMsg('되돌릴 수정이 없습니다.');return}const list=[];
+ for(const {id,b} of e){const r=PED.recs.find(x=>x.id===id);if(!r)continue;if(b==null)r.rv=1;else{const o=JSON.parse(b);Object.keys(r).forEach(k=>delete r[k]);Object.assign(r,o)}r.t=Date.now();pedRefresh(r);list.push(r)}
+ PE.v=null;if(PE.sel>=0&&(!PIPE.feats[PE.sel]||PIPE.feats[PE.sel].properties._빈))PE.sel=-1;await pedSave();peMarks();feUi();peDraw();feMsg('↶ 되돌렸습니다.')}
+const pedKey=(P,role)=>{const sel={id:'pId',dia:'pDia',mat:'pMat',ymd:'pYmd',use:'pUse'}[role],k=sel&&$(sel)&&$(sel).value;if(k)return k;for(const a of PALIAS[role])if(P[a]!=null)return a;return PALIAS[role][0]};
+async function pedSetProps(fi,vals){const r=pedBegin(fi),base=pedBase(r);let n=0;
+ for(const [k,v] of Object.entries(vals)){const o=base[k]==null?'':String(base[k]);if(v===o){if(k in r.p){delete r.p[k];delete r.op[k];n++}}else if(String(r.p[k]??'\u0000')!==v){r.p[k]=v;r.op[k]=o;n++}}
+ if(!n){pedCancel();feMsg('바뀐 칸이 없습니다.');return}await pedCommit([r],'속성 수정')}
+async function pedToggleDel(fi){const r=pedBegin(fi);r.del=r.del?0:Date.now();await pedCommit([r],r.del?'폐관 표시':'되살리기')}
+function pedGeom(parts,type){const ps=parts.map(p=>p.map(c=>[+(+c[0]).toFixed(7),+(+c[1]).toFixed(7)]));return ps.length===1&&type!=='MultiLineString'?{type:'LineString',coordinates:ps[0]}:{type:'MultiLineString',coordinates:ps}}
+async function pedSetGeom(fi,parts,label){const r=pedBegin(fi),f=PIPE.feats[fi],g=pedGeom(parts,f.geometry.type);
+ if(r.add)r.g=g;else if(geoSig(g)===pedGs(PIPE.raw[fi]))delete r.g;else r.g=g;await pedCommit([r],label)}
+async function pedRevert(fi){const r=pedRecOf(fi);if(!r)return;const kids=PED.recs.filter(x=>x.from===r.id&&!x.rv),e=[r,...kids].map(x=>({id:x.id,b:JSON.stringify(x)}));
+ PED.undo.push(e);[r,...kids].forEach(x=>x.rv=1);if(r.add)PE.sel=-1;await pedCommit([r,...kids],r.add?(r.from?'나눈 관로 취소':'추가 취소'):'원래대로'+(kids.length?` (나눈 관로 ${kids.length}개 함께)`:''))}
+let PED_SEQ=0;
+function pedTmpNo(){const d=new Date(),ymd=String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+ let n=PED_SEQ;PED.recs.forEach(r=>{const m=r.add&&String(r.add._임시번호||'').match(/-(\d+)$/);if(m&&String(r.add._임시번호).includes(ymd))n=Math.max(n,+m[1])});PED_SEQ=n+1;
+ const by=pedBy();return `현장추가-${ymd}-${String(n+1).padStart(3,'0')}${by?'-'+by.slice(0,4):''}`}
+/* 새 관로 속성: 붙은 관로의 관경·재질·용도·설치일자를 이어받음 (관리번호는 비우고 임시번호) */
+function pedNewProps(fis){const P={_레이어:'현장 추가',_임시번호:pedTmpNo()},src=fis.map(i=>PIPE.feats[i]).find(Boolean);
+ if(src){const S=src.properties||{};['dia','mat','use','ymd'].forEach(role=>{const k=pedKey(S,role);if(S[k]!=null&&S[k]!=='')P[k]=S[k]})}
+ const ik=pedKey(src?src.properties:{},'id');P[ik]='';return P}
+async function pedAddLine(coords,fis,label,from){const r={id:pedId(),t:Date.now(),add:pedNewProps(fis),g:{type:'LineString',coordinates:coords.map(c=>[+c[0].toFixed(7),+c[1].toFixed(7)])},p:{},op:{}};if(from)r.from=from;
+ PED.recs.push(r);return r}
+/* ✂️ 나누기: 관로 fi를 (lng,lat)에서 둘로 — 앞쪽은 원래 관로(모양 수정), 뒤쪽은 새 관로(관리번호 비움, 속성 이어받음) */
+async function pedCut(fi,lng,lat){const f=PIPE.feats[fi];if(!f)return;const parts=lineParts(f.geometry).map(p=>p.map(c=>[c[0],c[1]])),[px,py]=toM(lng,lat);let best=Infinity,bp=-1,bk=-1,bt=0;
+ parts.forEach((p,pi)=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]),dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy;let t=L2?((px-a[0])*dx+(py-a[1])*dy)/L2:0;t=t<0?0:t>1?1:t;
+  const d=Math.hypot(a[0]+t*dx-px,a[1]+t*dy-py);if(d<best){best=d;bp=pi;bk=k;bt=t}}});
+ if(bp<0){feMsg('자를 자리를 찾지 못했습니다.');return}
+ const p=parts[bp],A=p[bk-1],B=p[bk],q=[A[0]+(B[0]-A[0])*bt,A[1]+(B[1]-A[1])*bt],segL=Math.hypot(...[0,1].map(i=>toM(B[0],B[1])[i]-toM(A[0],A[1])[i]));
+ let head,tail;if(bt*segL<.05){head=p.slice(0,bk);tail=p.slice(bk-1)}else if((1-bt)*segL<.05){head=p.slice(0,bk+1);tail=p.slice(bk)}else{head=p.slice(0,bk).concat([q]);tail=[q].concat(p.slice(bk))}
+ const pre=parts.slice(0,bp),post=parts.slice(bp+1),g1=pre.concat([head]),g2=[tail].concat(post);
+ if(head.length<2||tail.length<2||pedLen(pedGeom(g1))<.1||pedLen(pedGeom(g2))<.1){feMsg('관로 끝이라 나눌 수 없습니다. 끝에서 조금 떨어진 곳을 누르세요.');return}
+ const r=pedBegin(fi);r.g=pedGeom(g1,f.geometry.type);
+ const src=PIPE.feats[fi].properties,r2={id:pedId(),t:Date.now(),add:{...pedNewProps([fi])},g:pedGeom(g2,'LineString'),p:{},op:{},from:r.id};
+ Object.keys(src).forEach(k=>{if(k[0]!=='_'&&k!=='현장메모'&&!(k in r2.add))r2.add[k]=src[k]});r2.add[pedKey(src,'id')]='';r2.add._나눔원=attrOf(f).id||src._임시번호||'';
+ if(r2.g.type==='MultiLineString'&&r2.g.coordinates.length===1)r2.g={type:'LineString',coordinates:r2.g.coordinates[0]};
+ PED.recs.push(r2);PED.undo[PED.undo.length-1].push({id:r2.id,b:null});PE.v=null;await pedCommit([r,r2],'관로 나눔')}
+/* 여러 기록 합치기(공유 서버·백업에서 받은 것): 기록 id별로 시각이 늦은 것 */
+function pedMerge(list){const m=new Map(PED.recs.map((r,i)=>[r.id,i]));let n=0;
+ for(const r of list||[]){if(!r||!r.id)continue;const i=m.get(r.id);if(i==null){m.set(r.id,PED.recs.push(r)-1);n++}else if((r.t||0)>(PED.recs[i].t||0)){PED.recs[i]=r;n++}}return n}
+function pedKeepHtml(){const n=pedLive().length;return n?`<label class="ck" style="display:flex;gap:6px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="dfPed" checked><span>🛠 관로 현장 수정 <b>${n.toLocaleString()}개</b>를 새 자료 위에 다시 덧씌우기<br><small class="mute">GIS에 이미 반영되어 필요 없을 때만 끄세요. 끄면 현장 수정을 모두 지웁니다(공유하면 직원 기기에서도 지워짐).</small></span></label>`:''}
+async function pedDropAll(){const t=Date.now();let n=0;PED.recs.forEach(r=>{if(!r.rv){r.rv=1;r.t=t;r.lb='SHP 교체 때 지움';n++}});if(n){PED.undo=[];await pedSave()}return n}
+/* ⏫⏬ 직원 공유: 먼저 받아 합치고 → 이 기기에서 고친 것이 있으면 올림 */
+async function pedSync(mode,quiet){const say=t=>{if(quiet)return;feMsg(t);const m=$('pedMsg');if(m)m.innerHTML=t};const R={got:0,sent:0};
+ if(typeof SH==='undefined'||!SH.on()){R.err='공유 서버 주소와 공유 키가 없습니다.';say('⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return R}
+ if(PED.busy){R.err='이미 공유 중입니다.';R.busy=1;return R}PED.busy=true;
+ try{if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');await pedLoad();say('공유 서버 확인 중…');
+  const info=(await shReq('refinfo')).ref||{},s=info.pedit;
+  if(s&&s.parts&&s.v!==PED.sv){say('⬇️ 관로 현장 수정 받는 중…');const bufs=[];for(let p=0;p<s.parts;p++){const r=await shReq('refget',{name:'pedit',v:s.v,part:p});bufs.push(shBlob(r.data))}
+   const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error('관로 현장 수정 압축 파일이 비었습니다.');const v=JSON.parse(await e.async('string')),sm=new Map((v.recs||[]).map(r=>[r.id,r]));
+   R.got=pedMerge(v.recs);PED.sv=s.v;PED.dirty=PED.recs.some(r=>{const o=sm.get(r.id);return !o||(r.t||0)>(o.t||0)});PED.at=PED.dirty?Date.now():s.v;await pedStore();if(R.got)pedReapply()}
+  if(mode!=='down'&&PED.dirty&&PED.recs.length){say('⏫ 관로 현장 수정 올리는 중…');const at=Date.now(),z=new JSZip();z.file('d.json',JSON.stringify({v:1,at,recs:PED.recs}));
+   const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+   for(let p=0;p<parts;p++)await shReq('refput',{name:'pedit',v:at,part:p,parts,size:u8.length,cnt:PED.recs.length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
+   PED.sv=at;PED.at=at;PED.dirty=false;await pedStore();R.sent=pedLive().length}
+  say(`✅ 관로 현장 수정 공유 완료${R.got?` · 받아 합침 ${R.got}건`:''}${R.sent?` · 올림 (고친 관로 ${R.sent}개)`:''}${!R.got&&!R.sent?' · 서버와 같습니다':''}`);pedInfo()}
+ catch(e){const m=String((e&&e.message)||e);R.err=m;R.old=/알 수 없는 (기준자료|요청)/.test(m);
+  say('<span class="c-rd">⚠️ 관로 수정 공유 실패: '+esc(m)+'</span>'+(R.old?'<br><small>공유 서버 Code.gs를 2026-10-15 판으로 바꾸고 새 버전으로 배포해 주세요.</small>':''))}
+ finally{PED.busy=false}return R}
+/* 📋 관로 현장 수정 목록 엑셀 (관리번호·소블록·바뀐 칸·모양 WKT만, 고객 정보 없음) */
+function pedWkt(g){const ps=lineParts(g).map(p=>'('+p.map(c=>(+c[0]).toFixed(7)+' '+(+c[1]).toFixed(7)).join(', ')+')');const s=ps.length===1?'LINESTRING'+ps[0]:'MULTILINESTRING('+ps.join(', ')+')';return s.length>32000?s.slice(0,32000)+' …(잘림)':s}
+function pedXlsx(){const rows=[],r1=x=>Math.round(x*10)/10;
+ for(const r of PED.recs){if(r.rv)continue;const fi=r.add?PED.fi.get(r.id):(PED.fi.has(r.id)?r.o.i:null),f=fi!=null?PIPE.feats[fi]:null;
+  if(!f){rows.push({'구분':'못 찾음 (기준자료가 바뀜)','관리번호':String((r.o&&r.o.k)||'').replace(/^I:[^|]*\|/,''),'수정 내용':r.lb||'','수정한 사람':r.by||'','수정 시각':pedTs(r.t)});continue}
+  const P=f.properties,a=attrOf(f),raw=r.add?null:PIPE.raw[fi],ks=Object.keys(r.p||{}),cut=PED.recs.some(x=>x.from===r.id&&!x.rv),m=midXY(f.geometry);
+  const kind=[r.add?(r.from?'나눔 (새 관로)':'현장 추가'):'',!r.add&&r.g?(cut?'나눔 (원래 관로)':'모양 수정'):'',r.del?'폐관 표시':'',ks.length?'속성 수정':''].filter(Boolean).join(', ');
+  rows.push({'구분':kind,'관리번호':a.id||P._임시번호||'','원래 관리번호':raw?(attrOf(raw).id||''):(P._나눔원||''),'소블록':m&&poly?blkAt(m[0],m[1])||'':'','관경(mm)':a.dia??'','재질':a.mat,'용도':a.use,
+   '바뀐 항목':ks.join(', '),'원래 값':ks.map(k=>`${k}: ${r.op[k]===''||r.op[k]==null?'빈칸':r.op[k]}`).join(' / '),'새 값':ks.map(k=>`${k}: ${r.p[k]===''?'빈칸':r.p[k]}`).join(' / '),
+   '원래 연장(m)':raw?r1(pedLen(raw.geometry)):'','새 연장(m)':r1(pedLen(f.geometry)),'새 모양 (WKT·경위도)':r.g?pedWkt(f.geometry):'','현장 메모':P['현장메모']??'','수정한 사람':r.by||'','수정 시각':pedTs(r.t)})}
+ if(!rows.length){alert('현장에서 고친 관로가 없습니다.');return}
+ try{const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:16},{wch:22},{wch:14},{wch:12},{wch:8},{wch:14},{wch:8},{wch:16},{wch:28},{wch:28},{wch:10},{wch:10},{wch:40},{wch:20},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'관로현장수정');XLSX.writeFile(wb,`상수관로_현장수정_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}catch(e){alert('엑셀 만들기 실패: '+((e&&e.message)||e))}}
+/* ② 상수관로 패널의 현장 수정 요약 */
+function pedInfo(){const box=$('pedBox');if(!box)return;const L=pedLive();if(!L.length&&!PED.orph.length){box.hidden=true;return}box.hidden=false;
+ const c={a:0,g:0,d:0,p:0};L.forEach(r=>{if(r.add)c.a++;else if(r.g)c.g++;if(r.del)c.d++;if(Object.keys(r.p||{}).length)c.p++});
+ const sh=typeof SH!=='undefined'&&SH.on();
+ $('pedSum').innerHTML=`🛠 관로 현장 수정 <b>${L.length.toLocaleString()}</b>개 <small class="mute">(추가·나눔 ${c.a} · 모양 ${c.g} · 폐관 ${c.d} · 속성 ${c.p})</small>${PED.orph.length?` · <span class="c-am">기준자료에서 못 찾음 ${PED.orph.length}</span>`:''}${PED.conf.length?` · <span class="c-am">같은 관로 겹친 수정 ${PED.conf.length} (최신 것 사용)</span>`:''}${sh?(PED.dirty?' · <b class="c-am">⏫ 올리기 필요</b>':' · ✅ 공유 서버와 같음'):''}`}
+/* ---- 편집 화면 (🛠 편집 모드 🚰 관로 탭) ---- */
+function peVerts(fi){const f=PIPE.feats[fi],r=[];if(!f)return r;lineParts(f.geometry).forEach((p,pi)=>p.forEach((c,vi)=>r.push({pi,vi,n:p.length,c,cp:map.latLngToContainerPoint([c[1],c[0]])})));return r}
+function peHit(cp,all){const ll=map.containerPointToLatLng(cp),h=nearestPipe(ll.lng,ll.lat,PE_HIT*feMpp(),all!==false);if(!h)return -1;const f=PIPE.feats[h.fi];return f&&!f.properties._빈?h.fi:-1}
+/* 놓을 자리: 시설물 점(밸브 등)이 가까우면 시설물, 아니면 관로 선·끝 (ex = 지금 고치는 관로는 빼고) */
+function peSnapAt(cp,ex){const ll=map.containerPointToLatLng(cp);if(!FE.snap)return{lat:ll.lat,lng:ll.lng,raw:1,fi:-1};const m=feMpp();
+ if(FAC.n&&FAC.grid){const R=FE_R*.6*m,dg=R/111000,c=Math.cos(ll.lat*Math.PI/180);let bd=Infinity,bi=-1;
+  for(const i of facQuery(ll.lng-dg/c,ll.lat-dg,ll.lng+dg/c,ll.lat+dg)){if(FAC.dl[i])continue;const d=Math.hypot((FAC.x[i]-ll.lng)*c*111320,(FAC.y[i]-ll.lat)*110574);if(d<bd){bd=d;bi=i}}
+  if(bi>=0&&bd<=R)return{lat:FAC.y[bi],lng:FAC.x[bi],fac:bi,fi:-1}}
+ const s=pipeSnap(ll.lng,ll.lat,FE_R*m,FE_VR*m,ex);return s||{lat:ll.lat,lng:ll.lng,raw:1,fi:-1}}
+function peSnapTxt(s){if(!s)return '';if(s.fac!=null){const I=facKindInfo(FAC.kinds[FAC.k[s.fac]]);return `🧲 시설물(${esc(I.name)}${FAC.pt[s.fac].p&&FAC.pt[s.fac].p['관리번호']?' '+esc(FAC.pt[s.fac].p['관리번호']):''})에 붙음`}return feSnapTxt(s)}
+function peLayers(){if(!PE.hL)PE.hL=L.layerGroup().addTo(map);if(!PE.eL)PE.eL=L.layerGroup().addTo(map)}
+/* 고친 관로 표시 (보라 점) — 편집 모드 관로 탭에서만 */
+function peMarks(){if(!map)return;peLayers();PE.eL.clearLayers();if(!FE.on||FE.obj!=='pipe')return;let n=0;
+ for(const [id,fi] of PED.fi){if(++n>3000)break;const f=PIPE.feats[fi];if(!f||f.properties._빈)continue;const m=midXY(f.geometry);if(!m)continue;
+  L.circleMarker([m[1],m[0]],{pane:'fePane',radius:4.5,color:'#fff',weight:1.5,fillColor:f.properties._폐관?'#dc2626':f.properties._추가?'#16a34a':'#7c3aed',fillOpacity:1,interactive:false}).addTo(PE.eL)}}
+/* 고른 관로·꼭짓점·그리는 중인 새 관로 */
+function peDraw(parts){if(!map)return;peLayers();PE.hL.clearLayers();if(!FE.on||FE.obj!=='pipe')return;const o={pane:'fePane',interactive:false};
+ if(PE.sel>=0&&PIPE.feats[PE.sel]){const f=PIPE.feats[PE.sel],ps=parts||lineParts(f.geometry);
+  ps.forEach(p=>{const ll=p.map(c=>[c[1],c[0]]);L.polyline(ll,{...o,color:'#facc15',weight:10,opacity:.55}).addTo(PE.hL);L.polyline(ll,{...o,color:'#f97316',weight:2.5,opacity:.95,dashArray:'6 4'}).addTo(PE.hL)});
+  if(PE.tool==='sel')ps.forEach((p,pi)=>{for(let vi=1;vi<p.length;vi++){const a=p[vi-1],b=p[vi];L.circleMarker([(a[1]+b[1])/2,(a[0]+b[0])/2],{...o,radius:4,color:'#f97316',weight:1.5,fillColor:'#fff',fillOpacity:.75,dashArray:'2 2'}).addTo(PE.hL)}
+   p.forEach((c,vi)=>{const end=vi===0||vi===p.length-1,on=PE.v&&PE.v.pi===pi&&PE.v.vi===vi;L.circleMarker([c[1],c[0]],{...o,radius:end?7:6,color:on?'#dc2626':'#f97316',weight:on?3.5:2.5,fillColor:on?'#fecaca':end?'#fed7aa':'#fff',fillOpacity:1}).addTo(PE.hL)})})}
+ if(PE.tool==='new'&&PE.draw.length){const ll=PE.draw.map(s=>[s.lat,s.lng]);L.polyline(ll,{...o,color:'#16a34a',weight:4,opacity:.9,dashArray:'8 5'}).addTo(PE.hL);
+  ll.forEach((q,i)=>L.circleMarker(q,{...o,radius:i===0?7:5,color:'#15803d',weight:2.5,fillColor:'#fff',fillOpacity:1}).addTo(PE.hL))}}
+function peBadges(P){return (P._추가?`<span class="feb add">🆕 ${P._나눔원!=null?'나눈 관로':'현장 추가'}</span>`:'')+(P._폐관?'<span class="feb del">🗑 폐관 표시</span>':'')+(P._ped&&!P._추가?'<span class="feb">✏️ 현장 수정</span>':'')}
+function peFormHtml(fi){const f=PIPE.feats[fi];if(!f)return '';const P=f.properties||{},a=attrOf(f),inp=(k,t,o)=>`<label>${t}</label><input data-k="${esc(k)}" value="${esc(P[k]??'')}"${o||''}>`;
+ const nv=lineParts(f.geometry).reduce((s,p)=>s+p.length,0);
+ return `<div class="fef" data-fi="${fi}"><div class="r"><b>🚰 관로 ${esc(a.id||P._임시번호||'(번호 없음)')}</b>${peBadges(P)}</div>
+  <details class="pefold"${matchMedia('(max-width:640px)').matches?'':' open'}><summary>속성 고치기 (관리번호·관경·재질·용도·메모)</summary><div class="feg">${inp(pedKey(P,'id'),'관리번호',P._임시번호?` placeholder="${esc(P._임시번호)}"`:'')}${inp(pedKey(P,'dia'),'관경(mm)',' inputmode="numeric"')}${inp(pedKey(P,'mat'),'재질',' list="pedMatL"')}${inp(pedKey(P,'use'),'용도',' list="pedUseL"')}${inp(pedKey(P,'ymd'),'설치일자')}${inp('현장메모','현장 메모')}</div></details>
+  <datalist id="pedMatL">${Object.keys(MAT_COL).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><datalist id="pedUseL">${Object.keys(USE_COL).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
+  <div class="hint">연장 ${(f._len||pedLen(f.geometry)).toFixed(1)}m · 꼭짓점 ${nv}개${PE.v?` · <b>고른 꼭짓점 ${PE.v.vi+1}번</b>`:''}${P._나눔원?` · 나눈 원래 관로 ${esc(P._나눔원)}`:''}</div>
+  <div class="r"><button type="button" data-pe="save" class="on">💾 저장</button>${PE.v?'<button type="button" data-pe="vdel" class="del">✖ 꼭짓점 지우기</button>':''}<button type="button" data-pe="del" class="${P._폐관?'':'del'}">${P._폐관?'♻ 되살리기':'🗑 폐관 표시'}</button>${P._ped?`<button type="button" data-pe="orig" class="${P._추가?'del':''}" title="${P._추가?'현장에서 추가한 관로를 지웁니다':'SHP 원래 값·모양으로'}">${P._추가?'🗑 추가 취소':'↩ 원래대로'}</button>`:''}<button type="button" data-pe="desel">닫기</button></div></div>`}
+function peUiHtml(){const has=PIPE.raw&&PIPE.raw.length||PIPE.feats.length,T=PE.tool,cx=FE.cross;
+ const place=cx?(T==='sel'?(PE.v?'<button type="button" data-pe="place" class="on">📍 꼭짓점 여기로</button>':''):T==='cut'?'<button type="button" data-pe="place" class="on">✂️ 여기서 나누기</button>':'<button type="button" data-pe="place" class="on">📍 점 찍기</button>'):'';
+ const msg=!has?'상수관로 자료가 없습니다. ② 상수관로에서 SHP를 먼저 올리세요.':T==='new'?`점 <b>${PE.draw.length}</b>개 · `+(cx?'십자선을 맞추고 📍 점 찍기를 누르세요.':'지도를 눌러 점을 찍으세요. 관로·시설물 가까이 찍으면 붙습니다.')+' 다 찍었으면 ✔ 다 그림.'
+  :T==='cut'?(cx?'십자선을 자를 자리에 맞추고 ✂️ 여기서 나누기를 누르세요.':'자를 자리를 누르세요. 가까이 밸브가 있으면 밸브 자리에서 자릅니다.')
+  :PE.sel<0?'관로를 눌러 고르세요.':(cx?'꼭짓점(흰 점)을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘고, 끝점은 다른 관로·시설물에 붙습니다. 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
+ return `<div class="r"><button type="button" data-pt="sel" class="${T==='sel'?'on':''}">✋ 고르기·꼭짓점</button><button type="button" data-pt="cut" class="${T==='cut'?'on':''}">✂️ 나누기</button><button type="button" data-pt="new" class="${T==='new'?'on':''}">➕ 새 관로</button></div>
+ <div class="r"><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="관로 끝·선, 시설물(밸브 등)에 자동으로 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${cx?'on':''}" aria-pressed="${cx}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${place}<button type="button" data-pe="undo" title="마지막 관로 수정 되돌리기">↶ 되돌리기</button><button type="button" data-pe="xls" title="현장에서 고친 관로 목록 (GIS 담당자 전달용, 고객 정보 없음)">📋 수정 목록 엑셀</button><button type="button" data-pe="sync" title="공유 서버에서 먼저 받아 합친 뒤 이 기기에서 고친 것을 올립니다">⏫ 수정분 공유</button></div>
+ ${T==='new'&&PE.draw.length?'<div class="r"><button type="button" data-pe="npop">↶ 점 하나 취소</button><button type="button" data-pe="ndone" class="on">✔ 다 그림</button><button type="button" data-pe="ncancel">✕ 그리기 취소</button></div>':''}
+ <div class="fem hint">${msg}</div>${T==='sel'&&PE.sel>=0?peFormHtml(PE.sel):''}`}
+function peCrossUpd(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2),T=PE.tool;let s;
+ if(T==='cut'){const fi=peHit(cp,false);if(fi<0){FE.last=null;feShow(null);feMsg('십자선 가까이 관로가 없습니다.');return}const ll=map.containerPointToLatLng(cp),q=pipeSnap(ll.lng,ll.lat,PE_HIT*feMpp(),0);s=q||{lat:ll.lat,lng:ll.lng,raw:1,fi};s.cut=fi}
+ else s=peSnapAt(cp,T==='sel'?PE.sel:-1);FE.last=s;feShow(s);feMsg(peSnapTxt(s))}
+async function pePlace(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2),s=FE.last||peSnapAt(cp,PE.tool==='sel'?PE.sel:-1);
+ if(PE.tool==='new'){PE.draw.push(s);feUi();peDraw();return}
+ if(PE.tool==='cut'){const fi=s&&s.cut!=null?s.cut:peHit(cp,false);if(fi<0){feMsg('십자선 가까이 관로가 없습니다.');return}return peCutAt(fi,cp,s)}
+ if(PE.sel<0||!PE.v){feMsg('먼저 관로를 고르고 옮길 꼭짓점을 누르세요.');return}
+ const parts=lineParts(PIPE.feats[PE.sel].geometry).map(p=>p.map(c=>[c[0],c[1]])),p=parts[PE.v.pi],end=PE.v.vi===0||PE.v.vi===p.length-1,q=end||s.raw?s:map.containerPointToLatLng(cp);
+ p[PE.v.vi]=[q.lng,q.lat];await pedSetGeom(PE.sel,parts,'꼭짓점 옮김')}
+/* 자를 자리: 고른 관로 위 가장 가까운 점, 가까이(화면 12픽셀·1.5m 안) 밸브가 있으면 밸브 자리 */
+function peCutAt(fi,cp,s){let ll=s&&!s.raw&&s.fi===fi?{lng:s.lng,lat:s.lat}:map.containerPointToLatLng(cp);
+ if(FAC.n&&FAC.grid){const m=feMpp(),R=PE_HIT*m,dg=R/111000,c=Math.cos(ll.lat*Math.PI/180),gate=new Set(FAC.kinds.map((k,i)=>facKindInfo(k).sym==='gate'?i:-1));let bd=Infinity,bi=-1;
+  for(const i of facQuery(ll.lng-dg/c,ll.lat-dg,ll.lng+dg/c,ll.lat+dg)){if(FAC.dl[i]||!gate.has(FAC.k[i]))continue;const d=Math.hypot((FAC.x[i]-ll.lng)*c*111320,(FAC.y[i]-ll.lat)*110574);if(d<bd){bd=d;bi=i}}
+  if(bi>=0&&bd<=R){const q=toM(FAC.x[bi],FAC.y[bi]);let dd=Infinity;lineParts(PIPE.feats[fi].geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);dd=Math.min(dd,segDist(q[0],q[1],[a[0],a[1],b[0],b[1]]))}});if(dd<=1.5)ll={lng:FAC.x[bi],lat:FAC.y[bi]}}}
+ return pedCut(fi,ll.lng,ll.lat)}
+async function peNewDone(){if(PE.draw.length<2){feMsg('점을 2개 이상 찍어야 관로가 됩니다.');return}
+ const pts=PE.draw,fis=[pts[0].fi,pts[pts.length-1].fi].filter(i=>i!=null&&i>=0),r=await pedAddLine(pts.map(s=>[s.lng,s.lat]),fis);
+ PED.undo.push([{id:r.id,b:null}]);PE.draw=[];PE.tool='sel';await pedCommit([r],'새 관로 추가');PE.sel=PED.fi.has(r.id)?PED.fi.get(r.id):-1;PE.v=null;feUi();peDraw()}
+async function peVDel(){if(PE.sel<0||!PE.v)return;const parts=lineParts(PIPE.feats[PE.sel].geometry).map(p=>p.map(c=>[c[0],c[1]])),p=parts[PE.v.pi];
+ if(!p||p.length<=2){feMsg('꼭짓점이 2개뿐이라 지울 수 없습니다. 관로를 없애려면 🗑 폐관 표시를 쓰세요.');return}p.splice(PE.v.vi,1);PE.v=null;await pedSetGeom(PE.sel,parts,'꼭짓점 지움')}
+async function peAct(btn){const E=btn.dataset.pe,T=btn.dataset.pt;
+ if(T){PE.tool=T;PE.v=null;if(T!=='new')PE.draw=[];if(T==='new')PE.sel=-1;feUi();peDraw();return}
+ if(E==='undo')return pedUndo();if(E==='xls')return pedXlsx();if(E==='sync')return pedSync('both');if(E==='place')return pePlace();
+ if(E==='npop'){PE.draw.pop();feUi();peDraw();return}if(E==='ncancel'){PE.draw=[];feUi();peDraw();return}if(E==='ndone')return peNewDone();
+ const box=btn.closest('.fef');if(!box)return;const fi=+box.dataset.fi;
+ if(E==='desel'){PE.sel=-1;PE.v=null;feUi();peDraw();return}
+ if(E==='save'){const vals={};box.querySelectorAll('[data-k]').forEach(el=>vals[el.dataset.k]=el.value.trim());return pedSetProps(fi,vals)}
+ if(E==='del')return pedToggleDel(fi);if(E==='vdel')return peVDel();
+ if(E==='orig'){const P=PIPE.feats[fi].properties;if(!confirm(P._추가?'현장에서 추가한 이 관로를 지울까요?':'이 관로를 SHP 원래 값·모양으로 되돌릴까요?'+(PED.recs.some(x=>x.from===P._ped&&!x.rv)?'\n(여기서 나눈 관로도 함께 없어집니다)':'')))return;return pedRevert(fi)}}
+/* 지도 누르기 (편집 모드 관로 탭) */
+function peClick(cp){if(Date.now()-PE.tapAt<400)return;const T=PE.tool;
+ if(T==='new'){if(FE.cross){feMsg('십자선 켜짐: 지도를 움직여 맞춘 뒤 📍 점 찍기를 누르세요.');return}const s=peSnapAt(cp,-1);PE.draw.push(s);feUi();feMsg(`점 ${PE.draw.length}개 · `+(peSnapTxt(s)||'누른 자리'));peDraw();return}
+ if(T==='cut'){if(FE.cross){feMsg('십자선 켜짐: 지도를 움직여 맞춘 뒤 ✂️ 여기서 나누기를 누르세요.');return}const fi=peHit(cp,false);if(fi<0){feMsg('누른 자리 가까이 관로가 없습니다.');return}
+  peCutAt(fi,cp,null).catch(er=>feMsg('<span class="c-rd">나누기 실패: '+esc(er.message||er)+'</span>'));return}
+ const fi=peHit(cp,true);PE.sel=fi;PE.v=null;feUi();peDraw()}
+function peDown(e,cp){if(PE.tool!=='sel'||PE.sel<0)return false;const vs=peVerts(PE.sel);let best=null,bd=PE_VHIT;
+ for(const v of vs){const d=Math.hypot(v.cp.x-cp.x,v.cp.y-cp.y);if(d<bd){bd=d;best=v}}
+ const parts=lineParts(PIPE.feats[PE.sel].geometry).map(p=>p.map(c=>[c[0],c[1]]));let D=null;
+ if(best)D={pi:best.pi,vi:best.vi,ins:false};
+ else{let md=PE_MHIT;for(let k=1;k<vs.length;k++){const a=vs[k-1],b=vs[k];if(a.pi!==b.pi)continue;const d=Math.hypot((a.cp.x+b.cp.x)/2-cp.x,(a.cp.y+b.cp.y)/2-cp.y);if(d<md){md=d;D={pi:b.pi,vi:b.vi,ins:true}}}
+  if(D){const p=parts[D.pi],a=p[D.vi-1],b=p[D.vi];p.splice(D.vi,0,[(a[0]+b[0])/2,(a[1]+b[1])/2])}}
+ if(!D)return false;const de=map.dragging.enabled();if(de)map.dragging.disable();PE.drag={...D,id:e.pointerId,de,parts,moved:false,s:null};map.closePopup();return true}
+function peMove(e){const D=PE.drag;if(!D||e.pointerId!==D.id)return;const cp=map.mouseEventToContainerPoint(e),p=D.parts[D.pi],end=D.vi===0||D.vi===p.length-1;
+ if(!D.moved){const v0=map.latLngToContainerPoint([p[D.vi][1],p[D.vi][0]]);if(Math.hypot(v0.x-cp.x,v0.y-cp.y)<4)return}D.moved=true;
+ const s=end?peSnapAt(cp,PE.sel):(()=>{const ll=map.containerPointToLatLng(cp);return{lat:ll.lat,lng:ll.lng,raw:1,fi:-1}})();D.s=s;p[D.vi]=[s.lng,s.lat];
+ if(!PE.raf)PE.raf=requestAnimationFrame(()=>{PE.raf=0;if(PE.drag){peDraw(PE.drag.parts);feShow(end&&!s.raw?s:null);feMsg(end?peSnapTxt(s)||'끝점: 붙을 관로·시설물이 가까이 없습니다':'꼭짓점 옮기는 중')}})}
+function peUp(e){const D=PE.drag;if(!D||e.pointerId!==D.id)return;PE.drag=null;if(D.de)map.dragging.enable();feShow(null);
+ if(e.type==='pointerup'&&D.moved){FE.justDrag=Date.now();PE.v={pi:D.pi,vi:D.vi};pedSetGeom(PE.sel,D.parts,D.ins?'꼭짓점 추가':'꼭짓점 옮김').catch(er=>feMsg('<span class="c-rd">저장 실패: '+esc(er.message||er)+'</span>'))}
+ else if(!D.ins){PE.v=PE.v&&PE.v.pi===D.pi&&PE.v.vi===D.vi?null:{pi:D.pi,vi:D.vi};PE.tapAt=Date.now();feUi();peDraw()}else{PE.tapAt=Date.now();peDraw()}}
+window.peOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='pipe';PE.tool='sel';PE.sel=fi;PE.v=null;PE.draw=[];feUi();peMarks();peDraw()};
 try{feInit()}catch(e){console.warn('시설물 편집',e)}
 
 /* 휴대폰 상단 ☰ 메뉴: 열고 닫기 (바깥 누르기·Esc·항목 누르면 닫힘) */
@@ -5478,10 +5721,10 @@ function meta(items, by) {
   });
 }
 
-// ---------- 기준자료 공유 (소블록 경계·상수관로·상수도 시설물·표고·사진 기준 위치) ----------
+// ---------- 기준자료 공유 (소블록 경계·상수관로·상수관로 현장 수정·상수도 시설물·표고·사진 기준 위치) ----------
 // 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
 // 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
-const REF_NAMES = ['blocks', 'pipes', 'facs', 'elev', 'phref'];
+const REF_NAMES = ['blocks', 'pipes', 'pedit', 'facs', 'elev', 'phref'];
 function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
 function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
 function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
