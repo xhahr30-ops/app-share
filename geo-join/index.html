@@ -540,7 +540,10 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 @media (max-width:640px){.phed{left:8px;right:8px;max-width:none;bottom:8px}.phed button{padding:7px 10px;font-size:12.5px}.phtr{padding:0;align-items:flex-end}.phtr>div{border-radius:16px 16px 0 0;max-height:85dvh;padding-bottom:env(safe-area-inset-bottom)}}
 @media print{.phed,.phedbtn,#phToast,.phtr{display:none!important}}
 .phpop .leaflet-popup-content{margin:8px!important;width:300px!important}
-.phpop .leaflet-popup-content-wrapper{background:var(--card)}.phpop .leaflet-popup-tip{background:var(--card)}
+.phpop .leaflet-popup-content-wrapper{background:var(--card)}
+.hitTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.hitTabs button{font:inherit;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--indb);background:transparent;color:var(--ink);cursor:pointer;min-height:28px}
+.hitTabs button.on{background:var(--ind);border-color:var(--ind);color:#fff}.phpop .leaflet-popup-tip{background:var(--card)}
 /* 갤러리 (전체화면·새 창) */
 .phg{position:fixed;inset:0;z-index:3000;background:var(--bg);display:none;flex-direction:column;color:var(--ink)}
 .phg.on{display:flex}.phg.win{position:static;height:100vh}
@@ -1033,32 +1036,96 @@ function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Mat
  g.globalAlpha=.88;
  for(const [k,a] of [...groups].sort((x,y)=>y[1].length-x[1].length)){const [f,c,w]=k.split('|');/* 많은 색부터 → 적은(이상) 점이 위에 보이게 */g.beginPath();for(let j=0;j<a.length;j+=3){g.moveTo(a[j]+a[j+2],a[j+1]);g.arc(a[j],a[j+1],a[j+2],0,6.2832)}
   g.fillStyle=f;g.fill();if(+w>0&&R0>=2.8){g.lineWidth=+w;g.strokeStyle=c;g.globalAlpha=1;g.stroke();g.globalAlpha=.88}}
- g.globalAlpha=1;const s=PT.sel;
+ g.globalAlpha=1;if(UI.cl&&UI.cl!=='off'&&z>=(+UI.clZ||18))ptLabels(g,ids,sc,ax,ay,W,H,R0);else CLB.n=0;uiClHint();const s=PT.sel;
  if(s>=0&&s<PT.n&&!isNaN(PT.lat[s])){const x=PT.px[s]*sc+ax,y=PT.py[s]*sc+ay,r=PT.r[s]||11;
   g.beginPath();g.arc(x,y,r,0,6.2832);g.fillStyle=PT.fill[s];g.fill();g.lineWidth=4;g.strokeStyle='#facc15';g.stroke()}}
 function ptHitAt(cp){if(!PT.n||PT.off)return -1;const z=map.getZoom(),R=Math.max(ptRadius(z),5)+3,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
  for(const i of ptQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!PT.vis[i])continue;const p=map.latLngToContainerPoint([PT.lat[i],PT.lng[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
-function ptPopupHtml(i){const o=out[i];return `<b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
+function ptPopupHtml(i){const o=out[i],mg=o['관리번호']||o['수용가번호']||'';return `<div style="font-size:11.5px;color:#4338ca;font-weight:700">👤 수용가${mg?' · '+esc(mg):''}</div><b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
 function ptSame(i){const la=PT.lat[i],ln=PT.lng[i],e=1e-6,r=[];for(const k of ptQuery(ln-e,la-e,ln+e,la+e))if(PT.vis[k]&&Math.abs(PT.lat[k]-la)<e&&Math.abs(PT.lng[k]-ln)<e)r.push(k);return r.sort((a,b)=>a-b)}
-function ptOpen(i){if(!map||isNaN(PT.lat[i]))return;const same=ptSame(i);let h=ptPopupHtml(i);
+function ptOpen(i){if(!map||isNaN(PT.lat[i]))return;L.popup({maxWidth:320,offset:[0,-4]}).setLatLng([PT.lat[i],PT.lng[i]]).setContent(ptPopFull(i)).openOn(map)}
+function ptPopFull(i){const same=ptSame(i);let h=ptPopupHtml(i);
  if(same.length>1){const lab=k=>{const o=out[k];return esc(o['관리번호']||o['수용가번호']||'#'+(k+1))};
   h+=`<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;font-size:12px"><b>📍 같은 위치 ${same.length}건</b><br>`+same.slice(0,12).map(k=>k===i?`<b style="color:#4338ca">${k+1}행(${lab(k)})</b>`:`<a href="#" onclick="ptPick(${k});return false">${k+1}행(${lab(k)})</a>`).join(' · ')+(same.length>12?` 외 ${same.length-12}건`:'')+'</div>'}
- L.popup({maxWidth:320,offset:[0,-4]}).setLatLng([PT.lat[i],PT.lng[i]]).setContent(h).openOn(map)}
+ return h}
 window.ptPick=i=>{ptOpen(i);selectRow(i,'map')};
 var ptLayerShim={hasLayer:m=>!!(m&&PT.vis[m.i]),addLayer(m){if(m){PT.vis[m.i]=1;ptDraw()}return this},removeLayer(m){if(m){PT.vis[m.i]=0;ptDraw()}return this},
  clearLayers(){ptReset(0);ptDraw();return this},bringToFront(){return this},getLayers:()=>mks.filter(Boolean)};
 function ptInit(){if(!map)return null;if(!map.getPane('ptPane')){const p=map.createPane('ptPane');p.style.zIndex=450;p.style.pointerEvents='none'}
  const cv=L.DomUtil.create('canvas','pt-canvas leaflet-zoom-hide',map.getPane('ptPane'));cv.style.position='absolute';PT.cv=cv;PT.ctx=cv.getContext('2d');PT.ok=true;
  map.on('moveend zoomend resize viewreset',ptDraw);map.on('zoomstart',()=>{cv.style.visibility='hidden'});map.on('zoomend',()=>{cv.style.visibility=''});
- // 클릭: 점이 있으면 점 우선 (관로·블록 팝업보다 위)
- map.on('preclick',e=>{PT.hit=ptHitAt(e.containerPoint)});
- map.on('click',e=>{const i=PT.hit;PT.hit=-1;if(i<0)return;setTimeout(()=>{ptOpen(i);selectRow(i,'map')},0)});
- let mt=0;map.on('mousemove',e=>{if(mt)return;mt=setTimeout(()=>{mt=0},40);map.getContainer().style.cursor=ptHitAt(e.containerPoint)>=0?'pointer':''});
+ // 클릭: 수용가 점 · 시설물 · 관로 · 소블록을 한곳(hitInit)에서 처리 — 블록 면 위에서도 열림
+ hitInit();
+ let mt=0;map.on('mousemove',e=>{if(mt)return;mt=setTimeout(()=>{mt=0},40);const cp=e.containerPoint;map.getContainer().style.cursor=ptHitAt(cp)>=0||(typeof facHitAt==='function'&&facHitAt(cp)>=0)?'pointer':''});
  return ptLayerShim}
 
+/* ===================== 지도 클릭 통합: 수용가 점 · 단수 수용가 · 시설물 · 관로 · 소블록
+   소블록 면은 채워진 도형이라 면 안을 누르면 Leaflet이 블록 팝업을 열고 지도 'click'을 멈춤(관로·수용가 정보창이 안 뜨던 원인).
+   → preclick에서 누른 자리의 대상을 모두 찾아 두고, 블록 팝업이 열린 뒤(setTimeout 0) 우선순위 첫 대상으로 바꿔 엶.
+   여러 개면 정보창 위 탭으로 골라 보고, 고른 대상은 노란 테두리로 표시. 블록만 있으면 블록 팝업 그대로 ===================== */
+const HIT={hl:null},HIT_T={pt:'👤 수용가',sc:'👤 수용가',fac:'🔧 시설물',pipe:'🚰 관로',blk:'🔲 소블록'};
+function hitBlkLayer(ll){if(!map||!polyL||!map.hasLayer(polyL)||typeof turf==='undefined')return null;const x=ll.lng,y=ll.lat,pt=turf.point([x,y]);let r=null;
+ polyL.eachLayer(l=>{if(r||!l.feature)return;const b=l.feature.properties&&l.feature.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3]))return;try{if(turf.booleanPointInPolygon(pt,l.feature))r=l}catch(_){}});return r}
+/* 💧 단수구역 수용가 점(out이 없을 때 저장된 부과량 자료로 그린 점) */
+function hitShutCust(cp){const A=typeof SHUT!=='undefined'&&SHUT.on&&SHUT.cust;if(!A||!A.length)return null;const R=9,ll=map.containerPointToLatLng(cp),l2=map.containerPointToLatLng([cp.x+R,cp.y+R]),dx=Math.abs(l2.lng-ll.lng),dy=Math.abs(l2.lat-ll.lat);let best=R*R,bj=-1;
+ for(let j=0;j<A.length;j+=3){if(Math.abs(A[j+1]-ll.lat)>dy||Math.abs(A[j+2]-ll.lng)>dx)continue;const p=map.latLngToContainerPoint([A[j+1],A[j+2]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bj=j}}return bj<0?null:{t:'sc',i:A[bj],ll:[A[bj+1],A[bj+2]]}}
+function shutCustPop(i){const o=shutSrc()[i]||{},big=SHUT.bigSet&&SHUT.bigSet.has(i),q=o['월평균(㎥)'],rows=[['관리번호',o['관리번호']||'-'],['소블록(Y)',o['소블록']||o['_결합블록']||'-'],['업종',o['업종']||'-'],['구경',o['구경']!=null&&o['구경']!==''?o['구경']+'mm':'-'],['월평균',q!=null&&q!==''?q+'㎥':'확인 필요']];
+ return `<div style="font-size:11.5px;color:#0284c7;font-weight:700">👤 단수 대상 수용가${big?' <span style="color:#c2410c">· 🏭 대수용가</span>':''}</div><table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${k}</td><td>${esc(v)}</td></tr>`).join('')}</table>`}
+function hitCollect(e){const cp=e.containerPoint,ll=e.latlng,H=[];
+ const pi=ptHitAt(cp);if(pi>=0)H.push({t:'pt',i:pi});else{const sc=hitShutCust(cp);if(sc)H.push(sc)}
+ const fi=typeof facHitAt==='function'?facHitAt(cp):-1;if(fi>=0)H.push({t:'fac',i:fi});
+ const pf=typeof pipeHitAt==='function'?pipeHitAt(ll):null;if(pf)H.push({t:'pipe',f:pf});
+ const bl=hitBlkLayer(ll);if(bl)H.push({t:'blk',l:bl});return H}
+function hitPos(x,ll){if(x.t==='pt')return [PT.lat[x.i],PT.lng[x.i]];if(x.t==='fac')return [FAC.y[x.i],FAC.x[x.i]];if(x.t==='sc')return x.ll;return ll}
+function hitBlkHtml(l){const p=l.getPopup&&l.getPopup(),c=p&&p._content;return `<div style="font-size:11.5px;color:#c2410c;font-weight:700">🔲 소블록</div>`+(typeof c==='function'?c(l):c||'')}
+function hitHtml(h){const x=h.H[h.cur];let b='';
+ try{b=x.t==='pt'?ptPopFull(x.i):x.t==='sc'?shutCustPop(x.i):x.t==='fac'?facPopup(x.i)+elevPop(FAC.y[x.i],FAC.x[x.i]):x.t==='pipe'?pipePopFull(x.f,h.ll):hitBlkHtml(x.l)}catch(err){b='정보를 만들지 못했습니다: '+esc(err&&err.message||err)}
+ return (h.H.length>1?`<div class="hitTabs" role="tablist" aria-label="이 자리에 있는 것">${h.H.map((y,k)=>`<button type="button" role="tab" aria-selected="${k===h.cur}" class="${k===h.cur?'on':''}" onclick="hitTab(${k})">${HIT_T[y.t]}</button>`).join('')}</div>`:'')+b}
+function hitMark(x){if(HIT.hl){map.removeLayer(HIT.hl);HIT.hl=null}if(!x)return;const Y='#facc15';
+ if(x.t==='pipe')HIT.hl=L.geoJSON(x.f,{interactive:false,style:{color:Y,weight:10,opacity:.6}});
+ else if(x.t==='blk')HIT.hl=L.geoJSON(x.l.feature,{interactive:false,style:{color:Y,weight:5,opacity:.9,fill:false}});
+ else if(x.t==='fac'||x.t==='sc')HIT.hl=L.circleMarker(hitPos(x),{interactive:false,radius:14,color:Y,weight:4,fill:false});
+ if(HIT.hl)HIT.hl.addTo(map)}
+function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
+ hitMark(x.t==='pt'?null:x);if(x.t==='pt'&&typeof selectRow==='function')selectRow(x.i,'map')}
+/* 내용 바꾸기는 클릭 처리가 끝난 뒤에: 누른 버튼이 바로 사라지면 Leaflet이 지도 클릭으로 보고 정보창을 닫음 */
+window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout(()=>{if(pp.isOpen())hitShow(h,k)},0)};
+function hitInit(){if(HIT.on)return;HIT.on=true;
+ map.on('preclick',e=>{const t=e.originalEvent&&e.originalEvent.target;PT.hit=-1;
+  if((typeof PH!=='undefined'&&(PH.place||(PH.ed&&PH.ed.on&&PH.ed.mode==='add')))||(typeof shutEat==='function'&&shutEat(e)))return;
+  if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;/* 사진·밸브 번호 같은 마커는 자기 팝업 */
+  const H=hitCollect(e);if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk')return;
+  setTimeout(()=>{const h={H,cur:0,ll:e.latlng,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true)},0)});
+ map.on('popupclose',e=>{if(e.popup&&e.popup._hit)hitMark(null)})}
+
+/* ---------- 수용가 라벨: 관리번호·소블록(Y)·월평균·업종·이상유형만 (이름·주소·연락처는 선택지에 없음 → 📷 캡처에 들어가도 됨)
+   수용가 점 캔버스에 같이 그림. 화면 안 점만, 겹치면 건너뜀, 최대 1,500개 ---------- */
+const CLB={MAX:1500,k:null,n:0};
+function clKeys(){const o0=out[0]||{},sig=out.length+'|'+Object.keys(o0).length;if(CLB.k&&CLB.k.sig===sig&&CLB.k.o===out)return CLB.k;const f=re=>shutRowKey(o0,re);
+ return CLB.k={sig,o:out,mg:('관리번호' in o0)?'관리번호':f(/관리번호/)||(('수용가번호' in o0)?'수용가번호':''),q:('월평균(㎥)' in o0)?'월평균(㎥)':f(/월평균|평균사용량/),u:('업종' in o0)?'업종':f(/업종|용도/)}}
+function clBigQ(){try{return +SHUT.opt.bigQ||500}catch(_){return 500}}
+function clText(o,K){const m=UI.cl;if(m==='mg')return K.mg?String(o[K.mg]??'').trim():'';if(m==='blk')return String(o['소블록']||o['_결합블록']||'').trim();
+ if(m==='q'){const q=K.q?shutNum(o[K.q]):null;return q==null?'':(q>=100?Math.round(q).toLocaleString():q.toFixed(1))+'㎥'}if(m==='u')return K.u?String(o[K.u]??'').trim():'';if(m==='ab')return String(o['이상유형']||'').trim();return ''}
+function ptLabels(g,ids,sc,ax,ay,W,H,R0){CLB.n=0;if(!out.length)return;const K=clKeys(),rg=UI.clR||'all',bq=clBigQ(),fp=+UI.lblPx||11,cand=[],num=v=>typeof v==='number'?v:shutNum(v);
+ for(const i of ids){if(!PT.vis[i])continue;const x=PT.px[i]*sc+ax,y=PT.py[i]*sc+ay;if(x<0||y<0||x>W||y>H)continue;const o=out[i];if(!o)continue;
+  const q=K.q?num(o[K.q]):null,ab=!!o['이상유형'],big=q!=null&&q>=bq;if(rg==='ab'&&!ab||rg==='big'&&!big)continue;cand.push({i,x,y,q:q??-1,big,ab,o})}
+ cand.sort((a,b)=>(b.i===PT.sel)-(a.i===PT.sel)||b.big-a.big||b.q-a.q);/* 고른 점 · 대수용가 · 사용량 많은 순으로 자리 차지 */
+ g.font=`700 ${fp}px "Noto Sans KR","Malgun Gothic",sans-serif`;g.textAlign='left';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.95)';
+ /* 겹침 칸(8px): 글자 시작 칸이 이미 찼으면 글자를 만들지도 않고 건너뜀 → 화면에 점이 아주 많아도 빠름 */
+ const occ=new Set(),CS=8,hh=fp/2+2,cw=t=>{let w=2;for(let k=0;k<t.length;k++)w+=t.charCodeAt(k)>255?fp:fp*.62;return w};
+ for(const c of cand){if(CLB.n>=CLB.MAX)break;const r=PT.r[c.i]||R0,x0=c.x+r+3,cy0=Math.floor((c.y-hh)/CS),cy1=Math.floor((c.y+hh)/CS),cx0=Math.floor(x0/CS);
+  if(occ.has(cx0+','+cy0)||occ.has(cx0+','+cy1))continue;const t=clText(c.o,K);if(!t)continue;const cx1=Math.floor((x0+cw(t))/CS),cells=[];let hit=false;
+  for(let cx=cx0;cx<=cx1&&!hit;cx++)for(let cy=cy0;cy<=cy1;cy++){const k=cx+','+cy;if(occ.has(k)){hit=true;break}cells.push(k)}
+  if(hit)continue;cells.forEach(k=>occ.add(k));
+  g.strokeText(t,x0,c.y);g.fillStyle=c.big?'#c2410c':c.ab?'#b91c1c':'#0f172a';g.fillText(t,x0,c.y);CLB.n++}}
+function uiClHint(){const h=document.getElementById('uiClHint');if(!h)return;let t='';
+ if(UI.cl&&UI.cl!=='off'){if(!out.length)t='주소 변환 결과(수용가 점)가 있어야 라벨이 붙습니다.';else if(PT.off)t='👥 수용가 점을 켜야 라벨이 보입니다.';else if(map&&map.getZoom()<(+UI.clZ||18))t=`지도를 줌 ${+UI.clZ||18} 이상으로 확대하면 라벨이 보입니다 (현재 ${map.getZoom()}).`;
+  else t=`지금 화면 라벨 ${CLB.n.toLocaleString()}개${CLB.n>=CLB.MAX?' (최대치, 더 확대하면 더 보입니다)':''}`;if(UI.clR==='big')t+=` · 대수용가 = 월평균 ${clBigQ().toLocaleString()}㎥ 이상 (💧 단수구역 설정과 같음)`}
+ h.textContent=t;h.hidden=!t}
+
 /* ===================== ⚙️ 유저설정 모드: 지도 표시 설정 (이 기기 브라우저에 저장 · geo- 로 시작하므로 백업 파일에도 포함) ===================== */
-var UI={leg:true,legMin:false,lbl:'off',lblZ:17,bcol:'hc',fsz:1,pw:1,lblPx:11,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
+var UI={leg:true,legMin:false,lbl:'off',lblZ:17,cl:'off',clR:'all',clZ:18,bcol:'hc',fsz:1,pw:1,lblPx:11,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
 try{const v=JSON.parse(localStorage.getItem('geo-ui')||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
 function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_){}}
 /* 소블록 경계 색: 파랑 계열 관로(관경 색)와 겹치지 않는 주황이 기본 */
@@ -1127,7 +1194,7 @@ function uiPanel(show,tab){const p=document.getElementById('uiSet');if(!p)return
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
- const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
+ const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiCl').value=UI.cl||'off';q('uiClR').value=UI.clR||'all';q('uiClZ').value=String(UI.clZ||18);uiClHint();q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
  const ph=$('pPanel').hidden,fh=$('fPanel').hidden;q('uiPipeBox').hidden=ph;q('uiPipeNo').hidden=!ph;q('uiFacBox').hidden=fh;q('uiFacNo').hidden=!fh;const eh=$('ePanel').hidden;q('uiElevBox').hidden=eh;q('uiElevNo').hidden=!eh;
  q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
  const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
@@ -1164,6 +1231,11 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uir"><input type="checkbox" id="uiPh"> 📷 현장 사진 <small style="color:var(--mute)">Alt+P</small></label>
 <label class="uir"><input type="checkbox" id="uiLeg"> 🗂️ 지도 범례 (관로 · 블록 색칠)</label>
 <p class="uin" style="margin-top:2px">상수관로·시설물 표시는 <a href="#" data-go="pipe">🚰 관로·시설물</a> 탭에 있습니다.</p>
+<div class="uig">🏷️ 수용가 라벨 <small>(이름·주소·연락처는 넣지 않음)</small></div>
+<label class="uif">내용<select id="uiCl" class="msel">${opt([['off','끔'],['mg','관리번호'],['blk','소블록 (Y열)'],['q','월평균 사용량'],['u','업종'],['ab','이상유형']])}</select></label>
+<label class="uif">대상<select id="uiClR" class="msel">${opt([['all','전체'],['ab','이상 수용가만'],['big','대수용가만']])}</select></label>
+<label class="uif">보이기 시작<select id="uiClZ" class="msel">${opt([['17','줌 17부터'],['18','줌 18부터 (권장)'],['19','줌 19부터']])}</select></label>
+<p class="uin" id="uiClHint" hidden></p>
 <div class="uig">소블록</div>
 <label class="uif">🟧 경계 색<select id="uiBcol" class="msel">${opt(Object.entries(BCOL).map(([k,v])=>[k,v.name]))}</select></label>
 <div id="uiBlkBox"></div>
@@ -1212,10 +1284,13 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply();if(typeof phDraw==='function')phDraw()};
  q('uiLbl').onchange=e=>{UI.lbl=e.target.value;uiSave();plblSoon()};
  q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
+ q('uiCl').onchange=e=>{UI.cl=e.target.value;uiSave();ptDraw();uiClHint()};
+ q('uiClR').onchange=e=>{UI.clR=e.target.value;uiSave();ptDraw();uiClHint()};
+ q('uiClZ').onchange=e=>{UI.clZ=+e.target.value||18;uiSave();ptDraw();uiClHint()};
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
- q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw()};
+ q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
  q('uiAll').onclick=uiAllToggle;
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -1806,7 +1881,7 @@ $('f3').onchange=e=>{const f=e.target.files[0];if(!f)return;if(typeof shp==='und
 $('pBy').onchange=()=>pipeRefresh(false);$('pShow').onchange=()=>{pipeRefresh(false)};$('pFar').oninput=()=>pipeRefresh(false);$('pPrint').onchange=()=>pipeRefresh(false);
 $('pCodes').oninput=()=>{PIPE.ct=null;PIPE.stats=null;pipeRefresh(true)};
 {let v={};try{v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}}catch(_){}if(v.by)$('pBy').value=v.by;if(v.show)$('pShow').value=v.show;if(v.far)$('pFar').value=v.far;if(v.codes)$('pCodes').value=v.codes;if(v.print===false)$('pPrint').checked=false}
-if(map){map.on('zoomend',pipeShow);map.on('click',pipeClick)}
+if(map){map.on('zoomend',pipeShow)}
 let pWas=[];window.addEventListener('beforeprint',()=>{pWas=[PIPE.layer,PIPE.layerS].filter(l=>l&&map&&map.hasLayer(l));if(!$('pPrint').checked)pWas.forEach(l=>map.removeLayer(l))});
 window.addEventListener('afterprint',()=>{pWas.forEach(l=>{if(!map.hasLayer(l))l.addTo(map)});pWas=[]});
 function locRun(i){if(i!=null)selectRow(i,'map');['locBtn','locBtn2'].forEach(id=>$(id).disabled=true);locTest().finally(()=>['locBtn','locBtn2'].forEach(id=>$(id).disabled=!out.length))}
@@ -2011,7 +2086,7 @@ const PZ_MAIN=13,PZ_SVC=16;
 function pipePane(){if(!map||!map.createPane)return 'overlayPane';if(!map.getPane('pipes')){const p=map.createPane('pipes');p.style.zIndex=390;p.style.pointerEvents='none'}return 'pipes'}
 function pipeHitAt(ll){/* 폐관 표시 관로도 누르면 정보가 보이게 (all) */if(!PIPE.segs||!map)return null;const onM=PIPE.layer&&map.hasLayer(PIPE.layer),onS=PIPE.layerS&&map.hasLayer(PIPE.layerS);if(!onM&&!onS)return null;
  const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*7,h=nearestPipe(ll.lng,ll.lat,r,true);if(!h)return null;const f=PIPE.feats[h.fi],svc=attrOf(f).use==='급수관';return(svc?onS:onM)?f:null}
-function pipeClick(e){if(typeof shutEat==='function'&&shutEat(e))return;const f=pipeHitAt(e.latlng);if(f)L.popup({maxWidth:280}).setLatLng(e.latlng).setContent(pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · ')))(attrOf(f))}</div>`).openOn(map)}
+function pipePopFull(f,ll){const e={latlng:ll};return pipePopup(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · ')))(attrOf(f))}</div>`}
 function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
  const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle},main=[],svc=[];
@@ -3196,7 +3271,7 @@ async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p
   n+=facPatch(P,patch);if(!n)return;facMark(P)}
  if(re)facIndex(); /* 위치·삭제 표시가 바뀌면 색인을 다시 만듦 (번호 i는 그대로) */
  else{const KI=facKindInfo(f.k);FAC.cl[i]=facClosed(P)?1:0;FAC.sk[i]=facSymOf(KI,P);FAC.rot[i]=FROT.has(FAC.sk[i])?facRot(P):NaN;FAC.ed[i]=P._현장수정||P._추가?1:0;facDraw();try{facKindsUi()}catch(_){}}
- if(map&&map._popup&&map._popup.isOpen()){const pp=map._popup;setTimeout(()=>{if(pp.isOpen()&&pp._fi===i)pp.setContent(facPopup(i)+elevPop(FAC.y[i],FAC.x[i]))},0)}
+ if(map&&map._popup&&map._popup.isOpen()){const pp=map._popup;setTimeout(()=>{if(pp.isOpen()&&pp._fi===i)pp.setContent(pp._hit?hitHtml(pp._hit):facPopup(i)+elevPop(FAC.y[i],FAC.x[i]))},0)}
  if(typeof shutRefresh==='function')shutRefresh();
  await facSave('현장 수정',facKindInfo(f.k).name+(P['관리번호']?' '+P['관리번호']:'')+' '+label,{upd:1})}
 function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
@@ -3204,9 +3279,7 @@ window.facOpSet=facOpSet;
 function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
  const cv=L.DomUtil.create('canvas','fac-canvas leaflet-zoom-hide',map.getPane('facPane'));cv.style.position='absolute';FAC.cv=cv;FAC.ctx=cv.getContext('2d');
  map.on('moveend zoomend resize viewreset',facDraw);map.on('zoomstart',()=>{cv.style.visibility='hidden'});map.on('zoomend',()=>{cv.style.visibility=''});
- /* 클릭: 수용가 점이 우선, 그다음 시설물. 블록(면) 위에서는 지도 click이 오지 않으므로 preclick에서 잡고, 블록·관로 팝업이 열린 뒤에 덮어씀 */
- map.on('preclick',e=>{const i=(PT.hit>=0||(typeof PH!=='undefined'&&PH.place)||(typeof shutEat==='function'&&shutEat(e)))?-1:facHitAt(e.containerPoint);if(i<0)return;
-  setTimeout(()=>{if(PT.hit>=0)return;const pp=L.popup({maxWidth:300,offset:[0,-4]}).setLatLng([FAC.y[i],FAC.x[i]]).setContent(facPopup(i)+elevPop(FAC.y[i],FAC.x[i]));pp._fi=i;pp.openOn(map)},0)})}
+ /* 클릭은 hitInit(수용가 점 · 시설물 · 관로 · 소블록 통합)에서 */}
 const facSym=(I,s=16)=>I.sym?`<img src="${facSymUrl(I.sym)}" width="${s}" height="${s}" alt="" style="flex:none;vertical-align:-3px">`:`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${I.col};border:1.5px solid #fff;box-shadow:0 0 0 1px #94a3b8"></span>`;
 function facKindsUi(){const box=$('fKinds');if(!box)return;const cnt=new Map(),clc=new Map();FAC.feats.forEach(f=>{cnt.set(f.k,(cnt.get(f.k)||0)+1);if(f.c&&facClosed(f.p))clc.set(f.k,(clc.get(f.k)||0)+1)});
  box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span class="fkn" title="${esc(I.name)}${I.name!==k?' ('+esc(k)+')':''}">${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
@@ -4706,7 +4779,7 @@ function shutCalc(){const N=SHUT.net,E=N.ea.length,A=SHUT.area,inE=A?shutAreaIn(
  SHUT.seen=seen;SHUT.res={len,ne,nf:fs.size,V,ovl,blk:[...blk].sort((a,b)=>b[1]-a[1])}}
 function shutLayer(){if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=396;p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}}
 function shutDraw(){if(!map)return;shutLayer();
- SHUT.L.clearLayers();if(!SHUT.on||!SHUT.res)return;const N=SHUT.net,seen=SHUT.seen,ls=[],la=[],ld=[],lo=[],o={pane:'shut',renderer:SHUT.rd,interactive:false},inE=SHUT.area&&shutAMode()==='valve'?SHUT.area.inE:null;
+ SHUT.L.clearLayers();SHUT.cust=null;if(!SHUT.on||!SHUT.res)return;const N=SHUT.net,seen=SHUT.seen,ls=[],la=[],ld=[],lo=[],o={pane:'shut',renderer:SHUT.rd,interactive:false},inE=SHUT.area&&shutAMode()==='valve'?SHUT.area.inE:null;
  for(let e=0;e<seen.length;e++)if(seen[e])(SHUT.add.has(e)?la:inE&&!inE[e]?lo:ls).push(shutLL(e));SHUT.del.forEach(e=>ld.push(shutLL(e)));
  const w=+UI.pw||1;
  /* 그린 범위: 남색 점선 (캡처에도 들어감) */
@@ -4718,7 +4791,7 @@ function shutDraw(){if(!map)return;shutLayer();
  if(ld.length)L.polyline(ld,{...o,color:'#64748b',weight:4*w,opacity:.9,dashArray:'3 7'}).addTo(SHUT.L);
  /* 단수 대상 수용가 점(가장 가까운 관로 기준): 파랑 = 수용가, 주황 = 대수용가. 이름·주소 없음. 같은 캔버스라 📷 캡처에도 들어감 */
  if(SHUT.opt.cust!==false){const I=telRows();if(I.length&&I.length<=30000){shutRowStats();const src=shutSrc(),big=SHUT.bigSet||new Set(),ord=I.filter(i=>!big.has(i)).concat(I.filter(i=>big.has(i)));
-  ord.forEach(i=>{const r=src[i],la=+r['_위도'],ln=+r['_경도'];if(!la||!ln)return;const b=big.has(i);L.circleMarker([la,ln],{...o,radius:b?7:4.2,color:'#fff',weight:b?2:1.2,fillColor:b?'#f59e0b':'#0284c7',fillOpacity:1}).addTo(SHUT.L)})}}
+  SHUT.cust=[];ord.forEach(i=>{const r=src[i],la=+r['_위도'],ln=+r['_경도'];if(!la||!ln)return;const b=big.has(i);SHUT.cust.push(i,la,ln);L.circleMarker([la,ln],{...o,radius:b?7:4.2,color:'#fff',weight:b?2:1.2,fillColor:b?'#f59e0b':'#0284c7',fillOpacity:1}).addTo(SHUT.L)})}}
  SHUT.res.V.slice(0,300).forEach(v=>{const cls=v.st===2?'br':v.st===1?'cl':'',m=L.marker([FAC.y[v.i],FAC.x[v.i]],{icon:L.divIcon({className:'shvi',html:`<span class="shv ${cls}">${v.no}</span>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:900,keyboard:false,
   title:`${v.no}번 제수밸브 ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
   m.on('click',()=>shutBroken(v.n));m.addTo(SHUT.L)});
