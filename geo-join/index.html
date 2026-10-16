@@ -272,7 +272,7 @@ html.dark .ubbar{background:rgba(124,58,237,.12);border-color:rgba(167,139,250,.
 .ubbar input{width:auto!important;flex:0 1 220px;margin:0!important;padding:5px 8px;border:1px solid var(--line2,#cbd5e1);border-radius:8px;font:inherit;font-size:12.5px;min-width:150px;background:var(--card,#fff);color:var(--ink,#1e293b)}
 /* ===== 현장 모드 (휴대폰·태블릿) ===== */
 .fmctl{display:none!important}
-body.touch .fmctl,body.fm .fmctl{display:flex!important;flex-direction:column;gap:8px;background:none;border:0;box-shadow:none}
+body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{display:flex!important;flex-direction:column;gap:8px;background:none;border:0;box-shadow:none}
 .fmctl button{width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:#0f766e;color:#fff;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button.shot{background:#7c3aed;font-size:20px}
 #mshot{position:fixed;inset:0;z-index:10100;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:12px}#mshot[hidden]{display:none}
@@ -291,7 +291,7 @@ body.touch .leaflet-bar a{width:40px!important;height:40px!important;line-height
  .leaflet-top.leaflet-left{bottom:0;display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;align-items:flex-start}
  .leaflet-top.leaflet-left>.leaflet-control{margin-top:8px}
  body.touch .leaflet-bar a{width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
- body.touch .fmctl,body.fm .fmctl{gap:6px}.fmctl button{width:42px;height:42px;font-size:19px}.fmctl button.loc,.fmctl button.shot{font-size:18px}
+ body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{gap:6px}.fmctl button{width:42px;height:42px;font-size:19px}.fmctl button.loc,.fmctl button.shot{font-size:18px}
  .leaflet-bottom .pleg{font-size:10.5px;line-height:1.4;padding:4px 8px;max-height:calc(50vh - 16px);overflow:auto}
  .gsrch{width:230px}.gsrch .gsb{padding:6px 8px}
 }
@@ -812,7 +812,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <div id="pPanel" hidden>
    <div class="g2"><label class="f">관경 필드<select id="pDia" disabled></select></label><label class="f">재질 필드<select id="pMat" disabled></select></label>
    <label class="f">설치일 필드<select id="pYmd" disabled></select></label><label class="f">용도 필드<select id="pUse" disabled></select></label>
-   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="dia">관경</option><option value="use">용도</option></select></label>
+   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option></select></label>
    <label class="f">지도 표시<select id="pShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label><label class="f">원거리 기준(m)<input id="pFar" type="number" value="50" min="1"></label></div>
    <p class="hint" id="pZoomHint" hidden>관로가 많아 지도를 더 확대하면(줌 15 이상) 표시됩니다.</p>
    <span class="ck"><input type="checkbox" id="pPrint" checked> PDF 인쇄에 관로 포함</span>
@@ -2035,6 +2035,14 @@ const MAT_RULES=[
 const MAT_COL={'덕타일주철관(DCIP)':'#2563eb','회주철관(CIP)':'#7c3aed','강관(SP)':'#0891b2','스테인리스관(STS)':'#0d9488','아연도강관':'#a16207','PVC관(HI-3P·VP)':'#ca8a04','PE관':'#16a34a','콘크리트관(PC·PCC)':'#78716c','GRP관':'#db2777','석면시멘트관':'#dc2626','동관':'#ea580c'};
 const USE_COL={'취수관':'#0f766e','도수관':'#7c3aed','송수관':'#db2777','배수관':'#2563eb','급수관':'#16a34a','소방관':'#ea580c','불탐관':'#64748b'};
 const AGE_BANDS=[[10,'10년 이하','#16a34a'],[20,'10~20년','#84cc16'],[30,'20~30년','#f59e0b'],[1e9,'30년 초과 (노후)','#dc2626']];
+/* 관망해석 결과(관로 관리번호로 연결) 색: 유속 m/s(최대) · 유량 ㎥/일(평균, 방향 무시) */
+const VEL_BANDS=[[0.01,'0.01 미만 (정체)','#a855f7'],[0.3,'0.01~0.3 m/s','#38bdf8'],[1,'0.3~1.0 m/s','#22c55e'],[2,'1.0~2.0 m/s','#f59e0b'],[1e9,'2.0 m/s 초과 (과속)','#dc2626']];
+const FLOW_BANDS=[[10,'10 ㎥/일 미만','#bae6fd',1.4],[100,'10~100 ㎥/일','#38bdf8',2],[1000,'100~1,000 ㎥/일','#0284c7',3],[10000,'1,000~1만 ㎥/일','#1d4ed8',4.4],[1e9,'1만 ㎥/일 이상','#312e81',6]];
+const HYD_NO='결과 없음';
+/* 관로 → 관망해석 결과 {v,q} (없으면 null) */
+function hydLk(){try{return ELEV.lk}catch(_){return null}}/* ELEV가 아래에서 선언되므로 앞에서 불려도 안전하게 */
+function pipeHyd(a){const m=hydLk();if(!m)return null;const id=String(a.id??'').trim();return id&&m.get(id)||null}
+function pipeHydBand(a,by){const o=pipeHyd(a);return o?by==='vel'?band(VEL_BANDS,o.v):band(FLOW_BANDS,Math.abs(o.q)):null}
 const DIA_BANDS=[[100,'100mm 미만','#93c5fd',1.6],[200,'100~200mm','#3b82f6',2.4],[400,'200~400mm','#1d4ed8',3.4],[1e9,'400mm 이상','#1e3a8a',4.8]];
 const OTHER_COL=['#64748b','#be185d','#4d7c0f','#9333ea','#0369a1','#b45309','#475569'];
 function codeTable(){const m={};String($('pCodes').value||'').split(/\n/).forEach(l=>{const k=l.split(/[=:\t]/);if(k.length>=2&&k[0].trim())m[k[0].trim().toUpperCase()]=k.slice(1).join('=').trim()});return m}
@@ -2101,8 +2109,10 @@ var SHUT_PL=false;
 function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  if(by==='age')col=a.age==null?'#94a3b8':band(AGE_BANDS,a.age)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
- else if(by==='use')col=USE_COL[a.use]||catCol(a.use);else col=MAT_COL[a.mat]||catCol(a.mat);
- const w=(a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};return{color:col,weight:w,opacity:.9}}
+ else if(by==='use')col=USE_COL[a.use]||catCol(a.use);
+ else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else col=MAT_COL[a.mat]||catCol(a.mat);
+ /* 유속·유량 색일 때 굵기 = 유량 (결과 없는 관로는 가늘게) */
+ const hq=(by==='vel'||by==='flow')?pipeHyd(a):null,w=(hq?band(FLOW_BANDS,Math.abs(hq.q))[3]:by==='vel'||by==='flow'?1.2:a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};return{color:col,weight:w,opacity:.9}}
 const catMap=new Map();function catCol(k){if(k==='미상')return '#94a3b8';if(!catMap.has(k))catMap.set(k,OTHER_COL[catMap.size%OTHER_COL.length]);return catMap.get(k)}
 function pipePopup(f){const a=attrOf(f),P=f.properties;
  const rows=[['레이어',a.layer||'-'],['관리번호',a.id||P._임시번호||''],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];
@@ -2136,12 +2146,12 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
 function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
  const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
- const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const a=attrOf(f);const k=by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:a.mat;cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
- let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);
+ const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const a=attrOf(f);const k=by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):a.mat;cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
+ let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
- const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도'}[by];
- el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
+ const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
 async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;renderBlk();return}
  if(!poly._v)poly._v=Math.random();const key=[poly._v,$('blkField').value,$('pYmd').value,PIPE.feats.length].join('|');
@@ -3028,7 +3038,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -3500,7 +3510,7 @@ function elevSet(v){ELEV.n=0;ELEV.bs=null;ELEV.bsKey='';
   for(let i=0;i<n;i++){const x=v.lng[i]*EKX,y=v.lat[i]*EKY;ELEV.mx[i]=x;ELEV.my[i]=y;let k=Math.floor(x/ELEV.cs)+','+Math.floor(y/ELEV.cs),a=ELEV.grid.get(k);if(!a)ELEV.grid.set(k,a=[]);a.push(i);
    k=Math.floor(v.lng[i]/ELEV.dcs)+','+Math.floor(v.lat[i]/ELEV.dcs);a=ELEV.dg.get(k);if(!a)ELEV.dg.set(k,a=[]);a.push(i);if(map){const q=map.project([v.lat[i],v.lng[i]],0);ELEV.px[i]=q.x;ELEV.py[i]=q.y}}
   ELEV.n=n}
- hydSet(ELEV.n?v.hyd:null);$('ePanel').hidden=!ELEV.n;$('eByL').hidden=!ELEV.hyd;elevLeg();elevDraw();elevAttach();if(out.length){renderTable();renderBlk()}if(typeof shutInfoFill==='function'&&typeof SHUT!=='undefined'&&SHUT.on)shutInfoFill();uiPanelSync()}
+ hydSet(ELEV.n?v.hyd:null);$('ePanel').hidden=!ELEV.n;$('eByL').hidden=!ELEV.hyd;elevLeg();{const by=$('pBy').value;if((by==='vel'||by==='flow')&&PIPE.fc)renderPipes()}elevDraw();elevAttach();if(out.length){renderTable();renderBlk()}if(typeof shutInfoFill==='function'&&typeof SHUT!=='undefined'&&SHUT.on)shutInfoFill();uiPanelSync()}
 /* (lat,lng)의 표고: 150m 안 가까운 절점 3개 거리 가중 평균. 없으면 null */
 function elevAt(lat,lng){if(!ELEV.n||!isFinite(lat)||!isFinite(lng))return null;const x=lng*EKX,y=lat*EKY,cs=ELEV.cs,R=ELEV.R,gx=Math.floor(x/cs),gy=Math.floor(y/cs),rr=Math.ceil(R/cs),near=[];
  for(let a=gx-rr;a<=gx+rr;a++)for(let b=gy-rr;b<=gy+rr;b++){const g=ELEV.grid.get(a+','+b);if(!g)continue;for(const i of g){const d=Math.hypot(ELEV.mx[i]-x,ELEV.my[i]-y);if(d<=R)near.push([d,i])}}
@@ -4290,6 +4300,8 @@ const FM_TOUCH=matchMedia('(pointer:coarse)'),FM_NARROW=matchMedia('(max-width:1
 function fmPref(){try{return localStorage.getItem('geo-fm')||'auto'}catch(_){return 'auto'}}
 function fmApply(){const p=fmPref(),touch=FM_TOUCH.matches,on=p==='on'||(p==='auto'&&(touch||FM_NARROW.matches));
  document.body.classList.toggle('fm',on);document.body.classList.toggle('touch',on&&(touch||p==='on'));
+ // 📷·📍·🖼️ 버튼은 휴대폰·태블릿이면 현장 모드를 꺼도 항상 보이게
+ document.body.classList.toggle('tdev',touch);
  const b=$('fmBtn');if(b){b.classList.toggle('on',on);b.textContent=on?'📱 현장 모드 켜짐':'📱 현장 모드';b.setAttribute('aria-pressed',String(on))}
  if(map)setTimeout(()=>map.invalidateSize(),120)}
 $('fmBtn').onclick=()=>{const on=document.body.classList.contains('fm');try{localStorage.setItem('geo-fm',on?'off':'on')}catch(_){}fmApply()};
