@@ -852,7 +852,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
    <div id="eHistBox" class="hint histbox" hidden></div></div>
   <label class="drop"><input type="file" id="f5" accept=".inp,.txt,.json,.zip"><div class="ic">⛰️</div><b id="eDropT">관망해석 입력 파일(.inp) 또는 결과 파일(.zip)</b><span>.inp: [JUNCTIONS] 표고 + [COORDINATES] 좌표만 읽음 · 결과 파일(.zip/.json): 표고 + 절점 수압 + 관로 유속·유량 · 수요량·수용가 정보는 읽지 않음 · 한 번 올리면 이 PC에 저장</span></label>
   <label class="f">원본 좌표계 <small style="font-weight:400">(파일 [TITLE]에 좌표계가 없을 때 사용)</small><select id="eCrs"><option>EPSG:5187</option><option>EPSG:5186</option><option>EPSG:5185</option><option>EPSG:5179</option><option>EPSG:4326</option></select></label>
-  <p class="hint" id="eMsg">올리면 단수구역 캡처의 지반고, 주소 결과표·결과 엑셀의 표고 칸, 블록별 현황의 표고(평균·최저~최고)에 쓰입니다. 표고는 가까운 절점 3개(150m 안)의 거리 가중 평균이며 참고값입니다. 결과 파일을 올리면 수압 색 점, 관로 팝업 유속·유량, 블록별 최저 수압·저압 절점 수, 단수구역 최저 수압도 함께 나옵니다(모델 계산 참고값).</p>
+  <p class="hint" id="eMsg">올리면 단수구역 캡처의 지반고, 주소 결과표·결과 엑셀의 표고 칸, 블록별 현황의 표고(평균·최저~최고)에 쓰입니다. 표고는 가까운 절점 3개(150m 안)의 거리 가중 평균이며 참고값입니다. 결과 파일을 올리면 수압 색 점, 관로 팝업 유속·유량, 블록별 최저 수압·저압 절점 수, 단수구역 최저 수압도 함께 나옵니다(모델 계산 참고값). 결과는 한 번 올리면 결과 파일을 새로 올릴 때까지 계속 쓰입니다(.inp로 표고만 바꿔도 유지).</p>
   <div id="ePanel" hidden>
    <label class="f">⛰️ 표고·수압 지도 표시<select id="eShow"><option value="off">숨김 (기본)</option><option value="auto">표시 (줌 15부터)</option><option value="on">항상 표시</option></select></label>
    <label class="f" id="eByL" hidden>점 색 기준<select id="eBy"><option value="z">⛰️ 표고</option><option value="p">💧 최저 수압 (관망해석 결과)</option></select></label>
@@ -1912,7 +1912,7 @@ $('locClose').onclick=()=>{$('locModal').hidden=true};$('locModal').addEventList
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('locModal').hidden)$('locModal').hidden=true});
 /* 📱 폰·태블릿: 안드로이드·아이폰 파일 선택기는 accept의 확장자를 MIME으로 바꿔 거르는데 .xlsm(매크로 엑셀)은 MIME을 모르는 경우가 많아
    파일이 흐리게 나오고 고를 수 없음 → 터치 기기에서는 엑셀 입력칸의 accept를 빼고, 고른 뒤 확장자로 확인 */
-if(matchMedia('(pointer:coarse)').matches)['bFile','impFile','f1','phRefFile','phRcpFile'].forEach(id=>{const el=$(id);if(el)el.removeAttribute('accept')});
+if(matchMedia('(pointer:coarse)').matches)['bFile','impFile','f1','phRefFile','phRcpFile','f5'].forEach(id=>{const el=$(id);if(el)el.removeAttribute('accept')});
 $('bFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(!/\.xls[mxb]?$/i.test(f.name)){$('bMsg').textContent=`엑셀 파일(.xlsm·.xlsx)이 아닙니다: ${f.name}`;e.target.value='';return}billLoadFile(f)};
 $('bMonth').onchange=()=>{BILL.mi=+$('bMonth').value;billRefresh();if(BILLMODE&&out.length)$('bTInfo').innerHTML+=' <span class="c-am">· 기준월을 바꿨습니다. 이상 유형을 새 기준월로 다시 받으려면 "변환 대상 만들기"를 다시 누르세요(주소 변환 결과는 재사용).</span>'};
 ['bTarget','bBlk'].forEach(id=>$(id).onchange=billTargetInfo);$('bMake').onclick=billMake;
@@ -2702,7 +2702,7 @@ async function xlBusy(btn,label,job){const b=$(btn),t0=b.textContent;b.disabled=
  try{await job(st);hStat(label+' 저장 완료','ok')}catch(e){alert(label+' 저장 실패: '+((e&&e.message)||e));hStat(label+' 실패','warn')}finally{b.textContent=t0;b.disabled=false}}
 $('xl').onclick=()=>xlBusy('xl','결과 엑셀',async st=>{ubSync();
  const g={};out.forEach(o=>{const k=o['_결합블록']||'(미결합)';g[k]=(g[k]||0)+1});
- await xlsxSave([['결과',out],['블록별집계',Object.entries(g).map(([블록,건수])=>{const e=ELEV.n&&블록!=='(미결합)'?elevBlk(블록):null;const o=ELEV.n?{블록,건수,'평균 표고(m)':e?Math.round(e.avg*10)/10:'','최저 표고(m)':e?e.min:'','최고 표고(m)':e?e.max:''}:{블록,건수};if(ELEV.hyd)Object.assign(o,{'모델 최저 수압(m)':e&&e.pn?Math.round(e.pmin*10)/10:'','모델 평균 수압(m)':e&&e.pn?Math.round(e.pavg*10)/10:'','저압 절점(15m 미만)':e&&e.pn?e.low:'','수요 절점':e?e.pn:''});return o})]],'주소좌표_공간결합_결과.xlsx',st)});
+ await xlsxSave([['결과',out],['블록별집계',Object.entries(g).map(([블록,건수])=>{const e=ELEV.n&&블록!=='(미결합)'?elevBlk(블록):null;const o=ELEV.n?{블록,건수,'평균 표고(m)':e&&e.n?Math.round(e.avg*10)/10:'','최저 표고(m)':e&&e.n?e.min:'','최고 표고(m)':e&&e.n?e.max:''}:{블록,건수};if(ELEV.hyd)Object.assign(o,{'모델 최저 수압(m)':e&&e.pn?Math.round(e.pmin*10)/10:'','모델 평균 수압(m)':e&&e.pn?Math.round(e.pavg*10)/10:'','저압 절점(15m 미만)':e&&e.pn?e.low:'','수요 절점':e?e.pn:''});return o})]],'주소좌표_공간결합_결과.xlsx',st)});
 /*SHPSTART*/
 const enc=new TextEncoder();
 function wkt(n,cm,fe,fn,k){return `PROJCS["${n}",GEOGCS["GCS_Korea_2000",DATUM["D_Korea_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",${fe}.0],PARAMETER["False_Northing",${fn}.0],PARAMETER["Central_Meridian",${cm}],PARAMETER["Scale_Factor",${k}],PARAMETER["Latitude_Of_Origin",38.0],UNIT["Meter",1.0]]`}
@@ -3089,7 +3089,7 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(use.p){let s=null;try{s=await IDB.get('pipes')}catch(_){}if(s)try{await IDB.set('pipes_prev',s)}catch(_){}await IDB.set('pipes',o.pipes);await pipeRestore(true)}
   if(o.pedit&&Array.isArray(o.pedit.recs)&&$('bkP').checked){await pedLoad();const n=pedMerge(o.pedit.recs);if(n){PED.dirty=true;PED.at=Date.now();await pedStore();pedReapply()}}
   if(use.f){let s=null;try{s=await IDB.get('facs')}catch(_){}if(s)try{await IDB.set('facs_prev',s)}catch(_){}await IDB.set('facs',o.facs);await facRestore(true)}
-  if(use.e){let s=null;try{s=await IDB.get('elev')}catch(_){}if(s)try{await IDB.set('elev_prev',s)}catch(_){}await IDB.set('elev',o.elev);await elevRestore(true)}
+  if(use.e){let s=null;try{s=await IDB.get('elev')}catch(_){}if(s)try{await IDB.set('elev_prev',s)}catch(_){}{const h=!o.elev.hyd&&hydKeep(s);if(h)o.elev.hyd=h}await IDB.set('elev',o.elev);await elevRestore(true)}
   if(use.ph){const have=new Set(PH.list.map(m=>m.id));for(const m of o.photos){if(have.has(m.id))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id)}catch(_){}}await phSaveMeta(true);phRefresh()}
   if(use.u){o.ublk.forEach(([k,v])=>{if(k&&v)UB.m.set(k,v)});ubSave();ubList();if(out.length){ubSync();renderTable()}}
   if(use.r)await bkResLoad(o.res);
@@ -3509,14 +3509,23 @@ function elevAt(lat,lng){if(!ELEV.n||!isFinite(lat)||!isFinite(lng))return null;
 function elevPop(lat,lng){const e=elevAt(lat,lng);return e?`<div style="margin-top:4px;font-size:12px">⛰️ 표고 약 <b>${e.z}m</b> <small style="color:#64748b">(관망해석 절점 ${e.n}개 보간 · 가장 가까운 절점 ${Math.round(e.d)}m)</small></div>`+hydPop(lat,lng):''}
 /* ===== 관망해석 결과(수압·유속): 표고 기준자료(elev)의 hyd에 함께 저장 → 백업·공유 서버도 표고와 같이 감 =====
    hyd={name,base,calc,neg,pmin[],pavg[],pmax[],d[](1=수요 절점),links:{id[](관로 관리번호),a[],b[](절점 번호),v[](최대 유속 m/s),q[](평균 유량 ㎥/일)}} */
-function hydSet(h){ELEV.hyd=null;ELEV.lk=null;if(!h||!h.pmin||h.pmin.length!==ELEV.n)return;ELEV.hyd=h;const L0=h.links||{},m=new Map(),ids=L0.id||[];
+/* 절점 색인(찾기용 미터 격자 + 그리기용 경위도 격자). 결과 절점은 표고 절점과 따로 둠 → .inp로 표고만 바꿔도 결과는 그대로 */
+function nodeIdx(lng,lat){const n=lng.length,o={n,lng,lat,mx:new Float64Array(n),my:new Float64Array(n),px:new Float64Array(n),py:new Float64Array(n),grid:new Map(),dg:new Map()};
+ for(let i=0;i<n;i++){const x=lng[i]*EKX,y=lat[i]*EKY;o.mx[i]=x;o.my[i]=y;let k=Math.floor(x/ELEV.cs)+','+Math.floor(y/ELEV.cs),a=o.grid.get(k);if(!a)o.grid.set(k,a=[]);a.push(i);
+  k=Math.floor(lng[i]/ELEV.dcs)+','+Math.floor(lat[i]/ELEV.dcs);a=o.dg.get(k);if(!a)o.dg.set(k,a=[]);a.push(i);if(map){const q=map.project([lat[i],lng[i]],0);o.px[i]=q.x;o.py[i]=q.y}}
+ return o}
+/* 저장된 결과에 절점 좌표가 없으면(2026-10-16 첫 판) 그때의 표고 절점 좌표를 붙여 결과만 따로 들고 다닐 수 있게 함 */
+function hydKeep(v){const h=v&&v.hyd;if(!h||!h.pmin)return null;if(h.lng&&h.lng.length===h.pmin.length)return h;if(v.lng&&v.lng.length===h.pmin.length)return{...h,lng:v.lng,lat:v.lat};return null}
+function hydSet(h){ELEV.hyd=null;ELEV.lk=null;ELEV.hi=null;if(!h||!h.pmin)return;
+ if(h.lng&&h.lng.length===h.pmin.length)ELEV.hi=nodeIdx(h.lng,h.lat);else if(h.pmin.length===ELEV.n)ELEV.hi={n:ELEV.n,lng:ELEV.lng,lat:ELEV.lat,mx:ELEV.mx,my:ELEV.my,px:ELEV.px,py:ELEV.py,grid:ELEV.grid,dg:ELEV.dg};else return;
+ ELEV.hyd=h;const L0=h.links||{},m=new Map(),ids=L0.id||[];
  /* 한 관리번호가 모델에서 여러 토막으로 나뉜 곳: 유속은 가장 큰 값, 유량은 절댓값이 가장 큰 토막, 끝 절점은 모두 */
  for(let i=0;i<ids.length;i++){const k=String(ids[i]||'').trim();if(!k)continue;let o=m.get(k);if(!o)m.set(k,o={v:0,q:0,n:[],c:0});const v=+L0.v[i]||0,q=+L0.q[i]||0;o.c++;if(v>o.v)o.v=v;if(Math.abs(q)>Math.abs(o.q))o.q=q;
-  for(const j of [L0.a[i],L0.b[i]])if(j>=0&&j<ELEV.n&&!o.n.includes(j))o.n.push(j)}
+  for(const j of [L0.a[i],L0.b[i]])if(j>=0&&j<ELEV.hi.n&&!o.n.includes(j))o.n.push(j)}
  ELEV.lk=m}
 /* (lat,lng)에서 가장 가까운 절점(150m 안) 번호 */
-function hydNear(lat,lng){if(!ELEV.hyd||!isFinite(lat)||!isFinite(lng))return null;const x=lng*EKX,y=lat*EKY,cs=ELEV.cs,R=ELEV.R,gx=Math.floor(x/cs),gy=Math.floor(y/cs),rr=Math.ceil(R/cs);let bd=R,bi=-1;
- for(let a=gx-rr;a<=gx+rr;a++)for(let b=gy-rr;b<=gy+rr;b++){const g=ELEV.grid.get(a+','+b);if(!g)continue;for(const i of g){const d=Math.hypot(ELEV.mx[i]-x,ELEV.my[i]-y);if(d<=bd){bd=d;bi=i}}}
+function hydNear(lat,lng){if(!ELEV.hyd||!isFinite(lat)||!isFinite(lng))return null;const I=ELEV.hi,x=lng*EKX,y=lat*EKY,cs=ELEV.cs,R=ELEV.R,gx=Math.floor(x/cs),gy=Math.floor(y/cs),rr=Math.ceil(R/cs);let bd=R,bi=-1;
+ for(let a=gx-rr;a<=gx+rr;a++)for(let b=gy-rr;b<=gy+rr;b++){const g=I.grid.get(a+','+b);if(!g)continue;for(const i of g){const d=Math.hypot(I.mx[i]-x,I.my[i]-y);if(d<=bd){bd=d;bi=i}}}
  return bi<0?null:{i:bi,d:bd}}
 const hydF=v=>v==null||!isFinite(v)?'-':(Math.round(v*10)/10).toFixed(1);
 function hydPop(lat,lng){const r=hydNear(lat,lng);if(!r)return '';const H=ELEV.hyd,i=r.i,p=H.pmin[i];
@@ -3536,18 +3545,20 @@ function elevAttach(){if(!out.length)return;if(!ELEV.n){out.forEach(o=>{delete o
  out.forEach(o=>{if(o['_위도']===''){o['_표고m']='';if(ELEV.hyd)o['_모델최저수압m']='';return}const e=elevAt(+o['_위도'],+o['_경도']);o['_표고m']=e?e.z:'';
   if(ELEV.hyd){const r=hydNear(+o['_위도'],+o['_경도']);o['_모델최저수압m']=r?Math.round(ELEV.hyd.pmin[r.i]*10)/10:''}else delete o['_모델최저수압m']})}
 /* 블록별 표고: 절점이 경계 안에 있는 소블록만 (평균·최저·최고) */
-function elevBlk(name){if(!ELEV.n||!poly)return null;const fld=$('blkField').value,key=ELEV.at+'|'+(ELEV.hyd?1:0)+'|'+fld+'|'+poly.features.length;
+const blkS0=()=>({n:0,sum:0,min:Infinity,max:-Infinity,pn:0,psum:0,pmin:Infinity,low:0});
+function elevBlk(name){if(!ELEV.n||!poly)return null;const fld=$('blkField').value,key=ELEV.at+'|'+(ELEV.hyd?ELEV.hi.n:0)+'|'+fld+'|'+poly.features.length;
  if(ELEV.bsKey!==key||PIDX.src!==poly){pidxBuild();const m=new Map();
   for(let i=0;i<ELEV.n;i++){const r=pidxFind(ELEV.lng[i],ELEV.lat[i],0);if(!r||r.how!=='내부')continue;const b=String(poly.features[r.fi].properties[fld]??'').trim();if(!b)continue;
-   let s=m.get(b);if(!s)m.set(b,s={n:0,sum:0,min:Infinity,max:-Infinity,pn:0,psum:0,pmin:Infinity,low:0});const z=ELEV.z[i];s.n++;s.sum+=z;if(z<s.min)s.min=z;if(z>s.max)s.max=z;
-   const H=ELEV.hyd;if(H&&H.d[i]){const p=H.pmin[i];s.pn++;s.psum+=H.pavg[i];if(p<s.pmin)s.pmin=p;if(p<HYD_LOW)s.low++}}
-  m.forEach(s=>{s.avg=s.sum/s.n;s.pavg=s.pn?s.psum/s.pn:null});ELEV.bs=m;const nm=new Map();m.forEach((s,k)=>nm.set(bNorm(k),s));ELEV.bsN=nm;ELEV.bsKey=key}
+   let s=m.get(b);if(!s)m.set(b,s=blkS0());const z=ELEV.z[i];s.n++;s.sum+=z;if(z<s.min)s.min=z;if(z>s.max)s.max=z}
+  const H=ELEV.hyd,I=ELEV.hi;if(H)for(let i=0;i<I.n;i++){if(!H.d[i])continue;const r=pidxFind(I.lng[i],I.lat[i],0);if(!r||r.how!=='내부')continue;const b=String(poly.features[r.fi].properties[fld]??'').trim();if(!b)continue;
+   let s=m.get(b);if(!s)m.set(b,s=blkS0());const p=H.pmin[i];s.pn++;s.psum+=H.pavg[i];if(p<s.pmin)s.pmin=p;if(p<HYD_LOW)s.low++}
+  m.forEach(s=>{s.avg=s.n?s.sum/s.n:null;s.pavg=s.pn?s.psum/s.pn:null});ELEV.bs=m;const nm=new Map();m.forEach((s,k)=>nm.set(bNorm(k),s));ELEV.bsN=nm;ELEV.bsKey=key}
  return ELEV.bs.get(name)||ELEV.bsN.get(bNorm(name))||null}
-const elevBlkTd=b=>{const s=elevBlk(b);return `<td class="r" title="${s?`관망해석 절점 ${s.n.toLocaleString()}개 · 최저 ${s.min.toFixed(1)}m ~ 최고 ${s.max.toFixed(1)}m`:'블록 안 절점 없음'}">${s?`${Math.round(s.avg)}<br><small>${Math.round(s.min)}~${Math.round(s.max)}</small>`:'-'}</td>`};
+const elevBlkTd=b=>{const s0=elevBlk(b),s=s0&&s0.n?s0:null;return `<td class="r" title="${s?`관망해석 절점 ${s.n.toLocaleString()}개 · 최저 ${s.min.toFixed(1)}m ~ 최고 ${s.max.toFixed(1)}m`:'블록 안 절점 없음'}">${s?`${Math.round(s.avg)}<br><small>${Math.round(s.min)}~${Math.round(s.max)}</small>`:'-'}</td>`};
 const hydBlkTd=b=>{const s=elevBlk(b);return s&&s.pn?`<td class="r ${s.pmin<HYD_LOW?'q-bad':s.pmin<25?'q-mid':''}" title="관망해석 결과 · 수요 절점 ${s.pn.toLocaleString()}개 · 최저 ${hydF(s.pmin)}m · 평균 ${hydF(s.pavg)}m · 저압(15m 미만) ${s.low}개 · 모델 계산 참고값">${Math.round(s.pmin)}<br><small>${s.low?'저압 '+s.low:'평균 '+Math.round(s.pavg)}</small></td>`:'<td class="r" title="블록 안 수요 절점 없음">-</td>'};
 const HYD_TH='<th class="r" title="관망해석 결과(모델 계산 참고값): 수요 절점 최저 수압(m) / 저압(15m 미만) 절점 수">💧최저수압</th>';
 function elevLeg(){const el=$('eLeg');if(!el)return;if(!ELEV.n){el.innerHTML='';return}
- if(elevByP()){const H=ELEV.hyd,cnt=PRB.map(()=>0);let dn=0,dl=0;for(let i=0;i<ELEV.n;i++){const p=H.pmin[i];cnt[PRB.findIndex(b=>p<b[0])]++;if(H.d[i]){dn++;if(p<HYD_LOW)dl++}}
+ if(elevByP()){const H=ELEV.hyd,cnt=PRB.map(()=>0);let dn=0,dl=0;for(let i=0;i<ELEV.hi.n;i++){const p=H.pmin[i];cnt[PRB.findIndex(b=>p<b[0])]++;if(H.d[i]){dn++;if(p<HYD_LOW)dl++}}
   el.innerHTML=PRB.map((b,k)=>`<span><i style="background:${b[2]}"></i>${b[1]} <small>${cnt[k].toLocaleString()}</small></span>`).join('')+`<small style="flex-basis:100%">절점 최저 수압(모델 계산 참고값) · 수요 절점 ${dn.toLocaleString()}개 중 저압(15m 미만) <b class="c-rd">${dl.toLocaleString()}</b>개 · 줌 18부터 값 표시</small>`;return}
  const cnt=ELB.map(()=>0);for(let i=0;i<ELEV.n;i++){const z=ELEV.z[i];cnt[ELB.findIndex(b=>z<b[0])]++}
  el.innerHTML=ELB.map((b,k)=>`<span><i style="background:${b[2]}"></i>${b[1]} <small>${cnt[k].toLocaleString()}</small></span>`).join('')}
@@ -3561,10 +3572,10 @@ function elevRender(){if(!map||!ELEV.cv)return;const sz=map.getSize(),pad=.25,W=
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=ELEV.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();if(!elevOn(z))return;
- const b=map.getBounds().pad(pad),sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,cs=ELEV.dcs,r=z>=17?4:z>=16?3.2:z>=14?2.4:1.6,txt=z>=18,lab=[],byP=elevByP();
+ const b=map.getBounds().pad(pad),sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,cs=ELEV.dcs,r=z>=17?4:z>=16?3.2:z>=14?2.4:1.6,txt=z>=18,lab=[],byP=elevByP(),I=byP?ELEV.hi:ELEV;
  g.lineWidth=1;g.strokeStyle='rgba(255,255,255,.9)';
- for(let a=Math.floor(b.getWest()/cs);a<=Math.floor(b.getEast()/cs);a++)for(let c=Math.floor(b.getSouth()/cs);c<=Math.floor(b.getNorth()/cs);c++){const q=ELEV.dg.get(a+','+c);if(!q)continue;
-  for(const i of q){const x=ELEV.px[i]*sc+ax,y=ELEV.py[i]*sc+ay;if(x<-5||y<-5||x>W+5||y>H+5)continue;g.beginPath();g.arc(x,y,r,0,6.2832);g.fillStyle=byP?presCol(ELEV.hyd.pmin[i]):elevCol(ELEV.z[i]);g.fill();if(r>2)g.stroke();if(txt)lab.push(x,y,i)}}
+ for(let a=Math.floor(b.getWest()/cs);a<=Math.floor(b.getEast()/cs);a++)for(let c=Math.floor(b.getSouth()/cs);c<=Math.floor(b.getNorth()/cs);c++){const q=I.dg.get(a+','+c);if(!q)continue;
+  for(const i of q){const x=I.px[i]*sc+ax,y=I.py[i]*sc+ay;if(x<-5||y<-5||x>W+5||y>H+5)continue;g.beginPath();g.arc(x,y,r,0,6.2832);g.fillStyle=byP?presCol(ELEV.hyd.pmin[i]):elevCol(ELEV.z[i]);g.fill();if(r>2)g.stroke();if(txt)lab.push(x,y,i)}}
  if(lab.length){const fp=Math.max(9,(+UI.lblPx||11)-1),occ=new Set();g.font=`600 ${fp}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.lineJoin='round';
   for(let j=0;j<lab.length;j+=3){const x=lab[j]+r+2,y=lab[j+1],t=(byP?ELEV.hyd.pmin[lab[j+2]]:ELEV.z[lab[j+2]]).toFixed(1),w=g.measureText(t).width,k=Math.floor(x/40)+','+Math.floor(y/14);if(occ.has(k))continue;occ.add(k);
    g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(t,x,y);g.fillStyle='#3f3f46';g.fillText(t,x,y);if(w>40)occ.add((Math.floor(x/40)+1)+','+Math.floor(y/14))}}}
@@ -3592,7 +3603,7 @@ async function hydRead(f){let t;if(/\.zip$/i.test(f.name)){if(typeof JSZip==='un
  const ok=[];for(let i=0;i<n;i++)if(d.lng[i]>124&&d.lng[i]<132&&d.lat[i]>33&&d.lat[i]<39.5&&isFinite(d.z[i]))ok.push(i);if(!ok.length)throw new Error('결과 파일 좌표가 모두 우리나라 밖입니다.');
  const pick=a=>ok.map(i=>a[i]),remap=new Int32Array(n).fill(-1);ok.forEach((i,k)=>remap[i]=k);const L0=d.links||{},ln=(L0.id||[]).length,mp=a=>Array.from({length:ln},(_,i)=>{const j=a[i];return j>=0&&j<n?remap[j]:-1});
  return{v:1,name:f.name,base:d.base||fmtD(f.lastModified||Date.now()),crs:d.crs||'',at:Date.now(),lng:pick(d.lng),lat:pick(d.lat),z:pick(d.z),
-  hyd:{name:d.name||f.name,base:d.base||'',calc:d.calc||'',neg:d.neg||0,pmin:pick(d.pmin),pavg:pick(d.pavg),pmax:pick(d.pmax),d:pick(d.d),links:{id:(L0.id||[]).map(x=>String(x??'')),a:mp(L0.a||[]),b:mp(L0.b||[]),v:L0.v||[],q:L0.q||[]}},_skip:n-ok.length}}
+  hyd:{name:d.name||f.name,base:d.base||'',calc:d.calc||'',neg:d.neg||0,lng:pick(d.lng),lat:pick(d.lat),pmin:pick(d.pmin),pavg:pick(d.pavg),pmax:pick(d.pmax),d:pick(d.d),links:{id:(L0.id||[]).map(x=>String(x??'')),a:mp(L0.a||[]),b:mp(L0.b||[]),v:L0.v||[],q:L0.q||[]}},_skip:n-ok.length}}
 async function hydLoad(f){const msg=$('eMsg'),t0=Date.now();msg.textContent=f.name+' 읽는 중…';
  try{const v=await hydRead(f),sk=v._skip;delete v._skip;let prev=null;try{prev=await IDB.get('elev')}catch(_){}let cnt=null;
   if(prev&&prev.z){cnt=elevDiff(prev,v);if(!confirm(`표고 기준자료를 이 결과 파일로 바꿀까요? (미리보기)\n\n· 지금 ${prev.z.length.toLocaleString()}개 → 새 파일 ${v.z.length.toLocaleString()}개\n· 추가 ${cnt.add.toLocaleString()} · 표고 변경 ${cnt.upd.toLocaleString()} · 삭제 ${cnt.del.toLocaleString()} · 그대로 ${cnt.same.toLocaleString()}\n· 수압·유속 결과도 함께 ${prev.hyd?'바뀝니다':'들어갑니다'} (관로 ${v.hyd.links.id.length.toLocaleString()}개)\n\n바꾼 뒤에도 ↩ 되돌리기로 이전 것으로 돌아갈 수 있습니다.`)){msg.textContent='교체를 취소했습니다.';return}}
@@ -3609,7 +3620,8 @@ async function elevLoad(f){if(/\.(zip|json)$/i.test(f.name))return hydLoad(f);co
   if(!z.length)throw new Error(`좌표가 모두 우리나라 밖으로 나옵니다(${crs}). 원본 좌표계를 바꿔 다시 올리세요.`);
   const v={v:1,name:f.name,base:fmtD(f.lastModified||Date.now()),crs,at:Date.now(),lng,lat,z};
   let prev=null;try{prev=await IDB.get('elev')}catch(_){}let cnt=null;
-  if(prev&&prev.z){cnt=elevDiff(prev,v);if(!confirm(`표고 기준자료를 이 파일로 바꿀까요? (미리보기)\n\n· 지금 ${prev.z.length.toLocaleString()}개 → 새 파일 ${z.length.toLocaleString()}개\n· 추가 ${cnt.add.toLocaleString()} · 표고 변경 ${cnt.upd.toLocaleString()} · 삭제 ${cnt.del.toLocaleString()} · 그대로 ${cnt.same.toLocaleString()}\n${prev.hyd?'· ⚠️ 지금 저장된 수압·유속 결과는 지워집니다 (.inp에는 계산 결과가 없음)\n':''}\n바꾼 뒤에도 ↩ 되돌리기로 이전 것으로 돌아갈 수 있습니다.`)){msg.textContent='교체를 취소했습니다.';return}}
+  if(prev&&prev.z){cnt=elevDiff(prev,v);if(!confirm(`표고 기준자료를 이 파일로 바꿀까요? (미리보기)\n\n· 지금 ${prev.z.length.toLocaleString()}개 → 새 파일 ${z.length.toLocaleString()}개\n· 추가 ${cnt.add.toLocaleString()} · 표고 변경 ${cnt.upd.toLocaleString()} · 삭제 ${cnt.del.toLocaleString()} · 그대로 ${cnt.same.toLocaleString()}\n${prev.hyd?'· 💧 수압·유속 결과는 그대로 둡니다 (결과 파일을 새로 올릴 때까지)\n':''}\n바꾼 뒤에도 ↩ 되돌리기로 이전 것으로 돌아갈 수 있습니다.`)){msg.textContent='교체를 취소했습니다.';return}}
+  {const h=hydKeep(prev);if(h)v.hyd=h}
   await elevSave(prev?'전체 교체':'전체 등록',f.name,v,cnt);elevSet(v);
   msg.innerHTML=`로드 완료: 절점 ${d.junc.toLocaleString()}개${d.tank?` + 배수지(수조) ${d.tank}개`:''} 중 표고 ${z.length.toLocaleString()}개 · ${esc(crs)}${d.prj?' (파일에 적힌 좌표계)':''} (${Math.round((Date.now()-t0)/1000)}초)`+
    ((d.neg1||d.nocoord||out0)?`<br><small class="c-am">제외: ${[d.neg1&&`표고 −1(값 없음으로 봄) ${d.neg1}개`,d.nocoord&&`좌표 없음 ${d.nocoord}개`,out0&&`좌표가 우리나라 밖 ${out0}개`].filter(Boolean).join(' · ')}</small>`:'')+
@@ -3619,7 +3631,7 @@ async function elevUndo(){let p=null,cur=null;try{p=await IDB.get('elev_prev');c
  if(!p){alert('되돌릴 이전 버전이 없습니다.');return}if(!confirm(`표고 기준자료를 이전 버전(${fmtDT(p.at)}, ${p.z.length.toLocaleString()}개${p.hyd?', 수압·유속 결과 포함':cur&&cur.hyd?', 수압·유속 결과 없음':''})으로 되돌릴까요?`))return;
  const hist=(cur&&cur.hist||[]).concat([{at:Date.now(),kind:'되돌리기',file:p.name||'',n:p.z.length}]).slice(-200);p.hist=hist;
  try{await IDB.set('elev',p);await IDB.del('elev_prev')}catch(e){alert('되돌리지 못했습니다: '+((e&&e.message)||e));return}elevSet(p);elevSavedShow(p);$('eMsg').textContent='이전 버전으로 되돌렸습니다.'}
-$('f5').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)elevLoad(f)};
+$('f5').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!/\.(inp|txt|json|zip)$/i.test(f.name)){$('eMsg').textContent=`관망해석 파일(.inp) 또는 결과 파일(.zip·.json)이 아닙니다: ${f.name}`;return}elevLoad(f)};
 $('eUndo').onclick=elevUndo;$('eHistBtn').onclick=()=>{$('eHistBox').hidden=!$('eHistBox').hidden};
 $('eForget').onclick=async()=>{if(!confirm('이 PC에 저장된 표고 기준자료(수압·유속 결과, 이전 버전 포함)를 지울까요? 지금 화면의 표고는 새로고침 전까지 그대로 남습니다.'))return;try{await IDB.del('elev');await IDB.del('elev_prev')}catch(_){}elevSavedShow(null)};
 {const c=elevCfg();if(c.show&&[...$('eShow').options].some(o=>o.value===c.show))$('eShow').value=c.show;if(c.crs)$('eCrs').value=c.crs;if(c.by==='p')$('eBy').value='p'}
@@ -4537,7 +4549,7 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
    const v=JSON.parse(await e.async('string'));if(cnt(v)!==s.cnt||v.at!==s.v)throw new Error(t+' 받은 자료 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');
    if(n==='blocks'){const p=await blkSnap();if(p)try{await IDB.set('blocks_prev',p)}catch(_){}await IDB.set('blocks',v);rawFC=null;BLK_HIST=[];await blkRestore()}
    else if(n==='pipes'){if(l)try{await IDB.set('pipes_prev',l)}catch(_){}await IDB.set('pipes',v);await pipeRestore(true)}
-   else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}await IDB.set('elev',v);await elevRestore(true)}
+   else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}{const h=!v.hyd&&hydKeep(l);if(h)v.hyd=h}await IDB.set('elev',v);await elevRestore(true)}
    else if(n==='phref'){if(cnt(l))try{await IDB.set('phref_prev',l)}catch(_){}await IDB.set('phref',v);phRefSet(v);if(PH.list.length)phRefresh()}
    else{if(l)try{await IDB.set('facs_prev',l)}catch(_){}await IDB.set('facs',v);await facRestore(true)}
    stoKeep();got.push(`${t} ${s.cnt.toLocaleString()}개`)}
@@ -5019,6 +5031,7 @@ async function shutInfoFill(force){if(!SHUT.on)return;const I=SHUT.info||(SHUT.i
 function shutInfoItems(){const I=SHUT.info||{},rl=shutRefLL(),tm=rl&&shutTM(rl);
  return[I.no?'📋 민원 '+I.no:'',I.addr?'📍 '+I.addr:'',rl?`🧭 ${rl.lat.toFixed(6)}, ${rl.lng.toFixed(6)}`:'',tm?`EPSG:5187 X ${tm.x.toFixed(2)} · Y ${tm.y.toFixed(2)}`:'',`⛰️ 지반고 ${I.z?I.z+'m':'확인 필요'}`,hydShutTxt(hydShut())].filter(Boolean)}
 function shutWrap(g,items,maxW){const out=[];let cur='';items.forEach(t=>{const n=cur?cur+'  ·  '+t:t;if(!cur||g.measureText(n).width<=maxW)cur=n;else{out.push(cur);cur=t}});if(cur)out.push(cur);return out}
+const SHOT_RATIO=2;
 async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V,S=shutRowStats(),c0=V.filter(v=>v.st===0).length,c1=V.filter(v=>v.st===1).length,c2=V.filter(v=>v.st===2).length;
  const MAXR=12,list=V.slice(0,V.length>MAXR?MAXR-1:MAXR),more=V.length-list.length,lh=22;
  /* 아래 띠: 왼쪽 밸브 목록 · 오른쪽 수용가 현황(급수전·가구·월평균·합계, 업종 막대, 대수용가 상위 5 — 관리번호만, 이름·주소·전화 없음). 좁은 화면은 아래로 이어 붙임
@@ -5036,7 +5049,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  const B=await mapShotBase(['ptPane','mkPane'],side?0:k=>{t.font=Fq(600,13,k);INL=shutWrap(t,INF,(Wl-24)*k);
   return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
   side?(k,Hm)=>{q=Math.max(k*.72,Math.min(k,Hm/hs));return{w:Math.round(SW*q),h:Math.max(0,Math.round(hs*q)-Hm)}}:null,side&&(window.devicePixelRatio||1)>1?Math.min(2.5,window.devicePixelRatio):0);
- const {g,k,W,Hm,R}=B;if(!side)q=k;
+ let {g,k,W,Hm,R}=B;if(!side)q=k;
  const badge=(x,y,t,bg,dash,s)=>{s=s||k;g.font=`800 ${11*s}px sans-serif`;const w=Math.max(22*s,g.measureText(t).width+8*s),h=22*s;g.beginPath();if(g.roundRect)g.roundRect(x-w/2,y-h/2,w,h,h/2);else g.rect(x-w/2,y-h/2,w,h);g.fillStyle=bg;g.fill();
   g.lineWidth=2*s;g.strokeStyle=dash?'#dc2626':'#fff';if(dash)g.setLineDash([3*s,2*s]);g.stroke();g.setLineDash([]);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y+.5*s)};
  const col=v=>v.st===2?'#94a3b8':v.st===1?'#111827':'#1d4ed8';
@@ -5045,6 +5058,18 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  if(showC&&SHUT.bigSet){const src=shutSrc();g.font=`700 ${10.5*k}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.textAlign='left';
   SHUT.bigSet.forEach(i=>{const r=src[i],mg=String(r&&r['관리번호']||'').trim();if(!mg)return;const p=map.latLngToContainerPoint([+r['_위도'],+r['_경도']]);if(p.x<0||p.y<0||p.x>R.width||p.y>R.height)return;
    const x=(p.x+9)*k,y=p.y*k,w=g.measureText(mg).width+8*k;g.fillStyle='rgba(255,255,255,.9)';g.fillRect(x,y-8*k,w,16*k);g.strokeStyle='#f59e0b';g.lineWidth=1*k;g.strokeRect(x,y-8*k,w,16*k);g.fillStyle='#92400e';g.fillText(mg,x+4*k,y+.5*k)})}
+ /* 세로 캡처(2026-10-16): 지도(화면 높이 전체)+정보 띠가 휴대폰 화면보다 길쭉하면 갤러리·카톡에서 양옆이 비어 보임
+    → 단수구역·밸브·기준 위치가 다 들어가는 범위에서 지도 위아래 빈 부분만 잘라 전체를 폭의 SHOT_RATIO배 안으로 */
+ if(!side){const bh=B.cv.height-Hm,maxM=Math.round(W*SHOT_RATIO)-bh;
+  if(maxM>0&&Hm>maxM){let t=Infinity,b=-Infinity;const add=ll=>{const p=map.latLngToContainerPoint(ll);if(p.y*k<t)t=p.y*k;if(p.y*k>b)b=p.y*k};
+   try{const bb=shutBounds();if(bb){add(bb.getNorthWest());add(bb.getSouthEast())}}catch(_){}
+   V.forEach(v=>{const p=map.latLngToContainerPoint([FAC.y[v.i],FAC.x[v.i]]);if(p.x>=0&&p.y>=0&&p.x<=R.width&&p.y<=R.height)add(L.latLng(FAC.y[v.i],FAC.x[v.i]))});
+   {const rl=shutRefLL();if(rl)add(rl)}
+   const pad=44*k;t=Math.max(0,t-pad);b=Math.min(Hm,b+pad);
+   if(!(b>t)){t=(Hm-maxM)/2;b=t+maxM}
+   const mh=Math.max(maxM,Math.round(b-t)),c=(t+b)/2,ys=Math.round(Math.min(Hm-mh,Math.max(0,c-mh/2)));
+   if(mh<Hm){const cv=document.createElement('canvas');cv.width=B.cv.width;cv.height=mh+bh;const g2=cv.getContext('2d');g2.drawImage(B.cv,0,ys,W,mh,0,0,W,mh);
+    B.cv=cv;B.g=g=g2;B.Hm=Hm=mh;B.crop=1}}}
  mapShotDeco(B,true);
  const F=(w,sz)=>Fq(w,sz,q);g.textBaseline='middle';
  /* 밸브 목록 (x0 = 칸 왼쪽, tw = 글자 칸 폭) */
