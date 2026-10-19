@@ -802,7 +802,7 @@ function symLegend(){const box=$('symLeg');if(!S.fac||!MS.sym){box.innerHTML='';
  const c=new Map();S.fac.forEach(f=>c.set(f.s,(c.get(f.s)||0)+1));
  box.innerHTML='<span class="font-bold">시설물</span>'+[...c].map(([s,n])=>`<span class="inline-flex items-center gap-1"><img src="${SYM[s]}" alt="" style="height:14px;width:auto;max-width:18px">${SYML[s]||s} ${n.toLocaleString()}</span>`).join('')+(c.has('관말')?'<span class="text-slate-400">관말은 확대하면 보입니다.</span>':'')}
 function drawSym(ctx,vx0,vx1,vy0,vy1,detail,sat){if(!S.fac||!MS.sym)return;const lab=[];const d=MAP.dpr,m=S.view.s,zs=(m>6?0.7:m>1.5?0.85:1)*MS.is,maxPr=m>6?1:m>1.5?3:4,occ=new Set();
- for(const f of S.fac){if(f.pr>maxPr||(f.dead&&(!detail||!MS.dead))||MS.hide.includes(f.s))continue;if(f.x<vx0||f.x>vx1||f.y<vy0||f.y>vy1)continue;const im=SYMI[f.s];if(!im)continue;
+ for(const f of S.fac){if((f.t==='n'?S.net.nodes[f.i]:S.net.links[f.i])._h||f.pr>maxPr||(f.dead&&(!detail||!MS.dead))||MS.hide.includes(f.s))continue;if(f.x<vx0||f.x>vx1||f.y<vy0||f.y>vy1)continue;const im=SYMI[f.s];if(!im)continue;
   const sz=f.sz*zs,cx=Math.round(SX(f.x)/(sz*0.9)),cy=Math.round(SY(f.y)/(sz*0.9)),ck=cx+','+cy;if(occ.has(ck))continue;occ.add(ck);if(f.pr<2){occ.add((cx+1)+','+cy);occ.add((cx-1)+','+cy);occ.add(cx+','+(cy+1));occ.add(cx+','+(cy-1))}
   const w=im.width>=im.height?sz:sz*im.width/im.height,h=im.height>im.width?sz:sz*im.height/im.width,x=SX(f.x),y=SY(f.y),c=Math.cos(f.ang),s=Math.sin(f.ang);
   ctx.setTransform(d*c,-d*s,d*s,d*c,d*x,d*y);if(sat&&!f.dead){ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(-w/2-1,-h/2-1,w+2,h+2)}ctx.drawImage(im,-w/2,-h/2,w,h);if(f.pr<=2&&!f.dead)lab.push([f,x,y+h/2])}
@@ -854,7 +854,7 @@ function draw(){const c=MAP.cv,ctx=c.getContext('2d'),d=MAP.dpr,dark=document.do
  if(!S.net||!S.view)return;
  drawTiles(ctx);ctx.setTransform(d,0,0,d,0,0);drawContour(ctx);ctx.setTransform(d,0,0,d,0,0);
  const vx0=WX(0),vx1=WX(MAP.W),vy0=WY(MAP.H),vy1=WY(0),sat=$('bm').value!=='none';
- const vis=S.net.links.filter(l=>l.bb&&l.bb[2]>=vx0&&l.bb[0]<=vx1&&l.bb[3]>=vy0&&l.bb[1]<=vy1);
+ const vis=S.net.links.filter(l=>!l._h&&l.bb&&l.bb[2]>=vx0&&l.bb[0]<=vx1&&l.bb[3]>=vy0&&l.bb[1]<=vy1);
  const thin=(vis.length>6000?0.45:vis.length>1500?0.7:1)*MS.lw;
  const bk=new Map();if(MS.links)vis.forEach(l=>{const w=Math.max(0.6,l.w*thin),k=(l.col||'#94a3b8')+'|'+w.toFixed(1)+'|'+(l.closed?1:0);(bk.get(k)||bk.set(k,[]).get(k)).push(l)});
  ctx.lineCap='round';ctx.lineJoin='round';
@@ -863,7 +863,7 @@ function draw(){const c=MAP.cv,ctx=c.getContext('2d'),d=MAP.dpr,dark=document.do
  bk.forEach((ls,k)=>{const [col,w,cl]=k.split('|');ctx.strokeStyle=col;ctx.lineWidth=+w;ctx.setLineDash(cl==='1'?[4,4]:[]);ctx.globalAlpha=cl==='1'?.8:1;ctx.beginPath();
   ls.forEach(l=>trace(ctx,l,A,OX,OY));ctx.stroke()});
  ctx.setLineDash([]);ctx.globalAlpha=1;
- const nv=S.net.nodes.filter(n=>n.x>=vx0&&n.x<=vx1&&n.y>=vy0&&n.y<=vy1),r=(nv.length>8000?1.2:nv.length>2000?2:3.4)*MS.nr;
+ const nv=S.net.nodes.filter(n=>!n._h&&n.x>=vx0&&n.x<=vx1&&n.y>=vy0&&n.y<=vy1),r=(nv.length>8000?1.2:nv.length>2000?2:3.4)*MS.nr;
  const nb=new Map();if(MS.nodes)nv.forEach(n=>{if(n.type!==0)return;const k=n.col||'#94a3b8';(nb.get(k)||nb.set(k,[]).get(k)).push(n)});
  nb.forEach((ns,col)=>{ctx.fillStyle=col;ctx.beginPath();if(r<2)ns.forEach(n=>ctx.rect(SX(n.x)-r,SY(n.y)-r,2*r,2*r));else ns.forEach(n=>{const x=SX(n.x),y=SY(n.y);ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,7)});ctx.fill()});
  // 문제 절점은 크게 한 번 더
@@ -914,10 +914,10 @@ function draw(){const c=MAP.cv,ctx=c.getContext('2d'),d=MAP.dpr,dark=document.do
 function pick(mx,my,e){if(!S.net)return;if(pickMod(mx,my,e))return;const best=hit(mx,my);
  if(best){S.sel=best;S.pop={...best,x:mx,y:my};if(best.t==='n'){const n=S.net.nodes[best.i];S.pop.x=n.x;S.pop.y=n.y}renderPop();refreshSel()}else closePop()}
 function hit(mx,my){let best=null;
- if(S.fac&&MS.sym){let fd=1e99;const m=S.view.s,maxPr=m>6?1:m>1.5?3:4;S.fac.forEach(f=>{if(f.pr>maxPr)return;const r=(f.sz*0.6+3)*S.view.s,dx=Math.abs(f.x-mx),dy=Math.abs(f.y-my);if(dx<r&&dy<r){const dd=Math.hypot(dx,dy)/r;if(dd<fd){fd=dd;best={t:f.t,i:f.i}}}})}
+ if(S.fac&&MS.sym){let fd=1e99;const m=S.view.s,maxPr=m>6?1:m>1.5?3:4;S.fac.forEach(f=>{if(f.pr>maxPr||(f.t==='n'?S.net.nodes[f.i]:S.net.links[f.i])._h)return;const r=(f.sz*0.6+3)*S.view.s,dx=Math.abs(f.x-mx),dy=Math.abs(f.y-my);if(dx<r&&dy<r){const dd=Math.hypot(dx,dy)/r;if(dd<fd){fd=dd;best={t:f.t,i:f.i}}}})}
  const tol=8*S.view.s;let bd=tol;
- if(!best)S.net.nodes.forEach((n,i)=>{const d=Math.abs(n.x-mx)<bd&&Math.abs(n.y-my)<bd?Math.hypot(n.x-mx,n.y-my):1e99;if(d<bd){bd=d;best={t:'n',i}}});
- if(!best){bd=6*S.view.s;S.net.links.forEach((l,i)=>{if(!l.bb||mx<l.bb[0]-bd||mx>l.bb[2]+bd||my<l.bb[1]-bd||my>l.bb[3]+bd)return;for(let j=0;j<l.xs.length-1;j++){const d=segD(mx,my,[l.xs[j],l.ys[j]],[l.xs[j+1],l.ys[j+1]]);if(d<bd){bd=d;best={t:'l',i}}}})}
+ if(!best)S.net.nodes.forEach((n,i)=>{if(n._h)return;const d=Math.abs(n.x-mx)<bd&&Math.abs(n.y-my)<bd?Math.hypot(n.x-mx,n.y-my):1e99;if(d<bd){bd=d;best={t:'n',i}}});
+ if(!best){bd=6*S.view.s;S.net.links.forEach((l,i)=>{if(l._h||!l.bb||mx<l.bb[0]-bd||mx>l.bb[2]+bd||my<l.bb[1]-bd||my>l.bb[3]+bd)return;for(let j=0;j<l.xs.length-1;j++){const d=segD(mx,my,[l.xs[j],l.ys[j]],[l.xs[j+1],l.ys[j+1]]);if(d<bd){bd=d;best={t:'l',i}}}})}
  return best}
 
 
@@ -979,8 +979,8 @@ $('edUndo').onclick=async()=>{const u=ED.undo.pop();$('edUndo').disabled=!ED.und
 function afterStruct(msg,selId,selT){S.log.push(msg);renderLog();S.res=null;readNet();drawStatic();
  if(selId){const i=selT==='n'?S.net.nodes.findIndex(n=>n.id===selId):S.net.links.findIndex(l=>l.id===selId);S.sel=i>=0?{t:selT,i}:null}else S.sel=null;
  closePop();if($('edAuto').checked)run();else{status('편집됨 · 해석 필요',null);refresh()}}
-function nearNode(mx,my,px){const tol=(px||10)*S.view.s;let b=-1,bd=tol;S.net.nodes.forEach((n,i)=>{const dx=Math.abs(n.x-mx),dy=Math.abs(n.y-my);if(dx<bd&&dy<bd){const d=Math.hypot(dx,dy);if(d<bd){bd=d;b=i}}});return b}
-function nearLink(mx,my,px){const tol=(px||7)*S.view.s;let b=-1,bd=tol;S.net.links.forEach((l,i)=>{if(!l.bb||mx<l.bb[0]-tol||mx>l.bb[2]+tol||my<l.bb[1]-tol||my>l.bb[3]+tol)return;for(let j=0;j<l.xs.length-1;j++){const d=segD(mx,my,[l.xs[j],l.ys[j]],[l.xs[j+1],l.ys[j+1]]);if(d<bd){bd=d;b=i}}});return b}
+function nearNode(mx,my,px){const tol=(px||10)*S.view.s;let b=-1,bd=tol;S.net.nodes.forEach((n,i)=>{if(n._h)return;const dx=Math.abs(n.x-mx),dy=Math.abs(n.y-my);if(dx<bd&&dy<bd){const d=Math.hypot(dx,dy);if(d<bd){bd=d;b=i}}});return b}
+function nearLink(mx,my,px){const tol=(px||7)*S.view.s;let b=-1,bd=tol;S.net.links.forEach((l,i)=>{if(l._h||!l.bb||mx<l.bb[0]-tol||mx>l.bb[2]+tol||my<l.bb[1]-tol||my>l.bb[3]+tol)return;for(let j=0;j<l.xs.length-1;j++){const d=segD(mx,my,[l.xs[j],l.ys[j]],[l.xs[j+1],l.ys[j+1]]);if(d<bd){bd=d;b=i}}});return b}
 const geoK=()=>crsCode()==='4326'?111320:1;
 function polyLen(xs,ys){let L=0;for(let j=0;j<xs.length-1;j++)L+=Math.hypot(xs[j+1]-xs[j],ys[j+1]-ys[j]);return L*geoK()}
 function addJ(x,y,elev){const p=S.prj,id=newId('J');const i=p.addNode(id,0);p.setCoordinates(nidx(id),x,y);p.setNodeValue(nidx(id),0,elev/S.net.u.lf);return id}
@@ -2050,7 +2050,7 @@ function conLegend(){if(!CON.v||!CON.br)return'';const nm={p:'수압(m)',h:'수�
 
 /* ── 유향 화살표 ── */
 function drawArrows(ctx){if(!MS.arrows||!S.res||!S.net)return;const R=S.res,k=S.k,vx0=WX(0),vx1=WX(MAP.W),vy0=WY(MAP.H),vy1=WY(0);let n=0;ctx.save();ctx.fillStyle=document.documentElement.classList.contains('dark')?'#e2e8f0':'#1e293b';ctx.beginPath();
- for(let i=0;i<S.net.links.length;i++){const l=S.net.links[i];if(!l.bb||l.bb[2]<vx0||l.bb[0]>vx1||l.bb[3]<vy0||l.bb[1]>vy1)continue;const q=R.Q[k][i];if(Math.abs(q)<1e-3||R.ST[k][i]===0)continue;if(((l.bb[2]-l.bb[0])+(l.bb[3]-l.bb[1]))/S.view.s<30)continue;if(++n>4000)break;
+ for(let i=0;i<S.net.links.length;i++){const l=S.net.links[i];if(l._h||!l.bb||l.bb[2]<vx0||l.bb[0]>vx1||l.bb[3]<vy0||l.bb[1]>vy1)continue;const q=R.Q[k][i];if(Math.abs(q)<1e-3||R.ST[k][i]===0)continue;if(((l.bb[2]-l.bb[0])+(l.bb[3]-l.bb[1]))/S.view.s<30)continue;if(++n>4000)break;
   const [x,y,a]=midOf(l),ang=a+(q<0?Math.PI:0),sx=SX(x),sy=SY(y),c=Math.cos(ang),s=Math.sin(ang),r=5;ctx.moveTo(sx+c*r,sy-s*r);ctx.lineTo(sx-c*r-s*r*0.8,sy+s*r-c*r*0.8);ctx.lineTo(sx-c*r+s*r*0.8,sy+s*r+c*r*0.8);ctx.closePath()}
  ctx.fill();ctx.restore()}
 
@@ -2366,9 +2366,9 @@ function drawNetLabels(ctx,sat,dark){if(!S.net||(!MS.nl&&!MS.ll))return;if(MS.ls
  const fg=MS.lcol||(sat?'#fff':dark?'#e2e8f0':'#0f172a'),halo=sat?'rgba(0,0,0,.8)':dark?'rgba(15,23,42,.9)':'rgba(255,255,255,.92)';
  const txt=(t,x,y)=>{if(MS.lhalo&&MS.lhw!==0){ctx.lineWidth=MS.lhw==null?3:MS.lhw;ctx.strokeStyle=MS.lhc||halo;ctx.strokeText(t,x,y)}ctx.fillStyle=(LK==='l'?MS.llc:MS.lnc)||fg;ctx.fillText(t,x,y)};
  // 절점 먼저(중요도: 배수지·탱크 → 일반)
- if(MS.nl){const N=S.net.nodes,ord=[];for(let i=0;i<N.length;i++){const x=SX(N[i].x),y=SY(N[i].y);if(x>-20&&x<W+20&&y>-20&&y<H+20)ord.push(i)}ord.sort((a,b)=>N[b].type-N[a].type);
+ if(MS.nl){const N=S.net.nodes,ord=[];for(let i=0;i<N.length;i++){if(N[i]._h)continue;const x=SX(N[i].x),y=SY(N[i].y);if(x>-20&&x<W+20&&y>-20&&y<H+20)ord.push(i)}ord.sort((a,b)=>N[b].type-N[a].type);
   for(const i of ord){if(cnt>=mx)break;{const x0=SX(N[i].x)+6,y0=SY(N[i].y)-fs*0.75;if(hit(x0-1,y0-fs/2-1,fs*2,fs+2))continue}const t=lbNode(i);if(t==null||t==='')continue;const w=ctx.measureText(t).width,x=SX(N[i].x)+6,y=SY(N[i].y)-fs*0.75;if(hit(x-1,y-fs/2-1,w+2,fs+2))continue;put(x-1,y-fs/2-1,w+2,fs+2);txt(t,x,y);cnt++}}
- if(MS.ll){SF('l');const L=S.net.links;ctx.textAlign='center';for(let i=0;i<L.length&&cnt<mx;i++){const l=L[i];if(!l.xs||!l.xs.length)continue;{const a0=SX(l.xs[0]),b0=SY(l.ys[0]),n=l.xs.length-1,a1=SX(l.xs[n]),b1=SY(l.ys[n]);if(Math.max(a0,a1)<-50&&n<2||Math.min(a0,a1)>W+50&&n<2||Math.max(b0,b1)<-50&&n<2||Math.min(b0,b1)>H+50&&n<2)continue;if(n<2&&(a1-a0)*(a1-a0)+(b1-b0)*(b1-b0)<fs*fs*9)continue}
+ if(MS.ll){SF('l');const L=S.net.links;ctx.textAlign='center';for(let i=0;i<L.length&&cnt<mx;i++){const l=L[i];if(l._h||!l.xs||!l.xs.length)continue;{const a0=SX(l.xs[0]),b0=SY(l.ys[0]),n=l.xs.length-1,a1=SX(l.xs[n]),b1=SY(l.ys[n]);if(Math.max(a0,a1)<-50&&n<2||Math.min(a0,a1)>W+50&&n<2||Math.max(b0,b1)<-50&&n<2||Math.min(b0,b1)>H+50&&n<2)continue;if(n<2&&(a1-a0)*(a1-a0)+(b1-b0)*(b1-b0)<fs*fs*9)continue}
    let best=-1,bl=0;for(let j=1;j<l.xs.length;j++){const dx=SX(l.xs[j])-SX(l.xs[j-1]),dy=SY(l.ys[j])-SY(l.ys[j-1]),q=dx*dx+dy*dy;if(q>bl){bl=q;best=j}}
    if(best<0||bl<fs*fs*9)continue;const x1=SX(l.xs[best-1]),y1=SY(l.ys[best-1]),x2=SX(l.xs[best]),y2=SY(l.ys[best]),cx=(x1+x2)/2,cy=(y1+y2)/2;if(cx<-50||cx>W+50||cy<-50||cy>H+50)continue;
    const t=lbLink(i);if(t==null||t==='')continue;const w=ctx.measureText(t).width;if(Math.sqrt(bl)<w+10)continue;
@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v17 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v18 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -3584,6 +3584,239 @@ document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)ret
 window.addEventListener('gw-lock',()=>{const w=$('gwAd');if(w)w.classList.add('hidden')});
 updTitle();
 })()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v17 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
+
+/* ════ v18: 소블록 레이어(2.2) · 종단도 지도 그리기·양방향 연동(2.3) · 계통도(2.1) ════ */
+try{(()=>{
+const NOBLK='(블록 미지정)';
+Object.assign(ICP,{sch:'M3 5h6v4H3zM15 3h6v4h-6zM15 11h6v4h-6zM15 19h6v4h-6zM9 7h3v14h3M12 13h3',pf:'M3 20h18M3 16l4-6 4 3 4-7 6 5M3 20V4',frz:'M12 2v20M4 6l16 12M20 6L4 18'});
+
+/* ══════════ 2.2 소블록 레이어: 켜기·끄기·동결·동결해제 ══════════ */
+const BL={off:new Set(),frz:new Set(),open:true,q:''};T.blkLay=BL;
+const bkey=n=>n.blk||NOBLK;
+function applyBlk(){if(!S.net)return;const N=S.net.nodes,has=BL.off.size||BL.frz.size;
+ N.forEach(n=>{const k=bkey(n);n._f=has&&BL.frz.has(k);n._h=has&&(n._f||BL.off.has(k))});
+ S.net.links.forEach(l=>{const a=N[l.n1-1],b=N[l.n2-1];l._h=!!(a&&b&&a._h&&b._h);l._f=!!(a&&b&&a._f&&b._f)})}
+const _rn=readNet;readNet=function(){_rn.apply(this,arguments);applyBlk()};
+const _bd=bounds;bounds=function(){if(!S.net||!BL.frz.size)return _bd();const N=S.net.nodes;if(!N.some(n=>!n._f&&isFinite(n.x)))return _bd();
+ let x0=1/0,y0=1/0,x1=-1/0,y1=-1/0;N.forEach(n=>{if(n._f||!isFinite(n.x))return;x0=Math.min(x0,n.x);x1=Math.max(x1,n.x);y0=Math.min(y0,n.y);y1=Math.max(y1,n.y)});const w=Math.max(x1-x0,1e-6),h=Math.max(y1-y0,1e-6);return[x0-w*.04,y0-h*.04,x1+w*.04,y1+h*.04]};
+const _be=boxEnd;boxEnd=function(){const r=_be.apply(this,arguments);if(S.net&&(BL.off.size||BL.frz.size)){let c=0;[...T.multi.n].forEach(i=>{if(S.net.nodes[i]._h){T.multi.n.delete(i);c++}});[...T.multi.l].forEach(i=>{if(S.net.links[i]._h){T.multi.l.delete(i);c++}});if(c){renderMulti();requestDraw()}}return r};
+const _fn=findNode;findNode=function(q){const i=_fn.apply(this,arguments);if(i>=0&&S.net.nodes[i]._f){toast(`${S.net.nodes[i].id}은(는) 동결된 블록(${bkey(S.net.nodes[i])})에 있습니다. 레이어 창에서 동결 해제하세요.`,5000);return -1}return i};
+function blkList(){if(!S.net)return[];const m=new Map();S.net.nodes.forEach((n,i)=>{if(n.type!==0&&!n.blk)return;const k=bkey(n);let o=m.get(k);if(!o){o={k,n:0,l:0};m.set(k,o)}o.n++});
+ S.net.links.forEach(l=>{const a=S.net.nodes[l.n1-1];if(a){const o=m.get(bkey(a));if(o)o.l++}});
+ return[...m.values()].sort((a,b)=>(a.k===NOBLK)-(b.k===NOBLK)||String(a.k).localeCompare(String(b.k),'ko',{numeric:true}))}
+function blkSet(k,act){if(act==='on'){BL.off.delete(k);BL.frz.delete(k)}else if(act==='off'){BL.off.add(k)}else if(act==='frz'){BL.frz.add(k)}else if(act==='thaw'){BL.frz.delete(k)}
+ applyBlk();if(S.sel){const e=S.sel.t==='n'?S.net.nodes[S.sel.i]:S.net.links[S.sel.i];if(e&&e._h){S.sel=null;try{closePop()}catch(_){}}}requestDraw();gpLayers();schRefresh()}
+function blkZoom(k){const xs=[],ys=[];S.net.nodes.forEach(n=>{if(bkey(n)===k&&isFinite(n.x)){xs.push(n.x);ys.push(n.y)}});if(xs.length)zoomTo(xs,ys)}
+const _gl=gpLayers;gpLayers=function(){_gl.apply(this,arguments);const box=$('gpLay');if(!box||!S.net)return;applyBlk();const bs=blkList();if(!bs.length||(bs.length===1&&bs[0].k===NOBLK))return;
+ const nOff=bs.filter(b=>BL.off.has(b.k)&&!BL.frz.has(b.k)).length,nFrz=bs.filter(b=>BL.frz.has(b.k)).length,q=BL.q.trim();
+ let h=`<tr class="gl-g"><td colspan="3"><button type="button" data-blt="1" style="font-weight:600">${BL.open?'▾':'▸'} 소블록 레이어 ${bs.length}</button><span style="font-weight:400"> · 꺼짐 ${nOff} · 동결 ${nFrz}</span></td></tr>`;
+ if(BL.open){h+=`<tr><td colspan="3" style="padding:3px 4px"><div style="display:flex;gap:3px;flex-wrap:wrap;align-items:center">${bs.length>12?`<input id="blQ" value="${esc(BL.q)}" placeholder="블록 이름 찾기" style="flex:1;min-width:80px;height:22px;border:1px solid var(--c-bd);border-radius:3px;padding:0 5px;background:var(--c-pn);color:var(--c-tx);font-size:11px">`:''}
+   <button type="button" class="bl-b" data-bla="allon" title="모든 블록 켜기·동결 해제">모두 켜기</button><button type="button" class="bl-b" data-bla="alloff" title="모든 블록 끄기">모두 끄기</button><button type="button" class="bl-b" data-bla="solo" title="선택한 요소의 블록만 켜기">선택 블록만</button></div></td></tr>`;
+  bs.filter(b=>!q||String(b.k).includes(q)).forEach(b=>{const fz=BL.frz.has(b.k),on=!fz&&!BL.off.has(b.k);
+   h+=`<tr class="${fz?'bl-fz':!on?'bl-off':''}"><td><input type="checkbox" data-blk="${esc(b.k)}" ${on?'checked':''} ${fz?'disabled':''} aria-label="${esc(b.k)} 켜기"></td><td class="gl-n" title="${esc(b.k)} · 절점 ${b.n.toLocaleString()} · 관로 ${b.l.toLocaleString()}${fz?' · 동결됨(그리기·선택·전체보기·검색 제외)':''}"><span class="gl-i">${fz?'❄':ico('blk',12)}</span>${esc(b.k)} <span style="color:var(--c-tx2);font-size:10px">${b.n.toLocaleString()}</span></td>
+    <td class="gl-e" style="white-space:nowrap"><button type="button" class="bl-i" data-blz="${esc(b.k)}" title="이 블록으로 확대" ${fz?'disabled':''}>${ico('search',12)}</button><button type="button" class="bl-i ${fz?'on':''}" data-blf="${esc(b.k)}" title="${fz?'동결 해제':'동결 — 그리기·선택·전체보기·검색에서 제외(대규모 관망 속도 향상)'}">❄</button></td></tr>`})}
+ box.insertAdjacentHTML('beforeend',h);
+ const t=box.querySelector('[data-blt]');if(t)t.onclick=()=>{BL.open=!BL.open;gpLayers()};
+ box.querySelectorAll('[data-blk]').forEach(c=>c.onchange=()=>blkSet(c.dataset.blk,c.checked?'on':'off'));
+ box.querySelectorAll('[data-blf]').forEach(c=>c.onclick=()=>{const k=c.dataset.blf;blkSet(k,BL.frz.has(k)?'thaw':'frz');toast(BL.frz.has(k)?`❄ ${k} 블록을 동결했습니다. 지도·선택·전체 보기·검색에서 빠집니다.`:`${k} 블록 동결을 풀었습니다.`)});
+ box.querySelectorAll('[data-blz]').forEach(c=>c.onclick=()=>blkZoom(c.dataset.blz));
+ box.querySelectorAll('[data-bla]').forEach(c=>c.onclick=()=>{const a=c.dataset.bla;if(a==='allon'){BL.off.clear();BL.frz.clear()}else if(a==='alloff'){bs.forEach(b=>{if(!BL.frz.has(b.k))BL.off.add(b.k)})}
+  else{const s=S.sel;if(!s){toast('지도에서 절점이나 관로를 먼저 고르세요.');return}const n=s.t==='n'?S.net.nodes[s.i]:S.net.nodes[S.net.links[s.i].n1-1],k=bkey(n);BL.off.clear();bs.forEach(b=>{if(b.k!==k&&!BL.frz.has(b.k))BL.off.add(b.k)});BL.frz.delete(k)}
+  blkSet('','x')});
+ const qi=$('blQ');if(qi)qi.oninput=()=>{BL.q=qi.value;const p=qi.selectionStart;gpLayers();const q2=$('blQ');if(q2){q2.focus();q2.setSelectionRange(p,p)}}};
+
+/* ══════════ 2.3 종단도: 지도에서 그리기 · 그래프↔지도 연동 ══════════ */
+GR.prof.pts=GR.prof.pts||[];
+const PF={draw:false,hov:-1,flash:null,ft:0,down:null,data:null};
+function pfPts(){const p=GR.prof;if(p.pts&&p.pts.length)return p.pts;const a=[];if(p.a>=0)a.push(p.a);if(p.b>=0&&p.b!==p.a)a.push(p.b);return a}
+function pfSet(pts){GR.prof.pts=pts;GR.prof.a=pts.length?pts[0]:-1;GR.prof.b=pts.length>1?pts[pts.length-1]:-1;PF.data=null}
+function pfPath(){const pts=pfPts(),N=S.net.nodes,L=S.net.links;if(pts.length<2)return null;const seq=[[0,pts[0]]],links=[];let d=0;
+ for(let j=1;j<pts.length;j++){const r=shortestPath(pts[j-1],pts[j]);if(!r)return{err:`${N[pts[j-1]].id} → ${N[pts[j]].id} 사이가 이어져 있지 않습니다.`};let c=pts[j-1];r.links.forEach(li=>{d+=L[li].len||0;c=oth(L[li],c);seq.push([d,c]);links.push(li)})}
+ return{seq,links}}
+const _gdata=graphData;graphData=function(){if(GR.type!=='pf')return _gdata.apply(this,arguments);const R=S.res,N=S.net.nodes;const p=pfPath();if(!p)return null;if(p.err)return p;
+ const hk=(k,i)=>R.P[k][i]+N[i].elev,mm=i=>{let mn=1/0,mx=-1/0,s=0;for(let k=0;k<R.t.length;k++){const v=hk(k,i);mn=Math.min(mn,v);mx=Math.max(mx,v);s+=v}return[mn,s/R.t.length,mx]};
+ const st=p.seq.map(([x,i])=>[x,i,mm(i)]);PF.data={seq:st,links:p.links};
+ return{seq:st,links:p.links,series:[{name:'표고',col:'#92400e',pts:st.map(([x,i])=>[x,N[i].elev])},{name:'최소 수두',col:'#0ea5e9',pts:st.map(([x,,m])=>[x,m[0]])},{name:'평균 수두',col:'#6366f1',pts:st.map(([x,,m])=>[x,m[1]])},{name:'최대 수두',col:'#a855f7',pts:st.map(([x,,m])=>[x,m[2]])},{name:`현재 수두(${hhmm(R.t[S.k])})`,col:'#f59e0b',pts:st.map(([x,i])=>[x,hk(S.k,i)])}]}};
+// 종단도 그래프(상호작용형)
+function pfChart(d){const R=S.res,N=S.net.nodes,c=crit(),k=S.k,st=d.seq,W=680,H=300,L=56,Rm=16,Tp=14,B=40,hide=GR.hide;
+ const cur=st.map(([x,i])=>R.P[k][i]+N[i].elev),el=st.map(([x,i])=>N[i].elev),lim=el.map(v=>v+c.pmin);
+ const all=[...el,...st.map(s=>s[2][0]),...st.map(s=>s[2][2]),...cur,...lim].filter(isFinite);let [y0,y1]=minmax(all);if(y1===y0){y1+=1;y0-=1}const py=(y1-y0)*.07;y0-=py;y1+=py;const x1=Math.max(st[st.length-1][0],1);
+ const X=x=>L+x/x1*(W-L-Rm),Y=y=>Tp+(1-(y-y0)/(y1-y0))*(H-Tp-B),P=(a)=>a.map((v,j)=>(j?'L':'M')+X(st[j][0]).toFixed(1)+','+Y(v).toFixed(1)).join('');
+ let g='';const ys=niceStep((y1-y0)/5);for(let v=Math.ceil(y0/ys)*ys;v<=y1;v+=ys)g+=`<line x1="${L}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" class="pf-gr"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" class="pf-tx">${+v.toFixed(2)}</text>`;
+ const xs=niceStep(x1/6);for(let v=0;v<=x1+1e-9;v+=xs)g+=`<line y1="${Tp}" y2="${H-B}" x1="${X(v)}" x2="${X(v)}" class="pf-gr2"/><text x="${X(v)}" y="${H-B+15}" text-anchor="middle" class="pf-tx">${v>=1000?(v/1000).toFixed(v%1000?1:0)+'k':+v.toFixed(0)}</text>`;
+ const sh=n=>!hide.has(n);
+ if(sh('최소 수두')&&sh('최대 수두'))g+=`<path d="${P(st.map(s=>s[2][2]))}${st.slice().reverse().map(s=>'L'+X(s[0]).toFixed(1)+','+Y(s[2][0]).toFixed(1)).join('')}Z" fill="rgba(99,102,241,.13)" stroke="none"/>`;
+ if(sh('표고'))g+=`<path d="${P(el)}L${X(x1)},${H-B}L${X(0)},${H-B}Z" fill="url(#pfEl)" stroke="none"/><path d="${P(el)}" fill="none" stroke="#92400e" stroke-width="2"/>`;
+ if(sh('기준 수두'))g+=`<path d="${P(lim)}" fill="none" stroke="#ef4444" stroke-width="1.3" stroke-dasharray="5 4"/>`;
+ if(sh('최소 수두'))g+=`<path d="${P(st.map(s=>s[2][0]))}" fill="none" stroke="#0ea5e9" stroke-width="1.3" stroke-dasharray="5 3"/>`;
+ if(sh('최대 수두'))g+=`<path d="${P(st.map(s=>s[2][2]))}" fill="none" stroke="#a855f7" stroke-width="1.3" stroke-dasharray="5 3"/>`;
+ if(sh('평균 수두'))g+=`<path d="${P(st.map(s=>s[2][1]))}" fill="none" stroke="#6366f1" stroke-width="1.6"/>`;
+ const cn=`현재 수두(${hhmm(R.t[k])})`;if(sh(cn))g+=`<path d="${P(cur)}" fill="none" stroke="#f59e0b" stroke-width="2.6"/>`;
+ const sel=S.sel&&S.sel.t==='n'?S.sel.i:-1;
+ st.forEach(([x,i],j)=>{const p=cur[j]-el[j],cls=p<0?'neg':p<c.pmin?'low':p>c.pmax?'high':'ok';g+=`<circle data-pfj="${j}" cx="${X(x).toFixed(1)}" cy="${Y(cur[j]).toFixed(1)}" r="${st.length>150?2.2:3.6}" class="pf-pt ${cls}${i===sel?' sel':''}"/>`});
+ g+=`<text x="${(L+W-Rm)/2}" y="${H-4}" text-anchor="middle" class="pf-ax">거리(m) · 절점 ${st.length}개</text><text x="13" y="${(Tp+H-B)/2}" text-anchor="middle" class="pf-ax" transform="rotate(-90 13 ${(Tp+H-B)/2})">표고·수두(EL. m)</text>`;
+ const lg=[['표고','#92400e'],['기준 수두','#ef4444'],['최소 수두','#0ea5e9'],['평균 수두','#6366f1'],['최대 수두','#a855f7'],[cn,'#f59e0b']].map(([n,col])=>`<button type="button" data-gh="${esc(n)}" class="pf-lg ${hide.has(n)?'off':''}"><i style="background:${col}"></i>${esc(n)}${n==='기준 수두'?` <small>(표고+${c.pmin}m)</small>`:''}</button>`).join('');
+ PF.geo={X,Y,L,W,Rm,Tp,B,H,st,cur,el};
+ return`<div class="pf-w" id="pfW"><svg viewBox="0 0 ${W} ${H}" class="w-full" id="pfSvg" role="img" aria-label="선택 관로 종단도" style="max-height:${H+30}px;display:block"><defs><linearGradient id="pfEl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b45309" stop-opacity=".32"/><stop offset="1" stop-color="#b45309" stop-opacity=".05"/></linearGradient></defs>
+  <rect x="${L}" y="${Tp}" width="${W-L-Rm}" height="${H-Tp-B}" class="pf-fr"/>${g}<line id="pfCh" y1="${Tp}" y2="${H-B}" x1="-10" x2="-10" class="pf-ch"/><circle id="pfCc" r="6" cx="-20" cy="-20" class="pf-cc"/><rect id="pfHit" x="${L}" y="${Tp}" width="${W-L-Rm}" height="${H-Tp-B}" fill="transparent" style="cursor:crosshair"/></svg><div id="pfTip" class="pf-tip" hidden></div></div><div class="pf-lgw">${lg}</div>`}
+function pfTable(d){const R=S.res,N=S.net.nodes,c=crit(),k=S.k,st=d.seq;let low=0,neg=0,mi=-1,mv=1/0;
+ const rows=st.map(([x,i,m],j)=>{const p=R.P[k][i],pmn=m[0]-N[i].elev;if(p<0)neg++;else if(p<c.pmin)low++;if(pmn<mv){mv=pmn;mi=j}const cls=p<0?'neg':p<c.pmin?'low':p>c.pmax?'high':'ok',tx={neg:'부압',low:'부족',high:'과대',ok:'양호'}[cls];
+  return`<tr data-pfr="${j}"><td>${j+1}</td><td class="text-left">${esc(N[i].id)}</td><td>${fmt(x,1)}</td><td>${fmt(N[i].elev,2)}</td><td>${fmt(p+N[i].elev,2)}</td><td><b>${fmt(p,2)}</b></td><td>${fmt(pmn,2)}</td><td><span class="pf-bd ${cls}">${tx}</span></td></tr>`}).join('');
+ const L=st[st.length-1][0],els=st.map(s=>N[s[1]].elev),ps=st.map(s=>R.P[k][s[1]]);const avg=ps.reduce((a,b)=>a+b,0)/ps.length;
+ const ins=`구간 길이 <b>${fmt(L,1)} m</b>(절점 ${st.length}개, 관로 ${d.links.length}개) · 표고 ${fmt(Math.min(...els),2)}~${fmt(Math.max(...els),2)} m · ${hhmm(R.t[k])} 수압 평균 <b>${fmt(avg,2)} m</b>(최저 ${fmt(Math.min(...ps),2)} m). 하루 중 최저 수압은 <b>${esc(N[st[mi][1]].id)}</b>에서 <b>${fmt(mv,2)} m</b>입니다. `+(neg||low?`현재 시각 기준 최소 수압(${c.pmin} m) 미달 절점이 <b class="text-red-600">${neg+low}곳</b>${neg?`(부압 ${neg}곳 포함)`:''}입니다.`:`현재 시각 기준 최소 수압(${c.pmin} m) 미달 절점은 없습니다.`);
+ return`<div class="pf-ins">💡 ${ins}</div><div class="pf-tw"><table class="pf-tb"><thead><tr><th>#</th><th class="text-left">절점</th><th>거리(m)</th><th>표고(m)</th><th>수두(m)</th><th>수압(m)</th><th>하루 최저(m)</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div><p class="text-[11px] text-slate-500 mt-1">그래프의 점이나 표의 행을 누르면 지도가 그 절점으로 이동합니다. 수두선과 표고선 사이 간격이 수압입니다.</p>`}
+const _gbody=graphBody;graphBody=function(){if(GR.type!=='pf')return _gbody.apply(this,arguments);const d=graphData();
+ if(!d)return tnote('✏️ <b>지도에서 그리기</b>를 누른 뒤 지도에서 절점을 차례로 누르세요(2개 이상). 점과 점 사이는 최단 경로 관로로 자동으로 이어집니다. 또는 절점을 고른 뒤 시작·끝 버튼으로 지정하세요.');if(d.err)return tnote(d.err);
+ return pfChart(d)+pfTable(d)};
+const pfSt=document.createElement('style');pfSt.textContent=`.pf-w{position:relative}.pf-gr{stroke:#e2e8f0}.pf-gr2{stroke:#f1f5f9}html.dark .pf-gr{stroke:#334155}html.dark .pf-gr2{stroke:#1e293b}.pf-tx{font-size:10px;fill:#64748b}.pf-ax{font-size:11px;fill:#475569}html.dark .pf-ax,html.dark .pf-tx{fill:#94a3b8}.pf-fr{fill:none;stroke:#cbd5e1}
+.pf-pt{stroke:#fff;stroke-width:1.2;cursor:pointer}.pf-pt.ok{fill:#10b981}.pf-pt.low{fill:#ef4444}.pf-pt.neg{fill:#7f1d1d}.pf-pt.high{fill:#8b5cf6}.pf-pt.sel{stroke:#f59e0b;stroke-width:3;r:6}.pf-pt.hv{stroke:#111827;stroke-width:2.5}
+.pf-ch{stroke:#64748b;stroke-dasharray:3 3;pointer-events:none}.pf-cc{fill:none;stroke:#db2777;stroke-width:2.5;pointer-events:none}
+.pf-tip{position:absolute;pointer-events:none;background:rgba(17,24,39,.94);color:#fff;font-size:11px;line-height:1.45;padding:6px 8px;border-radius:6px;white-space:nowrap;z-index:2;box-shadow:0 4px 14px rgba(0,0,0,.25)}.pf-tip b{color:#fde68a}
+.pf-lgw{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;margin-top:2px}.pf-lg{display:inline-flex;align-items:center;gap:4px;color:var(--c-tx2)}.pf-lg i{display:inline-block;width:14px;height:3px;border-radius:2px}.pf-lg.off{opacity:.4;text-decoration:line-through}
+.pf-ins{margin-top:8px;padding:7px 9px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;font-size:12px;color:#312e81;line-height:1.55}html.dark .pf-ins{background:#1e1b4b;border-color:#3730a3;color:#e0e7ff}
+.pf-tw{margin-top:6px;max-height:230px;overflow:auto;border:1px solid var(--c-bd)}.pf-tb{width:100%;font-size:11px;border-collapse:collapse}.pf-tb th{position:sticky;top:0;background:var(--c-ch);font-weight:600;padding:3px 5px;border-bottom:1px solid var(--c-bd);text-align:right}.pf-tb td{padding:2px 5px;text-align:right;border-bottom:1px solid var(--c-bd)}.pf-tb td:first-child,.pf-tb th:first-child{text-align:center;color:var(--c-tx2)}
+.pf-tb tbody tr{cursor:pointer}.pf-tb tbody tr:hover,.pf-tb tbody tr.hv{background:var(--c-hv)}.pf-tb tbody tr.sel{background:var(--c-on)}
+.pf-bd{display:inline-block;padding:0 6px;border-radius:9999px;font-size:10px;font-weight:700}.pf-bd.ok{background:#d1fae5;color:#047857}.pf-bd.low{background:#fee2e2;color:#b91c1c}.pf-bd.neg{background:#7f1d1d;color:#fff}.pf-bd.high{background:#ede9fe;color:#6d28d9}
+.pf-on{background:#f59e0b!important;border-color:#f59e0b!important;color:#111827!important}
+#pfBar{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:16;display:flex;align-items:center;gap:6px;background:#111827;color:#fff;border-radius:8px;padding:5px 8px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.3);white-space:nowrap}#pfBar button{padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.14);color:#fff;font-size:12px}#pfBar button:hover{background:rgba(255,255,255,.26)}#pfBar .go{background:#f59e0b;color:#111827;font-weight:700}
+.bl-b{height:22px;padding:0 6px;border:1px solid var(--c-bd);border-radius:3px;background:var(--c-ch);font-size:11px;color:var(--c-tx)}.bl-b:hover{background:var(--c-hv)}.bl-i{width:20px;height:20px;border-radius:3px;color:var(--c-tx2);font-size:11px;display:inline-flex;align-items:center;justify-content:center}.bl-i:hover{background:var(--c-hv)}.bl-i.on{background:#dbeafe;color:#1d4ed8}.bl-i:disabled{opacity:.35}
+tr.bl-off .gl-n{opacity:.55}tr.bl-fz .gl-n{opacity:.55;font-style:italic;color:#2563eb}`;document.head.appendChild(pfSt);
+function pfGoto(j,pan){const d=PF.data;if(!d||!d.seq[j])return;const i=d.seq[j][1],n=S.net.nodes[i];if(pan&&S.view&&isFinite(n.x)){S.view.cx=n.x;S.view.cy=n.y;applyView()}S.sel={t:'n',i};PF.flash=i;PF.ft=Date.now();try{refreshSel()}catch(e){}pfMark(j);requestDraw();let c=0;const tick=()=>{requestDraw();if(++c<14)setTimeout(tick,120)};tick()}
+function pfMark(j){const w=$('pfW');if(!w)return;w.querySelectorAll('.pf-pt.sel').forEach(e=>e.classList.remove('sel'));const p=w.querySelector(`[data-pfj="${j}"]`);if(p)p.classList.add('sel');
+ document.querySelectorAll('.pf-tb tr.sel').forEach(e=>e.classList.remove('sel'));const r=document.querySelector(`.pf-tb [data-pfr="${j}"]`);if(r){r.classList.add('sel');r.scrollIntoView({block:'nearest'})}}
+function pfHover(j){const G=PF.geo,svg=$('pfSvg');if(!G||!svg)return;const ch=$('pfCh'),cc=$('pfCc'),tip=$('pfTip');document.querySelectorAll('.pf-tb tr.hv').forEach(e=>e.classList.remove('hv'));
+ if(j<0){ch.setAttribute('x1',-10);ch.setAttribute('x2',-10);cc.setAttribute('cx',-20);tip.hidden=true;PF.hov=-1;requestDraw();return}
+ const [x,i,m]=G.st[j],N=S.net.nodes,R=S.res,p=R.P[S.k][i],X=G.X(x),Y=G.Y(G.cur[j]);ch.setAttribute('x1',X);ch.setAttribute('x2',X);cc.setAttribute('cx',X);cc.setAttribute('cy',Y);
+ const r=svg.getBoundingClientRect(),sc=r.width/G.W;tip.innerHTML=`<b>${esc(N[i].id)}</b>${N[i].blk?' · '+esc(N[i].blk):''}<br>거리 ${fmt(x,1)} m · 표고 ${fmt(N[i].elev,2)} m<br>수두 ${fmt(p+N[i].elev,2)} m · 수압 <b>${fmt(p,2)} m</b><br>하루 최저 ${fmt(m[0]-N[i].elev,2)} m · 최고 ${fmt(m[2]-N[i].elev,2)} m`;tip.hidden=false;
+ const tx=X*sc,left=tx+tip.offsetWidth+16>r.width?tx-tip.offsetWidth-12:tx+12;tip.style.left=Math.max(0,left)+'px';tip.style.top=Math.max(0,Y*sc-20)+'px';
+ const tr=document.querySelector(`.pf-tb [data-pfr="${j}"]`);if(tr)tr.classList.add('hv');PF.hov=i;requestDraw()}
+const _gbind=graphBind;graphBind=function(box){_gbind.apply(this,arguments);if(GR.type!=='pf')return;
+ // 도구줄 바꾸기
+ ['gPa','gPb','gPr','gPc'].forEach(id=>{const e=$(id);if(e){const sp=e.parentNode.querySelector('span.text-slate-500');if(sp&&id==='gPc')sp.remove();e.remove()}});
+ const bar=box.querySelector('.flex.flex-wrap.items-center');const pts=pfPts(),N=S.net.nodes;
+ if(bar){const cls='px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50';const csv=$('gCsv');
+  const h=`<button id="pfDraw" type="button" class="${cls} ${PF.draw?'pf-on':''}" title="지도에서 절점을 차례로 눌러 경로 만들기">✏️ ${PF.draw?'그리는 중…':'지도에서 그리기'}</button><button id="pfA" type="button" class="${cls}">시작 = 선택</button><button id="pfB" type="button" class="${cls}">끝(추가) = 선택</button><button id="pfU" type="button" class="${cls}" ${pts.length?'':'disabled'}>↶ 마지막 점</button><button id="pfR" type="button" class="${cls}" ${pts.length>1?'':'disabled'}>⇄ 반전</button><button id="pfC" type="button" class="${cls}" ${pts.length?'':'disabled'}>지우기</button><button id="pfZ" type="button" class="${cls}" ${pts.length>1?'':'disabled'}>🔍 경로 보기</button><span class="text-slate-500 text-xs">${pts.length?pts.map(i=>esc(N[i]?N[i].id:'?')).join(' → '):'경로 없음'}</span>`;
+  if(csv)csv.insertAdjacentHTML('beforebegin',h);else bar.insertAdjacentHTML('beforeend',h)}
+ const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};const sn=()=>S.sel&&S.sel.t==='n'?S.sel.i:-1;
+ on('pfDraw',()=>pfDrawSet(!PF.draw));on('pfA',()=>{const i=sn();if(i<0){toast('지도에서 절점을 먼저 고르세요.');return}const p=pfPts().slice();if(p.length)p[0]=i;else p.push(i);pfSet(p);winRender('graph');requestDraw()});
+ on('pfB',()=>{const i=sn();if(i<0){toast('지도에서 절점을 먼저 고르세요.');return}const p=pfPts().slice();if(p[p.length-1]!==i)p.push(i);pfSet(p);winRender('graph');requestDraw()});
+ on('pfU',()=>{const p=pfPts().slice();p.pop();pfSet(p);winRender('graph');requestDraw()});on('pfR',()=>{pfSet(pfPts().slice().reverse());winRender('graph');requestDraw()});on('pfC',()=>{pfSet([]);winRender('graph');requestDraw()});
+ on('pfZ',()=>{const d=PF.data;if(!d)return;zoomTo(d.seq.map(s=>S.net.nodes[s[1]].x),d.seq.map(s=>S.net.nodes[s[1]].y))});
+ const hit=$('pfHit'),svg=$('pfSvg');if(hit&&svg&&PF.geo){const G=PF.geo;const near=e=>{const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)*G.W/r.width;let b=-1,bd=1/0;G.st.forEach(([d],j)=>{const dd=Math.abs(G.X(d)-x);if(dd<bd){bd=dd;b=j}});return b};
+  hit.onpointermove=e=>pfHover(near(e));hit.onpointerleave=()=>pfHover(-1);hit.onclick=e=>{const j=near(e);if(j>=0)pfGoto(j,true)}}
+ box.querySelectorAll('[data-pfr]').forEach(tr=>{tr.onmouseenter=()=>pfHover(+tr.dataset.pfr);tr.onmouseleave=()=>pfHover(-1);tr.onclick=()=>pfGoto(+tr.dataset.pfr,true)});
+ if(S.sel&&S.sel.t==='n'&&PF.data){const j=PF.data.seq.findIndex(s=>s[1]===S.sel.i);if(j>=0)pfMark(j)}};
+WR.graph.bind=graphBind;
+// 지도에서 그리기 모드
+function pfDrawSet(on){if(on&&!needNet())return;PF.draw=on;let b=$('pfBar');
+ if(on){if(!S.res){toast('먼저 해석을 실행하세요.');PF.draw=false;return}GR.type='pf';winOpen('graph');setMode('pan');
+  if(!b){b=document.createElement('div');b.id='pfBar';MAP.cv.parentNode.appendChild(b)}pfBarUi();toast('지도에서 절점을 차례로 누르세요. 끝나면 ✓ 완료(또는 Esc).',5000)}
+ else{if(b)b.remove();if(ED.m==='pan')setMode('sel')}
+ const t=$('pfDraw');if(t){t.classList.toggle('pf-on',on);t.textContent=on?'✏️ 그리는 중…':'✏️ 지도에서 그리기'}const rb=document.querySelector('#gpMT [data-rb="pfDraw"]');if(rb)rb.classList.toggle('on',on);requestDraw()}
+function pfBarUi(){const b=$('pfBar');if(!b)return;const n=pfPts().length;b.innerHTML=`<span>✏️ 종단도 그리기 · 점 ${n}개${n<2?' (2개 이상)':''}</span><button type="button" id="pfbU" ${n?'':'disabled'}>↶ 빼기</button><button type="button" id="pfbC" ${n?'':'disabled'}>지우기</button><button type="button" class="go" id="pfbE">✓ 완료</button>`;
+ $('pfbU').onclick=()=>{const p=pfPts().slice();p.pop();pfSet(p);pfBarUi();winRender('graph');requestDraw()};$('pfbC').onclick=()=>{pfSet([]);pfBarUi();winRender('graph');requestDraw()};$('pfbE').onclick=()=>pfDrawSet(false)}
+{const host=MAP.cv.parentNode;host.addEventListener('pointerdown',e=>{if(PF.draw&&e.target===MAP.cv)PF.down=[e.clientX,e.clientY]},true);
+ host.addEventListener('pointerup',e=>{if(!PF.draw||e.target!==MAP.cv||!PF.down)return;const mv=Math.abs(e.clientX-PF.down[0])+Math.abs(e.clientY-PF.down[1]);PF.down=null;if(mv>5)return;
+  const r=MAP.cv.getBoundingClientRect(),mx=WX(e.clientX-r.left),my=WY(e.clientY-r.top),i=nearNode(mx,my,14);if(i<0){toast('절점 가까이를 누르세요.');return}
+  const p=pfPts().slice();if(p[p.length-1]===i)return;if(p.length&&!shortestPath(p[p.length-1],i)){toast('앞 점과 이어지지 않는 절점입니다.');return}p.push(i);pfSet(p);pfBarUi();winRender('graph');requestDraw()},true);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PF.draw){pfDrawSet(false)}})}
+// 지도 위 표시: 종단도 경로·점·그래프에서 가리킨 절점
+const _da=drawArrows;drawArrows=function(ctx){_da.apply(this,arguments);try{pfOverlay(ctx);schOverlay(ctx)}catch(e){}};
+function pfOverlay(ctx){if(!S.net)return;const pts=pfPts();const show=pts.length&&(PF.draw||(WS.open.has('graph')&&GR.type==='pf'));if(!show&&PF.hov<0)return;const N=S.net.nodes,L=S.net.links;ctx.save();
+ if(show){const p=PF.data&&PF.data.links?PF.data:pfPath();if(p&&p.links){ctx.strokeStyle='rgba(245,158,11,.85)';ctx.lineWidth=7;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();p.links.forEach(li=>{const l=L[li];if(!l.xs)return;ctx.moveTo(SX(l.xs[0]),SY(l.ys[0]));for(let j=1;j<l.xs.length;j++)ctx.lineTo(SX(l.xs[j]),SY(l.ys[j]))});ctx.stroke()}
+  ctx.font='bold 11px "Noto Sans KR",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';pts.forEach((i,j)=>{const n=N[i];if(!n)return;const x=SX(n.x),y=SY(n.y),t=j===0?'S':j===pts.length-1&&pts.length>1?'E':String(j);ctx.fillStyle=j===0?'#059669':j===pts.length-1?'#dc2626':'#f59e0b';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.fillText(t,x,y+.5)})}
+ const mk=(i,col,r)=>{const n=N[i];if(!n||!isFinite(n.x))return;const x=SX(n.x),y=SY(n.y);ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke()};
+ if(PF.hov>=0)mk(PF.hov,'#db2777',12);if(PF.flash!=null&&Date.now()-PF.ft<1800){const t=(Date.now()-PF.ft)/1800;mk(PF.flash,`rgba(219,39,119,${1-t})`,10+t*26)}ctx.restore()}
+// 지도에서 절점을 고르면 그래프에도 표시
+const _rs=refreshSel;refreshSel=function(){_rs.apply(this,arguments);try{if(GR.type==='pf'&&PF.data&&S.sel&&S.sel.t==='n'){const j=PF.data.seq.findIndex(s=>s[1]===S.sel.i);if(j>=0)pfMark(j)}schMark()}catch(e){}};
+
+/* ══════════ 2.1 계통도 ══════════ */
+const SC={vb:null,sel:null,mode:'cur',data:null};
+function entOf(i){const n=S.net.nodes[i];return n.type>0?'N:'+i:'B:'+bkey(n)}
+function schBuild(){const N=S.net.nodes,L=S.net.links,R=S.res,k=S.k,ents=new Map(),E=new Map(),c=crit();
+ const avgQ=i=>{if(!R)return 0;if(SC.mode==='cur')return R.Q[k][i];let s=0;for(let t=0;t<R.t.length;t++)s+=R.Q[t][i];return s/R.t.length};
+ const isOpen=i=>R?R.ST[k][i]!==0:L[i].init!==0;
+ const ent=(id,o)=>{let e=ents.get(id);if(!e){e={id,...o,nodes:[],ln:0,qin:0,qout:0};ents.set(id,e)}return e};
+ N.forEach((n,i)=>{const id=entOf(i);if(n.type>0)ent(id,{kind:n.type===1?'res':'tank',label:n.id,idx:i}).nodes.push(i);else ent(id,{kind:'blk',label:bkey(n)}).nodes.push(i)});
+ const edge=(a,b,q,li,closed)=>{const key=a<b?a+'>'+b:b+'>'+a,sgn=a<b?1:-1;let e=E.get(key);if(!e){e={a:a<b?a:b,b:a<b?b:a,q:0,n:0,cl:0,links:[]};E.set(key,e)}if(closed)e.cl++;else{e.q+=sgn*q;e.n++}e.links.push(li)};
+ L.forEach((l,i)=>{const A=entOf(l.n1-1),B=entOf(l.n2-1),q=avgQ(i),op=isOpen(i);
+  if(l.type===2){const P='P:'+i;ent(P,{kind:'pump',label:l.id,idx:i});edge(A,P,q,i,!op);edge(P,B,q,i,!op);return}
+  if(A===B){ents.get(A).ln++;return}edge(A,B,q,i,!op)});
+ ents.forEach(e=>{if(e.kind!=='blk')return;let mn=1/0,low=0,hid=false;e.nodes.forEach(i=>{if(R){const p=R.P[k][i];mn=Math.min(mn,p);if(p<c.pmin)low++}if(N[i]._h)hid=true});e.pmin=mn;e.low=low;e.hid=hid;e.frz=BL.frz.has(e.label)});
+ // 방향: 순유량 부호
+ const ed=[...E.values()].map(e=>{const fl=Math.abs(e.q)>1e-6;return fl&&e.q<0?{...e,a:e.b,b:e.a,q:-e.q}:e});
+ ed.forEach(e=>{const A=ents.get(e.a),B=ents.get(e.b);if(e.n&&Math.abs(e.q)>1e-6){A.qout+=e.q;B.qin+=e.q}});
+ // 단(層) 나누기: 수원에서 흐름 방향으로 최단 단계
+ const lay=new Map(),out=new Map(),und=new Map();ed.forEach(e=>{(out.get(e.a)||out.set(e.a,[]).get(e.a)).push(e.b);[[e.a,e.b],[e.b,e.a]].forEach(([x,y])=>(und.get(x)||und.set(x,[]).get(x)).push(y))});
+ let q=[...ents.values()].filter(e=>e.kind==='res'||(e.kind==='tank'&&e.qout>=e.qin)).map(e=>e.id);if(!q.length)q=[...ents.values()].filter(e=>e.kind!=='blk').map(e=>e.id);if(!q.length&&ents.size)q=[[...ents.keys()][0]];
+ q.forEach(id=>lay.set(id,0));for(let h=0;h<q.length;h++){const u=q[h];(out.get(u)||[]).forEach(v=>{if(!lay.has(v)){lay.set(v,lay.get(u)+1);q.push(v)}})}
+ let more=true;while(more){more=false;ents.forEach((e,id)=>{if(lay.has(id))return;const nb=(und.get(id)||[]).filter(v=>lay.has(v));if(nb.length){lay.set(id,Math.max(...nb.map(v=>lay.get(v)))+1);more=true}})}
+ let mxL=0;lay.forEach(v=>mxL=Math.max(mxL,v));ents.forEach((e,id)=>{if(!lay.has(id))lay.set(id,mxL+1)});
+ const cols=new Map();lay.forEach((v,id)=>(cols.get(v)||cols.set(v,[]).get(v)).push(id));const ord=new Map();
+ const ci=[...cols.keys()].sort((a,b)=>a-b);ci.forEach(c0=>{const ids=cols.get(c0);ids.sort((a,b)=>{const pa=(und.get(a)||[]).filter(v=>ord.has(v)),pb=(und.get(b)||[]).filter(v=>ord.has(v));const ma=pa.length?pa.reduce((s,v)=>s+ord.get(v),0)/pa.length:1e9,mb=pb.length?pb.reduce((s,v)=>s+ord.get(v),0)/pb.length:1e9;return ma-mb||String(ents.get(a).label).localeCompare(String(ents.get(b).label),'ko',{numeric:true})});ids.forEach((id,j)=>ord.set(id,j))});
+ const BW=164,BH=58,GX=96,GY=20;let H=0;ci.forEach(c0=>H=Math.max(H,cols.get(c0).length*(BH+GY)));
+ ci.forEach((c0,ix)=>{const ids=cols.get(c0),hh=ids.length*(BH+GY);ids.forEach((id,j)=>{const e=ents.get(id);e.x=20+ix*(BW+GX);e.y=20+(H-hh)/2+j*(BH+GY)})});
+ return{ents,ed,W:20*2+ci.length*(BW+GX)-GX,H:H+20,BW,BH}}
+function schSvg(){const d=SC.data=schBuild(),R=S.res,{ents,ed,BW,BH}=d,mq=Math.max(1e-9,...ed.map(e=>Math.abs(e.q)));let g='';
+ ed.forEach((e,j)=>{const A=ents.get(e.a),B=ents.get(e.b);const fw=B.x>A.x;let x1=fw?A.x+BW:A.x,y1=A.y+BH/2,x2=fw?B.x:B.x+BW,y2=B.y+BH/2;let dpath;
+  if(fw){const mx=(x1+x2)/2;dpath=`M${x1},${y1}C${mx},${y1} ${mx},${y2} ${x2},${y2}`}else if(B.x===A.x){x1=A.x+BW;x2=B.x+BW;const cx=x1+60;dpath=`M${x1},${y1}C${cx},${y1} ${cx},${y2} ${x2},${y2}`}else{x1=A.x;x2=B.x+BW;const mx=(x1+x2)/2;dpath=`M${x1},${y1}C${x1-60},${y1} ${x2+60},${y2} ${x2},${y2}`}
+  const cl=!e.n,w=cl?1.4:1.4+4*Math.sqrt(Math.abs(e.q)/mq),dir=R&&!cl&&Math.abs(e.q)>1e-6,lab=cl?`닫힘 ${e.cl}`:R?`${fmt(Math.abs(e.q),1)} L/s${e.n>1?' · 관 '+e.n:''}`:`관 ${e.n}`;
+  const lx=(x1+x2)/2,ly=(y1+y2)/2+(fw?0:-8);
+  g+=`<g class="sc-e${cl?' cl':''}" data-sce="${j}"><path d="${dpath}" fill="none" stroke-width="${w.toFixed(1)}" ${dir?'marker-end="url(#scAr)"':''}/><text x="${lx}" y="${ly-4}" text-anchor="middle" class="sc-el">${esc(lab)}</text></g>`});
+ const ic=e=>{const s=e.kind==='res'?'배수지':e.kind==='tank'?'탱크':e.kind==='pump'?'가압장':null;return s&&SYM[s]?`<image href="${SYM[s]}" x="8" y="${(BH-28)/2}" width="28" height="28"/>`:`<g transform="translate(10 ${(BH-24)/2})" class="sc-bi"><rect x="0" y="0" width="10" height="10" rx="2"/><rect x="14" y="0" width="10" height="10" rx="2"/><rect x="0" y="14" width="10" height="10" rx="2"/><rect x="14" y="14" width="10" height="10" rx="2"/></g>`};
+ const c=crit();
+ ents.forEach(e=>{let st='',cls='';if(e.kind==='blk'){cls=!R?'':e.pmin<0?'neg':e.pmin<c.pmin?'low':'ok';st=`절점 ${e.nodes.length.toLocaleString()}${R?` · 최저 ${fmt(e.pmin,1)} m`:''}`}
+  else if(e.kind==='pump'){const q=R?Math.abs(R.Q[S.k][e.idx]):null;st=R?(R.ST[S.k][e.idx]===0?'정지':`운전 · ${fmt(q,1)} L/s`):'가압장'}
+  else{st=R?`유출 ${fmt(e.qout-e.qin,1)} L/s`:(e.kind==='res'?'배수지(수원)':'탱크')}
+  const kt={res:'수원',tank:'탱크',pump:'가압장',blk:'소블록'}[e.kind],badge=cls?`<rect x="${BW-46}" y="6" width="40" height="15" rx="7.5" class="sc-bd ${cls}"/><text x="${BW-26}" y="16.5" text-anchor="middle" class="sc-bt">${{neg:'심각',low:'주의',ok:'양호'}[cls]}</text>`:'';
+  g+=`<g class="sc-n ${e.kind}${e.hid?' hid':''}${SC.sel===e.id?' sel':''}" data-scn="${esc(e.id)}" transform="translate(${e.x} ${e.y})" tabindex="0" role="button" aria-label="${esc(kt+' '+e.label)}"><rect width="${BW}" height="${BH}" rx="9" class="sc-r"/>${ic(e)}<text x="44" y="20" class="sc-k">${kt}${e.frz?' ❄':e.hid?' (꺼짐)':''}</text><text x="44" y="36" class="sc-t">${esc(String(e.label).length>12?String(e.label).slice(0,12)+'…':e.label)}</text><text x="44" y="50" class="sc-s">${esc(st)}</text>${badge}<title>${esc(kt+' '+e.label+' · '+st)}</title></g>`});
+ let vb=SC.vb;if(!vb){const w=Math.max(Math.min(d.W,1100),560),h=Math.max(d.H,w*0.5);vb=[0,(d.H-h)/2,w,h]}SC.vb=vb;
+ return`<svg id="scSvg" viewBox="${vb.join(' ')}" class="sc-svg" role="img" aria-label="관망 계통도"><defs><marker id="scAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="sc-arw"/></marker></defs>${g}</svg>`}
+const scSt=document.createElement('style');scSt.textContent=`.sc-svg{width:100%;height:calc(100% - 4px);min-height:300px;background:var(--c-ch2);border:1px solid var(--c-bd);border-radius:6px;cursor:grab;touch-action:none;display:block}.sc-svg.drag{cursor:grabbing}
+.sc-r{fill:var(--c-pn);stroke:#94a3b8;stroke-width:1.2}.sc-n{cursor:pointer}.sc-n:hover .sc-r{stroke:#4f46e5;stroke-width:2}.sc-n.sel .sc-r{stroke:#f59e0b;stroke-width:3}.sc-n.res .sc-r,.sc-n.tank .sc-r{fill:#eef2ff;stroke:#6366f1}.sc-n.pump .sc-r{fill:#fff1f2;stroke:#f43f5e}
+html.dark .sc-n.res .sc-r,html.dark .sc-n.tank .sc-r{fill:#1e1b4b}html.dark .sc-n.pump .sc-r{fill:#3f1d2b}.sc-n.hid{opacity:.45}
+.sc-k{font-size:10px;fill:var(--c-tx2)}.sc-t{font-size:13px;font-weight:700;fill:var(--c-tx)}.sc-s{font-size:10.5px;fill:var(--c-tx2)}.sc-bi rect{fill:#a5b4fc}
+.sc-bd.ok{fill:#d1fae5}.sc-bd.low{fill:#fef3c7}.sc-bd.neg{fill:#fee2e2}.sc-bt{font-size:9.5px;font-weight:700;fill:#374151}
+.sc-e path{stroke:#6366f1;opacity:.75}.sc-e.cl path{stroke:#94a3b8;stroke-dasharray:5 4;opacity:.8}.sc-e:hover path,.sc-e.hl path{stroke:#f59e0b;opacity:1}.sc-el{font-size:10px;fill:var(--c-tx2);paint-order:stroke;stroke:var(--c-ch2);stroke-width:3px}.sc-arw{fill:#6366f1}
+.sc-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;font-size:11.5px}.sc-bar .bl-b{height:24px}.sc-bar .on{background:var(--c-on);font-weight:700}.sc-sum{color:var(--c-tx2)}`;document.head.appendChild(scSt);
+WD.sch={t:'계통도 (수원 → 가압장 → 소블록)',w:820};
+WR.sch={ui:()=>{if(!S.net)return'';const R=S.res;const nb=new Set(S.net.nodes.filter(n=>n.type===0).map(bkey));const onlyNo=nb.size<=1&&nb.has(NOBLK);
+ const html=schSvg(),d=SC.data,cnt=k=>[...d.ents.values()].filter(e=>e.kind===k).length;
+ return`<div class="sc-bar"><span class="sc-sum">${R?hhmm(R.t[S.k])+' 기준':'해석 전(연결만 표시)'} · 수원 ${cnt('res')+cnt('tank')} · 가압장 ${cnt('pump')} · 소블록 ${cnt('blk')} · 연결 ${d.ed.length}</span><span style="flex:1"></span>
+  <button type="button" class="bl-b ${SC.mode==='cur'?'on':''}" data-scm="cur">현재 시각</button><button type="button" class="bl-b ${SC.mode==='avg'?'on':''}" data-scm="avg">하루 평균</button><button type="button" class="bl-b" data-scz="fit">맞춤</button><button type="button" class="bl-b" data-scz="in">＋</button><button type="button" class="bl-b" data-scz="out">－</button><button type="button" class="bl-b" data-scz="svg">⬇ SVG</button></div>
+  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [파일 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}
+  <div style="height:min(62vh,560px)">${html}</div><p class="text-[11px] text-slate-500 mt-1">상자를 누르면 지도에서 그 시설·블록을 고르고 확대합니다. 선 굵기는 유량, 화살표는 흐름 방향입니다. 끌어서 이동, 휠로 확대·축소.</p>`},
+ bind:b=>{const svg=$('scSvg');if(!svg)return;const d=SC.data;
+  b.querySelectorAll('[data-scm]').forEach(x=>x.onclick=()=>{SC.mode=x.dataset.scm;winRender('sch',true)});
+  b.querySelectorAll('[data-scz]').forEach(x=>x.onclick=()=>{const a=x.dataset.scz;if(a==='fit'){SC.vb=null;winRender('sch',true);return}if(a==='svg'){const s=new XMLSerializer().serializeToString(svg).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');const st2=`<style>${scSt.textContent.replace(/var\(--c-pn\)/g,'#fff').replace(/var\(--c-tx2\)/g,'#6b7280').replace(/var\(--c-tx\)/g,'#111827').replace(/var\(--c-ch2\)/g,'#fafafa').replace(/var\(--c-bd\)/g,'#d6d6d6')}</style>`;offerBlob(new Blob([s.replace(/(<svg[^>]*>)/,'$1'+st2)],{type:'image/svg+xml'}),(S.name.replace(/\.inp$/i,'')||'network')+'_계통도.svg');return}
+   const v=SC.vb,f=a==='in'?0.8:1.25,cx=v[0]+v[2]/2,cy=v[1]+v[3]/2;SC.vb=[cx-v[2]*f/2,cy-v[3]*f/2,v[2]*f,v[3]*f];svg.setAttribute('viewBox',SC.vb.join(' '))});
+  let dr=null;svg.addEventListener('pointerdown',e=>{if(e.target.closest('.sc-n'))return;dr={x:e.clientX,y:e.clientY,v:SC.vb.slice()};svg.setPointerCapture(e.pointerId);svg.classList.add('drag')});
+  svg.addEventListener('pointermove',e=>{if(!dr)return;const r=svg.getBoundingClientRect(),k=dr.v[2]/r.width;SC.vb=[dr.v[0]-(e.clientX-dr.x)*k,dr.v[1]-(e.clientY-dr.y)*k,dr.v[2],dr.v[3]];svg.setAttribute('viewBox',SC.vb.join(' '))});
+  const up=()=>{dr=null;svg.classList.remove('drag')};svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect(),v=SC.vb,f=e.deltaY>0?1.15:1/1.15,px=v[0]+(e.clientX-r.left)/r.width*v[2],py=v[1]+(e.clientY-r.top)/r.height*v[3];SC.vb=[px-(px-v[0])*f,py-(py-v[1])*f,v[2]*f,v[3]*f];svg.setAttribute('viewBox',SC.vb.join(' '))},{passive:false});
+  const act=g=>{const id=g.dataset.scn,e=d.ents.get(id);if(!e)return;SC.sel=id;b.querySelectorAll('.sc-n.sel').forEach(x=>x.classList.remove('sel'));g.classList.add('sel');
+   b.querySelectorAll('.sc-e').forEach((x,j)=>{const E=d.ed[+x.dataset.sce];x.classList.toggle('hl',E.a===id||E.b===id)});
+   if(e.kind==='blk'){if(e.hid&&!e.frz){BL.off.delete(e.label);applyBlk();gpLayers()}if(e.frz){toast(`${e.label} 블록은 동결되어 있습니다. 레이어 창에서 동결 해제하세요.`);return}T.multi.n=new Set(e.nodes);T.multi.l=new Set(S.net.links.map((l,i)=>i).filter(i=>{const l=S.net.links[i];return bkey(S.net.nodes[l.n1-1])===e.label&&bkey(S.net.nodes[l.n2-1])===e.label}));renderMulti();
+    zoomTo(e.nodes.map(i=>S.net.nodes[i].x),e.nodes.map(i=>S.net.nodes[i].y));requestDraw();toast(`${e.label}: 절점 ${e.nodes.length.toLocaleString()}개${S.res?` · 최저 수압 ${fmt(e.pmin,2)} m`:''}`)}
+   else if(e.kind==='pump')focusEl('l',e.idx);else focusEl('n',e.idx)};
+  b.querySelectorAll('[data-scn]').forEach(g=>{g.onclick=()=>act(g);g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();act(g)}}})}};
+function schRefresh(){if(WS.open.has('sch'))winRender('sch',true)}
+function schMark(){if(!WS.open.has('sch')||!S.sel||!SC.data)return;const id=S.sel.t==='n'?entOf(S.sel.i):S.net.links[S.sel.i].type===2?'P:'+S.sel.i:entOf(S.net.links[S.sel.i].n1-1);const w=$('w_sch');if(!w)return;SC.sel=id;w.querySelectorAll('.sc-n').forEach(g=>g.classList.toggle('sel',g.dataset.scn===id))}
+function schOverlay(ctx){/* 계통도에서 고른 블록은 다중 선택으로 표시되므로 별도 표시 없음 */}
+const _gr2=gpRefresh;gpRefresh=function(){_gr2.apply(this,arguments);try{if(WS.open.has('sch')){const v=SC.vb;winRender('sch',true);SC.vb=v}if(PF.draw)pfBarUi()}catch(e){}};
+const _ld=loadText;loadText=async function(){SC.vb=null;SC.sel=null;pfSet([]);PF.hov=-1;if(PF.draw)pfDrawSet(false);return _ld.apply(this,arguments)};
+
+/* ── 리본·도구줄 버튼 ── */
+const _rw=RIB.wds;RIB.wds=()=>_rw().replace(/(<button type="button" class="rb-b[^"]*" data-rb="svc")/,`<button type="button" class="rb-b" data-rb="sch" title="수원 → 가압장 → 소블록 흐름을 한눈에 보는 계통도">${ico('sch',15)}<span>계통도</span></button>$1`)
+ .replace(/(<button type="button" class="rb-b[^"]*" data-rb="pipeRep")/,`<button type="button" class="rb-b" data-rb="pfDraw" title="지도에서 관로 경로를 그려 종단도 바로 보기">${ico('pf',15)}<span>종단도 그리기</span></button>$1`);
+DDM.graph.push(['pfDraw','종단도 지도에서 그리기']);
+const XB={sch:()=>{if(!needNet())return;SC.vb=null;winOpen('sch')},pfDraw:()=>{if(!needNet())return;if(!S.res){toast('먼저 해석을 실행하세요.');return}pfDrawSet(!PF.draw)}};
+const _ra2=rbAct;rbAct=function(a,btn){if(XB[a]&&!(DDM[a]&&btn&&btn.closest('#gpRib'))){XB[a](btn);return}return _ra2.apply(this,arguments)};
+{const m=document.querySelector('#gpMT [data-m="meas"]');if(m)m.insertAdjacentHTML('afterend',`<button type="button" class="rb-b" data-rb="pfDraw" title="종단도 그리기 — 지도에서 절점을 차례로 누르기">${ico('pf',16)}</button><button type="button" class="rb-b" data-rb="sch" title="계통도">${ico('sch',16)}</button>`)}
+try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
+applyBlk();try{gpLayers()}catch(e){}
+window.__gw18={BL,PF,SC,applyBlk,blkSet,pfSet,pfDrawSet,schBuild};
+})()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v18 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
