@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v19 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v20 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4123,6 +4123,158 @@ try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
 popBtns();
 window.__gw19={WA,waRun,waStat,TSG,tsData,fqData,POP,popOut,popIn,popAll,D0};
 })()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v19 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
+
+/* ════ v20: 계통도 정수계통별 보기 — 수원별·정수계통별 장 넘기기 · 블록 안 가압장 묶기 · 가로 배치 ════ */
+try{(()=>{
+const G18=window.__gw18;if(!G18||!G18.SC)throw new Error('v18 계통도가 없습니다');
+const SC=G18.SC,BL=G18.BL,NOB='(블록 미지정)',bkey=n=>n.blk||NOB,entOf=i=>{const n=S.net.nodes[i];return n.type>0?'N:'+i:'B:'+bkey(n)};
+const isWtp=id=>/정수장/.test(String(id));
+const SYS=Object.assign({gh:null,view:'src',page:0,dir:'lr',grp:true,map:{},edit:false,pu:null},(()=>{try{const o=JSON.parse(lsGet('gw-sys')||'{}');return{map:o.map||{},view:o.view||'src',dir:o.dir||'lr',grp:o.grp!==false}}catch(e){return{}}})());
+T.sys=SYS;const sysSave=()=>lsSet('gw-sys',JSON.stringify({map:SYS.map,view:SYS.view,dir:SYS.dir,grp:SYS.grp}));
+const UNS='미지정';
+// 수원 → 정수계통 이름(정수장은 자기 자신, 배수지는 사용자가 정한 값, 없으면 미지정)
+const sysOf=id=>SYS.map[id]||(isWtp(id)?String(id):UNS);
+
+/* ── 전체 엔터티·연결 만들기(블록 안 가압장은 블록에 묶음) ── */
+function build(){const N=S.net.nodes,L=S.net.links,R=S.res,k=S.k,c=crit(),ents=new Map(),E=new Map();
+ const avgQ=i=>{if(!R)return 0;if(SC.mode==='cur')return R.Q[k][i];let s=0;for(let t=0;t<R.t.length;t++)s+=R.Q[t][i];return s/R.t.length};
+ const isOpen=i=>R?R.ST[k][i]!==0:L[i].init!==0;
+ const ent=(id,o)=>{let e=ents.get(id);if(!e){e={id,...o,nodes:[],ln:0,pu:[],qin:0,qout:0};ents.set(id,e)}return e};
+ N.forEach((n,i)=>{const id=entOf(i);if(n.type>0)ent(id,{kind:n.type===1?'res':'tank',label:n.id,idx:i}).nodes.push(i);else ent(id,{kind:'blk',label:bkey(n)}).nodes.push(i)});
+ const edge=(a,b,q,li,closed)=>{const key=a<b?a+'>'+b:b+'>'+a,sgn=a<b?1:-1;let e=E.get(key);if(!e){e={a:a<b?a:b,b:a<b?b:a,q:0,n:0,cl:0,links:[]};E.set(key,e)}if(closed)e.cl++;else{e.q+=sgn*q;e.n++}e.links.push(li)};
+ L.forEach((l,i)=>{const A=entOf(l.n1-1),B=entOf(l.n2-1),q=avgQ(i),op=isOpen(i);
+  if(l.type===2){if(A===B&&SYS.grp){ents.get(A).pu.push(i);return}const P='P:'+i;ent(P,{kind:'pump',label:l.id,idx:i});edge(A,P,q,i,!op);edge(P,B,q,i,!op);return}
+  if(A===B){ents.get(A).ln++;return}edge(A,B,q,i,!op)});
+ ents.forEach(e=>{e.pon=R?e.pu.filter(li=>R.ST[k][li]!==0).length:null;if(e.kind!=='blk')return;let mn=1/0,low=0,hid=false;e.nodes.forEach(i=>{if(R){const p=R.P[k][i];mn=Math.min(mn,p);if(p<c.pmin)low++}if(N[i]._h)hid=true});e.pmin=mn;e.low=low;e.hid=hid;e.frz=BL.frz.has(e.label)});
+ const ed=[...E.values()].map(e=>{const fl=Math.abs(e.q)>1e-6;return fl&&e.q<0?{...e,a:e.b,b:e.a,q:-e.q}:e});
+ ed.forEach(e=>{const A=ents.get(e.a),B=ents.get(e.b);if(e.n&&Math.abs(e.q)>1e-6){A.qout+=e.q;B.qin+=e.q}});
+ return{ents,ed}}
+
+/* ── 장(페이지) 나누기: 급수구역(해석 결과) 기준 ── */
+function pages(all){const R=S.res,sa=R?serviceAreas():null,out=[{key:'*',lab:'전체 관망',ids:null}];if(!sa)return{list:out,sa:null};
+ const N=S.net.nodes,ns=sa.ns,share=new Map();// 엔터티별 수원 비율
+ all.ents.forEach(e=>{if(e.kind==='pump')return;const a=new Float64Array(ns);let n=0;e.nodes.forEach(i=>{if(sa.src.includes(i)){a[sa.src.indexOf(i)]+=1;n++;return}for(let j=0;j<ns;j++)a[j]+=sa.F[i*ns+j];n++});if(n)for(let j=0;j<ns;j++)a[j]/=n;share.set(e.id,a)});
+ const grp=[];if(SYS.view==='src'){sa.src.map((s,j)=>({j,q:sa.st[j].q})).sort((a,b)=>b.q-a.q).forEach(({j})=>grp.push({key:'s:'+sa.st[j].id,lab:`${sa.st[j].id} (${sa.st[j].type} · ${fmt(sa.st[j].q,1)} L/s)`,js:[j]}))}
+ else{const m=new Map();sa.src.forEach((s,j)=>{const g=sysOf(sa.st[j].id);(m.get(g)||m.set(g,[]).get(g)).push(j)});[...m.keys()].sort((a,b)=>(a===UNS)-(b===UNS)||a.localeCompare(b,'ko')).forEach(g=>{const js=m.get(g),q=js.reduce((s,j)=>s+sa.st[j].q,0);grp.push({key:'g:'+g,lab:`${g===UNS?'미지정 수원':g+' 계통'} (수원 ${js.length} · ${fmt(q,1)} L/s)`,js,g})})}
+ const used=new Set();
+ grp.forEach(g=>{const ids=new Set(),mix=new Map();share.forEach((a,id)=>{let s=0,b=-1,bv=0;for(let j=0;j<ns;j++){if(g.js.includes(j))s+=a[j];if(a[j]>bv){bv=a[j];b=j}}if(s>=0.1||(b>=0&&g.js.includes(b))){ids.add(id);used.add(id);if(s<0.9)mix.set(id,s)}});
+  // 포함된 두 엔터티 사이의 가압장
+  all.ents.forEach(e=>{if(e.kind!=='pump')return;const nb=all.ed.filter(x=>x.a===e.id||x.b===e.id).map(x=>x.a===e.id?x.b:x.a);if(nb.length&&nb.every(id=>ids.has(id))){ids.add(e.id);used.add(e.id)}});
+  out.push({key:g.key,lab:g.lab,ids,mix,js:g.js,g:g.g})});
+ const rest=new Set();all.ents.forEach((e,id)=>{if(!used.has(id))rest.add(id)});if(rest.size)out.push({key:'x',lab:`어느 수원 물도 닿지 않음 (${rest.size})`,ids:rest,mix:new Map()});
+ return{list:out,sa}}
+
+/* ── 배치: 흐름 단계별 열(가로) 또는 행(세로), 긴 단은 여러 줄로 접기 ── */
+function layout(all,pg,aspect){const ents=new Map(),inP=id=>!pg.ids||pg.ids.has(id);
+ all.ents.forEach((e,id)=>{if(inP(id))ents.set(id,{...e,ghost:false,mix:pg.mix?pg.mix.get(id):undefined})});
+ const ed=[],gh=new Map(),ged=[];all.ed.forEach(e=>{const a=inP(e.a),b=inP(e.b);if(a&&b)ed.push(e);else if(pg.ids&&(a||b)){const o=a?e.b:e.a;if(!gh.has(o)){const g=all.ents.get(o);if(g)gh.set(o,{...g,ghost:true})}ged.push({...e,gh:true})}});
+ const showGh=SYS.gh==null?gh.size<=12:SYS.gh;if(showGh){gh.forEach((g,id)=>{if(!ents.has(id))ents.set(id,g)});ed.push(...ged)}
+ const lay=new Map(),out=new Map(),und=new Map();ed.forEach(e=>{(out.get(e.a)||out.set(e.a,[]).get(e.a)).push(e.b);[[e.a,e.b],[e.b,e.a]].forEach(([x,y])=>(und.get(x)||und.set(x,[]).get(x)).push(y))});
+ let q=[...ents.values()].filter(e=>!e.ghost&&(e.kind==='res'||(e.kind==='tank'&&e.qout>=e.qin))).map(e=>e.id);if(!q.length)q=[...ents.values()].filter(e=>e.kind!=='blk').map(e=>e.id);if(!q.length&&ents.size)q=[[...ents.keys()][0]];
+ q.forEach(id=>lay.set(id,0));for(let h=0;h<q.length;h++){const u=q[h];(out.get(u)||[]).forEach(v=>{if(!lay.has(v)){lay.set(v,lay.get(u)+1);q.push(v)}})}
+ let more=true;while(more){more=false;ents.forEach((e,id)=>{if(lay.has(id))return;const nb=(und.get(id)||[]).filter(v=>lay.has(v));if(nb.length){lay.set(id,Math.max(...nb.map(v=>lay.get(v)))+1);more=true}})}
+ let mxL=0;lay.forEach(v=>mxL=Math.max(mxL,v));ents.forEach((e,id)=>{if(!lay.has(id))lay.set(id,mxL+1)});
+ const cols=new Map();lay.forEach((v,id)=>(cols.get(v)||cols.set(v,[]).get(v)).push(id));const ord=new Map(),ci=[...cols.keys()].sort((a,b)=>a-b);
+ ci.forEach(c0=>{const ids=cols.get(c0);ids.sort((a,b)=>{const pa=(und.get(a)||[]).filter(v=>ord.has(v)),pb=(und.get(b)||[]).filter(v=>ord.has(v));const ma=pa.length?pa.reduce((s,v)=>s+ord.get(v),0)/pa.length:1e9,mb=pb.length?pb.reduce((s,v)=>s+ord.get(v),0)/pb.length:1e9;return ma-mb||String(ents.get(a).label).localeCompare(String(ents.get(b).label),'ko',{numeric:true})});ids.forEach((id,j)=>ord.set(id,j))});
+ const BW=164,BH=62,lr=SYS.dir==='lr',GL=lr?90:70,GS=lr?20:18,GW=lr?26:22;// GL: 단 사이, GS: 같은 줄 상자 사이, GW: 접은 줄 사이
+ const thick=lr?BW:BH,len=lr?BH:BW,mxn=Math.max(1,...ci.map(c0=>cols.get(c0).length));
+ const dims=M=>{let A=0;ci.forEach((c0,ix)=>{const s=Math.ceil(cols.get(c0).length/M);A+=s*thick+(s-1)*GW+(ix?GL:0)});const B=Math.min(M,mxn)*(len+GS)-GS;return lr?[A,B]:[B,A]};
+ let best=mxn,bs=1/0;for(let M=1;M<=mxn;M++){const [w,h]=dims(M),s=Math.abs(Math.log((w/h)/aspect));if(s<bs-1e-9){bs=s;best=M}}const M=best,[W,H]=dims(M);
+ let pos=20;ci.forEach((c0,ix)=>{const ids=cols.get(c0),s=Math.ceil(ids.length/M);if(ix)pos+=GL;ids.forEach((id,j)=>{const sub=Math.floor(j/M),slot=j%M,inSub=Math.min(M,ids.length-sub*M),off=(Math.min(M,mxn)-inSub)*(len+GS)/2,a=pos+sub*(thick+GW),b=20+off+slot*(len+GS),e=ents.get(id);if(lr){e.x=a;e.y=b}else{e.x=b;e.y=a}e.lay=c0});pos+=s*thick+(s-1)*GW});
+ return{ents,ed,W:W+40,H:H+40,BW,BH,M,ghN:gh.size,showGh}}
+
+/* ── 그리기 ── */
+const scCss=()=>{for(const s of document.querySelectorAll('style'))if(s.textContent.includes('.sc-svg{'))return s.textContent;return''};
+function svg(d){const R=S.res,{ents,ed,BW,BH}=d,lr=SYS.dir==='lr',mq=Math.max(1e-9,...ed.map(e=>Math.abs(e.q)));let g='';
+ ed.forEach((e,j)=>{const A=ents.get(e.a),B=ents.get(e.b);if(!A||!B)return;let dp,lx,ly;
+  if(lr){const fw=B.x>A.x+1;let x1=fw?A.x+BW:A.x,y1=A.y+BH/2,x2=fw?B.x:B.x+BW,y2=B.y+BH/2;if(fw){const mx=(x1+x2)/2;dp=`M${x1},${y1}C${mx},${y1} ${mx},${y2} ${x2},${y2}`}else if(Math.abs(B.x-A.x)<=1){x1=A.x+BW;x2=B.x+BW;const cx=x1+50;dp=`M${x1},${y1}C${cx},${y1} ${cx},${y2} ${x2},${y2}`}else{x1=A.x;x2=B.x+BW;dp=`M${x1},${y1}C${x1-60},${y1} ${x2+60},${y2} ${x2},${y2}`}lx=(x1+x2)/2;ly=(y1+y2)/2-4}
+  else{const fw=B.y>A.y+1;let x1=A.x+BW/2,y1=fw?A.y+BH:A.y,x2=B.x+BW/2,y2=fw?B.y:B.y+BH;if(fw){const my=(y1+y2)/2;dp=`M${x1},${y1}C${x1},${my} ${x2},${my} ${x2},${y2}`}else if(Math.abs(B.y-A.y)<=1){y1=A.y+BH;y2=B.y+BH;const cy=y1+40;dp=`M${x1},${y1}C${x1},${cy} ${x2},${cy} ${x2},${y2}`}else{y1=A.y;y2=B.y+BH;dp=`M${x1},${y1}C${x1},${y1-50} ${x2},${y2+50} ${x2},${y2}`}lx=(x1+x2)/2+4;ly=(y1+y2)/2}
+  const cl=!e.n,w=cl?1.4:1.4+4*Math.sqrt(Math.abs(e.q)/mq),dir=R&&!cl&&Math.abs(e.q)>1e-6,lab=cl?`닫힘 ${e.cl}`:R?`${fmt(Math.abs(e.q),1)} L/s${e.n>1?' · 관 '+e.n:''}`:`관 ${e.n}`;
+  g+=`<g class="sc-e${cl?' cl':''}${e.gh?' gh':''}" data-sce="${j}"><path d="${dp}" fill="none" stroke-width="${w.toFixed(1)}" ${dir?'marker-end="url(#scAr)"':''}/><text x="${lx}" y="${ly}" text-anchor="middle" class="sc-el">${esc(lab)}</text></g>`});
+ const ic=e=>{const s=e.kind==='res'?(isWtp(e.label)?'정수장':'배수지'):e.kind==='tank'?'탱크':e.kind==='pump'?'가압장':null;return s&&SYM[s]?`<image href="${SYM[s]}" x="8" y="${(BH-28)/2}" width="28" height="28"/>`:`<g transform="translate(10 ${(BH-24)/2})" class="sc-bi"><rect x="0" y="0" width="10" height="10" rx="2"/><rect x="14" y="0" width="10" height="10" rx="2"/><rect x="0" y="14" width="10" height="10" rx="2"/><rect x="14" y="14" width="10" height="10" rx="2"/></g>`};
+ const c=crit();
+ ents.forEach(e=>{let st='',cls='';if(e.kind==='blk'){cls=!R?'':e.pmin<0?'neg':e.pmin<c.pmin?'low':'ok';st=`절점 ${e.nodes.length.toLocaleString()}${R?` · 최저 ${fmt(e.pmin,1)} m`:''}`}
+  else if(e.kind==='pump'){const q=R?Math.abs(R.Q[S.k][e.idx]):null;st=R?(R.ST[S.k][e.idx]===0?'정지':`운전 · ${fmt(q,1)} L/s`):'가압장'}
+  else{st=R?`유출 ${fmt(e.qout-e.qin,1)} L/s`:(e.kind==='res'?'배수지(수원)':'탱크')}
+  const kt={res:isWtp(e.label)?'정수장':'수원',tank:'탱크',pump:'가압장',blk:'소블록'}[e.kind],badge=cls&&!e.ghost?`<rect x="${BW-46}" y="6" width="40" height="15" rx="7.5" class="sc-bd ${cls}"/><text x="${BW-26}" y="16.5" text-anchor="middle" class="sc-bt">${{neg:'심각',low:'주의',ok:'양호'}[cls]}</text>`:'';
+  const pu=e.pu&&e.pu.length?`<g class="sc-pu" data-scp="${esc(e.id)}" role="button" tabindex="0"><rect x="44" y="${BH-15}" width="${BW-50}" height="12" rx="3"/><text x="48" y="${BH-6}" class="sc-pt">⚙ 가압장 ${e.pu.length}${e.pon!=null?` · 운전 ${e.pon}`:''} ▸</text></g>`:'';
+  const mx=e.mix!=null&&!e.ghost?`<text x="${BW-6}" y="34" text-anchor="end" class="sc-mx">혼합 ${Math.round(e.mix*100)}%</text>`:'';
+  const tl=String(e.label).length>12?String(e.label).slice(0,12)+'…':e.label;
+  g+=`<g class="sc-n ${e.kind}${e.hid?' hid':''}${e.ghost?' ghost':''}${SC.sel===e.id?' sel':''}" data-scn="${esc(e.id)}" transform="translate(${e.x} ${e.y})" tabindex="0" role="button" aria-label="${esc(kt+' '+e.label)}"><rect width="${BW}" height="${BH}" rx="9" class="sc-r"/>${ic(e)}<text x="44" y="17" class="sc-k">${e.ghost?'다른 계통 · ':''}${kt}${e.frz?' ❄':e.hid?' (꺼짐)':''}</text><text x="44" y="33" class="sc-t">${esc(tl)}</text>${pu?'':`<text x="44" y="48" class="sc-s">${esc(st)}</text>`}${pu?`<text x="44" y="45" class="sc-s">${esc(st)}</text>`:''}${badge}${mx}${pu}<title>${esc(kt+' '+e.label+' · '+st+(e.pu&&e.pu.length?` · 가압장 ${e.pu.length}`:''))}</title></g>`});
+ let vb=SC.vb;if(!vb){const p=24,w=Math.max(d.W+2*p,760),h=Math.max(d.H+2*p,420);vb=[(d.W-w)/2,(d.H-h)/2,w,h]}SC.vb=vb;
+ return`<svg id="scSvg" viewBox="${vb.join(' ')}" class="sc-svg" role="img" aria-label="관망 계통도"><defs><marker id="scAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="sc-arw"/></marker></defs>${g}</svg>`}
+
+/* ── 정수계통 묶기 표 ── */
+function mapUi(sa){if(!sa)return tnote('먼저 해석을 실행하세요. 물을 내보내는 수원 목록은 해석 결과에서 만듭니다.');const wtp=[...new Set([...sa.st.map(s=>s.id).filter(isWtp),...Object.values(SYS.map).filter(v=>v&&v!==UNS)])].sort((a,b)=>a.localeCompare(b,'ko'));
+ const rows=sa.st.map((s,j)=>({s,j})).sort((a,b)=>b.s.q-a.s.q).map(({s})=>{const cur=sysOf(s.id),me=isWtp(s.id);return`<tr><td class="text-left">${esc(s.id)}</td><td>${esc(s.type)}</td><td>${fmt(s.q,1)}</td><td class="text-left">${me&&!SYS.map[s.id]?`<span class="sc-own">${esc(s.id)} (자기 계통)</span>`:''}<select data-sysm="${esc(s.id)}" class="wa-in"${me&&!SYS.map[s.id]?' style="display:none"':''}><option value="">미지정</option>${wtp.map(w=>`<option value="${esc(w)}" ${cur===w?'selected':''}>${esc(w)}</option>`).join('')}<option value="__new">＋ 새 계통 이름…</option></select>${me&&!SYS.map[s.id]?` <button type="button" class="bl-i" data-sysx="${esc(s.id)}" title="다른 계통으로 바꾸기">✎</button>`:''}</td></tr>`}).join('');
+ const un=sa.st.filter(s=>sysOf(s.id)===UNS).length;
+ return`<div class="sc-map"><div class="sc-bar"><b>정수계통 묶기</b><span class="sc-sum">수원 ${sa.st.length} · 미지정 ${un}</span><span style="flex:1"></span><button type="button" class="bl-b" id="sysCsv">⬇ CSV</button><label class="bl-b" style="display:inline-flex;align-items:center;cursor:pointer">⬆ CSV 불러오기<input type="file" id="sysIn" accept=".csv,text/csv" hidden></label><button type="button" class="bl-b" id="sysClr">모두 미지정</button><button type="button" class="bl-b" id="sysDone">✓ 닫기</button></div>
+  <div class="pf-tw" style="max-height:240px"><table class="pf-tb"><thead><tr><th class="text-left">수원</th><th>유형</th><th>유출(L/s)</th><th class="text-left">정수계통</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${tnote('배수지마다 물을 받는 정수장을 고르세요. 모델에는 배수지가 고정 수위 수원으로 들어가 있어, 정수장 → 배수지 연결은 앱이 알 수 없습니다. 이름에 "정수장"이 든 수원은 자기 계통으로 둡니다. 고른 값은 이 브라우저에 저장됩니다.')}</div>`}
+function mapBind(b,sa){const on=(id,f,ev)=>{const e=b.querySelector('#'+id);if(e)e[ev||'onclick']=f};
+ b.querySelectorAll('[data-sysm]').forEach(s=>s.onchange=()=>{const id=s.dataset.sysm;let v=s.value;if(v==='__new'){v=(prompt('새 정수계통 이름',isWtp(id)?id:'')||'').trim();if(!v){s.value=SYS.map[id]||'';return}}if(v)SYS.map[id]=v;else if(isWtp(id))SYS.map[id]=UNS;else delete SYS.map[id];sysSave();SC.vb=null;winRender('sch',true)});
+ b.querySelectorAll('[data-sysx]').forEach(x=>x.onclick=()=>{const s=b.querySelector(`[data-sysm="${CSS.escape(x.dataset.sysx)}"]`);if(s){s.style.display='';x.previousElementSibling&&x.previousElementSibling.classList.contains('sc-own')&&x.previousElementSibling.remove();x.remove();s.focus()}});
+ on('sysCsv',()=>{if(!sa)return;offer('수원,유형,유출(L/s),정수계통\n'+sa.st.map(s=>[s.id,s.type,s.q.toFixed(2),sysOf(s.id)===UNS?'':sysOf(s.id)].map(v=>/[,"]/.test(v)?`"${String(v).replace(/"/g,'""')}"`:v).join(',')).join('\n'),(S.name.replace(/\.inp$/i,'')||'network')+'_정수계통.csv','text/csv')});
+ on('sysIn',async e=>{const f=e.target.files[0];if(!f)return;let t=await f.text();if(t.charCodeAt(0)===0xFEFF)t=t.slice(1);let n=0;t.split(/\r?\n/).slice(1).forEach(line=>{const c=line.match(/("([^"]|"")*"|[^,]*)(,|$)/g)?.map(x=>x.replace(/,$/,'').replace(/^"|"$/g,'').replace(/""/g,'"').trim())||[];if(!c[0])return;const id=c[0],g=c[3]||'';if(g){SYS.map[id]=g;n++}else delete SYS.map[id]});sysSave();SC.vb=null;winRender('sch',true);toast(`정수계통 ${n}곳을 불러왔습니다.`)},'onchange');
+ on('sysClr',()=>{if(!confirm('배수지 정수계통 지정을 모두 지울까요?'))return;SYS.map={};sysSave();SC.vb=null;winRender('sch',true)});
+ on('sysDone',()=>{SYS.edit=false;winRender('sch',true)})}
+
+/* ── 가압장 목록(블록 배지를 눌렀을 때) ── */
+function puUi(d){const e=SYS.pu&&d.ents.get(SYS.pu);if(!e||!e.pu.length)return'';const R=S.res,L=S.net.links;
+ return`<div class="sc-pul"><div class="sc-bar"><b>${esc(e.label)} 블록 안 가압장 ${e.pu.length}곳</b>${e.pon!=null?`<span class="sc-sum">운전 ${e.pon} · 정지 ${e.pu.length-e.pon}</span>`:''}<span style="flex:1"></span><button type="button" class="bl-b" id="puSel">지도에서 모두 선택</button><button type="button" class="bl-b" id="puX">✕</button></div>
+  <div class="pf-tw" style="max-height:170px"><table class="pf-tb"><thead><tr><th class="text-left">가압장</th><th>상태</th><th>유량(L/s)</th><th>양정(m)</th></tr></thead><tbody>${e.pu.map(li=>{const on=R?R.ST[S.k][li]!==0:null,q=R?Math.abs(R.Q[S.k][li]):NaN,h=R?R.HL[S.k][li]:NaN;return`<tr data-scpl="${li}"><td class="text-left">${esc(L[li].id)}</td><td>${on==null?'-':on?'<span class="pf-bd ok">운전</span>':'<span class="pf-bd low">정지</span>'}</td><td>${fmt(q,1)}</td><td>${on?fmt(h,1):'-'}</td></tr>`}).join('')}</tbody></table></div></div>`}
+
+/* ── 창 ── */
+let cur=null;
+WD.sch={t:'계통도 (수원 → 가압장 → 소블록)',w:900};
+WR.sch={ui:()=>{if(!S.net)return'';const R=S.res,all=build(),P=pages(all),pl=P.list;if(SYS.page>=pl.length)SYS.page=0;const pg=pl[SYS.page];
+ const box=document.getElementById('w_sch'),bw=box?box.querySelector('.gw-b'):null,asp=bw&&bw.clientWidth>200?Math.max(0.6,Math.min(3,bw.clientWidth/Math.max(240,Math.min(bw.clientHeight-120,innerHeight*0.62)))):1.6;
+ const d=layout(all,pg,asp);cur={d,pg,P,all};SC.data=d;
+ const nb=new Set(S.net.nodes.filter(n=>n.type===0).map(bkey)),onlyNo=nb.size<=1&&nb.has(NOB);
+ const cnt=k=>[...d.ents.values()].filter(e=>e.kind===k&&!e.ghost).length,npu=[...d.ents.values()].filter(e=>!e.ghost).reduce((s,e)=>s+(e.pu?e.pu.length:0),0)+cnt('pump');
+ const opts=pl.map((p,j)=>`<option value="${j}" ${j===SYS.page?'selected':''}>${j}. ${esc(p.lab)}</option>`).join('');
+ return`<div class="sc-bar"><span class="inline-flex gap-1 bg-slate-100 rounded-lg p-0.5"><button type="button" data-scv="src" class="tab ${SYS.view==='src'?'on':''}">수원별</button><button type="button" data-scv="sys" class="tab ${SYS.view==='sys'?'on':''}">정수계통별</button></span>
+   <button type="button" class="bl-b" data-scpg="-1" title="이전 장 (←)" ${pl.length>1?'':'disabled'}>◀</button><select id="scPg" class="wa-in" style="max-width:330px">${opts}</select><button type="button" class="bl-b" data-scpg="1" title="다음 장 (→)" ${pl.length>1?'':'disabled'}>▶</button><span class="sc-sum">${SYS.page+1}/${pl.length}</span>
+   ${SYS.view==='sys'?`<button type="button" class="bl-b ${SYS.edit?'on':''}" id="scMap">정수계통 묶기</button>`:''}<span style="flex:1"></span>
+   <button type="button" class="bl-b" id="scDir" title="배치 방향 바꾸기">${SYS.dir==='lr'?'⇢ 가로 배치':'⇣ 세로 배치'}</button><button type="button" class="bl-b ${SYS.grp?'on':''}" id="scGrp" title="블록 안 가압장을 블록 상자에 묶기">가압장 묶기</button></div>
+  <div class="sc-bar"><span class="sc-sum">${R?hhmm(R.t[S.k])+' 기준':'해석 전(연결만 표시)'} · 수원 ${cnt('res')+cnt('tank')} · 소블록 ${cnt('blk')} · 가압장 ${npu} · 연결 ${d.ed.filter(e=>!e.gh).length}</span>${pg.ids&&d.ghN?`<button type="button" class="bl-b ${d.showGh?'on':''}" id="scGh" title="이 계통과 바로 이어진 다른 계통 상자(흐리게) 보이기">경계 이웃 ${d.ghN}</button>`:''}<span style="flex:1"></span>
+   <button type="button" class="bl-b ${SC.mode==='cur'?'on':''}" data-scm="cur">현재 시각</button><button type="button" class="bl-b ${SC.mode==='avg'?'on':''}" data-scm="avg">하루 평균</button><button type="button" class="bl-b" data-scz="fit">맞춤</button><button type="button" class="bl-b" data-scz="in">＋</button><button type="button" class="bl-b" data-scz="out">－</button><button type="button" class="bl-b" data-scz="svg">⬇ SVG</button></div>
+  ${SYS.view==='sys'&&SYS.edit?mapUi(P.sa):''}
+  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [파일 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}${!R&&SYS.page===0?tnote('해석을 실행하면 수원별·정수계통별 장으로 나눠 볼 수 있습니다.'):''}
+  <div style="height:min(62vh,560px)" class="sc-hold">${svg(d)}</div>${puUi(d)}
+  <p class="text-[11px] text-slate-500 mt-1">◀ ▶ 또는 키보드 ← →로 장을 넘깁니다. 장은 ${R?hhmm(R.t[S.k]):'-'} 급수구역(해석 결과로 수원별 물 비율 추적) 기준이며, 그 계통 물이 10% 이상 드는 블록을 넣고 90% 미만이면 "혼합"으로 표시합니다. 흐린 상자는 경계에 붙은 다른 계통입니다. 상자를 누르면 지도에서 고르고 확대합니다.</p>`},
+ bind:b=>{const svgE=b.querySelector('#scSvg');if(!svgE||!cur)return;const d=cur.d,pl=cur.P.list,re=()=>{SC.vb=null;winRender('sch',true)},go=n=>{SYS.page=(SYS.page+n+pl.length)%pl.length;SYS.pu=null;re()};
+  b.querySelectorAll('[data-scv]').forEach(x=>x.onclick=()=>{SYS.view=x.dataset.scv;SYS.page=0;SYS.pu=null;sysSave();re()});
+  b.querySelectorAll('[data-scpg]').forEach(x=>x.onclick=()=>go(+x.dataset.scpg));const ps=b.querySelector('#scPg');if(ps)ps.onchange=()=>{SYS.page=+ps.value;SYS.pu=null;re()};
+  const mp=b.querySelector('#scMap');if(mp)mp.onclick=()=>{SYS.edit=!SYS.edit;winRender('sch',true)};if(SYS.view==='sys'&&SYS.edit)mapBind(b,cur.P.sa);
+  const gb=b.querySelector('#scGh');if(gb)gb.onclick=()=>{SYS.gh=!d.showGh;re()};b.querySelector('#scDir').onclick=()=>{SYS.dir=SYS.dir==='lr'?'tb':'lr';sysSave();re()};b.querySelector('#scGrp').onclick=()=>{SYS.grp=!SYS.grp;SYS.pu=null;sysSave();re()};
+  b.querySelectorAll('[data-scm]').forEach(x=>x.onclick=()=>{SC.mode=x.dataset.scm;winRender('sch',true)});
+  b.querySelectorAll('[data-scz]').forEach(x=>x.onclick=()=>{const a=x.dataset.scz;if(a==='fit'){re();return}if(a==='svg'){const s=new XMLSerializer().serializeToString(svgE).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');const st2=`<style>${scCss().replace(/var\(--c-pn\)/g,'#fff').replace(/var\(--c-tx2\)/g,'#6b7280').replace(/var\(--c-tx\)/g,'#111827').replace(/var\(--c-ch2\)/g,'#fafafa').replace(/var\(--c-bd\)/g,'#d6d6d6')}${v20St.textContent}</style>`;offerBlob(new Blob([s.replace(/(<svg[^>]*>)/,'$1'+st2)],{type:'image/svg+xml'}),(S.name.replace(/\.inp$/i,'')||'network')+'_계통도'+(SYS.page?'_'+String(pl[SYS.page].lab).split(' (')[0]:'')+'.svg');return}
+   const v=SC.vb,f=a==='in'?0.8:1.25,cx=v[0]+v[2]/2,cy=v[1]+v[3]/2;SC.vb=[cx-v[2]*f/2,cy-v[3]*f/2,v[2]*f,v[3]*f];svgE.setAttribute('viewBox',SC.vb.join(' '))});
+  let dr=null;svgE.addEventListener('pointerdown',e=>{if(e.target.closest('.sc-n'))return;dr={x:e.clientX,y:e.clientY,v:SC.vb.slice()};svgE.setPointerCapture(e.pointerId);svgE.classList.add('drag')});
+  svgE.addEventListener('pointermove',e=>{if(!dr)return;const r=svgE.getBoundingClientRect(),k=Math.max(dr.v[2]/r.width,dr.v[3]/r.height);SC.vb=[dr.v[0]-(e.clientX-dr.x)*k,dr.v[1]-(e.clientY-dr.y)*k,dr.v[2],dr.v[3]];svgE.setAttribute('viewBox',SC.vb.join(' '))});
+  const up=()=>{dr=null;svgE.classList.remove('drag')};svgE.addEventListener('pointerup',up);svgE.addEventListener('pointercancel',up);
+  svgE.addEventListener('wheel',e=>{e.preventDefault();const r=svgE.getBoundingClientRect(),v=SC.vb,f=e.deltaY>0?1.15:1/1.15,px=v[0]+(e.clientX-r.left)/r.width*v[2],py=v[1]+(e.clientY-r.top)/r.height*v[3];SC.vb=[px-(px-v[0])*f,py-(py-v[1])*f,v[2]*f,v[3]*f];svgE.setAttribute('viewBox',SC.vb.join(' '))},{passive:false});
+  const act=g=>{const id=g.dataset.scn,e=d.ents.get(id);if(!e)return;SC.sel=id;b.querySelectorAll('.sc-n.sel').forEach(x=>x.classList.remove('sel'));g.classList.add('sel');
+   b.querySelectorAll('.sc-e').forEach(x=>{const E=d.ed[+x.dataset.sce];x.classList.toggle('hl',!!E&&(E.a===id||E.b===id))});
+   if(e.kind==='blk'){if(e.hid&&!e.frz){BL.off.delete(e.label);G18.applyBlk();gpLayers()}if(e.frz){toast(`${e.label} 블록은 동결되어 있습니다. 레이어 창에서 동결 해제하세요.`);return}T.multi.n=new Set(e.nodes);T.multi.l=new Set(S.net.links.map((l,i)=>i).filter(i=>{const l=S.net.links[i];return bkey(S.net.nodes[l.n1-1])===e.label&&bkey(S.net.nodes[l.n2-1])===e.label}));renderMulti();
+    zoomTo(e.nodes.map(i=>S.net.nodes[i].x),e.nodes.map(i=>S.net.nodes[i].y));requestDraw();toast(`${e.label}: 절점 ${e.nodes.length.toLocaleString()}개${S.res?` · 최저 수압 ${fmt(e.pmin,2)} m`:''}${e.pu.length?` · 가압장 ${e.pu.length}`:''}`)}
+   else if(e.kind==='pump')focusEl('l',e.idx);else focusEl('n',e.idx)};
+  b.querySelectorAll('[data-scn]').forEach(g=>{g.onclick=ev=>{if(ev.target.closest('[data-scp]'))return;act(g)};g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();act(g)}}});
+  b.querySelectorAll('[data-scp]').forEach(x=>{const f=ev=>{ev.stopPropagation();SYS.pu=SYS.pu===x.dataset.scp?null:x.dataset.scp;const v=SC.vb;winRender('sch',true);SC.vb=v};x.onclick=f;x.onkeydown=ev=>{if(ev.key==='Enter'){f(ev)}}});
+  const px=b.querySelector('#puX');if(px)px.onclick=()=>{SYS.pu=null;const v=SC.vb;winRender('sch',true);SC.vb=v};
+  const psl=b.querySelector('#puSel');if(psl)psl.onclick=()=>{const e=d.ents.get(SYS.pu);if(!e)return;T.multi.l=new Set(e.pu);T.multi.n=new Set();renderMulti();const xs=[],ys=[];e.pu.forEach(li=>{const l=S.net.links[li];if(l.xs){xs.push(...l.xs);ys.push(...l.ys)}});if(xs.length)zoomTo(xs,ys);requestDraw()};
+  b.querySelectorAll('[data-scpl]').forEach(tr=>tr.onclick=()=>focusEl('l',+tr.dataset.scpl));
+  // 키보드 ← → (떼어 낸 창에서도)
+  const doc=b.ownerDocument;if(!doc.__scKey){doc.__scKey=1;doc.addEventListener('keydown',ev=>{if(!WS.open.has('sch')||!cur)return;const t=ev.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;const w=document.getElementById('w_sch');if(!w||w.classList.contains('hidden'))return;
+   if(doc===document&&!w.contains(t)&&!(t===document.body&&w.matches(':hover')))return;if(ev.key==='ArrowRight'||ev.key==='ArrowLeft'){ev.preventDefault();const n=cur.P.list.length;SYS.page=(SYS.page+(ev.key==='ArrowRight'?1:-1)+n)%n;SYS.pu=null;SC.vb=null;winRender('sch',true)}})}}};
+const v20St=document.createElement('style');v20St.textContent=`.sc-n.ghost{opacity:.42}.sc-n.ghost .sc-r{stroke-dasharray:4 3}.sc-e.gh path{stroke-dasharray:2 4;opacity:.45}.sc-mx{font-size:10px;font-weight:700;fill:#7c3aed}
+.sc-pu{cursor:pointer}.sc-pu rect{fill:#fff1f2;stroke:#fda4af}.sc-pu:hover rect{fill:#ffe4e6;stroke:#f43f5e}.sc-pt{font-size:9.5px;font-weight:700;fill:#be123c}html.dark .sc-pu rect{fill:#3f1d2b;stroke:#9f1239}html.dark .sc-pt{fill:#fda4af}
+.sc-n.res .sc-r{stroke-width:1.6}.sc-hold{min-height:300px}.sc-map,.sc-pul{margin:6px 0;padding:6px 8px;border:1px solid var(--c-bd);border-radius:6px;background:var(--c-ch2)}.sc-own{font-size:11px;color:var(--c-tx2);margin-right:4px}#popHost .sc-hold{height:calc(100vh - 150px)!important}`;document.head.appendChild(v20St);
+// 해석·시각이 바뀌면 장 구성도 다시
+const _ld20=loadText;loadText=async function(){SYS.page=0;SYS.pu=null;SYS.edit=false;return _ld20.apply(this,arguments)};
+window.__gw20={SYS,build,pages,layout,sysOf};
+})()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v20 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
