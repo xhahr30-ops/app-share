@@ -5,6 +5,6 @@
 | 앱 | 공유 주소 |
 |---|---|
 | 스마트 물길주소 | https://xhahr30-ops.github.io/app-share/geo-join/ |
-| 웹 관망해석기 (v17) | https://xhahr30-ops.github.io/app-share/pipe-network/ |
+| 웹 관망해석기 (v18) | https://xhahr30-ops.github.io/app-share/pipe-network/ |
 
 만든이: 구병순
