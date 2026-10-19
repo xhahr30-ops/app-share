@@ -3433,7 +3433,15 @@ document.addEventListener('drop',e=>{FS.dropH=null;try{const it=[...(e.dataTrans
 {const o=$('bReset').onclick;$('bReset').onclick=e=>{if(S.log&&S.log.length&&!confirm('바꾼 내용을 모두 버리고 마지막으로 열거나 저장한 상태로 되돌릴까요?'))return;FS._next={h:FS.h,enc:FS.enc};o&&o(e);FS._next=null}}
 
 /* ── 저장용 INP 만들기: 엔진이 빼는 [TAGS]·좌표계 표시를 되살림 ── */
-function inpOut(){S.prj.saveInpFile('out.inp');let t=S.ws.readFile('out.inp');if(typeof t!=='string')t=new TextDecoder().decode(t);
+/* v21: 앱에서 바꾼 소블록(일괄입력·블록 경계 SHP)도 [TAGS]에 저장. 전에는 처음 연 INP의 [TAGS] 줄만 되살려 바꾼 블록이 빠졌음 */
+function inpOut(){let t=inpOut0();if(!S.net)return t;
+ const tags=S.tags&&S.tags.n,ser=o=>{const k=Object.keys(o).filter(x=>o[x]!=null&&String(o[x])!=='');if(k.length===1&&k[0]==='tag')return String(o.tag);return k.filter(x=>x!=='tag'||!o.dma_name).map(x=>x+':'+String(o[x]).replace(/[|\s]+/g,'_')).join('|')};
+ const lines=[];S.net.nodes.forEach(n=>{const o=Object.assign({},tags&&tags.get(n.id)||{});if(n.blk)o.dma_name=n.blk;else delete o.dma_name;const v=ser(o);if(v)lines.push(`NODE \t${n.id}\t${v}`)});
+ const re=/^[ \t]*\[TAGS\][^\n]*\n([\s\S]*?)(?=^[ \t]*\[|(?![\s\S]))/im,m=t.match(re);
+ if(m){const keep=m[1].split('\n').filter(l=>{const s=l.trim();return s&&!/^NODE\s/i.test(s)});t=t.slice(0,m.index)+m[0].slice(0,m[0].indexOf('\n')+1)+[...keep,...lines].join('\n')+'\n\n'+t.slice(m.index+m[0].length)}
+ else if(lines.length){const sec='[TAGS]\n'+lines.join('\n')+'\n\n';t=/^\s*\[END\]/im.test(t)?t.replace(/^\s*\[END\]/im,sec+'[END]'):t+'\n'+sec}
+ return t}
+function inpOut0(){S.prj.saveInpFile('out.inp');let t=S.ws.readFile('out.inp');if(typeof t!=='string')t=new TextDecoder().decode(t);
  if(S.src){const m=S.src.match(/\[TAGS\][^\n]*\n([\s\S]*?)(?=\n\s*\[|$)/i);if(m){const nI=new Set(S.net.nodes.map(n=>n.id)),lI=new Set(S.net.links.map(l=>l.id));
   const keep=m[1].split(/\r?\n/).filter(line=>{const s=line.trim();if(!s||s[0]===';')return !!s;const [ty,id]=s.split(/\s+/);return /^N/i.test(ty)?nI.has(id):lI.has(id)});
   if(keep.length){const em=t.match(/^[ \t]*\[TAGS\][^\n]*\n([\s\S]*?)(?=^[ \t]*\[|(?![\s\S]))/im);
@@ -4282,6 +4290,7 @@ const v20St=document.createElement('style');v20St.textContent=`.sc-n.ghost{opaci
 const _ld20=loadText;loadText=async function(){SYS.page=0;SYS.pu=null;SYS.edit=false;return _ld20.apply(this,arguments)};
 window.__gw20={SYS,build,pages,layout,sysOf};
 })()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v20 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
+
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
