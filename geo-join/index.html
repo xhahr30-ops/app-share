@@ -906,7 +906,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
    <p class="hint" id="shMsg" style="margin:4px 0 0"></p>
    <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:6px">
     <b style="font-size:12.5px">🗺️ 기준자료 공유</b> <small style="color:var(--mute)">소블록 경계 · 상수관로 · 상수도 시설물</small>
-    <p class="hint" style="margin:4px 0">관리자가 [⏫ 올리기]를 한 번 누르면, 공유 키를 넣은 다른 기기는 앱을 열 때 새 버전만 자동으로 받습니다 (같은 버전이면 받지 않음).</p>
+    <p class="hint" style="margin:4px 0">관리자가 [⏫ 올리기]를 한 번 누르면, 공유 키를 넣은 다른 기기는 앱을 열 때 새 버전만 자동으로 받습니다 (같은 버전이면 받지 않음).<br>🔧 시설물 현장 수정(제수밸브 열림·닫힘·추가·옮기기)은 자동 동기화가 켜져 있으면 20초 뒤 자동으로 받아 합친 뒤 올립니다. 시설물 SHP 교체·변경분 반영은 지금처럼 [⏫ 올리기]를 눌러야 퍼집니다.</p>
     <label class="ck" style="display:flex;gap:6px;align-items:center;font-size:12px;margin:2px 0 6px"><input type="checkbox" id="shRefAuto" checked> 앱을 열 때 새 기준자료 자동 받기</label>
     <div class="sbtns"><button id="shRefUp" type="button" class="btn ol">⏫ 이 기기 기준자료 올리기</button><button id="shRefDn" type="button" class="btn ol">⬇️ 지금 받기</button></div>
     <p class="hint" id="shRefMsg" style="margin:4px 0 0"></p>
@@ -3373,7 +3373,7 @@ function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen
   `<div class="acts" style="margin-top:6px">${kvBtns(FAC.y[i],FAC.x[i],I.name+(P['관리번호']?' '+P['관리번호']:''),b?'소블록 '+b:'',true)}<button type="button" class="kl" onclick="feOpen(${i})" title="시설물 편집 모드에서 이 시설 고치기·옮기기">🛠 편집</button>${vidBtns('fac',P['관리번호']!=null&&P['관리번호']!==''?'m:'+I.name+':'+P['관리번호']:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6),FAC.y[i],FAC.x[i],'🔧 '+I.name+(P['관리번호']?' '+P['관리번호']:''))}</div>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).filter(([k])=>!/^_/.test(k)).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 시설물 현장 수정(제수밸브 개폐·🛠 편집 모드): 고친 칸의 SHP 원래 값은 '_원본', 원래 위치는 '_원좌표'에 보관 → 시설물 저장(이력 '현장 수정', ↶ 되돌리기 가능).
-   직원에게 퍼뜨리려면 기준자료 공유에서 ⏫ 올리기. 시설물 SHP를 새로 올릴 때 현장 수정을 유지할지 고름(facReapply) */
+   공유 서버가 켜져 있으면 20초 뒤 자동으로 받아 합친 뒤 올림(facSync). 시설물 SHP를 새로 올릴 때 현장 수정을 유지할지 고름(facReapply) */
 const facNow=()=>{const d=new Date();return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 const facOrigTxt=P=>Object.entries(P['_원본']||{}).map(([k,v])=>`${k}: ${v==null||v===''?'빈칸':v}`).join(', ');
 function facOpUi(i){const P=FAC.pt[i].p||{},cl=!!FAC.cl[i],ed=P['_현장수정'];
@@ -3383,7 +3383,7 @@ function facPatch(P,patch){const o={...(P['_원본']||{})};let n=0;
  for(const k in patch){const v=patch[k]==null?'':String(patch[k]).trim(),cur=P[k]==null?'':String(P[k]);if(v===cur)continue;n++;if(!(k in o))o[k]=P[k]==null?null:P[k];if(v==='')delete P[k];else P[k]=v;if((o[k]==null?'':String(o[k]))===v)delete o[k]}
  if(Object.keys(o).length)P['_원본']=o;else delete P['_원본'];return n}
 /* 현장 수정 표시: 추가·삭제 표시·위치 이동·속성 수정 중 하나라도 있으면 시각을 남김 */
-function facMark(P){if(P._추가||P._삭제||P._원좌표||(P['_원본']&&Object.keys(P['_원본']).length))P['_현장수정']=facNow();else delete P['_현장수정']}
+function facMark(P){P._et=Date.now();if(!P._fid)P._fid='F'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(P._추가||P._삭제||P._원좌표||(P['_원본']&&Object.keys(P['_원본']).length))P['_현장수정']=facNow();else delete P['_현장수정']}
 async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p||(f.p={});let re=false;
  if(patch==='orig'){const o=P['_원본']||{};for(const k in o){if(o[k]==null)delete P[k];else P[k]=o[k]}delete P['_원본'];if(P._원좌표){f.c=P._원좌표.slice();delete P._원좌표;re=true}if(P._삭제){delete P._삭제;re=true}facMark(P)}
  else{patch={...patch};let n=0;
@@ -3417,7 +3417,7 @@ async function facSave(kind,file,cnt){let prev=null;try{prev=await IDB.get('facs
  const hist=(prev&&prev.hist||[]).concat([{at:Date.now(),kind,file:file||'',add:cnt&&cnt.add||0,upd:cnt&&cnt.upd||0,del:cnt&&cnt.del||0,n:FAC.feats.length}]).slice(-200);
  const v={v:1,name:full?(file||'상수도 시설물'):(prev&&prev.name)||file||'상수도 시설물',base:full?baseOf(file):(prev&&prev.base)||baseOf(file),at:Date.now(),layers:FAC.layers||[],feats:FAC.feats,hist};
  $('fSaveBox').hidden=false;$('fSaved').textContent='💾 이 PC에 저장 중…';
- try{if(prev&&kind!=='되돌리기')await IDB.set('facs_prev',prev);await IDB.set('facs',v);stoKeep();facSavedShow(v)}
+ try{if(prev&&kind!=='되돌리기')await IDB.set('facs_prev',prev);await IDB.set('facs',v);stoKeep();facSavedShow(v);facSyncMark(kind)}
  catch(e){$('fSaved').innerHTML='<span class="c-rd">이 PC에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span> (브라우저 저장 공간을 확인하세요)'}}
 async function facSavedShow(v){const box=$('fSaveBox');if(!v){box.hidden=true;$('fDropT').textContent='상수도 시설물 SHP 압축파일(.zip)';return}
  box.hidden=false;$('fDropT').textContent='전체 교체용 시설물 SHP 압축파일(.zip)';
@@ -3441,7 +3441,7 @@ function facReapply(e,f){const P=e.p||{};if(P._추가)return f;const q={...(f.p|
  const o=P['_원본']||{},no={};for(const k in o){no[k]=q[k]==null?null:q[k];if(P[k]==null)delete q[k];else q[k]=P[k]}
  for(const k in no)if((no[k]==null?'':String(no[k]))===(q[k]==null?'':String(q[k])))delete no[k];
  if(Object.keys(no).length)q['_원본']=no;if(P._원좌표&&n.c&&e.c){q._원좌표=n.c.slice();n.c=e.c.slice()}if(P._삭제)q._삭제=P._삭제;
- if(q['_원본']||q._원좌표||q._삭제)q['_현장수정']=P['_현장수정']||facNow();return n}
+ if(q['_원본']||q._원좌표||q._삭제)q['_현장수정']=P['_현장수정']||facNow();if(P._fid)q._fid=P._fid;if(P._et)q._et=P._et;return n}
 /* 전체 교체 때 현장 수정 옮기기: 관리번호(종류 안 하나뿐) → 원래 위치 0.5m 안 같은 종류 순으로 짝지음 */
 function facCarry(ed,all){const LC=Math.cos(36*Math.PI/180),mx=c=>c[0]*LC*111320,my=c=>c[1]*110574,cell=new Map(),ids=facIdCounts(all),byId=new Map(),used=new Uint8Array(all.length);
  all.forEach((f,j)=>{if(f.c){const g=Math.floor(mx(f.c))+','+Math.floor(my(f.c));let a=cell.get(g);if(!a)cell.set(g,a=[]);a.push(j)}const id=facId(f.p),k=f.k+'|'+id;if(id&&ids.get(k)===1)byId.set(k,j)});
@@ -3494,7 +3494,7 @@ async function facUndo(){let p=null,cur=null;try{p=await IDB.get('facs_prev');cu
  if(!confirm(`상수도 시설물 기준자료를 바로 이전 버전(${p.feats.length.toLocaleString()}개, ${fmtDT(p.at)} 저장)으로 되돌릴까요?`))return;
  p.hist=((cur&&cur.hist)||p.hist||[]).concat([{at:Date.now(),kind:'되돌리기',file:'',n:p.feats.length}]);p.at=Date.now();
  try{await IDB.set('facs',p);await IDB.del('facs_prev')}catch(e){alert('되돌리지 못했습니다: '+((e&&e.message)||e));return}
- await facRestore(true);$('fMsg').innerHTML='↩ 이전 버전으로 되돌렸습니다. '+$('fMsg').innerHTML}
+ await facRestore(true);facSyncMark('되돌리기');$('fMsg').innerHTML='↩ 이전 버전으로 되돌렸습니다. '+$('fMsg').innerHTML}
 const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(typeof shp==='undefined'){$('fMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다.';return}
  const r=new FileReader();r.onload=ev=>fn(ev.target.result,f.name).catch(err=>{console.error(label,err);$('fMsg').textContent=label+' 실패: '+((err&&err.message)||err)});r.readAsArrayBuffer(f)};
 $('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
@@ -4570,6 +4570,7 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
   for(const [n,t,cnt] of REF.L){if(n==='vids'){const r=await vidSync(true);if(r.old){REF.oldN.push(t);REF.old=true}else if(r.err)throw new Error(r.err);if(r.sent)up++;continue}
+   if(n==='facs'){const r=await facSync('manual',true);if(r.err&&!r.busy)throw new Error(r.err);if(r.sent)up++;continue}
    if(n==='pedit'){const r=await pedSync('both',true);if(r.old){REF.oldN.push(t);REF.old=true}else if(r.err&&!r.busy)throw new Error(r.err);if(r.sent)up++;continue}
    const v=loc[n],c=cnt(v);if(!c||!v.at)continue;if(info[n]&&info[n].v===v.at)continue;
    refSay(`${t} 압축 중… (${c.toLocaleString()}개)`);const z=new JSZip();z.file('d.json',JSON.stringify(v));
@@ -4580,11 +4581,77 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
   const info2=(await shReq('refinfo')).ref||{};refSay((REF.old?`<span class="c-am">${esc(REF.oldN.join('·'))}은(는) 공유 서버가 예전 판이라 올리지 못했습니다. 공유 서버 Code.gs를 최신 판으로 바꾸고 새 버전으로 배포해 주세요.</span><br>`:'')+(up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
  catch(e){refSay('<span class="c-rd">⚠️ 기준자료 올리기 실패: '+esc((e&&e.message)||e)+'</span>'+(/알 수 없는 요청/.test(String(e&&e.message))?'<br><small>공유 서버 Code.gs를 2026-10-13 판으로 바꾸고 새 버전으로 다시 배포해 주세요.</small>':''))}
  finally{REF.busy=false}}
+/* ---------- 🔧 시설물 현장 수정 자동 공유 (B안, 2026-10-19) ----------
+ 시설물을 고치면(제수밸브 열림·닫힘, 추가, 옮기기 등) 20초 뒤 자동으로: 공유 서버 시설물이 바뀌었으면 먼저 받아
+ 이 기기에서 고친 시설을 그 위에 다시 얹고(시설마다 늦게 고친 것) → 시설물 전체를 올림.
+ SHP 전체 교체·변경분 반영·되돌리기(관리자 작업)는 자동으로 올리지 않고 '⏫ 올리기'를 눌러야 퍼짐.
+ 상태 IDB 'facsync' {sv:마지막으로 맞춘 서버 버전, st:그때 시각, dirty:올릴 현장 수정 있음, full:SHP 바꿈(손으로 올리기), rm:추가 취소한 시설 _fid, gen} */
+const FSY={busy:false,tm:0,st:null};
+async function fsyGet(){if(FSY.st)return FSY.st;let s=null;try{s=await IDB.get('facsync')}catch(_){}
+ FSY.st=Object.assign({sv:null,st:0,dirty:false,full:false,rm:[],gen:0},s||{});if(!Array.isArray(FSY.st.rm))FSY.st.rm=[];return FSY.st}
+async function fsyPut(){try{await IDB.set('facsync',FSY.st)}catch(_){}}
+const facHasEd=fs=>(fs||[]).some(f=>f.p&&(f.p._현장수정||f.p._추가||f.p._et));
+async function facSyncMark(kind){const s=await fsyGet();s.dirty=true;s.gen++;if(kind!=='현장 수정')s.full=true;await fsyPut();if(kind==='현장 수정')facSyncSoon()}
+function facSyncSoon(){clearTimeout(FSY.tm);if(typeof SH==='undefined'||!SH.on()||!SH.cfg.auto)return;
+ FSY.tm=setTimeout(()=>facSync('both',true).then(r=>{if(r.sent)feMsg('☁️ 시설물 수정을 공유 서버에 올렸습니다'+(r.got?` (먼저 받아 합침 ${r.got.toLocaleString()}개)`:'')+'.');
+  else if(r.err&&!r.busy)feMsg('<span class="c-rd">⚠️ 시설물 수정 공유 실패: '+esc(r.err)+' · 🗺️ 기준자료 공유에서 ⏫ 올리기를 눌러 주세요.</span>');
+  else if(r.need)feMsg('<span class="c-am">이 기기에서 시설물 SHP를 바꿨습니다. 🗺️ 기준자료 공유에서 ⏫ 올리기를 눌러야 퍼집니다.</span>')}),20000)}
+/* base 위에 edits 중 since 뒤에 고친 시설을 얹음 (since<0: 현장 수정 표시가 있는 것 모두). 같은 시설은 늦게 고친 쪽, rm(_fid)은 지움 */
+function facMergeEd(base,edits,since,rm){const out=base.slice(),LC=Math.cos(36*Math.PI/180),mx=c=>c[0]*LC*111320,my=c=>c[1]*110574,oc=f=>(f.p&&f.p._원좌표)||f.c;
+ const byFid=new Map(),cell=new Map(),ids=facIdCounts(out),byId=new Map(),used=new Uint8Array(out.length+edits.length);
+ out.forEach((f,j)=>{const P=f.p||{};if(P._fid)byFid.set(P._fid,j);const c=oc(f);if(c){const g=Math.floor(mx(c))+','+Math.floor(my(c));let a=cell.get(g);if(!a)cell.set(g,a=[]);a.push(j)}
+  const id=facId(P),k=f.k+'|'+id;if(id&&ids.get(k)===1)byId.set(k,j)});
+ const near=(k,c,add)=>{const x=mx(c),y=my(c),gx=Math.floor(x),gy=Math.floor(y);let best=.25,bj=-1;for(let a=gx-1;a<=gx+1;a++)for(let b=gy-1;b<=gy+1;b++){const L2=cell.get(a+','+b);if(!L2)continue;
+  for(const j of L2){const g=out[j];if(used[j]||g.k!==k||(add&&!(g.p&&g.p._추가)))continue;const d=(mx(oc(g))-x)**2+(my(oc(g))-y)**2;if(d<=best){best=d;bj=j}}}return bj};
+ let n=0,lost=0,old=0;
+ for(const e of edits){const P=e.p||{};if(since<0?!(P._현장수정||P._추가||P._et):!((P._et||0)>since))continue;if(P._fid&&rm&&rm.includes(P._fid))continue;
+  let j=P._fid&&byFid.has(P._fid)?byFid.get(P._fid):-1;
+  if(j<0&&!P._추가){const id=facId(P),k=e.k+'|'+id;if(id&&byId.has(k)&&!used[byId.get(k)])j=byId.get(k)}
+  if(j<0&&oc(e))j=near(e.k,oc(e),!!P._추가);
+  const cp=JSON.parse(JSON.stringify(e));
+  if(j<0){if(P._추가){out.push(cp);n++}else lost++;continue}
+  used[j]=1;if(((out[j].p||{})._et||0)>(P._et||0)){old++;continue}out[j]=cp;n++}
+ const rs=new Set(rm||[]),feats=rs.size?out.filter(f=>!(f.p&&f.p._fid&&rs.has(f.p._fid))):out;
+ return{feats,n,lost,old,rmN:out.length-feats.length}}
+async function facGet(v,s){const bufs=[];for(let p=0;p<s.parts;p++){const r=await shReq('refget',{name:'facs',v,part:p});bufs.push(shBlob(r.data))}
+ const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error('시설물 압축 파일이 비었습니다.');const d=JSON.parse(await e.async('string'));
+ if(!d.feats||d.feats.length!==s.cnt||d.at!==s.v)throw new Error('받은 시설물 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');return d}
+/* mode: 'down'(받기만) · 'both'(자동: 받아 합친 뒤 현장 수정 올리기) · 'manual'(⏫ 올리기: SHP 바꾼 것도 올림) */
+async function facSync(mode,quiet){const R={got:0,sent:0,kept:0};const say=t=>{if(!quiet)refSay(t)};
+ if(typeof SH==='undefined'||!SH.on()){R.err='공유 서버 주소와 공유 키가 없습니다.';return R}
+ if(FSY.busy){R.busy=1;R.err='이미 공유 중입니다.';return R}FSY.busy=true;
+ try{if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
+  const s=await fsyGet(),gen=s.gen,t0=Date.now(),info=(await shReq('refinfo')).ref||{},sv=info.facs;let loc=null;try{loc=await IDB.get('facs')}catch(_){}
+  const lc=loc&&loc.feats?loc.feats.length:0,legacy=s.sv==null,since=legacy?-1:s.st;
+  if(legacy&&lc){/* 예전 판에서 넘어온 기기: 저장 시각으로 상태를 짐작 */
+   if(sv&&loc.at===sv.v)s.sv=sv.v;else if(facHasEd(loc.feats))s.dirty=true;else if(!sv||(loc.at||0)>sv.v){s.full=true;s.dirty=true}}
+  /* 1) 서버가 마지막으로 맞춘 뒤 바뀌었으면 받아서 합침 */
+  if(sv&&sv.parts&&sv.v!==s.sv){
+   if(s.full&&lc&&mode!=='manual'){R.need=1}
+   else{say('⬇️ 상수도 시설물 받는 중…');const d=await facGet(sv.v,sv);let cur=null;try{cur=await IDB.get('facs')}catch(_){}
+    const mine=FAC.feats.length?FAC.feats:(cur&&cur.feats)||[];let v=d,m=null;
+    if(s.full&&mine.length){m=facMergeEd(mine,d.feats,since,[]);v={...(cur||d),feats:m.feats,at:Date.now()};R.kept=0}
+    else if(mine.length&&(s.dirty||legacy)){m=facMergeEd(d.feats,mine,since,s.rm);if(m.n||m.rmN){v={...d,feats:m.feats,at:Date.now()};R.kept=m.n}else s.dirty=false}
+    if(cur)try{await IDB.set('facs_prev',cur)}catch(_){}
+    await IDB.set('facs',v);stoKeep();await facRestore(true);if(typeof FE!=='undefined'&&FE.bar){FE.sel=-1;try{feUi()}catch(_){}}
+    s.sv=sv.v;s.st=t0;R.got=sv.cnt;if(!s.full&&!R.kept&&s.gen===gen)s.dirty=false}}
+  else if(sv&&sv.v===s.sv&&!s.dirty)s.st=t0;
+  /* 2) 올리기: 현장 수정(자동) 또는 SHP 바꾼 것(⏫ 손으로) */
+  if(mode!=='down'&&s.dirty&&!R.need&&(!s.full||mode==='manual')){let v=null;try{v=await IDB.get('facs')}catch(_){}
+   if(v&&v.feats&&v.feats.length&&v.at&&(!sv||v.at!==sv.v||R.kept)){say('⏫ 상수도 시설물 올리는 중…');const z=new JSZip();z.file('d.json',JSON.stringify(v));
+    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+    for(let p=0;p<parts;p++)await shReq('refput',{name:'facs',v:v.at,part:p,parts,size:u8.length,cnt:v.feats.length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
+    s.sv=v.at;s.st=t0;R.sent=v.feats.length;if(s.gen===gen){s.dirty=false;s.full=false;s.rm=[]}else s.full=false}
+   else if(v&&sv&&v.at===sv.v){s.sv=sv.v;s.st=t0;if(s.gen===gen){s.dirty=false;s.full=false;s.rm=[]}}}
+  await fsyPut()}
+ catch(e){R.err=String((e&&e.message)||e)}
+ finally{FSY.busy=false}return R}
 /* auto=true: 앱을 열 때. 서버가 새것인 기준자료만 받아 이 기기에 저장(이전 것은 되돌리기용 _prev로 보관)하고 지도에 바로 표시 */
 async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=[];try{
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   if(!auto)refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
   for(const [n,t,cnt] of REF.L){if(n==='vids'){const r=await vidSync(true);if(r.got)got.push(`${t} ${r.got}개`);continue}
+   if(n==='facs'){if(info.facs||SH.cfg.auto){const r=await facSync(SH.cfg.auto?'both':'down',true);if(r.got)got.push(`${t} ${r.got.toLocaleString()}개`+(r.kept?` (이 기기 수정 ${r.kept}개 유지)`:''))}continue}
    if(n==='pedit'){if(info.pedit){const r=await pedSync('down',true);if(r.got)got.push(`${t} ${r.got}건`)}continue}
    const s=info[n],l=loc[n];if(!s||!s.parts)continue;if(cnt(l)&&(l.at||0)>=s.v)continue;
    const bufs=[];for(let p=0;p<s.parts;p++){refSay(`⬇️ ${t} 받는 중… ${p+1}/${s.parts} (${refMB(s.size)})`);const r=await shReq('refget',{name:n,v:s.v,part:p});bufs.push(shBlob(r.data))}
@@ -5527,7 +5594,7 @@ async function feAdd(s){const k=FE.addK;if(!k){feMsg('추가할 종류를 고르
  await facSave('현장 수정',I.name+' 현장 추가',{add:1})}
 async function feMove(i,s){const f=FAC.pt[i];if(!f||!s)return;const pt={c:[+s.lng.toFixed(7),+s.lat.toFixed(7)]};if(feRotKind(i)&&!s.raw)pt.rotation=String(s.ang);
  await facEdit(i,pt,'위치 옮김'+(s.raw?'':' (관로에 붙임)'));feUi();feMsg('📍 옮겼습니다. '+feSnapTxt(s)+(pt.rotation?' · 회전 '+pt.rotation+'°':''))}
-async function facRemove(i){const f=FAC.pt[i];if(!f)return;const j=FAC.feats.indexOf(f);if(j>=0)FAC.feats.splice(j,1);FE.sel=-1;facIndex();feUi();
+async function facRemove(i){const f=FAC.pt[i];if(!f)return;if(f.p&&f.p._fid){const s=await fsyGet();if(!s.rm.includes(f.p._fid))s.rm.push(f.p._fid)}const j=FAC.feats.indexOf(f);if(j>=0)FAC.feats.splice(j,1);FE.sel=-1;facIndex();feUi();
  await facSave('현장 수정',facKindInfo(f.k).name+' 추가 취소',{del:1})}
 /* 시설 위 화면 점 (선택 시설 끌기 판정용) */
 const feCp=i=>map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]);
