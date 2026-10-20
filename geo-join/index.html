@@ -781,6 +781,16 @@ html.gwOn .afp{top:150px}
 }
 @media(max-width:900px) and (orientation:landscape) and (max-height:520px){#gwRib{display:none}#gwRibX{display:none}#gwDock{--gwDH:46vh}}
 @media print{#gw{display:none!important}}
+/* 머리글 한 줄(PC 배치)이 화면보다 길면 페이지 전체를 넓히지 말고 오른쪽 버튼 줄만 옆으로 밀어 보기
+   (폰을 '데스크톱 사이트'로 열면 폭 980px로 PC 배치가 나오는데, 이때 줄이 넘쳐 화면이 한쪽으로 쏠리고 글자가 더 작아졌음) */
+@media screen and (min-width:900px){
+ .hin{max-width:100%}
+ .hl{flex-shrink:1000!important;min-width:100px!important}
+ .hr{flex:0 1 auto!important;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;gap:4px!important}
+}
+@media screen and (min-width:900px) and (max-width:1700px){#gwBtn .gwbl{display:none}}
+#dskHint{position:fixed;left:8px;right:8px;bottom:8px;z-index:30000;display:flex;align-items:center;gap:10px;background:#1e293b;color:#fff;border-radius:14px;padding:14px 16px;font-size:26px;line-height:1.45;box-shadow:0 8px 24px #0006}
+#dskHint b{color:#fcd34d}#dskHint button{flex:none;font:inherit;font-size:24px;border:0;border-radius:10px;padding:8px 14px;background:#ffffff26;color:#fff;cursor:pointer}
 </style></head><body>
 <header><div class="hin">
  <div class="hl">
@@ -793,7 +803,7 @@ html.gwOn .afp{top:150px}
   <div class="hchip" title="자료 상태"><span class="hlbl">자료 상태:</span> <span class="dot" id="hDot"></span><b id="hStat">대기 중</b></div>
   <div class="hchip hide-s"><span class="hlbl">만든이:</span> <b>구병순</b></div>
   <button id="sideBtn" type="button" class="hbtn np" title="분석 조건 및 자료 등록 창 숨기기/보이기 (Ctrl+B)" aria-controls="side">◀ 설정 숨기기</button><button id="fmBtn" type="button" class="hbtn np" title="현장 모드: 지도 먼저 · 큰 버튼 · 📷 사진 찍기 · 📍 내 위치 (휴대폰·태블릿은 자동)">📱 현장 모드</button>
-  <button id="gwBtn" type="button" class="hbtn np" title="BsstGis 작업 화면: 리본 메뉴 · 레이어 창 · 아래 결과 표 · 상태줄 (Alt+W) — 자료는 그대로, 배치만 바뀜">🖥️ 작업 화면</button>
+  <button id="gwBtn" type="button" class="hbtn np" title="BsstGis 작업 화면: 리본 메뉴 · 레이어 창 · 아래 결과 표 · 상태줄 (Alt+W) — 자료는 그대로, 배치만 바뀜">🖥️<span class="gwbl"> 작업 화면</span></button>
   <button id="vdHelpBtn" type="button" class="hbtn np" title="기능별 사용법 안내 영상 (유튜브)">📖 사용법</button>
   <button id="dm" type="button" class="hbtn np">🌙 다크</button>
   <label class="hlab np">출력<select id="po" class="hsel"><option value="portrait">세로</option><option value="landscape">가로</option></select></label>
@@ -1324,7 +1334,7 @@ function set(on,quiet){on=!!on;if(on===S.on)return;
  else{winClose();S.ph.reverse().forEach(([el,ph])=>{el.classList.remove('gwOn');if(ph.parentNode)ph.parentNode.replaceChild(el,ph)});S.ph=[];
   R.classList.remove('gwOn');gw.classList.remove('lshow');S.on=false;clearInterval(S.tm);
   setTimeout(()=>{const m=G('map');if(m)m.invalidateSize({pan:false})},60)}
- if(!quiet)LS.set('geo-gw',on?'1':'0');const hb=$('gwBtn');if(hb)hb.textContent=on?'📋 보고서형 화면':'🖥️ 작업 화면'}
+ if(!quiet)LS.set('geo-gw',on?'1':'0');const hb=$('gwBtn');if(hb)hb.innerHTML=on?'📋<span class="gwbl"> 보고서형 화면</span>':'🖥️<span class="gwbl"> 작업 화면</span>'}
 window.gwSet=set;
 
 /* 리본·제목줄 버튼 (원래 버튼을 대신 누름 · 바깥 클릭으로 닫히는 창이 있어 클릭 처리가 끝난 뒤 실행) */
@@ -1344,6 +1354,15 @@ const hb=$('gwBtn');if(hb)hb.onclick=()=>set(!S.on);
 /* 처음: 이 기기에서 마지막에 고른 화면 (처음 쓰는 기기는 보고서형) · 지도 준비를 기다렸다가 */
 if(LS.get('geo-gw')==='1'){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
 })();
+</script>
+<script>
+/* 폰에서 '데스크톱 사이트' 보기로 열리면(화면은 폰인데 배치 폭이 900px 이상) 글자가 작아지므로 끄는 방법을 한 번 알려 줌 */
+(function(){try{if(localStorage.getItem('geo-dskhint')==='1')return}catch(_){}
+ const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=600;if(!phone||innerWidth<900)return;
+ const d=document.createElement('div');d.id='dskHint';d.className='np';d.setAttribute('role','status');
+ d.innerHTML='<span style="flex:1">📱 휴대폰에서 <b>데스크톱 사이트</b> 보기로 열려 글자가 작게 보입니다. 크롬 오른쪽 위 <b>⋮</b> 메뉴에서 <b>데스크톱 사이트</b> 체크를 끄면 휴대폰 화면으로 크게 나옵니다.</span><button type="button">✕ 닫기</button>';
+ d.querySelector('button').onclick=()=>{d.remove();try{localStorage.setItem('geo-dskhint','1')}catch(_){}};
+ const go=()=>document.body.appendChild(d);document.body?go():addEventListener('DOMContentLoaded',go)})();
 </script>
 <section id="kvPanel" class="kvp np" hidden aria-label="카카오 로드뷰·스카이뷰 패널">
  <div class="kvh"><div class="kvt"><b id="kvTitle">카카오 로드뷰</b><small id="kvSub"></small></div>
@@ -3438,7 +3457,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
