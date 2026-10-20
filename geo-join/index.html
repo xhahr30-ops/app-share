@@ -653,6 +653,134 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
  header .hr .hchip.hide-s{display:flex!important}
  header .hr .hchip .hlbl{display:inline!important}
 }
+/* ════════ 🖥️ BsstGis 작업 화면 (관망해석기 작업 화면과 같은 배치: 제목줄 · 리본 · 레이어 창 · 지도 · 결과 표 · 상태줄) ════════ */
+:root{--gw-ch:#f3f3f3;--gw-ch2:#fafafa;--gw-bd:#d6d6d6;--gw-tx:#2b2b2b;--gw-tx2:#6b6b6b;--gw-ac:#2563eb;--gw-hv:#e6eefc;--gw-on:#d3e2fb;--gw-pn:#fff;--gwL:270px;--gwDH:34vh}
+html.dark{--gw-ch:#1b2433;--gw-ch2:#162033;--gw-bd:#2f3d55;--gw-tx:#e2e8f0;--gw-tx2:#94a3b8;--gw-ac:#60a5fa;--gw-hv:#23324a;--gw-on:#2b4168;--gw-pn:#0f1a2e}
+#gw{display:none}
+html.gwOn #gw{display:grid;position:fixed;inset:0;z-index:900;grid-template-rows:auto auto auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);background:var(--gw-ch);color:var(--gw-tx);font-size:12px;padding-top:env(safe-area-inset-top,0px)}
+html.gwOn body{overflow:hidden}
+html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
+#gwTitle button,#gwMenu button,#gwRibW button,.gw-ph button,.gw-dt button,.gw-wh button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;margin:0}
+#gw .gi{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* 제목줄 */
+#gwTitle{display:flex;align-items:center;gap:4px;height:34px;padding:0 6px;background:var(--gw-pn);border-bottom:1px solid var(--gw-bd)}
+#gwTitle .qb{width:28px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;color:var(--gw-tx2)}#gwTitle .qb:hover{background:var(--gw-hv);color:var(--gw-tx)}
+#gwTitle .tt{flex:1;min-width:0;text-align:center;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gwTitle .tt small{color:var(--gw-tx2);font-weight:400}
+#gwTitle .tr{display:flex;align-items:center;gap:6px}
+.gwm{height:28px;width:auto;max-width:56px;object-fit:contain}
+.gw-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--gw-bd)!important;border-radius:4px;background:var(--gw-ch2)!important;font-size:11px;white-space:nowrap}#gw button.gw-pill:hover{background:var(--gw-hv)!important}
+.gw-pill .dot{width:8px;height:8px}
+/* 메뉴 탭 + 검색 */
+#gwMenu{display:flex;align-items:flex-end;gap:2px;padding:0 8px;height:32px;background:var(--gw-ch)}
+#gwTabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;min-width:0}#gwTabs::-webkit-scrollbar{display:none}
+#gwTabs button{padding:6px 14px 5px;font-size:13px;border-bottom:2px solid transparent!important;white-space:nowrap}#gwTabs button:hover{color:var(--gw-ac)}#gwTabs button.on{color:var(--gw-ac);border-bottom-color:var(--gw-ac)!important;font-weight:600}
+#gwSearch{margin-left:auto;display:flex;align-items:center;gap:4px;align-self:center;background:var(--gw-pn);border:1px solid var(--gw-bd);border-radius:4px;padding:2px 6px;min-width:240px;color:var(--gw-tx2)}
+#gwSearch input{border:0!important;outline:0;background:transparent!important;font-size:12px;flex:1;min-width:0;color:var(--gw-tx);margin:0!important;padding:2px 0!important;box-shadow:none!important}
+/* 리본 */
+#gwRibW{position:relative;background:var(--gw-ch);border-bottom:1px solid var(--gw-bd)}
+#gw.rc #gwRib{display:none}
+#gwRib{display:flex;align-items:stretch;padding:4px 6px 0;overflow-x:auto;min-height:94px;scrollbar-width:thin}
+#gwRibX{position:absolute;right:6px;bottom:2px;color:var(--gw-tx2);font-size:11px;padding:0 4px}#gw.rc #gwRibX{transform:rotate(180deg)}
+.gw-g{display:flex;flex-direction:column;border-right:1px solid var(--gw-bd);padding:0 6px;flex:none}
+.gw-gi{display:flex;align-items:flex-start;gap:2px;flex:1}
+.gw-gl{text-align:center;color:var(--gw-tx2);font-size:11px;padding:2px 0 3px;white-space:nowrap}
+.gw-col{display:flex;flex-direction:column}
+.gw-b{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:3px;white-space:nowrap;font-size:12px;line-height:16px;border:1px solid transparent!important;position:relative}
+.gw-b .gi{color:var(--gw-tx2)}
+#gw .gw-b:hover:not(:disabled){background:var(--gw-hv);border-color:#c5d5f0!important}html.dark #gw .gw-b:hover:not(:disabled){border-color:#3b5378!important}
+#gw .gw-b.on{background:var(--gw-on);border-color:#9fbcea!important}.gw-b.on .gi{color:var(--gw-ac)}
+#gw .gw-b:disabled{opacity:.4;cursor:default}
+.gw-b.big{flex-direction:column;justify-content:center;gap:4px;padding:6px 6px;min-width:58px;height:70px;line-height:14px;text-align:center;white-space:normal;max-width:84px;word-break:keep-all}
+.gw-b.big .gi{width:22px;height:22px}
+.gw-b.run .gi{color:var(--gw-ac)}
+.gw-b .has{position:absolute;top:4px;right:6px;width:7px;height:7px;border-radius:50%;background:#10b981}
+/* 본문: 레이어 창 | 지도 + 결과 표 */
+#gwBody{display:grid;grid-template-columns:var(--gwL) minmax(0,1fr);gap:4px;min-height:0;padding:4px 4px 0}
+#gw.nol #gwBody{grid-template-columns:minmax(0,1fr)}#gw.nol #gwLeft{display:none}
+#gwLeft{display:flex;flex-direction:column;min-height:0;background:var(--gw-pn);border:1px solid var(--gw-bd)}
+.gw-ph{display:flex;align-items:center;gap:2px;padding:4px 6px;border-bottom:1px solid var(--gw-bd)}
+.gw-ph .lt{padding:3px 10px;font-size:13px;border-bottom:2px solid transparent!important;color:var(--gw-tx2)!important;position:relative}.gw-ph .lt.on{color:var(--gw-tx)!important;border-bottom-color:var(--gw-ac)!important;font-weight:600}
+.gw-ph .lt.new::after{content:'';position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--gw-ac)}
+.gw-ph .x{margin-left:auto;color:var(--gw-tx2)!important;padding:0 6px;font-size:14px}
+#gwLay{overflow:auto;flex:1;min-height:0}
+#gwLay table{width:100%;border-collapse:collapse;font-size:12px}
+#gwLay th{position:sticky;top:0;z-index:1;background:var(--gw-ch2);font-weight:500;border-bottom:1px solid var(--gw-bd);padding:4px 6px;text-align:center}
+#gwLay td{padding:4px 6px;border-bottom:1px solid var(--gw-ch);white-space:nowrap}
+#gwLay td:first-child{width:26px;text-align:center}#gwLay td.n{text-align:right;color:var(--gw-tx2);font-size:11px;font-variant-numeric:tabular-nums}
+#gwLay tr.g td{background:var(--gw-ch2);color:var(--gw-tx2);font-size:11px;font-weight:600}
+#gwLay tr.dis td{color:var(--gw-tx2);opacity:.6}
+#gwLay label{display:flex;align-items:center;gap:6px;cursor:pointer}
+#gwLay input{width:14px;height:14px;margin:0;accent-color:var(--gw-ac)}
+.gwl-s{display:inline-block;width:16px;height:10px;border-radius:2px;flex:none}
+.gw-lh{padding:6px 8px;color:var(--gw-tx2);font-size:11px;line-height:1.5;border-top:1px solid var(--gw-bd)}
+#gwProp{overflow:auto;flex:1;min-height:0;padding:8px;font-size:12px}
+#gwProp table{border-collapse:collapse}#gwProp td{padding:2px 4px;vertical-align:top}
+#gwProp .gwp-h{font-size:11px;color:var(--gw-tx2);margin-bottom:6px}
+#gwMain{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;background:var(--gw-pn);border:1px solid var(--gw-bd)}
+#gwMapSlot{position:relative;flex:1;min-height:0}
+/* 지도 카드: 작업 화면 안에서는 카드 테두리 없이 꽉 채움, 제목 줄은 지도 도구 막대로 */
+html.gwOn #gwMapSlot>#mapBox{display:flex!important;flex-direction:column;position:absolute;inset:0;margin:0;border:0;border-radius:0;padding:0;box-shadow:none;background:var(--gw-pn)}
+html.gwOn #gwMapSlot>#mapBox>h3{margin:0;padding:3px 6px;gap:4px;font-size:0;background:var(--gw-ch2);border-bottom:1px solid var(--gw-bd);min-height:30px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+html.gwOn #gwMapSlot>#mapBox>h3 select{width:auto;margin:0;padding:2px 6px;height:24px;font-size:12px}html.gwOn #gwMapSlot>#mapBox>h3 label{display:inline-flex;align-items:center;gap:4px;flex:none}html.gwOn #gwMapSlot>#mapBox>h3>button{flex:none}
+html.gwOn #gwMapSlot>#mapBox>h3>*{font-size:11.5px}
+html.gwOn #gwMapSlot>#mapBox>h3 .hideBtn,html.gwOn #gwMapSlot>#mapBox>h3 .dwBtn{display:none!important}
+html.gwOn #gwMapSlot>#mapBox #map{flex:1;height:auto!important;min-height:0!important;border-radius:0}
+html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
+/* 오른쪽 작업 창: 왼쪽 카드(자료 등록 등)를 같은 id 그대로 옮겨 띄움 */
+#gwWin{position:absolute;top:0;right:0;bottom:0;width:min(400px,100%);z-index:1200;display:flex;flex-direction:column;background:var(--gw-pn);border-left:1px solid var(--gw-bd);box-shadow:-6px 0 18px rgba(0,0,0,.14)}
+#gwWin[hidden]{display:none}
+.gw-wh{display:flex;align-items:center;height:30px;padding:0 4px 0 10px;background:var(--gw-ch);border-bottom:1px solid var(--gw-bd);flex:none}
+.gw-wt{flex:1;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gw .gw-wx{width:30px;height:26px;color:var(--gw-tx2)}#gw .gw-wx:hover{background:#e81123;color:#fff}
+.gw-wb{flex:1;overflow:auto;padding:8px;min-height:0;font-size:13px}
+.gw-wb>.sec{border:0;padding:0;background:transparent}
+.gw-wb>.sec>h4{display:none}
+.gw-help{display:flex;flex-direction:column;gap:8px;line-height:1.6}.gw-help h5{margin:6px 0 0;font-size:12.5px}.gw-help ul{margin:0;padding-left:18px}
+.gw-help kbd{border:1px solid var(--gw-bd);border-bottom-width:2px;border-radius:3px;padding:0 4px;font-size:11px;background:var(--gw-ch2)}
+/* 아래 결과 표 (GIS 속성 테이블 자리) */
+#gwDock{flex:none;display:flex;flex-direction:column;border-top:1px solid var(--gw-bd);background:var(--gw-pn);min-height:0}
+.gw-dt{display:flex;align-items:center;gap:2px;padding:0 4px;height:28px;background:var(--gw-ch2);flex:none;overflow-x:auto;scrollbar-width:none}
+.gw-dt button{padding:4px 10px;font-size:12px;border-bottom:2px solid transparent!important;color:var(--gw-tx2)!important;white-space:nowrap}
+.gw-dt button.on{color:var(--gw-tx)!important;border-bottom-color:var(--gw-ac)!important;font-weight:600}
+.gw-dt .sp{flex:1}
+#gwDockB{height:var(--gwDH);overflow:auto;padding:6px;min-height:0}
+#gwDock.cl #gwDockB{display:none}
+#gwDock.tall{--gwDH:58vh}
+#gwDockB>*{display:none!important}
+#gwDockB>.gwOn{display:block!important;margin:0}
+#gwDockB>.card{border:0;border-radius:0;box-shadow:none;padding:0;background:transparent}
+#gwDockB .hideBtn{display:none!important}
+#gwDockB .scr{max-height:none}
+#gwDockB>.card>h3{font-size:12.5px}
+#gwDockB>.r1 #diag:empty{display:none}
+/* 상태줄 */
+#gwStat{display:flex;align-items:center;height:26px;border-top:1px solid var(--gw-bd);background:var(--gw-ch);font-size:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box}
+#gwStat>div{padding:0 10px;border-left:1px solid var(--gw-bd);height:26px;display:flex;align-items:center;gap:6px}
+#gwStat .f{flex:1;border-left:0;min-width:120px;overflow:hidden;text-overflow:ellipsis;color:var(--gw-tx2)}
+#gwStat .box{min-width:110px;padding:1px 6px;border:1px solid var(--gw-bd);background:var(--gw-pn);text-align:center;font-variant-numeric:tabular-nums}
+#gwStat .who{color:var(--gw-tx2);font-size:11px}
+/* 작업 화면에서 띄우는 헤더 창(주소찾기설정·내보내기)은 리본 아래에 */
+html.gwOn .afp{top:150px}
+@media(max-width:900px){
+ #gwSearch,#gwTitle .tt small,#gwStat .f{display:none!important}
+ #gwTitle .tt{text-align:left;padding-left:4px}
+ #gwTitle .hs,#gwStat .hs{display:none!important}
+ #gwRib{min-height:0;padding:3px 22px 0 4px}
+ .gw-gl{display:none}
+ .gw-g{padding:0 3px}
+ .gw-col{flex-direction:row}
+ .gw-b.big,.gw-col .gw-b{flex-direction:column;justify-content:center;gap:2px;height:52px;min-width:52px;max-width:64px;padding:3px 4px;font-size:10.5px;line-height:12px;white-space:normal;text-align:center}
+ .gw-b.big .gi,.gw-col .gw-b .gi{width:18px;height:18px}
+ #gwBody{grid-template-columns:minmax(0,1fr)!important;padding:2px 2px 0}
+ #gwLeft{display:none}
+ #gw.lshow #gwLeft{display:flex;position:fixed;left:4px;top:120px;bottom:40px;width:min(300px,86vw);z-index:1300;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+ #gwWin{position:fixed;left:0;right:0;top:auto;bottom:calc(26px + env(safe-area-inset-bottom,0px));width:auto;height:72vh;height:72dvh;border-left:0;border-top:1px solid var(--gw-bd);border-radius:12px 12px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
+ #gwDock{--gwDH:40vh}#gwDock.tall{--gwDH:64vh}
+ html.gwOn .afp{top:110px}
+}
+@media(max-width:900px) and (orientation:landscape) and (max-height:520px){#gwRib{display:none}#gwRibX{display:none}#gwDock{--gwDH:46vh}}
+@media print{#gw{display:none!important}}
 </style></head><body>
 <header><div class="hin">
  <div class="hl">
@@ -665,6 +793,7 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
   <div class="hchip" title="자료 상태"><span class="hlbl">자료 상태:</span> <span class="dot" id="hDot"></span><b id="hStat">대기 중</b></div>
   <div class="hchip hide-s"><span class="hlbl">만든이:</span> <b>구병순</b></div>
   <button id="sideBtn" type="button" class="hbtn np" title="분석 조건 및 자료 등록 창 숨기기/보이기 (Ctrl+B)" aria-controls="side">◀ 설정 숨기기</button><button id="fmBtn" type="button" class="hbtn np" title="현장 모드: 지도 먼저 · 큰 버튼 · 📷 사진 찍기 · 📍 내 위치 (휴대폰·태블릿은 자동)">📱 현장 모드</button>
+  <button id="gwBtn" type="button" class="hbtn np" title="BsstGis 작업 화면: 리본 메뉴 · 레이어 창 · 아래 결과 표 · 상태줄 (Alt+W) — 자료는 그대로, 배치만 바뀜">🖥️ 작업 화면</button>
   <button id="vdHelpBtn" type="button" class="hbtn np" title="기능별 사용법 안내 영상 (유튜브)">📖 사용법</button>
   <button id="dm" type="button" class="hbtn np">🌙 다크</button>
   <label class="hlab np">출력<select id="po" class="hsel"><option value="portrait">세로</option><option value="landscape">가로</option></select></label>
@@ -971,6 +1100,251 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
  </div>
 </section>
 </main>
+<!-- ═══ 🖥️ BsstGis 작업 화면 (보고서형 화면과 버튼 하나로 전환 · 카드는 같은 id 그대로 옮겨 씀) ═══ -->
+<div id="gw" class="np" aria-label="BsstGis 작업 화면">
+ <div id="gwTitle">
+  <img class="gwm hs" id="gwmL" alt="포항이">
+  <button type="button" class="qb" data-a="bkSave" title="백업 파일 만들기"><svg class="gi" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5zM8 3v6h8V3M8 14h8v7H8z"/></svg></button>
+  <button type="button" class="qb" data-a="lay" title="레이어 창 보이기·숨기기"><svg class="gi" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/></svg></button>
+  <button type="button" class="qb" data-a="ui:map" title="지도 설정"><svg class="gi" viewBox="0 0 24 24"><path d="M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button>
+  <div class="tt">스마트 물길주소 <small>· 작업 화면</small></div>
+  <div class="tr">
+   <span class="gw-pill hs" id="gwSt" title="자료 상태"><span class="dot" id="gwDot"></span><b id="gwStT">대기 중</b></span>
+   <button type="button" class="gw-pill hs" data-a="dark" id="gwDark">🌙 다크</button>
+   <button type="button" class="gw-pill" data-a="report" title="예전 보고서형 화면으로 (Alt+W)">📋<span class="hs"> 보고서형 화면</span></button>
+   <img class="gwm" id="gwmR" alt="서용이">
+  </div>
+ </div>
+ <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 관리번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
+ <div id="gwRibW"><div id="gwRib"></div><button type="button" id="gwRibX" title="리본 접기·펴기">︿</button></div>
+ <div id="gwBody">
+  <aside id="gwLeft">
+   <div class="gw-ph"><button type="button" class="lt on" data-lt="lay">레이어</button><button type="button" class="lt" data-lt="prop">속성</button><button type="button" class="x" data-a="lay" title="창 닫기">✕</button></div>
+   <div id="gwLay"><table><thead><tr><th>☑</th><th>레이어</th><th>개수</th></tr></thead><tbody id="gwLayB"></tbody></table>
+    <p class="gw-lh">회색 줄은 아직 자료가 없는 레이어입니다. <b>자료</b> 탭에서 SHP·엑셀을 올리면 켜집니다. 자세한 보기 설정은 <b>지도</b> 탭 › 지도 설정.</p></div>
+   <div id="gwProp" hidden><p class="gwp-h">지도에서 점·관로·시설물·소블록을 누르면 정보가 여기 나옵니다. 고치기·버튼은 지도 정보창에서 쓰세요.</p><div id="gwPropB"></div></div>
+  </aside>
+  <section id="gwMain">
+   <div id="gwMapSlot"></div>
+   <div id="gwWin" hidden role="dialog" aria-labelledby="gwWinT"><div class="gw-wh"><span class="gw-wt" id="gwWinT"></span><button type="button" class="gw-wx" id="gwWinX" title="닫기 (Esc)" aria-label="닫기">✕</button></div><div class="gw-wb" id="gwWinB"></div></div>
+   <div id="gwDock" class="cl"><div class="gw-dt" role="tablist"><button type="button" data-d="tbl">🎯 상세 결과</button><button type="button" data-d="bar">📈 블록별 현황</button><button type="button" data-d="kpi">📊 요약 지표</button><span class="sp"></span><button type="button" data-d="tall" title="표 크게·작게">⇕</button><button type="button" data-d="close" title="표 접기">▾</button></div><div id="gwDockB"></div></div>
+  </section>
+ </div>
+ <div id="gwStat"><div class="f" id="gwMsg">작업 화면 · 왼쪽 레이어 창에서 켜고 끄고, 위 리본에서 자료·지도·현장 기능을 고르세요.</div><div class="hs">소블록 <span class="box" id="gwBlk">-</span></div><div>좌표 <span class="box" id="gwXY">-</span></div><div>축척 <span class="box" id="gwSc" style="min-width:90px">-</span></div><div class="hs" id="gwCnt">-</div><div class="who hs">만든이: 구병순</div></div>
+</div>
+<script>
+/* ===================== 🖥️ BsstGis 작업 화면 =====================
+   보고서형 화면의 카드(지도·표·자료 등록)를 같은 요소 그대로 옮겨 GIS 프로그램처럼 배치한다.
+   요소를 옮길 때 자리 표시(주석)를 남겨 두고, 보고서형 화면으로 돌아가면 제자리로 되돌린다.
+   앱 본문(appMain)은 라이브러리를 받은 뒤 실행되므로, 본문의 변수·함수는 G()로 그때그때 찾아 쓴다. */
+(function(){
+const $=id=>document.getElementById(id),R=document.documentElement,gw=$('gw');if(!gw)return;
+const G=n=>{try{return (0,eval)(n)}catch(_){return undefined}};
+const F=(n,...a)=>{const f=G(n);if(typeof f==='function')try{return f(...a)}catch(e){console.warn('gw',n,e)}};
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}}};
+const num=n=>Number(n||0).toLocaleString();
+const clk=id=>{const e=typeof id==='string'?$(id):id;if(e&&!e.disabled)e.click()};
+const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
+ save:'M5 3h11l3 3v15H5zM8 3v6h8V3M8 14h8v7H8z',open:'M3 7h6l2 2h10v10H3zM12 17v-6M9 13l3-3 3 3',box:'M4 7h16v13H4zM4 7l2-4h12l2 4M10 11h4',
+ exp:'M12 3v12M7 10l5 5 5-5M4 19h16',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',link:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 7M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5',
+ cam:'M4 8h4l2-3h4l2 3h4v11H4zM12 10a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z',prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',page:'M6 3h9l4 4v14H6zM14 3v5h5',
+ pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',poly:'M4 7l6-4 9 3 1 9-7 6-9-3z',
+ pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
+ drop:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z',srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',bolt:'M13 2L4 14h7l-1 8 9-12h-7z',stop:'M6 6h12v12H6z',
+ gear:'M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2',key:'M8 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM11 10h10M18 10v4M15 10v3',
+ eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',
+ lock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',tool:'M15 4a5 5 0 0 0-5 6l-7 7 4 4 7-7a5 5 0 0 0 6-5l-3 3-3-1-1-3z',walk:'M13 3.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM10 21l2-6 3 3v3M8 12l3-4 4 3 3 1M11 8l-3 2-1 4',
+ img:'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z',plus:'M12 5v14M5 12h14',pen:'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',
+ grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',vid:'M3 6h13v12H3zM16 10l5-3v10l-5-3z',phone:'M8 2h8v20H8zM11 18h2',chart:'M4 20V10M10 20V4M16 20v-7M2 20h20',
+ kpi:'M4 4h16v6H4zM4 14h7v6H4zM13 14h7v6h-7z',mon:'M3 4h18v12H3zM8 20h8M12 16v4',help:'M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7v.5M12 17h.01',
+ play:'M6 4l14 8-14 8z',tbl:'M3 4h18v16H3zM3 9h18M9 9v11',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+ bill:'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',moon:'M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z',list:'M4 6h16M4 12h16M4 18h10'};
+const ic=k=>P+(I[k]||I.box)+'"/></svg>';
+
+/* ── 리본: 탭 › 묶음 › 버튼 [동작, 아이콘, 글자, 크게?] ── */
+const TABS=[
+ {k:'file',n:'파일',g:[
+  {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 항목 고르기']]},
+  {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기']]},
+  {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
+  {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
+ {k:'data',n:'자료',g:[
+  {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1]]},
+  {n:'부과량',b:[['win:bill','bill','부과량 연동',1]]},
+  {n:'변환 · 공간결합',b:[['af','srch','주소찾기 설정',1],['start','bolt','변환 시작',1,'run'],['stop','stop','변환 중지']]}]},
+ {k:'map',n:'지도',g:[
+  {n:'보기 설정',b:[['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
+  {n:'표시',b:[['allOff','eye','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['fe','tool','시설물·관로 편집',1],['lock','lock','지도 잠금']]},
+  {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
+ {k:'field',n:'현장',g:[
+  {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','pen','사진 편집 모드'],['gal','grid','사진 갤러리']]},
+  {n:'동영상',b:[['win:vid','vid','동영상 연결',1]]},
+  {n:'현장 모드',b:[['fm','phone','현장 모드',1]]}]},
+ {k:'table',n:'표',g:[
+  {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
+  {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
+ {k:'help',n:'도움말',g:[
+  {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1]]}]}];
+/* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
+const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
+if(S.dock==null)S.dock='';
+
+/* ── 동작 ── */
+function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
+ if(h==='win')return winOpen(v);if(h==='dock')return dockSet(S.dock===v&&!$('gwDock').classList.contains('cl')?'':v);
+ if(h==='ui'){F('uiPanel',true,v);return}
+ const go={
+  bkLoad:()=>clk('bkLoad'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
+  po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
+  report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
+  stop:()=>{const b=$('stopBtn');if(b&&!b.hidden)b.click()},allOff:()=>F('uiAllToggle'),bg:()=>F('bgToggle'),pt:()=>F('ptToggle'),
+  fe:()=>{const fe=G('FE');if(fe&&fe.a)fe.a.click()},
+  shot:()=>F('mapShot',document.querySelector('.fmctl .shot')||$('gwRib')),loc:()=>F('fmLocate',document.querySelector('.fmctl .loc')||document.createElement('button'))}[h];
+ if(go)return go();if(SRC[h])clk(SRC[h])}
+function dis(h){if(h==='stop'){const b=$('stopBtn');return !b||b.hidden}
+ if(h==='fe'){const fe=G('FE');return !(fe&&fe.a)}
+ if(h==='shot'||h==='loc'||h==='bg'||h==='allOff'||h==='pt')return !G('map');
+ const id=SRC[h];if(!id)return false;const e=$(id);return !e||!!e.disabled}
+function isOn(h,v){const html=R.classList;
+ switch(h){case 'dark':return html.contains('dark');case 'bg':{const b=G('BG');return !!(b&&b.off)}case 'allOff':{const u=G('UI');return !!(u&&u.allOff)}
+  case 'pt':{const p=G('PT');return !!(p&&p.off)}case 'lock':{const m=G('MLOCK');return !!(m&&m.user)}case 'fe':{const f=G('FE');return !!(f&&f.on)}
+  case 'phEd':{const p=G('PH');return !!(p&&p.ed&&p.ed.on)}case 'fm':return document.body.classList.contains('fm');case 'kv':{const k=G('KV');return !!(k&&k.on)}
+  case 'shut':{const s=G('SHUT');return !!(s&&(s.pick||s.on))}case 'win':return S.win===v;case 'dock':return S.dock===v&&!$('gwDock').classList.contains('cl');
+  case 'mapfs':{const b=$('mapBox');return !!(b&&b.classList.contains('mapfs'))}}return false}
+
+function ribBuild(){
+ $('gwTabs').innerHTML=TABS.map(t=>`<button type="button" role="tab" data-t="${t.k}">${t.n}</button>`).join('');
+ const t=TABS.find(x=>x.k===S.tab)||TABS[0];S.tab=t.k;
+ $('gwTabs').querySelectorAll('button').forEach(b=>{const on=b.dataset.t===t.k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+ const btn=([k,i,n,big,cls])=>`<button type="button" class="gw-b${big?' big':''}${cls?' '+cls:''}" data-a="${k}" title="${n}">${ic(i)}<span>${n}</span></button>`;
+ $('gwRib').innerHTML=t.g.map(g=>{const bigs=g.b.filter(b=>b[3]),sm=g.b.filter(b=>!b[3]),cols=[];for(let i=0;i<sm.length;i+=3)cols.push(sm.slice(i,i+3));
+  return `<div class="gw-g"><div class="gw-gi">${bigs.map(btn).join('')}${cols.map(c=>`<div class="gw-col">${c.map(btn).join('')}</div>`).join('')}</div><div class="gw-gl">${g.n}</div></div>`}).join('');
+ sync()}
+const HAS={'win:addr':()=>(G('out')||[]).length,'win:blk':()=>{const p=G('poly');return p&&p.features?p.features.length:0},'win:pipe':()=>{const p=G('PIPE');return p?p.feats.length:0},
+ 'win:fac':()=>{const f=G('FAC');return f?f.feats.length:0},'win:elev':()=>{const e=G('ELEV');return e?e.n:0},'win:bill':()=>{const b=G('BILL');return b&&b.R?b.R.length:0},'win:ph':()=>{const p=G('PH');return p?p.list.length:0}};
+function sync(){if(!S.on)return;
+ gw.querySelectorAll('[data-a]').forEach(b=>{const k=b.dataset.a,d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
+  const x=h==='win'||h==='dock'||h==='ui'||h==='lay'||h==='report'?false:dis(h);if(b.disabled!==x)b.disabled=x;b.classList.toggle('on',isOn(h,v));
+  if(HAS[k]&&b.classList.contains('gw-b')){let n=0;try{n=HAS[k]()}catch(_){}let s=b.querySelector('.has');if(n&&!s){s=document.createElement('i');s.className='has';b.appendChild(s)}else if(!n&&s)s.remove();if(s)s.title='자료 있음 · '+num(n)}});
+ const t=$('gwDark');if(t)t.textContent=R.classList.contains('dark')?'☀️ 라이트':'🌙 다크';
+ const bg=gw.querySelector('[data-a="bg"] span');if(bg)bg.textContent=isOn('bg')?'배경 지도 켜기':'배경 지도 끄기';
+ const pt=gw.querySelector('[data-a="pt"] span');if(pt)pt.textContent=isOn('pt')?'수용가 점 켜기':'수용가 점 끄기';
+ const al=gw.querySelector('[data-a="allOff"] span');if(al)al.textContent=isOn('allOff')?'표시 다시 켜기':'표시 모두 끄기';
+ const po=gw.querySelector('[data-a="po"] span');if(po)po.textContent='출력: '+(($('po')||{}).value==='landscape'?'가로':'세로');
+ const hs=$('hStat'),hd=$('hDot');if(hs)$('gwStT').textContent=hs.textContent;if(hd)$('gwDot').className=hd.className;
+ const p=G('PIPE'),f=G('FAC'),ph=G('PH'),o=G('out')||[];$('gwCnt').textContent=`수용가 ${num(o.length)} · 관로 ${num(p?p.feats.length:0)} · 시설물 ${num(f?f.feats.length:0)} · 사진 ${num(ph?ph.list.length:0)}`;
+ layRender()}
+
+/* ── 레이어 창: 기존 보기 설정(같은 저장 위치 geo-ui 등)을 그대로 켜고 끔 ── */
+const selOn=id=>{const e=$(id);return !!e&&e.value!=='off'};
+const selSet=(id,on,def)=>{const e=$(id);if(!e)return;const v=on?(e.dataset.gwLast&&e.dataset.gwLast!=='off'?e.dataset.gwLast:def):'off';if(!on&&e.value!=='off')e.dataset.gwLast=e.value;
+ if(typeof G('uiSel')==='function')F('uiSel',id,v);else{e.value=v;e.dispatchEvent(new Event('change'))}};
+const LAY=[
+ {g:'기준자료'},
+ {k:'blk',n:'소블록 경계',s:'#ea580c',c:()=>{const p=G('poly');return p&&p.features?p.features.length:0},on:()=>{const m=G('map'),l=G('polyL');return !!(m&&l&&m.hasLayer(l))},set:o=>{const m=G('map'),l=G('polyL');if(!m||!l)return;o?l.addTo(m):m.removeLayer(l)}},
+ {k:'pipe',n:'상수관로',s:'#2563eb',c:()=>{const p=G('PIPE');return p?p.feats.length:0},on:()=>selOn('pShow'),set:o=>selSet('pShow',o,'auto'),ok:()=>!$('pPanel').hidden},
+ {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
+ {k:'elev',n:'표고·수압 (관망해석)',s:'#a16207',c:()=>{const e=G('ELEV');return e?e.n:0},on:()=>selOn('eShow'),set:o=>selSet('eShow',o,'auto'),ok:()=>!$('ePanel').hidden},
+ {g:'현장 · 수용가'},
+ {k:'pt',n:'수용가 점',s:'#0284c7',c:()=>{const p=G('PT');return p?p.n:0},on:()=>{const p=G('PT');return !!p&&!p.off},set:o=>{const p=G('PT');if(p&&!!p.off===o)F('ptToggle')}},
+ {k:'ph',n:'현장 사진',s:'#7c3aed',c:()=>{const p=G('PH');return p?p.list.length:0},on:()=>selOn('phShow'),set:o=>selSet('phShow',o,'on')},
+ {k:'vid',n:'동영상 위치',s:'#dc2626',c:()=>{const v=G('VID');return v&&v.list?v.list.filter(x=>!x.del).length:0},on:()=>{const u=G('UI');return !!u&&u.vid!==false},set:o=>{const u=G('UI');if(!u)return;u.vid=o;F('uiSave');F('vidDraw');const c=$('uiVid');if(c)c.checked=o}},
+ {g:'글자 · 배경'},
+ {k:'bl',n:'소블록 이름',s:'#475569',c:()=>null,on:()=>selOn('lblMode'),set:o=>selSet('lblMode',o,'auto'),ok:()=>!!G('polyL')},
+ {k:'pl',n:'관로 라벨 (관종·구경)',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.lbl&&u.lbl!=='off'},set:o=>{const e=$('uiLbl'),u=G('UI');if(u&&u.lbl&&u.lbl!=='off')S.lblLast=u.lbl;if(e){e.value=o?S.lblLast:'off';e.dispatchEvent(new Event('change'))}},ok:()=>!$('pPanel').hidden},
+ {k:'leg',n:'지도 범례',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&!!u.leg},set:o=>{const e=$('uiLeg');if(e&&e.checked!==o)e.click()}},
+ {k:'bg',n:'배경 지도',s:'#94a3b8',c:()=>null,on:()=>{const b=G('BG');return !!b&&!b.off},set:o=>F('bgToggle',!o),ok:()=>!!G('map')}];
+let layKey='';
+function layRender(){const tb=$('gwLayB');if(!tb||gw.querySelector('#gwLay').hidden)return;
+ const rows=LAY.map(r=>{if(r.g)return{g:r.g};let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}return{r,c,on,ok}});
+ const key=JSON.stringify(rows.map(x=>x.g||[x.r.k,x.c,x.on,x.ok]));if(key===layKey)return;layKey=key;
+ tb.innerHTML=rows.map(x=>x.g?`<tr class="g"><td colspan="3">${x.g}</td></tr>`:`<tr class="${x.ok?'':'dis'}"><td><input type="checkbox" data-l="${x.r.k}" ${x.on&&x.ok?'checked':''} ${x.ok?'':'disabled'} aria-label="${x.r.n}"></td><td><label><span class="gwl-s" style="background:${x.r.s}"></span>${x.r.n}</label></td><td class="n">${x.c==null?'':num(x.c)}</td></tr>`).join('')}
+$('gwLayB').addEventListener('change',e=>{const k=e.target.dataset.l,r=LAY.find(x=>x.k===k);if(!r)return;try{r.set(e.target.checked)}catch(err){console.warn(err)}layKey='';setTimeout(sync,60)});
+$('gwLayB').addEventListener('click',e=>{const lb=e.target.closest('label');if(!lb)return;e.preventDefault();const c=lb.closest('tr').querySelector('input');if(c&&!c.disabled){c.checked=!c.checked;c.dispatchEvent(new Event('change',{bubbles:true}))}});
+function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classList.remove('nol')}else{gw.classList.toggle('nol');LS.set('geo-gwL',gw.classList.contains('nol')?'0':'1')}}
+gw.querySelectorAll('.gw-ph .lt').forEach(b=>b.onclick=()=>{const p=b.dataset.lt==='prop';gw.querySelectorAll('.gw-ph .lt').forEach(x=>x.classList.toggle('on',x===b));b.classList.remove('new');$('gwLay').hidden=p;$('gwProp').hidden=!p;layKey='';layRender()});
+
+/* ── 속성 탭: 지도 정보창 내용을 읽기 전용으로 복사 ── */
+function propCopy(pp){setTimeout(()=>{const el=pp&&pp.getElement&&pp.getElement(),c=el&&el.querySelector('.leaflet-popup-content');if(!c)return;
+ const d=document.createElement('div');d.innerHTML=c.innerHTML;d.querySelectorAll('button,input,select,textarea,script,.hitTabs').forEach(x=>x.remove());d.querySelectorAll('[onclick]').forEach(x=>x.removeAttribute('onclick'));d.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));
+ $('gwPropB').replaceChildren(...d.childNodes);const t=gw.querySelector('.lt[data-lt="prop"]');if($('gwProp').hidden)t.classList.add('new')},30)}
+
+/* ── 오른쪽 작업 창: 왼쪽 카드(같은 id)를 옮겨 띄우고, 닫으면 제자리로 ── */
+function winBack(){if(S.winEl&&S.winPh&&S.winPh.parentNode){S.winPh.parentNode.replaceChild(S.winEl,S.winPh)}S.winEl=S.winPh=null}
+function winClose(){winBack();S.win=null;$('gwWin').hidden=true;$('gwWinB').replaceChildren();sync()}
+function winOpen(k){if(S.win===k&&!$('gwWin').hidden)return winClose();winBack();const B=$('gwWinB');B.replaceChildren();
+ if(k==='help'){B.innerHTML=HELP}else{const f=WIN[k]&&WIN[k](),el=f&&(f.id==='vdSec'?f:f.closest('.sec'));if(!el){msg('이 자료 칸을 찾지 못했습니다.');return}
+  S.winPh=document.createComment('gw-win');el.parentNode.replaceChild(S.winPh,el);S.winEl=el;el.classList.remove('col');B.appendChild(el)}
+ S.win=k;$('gwWinT').textContent=WT[k]||'';$('gwWin').hidden=false;B.scrollTop=0;sync()}
+$('gwWinX').onclick=winClose;
+const HELP=`<div class="gw-help"><p><b>BsstGis 작업 화면</b>은 웹 관망해석기의 작업 화면과 같은 배치입니다. 자료·저장 위치·공유는 보고서형 화면과 같고, 화면 배치만 다릅니다.</p>
+<h5>① 위쪽 리본 메뉴</h5><ul><li><b>파일</b>: 백업 만들기·불러오기, 결과 엑셀·PDF·사진 내보내기</li><li><b>자료</b>: 주소·소블록·관로·시설물·표고·부과량 올리기, 주소찾기 설정과 변환 시작 (초록 점 = 자료 있음)</li><li><b>지도</b>: 지도 설정, 표시 모두 끄기, 배경 끄기, 단수구역, 편집, 로드뷰, 지도 캡처</li><li><b>현장</b>: 현장 사진·동영상·현장 모드</li><li><b>표</b>: 아래 결과 창(상세 결과·블록별 현황·요약 지표)</li></ul>
+<h5>② 왼쪽 레이어 창</h5><ul><li>☑로 레이어를 켜고 끕니다. <b>속성</b> 탭에는 지도에서 누른 점·관로·시설물 정보가 나옵니다.</li></ul>
+<h5>③ 아래 결과 창 · 상태줄</h5><ul><li>결과 창은 ⇕로 크게, ▾로 접습니다. 표의 행을 누르면 지도가 그 위치로 갑니다.</li><li>상태줄: 누른 곳의 소블록, 마우스 좌표(위경도), 축척, 자료 개수</li></ul>
+<h5>단축키</h5><ul><li><kbd>Alt</kbd>+<kbd>W</kbd> 작업 화면 ↔ 보고서형 화면 · <kbd>Esc</kbd> 오른쪽 창 닫기</li><li>그 밖의 단축키(Alt+U 수용가, Alt+P 사진, Alt+H 표시 끄기)는 그대로입니다.</li></ul>
+<p class="hint">PDF 인쇄는 보고서형 화면 양식으로 나갑니다(인쇄하는 동안만 잠깐 전환).</p></div>`;
+
+/* ── 아래 결과 창 ── */
+const DOCK={tbl:()=>$('tblCard'),bar:()=>$('barCard'),kpi:()=>{const c=$('cards');return c&&c.closest('.r1')}};
+function dockSet(k){const d=$('gwDock');S.dock=k;if(k)S.last=k;LS.set('geo-gwD',k);d.classList.toggle('cl',!k);d.classList.toggle('tall',S.tall);
+ Object.entries(DOCK).forEach(([n,f])=>{const e=f();if(e)e.classList.toggle('gwOn',n===k)});
+ d.querySelectorAll('.gw-dt [data-d]').forEach(b=>{const x=b.dataset.d;if(x!=='tall'&&x!=='close')b.classList.toggle('on',x===k)});
+ const c=d.querySelector('[data-d="close"]');c.textContent=k?'▾':'▴';c.title=k?'표 접기':'표 펴기';sync()}
+$('gwDock').querySelector('.gw-dt').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;const x=b.dataset.d;
+ if(x==='tall'){S.tall=!S.tall;LS.set('geo-gwDT',S.tall?'1':'0');return dockSet(S.dock||S.last||'tbl')}
+ if(x==='close')return dockSet(S.dock?'':(S.last||'tbl'));dockSet(S.dock===x?'':x)});
+
+/* ── 상태줄 ── */
+let msgT=0;function msg(t){$('gwMsg').textContent=t;clearTimeout(msgT);msgT=setTimeout(()=>{$('gwMsg').textContent='작업 화면 · 왼쪽 레이어 창에서 켜고 끄고, 위 리본에서 자료·지도·현장 기능을 고르세요.'},6000)}
+function scaleTxt(){const m=G('map');if(!m)return;const z=m.getZoom(),c=m.getCenter(),mpp=40075016.686*Math.cos(c.lat*Math.PI/180)/Math.pow(2,z+8);
+ $('gwSc').textContent='1:'+num(Math.round(mpp*3779.5/10)*10)+' · 줌 '+(Math.round(z*2)/2)}
+function xyTxt(ll){if(!ll)return;$('gwXY').textContent=ll.lat.toFixed(6)+', '+ll.lng.toFixed(6)}
+let raf=0,lastLL=null;
+function mapHook(){const m=G('map');if(!m||m._gwHook)return!!m;m._gwHook=true;
+ m.on('mousemove',e=>{lastLL=e.latlng;if(!S.on||raf)return;raf=requestAnimationFrame(()=>{raf=0;xyTxt(lastLL)})});
+ m.on('zoomend moveend',()=>{if(S.on)scaleTxt()});
+ m.on('preclick',e=>{if(!S.on)return;xyTxt(e.latlng);let n='-';try{const l=F('hitBlkLayer',e.latlng),P=l&&l.feature&&l.feature.properties||null;if(P){const k=($('blkField')||{}).value||Object.keys(P).find(x=>/^BLK_NM$/i.test(x))||Object.keys(P).find(x=>/소블록|블록|BLK/i.test(x));n=String(k&&P[k]!=null?P[k]:'').trim()||'(이름 없음)'}}catch(_){}$('gwBlk').textContent=n});
+ m.on('popupopen',e=>{if(S.on)propCopy(e.popup)});return true}
+
+/* ── 들어가기 · 나가기: 카드를 옮기고(자리 표시를 남김) 되돌림 ── */
+function move(el,to){if(!el)return;const ph=document.createComment('gw');el.parentNode.replaceChild(ph,el);S.ph.push([el,ph]);to.appendChild(el)}
+function mascots(){const a=$('mL'),b=$('mR');if(a&&a.src)$('gwmL').src=a.src;else $('gwmL').hidden=true;if(b&&b.src)$('gwmR').src=b.src;else $('gwmR').hidden=true}
+function set(on,quiet){on=!!on;if(on===S.on)return;
+ if(on){S.on=true;R.classList.add('gwOn');mascots();
+  if(LS.get('geo-gwL')==='0'&&innerWidth>900)gw.classList.add('nol');
+  if(document.body.classList.contains('fsOn')){const fb=$('mapFsBtn');if(fb&&$('mapBox').classList.contains('mapfs'))fb.click()}
+  move($('mapBox'),$('gwMapSlot'));['tbl','bar','kpi'].forEach(k=>move(DOCK[k](),$('gwDockB')));
+  $('gwDock').classList.toggle('tall',S.tall);dockSet(S.dock);ribBuild();mapHook();
+  if(!S.ro&&window.ResizeObserver){S.ro=new ResizeObserver(()=>{const m=G('map');if(m&&S.on)m.invalidateSize({pan:false})});S.ro.observe($('gwMapSlot'))}
+  clearInterval(S.tm);S.tm=setInterval(()=>{mapHook();sync()},1000);setTimeout(()=>{const m=G('map');if(m){m.invalidateSize({pan:false});scaleTxt()}},60)}
+ else{winClose();S.ph.reverse().forEach(([el,ph])=>{el.classList.remove('gwOn');if(ph.parentNode)ph.parentNode.replaceChild(el,ph)});S.ph=[];
+  R.classList.remove('gwOn');gw.classList.remove('lshow');S.on=false;clearInterval(S.tm);
+  setTimeout(()=>{const m=G('map');if(m)m.invalidateSize({pan:false})},60)}
+ if(!quiet)LS.set('geo-gw',on?'1':'0');const hb=$('gwBtn');if(hb)hb.textContent=on?'📋 보고서형 화면':'🖥️ 작업 화면'}
+window.gwSet=set;
+
+/* 리본·제목줄 버튼 (원래 버튼을 대신 누름 · 바깥 클릭으로 닫히는 창이 있어 클릭 처리가 끝난 뒤 실행) */
+gw.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const k=b.dataset.a;setTimeout(()=>{A(k);setTimeout(sync,80)},0)});
+$('gwTabs').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;S.tab=b.dataset.t;LS.set('geo-gwT',S.tab);gw.classList.remove('rc');ribBuild()});
+$('gwRibX').onclick=()=>gw.classList.toggle('rc');
+/* 검색: 지도 위 주소찾기 칸으로 넘김 */
+$('gwQ').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const q=e.target.value.trim();if(!q)return;const f=document.querySelector('.gsrch form'),i=f&&f.querySelector('input');
+ if(!f||!i){msg('지도 주소찾기를 아직 쓸 수 없습니다 (지도를 불러오는 중).');return}const box=f.closest('.gsrch');if(box)box.classList.remove('min','fold','cl');i.value=q;i.dispatchEvent(new Event('input',{bubbles:true}));
+ if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true}))});
+document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='w'||e.key==='W'||e.code==='KeyW')){e.preventDefault();set(!S.on)}
+ else if(e.key==='Escape'&&S.on&&!$('gwWin').hidden){const t=e.target;if(t&&t.closest&&t.closest('.afp,.pcm,.uiset'))return;winClose()}});
+/* 인쇄는 보고서형 양식으로: 인쇄하는 동안만 제자리로 */
+let prW=false;addEventListener('beforeprint',()=>{if(S.on){prW=true;set(false,true)}});addEventListener('afterprint',()=>{if(prW){prW=false;set(true,true)}});
+/* 머리글 전환 버튼 */
+const hb=$('gwBtn');if(hb)hb.onclick=()=>set(!S.on);
+/* 처음: 이 기기에서 마지막에 고른 화면 (처음 쓰는 기기는 보고서형) · 지도 준비를 기다렸다가 */
+if(LS.get('geo-gw')==='1'){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
+})();
+</script>
 <section id="kvPanel" class="kvp np" hidden aria-label="카카오 로드뷰·스카이뷰 패널">
  <div class="kvh"><div class="kvt"><b id="kvTitle">카카오 로드뷰</b><small id="kvSub"></small></div>
   <div class="kvnav"><button type="button" id="kvPrev" class="hbtn" title="표의 이전 행 ([)" aria-label="이전 행">◀</button><span id="kvPos"></span><button type="button" id="kvNext" class="hbtn" title="표의 다음 행 (])" aria-label="다음 행">▶</button><button type="button" id="kvClose" class="hbtn" aria-label="패널 닫기">✕</button></div></div>
@@ -3064,7 +3438,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
