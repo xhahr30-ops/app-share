@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v22 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v23 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4311,6 +4311,280 @@ const add=()=>{const q=pop.querySelector('.qe'),p=S.pop;if(!q||!p||!S.net||q.que
  d.querySelector('#qeBlkGo').onclick=ap;d.querySelector('#qeBlk').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();ap()}}};
 const ob=new MutationObserver(()=>{try{add()}catch(e){console.error(e)}});ob.observe(pop,{childList:true,subtree:true});
 })()}catch(e){console.error(e)}
+/* ════ v23: INP 만들기(안 B) — 단계 안내 · 시설 입력표(엑셀) · 수정 대장 · 운전 규칙 표 · 블록 패턴 ════ */
+try{(()=>{
+const IW={tab:'s',plan:null,ses:0,base:null,loading:false,LIM:300,t:0,lkTxt:'',file:''};
+const FU=['CFS','GPM','MGD','IMGD','AFD','LPS','LPM','MLD','CMH','CMD','CMS'];
+const fuName=()=>{try{return FU[S.prj.getFlowUnits()]||'INP 단위'}catch(e){return'INP 단위'}};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const num=v=>{if(v==null)return NaN;const s=String(v).replace(/,/g,'').trim();return s===''?NaN:+s};
+const r4=v=>v==null||!isFinite(v)?v:Math.round(v*1e4)/1e4;
+const near=(a,b,t)=>Math.abs(a-b)<=(t||1e-4)*Math.max(1,Math.abs(a),Math.abs(b));
+const VTN=['','','','PRV','PSV','PBV','FCV','TCV','GPV'];
+const lkw=t=>t<=1?'PIPE':t===2?'PUMP':'VALVE';
+
+/* ── 수정 대장: 손으로 고친 값 목록 ── */
+let LED=[];try{LED=JSON.parse(lsGet('gw-ledger')||'[]');if(!Array.isArray(LED))LED=[]}catch(e){LED=[]}
+const ledSave=()=>lsSet('gw-ledger',JSON.stringify(LED));
+function setBlk(n,v){if(n.type!==0)throw new Error('접합점이 아닙니다');n.blk=v;if(!S.tags)S.tags={n:new Map(),l:new Map()};const tg=Object.assign({},S.tags.n.get(n.id)||{});if(v)tg.dma_name=v;else delete tg.dma_name;S.tags.n.set(n.id,tg)}
+const LK={
+ 'n.elev':{t:'n',lab:'표고·수위',unit:()=>'m',g:n=>n.elev,s:(n,v)=>S.prj.setNodeValue(n.i,0,v/S.net.u.lf),tol:1e-3},
+ 'n.base':{t:'n',lab:'기본수요',unit:()=>'L/s',g:n=>n.type===0?n.base:null,s:(n,v)=>{if(n.type!==0)throw new Error('접합점이 아닙니다');S.prj.setNodeValue(n.i,1,v/S.net.u.qf)},tol:1e-5},
+ 'n.blk':{t:'n',lab:'소블록',str:1,unit:()=>'',g:n=>n.type===0?(n.blk||''):null,s:(n,v)=>setBlk(n,v)},
+ 'l.dia':{t:'l',lab:'관경',unit:()=>'mm',g:l=>l.type===2?null:l.dia,s:(l,v)=>S.prj.setLinkValue(l.i,0,v/S.net.u.df),tol:0.01},
+ 'l.len':{t:'l',lab:'연장',unit:()=>'m',g:l=>l.type<=1?l.len:null,s:(l,v)=>S.prj.setLinkValue(l.i,1,v/S.net.u.lf),tol:0.01},
+ 'l.c':{t:'l',lab:'조도계수(C)',unit:()=>'',g:l=>l.type<=1?l.c:null,s:(l,v)=>S.prj.setLinkValue(l.i,2,v),tol:0.01},
+ 'l.ml':{t:'l',lab:'부차손실',unit:()=>'',g:l=>l.type<=1?l.ml:null,s:(l,v)=>S.prj.setLinkValue(l.i,3,v),tol:1e-3},
+ 'l.init':{t:'l',lab:'상태',st:1,unit:()=>'',g:l=>l.init===0?0:1,s:(l,v)=>{if(v===0)S.prj.setLinkValue(l.i,4,0);else if(l.type>=3&&l.type<=7&&l.set)S.prj.setLinkValue(l.i,5,l.set);else S.prj.setLinkValue(l.i,4,1)}},
+ 'l.set':{t:'l',lab:'설정값',unit:l=>!l?'':l.type===2?'속도비':l.type>=3&&l.type<=5?'m':l.type===6?fuName():'',g:l=>l.type>=2&&l.type<=7?l.set:null,s:(l,v)=>S.prj.setLinkValue(l.i,5,v),tol:1e-4}};
+const NK=Object.keys(LK).filter(k=>LK[k].t==='n'),LKK=Object.keys(LK).filter(k=>LK[k].t==='l');
+const LAB2K=new Map(Object.keys(LK).map(k=>[LK[k].t+'|'+LK[k].lab,k]));
+const same=(k,a,b)=>{const d=LK[k];if(d.str||d.st)return String(a??'')===String(b??'');if(a==null||b==null||a===''||b==='')return(a==null||a==='')&&(b==null||b==='');return Math.abs(a-b)<=(d.tol||1e-6)};
+const vTxt=(k,el,v)=>{if(v==null||v==='')return'';const d=LK[k];if(d.st)return el?stTxt(el,v):(+v===0?'닫힘':'열림');if(d.str)return String(v);return String(r4(+v))};
+const vParse=(k,s)=>{const d=LK[k];if(s==null||String(s).trim()==='')return d.str?'':null;if(d.st)return /닫|정지|close|^0$/i.test(String(s).trim())?0:1;if(d.str)return String(s).trim();const v=num(s);return isFinite(v)?v:null};
+const findEl=r=>{if(!S.net)return null;if(LK[r.k].t==='n'){const i=nidx(r.id);return i?S.net.nodes[i-1]:null}const i=lidx(r.id);return i?S.net.links[i-1]:null};
+function snapBase(){if(!S.net){IW.base=null;return}const n=new Map(),l=new Map();S.net.nodes.forEach(x=>{const o={};NK.forEach(k=>o[k]=LK[k].g(x));n.set(x.id,o)});S.net.links.forEach(x=>{const o={};LKK.forEach(k=>o[k]=LK[k].g(x));l.set(x.id,o)});IW.base={n,l};IW.ses=Date.now()}
+function scan(){const D=new Map(),B=IW.base;if(!B||!S.net)return D;
+ S.net.nodes.forEach(x=>{const b=B.n.get(x.id);if(!b)return;NK.forEach(k=>{const a=LK[k].g(x);if(a==null&&b[k]==null)return;if(!same(k,a,b[k]))D.set(k+'|'+x.id,{k,id:x.id,from:b[k],to:a})})});
+ S.net.links.forEach(x=>{const b=B.l.get(x.id);if(!b)return;LKK.forEach(k=>{const a=LK[k].g(x);if(a==null&&b[k]==null)return;if(!same(k,a,b[k]))D.set(k+'|'+x.id,{k,id:x.id,from:b[k],to:a})})});return D}
+function autoRec(){if(!S.net||!IW.base||IW.loading)return 0;const D=scan(),M=new Map(LED.map(r=>[r.k+'|'+r.id,r]));const nw=[...D.keys()].filter(k=>!M.has(k));let ch=0;
+ if(nw.length>IW.LIM){nw.forEach(key=>{const c=D.get(key),B=LK[c.k].t==='n'?IW.base.n:IW.base.l,o=B.get(c.id);if(o)o[c.k]=c.to;D.delete(key)});toast(`한 번에 ${nw.length.toLocaleString()}건이 바뀐 일괄 작업이라 수정 대장에는 넣지 않았습니다. 대장에는 손으로 고친 값만 모읍니다.`,6000)}
+ D.forEach((c,key)=>{const r=M.get(key);if(r){if(!same(c.k,r.to,c.to)){r.to=c.to;r.d=today();ch++}}else{LED.push({k:c.k,id:c.id,from:c.from,to:c.to,why:'',d:today(),f:S.name||'',ses:IW.ses});ch++}});
+ for(let q=LED.length-1;q>=0;q--){const r=LED[q];if(r.ses===IW.ses&&!D.has(r.k+'|'+r.id)){LED.splice(q,1);ch++}}
+ if(ch)ledSave();return ch}
+function rowSt(r){const el=findEl(r);if(!el)return['miss','대상 없음'];const cur=LK[r.k].g(el);if(cur==null)return['miss','항목 없음'];if(same(r.k,cur,r.to))return['ok','반영됨'];if(r.from==null||r.from===''&&!LK[r.k].str||same(r.k,cur,r.from))return['todo','미반영'];return['conf','값이 다름']}
+const STC={ok:'iw-ok',todo:'iw-todo',conf:'iw-conf',miss:'iw-miss'};
+function afterBulk(msg){S.res=null;readNet();try{buildFac()}catch(e){}drawStatic();if(msg)S.log.push(msg);renderLog();if($('edAuto')&&$('edAuto').checked)run();else refresh();winRender('iw',true)}
+function ledApply(conf){if(!needNet())return;autoRec();const todo=LED.filter(r=>{const s=rowSt(r)[0];return s==='todo'||(conf&&s==='conf')});if(!todo.length){toast('다시 적용할 항목이 없습니다.');return 0}
+ snapUndo('수정 대장 다시 적용');let ok=0,bad=0;todo.forEach(r=>{try{LK[r.k].s(findEl(r),r.to);ok++}catch(e){bad++}});
+ afterBulk(`수정 대장 다시 적용 ${ok}건${bad?` (실패 ${bad}건)`:''}`);toast(`수정 대장 ${ok}건을 다시 적용했습니다.${bad?` ${bad}건은 적용하지 못했습니다.`:''}`,5000);return ok}
+
+/* ── 엑셀(xlsx) 쓰기·읽기: 여러 시트 ── */
+const xe=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'');
+function cRef(c,r){let s='';c++;while(c>0){const m=(c-1)%26;s=String.fromCharCode(65+m)+s;c=Math.floor((c-1)/26)}return s+r}
+function xlsxMake(sheets){const te=new TextEncoder(),X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n',NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+ const F=[['[Content_Types].xml',X+`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+  ['_rels/.rels',X+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${RN}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+  ['xl/workbook.xml',X+`<workbook xmlns="${NS}" xmlns:r="${RN}"><sheets>${sheets.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`],
+  ['xl/_rels/workbook.xml.rels',X+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${RN}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${RN}/styles" Target="styles.xml"/></Relationships>`],
+  ['xl/styles.xml',X+`<styleSheet xmlns="${NS}"><fonts count="3"><font><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="13"/><name val="맑은 고딕"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE0E7FF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFCBD5E1"/></left><right style="thin"><color rgb="FFCBD5E1"/></right><top style="thin"><color rgb="FFCBD5E1"/></top><bottom style="thin"><color rgb="FFCBD5E1"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`]];
+ sheets.forEach((s,i)=>{const H=s.hdr??-1,ro=new Set(s.ro||[]),rows=s.rows.map((r,ri)=>{const st=ri===H?1:ri===0&&s.title?4:ri>H&&H>=0?2:0;
+   return`<row r="${ri+1}">${r.map((v,ci)=>{if(v==null||v==='')return st===1||st===2&&!ro.has(ci)?'':'';const sid=st===2&&ro.has(ci)?3:st,ref=cRef(ci,ri+1);return typeof v==='number'&&isFinite(v)?`<c r="${ref}" s="${sid}"><v>${v}</v></c>`:`<c r="${ref}" s="${sid}" t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`}).join('')}</row>`}).join('');
+  const cols=s.w?`<cols>${s.w.map((w,ci)=>`<col min="${ci+1}" max="${ci+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:'';
+  const pane=H>=0?`<sheetViews><sheetView workbookViewId="0"><pane ySplit="${H+1}" topLeftCell="A${H+2}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`:'';
+  F.push([`xl/worksheets/sheet${i+1}.xml`,X+`<worksheet xmlns="${NS}">${pane}${cols}<sheetData>${rows}</sheetData></worksheet>`])});
+ return new Blob([zipStore(F.map(([n,t])=>[n,te.encode(t)]))],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+async function xlsxRead(buf){const z=await unzip(buf),td=new TextDecoder(),X=s=>new DOMParser().parseFromString(td.decode(s),'application/xml'),ss=[];
+ const sx=await z.get('xl/sharedStrings.xml');if(sx)for(const si of X(sx).getElementsByTagName('si')){const ts=[...si.getElementsByTagName('t')].filter(t=>!t.parentNode||t.parentNode.nodeName!=='rPh');ss.push(ts.map(t=>t.textContent).join(''))}
+ const wbx=await z.get('xl/workbook.xml');if(!wbx)throw new Error('엑셀(xlsx) 파일이 아닙니다.');const wb=X(wbx),rx=await z.get('xl/_rels/workbook.xml.rels'),rm={};if(rx)for(const r of X(rx).getElementsByTagName('Relationship'))rm[r.getAttribute('Id')]=r.getAttribute('Target');
+ const out={};let k=0;for(const sh of wb.getElementsByTagName('sheet')){k++;const rid=sh.getAttribute('r:id')||sh.getAttributeNS(sh.lookupNamespaceURI('r')||'','id');let t=(rm[rid]||`worksheets/sheet${k}.xml`).replace(/^\//,'');const raw=await z.get(t.startsWith('xl/')?t:'xl/'+t);if(!raw)continue;
+  const d=X(raw),rows=[];for(const r of d.getElementsByTagName('row')){const ri=(+r.getAttribute('r')||rows.length+1)-1,row=[];let ci=0;for(const c of r.getElementsByTagName('c')){const ref=c.getAttribute('r'),col=ref?colIdx(ref):ci;ci=col+1;const ty=c.getAttribute('t');let v='';
+    if(ty==='inlineStr')v=[...c.getElementsByTagName('t')].map(x=>x.textContent).join('');else{const ve=c.getElementsByTagName('v')[0];v=ve?ve.textContent:'';if(ty==='s')v=ss[+v]??''}row[col]=v}rows[ri]=[...row].map(v=>v??'')}
+  out[sh.getAttribute('name')]=[...rows].map(r=>r||[])}
+ return out}
+
+/* ── 입력표 만들기(현재 관망 값으로 채움) ── */
+function curvePts(ci){try{const c=S.prj.getCurve(ci);return{x:[...(c.xValues||c.x||[])],y:[...(c.yValues||c.y||[])]}}catch(e){return{x:[],y:[]}}}
+function rulesRead(){const p=S.prj,out=[];let n=0;try{n=p.getCount(6)}catch(e){return out}
+ for(let r=1;r<=n;r++){let g,id='';try{g=p.getRule(r);id=p.getRuleId(r)}catch(e){continue}const pr=[],th=[];
+  for(let k=1;k<=g.premiseCount;k++){try{pr.push(p.getPremise(r,k))}catch(e){}}for(let k=1;k<=g.thenActionCount;k++){try{th.push(p.getThenAction(r,k))}catch(e){}}out.push({r,id,pr,th})}return out}
+const isTankLv=q=>q&&q.object===6&&q.variable===3;
+function rulePairs(){const p=S.prj,m=new Map();rulesRead().forEach(R=>{if(R.pr.length!==1||!isTankLv(R.pr[0]))return;const q=R.pr[0];let tk;try{if(p.getNodeType(q.objIndex)!==2)return;tk=p.getNodeId(q.objIndex)}catch(e){return}
+  const lo=q.relop===8||q.relop===4||q.relop===2,hi=q.relop===9||q.relop===5||q.relop===3;if(!lo&&!hi)return;
+  R.th.forEach(a=>{let lid;try{lid=p.getLinkId(a.linkIndex)}catch(e){return}const key=tk+'|'+lid;const o=m.get(key)||{tk,lid,lo:null,hi:null,set:null,ids:[]};o.ids.push(R.id);
+   if(lo){o.lo=q.value;if(a.setting>-1e9&&a.setting!==-1)o.set=a.setting}else o.hi=q.value;m.set(key,o)})});return[...m.values()]}
+function patBlocks(){const p=S.prj,J=S.net.nodes.filter(n=>n.type===0&&n.base>0&&n.blk),bm=new Map();J.forEach(n=>{let pi=0;try{pi=p.getNodeValue(n.i,2)}catch(e){}const o=bm.get(n.blk)||new Map();o.set(pi,(o.get(pi)||0)+1);bm.set(n.blk,o)});
+ const pm=new Map();bm.forEach((o,b)=>{if(o.size===1){const pi=[...o.keys()][0];if(pi>0){const a=pm.get(pi)||[];a.push(b);pm.set(pi,a)}}});return pm}
+function tplBook(){const p=S.prj,N=S.net,u=N.u,fu=fuName(),lu=u.us?'ft':'m',sheets=[];
+ const blks=[...new Set(N.nodes.filter(n=>n.type===0&&n.blk).map(n=>n.blk))].sort((a,b)=>a.localeCompare(b,'ko'));
+ sheets.push({name:'안내',title:1,w:[16,46,70],rows:[['INP 만들기 입력표 — 웹 관망해석기'],['관망',S.name||''],['만든 날',today()],['INP 유량 단위',fu],[],
+  ['시트','내용','적용 방법'],
+  ['배수지','배수지(고정 수두)와 탱크 값','ID가 같은 시설에 값을 넣습니다. 빈 칸은 그대로 둡니다. 탱크는 최저 ≤ 초기 ≤ 최고 수위여야 합니다.'],
+  ['가압장','운전·정지, 속도비, 양정곡선 점',`유량은 ${fu}, 양정은 ${lu}. 곡선 점을 넣으면 그 곡선을 바꿉니다(같은 곡선을 쓰는 다른 가압장도 함께 바뀝니다).`],
+  ['밸브','설정값, 상태',`설정값 단위: PRV·PSV·PBV는 ${lu}, FCV는 ${fu}, TCV는 손실계수. 종류 열은 참고용이라 바꿔도 반영하지 않습니다.`],
+  ['블록유량','소블록별 유입·유출·부과량(㎥/일)','유수율 = 부과량 ÷ (유입 − 유출) × 100. 유입을 비우면 유수율(%) 칸을 씁니다. 적용하면 [블록 누수] 도구에 채워 넣습니다.'],
+  ['패턴','시간 패턴과 적용 소블록','평균이 3보다 크면 유량 값으로 보고 평균으로 나눠 배율로 바꿉니다. 그래서 유량계 시간별 값을 그대로 붙여 넣어도 됩니다. 적용 소블록을 쓰면 그 블록 접합점 수요에 패턴을 연결합니다.'],
+  ['운전규칙','배수지(탱크) 수위로 유입 시설을 여닫는 규칙','한 줄마다 "하한보다 낮으면 열기", "상한보다 높으면 닫기" 규칙 2개를 만듭니다. 표에 나온 배수지를 조건으로 쓰던 기존 규칙은 지우고 새로 만듭니다.'],
+  ['수정대장','손으로 고친 값 목록','GIS로 새로 만든 INP에 "원래값 → 새값"을 다시 적용합니다. 사유 칸은 자유롭게 적으세요.'],[],
+  ['주의','ID와 열 이름은 바꾸지 마세요.','행을 지우면 그 시설은 바꾸지 않습니다. 숫자 칸을 비우면 지금 값을 그대로 둡니다.']]});
+ const tr=[['ID','종류',`수두·바닥표고(${lu})`,`초기수위(${lu})`,`최저수위(${lu})`,`최고수위(${lu})`,`지름(${lu})`,'최소용량','메모']];
+ N.nodes.forEach(n=>{if(n.type===1)tr.push([n.id,'배수지(고정수두)',r4(p.getNodeValue(n.i,0)),'','','','','',''])
+  else if(n.type===2)tr.push([n.id,'탱크',r4(p.getNodeValue(n.i,0)),r4(p.getNodeValue(n.i,8)),r4(p.getNodeValue(n.i,20)),r4(p.getNodeValue(n.i,21)),r4(p.getNodeValue(n.i,17)),r4(p.getNodeValue(n.i,18)),''])});
+ sheets.push({name:'배수지',hdr:0,ro:[1],w:[18,16,16,13,13,13,12,12,30],rows:tr});
+ const pr=[['ID','시작절점','끝절점','상태(운전/정지)','속도비','양정곡선 ID',`유량1(${fu})`,`양정1(${lu})`,`유량2(${fu})`,`양정2(${lu})`,`유량3(${fu})`,`양정3(${lu})`,'메모']];
+ N.links.forEach(l=>{if(l.type!==2)return;let ci=0,cid='',c={x:[],y:[]};try{ci=p.getHeadCurveIndex(l.i);if(ci>0){cid=p.getCurveId(ci);c=curvePts(ci)}}catch(e){}
+  const pts=[];let memo='';if(c.x.length<=3)c.x.forEach((x,k)=>pts.push(r4(x),r4(c.y[k])));else memo=`곡선 점이 ${c.x.length}개라 표에서 뺐습니다(점을 넣으면 그 값으로 바뀝니다).`;while(pts.length<6)pts.push('');
+  const off=l.init===0;if(off&&!(l.set>0))memo=(memo?memo+' ':'')+'정지 중이라 속도비를 읽을 수 없습니다. 운전으로 바꾸면 속도비를 넣으세요(비우면 1).';pr.push([l.id,N.nodes[l.n1-1].id,N.nodes[l.n2-1].id,off?'정지':'운전',off&&!(l.set>0)?'':r4(l.set),cid,...pts,memo])});
+ sheets.push({name:'가압장',hdr:0,ro:[1,2],w:[18,12,12,14,9,16,11,10,11,10,11,10,40],rows:pr});
+ const vr=[['ID','종류','관경(mm)','설정값','설정 단위','상태(설정대로/열림/닫힘)','메모']];
+ N.links.forEach(l=>{if(l.type<3)return;vr.push([l.id,VTN[l.type]||'',r4(l.dia),l.type===8?'':r4(l.set),LK['l.set'].unit(l)||(l.type===7?'손실계수':''),l.init===0?'닫힘':'설정대로',''])});
+ sheets.push({name:'밸브',hdr:0,ro:[1,2,4],w:[18,8,10,10,10,22,30],rows:vr});
+ const bd=new Map();N.nodes.forEach(n=>{if(n.type===0&&n.blk){const o=bd.get(n.blk)||{d:0,c:0};o.d+=n.base||0;o.c++;bd.set(n.blk,o)}});
+ const br=[['소블록','유입유량(㎥/일)','유출유량(㎥/일)','부과량(㎥/일)','유수율(%)','물리적 누수 비율(%)','모델 기본수요(㎥/일, 참고)','접합점 수(참고)']];blks.forEach(b=>{const o=bd.get(b);br.push([b,'','','','','',r4(o.d*86.4),o.c])});
+ sheets.push({name:'블록유량',hdr:0,ro:[6,7],w:[16,15,15,15,11,17,22,14],rows:br});
+ let np=0;try{np=p.getCount(3)}catch(e){}const pb=patBlocks(),pats=[];let ml=24;for(let i=1;i<=np;i++){let id='',v=[];try{id=p.getPatternId(i);const L=p.getPatternLength(i);for(let k=1;k<=L;k++)v.push(r4(p.getPatternValue(i,k)))}catch(e){}ml=Math.max(ml,v.length);pats.push([id,(pb.get(i)||[]).join(', '),...v])}
+ sheets.push({name:'패턴',hdr:0,w:[16,26,...Array(ml).fill(7)],rows:[['패턴 ID','적용 소블록(쉼표로 구분)',...Array.from({length:ml},(_,k)=>String(k+1))],...pats]});
+ const rr=[['배수지(탱크 ID)',`하한수위(${lu})`,`상한수위(${lu})`,'유입 시설 ID(밸브·가압장·관로)','하한일 때 설정값(비우면 열기)','메모']];
+ rulePairs().forEach(o=>rr.push([o.tk,o.lo??'',o.hi??'',o.lid,o.set==null?'':r4(o.set),'기존 규칙 '+o.ids.join(', ')]));
+ if(rr.length===1)N.nodes.forEach(n=>{if(n.type===2)rr.push([n.id,'','','','',''])});
+ sheets.push({name:'운전규칙',hdr:0,w:[18,13,13,26,24,30],rows:rr});
+ autoRec();const lr=[['구분','ID','항목','원래값','새값','단위','사유','기록일','기록 파일','상태(참고)']];
+ LED.forEach(r=>{const el=findEl(r),d=LK[r.k];lr.push([d.t==='n'?'절점':'관로',r.id,d.lab,vTxt(r.k,el,r.from),vTxt(r.k,el,r.to),d.unit(el),r.why||'',r.d||'',r.f||'',rowSt(r)[1]])});
+ sheets.push({name:'수정대장',hdr:0,ro:[9],w:[8,18,12,12,12,9,30,11,24,11],rows:lr});
+ return sheets}
+async function tplSave(){if(!needNet())return;let s;try{s=tplBook()}catch(e){console.error(e);toast('입력표를 만들지 못했습니다: '+(e.message||e));return}
+ const nm=(S.name||'관망').replace(/\.(inp|txt)$/i,'')+'_입력표.xlsx';await offerBlob(xlsxMake(s),nm)}
+
+/* ── 입력표 읽기 → 바뀔 값 미리보기(plan) → 적용 ── */
+const hIdx=(h,re)=>h.findIndex(x=>re.test(String(x||'').replace(/\s+/g,'')));
+function sheetOf(book,re){const k=Object.keys(book).find(n=>re.test(n.replace(/\s+/g,'')));return k?book[k]:null}
+function hdrRow(rows,re){for(let i=0;i<Math.min(rows.length,8);i++){if((rows[i]||[]).some(x=>re.test(String(x||'').replace(/\s+/g,''))))return i}return-1}
+function plan(book){const p=S.prj,N=S.net,P={chg:[],warn:[],seen:{},lk:null,led:null,lkTxt:''};const ch=(sh,id,what,a,b,fn)=>P.chg.push({sh,id,what,a,b,fn}),wn=(sh,id,msg)=>P.warn.push({sh,id,msg});
+ const T0=(rows,re)=>{const h=hdrRow(rows,re);return h<0?null:{h,H:rows[h].map(x=>String(x||'').replace(/\s+/g,'')),R:rows.slice(h+1).filter(r=>r&&r.some(v=>String(v).trim()!==''))}};
+ // 배수지
+ let s=sheetOf(book,/^배수지/);if(s){const t=T0(s,/^ID$/i);P.seen['배수지']=t?t.R.length:0;if(t){const c={id:hIdx(t.H,/^ID$/i),hd:hIdx(t.H,/^수두|바닥표고/),il:hIdx(t.H,/^초기수위/),mn:hIdx(t.H,/^최저수위/),mx:hIdx(t.H,/^최고수위/),dm:hIdx(t.H,/^지름/),mv:hIdx(t.H,/^최소용량/)};
+  t.R.forEach(r=>{const id=String(r[c.id]||'').trim();if(!id)return;const k=nidx(id);if(!k){wn('배수지',id,'관망에 없는 ID');return}const ty=p.getNodeType(k);const g=ci=>ci>=0?num(r[ci]):NaN;
+   if(ty===1){const v=g(c.hd),o=p.getNodeValue(k,0);if(isFinite(v)&&!near(v,o))ch('배수지',id,'수두',r4(o),v,()=>p.setNodeValue(k,0,v))}
+   else if(ty===2){const o=[0,8,20,21,17,18].map(q=>p.getNodeValue(k,q)),nv=[c.hd,c.il,c.mn,c.mx,c.dm,c.mv].map((ci,q)=>{const v=g(ci);return isFinite(v)?v:o[q]});
+    if(nv.every((v,q)=>near(v,o[q])))return;if(!(nv[2]<=nv[1]&&nv[1]<=nv[3])){wn('배수지',id,`수위 순서가 맞지 않음(최저 ${nv[2]} ≤ 초기 ${nv[1]} ≤ 최고 ${nv[3]})`);return}
+    const lab=['바닥표고','초기수위','최저수위','최고수위','지름','최소용량'],d=nv.map((v,q)=>near(v,o[q])?null:`${lab[q]} ${r4(o[q])}→${r4(v)}`).filter(Boolean);
+    let vc='';try{const vi=p.getNodeValue(k,19);if(vi>0)vc=p.getCurveId(vi)}catch(e){}ch('배수지',id,d.join(', '),'','',()=>p.setTankData(k,nv[0],nv[1],nv[2],nv[3],nv[4],nv[5],vc))}
+   else wn('배수지',id,'배수지·탱크가 아님')})}}
+ // 가압장
+ s=sheetOf(book,/^가압장/);if(s){const t=T0(s,/^ID$/i);P.seen['가압장']=t?t.R.length:0;if(t){const c={id:hIdx(t.H,/^ID$/i),st:hIdx(t.H,/^상태/),sp:hIdx(t.H,/^속도/),cv:hIdx(t.H,/곡선ID|곡선/),q:[1,2,3].map(n=>hIdx(t.H,new RegExp('^유량'+n))),h:[1,2,3].map(n=>hIdx(t.H,new RegExp('^양정'+n)))};const used=new Map();
+  t.R.forEach(r=>{const id=String(r[c.id]||'').trim();if(!id)return;const k=lidx(id);if(!k){wn('가압장',id,'관망에 없는 ID');return}if(p.getLinkType(k)!==2){wn('가압장',id,'가압장(펌프)이 아님');return}
+   const st=c.st>=0?String(r[c.st]||'').trim():'';if(st){const v=/정지|닫|off|close|^0$/i.test(st)?0:1,o=p.getLinkValue(k,4)===0?0:1;if(v!==o){const sp0=c.sp>=0?num(r[c.sp]):NaN,nsp=v&&!(sp0>0)&&!(p.getLinkValue(k,5)>0);if(nsp)wn('가압장',id,'속도비가 없어 1로 둡니다');ch('가압장',id,'상태',o?'운전':'정지',v?'운전':'정지',()=>{p.setLinkValue(k,4,v);if(nsp)p.setLinkValue(k,5,1)})}}
+   const sp=c.sp>=0?num(r[c.sp]):NaN;if(isFinite(sp)){const o=p.getLinkValue(k,5);if(!near(sp,o))ch('가압장',id,'속도비',r4(o),sp,()=>p.setLinkValue(k,5,sp))}
+   const X=[],Y=[];c.q.forEach((qi,q)=>{const a=qi>=0?num(r[qi]):NaN,b=c.h[q]>=0?num(r[c.h[q]]):NaN;if(isFinite(a)&&isFinite(b)){X.push(a);Y.push(b)}});if(!X.length)return;
+   if(X.length>1&&!(X.every((x,q)=>!q||x>X[q-1])&&Y.every((y,q)=>!q||y<Y[q-1]))){wn('가압장',id,'곡선 점은 유량이 커지고 양정이 작아지는 순서여야 함');return}
+   let ci0=0;try{ci0=p.getHeadCurveIndex(k)}catch(e){}let cid=c.cv>=0?String(r[c.cv]||'').trim():'';if(!cid)cid=ci0>0?p.getCurveId(ci0):('PC_'+id).slice(0,31);
+   const key=X.join(',')+'|'+Y.join(',');if(used.has(cid)&&used.get(cid)!==key){wn('가압장',id,`곡선 ${cid}에 다른 점이 이미 있어 이 줄의 곡선은 건너뜀`);return}used.set(cid,key);
+   let ex=0;try{ex=p.getCurveIndex(cid)}catch(e){}const cur=ex?curvePts(ex):null,diff=!cur||cur.x.length!==X.length||cur.x.some((x,q)=>!near(x,X[q])||!near(cur.y[q],Y[q]));
+   if(diff)ch('가압장',id,`양정곡선 ${cid}`,cur?cur.x.map((x,q)=>r4(x)+'/'+r4(cur.y[q])).join(' '):'(새 곡선)',X.map((x,q)=>x+'/'+Y[q]).join(' '),()=>{let ci=0;try{ci=p.getCurveIndex(cid)}catch(e){}if(!ci){p.addCurve(cid);ci=p.getCurveIndex(cid)}p.setCurve(ci,X,Y);if(p.getHeadCurveIndex(k)!==ci)p.setHeadCurveIndex(k,ci)});
+   else if(ex&&ex!==ci0)ch('가압장',id,'양정곡선 연결',ci0?p.getCurveId(ci0):'',cid,()=>p.setHeadCurveIndex(k,p.getCurveIndex(cid)))})}}
+ // 밸브
+ s=sheetOf(book,/^밸브/);if(s){const t=T0(s,/^ID$/i);P.seen['밸브']=t?t.R.length:0;if(t){const c={id:hIdx(t.H,/^ID$/i),ty:hIdx(t.H,/^종류/),se:hIdx(t.H,/^설정값/),st:hIdx(t.H,/^상태/)};
+  t.R.forEach(r=>{const id=String(r[c.id]||'').trim();if(!id)return;const k=lidx(id);if(!k){wn('밸브',id,'관망에 없는 ID');return}const ty=p.getLinkType(k);if(ty<3){wn('밸브',id,'밸브가 아님');return}
+   const tt=c.ty>=0?String(r[c.ty]||'').trim().toUpperCase():'';if(tt&&tt!==VTN[ty])wn('밸브',id,`종류(${tt})는 바꾸지 않았습니다. 지금 종류: ${VTN[ty]}`);
+   const se=c.se>=0?num(r[c.se]):NaN,o=p.getLinkValue(k,5),oi=p.getLinkValue(k,4);if(isFinite(se)&&ty!==8&&!near(se,o))ch('밸브',id,'설정값',r4(o),se,()=>p.setLinkValue(k,5,se));
+   const st=c.st>=0?String(r[c.st]||'').trim():'';if(st){if(/닫/.test(st)){if(oi!==0)ch('밸브',id,'상태','열림·설정대로','닫힘',()=>p.setLinkValue(k,4,0))}
+    else if(/열림|완전|open/i.test(st)&&!/설정/.test(st))ch('밸브',id,'상태',oi===0?'닫힘':'설정대로','완전 열림',()=>p.setLinkValue(k,4,1));
+    else if(oi===0){const v=isFinite(se)?se:o;ch('밸브',id,'상태','닫힘','설정대로',()=>p.setLinkValue(k,5,v))}}})}}
+ // 패턴
+ s=sheetOf(book,/^패턴/);if(s){const t=T0(s,/^패턴ID$/);P.seen['패턴']=t?t.R.length:0;if(t){const ib=hIdx(t.H,/^적용/),i0=Math.max(1,ib+1);const bj=new Map();N.nodes.forEach(n=>{if(n.type===0&&n.blk&&n.base>0){const a=bj.get(n.blk)||[];a.push(n);bj.set(n.blk,a)}});
+  t.R.forEach(r=>{const id=String(r[0]||'').trim();if(!id)return;if(/\s/.test(id)||new TextEncoder().encode(id).length>31){wn('패턴',id,'ID에 빈칸이 있거나 너무 김(31바이트까지)');return}
+   const v=r.slice(i0).map(num);let e=v.length;while(e>0&&!isFinite(v[e-1]))e--;const vals=v.slice(0,e);if(vals.some(x=>!isFinite(x))){wn('패턴',id,'값 중간에 빈 칸이나 글자가 있음');return}
+   let pi=0;try{pi=p.getPatternIndex(id)}catch(e){}let mv=vals;if(vals.length){const m=vals.reduce((a,b)=>a+b,0)/vals.length;if(!(m>0)){wn('패턴',id,'평균이 0 이하라 건너뜀');return}if(m>3){mv=vals.map(x=>x/m);wn('패턴',id,`유량 값으로 보고 평균 ${r4(m)}으로 나눠 배율로 바꿈`)}
+    let same=false;if(pi){try{const L=p.getPatternLength(pi);same=L===mv.length&&mv.every((x,q)=>near(x,p.getPatternValue(pi,q+1),1e-4))}catch(e){}}
+    if(!same)ch('패턴',id,pi?`값 ${mv.length}칸`:`새 패턴 ${mv.length}칸`,'','',()=>{let k=0;try{k=p.getPatternIndex(id)}catch(e){}if(!k){p.addPattern(id);k=p.getPatternIndex(id)}p.setPattern(k,mv.map(r4))})}
+   else if(!pi){wn('패턴',id,'값이 없고 관망에도 없는 패턴');return}
+   const bl=ib>=0?String(r[ib]||'').split(/[,，;\n]+/).map(x=>x.trim()).filter(Boolean):[];bl.forEach(b=>{const js=bj.get(b);if(!js){wn('패턴',id,`소블록 ${b}이(가) 관망에 없거나 수요 있는 접합점이 없음`);return}
+    const dc=n=>{let nd=0;try{nd=p.getNumberOfDemands(n.i)}catch(e){}const a=[];for(let d=1;d<=nd;d++){try{if(p.getBaseDemand(n.i,d)>0)a.push(d)}catch(e){}}return a.length?a:nd?[1]:[]};
+    const tg=js.filter(n=>{const ds=dc(n);if(!ds.length)return pi===0||p.getNodeValue(n.i,2)!==pi;try{return ds.some(d=>pi===0||p.getDemandPattern(n.i,d)!==pi)}catch(e){return true}});
+    if(tg.length)ch('패턴',id,`소블록 ${b} 접합점 ${tg.length}개에 연결`,'','',()=>{const k=p.getPatternIndex(id);tg.forEach(n=>{const ds=dc(n);if(ds.length)ds.forEach(d=>p.setDemandPattern(n.i,d,k));else p.setNodeValue(n.i,2,k)})})})})}}
+ // 운전규칙
+ s=sheetOf(book,/^운전규칙|^규칙/);if(s){const t=T0(s,/^배수지/);P.seen['운전규칙']=t?t.R.length:0;if(t){const c={tk:hIdx(t.H,/^배수지/),lo:hIdx(t.H,/^하한수위/),hi:hIdx(t.H,/^상한수위/),lk:hIdx(t.H,/^유입/),se:hIdx(t.H,/^하한일때|설정값/)};const cur=new Map(rulePairs().map(o=>[o.tk+'|'+o.lid,o]));const tks=new Map();
+  t.R.forEach(r=>{const tk=String(r[c.tk]||'').trim(),lid=String(r[c.lk]||'').trim();if(!tk)return;const lo=num(r[c.lo]),hi=num(r[c.hi]),se=c.se>=0?num(r[c.se]):NaN;if(!lid&&!isFinite(lo)&&!isFinite(hi))return;
+   const k=nidx(tk);if(!k||p.getNodeType(k)!==2){wn('운전규칙',tk,'탱크(수위가 바뀌는 배수지)가 아니거나 없는 ID');return}const li=lidx(lid);if(!li){wn('운전규칙',tk,`유입 시설 ${lid||'(빈칸)'}이(가) 없음`);return}
+   if(!(isFinite(lo)&&isFinite(hi)&&lo<hi)){wn('운전규칙',tk,'하한·상한 수위를 모두 넣고 하한 < 상한이어야 함');return}const a=tks.get(k)||[];a.push({tk,lid,li,lo,hi,se});tks.set(k,a)});
+  tks.forEach((rows,k)=>{const same=rows.every(o=>{const c0=cur.get(o.tk+'|'+o.lid);return c0&&near(c0.lo??NaN,o.lo)&&near(c0.hi??NaN,o.hi)&&(isFinite(o.se)?c0.set!=null&&near(c0.set,o.se):c0.set==null)});
+   const nOld=rulesRead().filter(R=>R.pr.some(q=>isTankLv(q)&&q.objIndex===k)).length;if(same&&nOld===rows.length*2)return;
+   ch('운전규칙',rows[0].tk,rows.map(o=>`${o.lid}: ${o.lo} 아래 ${isFinite(o.se)?'설정 '+o.se:'열기'} / ${o.hi} 위 닫기`).join(' · '),nOld?`기존 규칙 ${nOld}개`:'',`규칙 ${rows.length*2}개`,()=>{
+    for(let r=p.getCount(6);r>=1;r--){let g;try{g=p.getRule(r)}catch(e){continue}let hit=false;for(let q=1;q<=g.premiseCount;q++){try{const pr=p.getPremise(r,q);if(isTankLv(pr)&&pr.objIndex===k)hit=true}catch(e){}}if(hit)p.deleteRule(r)}
+    const ids=new Set();for(let r=1;r<=p.getCount(6);r++){try{ids.add(p.getRuleId(r))}catch(e){}}let n=1;const nid=()=>{while(ids.has('IW'+n+'L')||ids.has('IW'+n+'H'))n++;const s0='IW'+n;n++;return s0};
+    rows.forEach(o=>{const kw=lkw(p.getLinkType(o.li)),b=nid();p.addRule(`RULE ${b}L\nIF TANK ${o.tk} LEVEL BELOW ${o.lo}\nTHEN ${kw} ${o.lid} ${isFinite(o.se)?'SETTING IS '+o.se:'STATUS IS OPEN'}`);p.addRule(`RULE ${b}H\nIF TANK ${o.tk} LEVEL ABOVE ${o.hi}\nTHEN ${kw} ${o.lid} STATUS IS CLOSED`)})})})}}
+ // 블록유량 → 블록 누수 도구용 유수율
+ s=sheetOf(book,/^블록유량|^블록/);if(s){const t=T0(s,/^소블록|^블록/);P.seen['블록유량']=t?t.R.length:0;if(t){const c={b:hIdx(t.H,/^소블록|^블록/),i:hIdx(t.H,/^유입/),o:hIdx(t.H,/^유출/),f:hIdx(t.H,/^부과/),r:hIdx(t.H,/^유수율/),s:hIdx(t.H,/누수비율|물리/)};const names=new Set(N.nodes.filter(n=>n.blk).map(n=>n.blk));const L=[];
+  t.R.forEach(r=>{const b=String(r[c.b]||'').trim();if(!b)return;const qi=num(r[c.i]),qo=c.o>=0?num(r[c.o]):NaN,qf=num(r[c.f]);let rw=c.r>=0?num(r[c.r]):NaN;const sv=c.s>=0?num(r[c.s]):NaN;
+   if(isFinite(qi)&&isFinite(qf)){const sup=qi-(isFinite(qo)?qo:0);if(!(sup>0)){wn('블록유량',b,'유입 − 유출이 0 이하');return}rw=qf/sup*100}
+   if(!isFinite(rw))return;if(!(rw>0&&rw<=100)){wn('블록유량',b,`유수율 ${r4(rw)}%는 0 초과 100 이하가 아님`);return}if(!names.has(b))wn('블록유량',b,'관망에 없는 소블록');L.push([b,r4(rw),isFinite(sv)?sv:''])});
+  if(L.length){P.lk={n:L.length};P.lkTxt='소블록,유수율(%),물리적 누수 비율(%)\n'+L.map(a=>a.join(',')).join('\n')}}}
+ // 수정대장
+ s=sheetOf(book,/^수정대장|^대장/);if(s){const t=T0(s,/^구분$/);P.seen['수정대장']=t?t.R.length:0;if(t){const c={g:hIdx(t.H,/^구분$/),id:hIdx(t.H,/^ID$/i),it:hIdx(t.H,/^항목$/),a:hIdx(t.H,/^원래값$/),b:hIdx(t.H,/^새값$/),w:hIdx(t.H,/^사유$/),d:hIdx(t.H,/^기록일$/),f:hIdx(t.H,/^기록파일$/)};const rows=[];
+  t.R.forEach(r=>{const g=String(r[c.g]||'').trim(),id=String(r[c.id]||'').trim(),it=String(r[c.it]||'').trim();if(!id)return;const k=LAB2K.get((/관|링크/.test(g)?'l':'n')+'|'+it);if(!k){wn('수정대장',id,`항목 "${it}"을(를) 모름`);return}
+   const to=vParse(k,r[c.b]);if(to==null){wn('수정대장',id,'새값이 비어 있음');return}rows.push({k,id,from:vParse(k,r[c.a]),to,why:c.w>=0?String(r[c.w]||''):'',d:c.d>=0?String(r[c.d]||''):today(),f:c.f>=0?String(r[c.f]||''):'',ses:0})});
+  const st={ok:0,todo:0,conf:0,miss:0};rows.forEach(r=>st[rowSt(r)[0]]++);P.led={rows,st}}}
+ return P}
+async function planLoad(file){if(!needNet())return;let book;try{book=await xlsxRead(await file.arrayBuffer())}catch(e){toast('입력표를 읽지 못했습니다: '+(e.message||e),6000);return}
+ try{IW.plan=plan(book);IW.file=file.name}catch(e){console.error(e);toast('입력표 확인 중 오류: '+(e.message||e),6000);return}IW.tab='t';winOpen('iw');winRender('iw',true)}
+function planApply(){const P=IW.plan;if(!P||!needNet())return;const nL=P.led?P.led.rows.length:0;if(!P.chg.length&&!nL&&!P.lkTxt){toast('바꿀 값이 없습니다.');return}
+ autoRec();let ok=0,bad=[];if(P.chg.length){snapUndo('입력표 적용');IW.loading=true;try{P.chg.forEach(c=>{try{c.fn();ok++}catch(e){bad.push(c.sh+' '+c.id+': '+(e.message||e))}})}finally{IW.loading=false}
+  readNet();const D=scan();D.forEach(c=>{if(!LED.some(r=>r.k===c.k&&r.id===c.id)){const o=(LK[c.k].t==='n'?IW.base.n:IW.base.l).get(c.id);if(o)o[c.k]=c.to}})}
+ let nled=0;if(nL){P.led.rows.forEach(r=>{const q=LED.findIndex(x=>x.k===r.k&&x.id===r.id);if(q>=0)LED[q]=Object.assign(LED[q],{from:r.from,to:r.to,why:r.why||LED[q].why,d:r.d||LED[q].d,f:r.f||LED[q].f});else LED.push(r)});ledSave();
+  const todo=LED.filter(r=>rowSt(r)[0]==='todo');if(todo.length){if(!P.chg.length)snapUndo('수정 대장 다시 적용');todo.forEach(r=>{try{LK[r.k].s(findEl(r),r.to);nled++}catch(e){bad.push('수정대장 '+r.id)}})}}
+ if(P.lkTxt)IW.lkTxt=P.lkTxt;
+ IW.plan=null;afterBulk(`입력표 적용: ${ok}건${nled?`, 수정 대장 ${nled}건`:''}${bad.length?` (실패 ${bad.length}건)`:''}`);
+ if(bad.length){console.warn(bad);toast(`적용 ${ok+nled}건, 실패 ${bad.length}건 — ${bad.slice(0,2).join(' / ')}`,8000)}else toast(`입력표를 적용했습니다(${ok+nled}건).${P.lkTxt?' 블록 누수는 [블록 누수 도구]에서 배분하세요.':''}`,6000);
+ IW.tab='s';winRender('iw',true)}
+function lkOpen(){if(!needNet())return;toolsTab('lkb');if(IW.lkTxt)setTimeout(()=>{const t=$('lkT'),b=$('lkRead');if(t&&b){t.value=IW.lkTxt;b.click();toast('입력표의 블록 유수율을 넣었습니다. 물리적 누수 비율을 확인하고 [배분 적용]을 누르세요.',6000)}},80)}
+
+/* ── 단계 안내 ── */
+function steps(){const N=S.net,p=S.prj;if(!N)return[{k:1,t:'관망 만들기',st:'todo',m:'GIS 관로 SHP로 새로 만들거나 기존 INP를 여세요.',b:[['gis','GIS 관망 생성'],['open','INP 열기'],['sample','샘플 관망']]}];
+ const J=N.nodes.filter(n=>n.type===0),nJ=J.length||1,nb=J.filter(n=>n.blk).length,ne=J.filter(n=>Math.abs(n.elev)<1e-9).length,nd=J.filter(n=>n.base>0).length,sd=J.reduce((a,n)=>a+(n.base||0),0)*86.4;
+ const nr=N.nodes.filter(n=>n.type===1).length,nt=N.nodes.filter(n=>n.type===2).length,pu=N.links.filter(l=>l.type===2),va=N.links.filter(l=>l.type>=3);let pnc=0;pu.forEach(l=>{try{if(!(p.getHeadCurveIndex(l.i)>0))pnc++}catch(e){}});
+ let np=0,nru=0;try{np=p.getCount(3)}catch(e){}try{nru=p.getCount(6)}catch(e){}let np0=0,nem=0;J.forEach(n=>{try{if(n.base>0){const nd=p.getNumberOfDemands(n.i);let z=false;for(let d=1;d<=nd;d++)if(p.getBaseDemand(n.i,d)>0&&!(p.getDemandPattern(n.i,d)>0))z=true;if(z)np0++}if(p.getNodeValue(n.i,3)>0)nem++}catch(e){}});
+ const blks=new Set(J.map(n=>n.blk).filter(Boolean)).size,ls={ok:0,todo:0,conf:0,miss:0};LED.forEach(r=>ls[rowSt(r)[0]]++);const pct=x=>Math.round(x/nJ*100);
+ return[{k:1,t:'관망 만들기',st:'ok',m:`접합점 ${J.length.toLocaleString()} · 관로 ${N.links.filter(l=>l.type<=1).length.toLocaleString()}개`,b:[['gis','GIS 관망 다시 생성'],['open','INP 열기']]},
+  {k:2,t:'소블록 지정',st:nb>=nJ*0.95?'ok':nb?'warn':'todo',m:`${blks}개 블록 · 접합점 ${pct(nb)}%에 지정${nb<J.length?` (미지정 ${(J.length-nb).toLocaleString()}개)`:''}`,b:[['blkLay','블록 경계 SHP'],['iso','소블록 고립 확인']]},
+  {k:3,t:'표고',st:ne===0?'ok':ne<nJ*0.05?'warn':'todo',m:ne?`표고 0인 접합점 ${ne.toLocaleString()}개`:'모든 접합점에 표고 있음',b:[['elvIn','표고 입력'],['elv','표고 검증']]},
+  {k:4,t:'수요(계량기 할당)',st:nd>=nJ*0.3?'ok':nd?'warn':'todo',m:`수요 있는 접합점 ${nd.toLocaleString()}개 · 합 ${fmt(sd,0)} ㎥/일`,b:[['meter','계량기 절점 할당'],['demTab','수요량 테이블']]},
+  {k:5,t:'시설값(배수지·가압장·밸브)',st:nr+nt===0?'todo':pnc?'warn':'ok',m:`배수지 ${nr} · 탱크 ${nt} · 가압장 ${pu.length} · 밸브 ${va.length}${pnc?` — 양정곡선 없는 가압장 ${pnc}개`:''}`,b:[['iwTpl','입력표 내려받기'],['iwLoad','입력표 불러오기'],['fac','시설물 편집']]},
+  {k:6,t:'시간 패턴',st:np?(np0?'warn':'ok'):'todo',m:`패턴 ${np}개${np0?` · 패턴 없이 기본 패턴을 쓰는 수요 접합점 ${np0.toLocaleString()}개`:''}`,b:[['iwTpl','입력표(패턴 시트)'],['sPat','패턴 보기']]},
+  {k:7,t:'누수(블록 유수율)',st:nem?'ok':IW.lkTxt?'warn':'todo',m:`누수계수 있는 접합점 ${nem.toLocaleString()}개${IW.lkTxt?' · 입력표 유수율 준비됨':''}`,b:[['iwLk',IW.lkTxt?'블록 누수 도구(유수율 넣기)':'블록 누수 도구']]},
+  {k:8,t:'운전 규칙',st:nt===0||nru?'ok':'warn',m:`규칙 ${nru}개 · 탱크 ${nt}개`,b:[['iwTpl','입력표(운전규칙 시트)'],['sCtl','제어 보기']]},
+  {k:9,t:'수정 대장',st:ls.todo||ls.conf?'warn':'ok',m:`${LED.length.toLocaleString()}건 (반영 ${ls.ok} · 미반영 ${ls.todo} · 값이 다름 ${ls.conf} · 대상 없음 ${ls.miss})`,b:[['iwLed','대장 보기'],...(ls.todo?[['iwRe','미반영 다시 적용']]:[])]},
+  {k:10,t:'검증·저장',st:S.res?'ok':'todo',m:S.res?'해석 결과 있음 — 저장하면 INP와 입력표(엑셀)를 함께 내려받습니다.':'모델 검증과 해석을 돌린 뒤 저장하세요.',b:[['verify','모델 검증'],['run','해석 실행'],['iwSave','INP + 입력표 저장']]}]}
+const ICS={ok:'✓',warn:'!',todo:'○'};
+function uiSteps(){return`<div class="iw-steps">${steps().map(s=>`<div class="iw-st"><span class="iw-ic iw-${s.st}">${ICS[s.st]}</span><div class="iw-tx"><b>${s.k}. ${esc(s.t)}</b><span>${esc(s.m)}</span><div class="iw-bt">${s.b.map(([a,l])=>`<button type="button" class="iw-b" data-iw="${a}">${esc(l)}</button>`).join('')}</div></div></div>`).join('')}</div>`
+ +tnote('단계는 순서대로 하지 않아도 됩니다. 각 단계의 상태는 지금 관망을 보고 바로 계산합니다. 시설값·패턴·운전 규칙은 입력표(엑셀) 한 장으로 한 번에 넣을 수 있습니다.')}
+function uiTpl(){const P=IW.plan;let h=tbox('📗 시설 입력표(엑셀)',`<p class="text-xs text-slate-500">배수지·가압장·밸브·블록유량·패턴·운전규칙·수정대장 시트로 된 엑셀입니다. 지금 관망 값으로 채워 내려받고, 고친 뒤 다시 불러오면 바뀐 값만 보여 주고 적용합니다. 같은 입력표를 내년에 새로 만든 INP에도 그대로 쓸 수 있습니다.</p>
+ <div class="flex flex-wrap gap-2">${tbtnP('iwTplB','📥 입력표 내려받기')}<label class="inline-flex items-center gap-1 cursor-pointer px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-xs"><input id="iwF" type="file" accept=".xlsx" class="hidden">📂 입력표 불러오기</label></div>`);
+ if(P){const seen=Object.entries(P.seen).map(([k,v])=>`${k} ${v}행`).join(' · ')||'알아본 시트 없음';
+  h+=tbox(`🔎 미리보기 — ${esc(IW.file)}`,kv('읽은 시트',esc(seen))+kv('바뀔 값',`${P.chg.length.toLocaleString()}건`)+(P.lk?kv('블록 유수율',`${P.lk.n}개 블록 → 블록 누수 도구로`):'')+(P.led?kv('수정 대장',`${P.led.rows.length}행 (미반영 ${P.led.st.todo} · 반영됨 ${P.led.st.ok} · 값이 다름 ${P.led.st.conf} · 대상 없음 ${P.led.st.miss})`):'')+kv('알림',`${P.warn.length}건`)
+   +tbl(['시트','ID','바뀌는 것','지금','새 값'],P.chg.slice(0,400).map(c=>`<tr class="border-t"><td class="text-left">${esc(c.sh)}</td><td class="text-left">${esc(c.id)}</td><td class="text-left">${esc(c.what)}</td><td>${esc(c.a??'')}</td><td>${esc(c.b??'')}</td></tr>`),{h:220,empty:'바뀔 값이 없습니다'})
+   +(P.warn.length?tbl(['시트','ID','알림'],P.warn.slice(0,300).map(w=>`<tr class="border-t"><td class="text-left">${esc(w.sh)}</td><td class="text-left">${esc(w.id)}</td><td class="text-left">${esc(w.msg)}</td></tr>`),{h:140,left:1}):'')
+   +`<div class="flex flex-wrap gap-2">${tbtnP('iwApply','✔ 적용')}${tbtn('iwCancel','취소')}</div>`+tnote('적용은 한 번에 되돌리기(↶)로 취소할 수 있습니다. 수정 대장 시트는 대장에 합친 뒤 미반영 항목을 다시 적용합니다.'))}
+ return h}
+function uiLed(){autoRec();const ls={ok:0,todo:0,conf:0,miss:0},rs=LED.map((r,q)=>{const s=rowSt(r);ls[s[0]]++;return{r,q,s}});const ord={todo:0,conf:1,miss:2,ok:3};rs.sort((a,b)=>ord[a.s[0]]-ord[b.s[0]]||b.q-a.q);
+ return tbox('📒 수정 대장',`<p class="text-xs text-slate-500">손으로 고친 값(표고, 수요, 관경, C, 상태, 밸브 설정값, 소블록 등)을 처음 연 값과 비교해 자동으로 모읍니다. GIS로 INP를 새로 만든 뒤 [미반영 다시 적용]을 누르면 같은 수정을 되살립니다. 한 번에 ${IW.LIM}건 넘게 바뀌는 일괄 작업(블록 경계·계량기 할당 등)은 넣지 않습니다.</p>`
+  +kv('전체',`${LED.length.toLocaleString()}건`)+kv('반영됨 · 미반영 · 값이 다름 · 대상 없음',`${ls.ok} · ${ls.todo} · ${ls.conf} · ${ls.miss}`)
+  +`<div class="flex flex-wrap gap-2">${tbtnP('iwReB','↻ 미반영 다시 적용')}${tbtn('iwReC','값이 다른 것도 적용')}${tbtn('iwTplL','📥 대장 엑셀(입력표)')}${tbtn('iwClr','대장 비우기','border border-red-300 bg-white text-red-600 hover:bg-red-50')}</div>`
+  +tbl(['상태','구분','ID','항목','원래값','새값','사유','기록일'],rs.slice(0,600).map(({r,q,s})=>{const el=findEl(r),d=LK[r.k],i=el?(d.t==='n'?S.net.nodes.indexOf(el):S.net.links.indexOf(el)):-1;
+   return`<tr ${i>=0?`data-ft="${d.t}" data-fi="${i}"`:''} class="border-t ${i>=0?'cursor-pointer hover:bg-indigo-50':''}"><td class="text-left"><span class="iw-bd ${STC[s[0]]}">${s[1]}</span></td><td class="text-left">${d.t==='n'?'절점':'관로'}</td><td class="text-left">${esc(r.id)}</td><td class="text-left">${esc(d.lab)}</td><td>${esc(vTxt(r.k,el,r.from))}</td><td><b>${esc(vTxt(r.k,el,r.to))}</b> ${esc(d.unit(el))}</td><td><input data-why="${q}" value="${esc(r.why||'')}" placeholder="사유" class="iw-why"></td><td>${esc(r.d||'')}</td></tr>`}),{h:300,empty:'아직 손으로 고친 값이 없습니다'})
+  +tnote('대장은 이 브라우저에 저장되고, 입력표 엑셀의 "수정대장" 시트로 내보내고 들여올 수 있습니다. 행을 누르면 지도에서 찾아갑니다.'))}
+WD.iw={t:'INP 만들기 — 단계 안내·입력표·수정 대장',w:660};
+WR.iw={ui:()=>{const tabs=[['s','🧭 단계 안내'],['t','📗 입력표'],['l','📒 수정 대장']].map(([k,t])=>`<button type="button" data-iwt="${k}" class="tab ${IW.tab===k?'on':''}">${t}</button>`).join('');
+  return`<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5 mb-2">${tabs}</div><div class="flex flex-col gap-2 text-xs">${IW.tab==='t'?uiTpl():IW.tab==='l'?(S.net?uiLed():'<p class="text-slate-400 p-2">관망을 먼저 여세요.</p>'):uiSteps()}</div>`},
+ bind:b=>{b.querySelectorAll('[data-iwt]').forEach(x=>x.onclick=()=>{IW.tab=x.dataset.iwt;winRender('iw',true)});b.querySelectorAll('[data-iw]').forEach(x=>x.onclick=()=>iwAct(x.dataset.iw));
+  const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('iwTplB',tplSave);on('iwTplL',tplSave);on('iwApply',planApply);on('iwCancel',()=>{IW.plan=null;winRender('iw',true)});on('iwReB',()=>ledApply(false));on('iwReC',()=>ledApply(true));
+  on('iwClr',()=>{if(!LED.length)return;if(!confirm(`수정 대장 ${LED.length}건을 모두 지울까요? (관망 값은 바뀌지 않습니다)`))return;LED.length=0;ledSave();snapBase();winRender('iw',true)});
+  const f=b.querySelector('#iwF');if(f)f.onchange=e=>{const fl=e.target.files[0];e.target.value='';if(fl)planLoad(fl)};
+  b.querySelectorAll('[data-why]').forEach(x=>x.onchange=()=>{const r=LED[+x.dataset.why];if(r){r.why=x.value;ledSave()}});
+  b.querySelectorAll('tr[data-ft]').forEach(tr=>tr.onclick=e=>{if(e.target.closest('input'))return;focusEl(tr.dataset.ft,+tr.dataset.fi)})}};
+function iwAct(a){const X={iwTpl:tplSave,iwLoad:()=>{IW.tab='t';winRender('iw',true);setTimeout(()=>{const f=$('iwF');if(f)f.click()},30)},iwLk:lkOpen,iwLed:()=>{IW.tab='l';winRender('iw',true)},iwRe:()=>ledApply(false),
+  iwSave:async()=>{if(!needNet())return;autoRec();await $('bInp').onclick();setTimeout(tplSave,900)}};if(X[a])X[a]();else rbAct(a)}
+
+/* ── 연결: 불러오기·편집 기록·창·리본 ── */
+const _ld23=loadText;loadText=async function(){IW.loading=true;try{return await _ld23.apply(this,arguments)}finally{IW.loading=false;try{snapBase()}catch(e){}IW.plan=null;if(WS.open.has('iw'))winRender('iw',true)}};
+const _rl23=renderLog;renderLog=function(){const r=_rl23.apply(this,arguments);clearTimeout(IW.t);IW.t=setTimeout(()=>{try{autoRec();const ae=document.activeElement;if(WS.open.has('iw')&&!(ae&&ae.closest&&ae.closest('#w_iw')&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName)))winRender('iw',true)}catch(e){console.error(e)}},400);return r};
+const _wr23=winRender;winRender=function(k,force){if(k==='iw'&&!S.net){const w=$('w_iw');if(!w||(!force&&w.classList.contains('hidden')))return;const b=w.querySelector('.gw-b');try{b.innerHTML=WR.iw.ui();WR.iw.bind(b)}catch(e){console.error(e)}return}return _wr23.apply(this,arguments)};
+if(S.net&&!IW.base)snapBase();
+const st=document.createElement('style');st.textContent=`.iw-steps{display:flex;flex-direction:column;gap:6px}.iw-st{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--c-bd,#e2e8f0);border-radius:10px;padding:7px 9px}
+.iw-ic{flex:none;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}.iw-ok{background:rgba(16,185,129,.18);color:#059669}.iw-warn{background:rgba(245,158,11,.2);color:#b45309}.iw-todo{background:rgba(148,163,184,.22);color:#64748b}
+.iw-tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.iw-tx b{font-size:12.5px}.iw-tx>span{color:#64748b;font-size:11.5px}.iw-bt{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.iw-b{font-size:11.5px;padding:3px 8px;border-radius:7px;border:1px solid #cbd5e1;background:transparent;color:inherit;font-weight:600}.iw-b:hover{border-color:#6366f1;color:#4f46e5}
+.iw-bd{display:inline-block;padding:1px 6px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}.iw-bd.iw-ok{background:rgba(16,185,129,.16);color:#059669}.iw-bd.iw-todo{background:rgba(99,102,241,.16);color:#4f46e5}.iw-bd.iw-conf{background:rgba(245,158,11,.2);color:#b45309}.iw-bd.iw-miss{background:rgba(148,163,184,.22);color:#64748b}
+.iw-why{width:110px;padding:1px 4px;border:1px solid #cbd5e1;border-radius:5px;background:transparent;color:inherit;font-size:11px}
+html.dark .iw-st{border-color:#334155}html.dark .iw-tx>span{color:#94a3b8}html.dark .iw-b,html.dark .iw-why{border-color:#475569}html.dark .iw-b:hover{color:#a5b4fc;border-color:#818cf8}html.dark .iw-ok{color:#34d399}html.dark .iw-warn,html.dark .iw-bd.iw-conf{color:#fbbf24}html.dark .iw-bd.iw-todo{color:#a5b4fc}`;document.head.appendChild(st);
+ICP.wiz='M4 20L14 10M15 3l1.2 2.8L19 7l-2.8 1.2L15 11l-1.2-2.8L11 7l2.8-1.2zM6 4l.6 1.4L8 6l-1.4.6L6 8l-.6-1.4L4 6l1.4-.6zM19 14l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z';
+const ib=gb('iw','wiz','INP 만들기',{big:1,tip:'관망 만들기 단계 안내 · 시설 입력표(엑셀) · 수정 대장'});
+const _rw23=RIB.wds;RIB.wds=()=>_rw23().replace(/(<button type="button" class="rb-b big" data-rb="gis")/,()=>ib+'<button type="button" class="rb-b big" data-rb="gis"');
+const _rf23=RIB.file;RIB.file=()=>_rf23().replace(/(<button type="button" class="rb-b big" data-rb="gis")/,()=>ib+'<button type="button" class="rb-b big" data-rb="gis"');
+const XB23={iw:()=>{winOpen('iw')}};
+const _ra23=rbAct;rbAct=function(a,btn){if(XB23[a]&&!(DDM[a]&&btn&&btn.closest('#gpRib'))){XB23[a](btn);return}return _ra23.apply(this,arguments)};
+try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
+window.__gw23={IW,LED:()=>LED,LK,autoRec,scan,snapBase,tplBook,xlsxMake,xlsxRead,plan,planApply,ledApply,rulesRead,rulePairs,steps,_t:{batchApply,readNet,renderLog:()=>renderLog(),load:(t,n)=>loadText(t,n),inpOut:()=>{S.prj.saveInpFile('t.inp');return S.ws.readFile('t.inp')}}};
+})()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v23 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
