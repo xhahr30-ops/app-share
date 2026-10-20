@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v21 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v22 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4292,6 +4292,25 @@ window.__gw20={SYS,build,pages,layout,sysOf};
 })()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v20 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
 
 
+
+/* ════ v22: 말풍선 빠른 편집에 소블록 이름 칸 — 절점은 그 절점, 관로는 양 끝 절점에 적용 ════ */
+try{(()=>{
+const pop=$('pop');if(!pop)throw new Error('말풍선이 없습니다');
+const names=()=>[...new Set(S.net.nodes.map(n=>n.blk).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+const add=()=>{const q=pop.querySelector('.qe'),p=S.pop;if(!q||!p||!S.net||q.querySelector('#qeBlk'))return;
+ let ids,cur,lab;
+ if(p.t==='n'){const n=S.net.nodes[p.i];if(!n)return;ids=[p.i];cur=n.blk||'';lab='소블록'}
+ else{const l=S.net.links[p.i];if(!l)return;const a=S.net.nodes[l.n1-1],b=S.net.nodes[l.n2-1];ids=[a,b].filter(x=>x&&x.type===0).map(x=>x.i);
+  if(!ids.length)return;const ba=a.blk||'(없음)',bb=b.blk||'(없음)';cur=a.blk===b.blk?(a.blk||''):'';lab=a.blk===b.blk?'소블록':`소블록 <span style="opacity:.7;font-size:11px">${esc(ba)} | ${esc(bb)}</span>`}
+ const d=document.createElement('div');d.className='qe-r';d.style.marginTop='4px';
+ d.innerHTML=`<span>${lab}</span><span><input id="qeBlk" list="qeBlkL" value="${esc(cur)}" placeholder="블록 이름" class="qe-i" style="width:84px"><datalist id="qeBlkL">${names().map(x=>`<option value="${esc(x)}">`).join('')}</datalist><button type="button" id="qeBlkGo" class="qe-b" title="${p.t==='l'?'이 관로 양 끝 절점의 블록 이름을 바꿉니다':'이 절점의 블록 이름을 바꿉니다'}">바꾸기</button></span>`;
+ const go=q.querySelector('#qeGo');(go?go:q.lastElementChild).after(d);
+ const ap=()=>{const v=d.querySelector('#qeBlk').value.trim();if(!v){toast('블록 이름을 넣어 주세요.');return}
+  if(ids.every(i=>S.net.nodes[i].blk===v)){toast('이미 '+v+' 블록입니다.');return}
+  batchApply('n',ids,'blk','=',v);try{requestDraw()}catch(e){}};
+ d.querySelector('#qeBlkGo').onclick=ap;d.querySelector('#qeBlk').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();ap()}}};
+const ob=new MutationObserver(()=>{try{add()}catch(e){console.error(e)}});ob.observe(pop,{childList:true,subtree:true});
+})()}catch(e){console.error(e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
