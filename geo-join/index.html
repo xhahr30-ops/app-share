@@ -316,6 +316,7 @@ html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
 html.chipOn .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipOn .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
 html.chipOn .leaflet-bottom.leaflet-right .fmctl{flex-direction:column-reverse;gap:10px}
+html.chipOn .leaflet-bottom.leaflet-right.fabrow .fmctl{flex-direction:row-reverse}
 /* 폰: 범례(관로·촬영 연도·블록)를 왼쪽 아래 한 상자로 합치고 탭으로 바꿔 봄 (legBoxInit, C안) */
 .legbox{display:none}
 html.chipOn .legbox{display:block;background:var(--card);color:var(--ink);border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.3);padding:6px 9px;font-size:11.5px;line-height:1.55;max-width:min(230px,calc(100vw - 100px));max-height:calc(45vh);overflow:auto}
@@ -335,7 +336,7 @@ html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:54px;height:54px;b
  html.chipOn .leaflet-bottom.leaflet-right .fmctl{gap:6px}
  html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:44px;height:44px;border-radius:13px;font-size:20px}
  html.chipOn .uiset:not(.shutp){left:58px;max-width:calc(100% - 70px)}
- html.chipOn .uiset.shutp{top:104px}
+ html.chipOn .uiset.shutp,html.chipOn .uiset.shutp.fold{top:auto;bottom:8px}
 }
 @media print{.chipbar{display:none!important}}
 body.touch .dwBtn,body.touch #phWinBtn{display:none!important}
@@ -1399,6 +1400,8 @@ if(LS.get('geo-gw')==='1'){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>6
 /* 폰에서 '데스크톱 사이트' 보기로 열리면(화면은 폰인데 배치 폭이 900px 이상) 글자가 작아지므로 끄는 방법을 한 번 알려 줌 */
 (function(){try{if(localStorage.getItem('geo-dskhint')==='1')return}catch(_){}
  const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=600;if(!phone||innerWidth<900)return;
+ /* 폰 가로 화면(예: 915px)은 원래 폭이 900을 넘으므로 제외: 지금 방향의 화면 폭보다 페이지 폭이 넓을 때만 데스크톱 사이트로 봄 */
+ const sw=matchMedia('(orientation:landscape)').matches?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(innerWidth<=sw+40)return;
  const d=document.createElement('div');d.id='dskHint';d.className='np';d.setAttribute('role','status');
  d.innerHTML='<span style="flex:1">📱 휴대폰에서 <b>데스크톱 사이트</b> 보기로 열려 글자가 작게 보입니다. 크롬 오른쪽 위 <b>⋮</b> 메뉴에서 <b>데스크톱 사이트</b> 체크를 끄면 휴대폰 화면으로 크게 나옵니다.</span><button type="button">✕ 닫기</button>';
  d.querySelector('button').onclick=()=>{d.remove();try{localStorage.setItem('geo-dskhint','1')}catch(_){}};
@@ -1801,10 +1804,16 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);shutDodgeInit(C)}
 /* 폰: 💧 단수구역 창이 열려 있으면 아래 귀퉁이(📷·📍·🖼️ 버튼, 범례 상자)를 창 위(세로) 또는 창 왼쪽(가로)으로 비켜 둠 */
 function shutDodgeInit(C){const mc=map.getContainer();let p=null;
- const fix=()=>{let b=0,r=0;if(p&&!p.hidden&&p.offsetHeight){const R=p.getBoundingClientRect(),M=mc.getBoundingClientRect();if(R.width>M.width*.7)b=Math.max(0,Math.round(M.bottom-R.top));else r=Math.max(0,Math.round(M.right-R.left))}
-  const bv=b?b+'px':'',rv=r?r+'px':'';for(const c of [C.bottomleft,C.bottomright])if(c.style.bottom!==bv)c.style.bottom=bv;if(C.bottomright.style.right!==rv)C.bottomright.style.right=rv};
+ const fix=()=>{let b=0,row=false,rb='';if(p&&!p.hidden&&p.offsetHeight){const M=mc.getBoundingClientRect();
+  if(p.getBoundingClientRect().width>M.width*.7){if(p.style.top)p.style.top='';if(p.style.maxHeight)p.style.maxHeight='';b=Math.max(0,Math.round(M.bottom-p.getBoundingClientRect().top))}
+  else{/* 가로: 창은 오른쪽 아래에 붙이고(세로 화면 아래 창과 같은 자리), 📷·📍·🖼️는 창 바로 위에 가로 한 줄 */
+   row=true;C.bottomright.classList.add('fabrow');const fh=C.bottomright.offsetHeight+8,tt=Math.round(C.topright.getBoundingClientRect().bottom-M.top)+6;
+   if(p.style.top!=='auto')p.style.top='auto';const mh=Math.max(120,Math.round(M.height-tt-fh-16))+'px';if(p.style.maxHeight!==mh)p.style.maxHeight=mh;
+   rb=Math.round(M.bottom-p.getBoundingClientRect().top+4)+'px'}}
+  else if(p){if(p.style.top)p.style.top='';if(p.style.maxHeight)p.style.maxHeight=''}
+  C.bottomright.classList.toggle('fabrow',row);const bv=b?b+'px':'';if(C.bottomleft.style.bottom!==bv)C.bottomleft.style.bottom=bv;const brv=row?rb:bv;if(C.bottomright.style.bottom!==brv)C.bottomright.style.bottom=brv;if(C.bottomright.style.right)C.bottomright.style.right=''};
  const hook=()=>{const q=document.getElementById('shutBox');if(!q||q===p)return;p=q;try{new ResizeObserver(fix).observe(p)}catch(_){}new MutationObserver(fix).observe(p,{attributes:true,attributeFilter:['hidden','class']});fix()};
- hook();new MutationObserver(hook).observe(mc,{childList:true});map.on('resize',fix)}
+ hook();new MutationObserver(hook).observe(mc,{childList:true});map.on('resize',fix);try{const ro=new ResizeObserver(fix);ro.observe(C.topright);ro.observe(C.bottomright)}catch(_){}}
 /* 폰: 왼쪽·오른쪽 아래 범례(.pleg)를 왼쪽 아래 한 상자로 옮기고 위쪽 탭으로 하나씩 보여 줌. 범례 내용은 각자 원래 함수가 그대로 그림 */
 function legBoxInit(C){let S={t:'',m:0};try{Object.assign(S,JSON.parse(localStorage.getItem('geo-legbox')||'{}'))}catch(_){}
  const save=()=>{try{localStorage.setItem('geo-legbox',JSON.stringify(S))}catch(_){}};
