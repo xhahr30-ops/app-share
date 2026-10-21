@@ -312,7 +312,8 @@ html.chipOn .chipbar .chsrch a.on{background:#e0e7ff}
 html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
 html.chipOn .gsrch{max-width:calc(100vw - 24px)}
-html.chipOn .uiset{top:56px;max-height:calc(100% - 66px)}
+html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
+html.chipOn .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipOn .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
 html.chipOn .leaflet-bottom.leaflet-right .fmctl{flex-direction:column-reverse;gap:10px}
 /* 폰: 범례(관로·촬영 연도·블록)를 왼쪽 아래 한 상자로 합치고 탭으로 바꿔 봄 (legBoxInit, C안) */
@@ -1797,7 +1798,13 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const scan=()=>{for(const el of [...C.topleft.children]){
   if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
   place(el)}};
- scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C)}
+ scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);shutDodgeInit(C)}
+/* 폰: 💧 단수구역 창이 열려 있으면 아래 귀퉁이(📷·📍·🖼️ 버튼, 범례 상자)를 창 위(세로) 또는 창 왼쪽(가로)으로 비켜 둠 */
+function shutDodgeInit(C){const mc=map.getContainer();let p=null;
+ const fix=()=>{let b=0,r=0;if(p&&!p.hidden&&p.offsetHeight){const R=p.getBoundingClientRect(),M=mc.getBoundingClientRect();if(R.width>M.width*.7)b=Math.max(0,Math.round(M.bottom-R.top));else r=Math.max(0,Math.round(M.right-R.left))}
+  const bv=b?b+'px':'',rv=r?r+'px':'';for(const c of [C.bottomleft,C.bottomright])if(c.style.bottom!==bv)c.style.bottom=bv;if(C.bottomright.style.right!==rv)C.bottomright.style.right=rv};
+ const hook=()=>{const q=document.getElementById('shutBox');if(!q||q===p)return;p=q;try{new ResizeObserver(fix).observe(p)}catch(_){}new MutationObserver(fix).observe(p,{attributes:true,attributeFilter:['hidden','class']});fix()};
+ hook();new MutationObserver(hook).observe(mc,{childList:true});map.on('resize',fix)}
 /* 폰: 왼쪽·오른쪽 아래 범례(.pleg)를 왼쪽 아래 한 상자로 옮기고 위쪽 탭으로 하나씩 보여 줌. 범례 내용은 각자 원래 함수가 그대로 그림 */
 function legBoxInit(C){let S={t:'',m:0};try{Object.assign(S,JSON.parse(localStorage.getItem('geo-legbox')||'{}'))}catch(_){}
  const save=()=>{try{localStorage.setItem('geo-legbox',JSON.stringify(S))}catch(_){}};
