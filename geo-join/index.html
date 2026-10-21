@@ -300,6 +300,29 @@ body.touch .leaflet-bar a{width:40px!important;height:40px!important;line-height
  .uiset.shutp{top:70px;bottom:8px;left:auto;right:8px;width:300px;max-height:none}.uiset.shutp.fold{bottom:auto}
  .uiset:not(.shutp){left:112px;max-width:calc(100% - 124px)}
 }
+/* 폰: 지도 도구를 위쪽 한 줄 칩(좌우로 밀기)으로, 📷·📍·🖼️ 현장 버튼은 오른쪽 아래로 (chipInit, C안) */
+.chipbar{display:none}
+html.chipOn .chipbar{display:flex;position:absolute;left:0;right:0;top:0;z-index:1000;gap:8px;overflow-x:auto;overflow-y:hidden;padding:8px 10px 6px;scrollbar-width:none;touch-action:pan-x;pointer-events:auto;-webkit-overflow-scrolling:touch}
+html.chipOn .chipbar::-webkit-scrollbar{display:none}
+html.chipOn .chipbar>.leaflet-control{flex:0 0 auto;float:none;clear:none;margin:0!important;border:0!important;box-shadow:none!important;background:none!important;white-space:nowrap}
+html.chipOn .chipbar .leaflet-bar a{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;width:auto!important;height:36px!important;line-height:36px!important;padding:0 13px!important;border:0!important;border-radius:18px!important;box-shadow:0 1px 4px rgba(0,0,0,.3);font:700 15px 'Noto Sans KR',sans-serif!important;color:#1e293b;white-space:nowrap}
+html.chipOn .chipbar .leaflet-bar a+a{margin-left:8px}
+html.chipOn .chipbar a[data-lb]::after{content:attr(data-lb);font-size:13.5px}
+html.chipOn .chipbar .chsrch a.on{background:#e0e7ff}
+html.chipOn .leaflet-top{top:52px}
+html.chipOn .gsrch.min{display:none!important}
+html.chipOn .gsrch{max-width:calc(100vw - 24px)}
+html.chipOn .uiset{top:56px;max-height:calc(100% - 66px)}
+html.chipOn .shdraw .shdt{top:58px}
+html.chipOn .leaflet-bottom.leaflet-right .fmctl{flex-direction:column-reverse;gap:10px}
+html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:54px;height:54px;border-radius:16px;font-size:25px}
+@media (orientation:landscape) and (max-height:520px){
+ html.chipOn .leaflet-bottom.leaflet-right .fmctl{gap:6px}
+ html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:44px;height:44px;border-radius:13px;font-size:20px}
+ html.chipOn .uiset:not(.shutp){left:58px;max-width:calc(100% - 70px)}
+ html.chipOn .uiset.shutp{top:104px}
+}
+@media print{.chipbar{display:none!important}}
 body.touch .dwBtn,body.touch #phWinBtn{display:none!important}
 
 @media screen and (max-width:1023px){
@@ -1733,7 +1756,32 @@ function uiInit(){if(!map)return;plblInit();
  window.addEventListener('orientationchange',()=>setTimeout(()=>{map.invalidateSize();plblSoon()},350));
  mapCornerFix();window.addEventListener('orientationchange',()=>setTimeout(mapCornerFix,400));map.on('resize',mapCornerFix);
  try{new ResizeObserver(()=>mapCornerFix()).observe(map._controlCorners.topleft)}catch(_){}
+ try{chipInit()}catch(e){console.warn('chipInit',e)}
  uiPanelSync()}
+/* 폰(터치·짧은 쪽 600px 미만): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
+const CHIP_ORD=['srch','shut','phed','fe','lock','ui','bg','fs'];
+function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
+ if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
+ if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
+function chipInit(){if(!map||!map._controlCorners||document.documentElement.classList.contains('chipOn'))return;
+ let pc=false;try{pc=matchMedia('(pointer:coarse)').matches}catch(_){}
+ if(!pc||Math.min(screen.width||9999,screen.height||9999)>=600)return;
+ const C=map._controlCorners,root=map._controlContainer;document.documentElement.classList.add('chipOn');
+ const bar=L.DomUtil.create('div','chipbar',root);L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
+ const sd=L.DomUtil.create('div','leaflet-bar leaflet-control chsrch',bar),sa=L.DomUtil.create('a','',sd);sd.dataset.ck='srch';
+ sa.href='#';sa.textContent='🔍';sa.dataset.lb='주소찾기';sa.title='주소찾기';sa.setAttribute('role','button');
+ const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
+ L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
+ const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
+ const LB={shut:'단수구역',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
+  if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
+  else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
+  const i=CHIP_ORD.indexOf(k),nx=[...bar.children].find(x=>CHIP_ORD.indexOf(x.dataset.ck)>i);bar.insertBefore(el,nx||null)};
+ const scan=()=>{for(const el of [...C.topleft.children]){
+  if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
+  place(el)}};
+ scan();new MutationObserver(scan).observe(C.topleft,{childList:true})}
 /* 폰 가로 모드: 왼쪽 위 버튼 줄(두 줄로 접힘)이 끝나는 곳 오른쪽에서 왼쪽 아래 범례(촬영 연도·블록 색)를 시작 → 📍·🖼️ 버튼을 가리지 않음 */
 const MAP_SHORT=matchMedia('(orientation:landscape) and (max-height:520px)');
 function mapCornerFix(){if(!map||!map._controlCorners)return;const C=map._controlCorners,bl=C.bottomleft;let x=0;
