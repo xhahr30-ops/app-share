@@ -576,6 +576,8 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phtr .it button{font:700 11.5px 'Noto Sans KR',sans-serif;padding:4px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}.phtr .it button.x{color:#dc2626;border-color:#fca5a5}
 .phtr .bd{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:0 6px;margin-left:4px;background:var(--ind1);color:var(--ind6)}.phtr .bd.w{background:#fef3c7;color:#92400e}
 .phtr .empty{padding:30px 10px;text-align:center;color:var(--mute)}
+.phtr .pair{display:flex;gap:3px;flex:none}.phtr .dg .t small,#phDupAsk .t small{display:block}.phtr .it label.ck{display:flex;gap:4px;align-items:center;white-space:nowrap;font-weight:700;font-size:11.5px;cursor:pointer}
+.phtr .dg{border:1px solid var(--line2);border-radius:8px;margin:6px 0;overflow:hidden}.phtr .dg>small{display:block;padding:4px 8px;background:var(--ind1);color:var(--ind6);font-weight:800}.phtr .dg .it:last-child{border-bottom:0}.phtr .dg>small .nd{float:right;font:700 11px 'Noto Sans KR',sans-serif;padding:1px 7px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
 @media (max-width:640px){.phed{left:8px;right:8px;max-width:none;bottom:8px}.phed button{padding:7px 10px;font-size:12.5px}.phtr{padding:0;align-items:flex-end}.phtr>div{border-radius:16px 16px 0 0;max-height:85dvh;padding-bottom:env(safe-area-inset-bottom)}}
 @media print{.phed,.phedbtn,#phToast,.phtr{display:none!important}}
 .phpop .leaflet-popup-content{margin:8px!important;width:300px!important}
@@ -3569,7 +3571,7 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(o.pedit&&Array.isArray(o.pedit.recs)&&$('bkP').checked){await pedLoad();const n=pedMerge(o.pedit.recs);if(n){PED.dirty=true;PED.at=Date.now();await pedStore();pedReapply()}}
   if(use.f){let s=null;try{s=await IDB.get('facs')}catch(_){}if(s)try{await IDB.set('facs_prev',s)}catch(_){}await IDB.set('facs',o.facs);await facRestore(true)}
   if(use.e){let s=null;try{s=await IDB.get('elev')}catch(_){}if(s)try{await IDB.set('elev_prev',s)}catch(_){}{const h=!o.elev.hyd&&hydKeep(s);if(h)o.elev.hyd=h}await IDB.set('elev',o.elev);await elevRestore(true)}
-  if(use.ph){const have=new Set(PH.list.map(m=>m.id));for(const m of o.photos){if(have.has(m.id))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id)}catch(_){}}await phSaveMeta(true);phRefresh()}
+  if(use.ph){const have=new Set(PH.list.map(m=>m.id)),hfp=new Set(PH.list.map(m=>m.fp).filter(Boolean));for(const m of o.photos){if(have.has(m.id)||(m.fp&&hfp.has(m.fp)))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id);if(m.fp)hfp.add(m.fp)}catch(_){}}await phSaveMeta(true);phRefresh()}
   if(use.u){o.ublk.forEach(([k,v])=>{if(k&&v)UB.m.set(k,v)});ubSave();ubList();if(out.length){ubSync();renderTable()}}
   if(use.r)await bkResLoad(o.res);
   if(use.k){bkApplySettings();bkLoad.k=true}
@@ -4667,17 +4669,21 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
  files=files.filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif)$/i.test(f.name));if(!files.length){if(WF.size)phWorldApply(WF);return}
  if(PH.busy){alert('사진을 올리는 중입니다. 끝난 뒤 다시 올려 주세요.');return}
  PH.busy=true;PH.stop=false;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
- const msg=$('phMsg'),max=+$('phSize').value,N=files.length,t0=Date.now();let add=0,nog=0,heic=0,dup=0,fail=0,done=0,i=0,nmap=0,hereN=0;PH.hereP=null;
+ const msg=$('phMsg'),max=+$('phSize').value,N=files.length,t0=Date.now();let add=0,nog=0,heic=0,dup=0,fail=0,done=0,i=0,nmap=0,hereN=0,skipN=0;PH.hereP=null;const DX=phDupIdx(),hold=[];
  $('phProg').hidden=false;$('phStop').hidden=false;$('phProg').firstElementChild.style.width='0';
  const one=async f=>{if(/heic|heif/i.test(f.type)||/\.(heic|heif)$/i.test(f.name)){heic++;return}
   const id='p'+phHash(f.name+'|'+f.size+'|'+f.lastModified);if(PH.byId.has(id)){dup++;return}
+  const fp=await phFp(f);if(fp){if(DX.fp.has(fp)){dup++;return}DX.fp.set(fp,id)} /* 이름·수정 시각이 달라도 내용이 같으면 같은 사진 */
   try{const ex=await exifRead(f)||{},wf=WF.get(bn(f.name)),re=phCodeRe(),d=await phDecode(f,max,ex.lat==null&&(wf||/png/i.test(f.type)||/\.png$/i.test(f.name)||(re&&re.test(f.name)))),dt=phDt(ex.dt);
-   const m={id,name:f.name,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
+   const m={id,name:f.name,fp:fp||undefined,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
    if(d.dot){m.map=true;m.dot=d.dot;if(wf){const ll=phWorldLL(wf,d.dot[0]*d.w,d.dot[1]*d.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도'}}}
    if(m.lat==null&&dropLL&&(N===1||ALL)){m.lat=+dropLL.lat.toFixed(7);m.lng=+dropLL.lng.toFixed(7);m.src='수동'}
    if(m.lat==null&&!m.map&&phHereUse(f,m)){const h=await phHere();if(h){m.lat=h.lat;m.lng=h.lng;m.acc=h.acc;m.src='현위치';hereN++}}
    if(m.lat!=null&&!inKR([m.lng,m.lat]))m.note='국외 좌표 — 위치를 확인하세요';
+   if(!m.fp)delete m.fp;
    await idbPut([['ph:'+id,d.big],['pt:'+id,d.th]]);if(PH.byId.has(id)){dup++;return}
+   const sk=phShotKeys(m),like=sk.map(k=>DX.sk.get(k)).find(Boolean);if(like){hold.push({m,like});return} /* 촬영 정보가 같은 사진 → 끝에 확인창 */
+   sk.forEach(k=>DX.sk.set(k,id));
    PH.list.push(m);PH.byId.set(id,m);add++;if(m.map)nmap++;if(m.lat==null&&!m.map)nog++}catch(e){fail++}};
  const worker=async()=>{while(i<N&&!PH.stop){const f=files[i++];await one(f);done++;
   if(done%5===0||done===N){const el=(Date.now()-t0)/1000,rest=done<N?Math.round(el/done*(N-done)):0;$('phProg').firstElementChild.style.width=(done/N*100).toFixed(1)+'%';
@@ -4685,9 +4691,64 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
   if(done%300===0){phSaveMeta();phRefresh()}}};
  try{await Promise.all(Array.from({length:Math.min(3,N)},worker))}
  finally{PH.busy=false;$('phProg').hidden=true;$('phStop').hidden=true;await phSaveMeta(true);phRefresh(add>0)}
+ if(hold.length){const keep=new Set(await phDupAsk(hold)),drop=[];
+  hold.forEach(({m})=>{if(keep.has(m.id)&&!PH.byId.has(m.id)){m.nd=1;PH.list.push(m);PH.byId.set(m.id,m);add++;if(m.map)nmap++;if(m.lat==null&&!m.map)nog++}else drop.push(m.id)});
+  skipN=drop.length;if(drop.length){try{await idbDel(drop.flatMap(id=>['ph:'+id,'pt:'+id]))}catch(_){}drop.forEach(phForget)}
+  if(keep.size){await phSaveMeta(true);phRefresh(true)}}
  if(WF.size)phWorldApply(WF,true);
- msg.innerHTML=`✅ 사진 ${add.toLocaleString()}장 추가`+(nmap?` · 🎯 위치도 ${nmap}장`:'')+(PH.stop?' · ⏹ 중간에 멈춤':'')+(nog?` · <b class="c-am">GPS 없음 ${nog.toLocaleString()}장</b>`:'')+(dup?` · 이미 있음 ${dup.toLocaleString()}장`:'')+(fail?` · 실패 ${fail}장`:'')+
+ msg.innerHTML=`✅ 사진 ${add.toLocaleString()}장 추가`+(nmap?` · 🎯 위치도 ${nmap}장`:'')+(PH.stop?' · ⏹ 중간에 멈춤':'')+(nog?` · <b class="c-am">GPS 없음 ${nog.toLocaleString()}장</b>`:'')+(dup?` · 이미 있음 ${dup.toLocaleString()}장`:'')+(skipN?` · 같은 사진으로 보여 건너뜀 ${skipN.toLocaleString()}장`:'')+(fail?` · 실패 ${fail}장`:'')+
   (heic?`<br><span class="c-rd">아이폰 HEIC ${heic}장은 읽지 못했습니다. 카메라 설정 › 포맷 › "높은 호환성"(JPG)으로 찍거나 JPG로 바꿔 올려 주세요.</span>`:'')+(nog?'<br>GPS 없는 사진은 비슷한 파일명·촬영시각의 묶음에 위치 추정으로 들어가고, 그래도 없으면 갤러리의 "위치 없는 사진"에 모입니다.':'')}
+/* ---------- 같은 사진 중복 막기 (2026-10-21) ----------
+   ① 내용 지문(fp): 파일 내용 SHA-256 앞 16자리 → 이름·수정 시각이 달라도 내용이 같으면 자동으로 건너뜀
+   ② 촬영 정보: 촬영 시각(초까지)+원본 가로×세로, 사진 속 GPS가 있으면 촬영 시각+GPS(소수 6자리)도. 같으면 올리기 끝에 확인창(연속 촬영 오판 방지)
+   ③ 🔍 중복 찾기: 이미 들어온 중복 묶음을 보여 주고 남길 1장 빼고 휴지통(7일 되살리기)으로
+   지문은 이 기기 목록·백업 파일에만 있음(공유 서버는 정해진 칸만 저장) → 다른 직원 사진은 촬영 정보로 비교 */
+async function phFp(f){try{if(!(window.crypto&&crypto.subtle))return '';const h=new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()));let s='';for(let i=0;i<8;i++)s+=h[i].toString(16).padStart(2,'0');return s}catch(_){return ''}}
+function phShotKeys(m){const dt=String(m.dt||''),o=[];if(!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dt))return o;
+ if(m.w&&m.h)o.push('s|'+dt+'|'+Math.max(m.w,m.h)+'x'+Math.min(m.w,m.h));
+ if(m.src==='GPS'&&m.lat!=null&&m.lng!=null)o.push('g|'+dt+'|'+(+m.lat).toFixed(6)+'|'+(+m.lng).toFixed(6));return o}
+function phDupIdx(){const fp=new Map(),sk=new Map();for(const m of PH.list){if(m.fp&&!fp.has(m.fp))fp.set(m.fp,m.id);for(const k of phShotKeys(m))if(!sk.has(k))sk.set(k,m.id)}return{fp,sk}}
+function phDupImgs(box){const ims=[...box.querySelectorAll('img[data-id]')];ims.forEach(im=>{phThumb(im.dataset.id).then(u=>{if(u)im.src=u})})}
+const phDupInfo=m=>[m.dt?'📅 '+esc(m.dt):'',m.lat!=null?'📍 '+esc(m.src||''):'📍 위치 없음',m.memo?'📝 메모 있음':''].filter(Boolean).join(' · ');
+/* 올리기 끝: 촬영 정보가 같은 사진을 보여 주고 고르게 함 → 올릴 사진 id 목록. 닫으면 모두 건너뜀 */
+function phDupAsk(hold){return new Promise(done=>{const MAX=300,w=document.createElement('div');w.className='phtr np';w.id='phDupAsk';w.setAttribute('role','dialog');w.setAttribute('aria-label','같은 사진 확인');
+ const rows=hold.slice(0,MAX).map(({m,like},k)=>{const o=PH.byId.get(like)||{};return `<div class="it"><div class="pair"><img alt="새 사진" data-id="${esc(m.id)}"><img alt="이미 있는 사진" data-id="${esc(like)}"></div><div class="t"><b title="${esc(m.name)}">${esc(m.name)}</b><small>${phDupInfo(m)}</small><small>↔ 이미 있음: ${esc(o.name||'')}${o.shUp?' <span class="bd">☁️ 공유</span>':''}${o.by?' · '+esc(o.by):''}</small></div><label class="ck"><input type="checkbox" data-k="${k}"> 그래도 올리기</label></div>`}).join('');
+ w.innerHTML=`<div><div class="th"><b>🔁 같은 사진으로 보이는 사진 ${hold.length.toLocaleString()}장</b><button type="button" data-t="x" aria-label="닫기">✕</button></div>
+<p class="hint" style="margin:8px 14px 0">촬영 시각(초까지)과 사진 크기 또는 GPS가 이미 있는 사진과 같습니다. 왼쪽이 새 사진, 오른쪽이 이미 있는 사진입니다. 연속 촬영한 다른 사진이면 <b>그래도 올리기</b>를 고르세요.</p>
+<div class="tb"><button type="button" class="btn em" data-t="ok">✔ 확인 (고른 것만 올리기)</button><button type="button" class="btn ol" data-t="none">모두 건너뛰기</button><button type="button" class="btn ol" data-t="all">모두 올리기</button></div>
+<div class="tl">${rows}${hold.length>MAX?`<div class="empty">나머지 ${(hold.length-MAX).toLocaleString()}장은 목록에 다 보이지 않습니다. [확인]·[모두 건너뛰기]는 건너뛰고, [모두 올리기]는 올립니다.</div>`:''}</div></div>`;
+ document.body.appendChild(w);phDupImgs(w);
+ const end=ids=>{document.removeEventListener('keydown',kd);w.remove();done(ids)},kd=e=>{if(e.key==='Escape')end([])};document.addEventListener('keydown',kd);
+ w.onclick=e=>{if(e.target===w)return;const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
+  if(t==='x'||t==='none')end([]);else if(t==='all')end(hold.map(x=>x.m.id));
+  else if(t==='ok')end([...w.querySelectorAll('input[data-k]:checked')].map(c=>hold[+c.dataset.k].m.id))}})}
+/* 이미 들어온 중복 묶음 찾기: 내용 지문 또는 촬영 정보가 같은 사진끼리 */
+function phDupGroups(){const L=PH.list,n=L.length,par=new Int32Array(n),why=new Map(),first=new Map();for(let i=0;i<n;i++)par[i]=i;
+ const fd=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i]}return i};
+ const link=(k,i)=>{const j=first.get(k);if(j==null){first.set(k,i);return}const a=fd(j),b=fd(i);if(a!==b)par[b]=a;why.set(L[i].id,k[0]==='f'?'내용 같음':'촬영 정보 같음')};
+ L.forEach((m,i)=>{if(m.fp)link('f|'+m.fp,i);if(!m.nd)phShotKeys(m).forEach(k=>link(k,i))}); /* nd: '그래도 올리기'·'다른 사진임'으로 고른 사진은 촬영 정보로 묶지 않음 */
+ const G=new Map();L.forEach((m,i)=>{const r=fd(i);let g=G.get(r);if(!g)G.set(r,g=[]);g.push(m)});
+ const score=m=>(m.memo?8:0)+(m.lat!=null&&m.src!=='없음'?4:0)+(m.shUp?2:0)+(m.fp?1:0);
+ return [...G.values()].filter(g=>g.length>1).map(g=>{g.sort((a,b)=>score(b)-score(a)||(a.at||0)-(b.at||0));return{ms:g,why:g.some(m=>why.get(m.id)==='내용 같음')?'내용 같음':'촬영 정보 같음'}}).sort((a,b)=>(a.ms[0].ts||9e15)-(b.ms[0].ts||9e15))}
+function phDupOpen(){let w=document.getElementById('phDup');
+ if(!w){w=document.createElement('div');w.id='phDup';w.className='phtr np';w.setAttribute('role','dialog');w.setAttribute('aria-label','사진 중복 찾기');
+  w.innerHTML=`<div><div class="th"><b>🔍 사진 중복 찾기</b><button type="button" data-t="x" aria-label="닫기">✕</button></div><div class="tb"><button type="button" class="btn em" data-t="del">🗑 고른 사진 휴지통으로</button><button type="button" class="btn ol" data-t="re">다시 찾기</button></div><p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
+  document.body.appendChild(w);
+  w.onclick=async e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
+   if(t==='x')w.hidden=true;else if(t==='re')phDupRender();
+   else if(t==='nd'){const g=b.closest('.dg');g.querySelectorAll('input[data-id]').forEach(c=>{const m=PH.byId.get(c.dataset.id);if(m)m.nd=1});await phSaveMeta(true);phDupRender()}
+   else if(t==='del'){const ids=[...w.querySelectorAll('input[data-id]:checked')].map(c=>c.dataset.id).filter(id=>PH.byId.has(id));if(!ids.length){alert('지울 사진을 고르세요.');return}
+    const all=[...w.querySelectorAll('.dg')].filter(g=>{const c=[...g.querySelectorAll('input[data-id]')];return c.length&&c.every(x=>x.checked)}).length;
+    if(all){alert(`묶음 ${all}개는 사진을 모두 골랐습니다. 묶음마다 1장은 남겨 주세요.`);return}
+    if(!phEdConfirmDel(ids))return;await phDelete(ids);phEdUndoDel(ids);phDupRender()}};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
+ w.hidden=false;phDupRender()}
+function phDupRender(){const w=document.getElementById('phDup');if(!w||w.hidden)return;const G=phDupGroups(),MAX=300,tl=w.querySelector('.tl'),extra=G.reduce((s,g)=>s+g.ms.length-1,0);
+ w.querySelector('[data-t="inf"]').innerHTML=G.length?`같은 사진 묶음 <b>${G.length.toLocaleString()}개</b> · 지울 수 있는 사진 <b>${extra.toLocaleString()}장</b>. 메모·위치가 있는 사진을 남기도록 미리 골라 두었습니다. 지운 사진은 🗂️ 휴지통에서 ${TR_DAYS}일 안에 되살릴 수 있습니다.`+(G.length>MAX?` (먼저 ${MAX}묶음만 보입니다. 정리 후 [다시 찾기])`:''):'';
+ w.querySelector('[data-t="del"]').disabled=!G.length;
+ if(!G.length){tl.innerHTML='<div class="empty">✅ 같은 사진이 없습니다.</div>';return}
+ tl.innerHTML=G.slice(0,MAX).map((g,gi)=>`<div class="dg"><small>묶음 ${gi+1} · ${g.why} · ${g.ms.length}장${g.why==='내용 같음'?'':' <button type="button" class="nd" data-t="nd" title="연속 촬영한 다른 사진이면 누르세요. 다음부터 이 묶음은 보이지 않습니다.">다른 사진임</button>'}</small>`+g.ms.map((m,k)=>`<div class="it"><img alt="" data-id="${esc(m.id)}"><div class="t"><b title="${esc(m.name)}">${esc(m.name)}</b><small>${phDupInfo(m)}</small>${k===0?'<span class="bd">남김</span>':''}${m.shUp?'<span class="bd">☁️ 공유</span>':''}${m.by?'<span class="bd w">'+esc(m.by)+'</span>':''}</div><label class="ck"><input type="checkbox" data-id="${esc(m.id)}"${k?' checked':''}> 지우기</label></div>`).join('')+'</div>').join('');
+ phDupImgs(tl)}
 /* ---------- 위치 찍기 ---------- */
 window.phPlace=(id,doc)=>{const m=PH.byId.get(id);if(!m)return;if(!map){alert('지도를 불러오지 못해 위치를 찍을 수 없습니다.');return}
  PH.place=id;PH.placeRet=null;if(PH.gal&&PH.gal.isOpen()&&doc===document){PH.placeRet=id;PH.gal.close()}if(doc&&doc!==document){try{window.focus()}catch(_){}}
@@ -5273,9 +5334,9 @@ function phEdInit(){if(!map)return;
  map.addControl(new Ctl());
  const bar=L.DomUtil.create('div','phed np',map.getContainer());bar.id='phEd';bar.hidden=true;bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','사진 편집');
  L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
- bar.innerHTML=`<div class="r"><b>✏️ 사진 편집</b><button type="button" data-e="add">➕ 사진 넣기</button><button type="button" data-e="sel">☑️ 골라 지우기</button><button type="button" data-b="tr">🗂️ 휴지통<i class="phTrN"></i></button><button type="button" data-b="end">✕ 끝내기</button></div>
+ bar.innerHTML=`<div class="r"><b>✏️ 사진 편집</b><button type="button" data-e="add">➕ 사진 넣기</button><button type="button" data-e="sel">☑️ 골라 지우기</button><button type="button" data-b="tr">🗂️ 휴지통<i class="phTrN"></i></button><button type="button" data-b="dup">🔍 중복 찾기</button><button type="button" data-b="end">✕ 끝내기</button></div>
 <div class="r r2" hidden><span>선택 <b class="pkN">0</b>장</span><button type="button" data-p="view">화면 안 모두 고르기</button><button type="button" data-p="clr">선택 풀기</button><button type="button" class="del" data-p="del">🗑 고른 사진 지우기</button></div><div class="h"></div>`;
- bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.e)phEdMode(b.dataset.e);else if(b.dataset.b==='tr')phTrashOpen();else if(b.dataset.b==='end')phEdSet(false);
+ bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.e)phEdMode(b.dataset.e);else if(b.dataset.b==='tr')phTrashOpen();else if(b.dataset.b==='dup')phDupOpen();else if(b.dataset.b==='end')phEdSet(false);
   else if(b.dataset.p==='view')phEdPickView();else if(b.dataset.p==='clr'){PH.ed.pick.clear();phEdSync();phDraw()}else if(b.dataset.p==='del')phEdDelPicked()};
  /* 사진 넣기: '➕ 사진 넣기'를 누른 뒤 지도 클릭, 또는 편집 중 길게 누르기·오른쪽 클릭 */
  map.on('preclick',()=>{if(PH.ed.on&&PH.ed.mode==='add')PT.hit=-1});
@@ -5289,8 +5350,9 @@ function phEdInit(){if(!map)return;
  C.addEventListener('touchmove',e=>{if(!lp)return;const t=e.touches[0];if(e.touches.length!==1||Math.hypot(t.clientX-sx,t.clientY-sy)>10)stop()},{passive:true});
  C.addEventListener('touchend',stop,{passive:true});C.addEventListener('touchcancel',stop,{passive:true});map.on('movestart zoomstart',stop);
  document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!PH.ed.on||PH.place)return;const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
-  if(document.getElementById('phTr')&&!document.getElementById('phTr').hidden)return;if(PH.ed.mode!=='move')phEdMode(PH.ed.mode);else if(!document.body.classList.contains('fsOn'))phEdSet(false)})}
+  if(document.getElementById('phTr')&&!document.getElementById('phTr').hidden)return;if(document.getElementById('phDup')&&!document.getElementById('phDup').hidden)return;if(document.getElementById('phDupAsk'))return;if(PH.ed.mode!=='move')phEdMode(PH.ed.mode);else if(!document.body.classList.contains('fsOn'))phEdSet(false)})}
 (function(){if(map)phEdInit();const g=$('phGalBtn');if(g&&!$('phTrBtn')){const b=document.createElement('button');b.type='button';b.id='phTrBtn';b.className='btn ol';b.textContent='🗂️ 휴지통';b.title='지운 사진 되살리기 · 7일 지나면 자동으로 비워짐';b.onclick=phTrashOpen;g.parentNode.appendChild(b)}
+ if(g&&!$('phDupBtn')){const b=document.createElement('button');b.type='button';b.id='phDupBtn';b.className='btn ol';b.textContent='🔍 중복 찾기';b.title='이미 들어온 같은 사진(내용 같음·촬영 정보 같음)을 찾아 1장만 남기기';b.onclick=phDupOpen;g.parentNode.appendChild(b)}
  phTrashLoad()})();
 
 /* ===================== 왼쪽 설정 창: 카드 접기 + 상단 바로가기 칩 (스크롤 줄이기) — 접은 상태는 geo-sec 으로 이 기기에 저장 ===================== */
