@@ -594,6 +594,20 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phtr .empty{padding:30px 10px;text-align:center;color:var(--mute)}
 .phtr .pair{display:flex;gap:3px;flex:none}.phtr .dg .t small,#phDupAsk .t small{display:block}.phtr .it label.ck{display:flex;gap:4px;align-items:center;white-space:nowrap;font-weight:700;font-size:11.5px;cursor:pointer}
 .phtr .dg{border:1px solid var(--line2);border-radius:8px;margin:6px 0;overflow:hidden}.phtr .dg>small{display:block;padding:4px 8px;background:var(--ind1);color:var(--ind6);font-weight:800}.phtr .dg .it:last-child{border-bottom:0}.phtr .dg>small .nd{float:right;font:700 11px 'Noto Sans KR',sans-serif;padding:1px 7px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
+/* 🔔 변경 기록 (2026-10-22) */
+.chgw .chgf .btn.on{background:var(--ind);color:#fff;border-color:var(--ind)}
+.chgw .chgo{align-items:center}
+.chgw .chgo select{width:auto;flex:none;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}
+.chgw .chgo .ck{display:flex;gap:4px;align-items:center;font-weight:700;cursor:pointer}
+.chgw .it.go{cursor:pointer}.chgw .it.go:hover{background:var(--ind1)}
+.chgw .it .ic{font-size:18px;flex:none;width:26px;text-align:center}
+.chgw .it .t b{white-space:normal}.chgw .it .t small{display:block}.chgw .it .t small.dt{color:var(--ink);opacity:.8}
+.chgw .it .gp{flex:none;font-size:15px}
+.chgw .bd{background:#dc2626;color:#fff}
+.chgb a{position:relative}
+.chgn{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dc2626;color:#fff;font:800 10.5px/17px 'Noto Sans KR',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff;pointer-events:none;box-sizing:border-box}
+.chgn[hidden]{display:none}
+.chgfl{animation:chgfl .9s ease-in-out 5}@keyframes chgfl{50%{stroke-opacity:.15}}
 @media (max-width:640px){.phed{left:8px;right:8px;max-width:none;bottom:8px}.phed button{padding:7px 10px;font-size:12.5px}.phtr{padding:0;align-items:flex-end}.phtr>div{border-radius:16px 16px 0 0;max-height:85dvh;padding-bottom:env(safe-area-inset-bottom)}}
 @media print{.phed,.phedbtn,#phToast,.phtr{display:none!important}}
 .phpop .leaflet-popup-content{margin:8px!important;width:300px!important}
@@ -1779,7 +1793,7 @@ function uiInit(){if(!map)return;plblInit();
  try{chipInit()}catch(e){console.warn('chipInit',e)}
  uiPanelSync()}
 /* 폰(터치·짧은 쪽 600px 미만): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','shut','phed','fe','lock','ui','bg','fs'];
+const CHIP_ORD=['srch','chg','shut','phed','fe','lock','ui','bg','fs'];
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
@@ -1793,7 +1807,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={shut:'단수구역',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const LB={chg:'변경 기록',shut:'단수구역',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -3557,7 +3571,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -3876,7 +3890,7 @@ function facPatch(P,patch){const o={...(P['_원본']||{})};let n=0;
  for(const k in patch){const v=patch[k]==null?'':String(patch[k]).trim(),cur=P[k]==null?'':String(P[k]);if(v===cur)continue;n++;if(!(k in o))o[k]=P[k]==null?null:P[k];if(v==='')delete P[k];else P[k]=v;if((o[k]==null?'':String(o[k]))===v)delete o[k]}
  if(Object.keys(o).length)P['_원본']=o;else delete P['_원본'];return n}
 /* 현장 수정 표시: 추가·삭제 표시·위치 이동·속성 수정 중 하나라도 있으면 시각을 남김 */
-function facMark(P){P._et=Date.now();if(!P._fid)P._fid='F'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(P._추가||P._삭제||P._원좌표||(P['_원본']&&Object.keys(P['_원본']).length))P['_현장수정']=facNow();else delete P['_현장수정']}
+function facMark(P){P._et=Date.now();{const b=(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';if(b)P._eb=b;else delete P._eb}if(!P._fid)P._fid='F'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(P._추가||P._삭제||P._원좌표||(P['_원본']&&Object.keys(P['_원본']).length))P['_현장수정']=facNow();else delete P['_현장수정']}
 async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p||(f.p={});let re=false;
  if(patch==='orig'){const o=P['_원본']||{};for(const k in o){if(o[k]==null)delete P[k];else P[k]=o[k]}delete P['_원본'];if(P._원좌표){f.c=P._원좌표.slice();delete P._원좌표;re=true}if(P._삭제){delete P._삭제;re=true}facMark(P)}
  else{patch={...patch};let n=0;
@@ -3887,6 +3901,7 @@ async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p
  else{const KI=facKindInfo(f.k);FAC.cl[i]=facClosed(P)?1:0;FAC.sk[i]=facSymOf(KI,P);FAC.rot[i]=FROT.has(FAC.sk[i])?facRot(P):NaN;FAC.ed[i]=P._현장수정||P._추가?1:0;facDraw();try{facKindsUi()}catch(_){}}
  if(map&&map._popup&&map._popup.isOpen()){const pp=map._popup;setTimeout(()=>{if(pp.isOpen()&&pp._fi===i)pp.setContent(pp._hit?hitHtml(pp._hit):facPopup(i)+elevPop(FAC.y[i],FAC.x[i]))},0)}
  if(typeof shutRefresh==='function')shutRefresh();
+ try{chgFacMine(f,label)}catch(_){}
  await facSave('현장 수정',facKindInfo(f.k).name+(P['관리번호']?' '+P['관리번호']:'')+' '+label,{upd:1})}
 function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
 window.facOpSet=facOpSet;
@@ -3934,7 +3949,7 @@ function facReapply(e,f){const P=e.p||{};if(P._추가)return f;const q={...(f.p|
  const o=P['_원본']||{},no={};for(const k in o){no[k]=q[k]==null?null:q[k];if(P[k]==null)delete q[k];else q[k]=P[k]}
  for(const k in no)if((no[k]==null?'':String(no[k]))===(q[k]==null?'':String(q[k])))delete no[k];
  if(Object.keys(no).length)q['_원본']=no;if(P._원좌표&&n.c&&e.c){q._원좌표=n.c.slice();n.c=e.c.slice()}if(P._삭제)q._삭제=P._삭제;
- if(q['_원본']||q._원좌표||q._삭제)q['_현장수정']=P['_현장수정']||facNow();if(P._fid)q._fid=P._fid;if(P._et)q._et=P._et;return n}
+ if(q['_원본']||q._원좌표||q._삭제)q['_현장수정']=P['_현장수정']||facNow();if(P._fid)q._fid=P._fid;if(P._et)q._et=P._et;if(P._eb)q._eb=P._eb;return n}
 /* 전체 교체 때 현장 수정 옮기기: 관리번호(종류 안 하나뿐) → 원래 위치 0.5m 안 같은 종류 순으로 짝지음 */
 function facCarry(ed,all){const LC=Math.cos(36*Math.PI/180),mx=c=>c[0]*LC*111320,my=c=>c[1]*110574,cell=new Map(),ids=facIdCounts(all),byId=new Map(),used=new Uint8Array(all.length);
  all.forEach((f,j)=>{if(f.c){const g=Math.floor(mx(f.c))+','+Math.floor(my(f.c));let a=cell.get(g);if(!a)cell.set(g,a=[]);a.push(j)}const id=facId(f.p),k=f.k+'|'+id;if(id&&ids.get(k)===1)byId.set(k,j)});
@@ -4582,6 +4597,7 @@ async function phGoTo(m,txt,all,yPick){txt=String(txt||'').normalize('NFC').trim
 function phViewsRefresh(except){PH.views.forEach(x=>{if(x!==except)try{x.refresh()}catch(_){}})}
 /* 지우기: 바로 없애지 않고 🗂️ 휴지통(7일)으로 — 사진 파일(ph:/pt:)은 휴지통에서 영구 삭제할 때 지움. opt.remote=다른 직원이 지운 것 */
 async function phDelete(ids,opt){opt=opt||{};const s=new Set(ids);if(!opt.remote&&typeof shMarkDel==='function')shMarkDel(ids);const gone=PH.list.filter(m=>s.has(m.id));PH.list=PH.list.filter(m=>!s.has(m.id));ids.forEach(id=>{PH.byId.delete(id);phForget(id)});
+ try{if(!opt.remote||opt.log)chgPhDel(gone,!!opt.remote)}catch(_){}
  if(PH.ed&&PH.ed.pick.size)ids.forEach(id=>PH.ed.pick.delete(id));await phTrashAdd(gone,opt.remote);await phSaveMeta(true);phRefresh();return gone}
 /* ---------- 갤러리 (앱 안 전체화면 / 새 창 공용) ---------- */
 function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
@@ -4718,7 +4734,7 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
  for(const f of files)if(/\.(pgw|pngw|jgw|jpgw|wld)$/i.test(f.name)){const w=phWorld(await f.text());if(w)WF.set(bn(f.name),w)}
  files=files.filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif)$/i.test(f.name));if(!files.length){if(WF.size)phWorldApply(WF);return}
  if(PH.busy){alert('사진을 올리는 중입니다. 끝난 뒤 다시 올려 주세요.');return}
- PH.busy=true;PH.stop=false;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
+ PH.busy=true;PH.stop=false;const chgN0=PH.list.length;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
  const msg=$('phMsg'),max=+$('phSize').value,N=files.length,t0=Date.now();let add=0,nog=0,heic=0,dup=0,fail=0,done=0,i=0,nmap=0,hereN=0,skipN=0;PH.hereP=null;const DX=phDupIdx(),hold=[];
  $('phProg').hidden=false;$('phStop').hidden=false;$('phProg').firstElementChild.style.width='0';
  const one=async f=>{if(/heic|heif/i.test(f.type)||/\.(heic|heif)$/i.test(f.name)){heic++;return}
@@ -4746,6 +4762,7 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
   skipN=drop.length;if(drop.length){try{await idbDel(drop.flatMap(id=>['ph:'+id,'pt:'+id]))}catch(_){}drop.forEach(phForget)}
   if(keep.size){await phSaveMeta(true);phRefresh(true)}}
  if(WF.size)phWorldApply(WF,true);
+ if(add)try{chgPhMine(PH.list.slice(chgN0).map(m=>m.id))}catch(_){}
  msg.innerHTML=`✅ 사진 ${add.toLocaleString()}장 추가`+(nmap?` · 🎯 위치도 ${nmap}장`:'')+(PH.stop?' · ⏹ 중간에 멈춤':'')+(nog?` · <b class="c-am">GPS 없음 ${nog.toLocaleString()}장</b>`:'')+(dup?` · 이미 있음 ${dup.toLocaleString()}장`:'')+(skipN?` · 같은 사진으로 보여 건너뜀 ${skipN.toLocaleString()}장`:'')+(fail?` · 실패 ${fail}장`:'')+
   (heic?`<br><span class="c-rd">아이폰 HEIC ${heic}장은 읽지 못했습니다. 카메라 설정 › 포맷 › "높은 호환성"(JPG)으로 찍거나 JPG로 바꿔 올려 주세요.</span>`:'')+(nog?'<br>GPS 없는 사진은 비슷한 파일명·촬영시각의 묶음에 위치 추정으로 들어가고, 그래도 없으면 갤러리의 "위치 없는 사진"에 모입니다.':'')}
 /* ---------- 같은 사진 중복 막기 (2026-10-21) ----------
@@ -5038,20 +5055,21 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
  SH.busy=true;SH.err='';shStatus();const msg=$('shMsg'),say=t=>{if(msg)msg.textContent=t};let changed=false,upN=0,dnN=0,delN=0;
  try{
   // 1) 먼저 받기: 서버에 이미 있는 사진(같은 사진을 백업 파일로 넣은 경우 등)은 id로 짝지어 다시 올리지 않음
-  const r=await shReq('list',{since:SH.since}),add=[],rm=[];
+  const r=await shReq('list',{since:SH.since}),add=[],rm=[],modIds=[],first0=!SH.since;
   let rmEd=0;
   for(const o of r.items||[]){if(SH.del.has(o.id)||SH.res.has(o.id))continue;/* 내가 지우는 중·되살리는 중인 사진은 서버 상태로 덮지 않음 */const m=PH.byId.get(o.id);
    if(o.del){if(m){rm.push(o.id);if(m.shUp&&m.shSig!==shSig(m))rmEd++}continue}
    if(m){if(!m.shUp||m.shSig===shSig(m)){let d=false;['memo','memoSrc','src'].forEach(k=>{const v=o[k]||'';if((m[k]||'')!==v){if(v)m[k]=v;else delete m[k];d=true}});
       ['lat','lng','acc'].forEach(k=>{const v=o[k]!=null&&isFinite(o[k])?o[k]:null;if((m[k]??null)!==v){m[k]=v;d=true}});
       if(shFxSet(m,o.code))d=true;
-      if(d)SH.act=Date.now();if(o.by&&!m.by)m.by=o.by;m.shUp=1;m.shSig=shSig(m);changed=true}continue}
+      if(d){SH.act=Date.now();modIds.push(m.id)}if(o.by&&!m.by)m.by=o.by;m.shUp=1;m.shSig=shSig(m);changed=true}continue}
    const n={id:o.id,name:o.name||o.id,dt:o.dt||'',ts:o.ts||phTs(o.dt||''),lat:o.lat??null,lng:o.lng??null,dir:o.dir??null,alt:o.alt??null,src:o.src||(o.lat!=null?'GPS':'없음'),
     memo:o.memo||'',w:o.w||0,h:o.h||0,at:o.at||Date.now(),by:o.by||'',shUp:1};if(o.memoSrc)n.memoSrc=o.memoSrc;if(o.acc!=null)n.acc=o.acc;if(o.map){n.map=true;if(o.dot)n.dot=o.dot}shFxSet(n,o.code);
    n.shSig=shSig(n);add.push(n)}
   // 사진 목록(위치·메모)만 먼저 넣고, 작은 사진은 화면에 보일 때 받음 (shThumbGet)
-  add.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++}});if(add.length)changed=true;
-  if(rm.length){await phDelete(rm,{remote:1});delN=rm.length;if(typeof phToast==='function')phToast(`☁️ 다른 직원이 사진 ${rm.length.toLocaleString()}장을 지웠습니다`+(rmEd?` (이 기기에서 고친 내용이 있던 ${rmEd}장 포함)`:'')+' — 🗂️ 휴지통에서 7일 안에 되살릴 수 있습니다.',{btn:'🗂️ 휴지통',fn:()=>phTrashOpen()})}
+  const addG=[];add.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++;addG.push(n)}});if(add.length)changed=true;
+  try{chgPhIn(addG,first0);chgPhMod(modIds)}catch(_){}
+  if(rm.length){await phDelete(rm,{remote:1,log:1});delN=rm.length;if(typeof phToast==='function')phToast(`☁️ 다른 직원이 사진 ${rm.length.toLocaleString()}장을 지웠습니다`+(rmEd?` (이 기기에서 고친 내용이 있던 ${rmEd}장 포함)`:'')+' — 🗂️ 휴지통에서 7일 안에 되살릴 수 있습니다.',{btn:'🗂️ 휴지통',fn:()=>phTrashOpen()})}
   if(dnN||delN)SH.act=Date.now();
   // 받은 목록은 바로 저장 → 중간에 끊겨도 다음엔 이어서 받음
   SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
@@ -5180,7 +5198,7 @@ async function facSync(mode,quiet){const R={got:0,sent:0,kept:0};const say=t=>{i
   /* 1) 서버가 마지막으로 맞춘 뒤 바뀌었으면 받아서 합침 */
   if(sv&&sv.parts&&sv.v!==s.sv){
    if(s.full&&lc&&mode!=='manual'){R.need=1}
-   else{say('⬇️ 상수도 시설물 받는 중…');const d=await facGet(sv.v,sv);let cur=null;try{cur=await IDB.get('facs')}catch(_){}
+   else{say('⬇️ 상수도 시설물 받는 중…');const d=await facGet(sv.v,sv);try{chgFacIn(d.feats,since,s.sv==null)}catch(_){}let cur=null;try{cur=await IDB.get('facs')}catch(_){}
     const mine=FAC.feats.length?FAC.feats:(cur&&cur.feats)||[];let v=d,m=null;
     if(s.full&&mine.length){m=facMergeEd(mine,d.feats,since,[]);v={...(cur||d),feats:m.feats,at:Date.now()};R.kept=0}
     else if(mine.length&&(s.dirty||legacy)){m=facMergeEd(d.feats,mine,since,s.rm);if(m.n||m.rmN){v={...d,feats:m.feats,at:Date.now()};R.kept=m.n}else s.dirty=false}
@@ -5214,7 +5232,8 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
    else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}{const h=!v.hyd&&hydKeep(l);if(h)v.hyd=h}await IDB.set('elev',v);await elevRestore(true)}
    else if(n==='phref'){if(cnt(l))try{await IDB.set('phref_prev',l)}catch(_){}await IDB.set('phref',v);phRefSet(v);if(PH.list.length)phRefresh()}
    else{if(l)try{await IDB.set('facs_prev',l)}catch(_){}await IDB.set('facs',v);await facRestore(true)}
-   stoKeep();got.push(`${t} ${s.cnt.toLocaleString()}개`)}
+   stoKeep();CHG.rg.push(`${t} ${s.cnt.toLocaleString()}개`);got.push(`${t} ${s.cnt.toLocaleString()}개`)}
+  if(CHG.rg.length){try{chgAdd({k:'ref',rx:1,tx:'기준자료 받음: '+CHG.rg.join(' · ')})}catch(_){}CHG.rg=[]}
   const loc2=await refLocal();
   if(got.length){refSay(`✅ 공유 서버에서 받았습니다: ${got.join(' · ')}<br><small>${refState(info,loc2)}</small>`);if(typeof phToast==='function')phToast('🗺️ 공유 서버에서 새 기준자료를 받았습니다: '+got.join(' · '))}
   else refSay((Object.keys(info).length?'✅ 이 기기 기준자료가 최신입니다.':'공유 서버에 아직 올린 기준자료가 없습니다.')+'<br><small>'+refState(info,loc2)+'</small>')}
@@ -6144,6 +6163,7 @@ async function feAct(e,btn){const E=btn.dataset.e,T=btn.dataset.t;
 async function feAdd(s){const k=FE.addK;if(!k){feMsg('추가할 종류를 고르세요.');return}const I=facKindInfo(k),p={};if(/^SA\d{3}$/.test(k))p['지물부호']=k;p._추가=facNow();
  if(FROT.has(I.sym)&&s&&!s.raw)p.rotation=String(s.ang);facMark(p);
  const f={k,c:[+s.lng.toFixed(7),+s.lat.toFixed(7)],p};FAC.feats.push(f);if(!FAC.layers)FAC.layers=[];$('fPanel').hidden=false;facIndex();FE.sel=FAC.pt.indexOf(f);FE.tool='sel';feUi();
+ try{chgFacMine(f,'현장 추가')}catch(_){}
  await facSave('현장 수정',I.name+' 현장 추가',{add:1})}
 async function feMove(i,s){const f=FAC.pt[i];if(!f||!s)return;const pt={c:[+s.lng.toFixed(7),+s.lat.toFixed(7)]};if(feRotKind(i)&&!s.raw)pt.rotation=String(s.ang);
  await facEdit(i,pt,'위치 옮김'+(s.raw?'':' (관로에 붙임)'));feUi();feMsg('📍 옮겼습니다. '+feSnapTxt(s)+(pt.rotation?' · 회전 '+pt.rotation+'°':''))}
@@ -6213,7 +6233,7 @@ function facRotFill(){if(!FAC.n){alert('시설물 자료가 없습니다.');retu
  diffOpen('🧭 밸브 회전값 채우기 미리보기',html,[[ok.map(([i])=>toF(i)),'#16a34a'],[jn.map(([i])=>toF(i)),'#f59e0b'],[np.map(toF),'#dc2626','4 4']],async()=>{
   const use=ok.concat($('dfRotJn')&&$('dfRotJn').checked?jn:[]);
   for(const [i,a] of use){const P=FAC.pt[i].p||(FAC.pt[i].p={});facPatch(P,{rotation:String(a)});facMark(P);FAC.rot[i]=a;FAC.ed[i]=1}
-  facDraw();await facSave('현장 수정',`밸브 회전값 채우기 ${use.length.toLocaleString()}개`,{upd:use.length});feUi();
+  facDraw();try{chgAdd({k:'fac',mine:1,by:chgMe(),n:use.length,tx:`밸브 회전값 채우기 ${use.length.toLocaleString()}개`})}catch(_){}await facSave('현장 수정',`밸브 회전값 채우기 ${use.length.toLocaleString()}개`,{upd:use.length});feUi();
   const m=$('fMsg');if(m)m.innerHTML=`🧭 밸브 ${use.length.toLocaleString()}개의 회전값을 관로 방향으로 채웠습니다.${tot-use.length?` 확인 필요 ${(tot-use.length).toLocaleString()}개는 그대로 두었습니다.`:''}`})}
 /* ===================== 🚰 상수관로 현장 편집 (🛠 편집 모드의 🚰 관로 탭) =====================
  기준자료(IDB 'pipes' = PIPE.raw)는 그대로 두고, 고친 관로만 IDB 'pedit'에 따로 저장해 덧씌움(PIPE.feats) → 9만 5천 개를 다시 저장·다시 그리지 않음.
@@ -6275,9 +6295,11 @@ function pedBegin(fi){let r=pedRecOf(fi),b=r?JSON.stringify(r):null;
 function pedCancel(){const e=PED.undo.pop();if(e)e.forEach(({id,b})=>{if(b==null){const j=PED.recs.findIndex(x=>x.id===id);if(j>=0)PED.recs.splice(j,1)}})}
 const pedBase=r=>r.add?r.add:((PIPE.raw[r.o.i]||{}).properties||{});
 async function pedCommit(list,label){const t=Date.now();for(const r of list){r.t=t;r.by=pedBy();r.lb=label;if(!r.add&&!r.rv&&!Object.keys(r.p||{}).length&&!r.g&&!r.del)r.rv=1;pedRefresh(r)}
+ try{chgPedMine(list,label)}catch(_){}
  await pedSave();peMarks();feUi();peDraw();feMsg('✅ '+esc(label)+' · 저장했습니다'+(PED.undo.length?' (↶ 되돌리기 가능)':''))}
 async function pedUndo(){const e=PED.undo.pop();if(!e){feMsg('되돌릴 수정이 없습니다.');return}const list=[];
  for(const {id,b} of e){const r=PED.recs.find(x=>x.id===id);if(!r)continue;if(b==null)r.rv=1;else{const o=JSON.parse(b);Object.keys(r).forEach(k=>delete r[k]);Object.assign(r,o)}r.t=Date.now();pedRefresh(r);list.push(r)}
+ try{if(list.length)chgPedMine(list,'↶ 되돌리기')}catch(_){}
  PE.v=null;if(PE.sel>=0&&(!PIPE.feats[PE.sel]||PIPE.feats[PE.sel].properties._빈))PE.sel=-1;await pedSave();peMarks();feUi();peDraw();feMsg('↶ 되돌렸습니다.')}
 const pedKey=(P,role)=>{const sel={id:'pId',dia:'pDia',mat:'pMat',ymd:'pYmd',use:'pUse'}[role],k=sel&&$(sel)&&$(sel).value;if(k)return k;for(const a of PALIAS[role])if(P[a]!=null)return a;return PALIAS[role][0]};
 async function pedSetProps(fi,vals){const r=pedBegin(fi),base=pedBase(r);let n=0;
@@ -6326,7 +6348,8 @@ async function pedSync(mode,quiet){const say=t=>{if(quiet)return;feMsg(t);const 
   const info=(await shReq('refinfo')).ref||{},s=info.pedit;
   if(s&&s.parts&&s.v!==PED.sv){say('⬇️ 관로 현장 수정 받는 중…');const bufs=[];for(let p=0;p<s.parts;p++){const r=await shReq('refget',{name:'pedit',v:s.v,part:p});bufs.push(shBlob(r.data))}
    const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error('관로 현장 수정 압축 파일이 비었습니다.');const v=JSON.parse(await e.async('string')),sm=new Map((v.recs||[]).map(r=>[r.id,r]));
-   R.got=pedMerge(v.recs);PED.sv=s.v;PED.dirty=PED.recs.some(r=>{const o=sm.get(r.id);return !o||(r.t||0)>(o.t||0)});PED.at=PED.dirty?Date.now():s.v;await pedStore();if(R.got)pedReapply()}
+   const t0m=new Map(PED.recs.map(r=>[r.id,r.t||0])),first=!PED.sv,inc=(v.recs||[]).filter(r=>r&&r.id&&(r.t||0)>(t0m.has(r.id)?t0m.get(r.id):-1));
+   R.got=pedMerge(v.recs);PED.sv=s.v;PED.dirty=PED.recs.some(r=>{const o=sm.get(r.id);return !o||(r.t||0)>(o.t||0)});PED.at=PED.dirty?Date.now():s.v;await pedStore();if(R.got)pedReapply();try{chgPedIn(inc,first)}catch(_){}}
   if(mode!=='down'&&PED.dirty&&PED.recs.length){say('⏫ 관로 현장 수정 올리는 중…');const at=Date.now(),z=new JSZip();z.file('d.json',JSON.stringify({v:1,at,recs:PED.recs}));
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    for(let p=0;p<parts;p++)await shReq('refput',{name:'pedit',v:at,part:p,parts,size:u8.length,cnt:PED.recs.length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
@@ -6581,6 +6604,133 @@ async function vidSync(quiet){if(!SH.on())return{};if(VID.busy)return{busy:true}
  const c=$('uiVid');if(c){c.checked=UI.vid!==false;c.onchange=e=>{UI.vid=e.target.checked;uiSave();vidDraw()}}
  if(map)map.on('zoomend',()=>{const want=UI.vid!==false&&map.getZoom()>=13;if(want!==(!!VID.lyr&&map.hasLayer(VID.lyr)))vidDraw()});
  vidLoad()}catch(e){console.warn('동영상',e)}})();
+/* ===================== 🔔 변경 기록 (2026-10-22) =====================
+   관로·시설물 현장 수정, 사진 추가·지움·메모, 기준자료 받기를 한 목록으로 모음.
+   이 기기에서 고친 것과 공유 서버에서 받은 것을 함께 남기고, 받은 것 중 아직 안 본 건수를 🔔에 빨간 숫자로 보여 줌.
+   기록은 이 기기 IDB 'chglog'(30일·최대 3000줄), 본 시각은 localStorage geo-chg-seen. 고객 정보 없이 관리번호·소블록만 남김 */
+const CHG={list:[],loaded:null,seen:0,prev:0,f:'all',d:7,oth:false,rg:[],nt:[],ntT:null,svT:null,max:300};
+const CHG_DAYS=30,CHG_MAX=3000,CHG_K={pipe:['🚰','관로'],fac:['🔧','시설물'],photo:['📷','사진'],ref:['🗺️','기준자료']};
+try{CHG.seen=+localStorage.getItem('geo-chg-seen')||0}catch(_){}
+const chgMe=()=>(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';
+const chgCut=v=>{const s=v==null||v===''?'(빈칸)':String(v);return s.length>24?s.slice(0,24)+'…':s};
+const chgHm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const chgMd=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${chgHm(t)}`};
+function chgLoad(){return CHG.loaded||(CHG.loaded=(async()=>{let v=null;try{v=await IDB.get('chglog')}catch(_){}
+ if(Array.isArray(v))CHG.list=v.concat(CHG.list);else{if(!CHG.seen){CHG.seen=Date.now()-1;try{localStorage.setItem('geo-chg-seen',String(CHG.seen))}catch(_){}}}if(!Array.isArray(v))setTimeout(()=>chgSeed().catch(e=>console.warn('변경 기록',e)),5000);chgTrim();chgBadge();chgRender()})())}
+function chgTrim(){const old=Date.now()-CHG_DAYS*864e5;CHG.list=CHG.list.filter(e=>(e.at||0)>=old);if(CHG.list.length>CHG_MAX)CHG.list=CHG.list.sort((a,b)=>b.at-a.at).slice(0,CHG_MAX)}
+function chgSave(){clearTimeout(CHG.svT);CHG.svT=setTimeout(()=>{IDB.set('chglog',CHG.list).catch(e=>console.warn('변경 기록 저장',e))},800)}
+/* e: {k, tx, id(관리번호), dt(바뀐 칸), ll:[lat,lng], pid(관로 기록), fid(시설), ids(사진), by, t(고친 시각), rx(받음), mine} */
+function chgAdd(e){const now=Date.now();e.at=e.at||now;e.t=e.t||e.at;e.c='C'+now.toString(36)+Math.random().toString(36).slice(2,6);if(e.mine)e.mine=1;else delete e.mine;
+ if(e.ll&&!e.bk){try{e.bk=blkAt(e.ll[1],e.ll[0])||''}catch(_){}if(!e.bk)delete e.bk}
+ Object.keys(e).forEach(k=>{if(e[k]===''||e[k]==null)delete e[k]});
+ CHG.list.push(e);chgTrim();chgSave();chgBadge();if(!e.mine&&!e.seed)chgNote(e);chgRender();return e}
+const chgNew=()=>CHG.list.filter(e=>!e.mine&&e.at>CHG.seen).length;
+function chgBadge(){const n=chgNew(),b=document.querySelector('#chgBtn .chgn');if(!b)return;b.hidden=!n;b.textContent=n>99?'99+':String(n);
+ const a=$('chgBtn');if(a)a.title='변경 기록 (관로·시설물·사진)'+(n?` · 새로 받은 변경 ${n}건`:'')}
+/* 받은 변경을 1.5초 모아 아래 알림 줄 한 번 (다른 알림이 떠 있으면 숫자만) */
+function chgNote(e){CHG.nt.push(e);clearTimeout(CHG.ntT);CHG.ntT=setTimeout(()=>{const L2=CHG.nt;CHG.nt=[];const c={};
+  L2.forEach(x=>{const k=x.k==='photo'?(x.del?'pdel':'photo'):x.k;c[k]=(c[k]||0)+(x.k==='photo'?(x.n||1):(x.n||1))});
+  const s=[c.pipe&&`관로 수정 ${c.pipe}건`,c.fac&&`시설물 수정 ${c.fac}건`,c.photo&&`사진 ${c.photo}장`,c.pdel&&`사진 지워짐 ${c.pdel}장`,c.ref&&'기준자료'].filter(Boolean).join(' · ');
+  const t=document.getElementById('phToast');if(!s||(t&&!t.hidden)||typeof phToast!=='function')return;
+  phToast('🔔 받은 변경: '+s,{btn:'🔔 보기',fn:chgOpen,ms:6000})},1500)}
+/* ---- 관로 ---- */
+function chgPipeFi(r){if(!r||typeof PED==='undefined')return null;if(PED.fi&&PED.fi.has(r.id))return PED.fi.get(r.id);return !r.add&&r.o&&r.o.i!=null?r.o.i:null}
+function chgPipeInfo(r){let id='',ll=null;const fi=chgPipeFi(r),F=typeof PIPE!=='undefined'?PIPE:{};
+ for(const f of [fi!=null&&F.feats?F.feats[fi]:null,fi!=null&&!r.add&&F.raw?F.raw[fi]:null]){if(!f||(f.properties&&f.properties._빈))continue;
+  if(!id){try{id=attrOf(f).id||''}catch(_){}if(!id)id=(f.properties||{})._임시번호||''}if(!ll){const m=midXY(f.geometry);if(m)ll=[m[1],m[0]]}}
+ if(!id)id=(r.add&&r.add._임시번호)||(r.o&&r.o.k?keyId(String(r.o.k)):'')||'';return{id:id==null?'':String(id),ll}}
+function chgPedDet(r){const ks=Object.keys(r.p||{});if(!ks.length)return '';return ks.slice(0,3).map(k=>`${k} ${chgCut(r.op&&r.op[k])}→${chgCut(r.p[k])}`).join(', ')+(ks.length>3?` 외 ${ks.length-3}칸`:'')}
+function chgPedMine(list,label){const r=list[0];if(!r)return;const I=chgPipeInfo(r);
+ chgAdd({k:'pipe',mine:1,by:chgMe(),tx:(label||'관로 수정')+(list.length>1?` (${list.length}개)`:''),id:I.id,dt:r.rv?'':chgPedDet(r),ll:I.ll,pid:r.id})}
+function chgPedIn(recs,first){const me=chgMe();if(!recs.length)return;
+ if(first&&recs.length>5){chgAdd({k:'pipe',rx:1,n:recs.length,tx:`관로 현장 수정 ${recs.length.toLocaleString()}건 처음 받음`});return}
+ recs.slice().sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,100).forEach(r=>{const I=chgPipeInfo(r);
+  chgAdd({k:'pipe',rx:1,t:r.t,by:r.by||'',mine:!!(me&&r.by===me),tx:r.lb||'관로 수정',id:I.id,dt:r.rv?'':chgPedDet(r),ll:I.ll,pid:r.id})});
+ if(recs.length>100)chgAdd({k:'pipe',rx:1,n:recs.length-100,tx:`그 밖의 관로 현장 수정 ${(recs.length-100).toLocaleString()}건 받음`})}
+/* ---- 시설물 ---- */
+function chgFacTx(P){const ks=Object.keys(P['_원본']||{});return P._삭제?'삭제 표시':P._추가?'현장 추가':[P._원좌표?'위치 이동':'',ks.length?'속성 수정':''].filter(Boolean).join(', ')||'원래대로'}
+function chgFacDet(P){const o=P['_원본']||{},ks=Object.keys(o);return ks.slice(0,3).map(k=>`${k} ${chgCut(o[k])}→${chgCut(P[k])}`).join(', ')+(ks.length>3?` 외 ${ks.length-3}칸`:'')}
+const chgFacNm=f=>{try{return facKindInfo(f.k).name||'시설물'}catch(_){return '시설물'}};
+function chgFacMine(f,label){if(!f)return;const P=f.p||{};chgAdd({k:'fac',mine:1,by:chgMe(),tx:chgFacNm(f)+' '+(label||chgFacTx(P)),id:P['관리번호'],dt:chgFacDet(P),ll:f.c?[f.c[1],f.c[0]]:null,fid:P._fid})}
+function chgFacIn(feats,since,first){const me=chgMe(),L2=(feats||[]).filter(f=>{const P=f.p||{};return P._et&&P._et>since&&!(me&&P._eb===me)});if(!L2.length)return;
+ if(first&&L2.length>5){chgAdd({k:'fac',rx:1,n:L2.length,tx:`시설물 현장 수정 ${L2.length.toLocaleString()}개 처음 받음`});return}
+ L2.sort((a,b)=>b.p._et-a.p._et).slice(0,100).forEach(f=>{const P=f.p;chgAdd({k:'fac',rx:1,t:P._et,by:P._eb||'',tx:chgFacNm(f)+' '+chgFacTx(P),id:P['관리번호'],dt:chgFacDet(P),ll:f.c?[f.c[1],f.c[0]]:null,fid:P._fid})});
+ if(L2.length>100)chgAdd({k:'fac',rx:1,n:L2.length-100,tx:`그 밖의 시설물 현장 수정 ${(L2.length-100).toLocaleString()}개 받음`})}
+/* ---- 사진 ---- */
+const chgPhLL=ms=>{const m=ms.find(x=>x&&x.lat!=null);return m?[m.lat,m.lng]:null};
+function chgPhMine(ids){const ms=ids.map(id=>PH.byId.get(id)).filter(Boolean);if(!ms.length)return;
+ chgAdd({k:'photo',mine:1,by:chgMe(),n:ms.length,tx:`사진 ${ms.length.toLocaleString()}장 추가`,ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms)})}
+function chgPhIn(add,first){if(!add.length)return;const me=chgMe(),g=new Map();add.forEach(m=>{const k=m.by||'';if(!g.has(k))g.set(k,[]);g.get(k).push(m)});
+ g.forEach((ms,by)=>chgAdd({k:'photo',rx:1,by,mine:!!(me&&by===me),n:ms.length,tx:(first?`공유 사진 ${ms.length.toLocaleString()}장 처음 받음`:`새 사진 ${ms.length.toLocaleString()}장`),ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms),t:Math.max(...ms.map(m=>m.at||0))||undefined}))}
+function chgPhMod(ids){const ms=ids.map(id=>PH.byId.get(id)).filter(Boolean);if(ms.length)chgAdd({k:'photo',rx:1,n:ms.length,tx:`사진 메모·위치 바뀜 ${ms.length.toLocaleString()}장`,ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms)})}
+function chgPhDel(gone,remote){if(!gone.length)return;chgAdd({k:'photo',del:1,n:gone.length,mine:!remote,rx:remote?1:0,by:remote?'':chgMe(),tx:remote?`사진 ${gone.length.toLocaleString()}장 지워짐 (다른 직원 · 🗂️ 휴지통 7일)`:`사진 ${gone.length.toLocaleString()}장 지움 (🗂️ 휴지통 7일)`,ll:chgPhLL(gone)})}
+/* ---- 처음 켤 때: 이미 있는 기록(최근 30일)으로 채우고 모두 본 것으로 ---- */
+async function chgSeed(){const old=Date.now()-CHG_DAYS*864e5,me=chgMe(),out=[];
+ try{if(typeof pedLoad==='function')await pedLoad()}catch(_){}
+ if(typeof PED!=='undefined')PED.recs.filter(r=>!r.rv&&(r.t||0)>=old).forEach(r=>{const I=chgPipeInfo(r);out.push({k:'pipe',t:r.t,at:r.t,by:r.by||'',mine:!!(me&&r.by===me),tx:r.lb||'관로 수정',id:I.id,dt:chgPedDet(r),ll:I.ll,pid:r.id})});
+ if(typeof FAC!=='undefined')(FAC.feats||[]).forEach(f=>{const P=f.p||{};if((P._et||0)>=old&&(P['_현장수정']||P._추가))out.push({k:'fac',t:P._et,at:P._et,by:P._eb||'',mine:!!(me&&P._eb===me),tx:chgFacNm(f)+' '+chgFacTx(P),id:P['관리번호'],dt:chgFacDet(P),ll:f.c?[f.c[1],f.c[0]]:null,fid:P._fid})});
+ const g=new Map();PH.list.forEach(m=>{if((m.at||0)<old)return;const d=new Date(m.at),k=d.toDateString()+'|'+(m.by||'');if(!g.has(k))g.set(k,[]);g.get(k).push(m)});
+ g.forEach(ms=>{const by=ms[0].by||'',t=Math.max(...ms.map(m=>m.at));out.push({k:'photo',t,at:t,by,mine:!by||!!(me&&by===me),n:ms.length,tx:`사진 ${ms.length.toLocaleString()}장`,ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms)})});
+ out.sort((a,b)=>b.at-a.at).slice(0,500).forEach(e=>{e.seed=1;chgAdd(e)});
+ chgSave();chgBadge();chgRender()}
+/* ---- 🔔 버튼·창 ---- */
+function chgInit(){chgLoad();if(!map||document.getElementById('chgBtn'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control chgb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='chg';
+  a.href='#';a.id='chgBtn';a.setAttribute('role','button');a.setAttribute('aria-label','변경 기록');a.title='변경 기록 (관로·시설물·사진)';a.innerHTML='🔔<span class="chgn" hidden></span>';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chgOpen()});return d}});
+ map.addControl(new Ctl());chgBadge()}
+function chgOpen(){chgLoad().then(()=>{let w=document.getElementById('chgW');
+ if(!w){w=document.createElement('div');w.id='chgW';w.className='phtr chgw np';w.setAttribute('role','dialog');w.setAttribute('aria-label','변경 기록');
+  w.innerHTML=`<div><div class="th"><b>🔔 변경 기록</b><button type="button" data-t="x" aria-label="닫기">✕</button></div>
+   <div class="tb chgf">${[['all','전체'],['pipe','🚰 관로'],['fac','🔧 시설물'],['photo','📷 사진'],['ref','🗺️ 기준자료']].map(([k,t])=>`<button type="button" class="btn ol" data-f="${k}">${t}</button>`).join('')}</div>
+   <div class="tb chgo"><select data-t="d" aria-label="기간"><option value="1">오늘</option><option value="7">최근 7일</option><option value="30">최근 30일</option></select>
+    <label class="ck"><input type="checkbox" data-t="oth"> 다른 직원 것만</label><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl">📋 엑셀</button></div>
+   <p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
+  document.body.appendChild(w);
+  w.onclick=e=>{if(e.target===w){w.hidden=true;return}const f=e.target.closest('[data-f]');if(f){CHG.f=f.dataset.f;CHG.max=300;chgRender();return}
+   const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
+   if(t==='x')w.hidden=true;else if(t==='xl')chgXlsx();else if(t==='more'){CHG.max+=300;chgRender()}
+   else if(t==='go'){const x=CHG.list.find(y=>y.c===b.dataset.c);if(x)chgGo(x)}};
+  w.querySelector('[data-t="d"]').onchange=e=>{CHG.d=+e.target.value;CHG.max=300;chgRender()};
+  w.querySelector('[data-t="oth"]').onchange=e=>{CHG.oth=e.target.checked;chgRender()};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
+ w.querySelector('[data-t="d"]').value=String(CHG.d);w.querySelector('[data-t="oth"]').checked=CHG.oth;
+ CHG.prev=CHG.seen;CHG.seen=Date.now();try{localStorage.setItem('geo-chg-seen',String(CHG.seen))}catch(_){}chgBadge();
+ {const t=document.getElementById('phToast');if(t&&/^🔔/.test(t.textContent||''))t.hidden=true}
+ CHG.max=300;w.hidden=false;chgRender()})}
+function chgPick(){const now=new Date(),from=CHG.d===1?new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime():Date.now()-CHG.d*864e5;
+ return CHG.list.filter(e=>e.at>=from&&(CHG.f==='all'||e.k===CHG.f)&&(!CHG.oth||!e.mine)).sort((a,b)=>b.at-a.at)}
+function chgCanGo(e){return !!(e.pid||e.fid||e.ll||(e.ids&&e.ids.length))}
+function chgRender(){const w=document.getElementById('chgW');if(!w||w.hidden)return;
+ w.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===CHG.f));
+ const L2=chgPick(),tl=w.querySelector('.tl'),nw=L2.filter(e=>!e.mine&&e.at>CHG.prev).length;
+ w.querySelector('[data-t="inf"]').textContent=`${L2.length.toLocaleString()}건${nw?` · 새로 받은 것 ${nw}건`:''} · 이 기기에서 고친 것과 공유 서버에서 받은 것을 ${CHG_DAYS}일 동안 보관합니다. 줄을 누르면 지도에서 위치를 보여 줍니다.`;
+ w.querySelector('[data-t="xl"]').disabled=!L2.length;
+ if(!L2.length){tl.innerHTML=`<div class="empty">${CHG.list.length?'이 조건에 맞는 변경이 없습니다.':'아직 기록이 없습니다. 관로·시설물을 고치거나 사진을 올리고 받으면 여기에 쌓입니다.'}</div>`;return}
+ let day='',h='';const wk='일월화수목금토';
+ L2.slice(0,CHG.max).forEach(e=>{const d=new Date(e.at),dk=d.toDateString();
+  if(dk!==day){if(day)h+='</div>';day=dk;h+=`<div class="dg"><small>${d.getMonth()+1}월 ${d.getDate()}일 (${wk[d.getDay()]})</small>`}
+  const K=CHG_K[e.k]||['•',''],isN=!e.mine&&e.at>CHG.prev,go=chgCanGo(e);
+  h+=`<div class="it ch${go?' go':''}"${go?` data-t="go" data-c="${esc(e.c)}"`:''}><span class="ic">${K[0]}</span><div class="t"><b>${esc(e.tx)}${e.id?` · ${esc(e.id)}`:''}${isN?'<span class="bd">새</span>':''}</b>`+
+   `<small>${new Date(e.t).toDateString()===dk?chgHm(e.t):chgMd(e.t)} · ${e.by?esc(e.by):'이름 없음'}${e.mine?' (이 기기)':''}${e.rx?(Math.abs(e.at-e.t)>36e5?' · 받음 '+chgMd(e.at):' · 받음'):''}${e.bk?' · 소블록 '+esc(e.bk):''}</small>${e.dt?`<small class="dt">${esc(e.dt)}</small>`:''}</div>${go?'<span class="gp" aria-hidden="true">📍</span>':''}</div>`});
+ h+='</div>';if(L2.length>CHG.max)h+=`<button type="button" class="btn ol" data-t="more" style="width:100%;margin-top:6px">더 보기 (${(L2.length-CHG.max).toLocaleString()}건 남음)</button>`;tl.innerHTML=h}
+function chgGo(e){if(!map)return;let b=null,hl=null;
+ if(e.pid&&typeof PED!=='undefined'){const r=PED.recs.find(x=>x.id===e.pid),fi=r?chgPipeFi(r):null;let f=fi!=null&&PIPE.feats?PIPE.feats[fi]:null;
+  if((!f||(f.properties&&f.properties._빈))&&r&&!r.add&&PIPE.raw)f=PIPE.raw[fi];
+  if(f&&f.geometry&&!(f.properties&&f.properties._빈)){hl=L.geoJSON(f,{style:{color:'#f59e0b',weight:10,opacity:.85,className:'chgfl'},interactive:false});const bb=hl.getBounds();if(bb.isValid())b=bb;else hl=null}}
+ if(!b&&e.fid&&typeof FAC!=='undefined'){const f=(FAC.feats||[]).find(x=>x.p&&x.p._fid===e.fid);if(f&&f.c)b=L.latLngBounds([[f.c[1],f.c[0]],[f.c[1],f.c[0]]])}
+ if(!b&&e.ids&&e.ids.length){const ps=e.ids.map(id=>PH.byId.get(id)).filter(m=>m&&m.lat!=null).map(m=>[m.lat,m.lng]);if(ps.length)b=L.latLngBounds(ps)}
+ if(!b&&e.ll)b=L.latLngBounds([e.ll,e.ll]);
+ if(!b){if(typeof phToast==='function')phToast('이 기록은 지도 위치를 찾지 못했습니다 (기준자료가 바뀌었거나 사진이 지워짐).',{ms:4000});return}
+ const w=document.getElementById('chgW');if(w)w.hidden=true;
+ map.fitBounds(b,{padding:[60,60],maxZoom:19});
+ if(!hl)hl=L.circleMarker(b.getCenter(),{radius:22,color:'#f59e0b',weight:4,fill:false,className:'chgfl',interactive:false});
+ hl.addTo(map);setTimeout(()=>{try{map.removeLayer(hl)}catch(_){}},4500)}
+function chgXlsx(){const L2=chgPick();if(!L2.length)return;if(typeof XLSX==='undefined'){phToast('엑셀(SheetJS) 라이브러리를 불러오지 못했습니다.',{ms:4000});return}
+ const rows=L2.map(e=>({'고친 시각':chgMd(e.t),'받은 시각':e.rx?chgMd(e.at):'','구분':(CHG_K[e.k]||['',''])[1],'내용':e.tx||'','관리번호':e.id||'','바뀐 칸':e.dt||'','소블록':e.bk||'','고친 사람':e.by||'','이 기기':e.mine?'예':''}));
+ const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+ Promise.resolve(xlsxSave([['변경 기록',rows]],`변경기록_${ymd}.xlsx`)).catch(err=>phToast('엑셀 만들기 실패: '+((err&&err.message)||err),{ms:5000}))}
+try{chgInit()}catch(e){console.warn('변경 기록',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
