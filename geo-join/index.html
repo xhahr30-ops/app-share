@@ -604,6 +604,15 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .chgw .it .t b{white-space:normal}.chgw .it .t small{display:block}.chgw .it .t small.dt{color:var(--ink);opacity:.8}
 .chgw .it .gp{flex:none;font-size:15px}
 .chgw .bd{background:#dc2626;color:#fff}
+/* ✨ 새로 받은 사진·시설물 강조: 아이콘 둘레로 퍼지는 링 (아이콘·밸브 방향은 그대로) */
+.hlnew{--hlc:#f97316}.hlnew.hlf{--hlc:#eab308;background:none;border:0}
+.hlnew::before,.hlnew::after{content:'';position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;border:3px solid var(--hlc);box-shadow:0 0 0 1px rgba(0,0,0,.25);box-sizing:border-box;pointer-events:none;animation:hlpr 1.6s ease-out infinite}
+.hlnew::after{animation-delay:.8s}
+@keyframes hlpr{0%{transform:scale(1);opacity:.95}100%{transform:scale(2.3);opacity:0}}
+.leaflet-marker-icon.hlf{pointer-events:none}
+.ph-ic .phc{position:relative}.phc .hlc{position:absolute;right:-12px;top:-7px;background:#f97316;color:#fff;font-size:10px;line-height:1;padding:3px 5px;border-radius:9px;border:1.5px solid #fff;white-space:nowrap;box-shadow:0 1px 3px #0005}
+.chgw .chgh{align-items:center}.chgw .chgh select{width:auto;flex:none;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.chgw .chgh b{font-size:12px}
+@media (prefers-reduced-motion:reduce){.hlnew::before{animation:none;transform:scale(1.25);opacity:1}.hlnew::after{display:none}}
 .chgb a{position:relative}
 .chgn{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dc2626;color:#fff;font:800 10.5px/17px 'Noto Sans KR',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff;pointer-events:none;box-sizing:border-box}
 .chgn[hidden]{display:none}
@@ -3571,7 +3580,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen|hl-off)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -3826,7 +3835,7 @@ const facKS=k=>+((FAC.ksz||{})[k])||1;
 const facSzK=(z,I,k)=>Math.max(6,Math.round(facSz(z,I.z===0)*(+UI.fsz||1)*facKS(k)));
 function facShape(g,sh,x,y,r){if(sh==='ci'){g.moveTo(x+r,y);g.arc(x,y,r,0,6.2832)}else if(sh==='di'){g.moveTo(x,y-r*1.25);g.lineTo(x+r*1.25,y);g.lineTo(x,y+r*1.25);g.lineTo(x-r*1.25,y);g.closePath()}
  else if(sh==='tr'){g.moveTo(x,y-r*1.3);g.lineTo(x+r*1.2,y+r*.9);g.lineTo(x-r*1.2,y+r*.9);g.closePath()}else{const s=sh==='SQ'?r*1.6:r;g.rect(x-s,y-s,s*2,s*2)}}
-function facDraw(){if(!FAC.cv||FAC.raf)return;FAC.raf=requestAnimationFrame(()=>{FAC.raf=0;try{facRender()}catch(e){console.warn('시설물 표시',e)}})}
+function facDraw(){if(!FAC.cv||FAC.raf)return;FAC.raf=requestAnimationFrame(()=>{FAC.raf=0;try{facRender()}catch(e){console.warn('시설물 표시',e)}try{if(typeof hlFacDraw==='function')hlFacDraw()}catch(e){console.warn('새 항목 강조',e)}})}
 function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=Math.min(window.devicePixelRatio||1,2),cv=FAC.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
@@ -3872,7 +3881,7 @@ function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),RK=FAC.kin
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
  for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z)||(FAC.dl[i]&&!(FE&&FE.on)))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=RK[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
 const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)'],['현장메모','현장 메모']];
-function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen=new Set();
+function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen=new Set();try{if(typeof hlSeenFac==='function')hlSeenFac(P._fid)}catch(_){}
  FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
  const b=poly?blkAt(f.c[0],f.c[1]):'';rows.push(['소블록(위치)',b||'-']);
  return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}${P._추가?' <small style="color:#16a34a;font-weight:700">🆕 현장 추가</small>':''}${P._삭제?' <small style="color:#dc2626;font-weight:700">🗑 삭제 표시</small>':''}${P._현장수정&&I.sym!=='gate'&&!P._추가?' <small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 '+esc(P._현장수정)+'</small>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`+
@@ -4495,17 +4504,17 @@ function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
 function phToggle(){const sh=$('phShow');sh.value=sh.value==='off'?'on':'off';if(sh.value==='off'&&PH.pop&&map)map.closePopup();sh.dispatchEvent(new Event('change'))}
-function phDraw(){phTogSync();const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);if(!map)return;if(!PH.L)PH.L=L.layerGroup();
+function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);if(!map)return;if(!PH.L)PH.L=L.layerGroup();
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
  const b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])),z=map.getZoom();
  const ed=PH.ed&&PH.ed.on;if(ed)PH.ed.clu=false;
- if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:phIcon(g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
-   k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else phPopOpen(g.id)});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
+ if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:hlIc(phIcon(g),g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
+   k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else{phPopOpen(g.id);hlSeenPh(g.ids)}});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
  if(ed){PH.ed.clu=true;phEdHint()}
- const yc=phColOn(),cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,la:0,ln:0,b:L.latLngBounds([]),y:new Map()});c.n+=g.n;if(yc){const y=phYr(g);c.y.set(y,(c.y.get(y)||0)+g.n)}c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
+ const yc=phColOn(),cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,w:0,la:0,ln:0,b:L.latLngBounds([]),y:new Map()});c.n+=g.n;if(HL.p.size)c.w+=hlPhN(g);if(yc){const y=phYr(g);c.y.set(y,(c.y.get(y)||0)+g.n)}c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
  bk.forEach(c=>{const s=c.n<10?36:c.n<100?42:c.n<1000?50:58;let bg='';
   if(yc){const ys=[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1));if(ys.length===1)bg=`;background:${phYC(ys[0])}`;else{let a=0;bg=';background:conic-gradient('+ys.map(y=>{const b=a+c.y.get(y)/c.n*360,t=`${phYC(y)} ${a.toFixed(1)}deg ${b.toFixed(1)}deg`;a=b;return t}).join(',')+')'}}
-  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc${yc?' yc':''}" style="width:${s}px;height:${s}px${bg}"><i>📷</i>${c.n.toLocaleString()}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장 · 위치 ${c.g.toLocaleString()}곳${yc&&c.y.size>1?' · '+[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1)).map(y=>(y?y+'년 ':'시각 없음 ')+c.y.get(y).toLocaleString()+'장').join(', '):''} — 눌러서 확대`});
+  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc${yc?' yc':''}" style="width:${s}px;height:${s}px${bg}"><i>📷</i>${c.n.toLocaleString()}${c.w?`<b class="hlc">새 ${c.w>99?'99+':c.w}</b>`:''}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장${c.w?` (새로 받은 사진 ${c.w}장)`:''} · 위치 ${c.g.toLocaleString()}곳${yc&&c.y.size>1?' · '+[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1)).map(y=>(y?y+'년 ':'시각 없음 ')+c.y.get(y).toLocaleString()+'장').join(', '):''} — 눌러서 확대`});
   k.on('click',()=>{if(c.g===1)map.setView(c.b.getCenter(),Math.max(z+2,17));else map.fitBounds(c.b,{padding:[40,40],maxZoom:19})});k.addTo(PH.L)})}
 function phDrawSoon(){clearTimeout(PH.drawT);PH.drawT=setTimeout(phDraw,60)}
 function phPopOpen(gid,pid){const g=PH.V.mapG.find(x=>x.id===gid);if(!g||!map)return;PH.sel=gid;const box=document.createElement('div');
@@ -6611,6 +6620,11 @@ async function vidSync(quiet){if(!SH.on())return{};if(VID.busy)return{busy:true}
 const CHG={list:[],loaded:null,seen:0,prev:0,f:'all',d:7,oth:false,rg:[],nt:[],ntT:null,svT:null,max:300};
 const CHG_DAYS=30,CHG_MAX=3000,CHG_K={pipe:['🚰','관로'],fac:['🔧','시설물'],photo:['📷','사진'],ref:['🗺️','기준자료']};
 try{CHG.seen=+localStorage.getItem('geo-chg-seen')||0}catch(_){}
+/* ✨ 새 항목 강조: 🔔 기록 중 다른 직원에게서 받은 사진·시설물(내 것·처음 한꺼번에 받은 것·지워진 것 제외).
+   꺼짐 = 그 아이콘을 눌러 봄 / 🔔 창 '강조 모두 끄기' / 받은 지 d일 지남. 설정 geo-hl {d,clr}, 눌러 본 것 geo-hl-off {키:시각} */
+const HL={d:3,clr:0,off:new Map(),p:new Set(),f:new Set(),bt:0,dirty:true,L:null,T:null,fi:null,fiN:null};
+try{const o=JSON.parse(localStorage.getItem('geo-hl')||'{}');if(o.d!=null&&[0,1,3,7].includes(+o.d))HL.d=+o.d;HL.clr=+o.clr||0}catch(_){}
+try{const o=JSON.parse(localStorage.getItem('geo-hl-off')||'{}');Object.keys(o).forEach(k=>HL.off.set(k,+o[k]||0))}catch(_){}
 const chgMe=()=>(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';
 const chgCut=v=>{const s=v==null||v===''?'(빈칸)':String(v);return s.length>24?s.slice(0,24)+'…':s};
 const chgHm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
@@ -6623,7 +6637,7 @@ function chgSave(){clearTimeout(CHG.svT);CHG.svT=setTimeout(()=>{IDB.set('chglog
 function chgAdd(e){const now=Date.now();e.at=e.at||now;e.t=e.t||e.at;e.c='C'+now.toString(36)+Math.random().toString(36).slice(2,6);if(e.mine)e.mine=1;else delete e.mine;
  if(e.ll&&!e.bk){try{e.bk=blkAt(e.ll[1],e.ll[0])||''}catch(_){}if(!e.bk)delete e.bk}
  Object.keys(e).forEach(k=>{if(e[k]===''||e[k]==null)delete e[k]});
- CHG.list.push(e);chgTrim();chgSave();chgBadge();if(!e.mine&&!e.seed)chgNote(e);chgRender();return e}
+ CHG.list.push(e);chgTrim();chgSave();chgBadge();if(!e.mine&&!e.seed)chgNote(e);chgRender();HL.dirty=true;if(e.rx&&!e.mine&&!e.seed)hlSoon();return e}
 const chgNew=()=>CHG.list.filter(e=>!e.mine&&e.at>CHG.seen).length;
 function chgBadge(){const n=chgNew(),b=document.querySelector('#chgBtn .chgn');if(!b)return;b.hidden=!n;b.textContent=n>99?'99+':String(n);
  const a=$('chgBtn');if(a)a.title='변경 기록 (관로·시설물·사진)'+(n?` · 새로 받은 변경 ${n}건`:'')}
@@ -6661,7 +6675,7 @@ const chgPhLL=ms=>{const m=ms.find(x=>x&&x.lat!=null);return m?[m.lat,m.lng]:nul
 function chgPhMine(ids){const ms=ids.map(id=>PH.byId.get(id)).filter(Boolean);if(!ms.length)return;
  chgAdd({k:'photo',mine:1,by:chgMe(),n:ms.length,tx:`사진 ${ms.length.toLocaleString()}장 추가`,ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms)})}
 function chgPhIn(add,first){if(!add.length)return;const me=chgMe(),g=new Map();add.forEach(m=>{const k=m.by||'';if(!g.has(k))g.set(k,[]);g.get(k).push(m)});
- g.forEach((ms,by)=>chgAdd({k:'photo',rx:1,by,mine:!!(me&&by===me),n:ms.length,tx:(first?`공유 사진 ${ms.length.toLocaleString()}장 처음 받음`:`새 사진 ${ms.length.toLocaleString()}장`),ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms),t:Math.max(...ms.map(m=>m.at||0))||undefined}))}
+ g.forEach((ms,by)=>chgAdd({k:'photo',rx:1,fst:first?1:undefined,by,mine:!!(me&&by===me),n:ms.length,tx:(first?`공유 사진 ${ms.length.toLocaleString()}장 처음 받음`:`새 사진 ${ms.length.toLocaleString()}장`),ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms),t:Math.max(...ms.map(m=>m.at||0))||undefined}))}
 function chgPhMod(ids){const ms=ids.map(id=>PH.byId.get(id)).filter(Boolean);if(ms.length)chgAdd({k:'photo',rx:1,n:ms.length,tx:`사진 메모·위치 바뀜 ${ms.length.toLocaleString()}장`,ids:ms.map(m=>m.id).slice(0,300),ll:chgPhLL(ms)})}
 function chgPhDel(gone,remote){if(!gone.length)return;chgAdd({k:'photo',del:1,n:gone.length,mine:!remote,rx:remote?1:0,by:remote?'':chgMe(),tx:remote?`사진 ${gone.length.toLocaleString()}장 지워짐 (다른 직원 · 🗂️ 휴지통 7일)`:`사진 ${gone.length.toLocaleString()}장 지움 (🗂️ 휴지통 7일)`,ll:chgPhLL(gone)})}
 /* ---- 처음 켤 때: 이미 있는 기록(최근 30일)으로 채우고 모두 본 것으로 ---- */
@@ -6685,16 +6699,19 @@ function chgOpen(){chgLoad().then(()=>{let w=document.getElementById('chgW');
    <div class="tb chgf">${[['all','전체'],['pipe','🚰 관로'],['fac','🔧 시설물'],['photo','📷 사진'],['ref','🗺️ 기준자료']].map(([k,t])=>`<button type="button" class="btn ol" data-f="${k}">${t}</button>`).join('')}</div>
    <div class="tb chgo"><select data-t="d" aria-label="기간"><option value="1">오늘</option><option value="7">최근 7일</option><option value="30">최근 30일</option></select>
     <label class="ck"><input type="checkbox" data-t="oth"> 다른 직원 것만</label><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl">📋 엑셀</button></div>
+   <div class="tb chgh"><b>✨ 새 항목 강조</b><select data-t="hd" aria-label="새 항목 강조 기간"><option value="0">끄기</option><option value="1">받은 뒤 1일</option><option value="3">받은 뒤 3일</option><option value="7">받은 뒤 7일</option></select><span style="flex:1"></span><button type="button" class="btn ol" data-t="hx">✨ 모두 끄기</button></div>
    <p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
   document.body.appendChild(w);
   w.onclick=e=>{if(e.target===w){w.hidden=true;return}const f=e.target.closest('[data-f]');if(f){CHG.f=f.dataset.f;CHG.max=300;chgRender();return}
    const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
    if(t==='x')w.hidden=true;else if(t==='xl')chgXlsx();else if(t==='more'){CHG.max+=300;chgRender()}
-   else if(t==='go'){const x=CHG.list.find(y=>y.c===b.dataset.c);if(x)chgGo(x)}};
+   else if(t==='go'){const x=CHG.list.find(y=>y.c===b.dataset.c);if(x)chgGo(x)}
+   else if(t==='hx'){HL.clr=Date.now();hlCfgSave();hlRefresh()}};
+  w.querySelector('[data-t="hd"]').onchange=e=>{HL.d=+e.target.value;hlCfgSave();hlRefresh()};
   w.querySelector('[data-t="d"]').onchange=e=>{CHG.d=+e.target.value;CHG.max=300;chgRender()};
   w.querySelector('[data-t="oth"]').onchange=e=>{CHG.oth=e.target.checked;chgRender()};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
- w.querySelector('[data-t="d"]').value=String(CHG.d);w.querySelector('[data-t="oth"]').checked=CHG.oth;
+ w.querySelector('[data-t="d"]').value=String(CHG.d);w.querySelector('[data-t="oth"]').checked=CHG.oth;w.querySelector('[data-t="hd"]').value=String(HL.d);
  CHG.prev=CHG.seen;CHG.seen=Date.now();try{localStorage.setItem('geo-chg-seen',String(CHG.seen))}catch(_){}chgBadge();
  {const t=document.getElementById('phToast');if(t&&/^🔔/.test(t.textContent||''))t.hidden=true}
  CHG.max=300;w.hidden=false;chgRender()})}
@@ -6705,7 +6722,7 @@ function chgRender(){const w=document.getElementById('chgW');if(!w||w.hidden)ret
  w.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===CHG.f));
  const L2=chgPick(),tl=w.querySelector('.tl'),nw=L2.filter(e=>!e.mine&&e.at>CHG.prev).length;
  w.querySelector('[data-t="inf"]').textContent=`${L2.length.toLocaleString()}건${nw?` · 새로 받은 것 ${nw}건`:''} · 이 기기에서 고친 것과 공유 서버에서 받은 것을 ${CHG_DAYS}일 동안 보관합니다. 줄을 누르면 지도에서 위치를 보여 줍니다.`;
- w.querySelector('[data-t="xl"]').disabled=!L2.length;
+ w.querySelector('[data-t="xl"]').disabled=!L2.length;hlUi(w);
  if(!L2.length){tl.innerHTML=`<div class="empty">${CHG.list.length?'이 조건에 맞는 변경이 없습니다.':'아직 기록이 없습니다. 관로·시설물을 고치거나 사진을 올리고 받으면 여기에 쌓입니다.'}</div>`;return}
  let day='',h='';const wk='일월화수목금토';
  L2.slice(0,CHG.max).forEach(e=>{const d=new Date(e.at),dk=d.toDateString();
@@ -6730,6 +6747,35 @@ function chgXlsx(){const L2=chgPick();if(!L2.length)return;if(typeof XLSX==='und
  const rows=L2.map(e=>({'고친 시각':chgMd(e.t),'받은 시각':e.rx?chgMd(e.at):'','구분':(CHG_K[e.k]||['',''])[1],'내용':e.tx||'','관리번호':e.id||'','바뀐 칸':e.dt||'','소블록':e.bk||'','고친 사람':e.by||'','이 기기':e.mine?'예':''}));
  const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
  Promise.resolve(xlsxSave([['변경 기록',rows]],`변경기록_${ymd}.xlsx`)).catch(err=>phToast('엑셀 만들기 실패: '+((err&&err.message)||err),{ms:5000}))}
+/* ---- ✨ 새 항목 강조 ---- */
+function hlCfgSave(){try{localStorage.setItem('geo-hl',JSON.stringify({d:HL.d,clr:HL.clr}))}catch(_){}}
+function hlOffSave(){const old=Date.now()-8*864e5;for(const [k,t] of HL.off)if(t<old)HL.off.delete(k);
+ try{localStorage.setItem('geo-hl-off',JSON.stringify(Object.fromEntries(HL.off)))}catch(_){}}
+/* 강조할 사진 id·시설 _fid 모음. 기록이 바뀌었거나 1분 지났을 때만 다시 만듦 (기간이 지나면 저절로 꺼지게) */
+function hlBuild(){const now=Date.now();if(!HL.dirty&&now-HL.bt<6e4)return;HL.dirty=false;HL.bt=now;HL.p=new Set();HL.f=new Set();if(!HL.d)return;
+ const from=Math.max(now-HL.d*864e5,HL.clr);
+ for(const e of CHG.list){if(e.mine||!e.rx||e.del||e.fst||e.seed||!(e.at>from))continue;
+  if(e.k==='photo'&&e.ids)e.ids.forEach(id=>{if(!(HL.off.get('p'+id)>=e.at))HL.p.add(id)});
+  else if(e.k==='fac'&&e.fid!=null){const k=String(e.fid);if(!(HL.off.get('f'+k)>=e.at))HL.f.add(k)}}}
+const hlPhN=g=>{if(!HL.p.size||!g||!g.ids)return 0;let n=0;for(const id of g.ids)if(HL.p.has(id))n++;return n};
+/* 사진 아이콘에 링 클래스만 덧붙임 (아이콘 모양·연도 색은 그대로) */
+function hlIc(ic,g){if(!hlPhN(g))return ic;return L.divIcon(Object.assign({},ic.options,{className:(ic.options.className||'')+' hlnew'}))}
+function hlSeenPh(ids){if(!HL.p.size||!ids)return;const t=Date.now();let ch=0;ids.forEach(id=>{if(HL.p.has(id)){HL.off.set('p'+id,t);ch=1}});if(ch){hlOffSave();hlRefresh()}}
+function hlSeenFac(fid){if(fid==null||!HL.f.size)return;const k=String(fid);if(!HL.f.has(k))return;HL.off.set('f'+k,Date.now());hlOffSave();setTimeout(hlRefresh,0)}
+function hlSoon(){clearTimeout(HL.T);HL.T=setTimeout(hlRefresh,400)}
+function hlRefresh(){HL.dirty=true;hlBuild();try{if(typeof phDrawSoon==='function')phDrawSoon()}catch(_){}try{hlFacDraw()}catch(e){console.warn('새 항목 강조',e)}const w=document.getElementById('chgW');if(w&&!w.hidden)hlUi(w)}
+function hlUi(w){hlBuild();const b=w.querySelector('[data-t="hx"]');if(!b)return;const n=HL.p.size+HL.f.size;b.disabled=!n||!HL.d;
+ b.textContent=n&&HL.d?`✨ 모두 끄기 (${n.toLocaleString()})`:'✨ 새 항목 없음';b.title=n&&HL.d?`지도에 링이 퍼지는 새 항목 — 사진 ${HL.p.size.toLocaleString()}장 · 시설물 ${HL.f.size.toLocaleString()}개. 누르면 모두 본 것으로 합니다.`:'다른 직원에게서 새로 받은 사진·시설물이 있으면 지도에서 아이콘 둘레에 링이 퍼집니다.'}
+/* 시설물은 캔버스 1장이라 따로 얇은 표식 층에 링만 그림 (화면 안·보이는 종류만, 최대 200개, 누르기는 아래 캔버스로 통과) */
+function hlFacDraw(){if(!map)return;hlBuild();if(!HL.L)HL.L=L.layerGroup();HL.L.clearLayers();
+ const off=()=>{if(map.hasLayer(HL.L))map.removeLayer(HL.L)};
+ if(!HL.f.size||typeof FAC==='undefined'||!FAC.n||!FAC.pt)return off();
+ if(HL.fiN!==FAC.pt){HL.fi=new Map();FAC.pt.forEach((f,i)=>{const id=f.p&&f.p._fid;if(id!=null)HL.fi.set(String(id),i)});HL.fiN=FAC.pt}
+ const z=map.getZoom(),b=map.getBounds().pad(.1);let n=0;
+ for(const id of HL.f){const i=HL.fi.get(id);if(i==null||FAC.dl[i])continue;const k=FAC.kinds[FAC.k[i]];if(!facOn(k,z))continue;const ll=[FAC.y[i],FAC.x[i]];if(!b.contains(ll))continue;
+  let s=26;try{s=Math.max(24,Math.round(facSz(z,facKindInfo(k).z===0)*(+UI.fsz||1)*facKS(k))+10)}catch(_){}
+  L.marker(ll,{icon:L.divIcon({className:'hlnew hlf',iconSize:[s,s],iconAnchor:[s/2,s/2],html:''}),interactive:false,keyboard:false,zIndexOffset:-100}).addTo(HL.L);if(++n>=200)break}
+ if(n){if(!map.hasLayer(HL.L))HL.L.addTo(map)}else off()}
 try{chgInit()}catch(e){console.warn('변경 기록',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
