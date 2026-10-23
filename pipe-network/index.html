@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v23.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v24 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4605,6 +4605,68 @@ try{(()=>{
   const ex=el.dataset.accept.split(',');const ok=[...el.files].some(f=>ex.some(x=>f.name.toLowerCase().endsWith(x)));
   if(!ok){e.stopImmediatePropagation();toast(`${el.dataset.accept} 파일을 골라 주세요. (고른 파일: ${el.files[0].name})`,6000);el.value=''}},true);
 })()}catch(e){console.warn('v23.1',e)}
+/* ════ v24 제미나이 대화 ════ */
+// 💬 대화창 연결 설정에 'AI 선택(Claude / 제미나이)'을 더한다. 내 PC·공유 주소에서 연 HTML(API 키 방식)에서만 쓰고,
+// Claude 화면(아티팩트) 안에서는 외부 주소가 막혀 있어 지금처럼 Claude만 쓴다.
+try{(()=>{
+ const GM=[['gemini-3.8-flash','Gemini 3.8 Flash (기본·빠름)'],['gemini-3.6-flash','Gemini 3.6 Flash'],['gemini-3.5-flash-lite','Gemini 3.5 Flash-Lite (가장 저렴)'],['gemini-3.1-pro-preview','Gemini 3.1 Pro 미리보기 (유료 키 전용)']];
+ AI.gh=[];
+ const box=$('cxApiBox');if(!box)return;
+ const kl=$('cxKey').closest('label'),rl=$('cxRem').closest('label'),ml=$('cxModel').closest('label');
+ box.insertAdjacentHTML('afterbegin',`<label class="text-xs font-semibold text-slate-600">AI 선택<select id="cxProv" class="cx-in"><option value="claude">Claude</option><option value="gemini">제미나이 (Google Gemini)</option></select></label>
+  <div id="cxGBox" class="flex flex-col gap-2 hidden">
+   <label class="text-xs font-semibold text-slate-600">제미나이 API 키<input id="cxGKey" type="password" autocomplete="off" placeholder="AIza..." class="cx-in"></label>
+   <label class="flex items-center gap-1 text-[11px] text-slate-600"><input id="cxGRem" type="checkbox"> 이 PC 브라우저에 키 기억하기</label>
+   <label class="text-xs font-semibold text-slate-600">모델<select id="cxGModel" class="cx-in">${GM.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label>
+  </div>`);
+ const NOTE_C=$('cxSetNote').textContent;
+ const NOTE_G='제미나이 API 키는 aistudio.google.com에서 발급합니다. 키는 이 브라우저에만 저장되며, 질문과 해석 결과 일부가 Google Gemini API로 전송됩니다(관망 파일 전체는 보내지 않음). ⚠️ 무료 키(결제 안 켬)는 하루 약 20회로 한도가 작고, 보낸 내용을 구글이 제품 개선에 쓸 수 있습니다. 업무 관망 자료에는 결제를 켠 유료 키를 쓰세요.';
+ const gk=lsGet('gw-gk');if(gk){$('cxGKey').value=gk;$('cxGRem').checked=true}
+ const gm=lsGet('gw-gmodel');if(gm&&GM.some(m=>m[0]===gm))$('cxGModel').value=gm;
+ const pv=lsGet('gw-aiprov');if(pv==='gemini')$('cxProv').value='gemini';
+ $('cxGKey').onchange=()=>{if($('cxGRem').checked)lsSet('gw-gk',$('cxGKey').value.trim())};
+ $('cxGRem').onchange=()=>lsSet('gw-gk',$('cxGRem').checked?$('cxGKey').value.trim():'');
+ $('cxGModel').onchange=()=>lsSet('gw-gmodel',$('cxGModel').value);
+ const apply=()=>{if(AI.mode!=='api'&&AI.mode!=='gemini')return;const g=$('cxProv').value==='gemini';
+  AI.mode=g?'gemini':'api';[kl,rl,ml].forEach(e=>e&&e.classList.toggle('hidden',g));$('cxGBox').classList.toggle('hidden',!g);
+  $('cxVia').textContent=g?'제미나이 API 키로 연결':'Claude API 키로 연결';$('cxSetNote').textContent=g?NOTE_G:NOTE_C;
+  if(g&&!$('cxGKey').value.trim())$('cxSet').open=true};
+ $('cxProv').onchange=()=>{lsSet('gw-aiprov',$('cxProv').value);apply()};
+ {let n=0;const t=setInterval(()=>{if(AI.mode||++n>100){clearInterval(t);apply()}},100)}
+
+ // 앱 도구 → 제미나이 함수 선언 (빈 properties는 parameters를 뺌)
+ const decl=()=>AITOOLS.map(t=>{const d={name:t.name,description:t.description};const sc=t.inputSchema;if(sc&&sc.properties&&Object.keys(sc.properties).length)d.parametersJsonSchema=sc;return d});
+ async function viaGemini(box,text){const key=$('cxGKey').value.trim();if(!key){$('cxSet').open=true;$('cxGKey').focus();throw{code:'nokey'}}
+  const model=$('cxGModel').value,out=box.querySelector('.cx-body'),start=AI.gh.length;let all='';
+  try{AI.gh.push({role:'user',parts:[{text}]});
+   for(let round=0;round<12;round++){
+    let c=AI.gh.slice(-40);while(c.length&&!(c[0].role==='user'&&c[0].parts[0]&&'text' in c[0].parts[0]))c=c.slice(1);
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',signal:AI.ctl.signal,headers:{'content-type':'application/json','x-goog-api-key':key},
+     body:JSON.stringify({systemInstruction:{parts:[{text:aiRules()}]},contents:c,tools:[{functionDeclarations:decl()}],generationConfig:{maxOutputTokens:8192}})});
+    if(!res.ok){let m='';try{const j=await res.json();m=j.error&&j.error.message||''}catch(e){}throw{code:'http',status:res.status,message:m}}
+    const j=await res.json();const cand=j.candidates&&j.candidates[0];
+    if(!cand||!cand.content||!cand.content.parts){if(j.promptFeedback&&j.promptFeedback.blockReason||cand&&/SAFETY|BLOCK|PROHIBITED/.test(cand.finishReason||''))throw{code:'refused'};throw{code:'empty_completion'}}
+    const parts=cand.content.parts;AI.gh.push({role:'model',parts});   // thoughtSignature 포함 그대로 보관
+    const txt=parts.filter(p=>p.text&&!p.thought).map(p=>p.text).join('');if(txt.trim()){all+=(all?'\n\n':'')+txt;out.innerHTML=md(all);cxScroll()}
+    const calls=parts.filter(p=>p.functionCall);if(!calls.length)return all;
+    const rp=[];for(const p of calls){const f=p.functionCall;const r=await execTool(f.name,f.args||{},box);const fr={name:f.name,response:r.ok?{result:r.s}:{error:r.s}};if(f.id)fr.id=f.id;rp.push({functionResponse:fr})}
+    AI.gh.push({role:'user',parts:rp})}
+   return all+'\n\n(도구 사용 횟수 한도에 닿아 여기서 멈췄습니다.)'}
+  catch(e){AI.gh.length=start;throw e}}
+ const _via=viaApi;viaApi=function(box,text){return AI.mode==='gemini'?viaGemini(box,text):_via(box,text)};
+ const _err=errText;errText=function(e){if(AI.mode!=='gemini')return _err(e);
+  if(e&&e.code==='nokey')return'🔑 제미나이 API 키를 먼저 넣어 주세요(⚙️ 연결 설정).';
+  if(e&&e.code==='http'){const m=e.message||'';if(/API key not valid|API_KEY_INVALID/i.test(m)||e.status===401)return'🔑 제미나이 API 키가 맞지 않습니다. 키를 확인해 주세요.';
+   if(e.status===403)return'🔑 이 키로는 제미나이 API를 쓸 수 없습니다(키 제한·프로젝트 설정 확인). '+m;
+   if(e.status===429)return'제미나이 사용 한도에 닿았습니다. 무료 키는 하루 약 20회라 금방 막힙니다. 잠시 뒤 다시 보내거나 결제를 켠 키를 쓰세요.';
+   if(e.status===404)return`모델(${$('cxGModel').value})을 찾지 못했습니다. 다른 모델을 골라 주세요.`;
+   if(e.status>=500)return'제미나이 서버가 바쁩니다. 잠시 뒤 다시 보내 주세요.';return`제미나이 API 오류(${e.status}) ${m}`}
+  if(e&&e.code==='refused')return'제미나이가 이 요청에는 답하지 않았습니다. 질문을 바꿔 보세요.';
+  if(e&&e.name==='TypeError')return'인터넷 연결 또는 회사 방화벽 때문에 제미나이 API(generativelanguage.googleapis.com)에 닿지 못했습니다.';
+  return _err(e)};
+ const _new=cxNew;cxNew=function(){AI.gh=[];return _new.apply(this,arguments)};$('cxNew').onclick=cxNew;
+ window.__gw24={viaGemini,decl,GM};
+})()}catch(e){console.warn('v24',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
