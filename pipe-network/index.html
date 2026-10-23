@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v24 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v24.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4591,7 +4591,9 @@ window.__gw23={IW,LED:()=>LED,LK,autoRec,scan,snapBase,tplBook,xlsxMake,xlsxRead
 // 그래서 모바일에서는 그런 accept를 떼고(data-accept로 보관), 고른 뒤 확장자를 직접 확인한다.
 try{(()=>{
  const ua=navigator.userAgent||'';
- const MOB=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ // '데스크톱 사이트' 모드면 휴대폰도 PC 주소표시(UA)를 쓰므로, 파일 핸들 API가 없거나 터치 화면이면 모두 모바일처럼 다룬다
+ const MOB=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)
+  ||typeof window.showOpenFilePicker!=='function'||(window.matchMedia&&matchMedia('(any-pointer:coarse)').matches);
  window.__gw231={MOB};if(!MOB)return;
  const SAFE=new Set(['.txt','.csv','.xlsx','.svg','.png','.jpg','.jpeg','.gif','.webp']);
  const fix=el=>{if(!el||el.tagName!=='INPUT'||el.type!=='file'||!el.hasAttribute('accept'))return;
