@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v23 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v23.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4585,6 +4585,26 @@ const _ra23=rbAct;rbAct=function(a,btn){if(XB23[a]&&!(DDM[a]&&btn&&btn.closest('
 try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
 window.__gw23={IW,LED:()=>LED,LK,autoRec,scan,snapBase,tplBook,xlsxMake,xlsxRead,plan,planApply,ledApply,rulesRead,rulePairs,steps,_t:{batchApply,readNet,renderLog:()=>renderLog(),load:(t,n)=>loadText(t,n),inpOut:()=>{S.prj.saveInpFile('t.inp');return S.ws.readFile('t.inp')}}};
 })()}catch(e){console.error(e);setTimeout(()=>{try{toast('⚠️ v23 기능 오류: '+(e&&e.message),20000)}catch(_){}},1500)}
+/* ════ v23.1 모바일 파일 열기 ════ */
+// 모바일(안드로이드·아이폰)은 accept의 확장자를 MIME/UTI로 바꿔 파일 고르기 창을 거르는데,
+// .inp·.shp·.dbf처럼 모르는 확장자는 바꿀 수 없어 그 파일이 흐리게 나와 고를 수 없음.
+// 그래서 모바일에서는 그런 accept를 떼고(data-accept로 보관), 고른 뒤 확장자를 직접 확인한다.
+try{(()=>{
+ const ua=navigator.userAgent||'';
+ const MOB=(navigator.userAgentData&&navigator.userAgentData.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ window.__gw231={MOB};if(!MOB)return;
+ const SAFE=new Set(['.txt','.csv','.xlsx','.svg','.png','.jpg','.jpeg','.gif','.webp']);
+ const fix=el=>{if(!el||el.tagName!=='INPUT'||el.type!=='file'||!el.hasAttribute('accept'))return;
+  const ex=el.getAttribute('accept').split(',').map(x=>x.trim().toLowerCase()).filter(x=>x.startsWith('.'));
+  if(ex.some(x=>!SAFE.has(x))){el.dataset.accept=ex.join(',');el.removeAttribute('accept')}};
+ const scan=r=>{if(r&&r.querySelectorAll)r.querySelectorAll('input[type=file][accept]').forEach(fix)};
+ scan(document);
+ new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){if(n.nodeType===1){fix(n);scan(n)}}}).observe(document.documentElement,{childList:true,subtree:true});
+ document.addEventListener('click',e=>fix(e.target),true);
+ document.addEventListener('change',e=>{const el=e.target;if(!el||el.type!=='file'||!el.dataset.accept||!el.files||!el.files.length)return;
+  const ex=el.dataset.accept.split(',');const ok=[...el.files].some(f=>ex.some(x=>f.name.toLowerCase().endsWith(x)));
+  if(!ok){e.stopImmediatePropagation();toast(`${el.dataset.accept} 파일을 골라 주세요. (고른 파일: ${el.files[0].name})`,6000);el.value=''}},true);
+})()}catch(e){console.warn('v23.1',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
