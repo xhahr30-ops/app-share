@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v25 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v27 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4729,6 +4729,32 @@ try{flRelabel();
  {const rb=document.getElementById('gpRib');if(rb&&rb.innerHTML.trim())gpRib(T.rib||'wds')}
  window.__gw26={flSet,flRelabel,FLQ};
 }catch(e){console.warn('v26',e)}
+/* ════ v27 지도 전체화면: 왼쪽 도구·아래 재생 창 숨기기/펼치기 ════ */
+try{(()=>{
+const g=$('gp'),dk=$('mfDock'),top=dk&&dk.querySelector('.mfTop');if(!g||!top)return;
+const css=document.createElement('style');
+css.textContent=`#gp.mfull .mfTop>.mfHb{background:#334155;border-color:#64748b;font-weight:700}
+#gp.mfull .mfTop>.mfHb.off{background:#0f172a;color:#94a3b8;border-style:dashed}
+#gp.mfull.mfHL .mfLeft{display:none!important}
+#gp.mfull.mfHB #mfT{display:none!important}
+#gp.mfull.mfHL #mfT{left:8px;max-width:calc(100% - 16px)}
+#gp.mfull.mfHL #mfOpt{left:8px;max-width:calc(100% - 140px)}`;
+document.head.appendChild(css);
+let H={l:false,b:false};try{Object.assign(H,JSON.parse(localStorage.getItem('gw-mfh')||'{}'))}catch(e){}
+const mk=(k,t)=>{const b=document.createElement('button');b.type='button';b.className='mfHb';b.dataset.mfh=k;b.title=t;return b};
+const bl=mk('l','왼쪽 도구 창 숨기기/펼치기 ( [ )'),bb=mk('b','아래 재생·주제도 창 숨기기/펼치기 ( ] )');
+top.insertBefore(bb,top.firstChild);top.insertBefore(bl,bb);
+function sync(){g.classList.toggle('mfHL',!!H.l);g.classList.toggle('mfHB',!!H.b);
+ bl.textContent=H.l?'▶ 도구':'◀ 도구';bl.classList.toggle('off',!!H.l);
+ bb.textContent=H.b?'▲ 재생':'▼ 재생';bb.classList.toggle('off',!!H.b)}
+function set(k,v){H[k]=v??!H[k];try{localStorage.setItem('gw-mfh',JSON.stringify(H))}catch(e){}sync();
+ toast((k==='l'?'왼쪽 도구 창':'아래 재생 창')+(H[k]?'을 숨겼습니다. 위 [':'을 펼쳤습니다. 위 [')+(k==='l'?bl:bb).textContent+'] 버튼으로 '+(H[k]?'다시 펼칩니다.':'숨깁니다.'),2500)}
+bl.onclick=()=>set('l');bb.onclick=()=>set('b');
+document.addEventListener('keydown',e=>{if(!g.classList.contains('mfull')||e.ctrlKey||e.metaKey||e.altKey||e.isComposing)return;
+ const t=e.target,tn=t&&t.tagName;if(tn==='INPUT'||tn==='SELECT'||tn==='TEXTAREA'||(t&&t.isContentEditable))return;
+ if(e.key==='['){e.preventDefault();set('l')}else if(e.key===']'){e.preventDefault();set('b')}});
+sync();window.__gw27={set,H};
+})()}catch(e){console.warn('v27',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
