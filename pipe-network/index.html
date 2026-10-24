@@ -2658,7 +2658,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v24.4 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v25 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4675,6 +4675,42 @@ try{(()=>{
  const _new=cxNew;cxNew=function(){AI.gh=[];return _new.apply(this,arguments)};$('cxNew').onclick=cxNew;
  window.__gw24={viaGemini,decl,GM};
 })()}catch(e){console.warn('v24',e)}
+/* ════ v25 물길주소용 결과 내보내기 ════ */
+// 해석 결과(절점 수압 최저·평균·최고, 관로 최대 유속·평균 유량)를 스마트 물길주소가 읽는 형식(app:'geo-addr-hyd')으로 내보낸다.
+// 물길주소 ⛰️ 표고·수압 칸(②-3)에 이 .json을 올리면 수압 색 점, 관로 유속·유량, 블록·단수구역 최저 수압이 나온다.
+// 관로 번호는 [TAGS]의 pipe/sply/trans 값(=상수관로 SHP 관리번호, 예: PL05232)을 쓰고, 없으면 관로 ID를 그대로 쓴다.
+try{(()=>{
+ const r1=v=>Math.round(v*10)/10,r3=v=>Math.round(v*1000)/1000,r7=v=>Math.round(v*1e7)/1e7;
+ const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ function mgId(l){const t=S.tags&&S.tags.l.get(l.id);const v=t&&(t.pipe||t.sply||t.trans);return String(v||l.id||'').trim()}
+ function build(){
+  if(!S.net)throw new Error('관망을 먼저 여세요.');
+  const R=S.res;if(!R||!R.t||!R.t.length)throw new Error('해석 결과가 없습니다. 먼저 ▶ 해석 실행을 누르세요.');
+  const c=crsCode(),P=crs();if(!P)throw new Error('좌표계를 모릅니다. 왼쪽 레이어 창에서 좌표계(EPSG)를 고른 뒤 다시 누르세요.');
+  const N=S.net.nodes,nt=R.t.length,idx=new Int32Array(N.length).fill(-1);
+  const o={app:'geo-addr-hyd',ver:1,name:S.name||'',base:ymd(new Date()),crs:c==='4326'?'EPSG:4326':'EPSG:'+c,calc:'',neg:0,z:[],lng:[],lat:[],pmin:[],pavg:[],pmax:[],d:[],links:{id:[],a:[],b:[],v:[],q:[]}};
+  let out=0,skipEl=0;
+  N.forEach((n,i)=>{if(n.type!==0)return;if(n.elev===-1){skipEl++;return}
+   if(!isFinite(n.x)||!isFinite(n.y))return;const ll=P.toLL(n.x,n.y);if(!ll||!(ll[0]>124&&ll[0]<132&&ll[1]>33&&ll[1]<39.5)){out++;return}
+   let mn=Infinity,mx=-Infinity,s=0,dm=0;for(let k=0;k<nt;k++){const p=R.P[k][i];if(p<mn)mn=p;if(p>mx)mx=p;s+=p;dm+=R.D[k][i]}
+   idx[i]=o.z.length;o.z.push(r1(n.elev));o.lng.push(r7(ll[0]));o.lat.push(r7(ll[1]));o.pmin.push(r1(mn));o.pavg.push(r1(s/nt));o.pmax.push(r1(mx));o.d.push((n.base>0||dm>0)?1:0);if(mn<0)o.neg++});
+  if(!o.z.length)throw new Error(out?'절점 좌표가 모두 우리나라 밖으로 나옵니다. 좌표계(EPSG)를 확인하세요.':'내보낼 접합점이 없습니다.');
+  const L=o.links;S.net.links.forEach((l,j)=>{let vm=0,qs=0;for(let k=0;k<nt;k++){const v=R.V[k][j];if(v>vm)vm=v;qs+=R.Q[k][j]}
+   L.id.push(mgId(l));L.a.push(idx[l.n1-1]);L.b.push(idx[l.n2-1]);L.v.push(r3(vm));L.q.push(r1(qs/nt*86.4))});
+  const hrs=nt>1?`${Math.round((R.t[nt-1]-R.t[0])/360)/10}시간 ${nt}개 시각`:'정상상태 1개 시각';
+  o.calc=`관망해석기 계산 ${ymd(new Date())} · ${S.name||'관망'} · ${hrs} · 수압 m, 유속 m/s, 유량 ㎥/일`;
+  return{o,out,skipEl}}
+ async function mulgil(){if(!needNet())return;let b;try{b=build()}catch(e){toast(e.message||String(e),7000);return}
+  const {o,out,skipEl}=b,nm=(String(S.name||'관망').replace(/\.(inp|txt)$/i,'')||'관망')+'_물길주소용_결과.json';
+  await offer(JSON.stringify(o),nm,'application/json');
+  const ex=[out?`좌표가 우리나라 밖 ${out}개`:'',skipEl?`표고 −1 ${skipEl}개`:''].filter(Boolean).join(' · ');
+  setTimeout(()=>toast(`물길주소용 결과: 절점 ${o.z.length.toLocaleString()}개 · 관로 ${o.links.id.length.toLocaleString()}개${o.neg?` · 부압 절점 ${o.neg.toLocaleString()}개`:''}${ex?` (제외: ${ex})`:''}. 스마트 물길주소 ⛰️ 표고·수압 칸에 올리세요.`,9000),400)}
+ const btn=gb('mulgil','down','물길주소용 결과',{tip:'해석 결과(수압·유속·유량)를 스마트 물길주소에서 읽는 .json으로 내보냅니다'});
+ const _rf25=RIB.file;RIB.file=()=>_rf25().replace(/(data-rb="pdf"[\s\S]*?<\/button><\/div>)/,(m)=>m+col(btn));
+ const _ra25=rbAct;rbAct=function(a,btn2){if(a==='mulgil'){mulgil();return}return _ra25.apply(this,arguments)};
+ try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
+ window.__gw25={build,mulgil,mgId};
+})()}catch(e){console.warn('v25',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
