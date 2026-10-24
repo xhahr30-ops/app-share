@@ -1615,7 +1615,7 @@ function uiClHint(){const h=document.getElementById('uiClHint');if(!h)return;let
 
 /* ===================== ⚙️ 유저설정 모드: 지도 표시 설정 (이 기기 브라우저에 저장 · geo- 로 시작하므로 백업 파일에도 포함) ===================== */
 var UI={leg:true,legMin:false,lbl:'off',lblZ:17,cl:'off',clR:'all',clZ:18,bcol:'hc',fsz:1,pw:1,lblPx:11,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
-try{const v=JSON.parse(localStorage.getItem('geo-ui')||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
+var UI_NEW=true;try{const r=localStorage.getItem('geo-ui');UI_NEW=!r;const v=JSON.parse(r||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
 function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_){}}
 /* 다시 열 때 그대로: 지도 위치·확대(UI.view)·배경 지도(UI.base·UI.ovl)·지도 위 선택칸(UI.sel)
    저장된 위치가 있으면 처음 자료를 불러오는 동안은 자동 맞춤(fitBounds)을 하지 않음 → 지도를 만지거나 30초가 지나면 평소대로 */
@@ -1766,6 +1766,9 @@ function uiInit(){if(!map)return;plblInit();
 <p class="uin">묶음 거리·시간 간격은 다음에 사진을 올리거나 다시 묶을 때 쓰입니다.</p></section>
 <section class="uit" data-t="app" hidden>
 <p class="uin" style="margin-top:2px">이 기기(브라우저)에만 저장되는 사용자·기기 설정입니다. 자료를 보내고 받는 버튼(지금 동기화·기준자료 올리기/받기)은 왼쪽 📷 현장 사진 › ☁️ 직원 공유에 있습니다.</p>
+<div class="uig">📱 앱 시작 화면</div>
+<label class="uif">앱을 열 때<select id="uiFsStart" class="msel">${opt([['auto','자동 (휴대폰은 전체 지도)'],['on','항상 전체 지도'],['off','평소 화면']])}</select></label>
+<p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.</p>
 <div class="uig">☁️ 직원 공유</div><div id="uiShBox"></div>
 <div class="uig">🗺️ 브이월드 배경지도 · 지적도</div><div id="uiVwBox"></div>
 <div class="uig">📷 사진 저장</div><div id="uiPhSzBox"></div>
@@ -1792,6 +1795,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
  q('uiAll').onclick=uiAllToggle;
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
+ q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
  document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.code==='KeyH'||e.key==='h'||e.key==='H'||e.key==='ㅗ')){e.preventDefault();uiAllToggle()}
   else if(e.key==='Escape'&&!p.hidden&&!document.body.classList.contains('fsOn'))uiPanel(false)});
@@ -1911,6 +1915,21 @@ function initFs(){
  document.addEventListener('fullscreenchange',onChg);document.addEventListener('webkitfullscreenchange',onChg);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('mapfs'))off()});
  window.addEventListener('beforeprint',()=>{if(isOn())off()});
+ /* 앱 시작 화면: 전체 지도 모드로 열고, 처음 누를 때 진짜 전체화면(주소창 숨김)으로 바꿈
+    (브라우저는 사용자가 누르기 전에는 전체화면을 막음) · ⚙️ 앱 설정 › 앱 시작 화면 · 작업 화면(geo-gw)·처음 쓰는 기기는 평소 화면 */
+ try{const m=UI.fsStart||'auto',phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=600;
+  let gw='0';try{gw=localStorage.getItem('geo-gw')||'0'}catch(_){}
+  if((m==='on'||(m==='auto'&&phone&&!UI_NEW))&&gw!=='1'){
+   want=true;box.classList.add('mapfs');sync();
+   const evs=['pointerup','touchend','click','keydown'];
+   const first=e=>{const t=e&&e.target;
+    if(e.type==='keydown'&&(e.key==='Escape'||e.altKey||e.ctrlKey||e.metaKey))return;
+    if(t&&t.closest&&t.closest('.fsbtn,#mapFsBtn,#uiFs,input[type=file],label'))return;
+    evs.forEach(t=>document.removeEventListener(t,first,true));
+    if(!box.classList.contains('mapfs')||native())return;
+    if(!guard){try{history.pushState({mapfs:1},'');guard=true}catch(_){}}
+    if(rq){try{const p=rq.call(box);if(p&&p.catch)p.catch(()=>{})}catch(_){}}};
+   evs.forEach(t=>document.addEventListener(t,first,true))}}catch(e){console.warn('시작 전체화면',e)}
 }
 /* ===== 지도 주소찾기 (오른쪽 위) =====
    ① 불러온 자료(관리번호·수용가번호·주소)에서 먼저 찾고
