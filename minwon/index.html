@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>포항시 민원대장 관리</title>
+<script>(function(){var r=document.documentElement,t=r.getAttribute("data-theme"),v=null;try{v=localStorage.getItem("bsst-dark")}catch(e){}var d=t?t=="dark":(v!=null?v=="1":matchMedia("(prefers-color-scheme: dark)").matches);if(d)r.classList.add("dark")})()</script>
+<style id="pgs">@page{size:A4 portrait;margin:10mm}</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'">
+<script>
+/* 외부 라이브러리 로더: cdnjs → jsdelivr → unpkg 순서로 자동 재시도 */
+var LIBP={};var LIBU={
+ XLSX:['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'],
+ L:['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js','https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'],
+ shp:['https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js','https://unpkg.com/shpjs@4.0.4/dist/shp.min.js'],
+ proj4:['https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js','https://cdn.jsdelivr.net/npm/proj4@2.9.0/dist/proj4.js','https://unpkg.com/proj4@2.9.0/dist/proj4.js'],
+ JSZip:['https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://unpkg.com/jszip@3.10.1/dist/jszip.min.js']};
+var LIBN={XLSX:'엑셀 읽기(SheetJS)',L:'지도(Leaflet)',shp:'SHP 읽기(shpjs)',proj4:'좌표계 변환(proj4)',JSZip:'ZIP(JSZip)'};
+function need(g){if(window[g])return Promise.resolve(window[g]);if(LIBP[g])return LIBP[g];
+ LIBP[g]=new Promise(function(res,rej){var U=LIBU[g],i=0;(function nx(){if(i>=U.length){delete LIBP[g];rej(new Error(LIBN[g]+' 라이브러리를 불러오지 못했습니다. 인터넷 연결·회사 방화벽을 확인하세요.'));return}
+  var s=document.createElement('script');s.src=U[i++];s.onload=function(){window[g]?res(window[g]):nx()};s.onerror=function(){s.remove();nx()};document.head.appendChild(s)})()});
+ return LIBP[g]}
+</script>
+<style>
+body{font-family:'Noto Sans KR',sans-serif;background:#f8fafc}
+th{white-space:nowrap}td,th{padding:.4rem .6rem}
+.scr{overflow:auto;max-height:480px}
+.bar{transform-box:fill-box;transform-origin:50% 100%;animation:gr .8s cubic-bezier(.2,.8,.2,1) both}@keyframes gr{from{transform:scaleY(0)}}
+.ln{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 1.3s .35s ease-out forwards}@keyframes dr{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.bar,.ln{animation:none!important}.ln{stroke-dashoffset:0}}
+.fsb{margin-left:.5rem;padding:.1rem .5rem;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;border-radius:.375rem;font-size:11px;font-weight:700;white-space:nowrap}.fsb:hover{background:#e0e7ff}
+.fs{position:fixed!important;inset:.5rem!important;max-height:none!important;margin:0!important;z-index:60;background:#fff;border-radius:1rem;box-shadow:0 0 0 100vmax rgba(15,23,42,.6);overflow:auto}
+.fs .scr{max-height:none!important}
+.fs #map{height:calc(100vh - 7rem)!important}
+.inp{margin-top:.25rem;width:100%;padding:.4rem .6rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:.5rem;font-size:.875rem}
+.inp:focus{outline:none;box-shadow:0 0 0 2px #6366f1}
+.tbtn{padding:.45rem .8rem;border-radius:.6rem;font-size:.8rem;font-weight:700;white-space:nowrap;color:#475569}
+.tbtn:hover{background:#eef2ff}
+.tbtn.on{background:#4f46e5;color:#fff}
+.srt{cursor:pointer;user-select:none}.srt:hover{color:#4f46e5}
+/* 일지·기록부 서식 표 */
+.frm{border-collapse:collapse;width:100%}
+.frm th,.frm td{border:1px solid #94a3b8;padding:.35rem .45rem;font-size:12.5px;text-align:center;vertical-align:middle}
+.frm th{background:#eef2ff;color:#1e1b4b;font-weight:700}
+.slot{position:relative;border:1px solid #94a3b8;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.slot img{width:100%;height:100%;object-fit:contain;background:#fff}
+.slot .cap{position:absolute;left:0;top:0;background:#1e1b4b;color:#fff;font-size:11px;padding:1px 6px;border-bottom-right-radius:6px;z-index:2}
+.slot .del{position:absolute;right:4px;top:4px;z-index:2;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:6px;font-size:11px;padding:0 5px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;max-width:92vw}
+.leaflet-container{font-family:'Noto Sans KR',sans-serif}
+
+#ptitle{display:none}
+@media print{
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+header,#side,.np{display:none!important}
+body{background:#fff}.card{box-shadow:none!important;border:none!important;padding:0!important}
+main{display:block!important;max-width:none!important;padding:0!important}
+main>*,.stage>*{margin-bottom:8px}
+#ptitle{display:block;text-align:center;font-size:22pt;font-weight:800;color:#1e1b4b;margin:0 0 10px;padding-bottom:6px;border-bottom:2px solid #4f46e5}
+.scr{max-height:none!important;overflow:visible!important}
+.card,tr,.slot{break-inside:avoid}thead{display:table-header-group}h3{break-after:avoid}
+th{position:static!important}
+.slot .cap{background:#e2e8f0;color:#1e1b4b}
+}
+html[data-po="portrait"] table{font-size:inherit}
+@media print{html[data-po="portrait"] table:not(.frm){font-size:9.5px}html[data-po="portrait"] table:not(.frm) td,html[data-po="portrait"] table:not(.frm) th{padding:.2rem .3rem!important}}
+
+@media screen{
+html.dark{color-scheme:dark}
+html.dark body{background:#0b1220!important;color:#e2e8f0}
+html.dark *,html.dark ::before,html.dark ::after{border-color:#2b3a52}
+html.dark ::placeholder{color:#64748b}
+html.dark .bg-white{background-color:#162033}
+html.dark .bg-slate-50{background-color:#1a2539}
+html.dark .bg-slate-100{background-color:#1f2b41}
+html.dark .bg-indigo-50{background-color:rgba(99,102,241,.16)}
+html.dark .bg-indigo-100{background-color:rgba(99,102,241,.26)}
+html.dark .bg-indigo-50\/50{background-color:rgba(99,102,241,.1)}
+html.dark .bg-emerald-50\/60{background-color:rgba(16,185,129,.1)}
+html.dark .bg-amber-50\/60{background-color:rgba(245,158,11,.1)}
+html.dark .bg-sky-50\/60{background-color:rgba(14,165,233,.1)}
+html.dark .bg-red-100{background-color:rgba(239,68,68,.22)}
+html.dark .bg-amber-100{background-color:rgba(245,158,11,.22)}
+html.dark .bg-emerald-100{background-color:rgba(16,185,129,.22)}
+html.dark .bg-sky-100{background-color:rgba(14,165,233,.22)}
+html.dark .bg-violet-100{background-color:rgba(139,92,246,.24)}
+html.dark .hover\:bg-slate-50:hover,html.dark .hover\:bg-slate-100:hover{background-color:#243349}
+html.dark .hover\:bg-indigo-50:hover{background-color:rgba(99,102,241,.28)}
+html.dark .text-slate-900,html.dark .text-slate-800,html.dark .text-slate-700{color:#e2e8f0}
+html.dark .text-slate-600{color:#cbd5e1}
+html.dark .text-slate-500{color:#94a3b8}
+html.dark .text-slate-400{color:#7b8aa1}
+html.dark .text-indigo-700,html.dark .text-indigo-600{color:#a5b4fc}
+html.dark .text-emerald-700,html.dark .text-emerald-600{color:#34d399}
+html.dark .text-red-700,html.dark .text-red-600{color:#f87171}
+html.dark .text-amber-700,html.dark .text-amber-600{color:#fbbf24}
+html.dark .text-sky-700,html.dark .text-sky-600{color:#7dd3fc}
+html.dark .text-violet-700{color:#c4b5fd}
+html.dark .border-slate-200{border-color:#2b3a52}
+html.dark .border-slate-300{border-color:#3b4a63}
+html.dark .border-indigo-200,html.dark .border-indigo-300{border-color:rgba(129,140,248,.38)}
+html.dark .border-emerald-200,html.dark .border-amber-200,html.dark .border-sky-200{border-color:#2b3a52}
+html.dark input:not([type=checkbox]):not([type=file]),html.dark select:not(.hsel):not(.bg-indigo-800),html.dark textarea{background-color:#0f1a2e;color:#e2e8f0;border-color:#3b4a63}
+html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
+html.dark .fs{background:#0f1a2e}
+html.dark svg line[stroke="#e2e8f0"]{stroke:#2b3a52}
+html.dark svg text[fill="#64748b"]{fill:#94a3b8}
+html.dark .tbtn{color:#cbd5e1}html.dark .tbtn:hover{background:#243349}html.dark .tbtn.on{background:#4f46e5;color:#fff}
+html.dark .frm th{background:#1f2b41;color:#e2e8f0}html.dark .frm th,html.dark .frm td{border-color:#3b4a63}
+html.dark .slot{background:#1a2539;border-color:#3b4a63}
+html.dark .leaflet-popup-content-wrapper,html.dark .leaflet-popup-tip{background:#162033;color:#e2e8f0}
+}
+
+/* ── 📱 휴대폰(768px 미만): 지도 첫 화면 · 아래 알약 메뉴 (물길주소 지도와 같은 모양) — PC 화면은 그대로 ── */
+.mo{display:none}
+#mBk.hidden,#mSheet.hidden{display:none!important}
+.mcl{background:none;border:0}
+.mcl>div{border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+@media screen and (max-width:767px){
+ #tabs{display:none!important}
+ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ html:not(.mside) #side{display:none!important}
+ html.mside .stage,html.mside footer{display:none!important}
+ #mNav{display:flex;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:55;gap:4px;overflow-x:auto;padding:6px;border-radius:18px;background:rgba(30,41,59,.96);box-shadow:0 4px 14px rgba(0,0,0,.35);scrollbar-width:none}
+ #mNav::-webkit-scrollbar,#mTop::-webkit-scrollbar{display:none}
+ #mNav button{flex:none;color:#e2e8f0;font-weight:700;font-size:14px;padding:9px 13px;border-radius:13px;white-space:nowrap}
+ #mNav button.on{background:#4f46e5;color:#fff}
+ html.mm body{padding-bottom:0;overflow:hidden}
+ html.mm header,html.mm footer,html.mm #side,html.mm .stage>:not(#tb_map),html.mm #tb_map>:not(#cMap),html.mm #cMap>:not(#map){display:none!important}
+ html.mm main{padding:0!important}
+ html.mm #cMap{position:fixed;inset:0;z-index:40;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#0b1220}
+ html.mm #map{height:100vh!important;height:100dvh!important;border:0!important;border-radius:0!important}
+ html.mm .leaflet-control-zoom{display:none}
+ html.mm .leaflet-top.leaflet-right{top:calc(64px + env(safe-area-inset-top))}
+ html.mm .leaflet-bottom.leaflet-right{bottom:0}
+ html.mm #mNav{right:90px}
+ html.mm #mTop,html.mm #mZoom,html.mm #mFab{display:flex}
+ #mTop{position:fixed;top:calc(10px + env(safe-area-inset-top));left:0;right:0;z-index:45;gap:8px;overflow-x:auto;padding:2px 12px 6px;scrollbar-width:none}
+ .pill{flex:none;display:flex;align-items:center;gap:6px;background:#fff;color:#0f172a;border-radius:999px;padding:9px 16px;font-size:15px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.28)}
+ .pill select{background:transparent;border:0;font-weight:700;font-size:15px;color:inherit;max-width:140px;padding:0;outline:none}
+ #mZoom{position:fixed;left:12px;top:calc(70px + env(safe-area-inset-top));z-index:45;flex-direction:column;align-items:stretch;width:46px;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+ #mZoom button{background:#fff;color:#0f172a;font-size:26px;font-weight:700;height:46px;line-height:1}
+ #mZoom span{background:#1e293b;color:#fff;font-size:12px;font-weight:700;text-align:center;padding:2px 0}
+ #mFab{position:fixed;right:14px;bottom:calc(30px + env(safe-area-inset-bottom));z-index:45;flex-direction:column;gap:14px}
+ .fab{width:62px;height:62px;border-radius:18px;border:3px solid #fff;font-size:30px;box-shadow:0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+ .fab.f1{background:#7c3aed}.fab.f2{background:#2563eb}.fab.f3{background:#0f766e}
+ #mBk{position:fixed;inset:0;z-index:68;background:rgba(15,23,42,.45)}
+ #mSheet:not(.hidden){position:fixed;left:0;right:0;bottom:0;z-index:70;max-height:78vh;max-height:78dvh;display:flex;flex-direction:column;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.3);padding-bottom:env(safe-area-inset-bottom)}
+ #mSb{overflow:auto;padding:0 12px 14px}
+ #mSb .card{box-shadow:none!important;border:0!important;padding:4px 0!important}
+ #mSb .scr{max-height:none}
+}
+@media screen{
+ html.dark .pill,html.dark #mZoom button{background:#162033;color:#e2e8f0}
+ html.dark .pill select option{background:#162033}
+ html.dark #mSheet{background:#162033}
+ html.dark .fab{border-color:#e2e8f0}
+}
+@media print{.mo,#mSheet,#mBk{display:none!important}}
+</style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+<header class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md sticky top-0 z-50">
+ <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap justify-between items-center gap-2">
+  <div class="flex items-center gap-3">
+   <img src="data:image/png;base64,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" alt="포항이" style="height:56px;width:auto">
+   <div>
+    <h1 class="text-xl font-bold flex items-center gap-2">민원대장 관리 <span class="text-xs bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-semibold">긴급누수민원</span></h1>
+    <p class="text-xs text-indigo-100">포항시 상수도관망 전문유지관리 용역 · 민원 리스트 → 총괄·일지·업무수행기록부·지도 자동 작성</p>
+   </div>
+  </div>
+  <div class="flex items-center gap-3">
+   <div class="hidden sm:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg text-xs"><span>자료 상태:</span><span id="dot" class="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block"></span><span id="st" class="font-bold">자료 없음</span></div>
+   <button id="dm" type="button" class="np hsel text-xs font-bold rounded-lg px-3 py-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white">🌙 다크</button>
+   <label class="np flex items-center gap-1 text-xs text-white">출력<select id="po" class="hsel rounded-lg px-2 py-1 text-xs font-bold bg-white/20 border border-white/30 text-white"><option value="portrait" style="color:#1e293b;background:#fff">세로</option><option value="landscape" style="color:#1e293b;background:#fff">가로</option></select></label>
+   <button onclick="print()" class="np bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm">📄 PDF 미리보기 및 내보내기</button>
+   <img src="data:image/png;base64,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" alt="서용이" style="height:60px;width:auto">
+  </div>
+ </div>
+</header>
+
+<main class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+ <div id="ptitle" class="lg:col-span-3">민원대장 관리</div>
+
+ <!-- ═══ 왼쪽: 자료 등록 · 민원 입력 ═══ -->
+ <section id="side" class="lg:col-span-1 card bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col gap-4 h-fit lg:sticky lg:top-24">
+  <div class="flex items-center justify-between border-b pb-3"><h2 class="font-bold text-lg">📋 자료 등록 및 민원 입력</h2><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">xlsm · xlsx · json</span></div>
+
+  <label class="border-2 border-dashed border-indigo-200 rounded-xl p-4 text-center bg-indigo-50/50 hover:bg-indigo-50 cursor-pointer block">
+   <input id="fx" type="file" accept=".xlsm,.xlsx,.xls,.json,.zip" class="hidden"><div class="text-3xl">📥</div>
+   <p class="text-sm font-bold text-slate-700">민원대장 엑셀 첨부</p><p class="text-xs text-slate-500">'리스트(매크로용)' 시트 자동 인식 · 열: 접수날짜, 접수번호, 공사업체, 접수·도착·착공·준공시간, 대리인, 현장주소, 민원원인, 관종, 관경, 누수원인, 누수부위, 현장내용</p>
+  </label>
+  <button id="bSample" type="button" class="np -mt-2 w-full px-3 py-2 rounded-lg border border-indigo-300 bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50">⬇ 샘플 양식 다운로드</button>
+  <p id="impMsg" class="text-[11px] text-slate-500 -mt-2">같은 날짜·접수번호·주소 건은 다시 불러와도 좌표·소블록이 유지됩니다.</p>
+
+  <!-- 민원 입력 -->
+  <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 flex flex-col gap-2">
+   <div class="flex items-center justify-between"><h3 class="font-bold text-sm">✍️ <span id="fmTitle">새 민원 입력</span></h3><button id="bNew" type="button" class="text-[11px] font-bold px-2 py-1 rounded-lg border border-slate-300 bg-white">➕ 새로 입력</button></div>
+   <div class="grid grid-cols-2 gap-2">
+    <label class="text-xs font-semibold text-slate-600">접수날짜 *<input id="e_date" type="date" class="inp"></label>
+    <label class="text-xs font-semibold text-slate-600">접수번호<div class="flex gap-1"><input id="e_no" class="inp" placeholder="예: 1956"><button id="bEm" type="button" title="긴급 번호 자동" class="mt-1 px-2 rounded-lg border border-slate-300 bg-white text-[11px] font-bold whitespace-nowrap">긴급#</button></div></label>
+    <label class="text-xs font-semibold text-slate-600">민원원인 *<select id="e_cause" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600">공사업체(복구팀)<input id="e_co" class="inp" list="dlCo"></label>
+    <label class="text-xs font-semibold text-slate-600">접수시간<input id="e_rcv" class="inp tm" placeholder="09:04"></label>
+    <label class="text-xs font-semibold text-slate-600">도착시간<input id="e_arr" class="inp tm" placeholder="09:39"></label>
+    <label class="text-xs font-semibold text-slate-600">착공시간<input id="e_sta" class="inp tm" placeholder="11:13"></label>
+    <label class="text-xs font-semibold text-slate-600">준공시간<input id="e_done" class="inp tm" placeholder="14:15 / 익일 09:30"></label>
+    <label class="text-xs font-semibold text-slate-600 col-span-2">현장주소 *<input id="e_addr" class="inp" placeholder="남구 ○○동 000-0"></label>
+    <label class="text-xs font-semibold text-slate-600">대리인(출동자)<input id="e_agent" class="inp" list="dlAg" placeholder="홍길동,김철수"></label>
+    <label class="text-xs font-semibold text-slate-600">누수관종<select id="e_pipe" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600">누수관경(mm)<select id="e_dia" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600">누수원인<select id="e_reason" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600">누수부위<select id="e_part" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600">관정비여부<select id="e_fix" class="inp"></select></label>
+    <label class="text-xs font-semibold text-slate-600 col-span-2">현장내용<textarea id="e_memo" rows="2" class="inp" placeholder="PE75*25mm 새들분기누수"></textarea></label>
+   </div>
+   <p class="text-[11px] text-slate-500">시간은 0904처럼 숫자만 넣어도 09:04로 바뀝니다. 다음 날은 "익일 09:30"으로 입력하세요.</p>
+   <div class="flex gap-2">
+    <button id="bSave" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold py-2">💾 저장</button>
+    <button id="bDel" type="button" class="px-3 rounded-lg border border-red-300 text-red-600 bg-white text-xs font-bold hidden">🗑 삭제</button>
+   </div>
+  </div>
+
+  <!-- 내보내기 -->
+  <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-3 flex flex-col gap-2">
+   <h3 class="font-bold text-sm">💾 내보내기 · 백업</h3>
+   <div class="grid grid-cols-2 gap-2">
+    <button id="bXl" type="button" class="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold py-2 col-span-2">📊 엑셀 내보내기 (리스트·총괄·월별·점검)</button>
+    <button id="bJs" type="button" class="rounded-lg border border-slate-300 bg-white text-xs font-bold py-2" title="사진이 있으면 사진까지 ZIP 하나로 저장">🗂 백업 (사진 포함)</button>
+    <label class="rounded-lg border border-slate-300 bg-white text-xs font-bold py-2 text-center cursor-pointer">♻️ 백업 복원<input id="fj" type="file" accept=".json,.zip" class="hidden"></label>
+   </div>
+   <button id="bClr" type="button" class="rounded-lg border border-red-300 text-red-600 bg-white text-xs font-bold py-1.5">🧹 전체 초기화</button>
+  </div>
+
+  <details class="text-xs">
+   <summary class="cursor-pointer font-bold text-sm">⚙️ 설정 (좌표 변환 · 공휴일)</summary>
+   <div class="mt-2 flex flex-col gap-2">
+    <label class="font-semibold text-slate-600">좌표 변환 방식<select id="cMode" class="inp"><option value="gas">Apps Script 서버 경유 (카카오, 권장)</option><option value="osm">OSM 무료 (느림 · 정확도 낮음)</option></select></label>
+    <label class="font-semibold text-slate-600">Apps Script 웹앱 주소<input id="cGas" class="inp" placeholder="https://script.google.com/macros/s/…/exec"></label>
+    <p class="text-[11px] text-slate-500">"스마트 물길주소" 앱과 같은 Apps Script 웹앱 주소를 그대로 쓰면 됩니다(카카오 REST 키는 서버의 스크립트 속성 KAKAO_REST_KEY).</p>
+    <label class="font-semibold text-slate-600">공휴일 (주말 외, 쉼표 구분)<textarea id="cHol" rows="3" class="inp"></textarea></label>
+    <p class="text-[11px] text-slate-500">토·일과 위 날짜를 "주말·공휴일 당직"으로 집계합니다.</p>
+    <p class="text-[11px] text-slate-500">공사업체 대리인 표: <b id="coN">0</b>개 (엑셀의 '공사업체 대리인 성함' 시트를 첨부하면 자동 갱신 → 업무수행기록부에 사용)</p>
+   </div>
+  </details>
+ </section>
+
+ <!-- ═══ 오른쪽: 결과 ═══ -->
+ <section class="stage lg:col-span-2 flex flex-col gap-5 min-w-0">
+  <div class="np card bg-white rounded-2xl shadow-sm border border-slate-200 p-1.5 flex gap-1 overflow-x-auto" id="tabs"></div>
+
+  <div id="band" class="np bg-indigo-900 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+   <div><h3 class="font-bold text-sm">🗓️ 기간 · 조건 선택</h3><p class="text-[11px] text-indigo-200">선택하면 대시보드·민원대장·지도·점검이 함께 갱신됩니다.</p></div>
+   <div class="flex flex-wrap gap-2">
+    <select id="fPer" class="bg-indigo-800 text-white border border-indigo-700 rounded-lg px-3 py-2 text-sm font-bold"></select>
+    <select id="fCause" class="bg-indigo-800 text-white border border-indigo-700 rounded-lg px-3 py-2 text-sm font-bold"></select>
+    <select id="fGu" class="bg-indigo-800 text-white border border-indigo-700 rounded-lg px-3 py-2 text-sm font-bold"><option value="all">남구+북구</option><option value="남구">남구</option><option value="북구">북구</option><option value="기타">구 미표기</option></select>
+   </div>
+  </div>
+
+  <!-- 빈 화면 안내 -->
+  <div id="empty" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center hidden">
+   <div class="text-5xl mb-2">📂</div>
+   <p class="font-bold">민원대장 엑셀(xlsm)을 첨부하거나 왼쪽에서 민원을 입력하세요.</p>
+   <p class="text-xs text-slate-500 mt-1">자료는 이 브라우저에 저장됩니다. 다른 PC로 옮길 때는 🗂 백업(사진 포함)을 쓰세요.</p>
+  </div>
+
+  <!-- 📊 대시보드 -->
+  <div id="tb_dash" class="flex flex-col gap-5">
+   <div id="kp" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+   <div id="cMon" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center gap-2 mb-2"><h3 class="font-bold text-sm">📈 월별 민원 현황 (민원원인별)</h3><button data-fs="cMon" class="fsb np">⛶ 전체화면</button></div>
+    <div id="chMon"></div>
+   </div>
+   <div id="cWk" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center gap-2 mb-2"><h3 class="font-bold text-sm">📅 주차별 민원 건수</h3><span class="text-[11px] text-slate-400">월요일 시작 · 1월 1일이 든 주가 1주차 (엑셀 주차별 통계와 같은 기준)</span><button data-fs="cWk" class="fsb np">⛶ 전체화면</button></div>
+    <div id="chWk"></div>
+   </div>
+   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">🧱 누수 관종</h3><div id="rkPipe"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">📏 누수 관경</h3><div id="rkDia"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">🔧 누수 부위</h3><div id="rkPart"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">🧪 누수 원인</h3><div id="rkReason"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">🏗️ 공사업체(복구팀) TOP 12</h3><div id="rkCo"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-2">🏘️ 지역 · 당직 구분</h3><div id="rkGu"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-1">🕘 접수 시간대</h3><div id="chHr"></div></div>
+    <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><h3 class="font-bold text-sm mb-1">🚗 접수→도착 소요시간</h3><div id="chArr"></div></div>
+   </div>
+   <details class="text-xs text-slate-600 card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><summary class="cursor-pointer font-semibold">산정 기준 보기</summary><div class="mt-2 space-y-1">
+    <p>· 자연누수 = 민원원인 "누수". 관종·관경·부위·원인 통계는 "누수"와 "돌발" 건만 집계합니다.</p>
+    <p>· 도착 소요 = 도착시간 − 접수시간. "익일 09:30", "14일 12:48", "2026-01-15 13:08" 형식도 날짜를 넘겨 계산하며, 음수이거나 24시간을 넘는 값은 통계에서 빼고 자료 점검에 표시합니다.</p>
+    <p>· 주말·공휴일 = 토·일 + 설정의 공휴일 목록.</p>
+    <p>· 화면 숫자는 입력된 민원대장 기준 집계이며, 결재 전 원본 대장과 대조가 필요합니다.</p>
+   </div></details>
+  </div>
+
+  <!-- 📋 민원대장 -->
+  <div id="tb_list" class="hidden">
+   <div id="cList" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+     <h3 class="font-bold text-sm">📋 민원 리스트 <span id="lsN" class="text-indigo-600"></span> <span class="np text-[11px] text-slate-400 font-normal">행 클릭 → 왼쪽 입력창에서 수정</span><button data-fs="cList" class="fsb np">⛶ 전체화면</button></h3>
+     <input id="lsQ" placeholder="🔍 주소·번호·업체·내용 검색" class="np px-3 py-1.5 border border-slate-300 rounded-lg text-sm">
+    </div>
+    <div class="scr"><table class="w-full text-sm text-right"><thead id="lsH"></thead><tbody id="lsB"></tbody></table></div>
+   </div>
+  </div>
+
+  <!-- 🗺️ 지도 -->
+  <div id="tb_map" class="hidden flex flex-col gap-5">
+   <div id="cMap" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+     <h3 class="font-bold text-sm">🗺️ 민원 위치 지도</h3><button data-fs="cMap" class="fsb np">⛶ 전체화면</button>
+     <span id="mpLeg" class="text-[11px] text-slate-500"></span>
+    </div>
+    <div id="mapTools" class="np flex flex-wrap items-center gap-2 mb-2">
+     <button id="bGeo" type="button" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold px-3 py-2">📍 좌표 변환</button>
+     <button id="bGeoF" type="button" class="rounded-lg border border-slate-300 bg-white text-xs font-bold px-3 py-2">🔁 실패 건 다시 찾기</button>
+     <label class="rounded-lg border border-emerald-300 bg-white text-emerald-700 text-xs font-bold px-3 py-2 cursor-pointer" title="스마트 물길주소 💾 기준자료 백업 zip(주소좌표앱_기준자료_YYYYMMDD.zip) — 소블록 경계·상수관로·브이월드 키만 읽고, 주소 검색 결과·수용가 좌표는 읽지 않습니다">📥 물길주소 기준자료<input id="fBase" type="file" accept=".zip,.json" class="hidden"></label>
+     <label class="rounded-lg border border-violet-300 bg-white text-violet-700 text-xs font-bold px-3 py-2 cursor-pointer" title="스마트 물길주소 📍 기준 위치 파일과 같은 파일 — 민원지점.zip(2025년/·2026년/ 폴더별 점 SHP) 또는 엑셀(접수번호·위도·경도 또는 X·Y). 같은 해 같은 접수번호의 민원을 이 위치에 놓습니다. 접수번호·좌표·접수날짜·연도만 읽습니다">📍 민원지점(기준 위치)<input id="fRef" type="file" accept=".zip,.xlsx,.xls,.csv" class="hidden"></label>
+     <label class="rounded-lg border border-indigo-300 bg-white text-indigo-700 text-xs font-bold px-3 py-2 cursor-pointer">🧩 소블록 SHP(zip) 첨부<input id="fShp" type="file" accept=".zip" class="hidden"></label>
+     <select id="pShow" class="px-2 py-1.5 border border-slate-300 rounded-lg text-xs" title="상수관로 표시"><option value="on">🛠 관로 표시</option><option value="off">🛠 관로 숨김</option></select>
+     <select id="shpF" class="hidden px-2 py-1.5 border border-slate-300 rounded-lg text-xs" title="블록 이름 필드"></select>
+     <span id="geoMsg" class="text-[11px] text-slate-500"></span>
+    </div>
+    <div id="map" class="rounded-xl border border-slate-200" style="height:520px"></div>
+    <div id="mapInfo">
+    <p id="pipeHint" class="np text-[11px] text-slate-500 mt-1"></p>
+    <p class="text-[11px] text-slate-400 mt-1">점 색: 🟦 누수 · 🟦(하늘) 미누수 · 🟧 돌발 · ⬜ 기타 · 진한 테두리 = 민원지점 위치. 위치는 ① 민원지점(같은 해 접수번호) ② 직접 지정 ③ 주소 검색 순서로 정합니다(물길주소와 같은 기준). 주소 검색 위치는 실제 누수 지점과 차이가 있을 수 있습니다.</p>
+    <p class="text-[11px] text-slate-400">관로 색: <span style="color:#2563eb">━ 배수관</span> · <span style="color:#94a3b8">━ 급수관</span> · <span style="color:#7c3aed">━ 송수관</span> · <span style="color:#0891b2">━ 도수관</span> · <span style="color:#059669">━ 취수관</span> · <span style="color:#dc2626">━ 소방관</span> · <span style="color:#d97706">━ 불탐관</span> (굵을수록 관경이 큼)</p>
+    <p id="baseInfo" class="np text-[11px] text-slate-500 mt-1"></p>
+    <p id="refInfo" class="np text-[11px] text-slate-500 mt-1"></p>
+    </div>
+   </div>
+   <div id="cBlk" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4 hidden">
+    <div class="flex flex-wrap items-center gap-2 mb-1"><h3 class="font-bold text-sm">🧩 소블록별 민원 현황</h3><span class="np text-[11px] text-slate-400">행 클릭 → 지도에서 블록 강조</span><button data-fs="cBlk" class="fsb np">⛶ 전체화면</button></div>
+    <div class="scr"><table class="w-full text-sm text-right"><thead><tr class="bg-slate-100 sticky top-0"><th class="text-left">소블록</th><th>전체</th><th>자연누수</th><th>미누수</th><th>돌발</th><th>기타</th><th class="text-left">주요 누수 관종</th></tr></thead><tbody id="blkB"></tbody></table></div>
+    <p class="text-[11px] text-slate-400 mt-1">소블록 결합은 좌표가 SHP 폴리곤 안에 들어가는지로 판정합니다. 누수 다발 블록은 현장 확인 대상 후보이며 확정이 아닙니다.</p>
+   </div>
+   <div id="cFail" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center gap-2 mb-1"><h3 class="font-bold text-sm">🧭 좌표 미변환 · 실패 건</h3><span id="flN" class="text-[11px] text-slate-500"></span></div>
+    <p class="np text-[11px] text-slate-500 mb-1">주소를 고쳐 [재검색]하거나, [📌 지정]을 누른 뒤 지도를 클릭하면 그 위치로 저장합니다.</p>
+    <div class="scr" style="max-height:320px"><table class="w-full text-sm text-right"><thead><tr class="bg-slate-100 sticky top-0"><th class="text-left">접수일</th><th class="text-left">번호</th><th class="text-left">주소 (수정 가능)</th><th>상태</th><th class="np"></th></tr></thead><tbody id="flB"></tbody></table></div>
+   </div>
+  </div>
+
+  <!-- 📑 주간 총괄 -->
+  <div id="tb_sum" class="hidden flex flex-col gap-5">
+   <div class="np bg-indigo-900 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+    <div><h3 class="font-bold text-sm">🗓️ 기준일 (금주 판정)</h3><p class="text-[11px] text-indigo-200">기준일이 든 주(월~일)를 "금주", 그 전까지를 "전주까지"로 나눕니다.</p></div>
+    <div class="flex gap-2 items-center"><button id="sPrev" class="bg-indigo-800 border border-indigo-700 rounded-lg px-2 py-2 text-sm font-bold">◀</button><input id="sBase" type="date" class="bg-indigo-800 text-white border border-indigo-700 rounded-lg px-3 py-2 text-sm font-bold"><button id="sNext" class="bg-indigo-800 border border-indigo-700 rounded-lg px-2 py-2 text-sm font-bold">▶</button></div>
+   </div>
+   <div id="sumBody" class="flex flex-col gap-5"></div>
+  </div>
+
+  <!-- 🗒️ 대응관리 일지 -->
+  <div id="tb_ilji" class="hidden flex flex-col gap-3">
+   <div class="np card bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex flex-wrap items-center gap-2">
+    <button id="iPrev" class="rounded-lg border border-slate-300 bg-white text-xs font-bold px-2 py-2">◀</button>
+    <select id="iSel" class="flex-1 min-w-0 px-2 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50"></select>
+    <button id="iNext" class="rounded-lg border border-slate-300 bg-white text-xs font-bold px-2 py-2">▶</button>
+    <input id="iQ" placeholder="🔍 접수번호·주소" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-40">
+    <button id="iEdit" class="bg-emerald-600 text-white rounded-lg text-xs font-bold px-3 py-2">✏️ 입력창에서 수정</button>
+    <label class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold px-3 py-2 cursor-pointer" title="스마트 물길주소 📷 현장 사진의 📤 민원대장용 버튼으로 만든 ZIP (여러 개 한 번에 가능)">📥 사진 묶음 불러오기<input id="fMw" type="file" accept=".zip" multiple class="hidden"></label>
+    <button id="iUndo" class="hidden rounded-lg border border-slate-300 bg-white text-xs font-bold px-3 py-2">↩ 불러오기 되돌리기</button>
+    <p class="w-full text-[11px] text-slate-500">사진 칸을 누르면 위치도·단수밸브 상세도·현장사진을 붙일 수 있습니다(이 브라우저에 저장, 🗂 백업에 함께 담김). 스마트 물길주소의 📤 민원대장용 ZIP을 📥 사진 묶음 불러오기로 넣으면 접수번호·촬영일이 맞는 민원의 빈 칸에 자동으로 들어갑니다. 인쇄는 상단 📄 버튼, 세로 출력 권장.</p>
+   </div>
+   <div id="ijBody" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-5"></div>
+   <input id="fPh" type="file" accept="image/*" class="hidden">
+  </div>
+
+  <!-- 📝 업무수행기록부 -->
+  <div id="tb_rec" class="hidden flex flex-col gap-3">
+   <div class="np card bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex flex-wrap items-center gap-2">
+    <span class="text-sm font-bold">📅 날짜</span>
+    <button id="rPrev" class="rounded-lg border border-slate-300 bg-white text-xs font-bold px-2 py-2">◀</button>
+    <input id="rDate" type="date" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
+    <button id="rNext" class="rounded-lg border border-slate-300 bg-white text-xs font-bold px-2 py-2">▶</button>
+    <span class="text-[11px] text-slate-500">◀▶는 민원이 있는 날짜로 이동 · 공사업체 대리인은 '공사업체 대리인 성함' 표에서 업체명을 맞춰 찾습니다(㈜·(주) 등 무시).</span>
+   </div>
+   <div id="recBody" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-5"></div>
+  </div>
+
+  <!-- 🧪 자료 점검 -->
+  <div id="tb_chk" class="hidden flex flex-col gap-5">
+   <div id="chkSum" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+   <div id="chkImp"></div>
+   <div id="cChk" class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+     <h3 class="font-bold text-sm">🧪 점검 대상 목록 <span class="np text-[11px] text-slate-400 font-normal">행 클릭 → 수정</span><button data-fs="cChk" class="fsb np">⛶ 전체화면</button></h3>
+     <select id="chkF" class="np px-2 py-1.5 border border-slate-300 rounded-lg text-xs"></select>
+    </div>
+    <div class="scr"><table class="w-full text-sm text-right"><thead><tr class="bg-slate-100 sticky top-0"><th class="text-left">접수일</th><th class="text-left">번호</th><th class="text-left">주소</th><th class="text-left">구분</th><th class="text-left">내용</th></tr></thead><tbody id="chkB"></tbody></table></div>
+    <p class="text-[11px] text-slate-400 mt-1">점검 결과는 입력값 형식·순서만 본 것으로, 실제 오류인지는 원본 대장으로 확인하세요.</p>
+   </div>
+  </div>
+ </section>
+</main>
+
+
+<!-- 📱 휴대폰 화면 전용 (지도 위 알약 버튼 · 확대 · 둥근 버튼 · 아래 메뉴) -->
+<div id="mTop" class="mo np">
+ <button type="button" class="pill" data-sh="find">🔍 주소찾기</button>
+ <label class="pill">🗓️<select id="mPer"></select></label>
+ <label class="pill">🏷️<select id="mCause"></select></label>
+ <label class="pill">🏘️<select id="mGu"></select></label>
+ <button type="button" class="pill" data-sh="blk">🧩 소블록</button>
+ <button type="button" class="pill" data-sh="fail">🧭 미변환 <span id="mFailN"></span></button>
+ <button type="button" class="pill" data-sh="tools">🛠 지도 도구</button>
+</div>
+<div id="mZoom" class="mo np"><button type="button" id="mZi" aria-label="확대">+</button><span id="mZl">11</span><button type="button" id="mZo" aria-label="축소">−</button></div>
+<div id="mFab" class="mo np">
+ <button type="button" id="mPh" class="fab f1" title="사진 묶음 불러오기 (물길주소 📤 민원대장용 ZIP)">🖼️</button>
+ <button type="button" id="mMe" class="fab f2" title="내 위치로 이동">📍</button>
+ <button type="button" id="mNew" class="fab f3" title="새 민원 입력">✍️</button>
+</div>
+<nav id="mNav" class="mo np"></nav>
+<div id="mBk" class="np hidden"></div>
+<div id="mSheet" class="np hidden">
+ <div class="flex items-center justify-between px-4 pt-3 pb-2"><h3 id="mSt" class="font-bold text-base"></h3><button type="button" id="mSx" class="text-sm font-bold px-3 py-1.5 rounded-lg border border-slate-300 bg-white">✕ 닫기</button></div>
+ <div id="mSb"></div>
+</div>
+<datalist id="dlCo"></datalist><datalist id="dlAg"></datalist>
+<div id="toast" class="np hidden bg-slate-900 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg"></div>
+<footer class="np text-center text-[11px] text-slate-400 py-3">만든이: 구병순</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+/* ── 다크모드 · 인쇄 방향 · 전체화면 (BSST 공통) ── */
+function ef(){const t=document.documentElement.getAttribute('data-theme');if(t)return t=='dark';let v=null;try{v=localStorage.getItem('bsst-dark')}catch(e){}return v!=null?v=='1':matchMedia('(prefers-color-scheme: dark)').matches}
+function apd(){const d=ef();document.documentElement.classList.toggle('dark',d);$('dm').textContent=d?'☀️ 라이트':'🌙 다크'}
+$('dm').onclick=()=>{const d=!document.documentElement.classList.contains('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('bsst-dark',d?'1':'0')}catch(e){}apd()};
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',apd)}catch(e){}
+apd();
+function spo(v){if(v!='landscape')v='portrait';document.documentElement.dataset.po=v;$('pgs').textContent='@page{size:A4 '+v+';margin:10mm}';$('po').value=v;try{localStorage.setItem('bsst-po',v)}catch(e){}}
+$('po').onchange=()=>spo($('po').value);
+try{spo(localStorage.getItem('bsst-po'))}catch(e){spo('portrait')}
+function fsOff(){document.querySelectorAll('.fs').forEach(x=>x.classList.remove('fs'));document.querySelectorAll('[data-fs]').forEach(x=>x.textContent='⛶ 전체화면')}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-fs]');if(!b)return;const c=$(b.dataset.fs),on=!c.classList.contains('fs');fsOff();if(on){c.classList.add('fs');b.textContent='✕ 전체화면 닫기'}if(MAP)setTimeout(()=>MAP.invalidateSize(),60)});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){fsOff();if(MAP)setTimeout(()=>MAP.invalidateSize(),60)}});
+const MQ=matchMedia('(max-width:767px)'),MOB=()=>MQ.matches;let MSIDE=false;
+let tT=null;function toast(m,ms){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(tT);tT=setTimeout(()=>t.classList.add('hidden'),ms||3200)}
+
+/* ── 기준 목록 (엑셀 '조건부서식' 시트와 동일) ── */
+const CAUSES=['누수','미누수','돌발','출수불량','수질','이관','기타','미접수','확인굴착'];
+const PIPES=['PE','PVC','HI-3P','XL','SP','HIVP','동관','DCIP','CIP','PFP'];
+const DIAS=[13,16,20,25,30,32,40,50,65,75,80,100,125,150,200,250,300,350,400,450,500,600,700];
+const REASONS=['노후','시공불량','파손','심도부족','동파','자재불량','불용관'];
+const PARTS=['직관부','이음부','소켓','곡관부','밸브','분기부','T분기','불용관','계량기','관말','활정자관','플랜지'];
+const FIXES=['다발관','불용관','노후관','누수다발','급수관 이설필요','계량기 이설필요'];
+const CO_DEF=[['아당건설㈜',''],['재헌건설㈜',''],['(주)한동종합건설',''],['(주)부일기업',''],['(주)대화건설',''],['제이엠건설㈜',''],['(합)현대수도공업사',''],['(주)장강건설',''],['덕동개발㈜',''],['세웅이앤씨㈜',''],['(주)금두꺼비건설',''],['광명건설㈜',''],['(주)거송건설',''],['일신산업개발㈜',''],['(자)문화수도 공업사',''],['㈜발해건설',''],['㈜금화건설',''],['㈜부건산업',''],['(유)포항수도공업사',''],['중앙수도공업사','']]; // 공개용 판: 대리인 성함은 비움 — 대장 xlsm의 '공사업체 대리인 성함' 시트를 첨부하면 채워짐
+const HOL_DEF='2026-01-01, 2026-02-16, 2026-02-17, 2026-02-18, 2026-03-01, 2026-03-02, 2026-05-05, 2026-05-24, 2026-05-25, 2026-06-03, 2026-06-06, 2026-08-15, 2026-08-17, 2026-09-24, 2026-09-25, 2026-09-26, 2026-10-03, 2026-10-05, 2026-10-09, 2026-12-25';
+const TL={rcv:'접수시간',arr:'도착시간',sta:'착공시간',done:'준공시간'};
+const CC={'누수':'#4f46e5','미누수':'#0ea5e9','돌발':'#f59e0b'};const ccOf=c=>CC[c]||'#94a3b8';
+const GRP=[['자연누수',r=>r.cause==='누수'],['돌발',r=>r.cause==='돌발'],['출수불량',r=>r.cause==='출수불량'],['미누수',r=>r.cause==='미누수'],['수질',r=>r.cause==='수질'],['기타',r=>!['누수','돌발','출수불량','미누수','수질'].includes(r.cause)]];
+const WD='일월화수목금토';
+
+/* ── 상태 · 저장 ── */
+const LS='bsst-minwon-v1';
+let R=[],CO=CO_DEF.map(([co,rep])=>({co,rep})),CFG={gas:'',mode:'gas',hol:HOL_DEF,imp:null},HOL=new Set(),CUR='dash',EDIT=null;
+function save(){try{localStorage.setItem(LS,JSON.stringify({v:1,R,CO,CFG},(k,v)=>k==='_'?undefined:v))}catch(e){toast('⚠️ 브라우저 저장 실패: 저장 공간 또는 권한을 확인하세요. JSON 백업을 권장합니다.',5000)}}
+function loadLS(){try{const o=JSON.parse(localStorage.getItem(LS)||'null');if(o){R=o.R||[];if(o.CO&&o.CO.length)CO=o.CO;CFG={...CFG,...(o.CFG||{})}}}catch(e){}}
+const uid=()=>'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ── 날짜 · 시간 ── */
+const ymdOf=D=>D.getFullYear()+'-'+p2(D.getMonth()+1)+'-'+p2(D.getDate());
+const dOf=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const dayDiff=(a,b)=>Math.round((dOf(b)-dOf(a))/864e5);
+const addD=(s,n)=>{const D=dOf(s);D.setDate(D.getDate()+n);return ymdOf(D)};
+const monOf=s=>addD(s,-((dOf(s).getDay()+6)%7));
+function wkOf(s){const j=s.slice(0,4)+'-01-01',off=(dOf(j).getDay()+6)%7;return Math.floor((dayDiff(j,s)+off)/7)+1}
+const dimOf=s=>new Date(+s.slice(0,4),+s.slice(5,7),0).getDate();
+const hm=m=>p2(Math.floor(m/60)%24)+':'+p2(m%60);
+const durT=m=>m==null?'-':m<60?m+'분':Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':'');
+const dlab=s=>s?`${+s.slice(5,7)}/${+s.slice(8)}(${WD[dOf(s).getDay()]})`:'';
+/* 시간 문자열 → 접수일 0시 기준 분. 'HH:MM' · '익일 HH:MM' · 'D일 HH:MM' · 'YYYY-MM-DD HH:MM' */
+function tmin(s,ymd){if(s==null||s==='')return null;s=String(s).trim();let m;
+ if((m=s.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})\s*(\d{1,2}):(\d{2})/)))return dayDiff(ymd,`${m[1]}-${p2(m[2])}-${p2(m[3])}`)*1440+(+m[4])*60+(+m[5]);
+ if((m=s.match(/^익일\s*(\d{1,2}):(\d{2})$/)))return 1440+(+m[1])*60+(+m[2]);
+ if((m=s.match(/^(\d{1,2})일\s*(\d{1,2}):(\d{2})$/))){let d=+m[1]-(+ymd.slice(8));if(d<0)d+=dimOf(ymd);return d*1440+(+m[2])*60+(+m[3])}
+ if((m=s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/))&&+m[1]<24)return (+m[1])*60+(+m[2]);
+ return null}
+function normT(v){v=String(v??'').trim();let m;
+ if((m=v.match(/^(\d{1,2})(\d{2})$/))&&+m[1]<24&&+m[2]<60)return p2(m[1])+':'+m[2];
+ if((m=v.match(/^(\d{1,2})[:;.](\d{2})$/)))return p2(m[1])+':'+m[2];
+ return v.replace(/^익일\s*/,'익일 ').replace(/^익일 (\d{1,2})(\d{2})$/,(a,h,mm)=>'익일 '+p2(h)+':'+mm)}
+
+/* ── 레코드 파생값 · 점검 ── */
+function calc(r){const o={iss:[]},d=r.date;
+ o.mon=d.slice(0,7);o.y=d.slice(0,4);o.wk=wkOf(d);const dw=dOf(d).getDay();o.hol=dw===0||dw===6||HOL.has(d);
+ o.gu=/^\s*(포항시\s*)?남구/.test(r.addr||'')?'남구':/^\s*(포항시\s*)?북구/.test(r.addr||'')?'북구':'기타';
+ const T={};for(const k of ['rcv','arr','sta','done']){T[k]=tmin(r[k],d);if(r[k]&&T[k]==null)o.iss.push(['시간 형식',`${TL[k]} "${r[k]}" 해석 불가`])}
+ o.T=T;
+ for(const k of ['arr','sta','done'])if(T[k]!=null&&T.rcv!=null&&T[k]<T.rcv-720&&/^\d{4}-/.test(r[k])){o.iss.push(['날짜 확인',`${TL[k]} "${r[k]}" 날짜가 접수일보다 이전 (연도 오기 의심)`]);T[k]=null}
+ if(T.rcv!=null&&T.arr!=null){const a=T.arr-T.rcv;if(a<0)o.iss.push(['시간 순서',`도착(${r.arr})이 접수(${r.rcv})보다 빠름`]);else if(a>1440)o.iss.push(['시간 순서',`도착까지 ${durT(a)} (24시간 초과)`]);else o.arr=a}
+ if(T.arr!=null&&T.sta!=null&&T.sta<T.arr)o.iss.push(['시간 순서',`착공(${r.sta})이 도착(${r.arr})보다 빠름`]);
+ if(T.sta!=null&&T.done!=null&&T.done<T.sta&&T.done>=0)o.iss.push(['시간 순서',`준공(${r.done})이 착공(${r.sta})보다 빠름`]);
+ if(T.rcv!=null&&T.done!=null){const x=T.done-T.rcv;if(x<0)o.iss.push(['시간 순서',`준공(${r.done})이 접수(${r.rcv})보다 빠름`]);else if(x>30*1440)o.iss.push(['날짜 확인',`준공이 접수 후 30일 초과`]);else o.done=x}
+ if(!r.cause)o.iss.push(['필수 누락','민원원인 빈칸']);else if(!CAUSES.includes(r.cause))o.iss.push(['값 확인',`민원원인 "${r.cause}" 목록 외`]);
+ if(r.cause==='누수'||r.cause==='돌발'){const miss=[['pipe','관종'],['dia','관경'],['part','누수부위'],['reason','누수원인']].filter(([k])=>!r[k]).map(x=>x[1]);
+  if(miss.length)o.iss.push(['필수 누락',miss.join('·')+' 빈칸']);if(!r.co&&r.cause==='누수')o.iss.push(['필수 누락','공사업체 빈칸']);if(!r.done)o.iss.push(['미완료','준공시간 없음'])}
+ if(!r.addr)o.iss.push(['필수 누락','주소 빈칸']);else if(o.gu==='기타')o.iss.push(['주소 확인','"남구/북구" 표기 없음']);
+ if(r.gs==='ref'&&r.g0&&r.g0.lat!=null){const m=Math.round(dM(r.lat,r.lng,r.g0.lat,r.g0.lng));if(m>REF_WARN)o.iss.push(['위치 확인',`민원지점과 주소 검색 위치가 ${m.toLocaleString()}m 떨어짐 — 접수번호·주소 확인`])}
+ return o}
+const SEV={'위치 확인':'a','시간 형식':'r','시간 순서':'r','날짜 확인':'r','필수 누락':'a','주소 확인':'a','값 확인':'a','미완료':'s'};
+const BADGE={r:'bg-red-100 text-red-700',a:'bg-amber-100 text-amber-700',s:'bg-sky-100 text-sky-700',e:'bg-emerald-100 text-emerald-700',v:'bg-violet-100 text-violet-700'};
+const bdg=(t,k)=>`<span class="px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${BADGE[k]}">${t}</span>`;
+const cBdg=c=>{const k=c==='누수'?'bg-indigo-100 text-indigo-700':c==='미누수'?'bg-sky-100 text-sky-700':c==='돌발'?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-600';return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${k}">${esc(c||'-')}</span>`};
+const cmpR=(a,b)=>a.date<b.date?-1:a.date>b.date?1:((tmin(a.rcv,a.date)??0)-(tmin(b.rcv,b.date)??0))||((+a.seq||0)-(+b.seq||0));
+
+/* ── 엑셀 읽기 ── */
+function serYmd(n){const D=new Date(Math.round((n-25569)*864e5));return D.toISOString().slice(0,10)}
+function toYmd(v){if(v==null||v==='')return null;if(typeof v==='number'&&v>20000&&v<80000)return serYmd(Math.floor(v));if(v instanceof Date)return ymdOf(v);
+ const m=String(v).match(/(\d{4})\s*[-.\/년]\s*(\d{1,2})\s*[-.\/월]\s*(\d{1,2})/);return m?`${m[1]}-${p2(m[2])}-${p2(m[3])}`:null}
+function toT(v,ymd){if(v==null||v==='')return '';
+ if(typeof v==='number'){const mi=Math.round(v*1440);if(v<1)return hm(mi);const day=serYmd(Math.floor(mi/1440)),t=hm(mi%1440);return day===ymd?t:day===addD(ymd,1)?'익일 '+t:day+' '+t}
+ if(v instanceof Date){const d=ymdOf(v),t=p2(v.getHours())+':'+p2(v.getMinutes());return d<'1901'?t:d===ymd?t:d+' '+t}
+ return normT(v)}
+const sv=v=>v==null?'':String(v).trim();
+/* 2차원 배열(시트) → 레코드 */
+function parseAoa(a){
+ const isD=s=>String(s??'').replace(/\s/g,'')==='접수날짜';
+ const h=a.slice(0,20).findIndex(row=>row&&row.some(isD));if(h<0)return null;
+ const h1=a[h]||[],h2=a[h+1]||[],di=h1.findIndex(isD),cont=!toYmd(h2[di])&&h2.some(v=>v!=null&&v!=='');
+ const n=Math.max(h1.length,h2.length),lab=[];for(let c=0;c<n;c++)lab[c]=(sv(h1[c])+(cont?sv(h2[c]):'')).replace(/\s/g,'');
+ const FM=[['seq',/^순번/],['date',/접수날짜/],['no',/접수번호/],['co',/공사업체|복구팀/],['rcv',/^접수(시간)+$/],['arr',/^도착/],['sta',/^착공/],['done',/^준공/],['agent',/대리인|출동자/],['addr',/주소/],['cause',/민원원인/],['pipe',/관종/],['dia',/관경/],['reason',/누수원인/],['part',/부위/],['fix',/정비/],['memo',/현장내용/],['lat',/^위도/],['lng',/^경도/],['blk',/^소블록/]];
+ const ix={},used=new Set();for(const [k,re] of FM){const c=lab.findIndex((l,i)=>!used.has(i)&&re.test(l));if(c>=0){ix[k]=c;used.add(c)}}
+ const out=[];for(let i=h+(cont?2:1);i<a.length;i++){const row=a[i];if(!row)continue;const date=toYmd(row[ix.date]);if(!date)continue;
+  const g=k=>ix[k]==null?'':row[ix[k]];
+  const r={id:uid(),seq:sv(g('seq')),date,no:sv(g('no')),co:sv(g('co')),rcv:toT(g('rcv'),date),arr:toT(g('arr'),date),sta:toT(g('sta'),date),done:toT(g('done'),date),
+   agent:sv(g('agent')).replace(/\s*,\s*/g,','),addr:sv(g('addr')).replace(/\s+/g,' '),cause:sv(g('cause')),pipe:sv(g('pipe')),dia:sv(g('dia')).replace(/\s*mm$/i,''),reason:sv(g('reason')),part:sv(g('part')),fix:sv(g('fix')),memo:sv(g('memo'))};
+  const la=parseFloat(g('lat')),lo=parseFloat(g('lng'));if(la>30&&la<40&&lo>120&&lo<135){r.lat=la;r.lng=lo;r.gs='ok'}if(sv(g('blk')))r.blk=sv(g('blk'));
+  out.push(r)}
+ return {rows:out,map:ix}}
+const kOf=r=>r.date+'|'+r.no+'|'+(r.addr||'').replace(/\s/g,'');
+function mergeIn(rows,replace){const old=new Map(R.map(r=>[kOf(r),r]));let keep=0;
+ for(const r of rows){const o=old.get(kOf(r));if(o){if(o.lat!=null&&r.lat==null){r.lat=o.lat;r.lng=o.lng;r.gs=o.gs;if(o.g0)r.g0=o.g0;keep++}if(o.blk&&!r.blk)r.blk=o.blk;r.id=o.id;if(o.pk)r.pk=o.pk}}
+ if(replace)R=rows;else{const nk=new Map(rows.map(r=>[kOf(r),r]));R=R.filter(r=>!nk.has(kOf(r))).concat(rows)}
+ return keep}
+async function importFile(f){
+ if(/\.(json|zip)$/i.test(f.name))return restoreJson(f);
+ $('impMsg').textContent='⏳ 엑셀을 읽는 중…';
+ try{await need('XLSX');
+  const wb=XLSX.read(new Uint8Array(await f.arrayBuffer()),{type:'array',sheetRows:30000});
+  const order=[...wb.SheetNames].sort((a,b)=>(/리스트/.test(b)?1:0)-(/리스트/.test(a)?1:0));
+  let res=null,sn='';for(const n of order){const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null,blankrows:true});const p=parseAoa(a);if(p&&p.rows.length){res=p;sn=n;break}}
+  if(!res)throw new Error("'접수날짜' 열과 날짜 자료가 있는 시트를 찾지 못했습니다. ⬇ 샘플 양식을 확인하세요.");
+  /* 공사업체 대리인 표 */
+  const cs=wb.SheetNames.find(n=>/대리인/.test(n)&&n!==sn);let coN=0;
+  if(cs){const a=XLSX.utils.sheet_to_json(wb.Sheets[cs],{header:1,raw:false,defval:''});const L=a.filter(x=>sv(x[0])&&!/수선업체|업체명/.test(sv(x[0]))).map(x=>({co:sv(x[0]),rep:sv(x[1])}));if(L.length){CO=L;coN=L.length}}
+  /* 다른 시트의 수식 오류 셀 */
+  const errs=[];for(const n of wb.SheetNames){const ws=wb.Sheets[n],m={};for(const k in ws){if(k[0]==='!')continue;const c=ws[k];if(c&&c.t==='e'){const w=c.w||'#ERR';m[w]=(m[w]||0)+1}}for(const w in m)errs.push([n,w,m[w]])}
+  const rows=res.rows;let replace=true;
+  if(R.length)replace=confirm(`기존 자료 ${R.length}건이 있습니다.\n[확인] 새 파일 자료로 바꾸기 (좌표·소블록은 같은 건이면 유지)\n[취소] 기존 자료에 합치기 (같은 날짜·번호·주소는 새 값으로)`);
+  const keep=mergeIn(rows,replace);
+  const coNames=new Set(CO.map(c=>c.co)),miss=[...new Set(R.map(r=>r.co).filter(Boolean))].filter(c=>!coNames.has(c));
+  CFG.imp={file:f.name,sheet:sn,n:rows.length,at:new Date().toLocaleString('ko-KR'),errs,coN,coMiss:miss.length,coFuzzy:miss.filter(c=>coRep(c)!=null).length};
+  save();refresh();
+  $('impMsg').textContent=`✔ ${f.name} · '${sn}' 시트 ${rows.length}건 읽음${keep?` · 좌표 ${keep}건 유지`:''}${coN?` · 대리인 표 ${coN}개`:''}`;
+  toast(`✔ 민원 ${rows.length}건을 불러왔습니다.`);
+ }catch(e){$('impMsg').textContent='⚠️ '+e.message;toast('⚠️ '+e.message,6000)}}
+$('fx').onchange=e=>{const f=e.target.files[0];if(f)importFile(f);e.target.value=''};
+
+/* ── JSON 백업 · 복원 ── */
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const today=()=>ymdOf(new Date());
+/* 백업: 사진이 있으면 ZIP(backup.json + photos.json + 사진/), 없으면 JSON */
+$('bJs').onclick=async()=>{const bt=$('bJs'),t0=bt.textContent;bt.disabled=true;
+ try{const js=JSON.stringify({v:1,app:'민원대장관리',R,CO,CFG},(k,v)=>k==='_'?undefined:v);
+  const ks=(await pKeys()).filter(k=>/\|(loc|v\d|p\d|pool)$/.test(k));
+  if(!ks.length){dl(new Blob([js],{type:'application/json'}),`민원대장_백업_${today()}.json`);toast(`✔ 민원 ${R.length}건 백업 (사진 없음)`);return}
+  bt.textContent='⏳ 사진 담는 중…';await need('JSZip');const z=new JSZip(),idx=[];let i=0;const fOf=b=>`사진/${++i}.${/png/.test(b.type)?'png':'jpg'}`;z.file('backup.json',js);
+  for(const k of ks){const v=await pGet(k);if(v==null)continue;
+   if(Array.isArray(v)){const L=v.map(e=>{const f=fOf(e.b);z.file(f,e.b);const {b,...m}=e;return {...m,f}});idx.push({k,pool:L})}
+   else{const b=typeof v==='string'?dataBlob(v):v,f=fOf(b);z.file(f,b);idx.push({k,f})}}
+  z.file('photos.json',JSON.stringify(idx));bt.textContent='⏳ ZIP 묶는 중…';
+  dl(await z.generateAsync({type:'blob',compression:'STORE'}),`민원대장_백업_${today()}.zip`);toast(`✔ 민원 ${R.length}건 · 사진 ${i}장 백업`)}
+ catch(e){toast('⚠️ 백업 실패: '+e.message,6000)}finally{bt.textContent=t0;bt.disabled=false}};
+async function restoreJson(f){try{let o,z=null;
+ if(/\.zip$/i.test(f.name)){await need('JSZip');z=await JSZip.loadAsync(f);const e=z.file('backup.json');if(!e)throw new Error('민원대장 백업 ZIP이 아닙니다. (물길주소 사진 묶음은 🗒️ 대응관리 일지의 📥 사진 묶음 불러오기로 넣으세요)');o=JSON.parse(await e.async('string'))}
+ else o=JSON.parse(await f.text());
+ if(!Array.isArray(o.R))throw new Error('민원대장 백업 파일이 아닙니다.');
+ if(R.length&&!confirm(`현재 자료 ${R.length}건을 백업 파일의 ${o.R.length}건으로 바꿀까요?`))return;
+ let n=0;if(z){const e=z.file('photos.json'),idx=e?JSON.parse(await e.async('string')):[];toast('⏳ 사진 복원 중…',60000);
+  const bOf=async f=>{const x=f&&z.file(f);return x?imgBlob(await x.async('blob'),f):null};
+  for(const it of idx){if(it.pool){const L=[];for(const p of it.pool){const b=await bOf(p.f);if(!b)continue;const {f:_,...m}=p;L.push({...m,b});n++}if(L.length)await pSet(it.k,L)}
+   else{const b=await bOf(it.f);if(b){await pSet(it.k,b);n++}}}}
+ R=o.R;if(o.CO)CO=o.CO;if(o.CFG)CFG={...CFG,...o.CFG};save();refresh();toast(`✔ 백업 ${R.length}건${n?` · 사진 ${n}장`:''} 복원`)}catch(e){toast('⚠️ '+e.message,5000)}}
+$('fj').onchange=e=>{const f=e.target.files[0];if(f)restoreJson(f);e.target.value=''};
+$('bClr').onclick=()=>{if(!R.length)return;if(!confirm(`민원 ${R.length}건을 모두 지울까요? (먼저 🗂 백업 권장)`))return;R=[];CFG.imp=null;save();newForm();refresh();toast('전체 초기화했습니다.')};
+
+/* ── 엑셀 내보내기 ── */
+const HDR=['순번','접수날짜','접수번호','공사업체','접수시간','도착시간','착공시간','준공시간','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년'];
+const ser=s=>dayDiff('1899-12-30',s);
+function listAoa(L,extra){const fmt=[];const a=[extra?HDR.concat(['구','주차','도착소요(분)','주말·공휴일','위도','경도','위치출처','소블록','점검']):HDR];
+ L.forEach((r,i)=>{const row=[i+1,ser(r.date),/^\d+$/.test(r.no)?+r.no:r.no,r.co];
+  for(const k of ['rcv','arr','sta','done']){const v=r[k];if(/^\d{2}:\d{2}$/.test(v)){fmt.push([a.length,row.length,'hh:mm']);row.push(tmin(v,r.date)/1440)}else row.push(v||'')}
+  fmt.push([a.length,1,'yyyy-mm-dd']);
+  row.push(r.agent,r.addr,r.cause,r.pipe,/^\d+$/.test(r.dia)?+r.dia:r.dia,r.reason,r.part,r.fix,r.memo,+r.date.slice(5,7),+r.date.slice(0,4));
+  if(extra)row.push(r._.gu,r._.wk,r._.arr??'',r._.hol?'Y':'',r.lat??'',r.lng??'',GSL[r.gs]||'',r.blk||'',r._.iss.filter(x=>SEV[x[0]]!=='s').map(x=>x[0]+': '+x[1]).join(' / '));
+  a.push(row)});return {a,fmt}}
+function sheetOf(a,fmt,cols){const ws=XLSX.utils.aoa_to_sheet(a);(fmt||[]).forEach(([r,c,z])=>{const k=XLSX.utils.encode_cell({r,c});if(ws[k])ws[k].z=z});if(cols)ws['!cols']=cols.map(w=>({wch:w}));return ws}
+function sampleAoa(){return [HDR,[1,ser('2026-01-02'),2,'아당건설','09:04','09:39','11:13','14:15','홍길동','남구 시청로 1','누수','PE',25,'노후','분기부','','PE75*25mm 새들분기누수',1,2026],[2,ser('2026-01-02'),'긴급1','','12:58','13:21','','','홍길동','남구 구룡포읍 ○○리 000','미누수','','','','','','부동전 내부누수',1,2026]]}
+$('bSample').onclick=async()=>{try{await need('XLSX');const wb=XLSX.utils.book_new();const a=sampleAoa();const fmt=[[1,1,'yyyy-mm-dd'],[2,1,'yyyy-mm-dd']];
+ XLSX.utils.book_append_sheet(wb,sheetOf(a,fmt,[5,11,9,14,8,8,8,12,12,28,8,8,8,8,8,10,30,4,6]),'리스트');XLSX.writeFile(wb,'민원대장_샘플양식.xlsx')}catch(e){toast('⚠️ '+e.message,5000)}};
+$('bXl').onclick=async()=>{if(!R.length)return toast('내보낼 자료가 없습니다.');try{await need('XLSX');const wb=XLSX.utils.book_new();
+ const {a,fmt}=listAoa(R,true);XLSX.utils.book_append_sheet(wb,sheetOf(a,fmt,[5,11,9,14,8,8,8,12,12,28,8,8,8,8,8,10,34,4,6,6,5,8,8,10,10,10,40]),'리스트');
+ const base=$('sBase').value||R[R.length-1].date,Z=zg(base);const s=[[`민원 대응 총괄 (기준일 ${base}, 금주 ${Z.mon}~${Z.sun})`],[],['구분','누계','전주까지','금주']];
+ s.push(['민원 총현황('+Z.y+'년)',Z.Y.length,Z.Yp.length,Z.Yc.length],['민원 총현황(전체 자료)',Z.A.length,Z.Ap.length,Z.Ac.length],[]);
+ s.push(['민원 대응현황('+Z.y+'년)','누계','전주까지','금주']);GRP.forEach(([n,f])=>s.push([n,Z.Y.filter(f).length,Z.Yp.filter(f).length,Z.Yc.filter(f).length]));
+ s.push([],['주말·공휴일 당직('+Z.y+'년)','누계','전주까지','금주']);GRP.forEach(([n,f])=>s.push([n,Z.Yh.filter(f).length,Z.Yh.filter(r=>r.date<Z.mon).filter(f).length,Z.Yh.filter(r=>r.date>=Z.mon).filter(f).length]));
+ s.push(['오인신고',...[Z.Yh,Z.Yh.filter(r=>r.date<Z.mon),Z.Yh.filter(r=>r.date>=Z.mon)].map(L=>L.filter(isMis).length)]);
+ s.push([],['남/북구 주말 당직','누계 남구','누계 북구','금주 남구','금주 북구'],['',...[Z.Yh,Z.Yh.filter(r=>r.date>=Z.mon)].flatMap(L=>[L.filter(r=>r._.gu==='남구').length,L.filter(r=>r._.gu==='북구').length])]);
+ XLSX.utils.book_append_sheet(wb,sheetOf(s,null,[26,10,10,10,10]),'총괄');
+ const m=[['년','월','합계','자연누수','돌발','미누수','기타']];monthRows().forEach(x=>m.push(x));XLSX.utils.book_append_sheet(wb,sheetOf(m,null,[6,6,8,9,8,8,8]),'월별집계');
+ const c=[['접수날짜','접수번호','주소','구분','내용']];R.forEach(r=>r._.iss.forEach(x=>c.push([r.date,r.no,r.addr,x[0],x[1]])));XLSX.utils.book_append_sheet(wb,sheetOf(c,null,[11,9,28,10,44]),'자료점검');
+ XLSX.writeFile(wb,`민원대장_${today()}.xlsx`);toast('✔ 엑셀 파일을 내려받았습니다.')}catch(e){toast('⚠️ '+e.message,5000)}};
+
+/* ── 입력 폼 ── */
+const opt=(L,blank)=>(blank?'<option value=""></option>':'')+L.map(x=>`<option>${esc(x)}</option>`).join('');
+$('e_cause').innerHTML=opt(CAUSES,true);$('e_pipe').innerHTML=opt(PIPES,true);$('e_dia').innerHTML=opt(DIAS,true);$('e_reason').innerHTML=opt(REASONS,true);$('e_part').innerHTML=opt(PARTS,true);$('e_fix').innerHTML=opt(FIXES,true);
+const FK=['date','no','cause','co','rcv','arr','sta','done','addr','agent','pipe','dia','reason','part','fix','memo'];
+function setSel(el,v){if(v&&el.tagName==='SELECT'&&![...el.options].some(o=>o.value===v))el.insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);el.value=v??''}
+function fillForm(r){EDIT=r?r.id:null;FK.forEach(k=>setSel($('e_'+k),r?r[k]:''));$('fmTitle').textContent=r?`민원 수정 · ${r.date} ${r.no||''}`:'새 민원 입력';$('bDel').classList.toggle('hidden',!r)}
+function newForm(){fillForm(null);$('e_date').value=R.length?R[R.length-1].date:today()}
+document.querySelectorAll('.tm').forEach(el=>el.addEventListener('blur',()=>{el.value=normT(el.value)}));
+$('bNew').onclick=newForm;
+$('bEm').onclick=()=>{const mx=R.filter(r=>r.date.slice(0,4)===($('e_date').value||today()).slice(0,4)).map(r=>(String(r.no).match(/^긴급(\d+)$/)||[])[1]).filter(Boolean).reduce((a,b)=>Math.max(a,+b),0);$('e_no').value='긴급'+(mx+1)};
+$('bSave').onclick=()=>{const v={};FK.forEach(k=>v[k]=String($('e_'+k).value||'').trim());['rcv','arr','sta','done'].forEach(k=>v[k]=normT(v[k]));
+ if(!v.date)return toast('⚠️ 접수날짜를 입력하세요.');if(!v.cause)return toast('⚠️ 민원원인을 선택하세요.');if(!v.addr)return toast('⚠️ 현장주소를 입력하세요.');
+ let r=EDIT&&R.find(x=>x.id===EDIT);
+ if(r){if(r.addr!==v.addr){if(r.gs==='ref')delete r.g0;else{delete r.lat;delete r.lng;delete r.gs;delete r.blk}}Object.assign(r,v)}else{r={id:uid(),seq:'',...v};R.push(r)}
+ save();refresh();fillForm(r);toast('✔ 저장했습니다.')};
+$('bDel').onclick=()=>{const r=R.find(x=>x.id===EDIT);if(!r)return;if(!confirm(`${r.date} ${r.no} ${r.addr} 민원을 삭제할까요?`))return;pDelAll(pkOf(r));R=R.filter(x=>x!==r);save();newForm();refresh();toast('삭제했습니다.')};
+function editRec(id){const r=R.find(x=>x.id===id);if(!r)return;fillForm(r);if(MOB()){MSIDE=true;mMode();scrollTo(0,0)}else if(innerWidth<1024)$('side').scrollIntoView({behavior:'smooth'})}
+
+/* ── 필터 ── */
+function perOpts(){const el=$('fPer'),v=el.value||'all';const ys=[...new Set(R.map(r=>r.date.slice(0,4)))].sort(),ms=[...new Set(R.map(r=>r.date.slice(0,7)))].sort().reverse();
+ el.innerHTML='<option value="all">전체 기간</option>'+ys.map(y=>`<option value="${y}">${y}년 전체</option>`).join('')+ms.map(m=>`<option value="${m}">${m.slice(0,4)}년 ${+m.slice(5)}월</option>`).join('');
+ el.value=[...el.options].some(o=>o.value===v)?v:'all';
+ const c=$('fCause'),cv=c.value||'all',cs=[...new Set(R.map(r=>r.cause).filter(Boolean))];c.innerHTML='<option value="all">모든 원인</option>'+CAUSES.filter(x=>cs.includes(x)).concat(cs.filter(x=>!CAUSES.includes(x))).map(x=>`<option>${esc(x)}</option>`).join('');c.value=[...c.options].some(o=>o.value===cv)?cv:'all'}
+function fl(){const p=$('fPer').value||'all',c=$('fCause').value||'all',g=$('fGu').value||'all';return R.filter(r=>(p==='all'||r.date.startsWith(p))&&(c==='all'||r.cause===c)&&(g==='all'||r._.gu===g))}
+function flText(){const p=$('fPer').selectedOptions[0],c=$('fCause').selectedOptions[0],g=$('fGu').selectedOptions[0];return [p&&p.text,c&&c.text,g&&g.text].filter(Boolean).join(' · ')}
+['fPer','fCause','fGu'].forEach(id=>$(id).onchange=()=>renderTab());
+
+/* ── SVG 차트 ── */
+const nice=v=>{const p=10**Math.floor(Math.log10(Math.max(1,v))),f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p};
+function svgBars(labels,series,o={}){const W=o.w||720,H=o.h||250,pl=34,pr=10,pt=16,pb=30,n=Math.max(1,labels.length),cw=(W-pl-pr)/n,ih=H-pt-pb;
+ const tot=labels.map((_,i)=>series.reduce((s,x)=>s+(x.v[i]||0),0)),mx=nice(Math.max(1,...tot));let g='';
+ for(let k=0;k<=4;k++){const y=pt+ih*(1-k/4);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#e2e8f0"/><text x="${pl-5}" y="${y+3.5}" font-size="10" text-anchor="end" fill="#64748b">${+(mx*k/4).toFixed(1)}</text>`}
+ const ev=o.every||1,bw=Math.max(2,Math.min(44,cw*.66));
+ labels.forEach((lb,i)=>{let y0=H-pb;const x=pl+cw*i+(cw-bw)/2;
+  series.forEach(s=>{const v=s.v[i]||0;if(!v)return;const hh=ih*v/mx;y0-=hh;g+=`<rect class="bar" x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${hh.toFixed(1)}" fill="${s.c}" rx="${bw>8?2:0}" style="animation-delay:${Math.min(i*25,600)}ms"><title>${esc(lb)} · ${esc(s.n)} ${v}${o.unit||'건'}</title></rect>`});
+  if(tot[i]&&o.tot!==false&&n<=40)g+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y0-4).toFixed(1)}" font-size="10" text-anchor="middle" fill="#64748b" font-weight="700">${tot[i]}</text>`;
+  if(i%ev===0)g+=`<text x="${(pl+cw*i+cw/2).toFixed(1)}" y="${H-pb+14}" font-size="10" text-anchor="middle" fill="#64748b">${esc(lb)}</text>`});
+ if(o.avg!=null){const y=pt+ih*(1-o.avg/mx);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${W-pr}" y="${y-4}" font-size="10" text-anchor="end" fill="#059669" font-weight="700">평균 ${o.avg.toFixed(1)}</text>`}
+ const lg=series.length>1?`<div class="flex flex-wrap gap-3 text-[11px] text-slate-500 mt-1">${series.map(s=>`<span class="flex items-center gap-1"><i class="inline-block w-3 h-3 rounded-sm" style="background:${s.c}"></i>${esc(s.n)} ${s.v.reduce((a,b)=>a+(b||0),0)}</span>`).join('')}</div>`:'';
+ return `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img">${g}</svg>${lg}`}
+function cntBy(L,f){const m=new Map();L.forEach(r=>{const k=f(r);if(k==null||k==='')return;m.set(k,(m.get(k)||0)+1)});return [...m].sort((a,b)=>b[1]-a[1])}
+function rank(id,pairs,col,lim){pairs=pairs.slice(0,lim||12);const mx=Math.max(1,...pairs.map(p=>p[1])),tot=pairs.reduce((s,p)=>s+p[1],0);
+ $(id).innerHTML=pairs.length?pairs.map(([k,v])=>`<div class="flex items-center gap-2 text-xs py-0.5"><span class="w-24 shrink-0 truncate text-slate-600" title="${esc(k)}">${esc(k)}</span><div class="flex-1 h-3 bg-slate-100 rounded overflow-hidden"><div class="h-3 rounded ${col||'bg-indigo-500'}" style="width:${(v/mx*100).toFixed(1)}%"></div></div><span class="w-20 text-right font-bold whitespace-nowrap">${v}건 <span class="text-slate-400 font-normal">${Math.round(v/tot*100)}%</span></span></div>`).join(''):'<p class="text-xs text-slate-400">자료 없음</p>'}
+
+/* ── 📊 대시보드 ── */
+function kcard(lab,val,sub,ico,col){return `<div class="card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2"><div class="min-w-0"><p class="text-xs font-semibold text-slate-500">${lab}</p><h3 class="text-xl font-black ${col} mt-1 whitespace-nowrap">${val}</h3><p class="text-[11px] text-slate-500">${sub}</p></div><div class="w-14 h-14 shrink-0 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl leading-none">${ico}</div></div>`}
+const pc=(a,b)=>b?Math.round(a/b*1000)/10+'%':'-';
+function rDash(){const L=fl(),n=L.length,c=k=>L.filter(r=>r.cause===k).length;
+ const A=L.map(r=>r._.arr).filter(v=>v!=null).sort((a,b)=>a-b),avg=A.length?A.reduce((a,b)=>a+b,0)/A.length:null,med=A.length?A[A.length>>1]:null,over=A.filter(v=>v>60).length;
+ const leak=c('누수'),nl=c('미누수'),sd=c('돌발');
+ $('kp').innerHTML=kcard('총 민원',n.toLocaleString()+'건',`주말·공휴일 ${L.filter(r=>r._.hol).length}건`,'📞','text-indigo-600')+kcard('자연누수',leak+'건',`비율 ${pc(leak,n)}`,'💧','text-slate-800')+kcard('미누수',nl+'건',`비율 ${pc(nl,n)}`,'🔎','text-sky-600')+kcard('돌발',sd+'건',`비율 ${pc(sd,n)}`,'⚡','text-amber-600')+
+  kcard('평균 도착 소요',avg==null?'-':Math.round(avg)+'분',avg==null?'접수·도착시간 없음':`중앙값 ${med}분 · 1시간 초과 ${over}건(${pc(over,A.length)})`,'🚗',avg!=null&&avg>60?'text-amber-600':'text-emerald-600');
+ const ms=[...new Set(L.map(r=>r._.mon))].sort(),grp=[['누수',r=>r.cause==='누수','#4f46e5'],['미누수',r=>r.cause==='미누수','#0ea5e9'],['돌발',r=>r.cause==='돌발','#f59e0b'],['기타',r=>!['누수','미누수','돌발'].includes(r.cause),'#94a3b8']];
+ $('chMon').innerHTML=ms.length?svgBars(ms.map(m=>(+m.slice(5))+'월'+(ms[0].slice(0,4)!==ms[ms.length-1].slice(0,4)?'('+m.slice(2,4)+')':'')),grp.map(([nm,f,col])=>({n:nm==='누수'?'자연누수':nm,c:col,v:ms.map(m=>L.filter(r=>r._.mon===m&&f(r)).length)}))):'<p class="text-xs text-slate-400">자료 없음</p>';
+ const wk=new Map();L.forEach(r=>{const k=r._.y+'-'+p2(r._.wk);wk.set(k,(wk.get(k)||0)+1)});const wks=[...wk.keys()].sort(),multi=new Set(wks.map(k=>k.slice(0,4))).size>1;
+ const wv=wks.map(k=>wk.get(k));$('chWk').innerHTML=wks.length?svgBars(wks.map(k=>(multi?k.slice(2,4)+'-':'')+(+k.slice(5))),[{n:'민원',c:'#0ea5e9',v:wv}],{every:Math.ceil(wks.length/26),avg:wv.reduce((a,b)=>a+b,0)/wv.length,tot:wks.length<=26,h:230}):'<p class="text-xs text-slate-400">자료 없음</p>';
+ const LK=L.filter(r=>r.cause==='누수'||r.cause==='돌발');
+ rank('rkPipe',cntBy(LK,r=>r.pipe||'(빈칸)'),'bg-indigo-500');rank('rkDia',cntBy(LK,r=>r.dia?r.dia+'mm':'(빈칸)'),'bg-sky-500');rank('rkPart',cntBy(LK,r=>r.part||'(빈칸)'),'bg-indigo-500');rank('rkReason',cntBy(LK,r=>r.reason||'(빈칸)'),'bg-amber-500');
+ rank('rkCo',cntBy(L,r=>r.co),'bg-emerald-500');
+ rank('rkGu',[['남구',L.filter(r=>r._.gu==='남구').length],['북구',L.filter(r=>r._.gu==='북구').length],['구 미표기',L.filter(r=>r._.gu==='기타').length],['평일',L.filter(r=>!r._.hol).length],['주말·공휴일',L.filter(r=>r._.hol).length]].filter(x=>x[1]),'bg-violet-500');
+ const hr=Array(24).fill(0);L.forEach(r=>{const t=r._.T.rcv;if(t!=null&&t<1440)hr[Math.floor(t/60)]++});
+ $('chHr').innerHTML=svgBars(hr.map((_,i)=>i),[{n:'접수',c:'#6366f1',v:hr}],{every:3,tot:false,h:220,w:380});
+ const B=[['30분 이내',v=>v<=30],['30분~1시간',v=>v>30&&v<=60],['1~2시간',v=>v>60&&v<=120],['2시간 초과',v=>v>120]];
+ $('chArr').innerHTML=svgBars(B.map(b=>b[0]),[{n:'건수',c:'#10b981',v:B.map(b=>A.filter(b[1]).length)}],{h:220,w:380})}
+
+/* ── 📋 민원대장 ── */
+const COLS=[['date','접수일',r=>r.date,'l'],['no','번호',r=>r.no,'l'],['cause','원인',r=>r.cause,'l'],['gu','구',r=>r._.gu,'l'],['addr','현장주소',r=>r.addr,'l'],['co','공사업체',r=>r.co,'l'],['pipe','관종·관경',r=>(r.pipe||'')+(r.dia?' '+r.dia:''),'l'],['part','부위',r=>r.part,'l'],['rcv','접수',r=>r._.T.rcv??-1],['arr','도착(소요)',r=>r._.arr??-1],['done','준공',r=>r._.done??-1],['agent','대리인',r=>r.agent,'l'],['iss','점검',r=>r._.iss.filter(x=>SEV[x[0]]!=='s').length]];
+let SORT={k:'date',d:-1};
+function rList(){const q=$('lsQ').value.trim().toLowerCase();let L=fl();
+ if(q)L=L.filter(r=>[r.no,r.addr,r.co,r.memo,r.agent,r.pipe,r.part,r.date].join(' ').toLowerCase().includes(q));
+ const col=COLS.find(c=>c[0]===SORT.k)||COLS[0];L=L.slice().sort((a,b)=>{const x=col[2](a),y=col[2](b);return (x<y?-1:x>y?1:cmpR(a,b))*SORT.d});
+ $('lsN').textContent=L.length+'건';
+ $('lsH').innerHTML='<tr class="bg-slate-100 sticky top-0 z-10">'+COLS.map(c=>`<th class="srt ${c[3]?'text-left':''}" data-k="${c[0]}">${c[1]}${SORT.k===c[0]?(SORT.d>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
+ $('lsB').innerHTML=L.length?L.map(r=>{const bad=r._.iss.filter(x=>SEV[x[0]]!=='s');return `<tr class="border-t hover:bg-indigo-50 cursor-pointer ${r.id===EDIT?'bg-indigo-100':''}" data-id="${r.id}" title="${esc(r.memo)}">
+  <td class="text-left whitespace-nowrap">${dlab(r.date)}</td><td class="text-left whitespace-nowrap font-medium">${esc(r.no)}</td><td class="text-left">${cBdg(r.cause)}</td><td class="text-left whitespace-nowrap">${r._.gu==='기타'?'<span class="text-amber-600">?</span>':r._.gu}</td>
+  <td class="text-left whitespace-nowrap">${esc(r.addr)}${r.memo?`<div class="text-[11px] text-slate-400 truncate max-w-[260px]">${esc(r.memo)}</div>`:''}</td><td class="text-left whitespace-nowrap">${esc(r.co)}</td><td class="text-left whitespace-nowrap">${esc(r.pipe)}${r.dia?' '+esc(r.dia):''}</td><td class="text-left whitespace-nowrap">${esc(r.part)}</td>
+  <td class="whitespace-nowrap">${esc(r.rcv)}</td><td class="whitespace-nowrap">${esc(r.arr)}${r._.arr!=null?`<div class="text-[11px] ${r._.arr>60?'text-amber-600':'text-slate-400'}">${r._.arr}분</div>`:''}</td><td class="whitespace-nowrap">${esc(r.done)}</td><td class="text-left whitespace-nowrap">${esc(r.agent)}</td>
+  <td>${bad.length?bdg((bad.some(x=>SEV[x[0]]==='r')?'🚨 ':'🔍 ')+bad.length,bad.some(x=>SEV[x[0]]==='r')?'r':'a'):bdg('✔','e')}</td></tr>`}).join(''):'<tr><td colspan="13" class="text-center text-slate-400 py-6">자료 없음</td></tr>'}
+$('lsH').onclick=e=>{const th=e.target.closest('th[data-k]');if(!th)return;const k=th.dataset.k;SORT=SORT.k===k?{k,d:-SORT.d}:{k,d:k==='date'?-1:1};rList()};
+$('lsB').onclick=e=>{const tr=e.target.closest('tr[data-id]');if(tr){editRec(tr.dataset.id);rList()}};
+let lsT=null;$('lsQ').oninput=()=>{clearTimeout(lsT);lsT=setTimeout(rList,150)};
+
+/* ── 📑 주간 총괄 ── */
+const isMis=r=>/오인/.test(r.memo||'');
+function zg(base){const y=base.slice(0,4),mon=monOf(base),sun=addD(mon,6);
+ const A=R.filter(r=>r.date<=sun),Y=A.filter(r=>r.date.startsWith(y));
+ const sp=L=>[L.filter(r=>r.date<mon),L.filter(r=>r.date>=mon)];const [Yp,Yc]=sp(Y),[Ap,Ac]=sp(A);
+ return {y,mon,sun,A,Ap,Ac,Y,Yp,Yc,Yh:Y.filter(r=>r._.hol)}}
+function monthRows(){const ms=[...new Set(R.map(r=>r._.mon))].sort();let py='';return ms.map(m=>{const L=R.filter(r=>r._.mon===m),y=m.slice(0,4);const row=[y!==py?+y:'',(+m.slice(5))+'월',L.length,L.filter(r=>r.cause==='누수').length,L.filter(r=>r.cause==='돌발').length,L.filter(r=>r.cause==='미누수').length,L.filter(r=>!['누수','돌발','미누수'].includes(r.cause)).length];py=y;return row})}
+const tcard=(t,body,id)=>`<div ${id?`id="${id}"`:''} class="card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><div class="flex flex-wrap items-center gap-2 mb-2"><h3 class="font-bold text-sm">${t}</h3>${id?`<button data-fs="${id}" class="fsb np">⛶ 전체화면</button>`:''}</div><div class="overflow-x-auto">${body}</div></div>`;
+const th=(L,cls)=>`<tr class="bg-slate-100">${L.map((x,i)=>`<th class="${i===0&&cls!=='c'?'text-left':''}">${x}</th>`).join('')}</tr>`;
+function gtab(sets){/* sets: [[label,L]] → 원인 그룹 × 누계/전주까지/금주 */
+ const hd=['구분',...sets.map(s=>s[0])];return `<table class="w-full text-sm text-right"><thead>${th(hd)}</thead><tbody>${GRP.map(([n,f])=>`<tr class="border-t"><td class="text-left font-medium">${n}</td>${sets.map(s=>`<td class="${s[2]||''}">${s[1].filter(f).length}</td>`).join('')}</tr>`).join('')}<tr class="border-t-2 font-bold bg-slate-50"><td class="text-left">합계</td>${sets.map(s=>`<td class="${s[2]||''}">${s[1].length}</td>`).join('')}</tr></tbody></table>`}
+function rSum(){if(!$('sBase').value&&R.length)$('sBase').value=R[R.length-1].date;const base=$('sBase').value;if(!base){$('sumBody').innerHTML='';return}
+ const Z=zg(base),hd=`금주 ${dlab(Z.mon)}~${dlab(Z.sun)}`;$('ptitle').textContent=`민원 대응 주간 총괄 (${base} 기준)`;
+ const tot=`<table class="w-full text-sm text-right"><thead>${th(['구분','누계','전주까지','금주'])}</thead><tbody>
+  <tr class="border-t"><td class="text-left font-medium">민원 총현황 (${Z.y}년)</td><td class="font-black text-indigo-600">${Z.Y.length}</td><td>${Z.Yp.length}</td><td class="font-bold text-emerald-600">${Z.Yc.length}</td></tr>
+  <tr class="border-t"><td class="text-left font-medium">민원 총현황 (등록 자료 전체)</td><td class="font-bold">${Z.A.length}</td><td>${Z.Ap.length}</td><td>${Z.Ac.length}</td></tr></tbody></table>
+  <p class="text-[11px] text-slate-400 mt-1">"과업기간 누계"는 이전 연도 대장도 함께 불러와야 정확합니다 (현재 등록 자료 ${R.length?R[0].date+' ~ '+R[R.length-1].date:'-'}).</p>`;
+ const Yh=Z.Yh,Yhp=Yh.filter(r=>r.date<Z.mon),Yhc=Yh.filter(r=>r.date>=Z.mon);
+ const hol=gtab([['누계',Yh,'font-bold'],['전주까지',Yhp],['금주',Yhc,'text-emerald-600 font-bold']])+`<p class="text-xs mt-2">오인신고(현장내용에 "오인" 포함) — 주말·공휴일: 누계 <b>${Yh.filter(isMis).length}</b>건 · 금주 <b>${Yhc.filter(isMis).length}</b>건 / 전체 요일: 누계 <b>${Z.Y.filter(isMis).length}</b>건</p>`;
+ const gu=L=>[L.filter(r=>r._.gu==='남구').length,L.filter(r=>r._.gu==='북구').length];
+ const nb=`<table class="w-full text-sm text-right"><thead>${th(['구분','남구','북구','합계'])}</thead><tbody>${[['누계',Yh],['전주까지',Yhp],['금주',Yhc]].map(([n,L])=>{const g=gu(L);return `<tr class="border-t"><td class="text-left font-medium">${n}</td><td>${g[0]}</td><td>${g[1]}</td><td class="font-bold">${L.length}</td></tr>`}).join('')}</tbody></table>`;
+ const mr=monthRows();const mt=`<table class="w-full text-sm text-right"><thead>${th(['년','월','합계','자연누수','돌발','미누수','기타'])}</thead><tbody>${mr.map(x=>`<tr class="border-t"><td class="text-left font-bold">${x[0]}</td><td>${x[1]}</td><td class="font-bold">${x[2]}</td><td>${x[3]}</td><td>${x[4]}</td><td>${x[5]}</td><td>${x[6]}</td></tr>`).join('')}<tr class="border-t-2 font-bold bg-slate-50"><td class="text-left" colspan="2">합계</td>${[2,3,4,5,6].map(i=>`<td>${mr.reduce((s,x)=>s+x[i],0)}</td>`).join('')}</tr></tbody></table>`;
+ $('sumBody').innerHTML=`<div class="grid grid-cols-1 md:grid-cols-2 gap-5">${tcard('📞 1. 민원 대응 집계',tot)}${tcard(`🏘️ 4. 남구/북구 주말·공휴일 당직 (${Z.y}년)`,nb)}</div>`+
+  tcard(`💧 2. 민원 대응현황 (${Z.y}년) · ${hd}`,gtab([['누계',Z.Y,'font-bold'],['전주까지',Z.Yp],['금주',Z.Yc,'text-emerald-600 font-bold']]))+
+  tcard(`🌙 3. 주말 및 공휴일 당직 민원 현황 (${Z.y}년)`,hol)+tcard('📅 월별 민원 집계표',mt,'cMonT')+
+  `<details class="text-xs text-slate-600 card bg-white rounded-2xl shadow-sm border border-slate-200 p-4"><summary class="cursor-pointer font-semibold">산정 기준 보기</summary><div class="mt-2 space-y-1"><p>· 자연누수 = 리스트의 민원원인 "누수". (원본 엑셀 총괄 시트는 "자연누수"라는 값을 세도록 되어 있어 리스트의 "누수"가 0건으로 집계되는 문제가 있었습니다.)</p><p>· 금주 = 기준일이 든 주의 월요일 ~ 일요일, 전주까지 = 그 월요일 전날까지, 누계 = 전주까지 + 금주.</p><p>· 주말·공휴일 = 토·일 + 설정의 공휴일. 오인신고는 현장내용 문구로 찾은 추정치입니다.</p></div></details>`}
+$('sBase').onchange=rSum;$('sPrev').onclick=()=>{$('sBase').value=addD($('sBase').value||today(),-7);rSum()};$('sNext').onclick=()=>{$('sBase').value=addD($('sBase').value||today(),7);rSum()};
+
+/* ── 사진 저장 (IndexedDB, 막히면 메모리) ──
+   칸 사진 키 = 사진키|칸 (loc·v1~v4·p1~p4), 사진함 = 사진키|pool [{h,b:Blob,ts,dt,k,s:들어간 칸}] */
+const MEMP={};let IDB=null;
+function idb(){if(!IDB)IDB=new Promise((res,rej)=>{try{const q=indexedDB.open('bsst-minwon-photo',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}catch(e){rej(e)}});return IDB}
+async function pGet(k){if(k in MEMP)return MEMP[k];try{const db=await idb();return await new Promise(res=>{const t=db.transaction('p').objectStore('p').get(k);t.onsuccess=()=>res(t.result||null);t.onerror=()=>res(null)})}catch(e){return null}}
+async function pSet(k,v){MEMP[k]=v;try{const db=await idb();await new Promise(res=>{const tx=db.transaction('p','readwrite'),s=tx.objectStore('p');v==null?s.delete(k):s.put(v,k);tx.oncomplete=res;tx.onerror=res})}catch(e){}}
+async function pKeys(){const ks=new Set();try{const db=await idb();(await new Promise(res=>{const q=db.transaction('p').objectStore('p').getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])})).forEach(k=>ks.add(k))}catch(e){}
+ for(const k in MEMP){if(MEMP[k]==null)ks.delete(k);else ks.add(k)}return [...ks]}
+const PSL=()=>SLOTS.map(s=>s[0]).concat('pool');
+function pDelAll(pk){PSL().forEach(s=>pSet(pk+'|'+s,null))}
+function shrink(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const k=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.82))};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('이미지를 읽을 수 없습니다.'))};im.src=u})}
+function dataBlob(s){const i=s.indexOf(','),ty=(/^data:([^;,]+)/.exec(s)||[])[1]||'image/jpeg',bin=atob(s.slice(i+1)),a=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)a[j]=bin.charCodeAt(j);return new Blob([a],{type:ty})}
+const imgBlob=(b,f)=>b.type?b:new Blob([b],{type:/\.png$/i.test(f||'')?'image/png':'image/jpeg'});
+
+/* ── 사진 키: 접수날짜+접수번호 ──
+   엑셀을 다시 올리거나 주소를 고쳐도 사진이 그 민원에 남도록. 번호가 없거나 같은 날 같은 번호가 2건 이상이면 민원 고유번호를 씀.
+   키가 바뀌면(날짜·번호 수정) 사진을 새 키로 옮김. 예전 판(고유번호 키) 사진은 처음 한 번 옮김 */
+const noKey=v=>{const t=String(v??'').normalize('NFC').replace(/\s+/g,'');const x=/^([^\d]*)0*(\d+)$/.exec(t);return x?x[1]+(+x[2]):t};
+let PKD=new Set(),PKM=Promise.resolve();
+function pkDup(){const c=new Map();R.forEach(r=>{const n=noKey(r.no);if(!n)return;const k=r.date+'|'+n;c.set(k,(c.get(k)||0)+1)});PKD=new Set([...c].filter(x=>x[1]>1).map(x=>x[0]))}
+function pkOf(r){const n=noKey(r.no),k=r.date+'|'+n;return n&&!PKD.has(k)?'n:'+k:'i:'+r.id}
+async function pMove(a,b){if(a===b)return;for(const s of PSL()){const v=await pGet(a+'|'+s);if(v==null)continue;if(await pGet(b+'|'+s)!=null)continue;await pSet(b+'|'+s,v);await pSet(a+'|'+s,null)}}
+function pkSync(){pkDup();const mv=[],legacy=CFG.pkv!==2;let ch=false;
+ for(const r of R){const k=pkOf(r),from=r.pk||(legacy?r.id:null);if(from&&from!==k)mv.push([from,k]);if(r.pk!==k){r.pk=k;ch=true}}
+ if(legacy){CFG.pkv=2;ch=true}if(ch)save();
+ if(mv.length)PKM=PKM.then(async()=>{for(const [a,b] of mv)await pMove(a,b);if(CUR==='ilji')rIlji()})}
+
+/* ── 📥 사진 묶음 불러오기 (스마트 물길주소 📤 민원대장용 ZIP) ──
+   민원 찾기: 접수번호가 같고 접수날짜 ≤ 촬영일+3일 중 가장 가까운 건(120일 넘게 떨어지면 다른 해 건으로 보고 뺌). 촬영일이 없으면 같은 번호가 1건일 때만.
+   빈 칸에만 넣음: 파일명 규칙이 있으면 그 칸(긴급250.png=위치도 · 긴급250-6-1.png=단수밸브 상세도 1번 · 긴급250-1.jpg=현장사진 1),
+   없으면 위치도 ← 위치도(빨간 점) 사진 · 단수밸브 상세도 ← 파일명에 밸브/상세/단수 · 현장사진 ← 나머지(촬영 순). 남는 사진은 사진함에 보관 */
+const DAY=864e5,KLB={loc:'위치도',valve:'밸브',site:'현장'};
+function mwPick(no,ts){const k=noKey(no);if(!k)return null;const C=R.filter(r=>noKey(r.no)===k);if(!C.length)return null;
+ if(!ts)return C.length===1?C[0]:null;
+ let best=null,bd=0;for(const r of C){const d=dOf(r.date).getTime();if(d<=ts+3*DAY&&(!best||d>bd)){best=r;bd=d}}
+ return best&&ts-bd<=120*DAY?best:null}
+async function mwPlan(pk,its){const L=its.slice().sort((a,b)=>(a.ts||9e15)-(b.ts||9e15)),free=[];for(const s of SLOTS)if(await pGet(pk+'|'+s[0])==null)free.push(s[0]);
+ const out=[],take=(want,k)=>{const sl=free.filter(s=>want.test(s));for(const it of L){if(!sl.length)break;if(it.k===k&&!it.sl&&!out.some(o=>o[1]===it)){const s=sl.shift();out.push([s,it]);free.splice(free.indexOf(s),1)}}};
+ for(const it of L)if(it.sl&&free.includes(it.sl)){out.push([it.sl,it]);free.splice(free.indexOf(it.sl),1)} // 파일명 규칙으로 칸이 정해진 사진 먼저
+ take(/^loc$/,'loc');take(/^v\d$/,'valve');take(/^p\d$/,'site');return out}
+function modal(html){let m=$('mwModal');if(!m){m=document.createElement('div');m.id='mwModal';m.className='np fixed inset-0 z-[80] flex items-center justify-center p-4';m.style.background='rgba(15,23,42,.55)';document.body.appendChild(m)}
+ m.innerHTML=`<div class="card bg-white rounded-2xl shadow-xl border border-slate-200 p-5 w-full max-w-lg overflow-auto" style="max-height:86vh">${html}</div>`;m.classList.remove('hidden');
+ m.onclick=e=>{if(e.target===m||e.target.closest('[data-x]'))mClose()};return m}
+let MCB=null;function mClose(){const m=$('mwModal');if(m){m.classList.add('hidden');m.innerHTML=''}if(MCB){MCB();MCB=null}}
+let MWQ=null;
+async function mwRead(files){$('fMw').disabled=true;toast('⏳ 사진 묶음을 읽는 중…',60000);
+ try{await need('JSZip');const items=[];
+  for(const f of files){const z=await JSZip.loadAsync(f),e=z.file('minwon_photos.json');
+   if(!e)throw new Error(`${f.name}: 민원대장용 사진 묶음이 아닙니다. 스마트 물길주소 📷 현장 사진의 📤 민원대장용 버튼으로 만든 ZIP을 넣으세요.`);
+   const o=JSON.parse(await e.async('string'));if(o.kind!=='bsst-minwon-photos'||!Array.isArray(o.items))throw new Error(`${f.name}: 사진 목록 형식이 다릅니다.`);
+   o.items.forEach(it=>{if(it&&it.f&&z.file(it.f))items.push({...it,z})})}
+  if(!items.length)throw new Error('묶음 안에 사진이 없습니다.');
+  const by=new Map(),miss=new Map();
+  for(const it of items){const r=mwPick(it.no,it.ts);if(!r){miss.set(it.no,(miss.get(it.no)||0)+1);continue}const pk=pkOf(r);let g=by.get(pk);if(!g)by.set(pk,g={r,pk,it:[]});g.it.push(it)}
+  let dup=0,slot=0;const G=[];
+  for(const g of by.values()){const P=(await pGet(g.pk+'|pool'))||[],hs=new Set(P.map(p=>p.h)),n0=g.it.length;
+   g.it=g.it.filter((it,i,a)=>!hs.has(it.h)&&a.findIndex(x=>x.h===it.h)===i);dup+=n0-g.it.length;if(!g.it.length)continue;g.plan=await mwPlan(g.pk,g.it);slot+=g.plan.length;G.push(g)}
+  const nNew=G.reduce((s,g)=>s+g.it.length,0),nMiss=[...miss.values()].reduce((a,b)=>a+b,0);
+  MWQ={G,at:Date.now()};$('toast').classList.add('hidden');
+  const ms=[...miss].sort((a,b)=>String(a[0]).localeCompare(String(b[0]),'ko',{numeric:true}));
+  const row=g=>`<tr class="border-t"><td class="text-left">${g.r.date}</td><td class="text-left font-bold">${esc(g.r.no)}</td><td>${g.it.length}</td><td>${g.plan.length}</td><td>${g.it.length-g.plan.length}</td></tr>`;
+  modal(`<h3 class="font-bold text-sm mb-1">📥 사진 묶음 미리보기</h3><p class="text-[11px] text-slate-500 mb-3">${files.map(f=>esc(f.name)).join(', ')} · 사진 ${items.length.toLocaleString()}장</p>
+   <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">맞는 민원</p><p class="text-xl font-black text-indigo-600">${G.length.toLocaleString()}건</p></div>
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">새 사진 · 칸에 넣을 사진</p><p class="text-xl font-black text-emerald-600">${nNew.toLocaleString()} · ${slot.toLocaleString()}</p></div>
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">민원 못 찾음</p><p class="text-xl font-black ${nMiss?'text-amber-600':'text-slate-800'}">${nMiss.toLocaleString()}장</p></div></div>
+   ${G.length?`<div class="scr border rounded-lg" style="max-height:220px"><table class="w-full text-xs text-right"><thead><tr class="bg-slate-100"><th class="text-left">접수날짜</th><th class="text-left">접수번호</th><th>새 사진</th><th>칸에 넣음</th><th>사진함만</th></tr></thead><tbody>${G.map(row).join('')}</tbody></table></div>`:''}
+   ${dup?`<p class="text-[11px] text-slate-500 mt-2">이미 불러온 사진 ${dup.toLocaleString()}장은 건너뜁니다.</p>`:''}
+   ${ms.length?`<details class="text-[11px] mt-2"><summary class="cursor-pointer font-semibold text-amber-700">🔍 민원을 못 찾은 접수번호 ${ms.length}개 보기</summary><p class="mt-1 text-slate-600">${ms.map(([k,n])=>`${esc(k)}(${n})`).join(' · ')}</p><p class="mt-1 text-slate-500">민원대장에 그 번호가 없거나, 촬영일과 접수날짜가 맞지 않는 사진입니다(접수날짜 ≤ 촬영일+3일, 120일 이내).</p></details>`:''}
+   <p class="text-[11px] text-slate-500 mt-2">빈 칸에만 넣고, 직접 붙인 사진은 바꾸지 않습니다. 칸에 안 들어간 사진은 사진함에 두었다가 칸을 눌러 고를 수 있습니다.</p>
+   <div class="flex gap-2 mt-3"><button id="mwGo" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold py-2" ${nNew?'':'disabled style="opacity:.5"'}>✔ 반영</button><button data-x class="flex-1 rounded-lg border border-slate-300 bg-white text-xs font-bold py-2">취소</button></div>`);
+  MCB=()=>{MWQ=null};$('mwGo').onclick=()=>{const q=MWQ;MCB=null;mClose();mwApply(q)}}
+ catch(e){toast('⚠️ '+e.message,6000)}finally{$('fMw').disabled=false}}
+async function mwApply(q){if(!q||!q.G.length)return;toast('⏳ 사진을 넣는 중…',60000);const U=[];let n=0,s=0;
+ try{for(const g of q.G){const add=[];for(const it of g.it){const b=imgBlob(await it.z.file(it.f).async('blob'),it.f);add.push({h:it.h,b,ts:it.ts||null,dt:it.dt||'',k:it.k||'site',blk:it.blk||'',s:null})}
+   for(const [sl,it] of g.plan){if(await pGet(g.pk+'|'+sl)!=null)continue;const e=add.find(a=>a.h===it.h);await pSet(g.pk+'|'+sl,e.b);e.s=sl;s++}
+   const P=(await pGet(g.pk+'|pool'))||[];await pSet(g.pk+'|pool',P.concat(add));n+=add.length;U.push({id:g.r.id,pk:g.pk,hs:add.map(a=>a.h)})}
+  try{localStorage.setItem('bsst-minwon-undo',JSON.stringify({at:Date.now(),n,U}))}catch(e){}
+  const first=q.G[0]&&q.G[0].r;if(first&&!q.G.some(g=>g.r.id===IJ))IJ=first.id;
+  toast(`✔ 민원 ${q.G.length}건에 사진 ${n}장을 넣었습니다 (칸 ${s}개 · 나머지는 사진함).`,5000)}
+ catch(e){toast('⚠️ 사진 넣기 실패: '+e.message,6000)}
+ if(CUR==='ilji')rIlji()}
+function mwUndoInfo(){try{return JSON.parse(localStorage.getItem('bsst-minwon-undo')||'null')}catch(e){return null}}
+async function mwUndo(){const o=mwUndoInfo();if(!o)return;
+ if(!confirm(`${new Date(o.at).toLocaleString('ko-KR')}에 불러온 사진 ${o.n}장을 뺄까요?\n(그 사진이 들어간 칸도 비웁니다. 직접 붙인 사진은 그대로)`))return;
+ await PKM;for(const u of o.U){const r=R.find(x=>x.id===u.id),pk=r?pkOf(r):u.pk,P=(await pGet(pk+'|pool'))||[],hs=new Set(u.hs);
+  for(const e of P)if(hs.has(e.h)&&e.s)await pSet(pk+'|'+e.s,null);const L=P.filter(e=>!hs.has(e.h));await pSet(pk+'|pool',L.length?L:null)}
+ try{localStorage.removeItem('bsst-minwon-undo')}catch(e){}toast('↩ 마지막 불러오기를 되돌렸습니다.');rIlji()}
+/* 칸을 누르면: 사진함이 있으면 고르기 창, 없으면 파일 고르기 */
+async function slotPick(sl){const r=R.find(x=>x.id===IJ);if(!r)return;const pk=pkOf(r),P=(await pGet(pk+'|pool'))||[];
+ if(!P.length){PH=sl;$('fPh').click();return}
+ const nm=s=>(SLOTS.find(x=>x[0]===s)||[0,s])[1],urls=P.map(e=>URL.createObjectURL(e.b));
+ modal(`<h3 class="font-bold text-sm mb-1">🖼️ ${nm(sl)} 사진 고르기</h3><p class="text-[11px] text-slate-500 mb-3">${esc(r.no||'')} 사진함 ${P.length}장 · 파란 표시는 이미 다른 칸에 들어간 사진(고르면 이 칸으로 옮김)</p>
+  <div class="grid grid-cols-3 gap-2">${P.map((e,i)=>`<button data-i="${i}" class="relative border border-slate-300 rounded-lg overflow-hidden bg-slate-50" style="height:96px"><img src="${urls[i]}" class="w-full h-full" style="object-fit:cover" alt="">${e.s?`<span class="absolute left-1 top-1 text-[10px] bg-indigo-600 text-white rounded px-1">✔ ${esc(nm(e.s))}</span>`:''}<span class="absolute right-1 bottom-1 text-[10px] bg-white text-slate-700 rounded px-1">${KLB[e.k]||''} ${esc((e.dt||'').slice(5,16))}</span></button>`).join('')}</div>
+  <div class="flex gap-2 mt-3"><button id="mwFile" class="flex-1 rounded-lg border border-indigo-300 bg-white text-indigo-700 text-xs font-bold py-2">📁 파일에서 고르기</button><button data-x class="flex-1 rounded-lg border border-slate-300 bg-white text-xs font-bold py-2">닫기</button></div>`);
+ MCB=()=>urls.forEach(u=>URL.revokeObjectURL(u));
+ $('mwFile').onclick=()=>{mClose();PH=sl;$('fPh').click()};
+ $('mwModal').querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{const e=P[+b.dataset.i];
+  if(e.s&&e.s!==sl)await pSet(pk+'|'+e.s,null);P.forEach(x=>{if(x.s===sl)x.s=null});e.s=sl;await pSet(pk+'|'+sl,e.b);await pSet(pk+'|pool',P);mClose();rIlji()})}
+async function poolFree(pk,sl){const P=await pGet(pk+'|pool');if(P&&P.some(e=>e.s===sl)){P.forEach(e=>{if(e.s===sl)e.s=null});await pSet(pk+'|pool',P)}}
+
+/* ── 🗒️ 민원 대응관리 일지 ── */
+const SLOTS=[['loc','위 치 도'],['v1','단수밸브 상세도 1번'],['v2','단수밸브 상세도 2번'],['v3','단수밸브 상세도 3번'],['v4','단수밸브 상세도 4번'],['p1','현장사진 1'],['p2','현장사진 2'],['p3','현장사진 3'],['p4','현장사진 4']];
+let IJ=null,PH=null;
+function iOpts(){const q=$('iQ').value.trim();let L=R.slice().reverse();if(q)L=L.filter(r=>(r.no+' '+r.addr).includes(q));
+ if(!IJ||!R.some(r=>r.id===IJ))IJ=(L.find(r=>r.cause==='누수')||L[0]||{}).id||null;
+ $('iSel').innerHTML=L.slice(0,800).map(r=>`<option value="${r.id}">${r.date} · ${esc(r.no||'-')} · ${esc(r.cause)} · ${esc(r.addr)}</option>`).join('');if(IJ&&L.some(r=>r.id===IJ))$('iSel').value=IJ;else if(L[0]){IJ=L[0].id;$('iSel').value=IJ}}
+let IJU=[];
+async function rIlji(){iOpts();const r=R.find(x=>x.id===IJ);$('ptitle').style.display='none';$('iUndo').classList.toggle('hidden',!mwUndoInfo());IJU.forEach(u=>URL.revokeObjectURL(u));IJU=[];
+ if(!r){$('ijBody').innerHTML='<p class="text-sm text-slate-400 text-center py-8">민원을 선택하세요.</p>';return}
+ const v=x=>esc(x||'');
+ const slot=(s,h)=>`<div class="slot" data-s="${s[0]}" style="height:${h}px"><span class="cap">${s[1]}</span><span class="np text-xs text-slate-400">📷 클릭해 사진 첨부</span></div>`;
+ $('ijBody').innerHTML=`<div class="text-center mb-3"><h2 class="text-2xl font-black tracking-widest">민원 대응관리 일지</h2><p class="text-xs text-slate-500 mt-1">포항시 상수도관망 전문유지관리 용역</p></div>
+ <table class="frm"><colgroup>${'<col style="width:10%">'.repeat(10)}</colgroup><tbody>
+ <tr><th>접수번호</th><td colspan="2" class="font-bold">${v(r.no)}</td><th>민원원인</th><td>${v(r.cause)}</td><th>주소</th><td colspan="4" class="text-left">${v(r.addr)}</td></tr>
+ <tr><th>날짜</th><td colspan="2">${r.date} (${WD[dOf(r.date).getDay()]})</td><th>복구팀</th><td>${v(r.co)}</td><th>대리인</th><td colspan="4" class="text-left">${v(r.agent)} <span class="float-right text-slate-500">(인)</span></td></tr>
+ <tr><th rowspan="2">민원내용</th><th>관종</th><th>관경</th><th>누수원인</th><th>누수부위</th><th>불용관 여부</th><th>접수</th><th>도착</th><th>착공</th><th>준공</th></tr>
+ <tr><td>${v(r.pipe)}</td><td>${r.dia?v(r.dia)+'mm':''}</td><td>${v(r.reason)}</td><td>${v(r.part)}</td><td>${v(r.fix)}</td><td>${v(r.rcv)}</td><td>${v(r.arr)}</td><td>${v(r.sta)}</td><td>${v(r.done)}</td></tr>
+ <tr><th>현장내용</th><td colspan="9" class="text-left" style="height:44px">${v(r.memo)}</td></tr></tbody></table>
+ <div class="grid grid-cols-2 gap-2 mt-2">${slot(SLOTS[0],330)}<div class="grid grid-cols-2 gap-2">${SLOTS.slice(1,5).map(s=>slot(s,161)).join('')}</div></div>
+ <div class="grid grid-cols-2 gap-2 mt-2">${SLOTS.slice(5).map(s=>slot(s,200)).join('')}</div>
+ <table class="frm mt-2"><tbody><tr><th style="width:10%">비고</th><td class="text-left" style="height:40px">${r._.arr!=null?`접수→도착 ${r._.arr}분`:''}${r._.done!=null?` · 접수→준공 ${durT(r._.done)}`:''}${r.blk?` · 소블록 ${v(r.blk)}`:''}</td></tr></tbody></table><p id="ijPool" class="np text-[11px] text-slate-500 mt-2"></p>`;
+ const pk=pkOf(r);for(const s of SLOTS){const d=await pGet(pk+'|'+s[0]);if(IJ!==r.id)return;const el=$('ijBody').querySelector(`[data-s="${s[0]}"]`);if(!el||!d)continue;
+  let src=d;if(d instanceof Blob){src=URL.createObjectURL(d);IJU.push(src)}el.innerHTML=`<span class="cap">${s[1]}</span><img src="${src}" alt="${s[1]}"><button class="del np" data-del="${s[0]}">✕</button>`}
+ const P=(await pGet(pk+'|pool'))||[];if(IJ!==r.id)return;const fr=P.filter(e=>!e.s).length;
+ $('ijPool').textContent=P.length?`🗂 사진함 ${P.length}장 (물길주소에서 불러옴)${fr?` · 칸에 안 들어간 사진 ${fr}장 — 사진 칸을 누르면 골라 넣을 수 있습니다`:''}`:''}
+$('ijBody').onclick=async e=>{const d=e.target.closest('[data-del]');if(d){e.stopPropagation();if(confirm('이 사진을 지울까요?')){const r=R.find(x=>x.id===IJ);if(r){const pk=pkOf(r);await pSet(pk+'|'+d.dataset.del,null);await poolFree(pk,d.dataset.del)}rIlji()}return}
+ const s=e.target.closest('.slot');if(s)slotPick(s.dataset.s)};
+$('fPh').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!IJ||!PH)return;const r=R.find(x=>x.id===IJ);if(!r)return;try{const pk=pkOf(r);await pSet(pk+'|'+PH,await shrink(f));await poolFree(pk,PH);rIlji()}catch(er){toast('⚠️ '+er.message)}};
+$('fMw').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.length)mwRead(f)};$('iUndo').onclick=mwUndo;
+$('iSel').onchange=()=>{IJ=$('iSel').value;rIlji()};$('iQ').oninput=()=>{IJ=null;rIlji()};
+const iStep=d=>{const o=[...$('iSel').options],i=o.findIndex(x=>x.value===IJ),j=i-d;if(o[j]){IJ=o[j].value;rIlji()}};
+$('iPrev').onclick=()=>iStep(-1);$('iNext').onclick=()=>iStep(1);$('iEdit').onclick=()=>IJ&&editRec(IJ);
+
+/* ── 📝 업무수행기록부 ── */
+const coKey=s=>String(s||'').replace(/주식회사|\(주\)|㈜|\(합\)|\(유\)|\(자\)|\(사\)|합자회사|유한회사|[\s()]/g,'');
+function coRep(co){const k=coKey(co);if(!k)return null;const x=CO.find(c=>coKey(c.co)===k)||CO.find(c=>{const ck=coKey(c.co);return ck&&(ck.includes(k)||k.includes(ck))});return x?x.rep||'':null}
+function rRec(){const ds=[...new Set(R.map(r=>r.date))].sort();if(!$('rDate').value&&ds.length)$('rDate').value=ds[ds.length-1];const d=$('rDate').value;$('ptitle').style.display='none';
+ const L=R.filter(r=>r.date===d);const rows=L.map((r,i)=>{const rep=coRep(r.co);return `<tr><td>${i+1}</td><td class="font-bold">${esc(r.no)}</td><td>${esc(r.co)}</td><td>${esc(r.rcv)}</td><td>${esc(r.arr)}</td><td>${esc(r.sta)}</td><td>${r.co?(rep==null?'<span class="text-amber-600 np">표에 없음</span>':esc(rep)):''}</td><td class="text-left">${esc(r.addr)}${r.memo?' / '+esc(r.memo):''}</td><td>${r.cause==='누수'?'':esc(r.cause)}</td></tr>`});
+ for(let i=L.length;i<Math.max(12,L.length);i++)rows.push(`<tr>${'<td style="height:30px"></td>'.repeat(9)}</tr>`);
+ $('recBody').innerHTML=d?`<p class="text-xs">[별지 제1호 서식]</p><h2 class="text-center text-xl font-black my-2">긴급누수민원 대응관리 일일 업무수행 기록부</h2>
+ <div class="flex justify-between items-end gap-3 mb-2"><div class="text-sm"><p>업무수행지역 : 포항시 급수구역</p><p>날짜 : ${+d.slice(0,4)}년 ${+d.slice(5,7)}월 ${+d.slice(8)}일 (${WD[dOf(d).getDay()]})${HOL.has(d)?' · 공휴일':''} · 총 <b>${L.length}</b>건</p></div>
+ <table class="frm" style="width:160px"><tbody><tr><th>감독관 확인</th></tr><tr><td style="height:56px"></td></tr></tbody></table></div>
+ <table class="frm"><thead><tr><th style="width:5%">순번</th><th style="width:8%">접수번호</th><th style="width:12%">공사업체</th><th style="width:7%">접수<br>시간</th><th style="width:7%">도착<br>시간</th><th style="width:7%">착공<br>시간</th><th style="width:9%">공사업체<br>대리인</th><th>현장 내용</th><th style="width:8%">비고</th></tr></thead><tbody>${rows.join('')}</tbody></table>`:'<p class="text-sm text-slate-400 text-center py-8">날짜를 선택하세요.</p>'}
+$('rDate').onchange=rRec;
+const rStep=d=>{const ds=[...new Set(R.map(r=>r.date))].sort(),c=$('rDate').value;const n=d>0?ds.find(x=>x>c):ds.filter(x=>x<c).pop();if(n){$('rDate').value=n;rRec()}};
+$('rPrev').onclick=()=>rStep(-1);$('rNext').onclick=()=>rStep(1);
+
+/* ── 🧪 자료 점검 ── */
+function rChk(){const L=fl(),I=[];L.forEach(r=>r._.iss.forEach(x=>I.push([r,x])));
+ const by=k=>I.filter(x=>SEV[x[1][0]]===k).length,rec=new Set(I.filter(x=>SEV[x[1][0]]!=='s').map(x=>x[0].id)).size;
+ $('chkSum').innerHTML=kcard('점검 대상 민원',rec+'건',`전체 ${L.length}건 중 ${pc(rec,L.length)}`,'🧪','text-indigo-600')+kcard('🚨 시간·날짜 오류',by('r')+'건','순서 역전·형식·연도 오기','⏱️','text-red-600')+kcard('🔍 필수값 누락',by('a')+'건','관종·관경·부위·업체·주소·위치','📝','text-amber-600')+kcard('미완료(정보)',by('s')+'건','누수인데 준공시간 없음','🚧','text-sky-600');
+ const f=$('chkF'),fv=f.value||'all',types=[...new Set(I.map(x=>x[1][0]))];f.innerHTML='<option value="all">모든 구분</option>'+types.map(t=>`<option>${t}</option>`).join('');f.value=types.includes(fv)?fv:'all';
+ const J=I.filter(x=>f.value==='all'||x[1][0]===f.value).sort((a,b)=>({r:0,a:1,s:2}[SEV[a[1][0]]]-{r:0,a:1,s:2}[SEV[b[1][0]]])||cmpR(a[0],b[0]));
+ $('chkB').innerHTML=J.length?J.slice(0,1500).map(([r,x])=>`<tr class="border-t hover:bg-indigo-50 cursor-pointer" data-id="${r.id}"><td class="text-left whitespace-nowrap">${r.date}</td><td class="text-left">${esc(r.no)}</td><td class="text-left">${esc(r.addr)}</td><td class="text-left">${bdg((SEV[x[0]]==='r'?'🚨 ':SEV[x[0]]==='a'?'🔍 ':'ℹ️ ')+x[0],SEV[x[0]])}</td><td class="text-left">${esc(x[1])}</td></tr>`).join(''):'<tr><td colspan="5" class="text-center py-6">'+bdg('✔ 점검 대상 없음','e')+'</td></tr>';
+ const im=CFG.imp;$('chkImp').innerHTML=im?tcard(`📁 원본 엑셀 점검 · ${esc(im.file)}`,`<div class="text-xs space-y-1"><p>· '${esc(im.sheet)}' 시트에서 민원 ${im.n}건을 읽었습니다 (${esc(im.at)}).</p>
+  ${im.errs&&im.errs.length?`<p>· 수식 오류 셀: ${im.errs.map(e=>`${bdg(esc(e[1]),'r')} ${esc(e[0])} ${e[2]}칸`).join(' · ')}</p><p class="text-slate-500">→ #N/A는 주로 업체명 표기 차이로 VLOOKUP이 실패한 경우, #NAME?는 그 엑셀에서 지원하지 않는 함수일 때 생깁니다. 이 앱의 총괄·기록부는 수식 없이 다시 계산합니다.</p>`:'<p>· 수식 오류 셀 없음</p>'}
+  <p>· 리스트의 업체명 중 대리인 표와 글자가 정확히 같지 않은 이름: <b>${im.coMiss}</b>개 (그중 ㈜·(주) 등을 빼면 맞는 이름 ${im.coFuzzy}개 → 이 앱은 자동으로 맞춤)</p></div>`):''}
+$('chkF').onchange=rChk;$('chkB').onclick=e=>{const tr=e.target.closest('tr[data-id]');if(tr)editRec(tr.dataset.id)};
+
+/* ── 🧭 물길주소 기준자료 (소블록 경계 · 상수관로 · 브이월드 인증키) ──
+   스마트 물길주소 💾 기준자료 백업 zip(backup.json)에서 이 셋만 꺼내 이 브라우저에 저장(키 base|v1).
+   주소 검색 결과·수용가 좌표·카카오 키·사진은 읽지 않고 버림. 큰 파일이라 해석은 Web Worker에서 */
+let BASE=null,PC=null;
+const PUC={'배수관':'#2563eb','급수관':'#94a3b8','송수관':'#7c3aed','도수관':'#0891b2','취수관':'#059669','소방관':'#dc2626','불탐관':'#d97706'};
+const PZ=13,PZ_SVC=16,PZ_LBL=17;
+function baseWorker(){onmessage=e=>{try{const o=JSON.parse(new TextDecoder().decode(e.data));
+ if(!o||o.app!=='geo-addr-app')throw new Error('스마트 물길주소 기준자료 백업이 아닙니다.');
+ const out={v:1,at:o.at||'',vw:null,blk:null,pipe:null},tr=[];
+ try{const s=o.settings||{},v=typeof s['geo-vw']==='string'?JSON.parse(s['geo-vw']):s['geo-vw'];if(v&&v.key)out.vw={key:String(v.key)}}catch(_){}
+ const xy2=c=>typeof c[0]==='number'?[c[0],c[1]]:c.map(xy2);
+ const b=o.blocks;if(b&&b.fc&&Array.isArray(b.fc.features)){const fd=b.field||'BLK_NM';
+  out.blk={name:b.name||'',field:fd,fc:{type:'FeatureCollection',features:b.fc.features.filter(f=>f&&f.geometry&&/Polygon/.test(f.geometry.type)).map(f=>({type:'Feature',properties:{[fd]:f.properties?f.properties[fd]??'':''},geometry:{type:f.geometry.type,coordinates:xy2(f.geometry.coordinates)}}))}}}
+ const p=o.pipes;if(p&&Array.isArray(p.feats)&&p.feats.length){let fl={};try{fl=JSON.parse((o.settings||{})['geo-pipe']).fields||{}}catch(_){}
+  const FD=fl.pDia||'구경',FM=fl.pMat||'관재질',FU=fl.pUse||'상수관용도',parts=[];let np=0;
+  for(const f of p.feats){const g=f&&f.geometry;if(!g)continue;const L=g.type==='LineString'?[g.coordinates]:g.type==='MultiLineString'?g.coordinates:[];for(const c of L)if(c&&c.length>1){parts.push([c,f.properties||{}]);np+=c.length}}
+  const n=parts.length,X0=129,Y0=36,xy=new Float32Array(np*2),off=new Uint32Array(n+1),bb=new Float32Array(n*4),use=new Uint8Array(n),mat=new Uint8Array(n),dia=new Uint16Array(n),U=[],M=[],ui=new Map(),mi=new Map();let k=0;
+  parts.forEach(([c,pr],i)=>{off[i]=k;let a=1e9,b2=1e9,cx=-1e9,d=-1e9;for(const q of c){const x=q[0]-X0,y=q[1]-Y0;xy[k*2]=x;xy[k*2+1]=y;k++;if(x<a)a=x;if(x>cx)cx=x;if(y<b2)b2=y;if(y>d)d=y}bb[i*4]=a;bb[i*4+1]=b2;bb[i*4+2]=cx;bb[i*4+3]=d;
+   const u=String(pr[FU]||pr['_레이어']||pr['레이어']||'').replace(/^SAA\d+_/,'');if(!ui.has(u)){ui.set(u,U.length);U.push(u)}use[i]=Math.min(255,ui.get(u));
+   const m=String(pr[FM]??'');if(!mi.has(m)){mi.set(m,M.length);M.push(m)}mat[i]=Math.min(255,mi.get(m));dia[i]=Math.max(0,Math.min(65535,parseInt(pr[FD],10)||0))});
+  off[n]=k;out.pipe={name:p.name||'',base:p.base||'',n,X0,Y0,xy,off,bb,use,mat,dia,U,M};tr.push(xy.buffer,off.buffer,bb.buffer,use.buffer,mat.buffer,dia.buffer)}
+ if(!out.blk&&!out.pipe)throw new Error('백업에 소블록 경계·상수관로가 없습니다.');
+ postMessage({ok:out},tr)}catch(err){postMessage({err:String(err&&err.message||err)})}}}
+function baseParse(u8){return new Promise((res,rej)=>{let w;try{const url=URL.createObjectURL(new Blob([`(${baseWorker.toString()})()`],{type:'text/javascript'}));w=new Worker(url);URL.revokeObjectURL(url)}catch(e){return rej(new Error('Web Worker를 쓸 수 없는 브라우저입니다.'))}
+ w.onmessage=e=>{w.terminate();e.data.err?rej(new Error(e.data.err)):res(e.data.ok)};w.onerror=e=>{w.terminate();rej(new Error(e.message||'기준자료를 읽지 못했습니다.'))};w.postMessage(u8,[u8.buffer])})}
+async function baseLoad(f){const msg=$('geoMsg');msg.textContent='⏳ 기준자료 읽는 중… (큰 파일은 몇 초 걸립니다)';
+ try{let u8;if(/\.zip$/i.test(f.name)){await need('JSZip');const z=await JSZip.loadAsync(f),e=z.file('backup.json');if(!e)throw new Error('zip 안에 backup.json이 없습니다. 물길주소 💾 기준자료 백업 zip을 고르세요.');u8=await e.async('uint8array')}
+  else u8=new Uint8Array(await f.arrayBuffer());
+  const B=await baseParse(u8);B.file=f.name;B.load=Date.now();BASE=B;await pSet('base|v1',B);
+  await mapInit();baseApply(true);toast('✔ 물길주소 기준자료를 넣었습니다.');rMap()}
+ catch(e){msg.textContent='⚠️ '+e.message;toast('⚠️ '+e.message,6000)}}
+function baseInfo(){const el=$('baseInfo');if(!el)return;if(!BASE){el.innerHTML='물길주소 💾 기준자료 백업 zip을 넣으면 브이월드 지도 · 소블록 경계 · 상수관로가 함께 보입니다.';return}
+ const b=BASE.blk,p=BASE.pipe;el.innerHTML=`🧭 기준자료 ${esc((BASE.at||'').slice(0,10))} · 소블록 ${b?b.fc.features.length.toLocaleString()+'개':'없음'} · 관로 ${p?p.n.toLocaleString()+'개':'없음'} · 브이월드 ${BASE.vw?'키 있음':'키 없음(OSM 사용)'} · 관로는 확대 ${PZ} 이상, 급수관은 ${PZ_SVC} 이상, 관경·관종 글자는 ${PZ_LBL} 이상 <button id="bBaseClr" class="ml-1 px-1.5 rounded border border-red-300 text-red-600 bg-white">지우기</button>`;
+ $('bBaseClr').onclick=async()=>{if(!confirm('저장된 물길주소 기준자료(경계·관로)를 지울까요? 민원의 소블록 값은 그대로 둡니다.'))return;BASE=null;await pSet('base|v1',null);if(PLY){PLY.remove();PLY=null}POLY=null;$('shpF').classList.add('hidden');baseBases();pipeDraw();baseInfo();toast('기준자료를 지웠습니다.')}}
+/* 기준자료 적용: 소블록 경계 → POLY·PLY, 브이월드 바탕, 관로 캔버스. all=true면 민원 소블록도 다시 판정 */
+function baseApply(all){if(!MAP)return;const b=BASE&&BASE.blk;
+ if(b&&b.fc.features.length){const fs=b.fc.features,fd=b.field;
+  POLY=fs.map(x=>{const P=x.geometry.type==='Polygon'?[x.geometry.coordinates]:x.geometry.coordinates;let bb=[1e9,1e9,-1e9,-1e9];P.forEach(pg=>pg[0].forEach(([X,Y])=>{bb=[Math.min(bb[0],X),Math.min(bb[1],Y),Math.max(bb[2],X),Math.max(bb[3],Y)]}));return {f:x,P,b:bb}});
+  $('shpF').innerHTML=`<option>${esc(fd)}</option>`;$('shpF').value=fd;$('shpF').classList.add('hidden');
+  if(PLY)PLY.remove();PLY=L.geoJSON(b.fc,{style:{color:'#4f46e5',weight:1.2,fillOpacity:.05},onEachFeature:(ft,ly)=>ly.bindTooltip(()=>String(ft.properties[$('shpF').value]??''),{sticky:true})}).addTo(MAP);PLY.bringToBack();
+  if(all)blkAll()}
+ baseBases();pipeInit();pipeDraw();baseInfo();
+ $('geoMsg').textContent=BASE?`✔ 기준자료 적용${b?` · 소블록 ${b.fc.features.length}개`:''}${BASE.pipe?` · 관로 ${BASE.pipe.n.toLocaleString()}개`:''}`:''}
+/* 바탕지도: OSM + (키가 있으면) 브이월드 일반·위성·지명. 브이월드 타일이 계속 안 오면 OSM으로 되돌림 */
+let LYC=null,OSM=null,VWL=[];
+function baseBases(){if(!MAP)return;if(!LYC){LYC=L.control.layers({},{},{position:'topright'}).addTo(MAP);LYC.addBaseLayer(OSM,'OpenStreetMap')}
+ VWL.forEach(l=>{LYC.removeLayer(l);if(MAP.hasLayer(l))MAP.removeLayer(l)});VWL=[];const key=BASE&&BASE.vw&&BASE.vw.key;
+ if(!key){if(!MAP.hasLayer(OSM))OSM.addTo(MAP);return}
+ const W=t=>`https://api.vworld.kr/req/wmts/1.0.0/${encodeURIComponent(key)}/${t}/{z}/{y}/{x}.${t==='Satellite'?'jpeg':'png'}`,at='© 국토교통부 브이월드';
+ const base=L.tileLayer(W('Base'),{maxZoom:19,attribution:at}),sat=L.tileLayer(W('Satellite'),{maxZoom:19,attribution:at}),hyb=L.tileLayer(W('Hybrid'),{maxZoom:19,attribution:at});
+ LYC.addBaseLayer(base,'브이월드 일반');LYC.addBaseLayer(sat,'브이월드 위성');LYC.addOverlay(hyb,'브이월드 지명·도로');VWL=[base,sat,hyb];
+ if(MAP.hasLayer(OSM))MAP.removeLayer(OSM);base.addTo(MAP);
+ let er=0,ok=0;base.on('tileload',()=>{ok++});base.on('tileerror',()=>{if(++er===6&&!ok){MAP.removeLayer(base);OSM.addTo(MAP);toast('⚠️ 브이월드 지도를 받지 못해 OpenStreetMap으로 바꿨습니다. 인증키의 등록 주소(서비스 URL)를 확인하세요.',7000)}})}
+/* 상수관로 캔버스: 화면 안 관로만 용도별 색 · 관경별 굵기로 한 번에 그림 (9만 5천 개도 멈추지 않게) */
+function pipeInit(){if(PC||!MAP)return;const pane=MAP.createPane('pipes');pane.style.zIndex=350;pane.style.pointerEvents='none';
+ const cv=L.DomUtil.create('canvas','',pane);cv.style.pointerEvents='none';PC={pane,cv};
+ MAP.on('moveend zoomend resize viewreset',pipeDraw);MAP.on('zoomstart',()=>{cv.style.visibility='hidden'})}
+function pipeDraw(){if(!PC||!MAP)return;const cv=PC.cv,P=BASE&&BASE.pipe,sz=MAP.getSize(),dpr=Math.min(2,window.devicePixelRatio||1);
+ L.DomUtil.setPosition(cv,MAP.containerPointToLayerPoint([0,0]));cv.width=Math.round(sz.x*dpr);cv.height=Math.round(sz.y*dpr);cv.style.width=sz.x+'px';cv.style.height=sz.y+'px';cv.style.visibility='';
+ const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,sz.x,sz.y);const z=MAP.getZoom(),hint=$('pipeHint');
+ if(!P||$('pShow').value==='off'){if(hint)hint.textContent='';return}
+ if(z<PZ){if(hint)hint.textContent=`🛠 관로는 확대 ${PZ} 이상에서 보입니다 (지금 ${z})`;return}
+ const bd=MAP.getBounds(),x0=bd.getWest()-P.X0,x1=bd.getEast()-P.X0,y0=bd.getSouth()-P.Y0,y1=bd.getNorth()-P.Y0,svc=z>=PZ_SVC,gi=P.U.indexOf('급수관');
+ const S=256*Math.pow(2,z),o=MAP.project(MAP.containerPointToLatLng([0,0]),z),R2=Math.PI/180;
+ const px=x=>(x+P.X0+180)/360*S-o.x,py=y=>{const s=Math.sin((y+P.Y0)*R2);return (.5-Math.log((1+s)/(1-s))/(4*Math.PI))*S-o.y};
+ const buck=new Map(),vis=[];let nv=0;
+ for(let i=0;i<P.n;i++){const j=i*4;if(P.bb[j]>x1||P.bb[j+2]<x0||P.bb[j+1]>y1||P.bb[j+3]<y0)continue;if(!svc&&P.use[i]===gi)continue;
+  const d=P.dia[i],w=d>=300?3.2:d>=150?2.3:d>=75?1.6:1.1,c=PUC[P.U[P.use[i]]]||'#0ea5e9',k=c+'|'+w;let a=buck.get(k);if(!a)buck.set(k,a=[]);a.push(i);nv++;if(z>=PZ_LBL&&d>0&&(z>=18||P.use[i]!==gi))vis.push(i)}
+ g.lineCap='round';g.lineJoin='round';
+ buck.forEach((a,k)=>{const [c,w]=k.split('|');g.strokeStyle=c;g.lineWidth=+w;g.globalAlpha=.85;g.beginPath();
+  for(const i of a){const s=P.off[i],e=P.off[i+1];g.moveTo(px(P.xy[s*2]),py(P.xy[s*2+1]));for(let q=s+1;q<e;q++)g.lineTo(px(P.xy[q*2]),py(P.xy[q*2+1]))}g.stroke()});
+ g.globalAlpha=1;
+ if(vis.length){const occ=new Set();let nl=0;g.font='bold 11px "Noto Sans KR",sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.9)';
+  for(const i of vis){if(nl>=500)break;const s=P.off[i],e=P.off[i+1],m=s+((e-s)>>1),X=px(P.xy[m*2]),Y=py(P.xy[m*2+1]);if(X<0||Y<0||X>sz.x||Y>sz.y)continue;
+   const ck=Math.floor(X/70)+','+Math.floor(Y/18);if(occ.has(ck))continue;occ.add(ck);const mt=P.M[P.mat[i]]||'',t=(/^(미분류|기타)?$/.test(mt)?'':mt+' ')+P.dia[i];g.strokeText(t,X,Y);g.fillStyle=PUC[P.U[P.use[i]]]||'#0f172a';g.fillText(t,X,Y);nl++}}
+ if(hint)hint.textContent=`🛠 화면 안 관로 ${nv.toLocaleString()}개${svc?'':` · 급수관은 확대 ${PZ_SVC} 이상`}${z>=PZ_LBL?(z>=18?'':' · 급수관 글자는 확대 18 이상'):` · 관경·관종 글자는 확대 ${PZ_LBL} 이상`}`}
+/* 민원 점 팝업: 일지 사진(현장사진 1 → 위치도 → 상세도 → 사진함) 미리보기 */
+async function popPhoto(el){const r=R.find(x=>x.id===el.dataset.id);if(!r)return;const pk=pkOf(r);let d=null;
+ for(const s of ['p1','p2','p3','p4','loc','v1','v2','v3','v4']){d=await pGet(pk+'|'+s);if(d)break}
+ if(!d){const P=await pGet(pk+'|pool');if(P&&P.length)d=P[0].b}
+ if(!d){el.innerHTML='<span style="color:#94a3b8;font-size:11px">일지 사진 없음</span>';return}
+ const src=d instanceof Blob?URL.createObjectURL(d):d;el._u=d instanceof Blob?src:null;el.innerHTML=`<img src="${src}" alt="현장 사진" style="width:220px;height:140px;object-fit:cover;border-radius:6px;margin-top:4px">`}
+
+/* ── 🗺️ 지도 · 좌표 · 소블록 ── */
+let MAP=null,MK=null,PLY=null,POLY=null,PICK=null,HL=null,GEO=false;
+async function mapInit(){if(MAP)return;await need('L');MAP=L.map('map',{preferCanvas:true}).setView([36.02,129.36],11);
+ OSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(MAP);MK=L.layerGroup().addTo(MAP);
+ MAP.on('zoomend',()=>{$('mZl').textContent=MAP.getZoom();if(MOB())drawMk()});
+ MAP.on('popupopen',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.mwPh');if(el&&!el._done){el._done=1;popPhoto(el)}});
+ MAP.on('popupclose',e=>{const el=e.popup.getElement()&&e.popup.getElement().querySelector('.mwPh');if(el){if(el._u)URL.revokeObjectURL(el._u);el._done=0;el._u=null}});
+ if(!BASE)BASE=await pGet('base|v1');baseApply(false);
+ if(POLY){let c=0;R.forEach(r=>{if(r.lat!=null&&!r.blk){blkOne(r);c++}});if(c)save()}
+ MAP.on('click',e=>{if(!PICK)return;const r=R.find(x=>x.id===PICK);PICK=null;$('map').style.cursor='';if(!r)return;r.lat=+e.latlng.lat.toFixed(6);r.lng=+e.latlng.lng.toFixed(6);r.gs='manual';blkOne(r);save();rMap();toast('📌 위치를 지정했습니다.')})}
+/* 민원 점 그리기. 휴대폰은 확대 16 미만에서 가까운 점을 숫자 원(원인별 비율 색)으로 묶음 — 누르면 확대 */
+let MKG=[],MKI={};
+const mkOne=r=>L.circleMarker([r.lat,r.lng],{radius:6,color:r.gs==='ref'?'#1e1b4b':'#fff',weight:r.gs==='ref'?2:1,fillColor:ccOf(r.cause),fillOpacity:.9}).bindPopup(`<b>${esc(r.no)} · ${esc(r.cause)}</b> <span style="color:#64748b">${r.date}</span><br>${esc(r.addr)}<br>${esc(r.memo)}${r.co?'<br>복구: '+esc(r.co):''}${r.blk?'<br>소블록: <b>'+esc(r.blk)+'</b>':''}<br><i style="color:#64748b">위치: ${GSL[r.gs]||'-'}</i><div class="mwPh" data-id="${r.id}"></div><a href="#" class="mwIl" data-id="${r.id}" style="font-size:11px;font-weight:700">🗒️ 일지 열기</a>`);
+function drawMk(){if(!MAP)return;MK.clearLayers();MKI={};const G=MKG||[],z=MAP.getZoom();
+ if(!MOB()||z>=16||G.length<30){G.forEach(r=>{MKI[r.id]=mkOne(r).addTo(MK)});return}
+ const cell=60,cl=new Map();for(const r of G){const p=MAP.project([r.lat,r.lng],z),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=cl.get(k);if(!c)cl.set(k,c={a:[],la:0,ln:0});c.a.push(r);c.la+=r.lat;c.ln+=r.lng}
+ cl.forEach(c=>{const n=c.a.length;if(n===1){const r=c.a[0];MKI[r.id]=mkOne(r).addTo(MK);return}
+  const cnt={};c.a.forEach(r=>{const k=CC[r.cause]?r.cause:'';cnt[k]=(cnt[k]||0)+1});let acc=0;
+  const seg=['누수','미누수','돌발',''].filter(k=>cnt[k]).map(k=>{const a=acc;acc+=cnt[k]/n*360;return `${ccOf(k)} ${a}deg ${acc}deg`}).join(',');
+  const sz=n<10?40:n<100?48:n<1000?56:64;
+  L.marker([c.la/n,c.ln/n],{icon:L.divIcon({className:'mcl',html:`<div style="width:${sz}px;height:${sz}px;background:conic-gradient(${seg})">${n.toLocaleString()}</div>`,iconSize:[sz,sz]})})
+   .on('click',()=>MAP.fitBounds(L.latLngBounds(c.a.map(r=>[r.lat,r.lng])).pad(.2),{maxZoom:17})).addTo(MK)})}
+let FIT=true;
+function rMap(){const L0=fl(),G=L0.filter(r=>r.lat!=null),F=L0.filter(r=>r.lat==null);$('ptitle').textContent='민원 위치 지도 · '+flText();
+ $('bGeo').textContent=`📍 좌표 변환 (미변환 ${R.filter(r=>r.lat==null&&r.gs!=='fail').length}건)`;
+ $('mpLeg').textContent=`표시 ${G.length}건 / 조건 ${L0.length}건 · 민원지점 ${G.filter(r=>r.gs==='ref').length} · 직접 지정 ${G.filter(r=>r.gs==='manual').length} · 주소 검색 ${G.filter(r=>r.gs!=='ref'&&r.gs!=='manual').length}`;refInfo();
+ $('flN').textContent=F.length+'건';$('mFailN').textContent=F.length;
+ $('flB').innerHTML=F.length?F.slice(0,400).map(r=>`<tr class="border-t" data-id="${r.id}"><td class="text-left whitespace-nowrap">${r.date}</td><td class="text-left">${esc(r.no)}</td><td class="text-left"><input class="fa w-full min-w-[220px] px-2 py-1 bg-slate-50 border border-slate-300 rounded text-sm" value="${esc(r.addr)}"></td><td>${r.gs==='fail'?bdg('실패','r'):bdg('미변환','s')}</td><td class="np whitespace-nowrap"><button data-a="re" class="px-2 py-1 rounded border border-slate-300 bg-white text-[11px] font-bold">🔁 재검색</button> <button data-a="pin" class="px-2 py-1 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold">📌 지정</button></td></tr>`).join(''):'<tr><td colspan="5" class="text-center py-4">'+bdg('✔ 모두 좌표 변환됨','e')+'</td></tr>';
+ rBlk(L0);
+ if(!MAP)return;MK.clearLayers();
+ MKG=G;drawMk();
+ if(G.length&&FIT){try{MAP.fitBounds(L.latLngBounds(G.map(r=>[r.lat,r.lng])).pad(.08),{maxZoom:15})}catch(e){}FIT=false}}
+$('flB').addEventListener('input',e=>{const tr=e.target.closest('tr[data-id]');if(tr&&e.target.classList.contains('fa')){const r=R.find(x=>x.id===tr.dataset.id);if(r)r._q=e.target.value}});
+$('flB').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const r=R.find(x=>x.id===b.closest('tr').dataset.id);if(!r)return;
+ if(b.dataset.a==='pin'){await mapInit();shClose();PICK=r.id;$('map').style.cursor='crosshair';$('map').scrollIntoView({behavior:'smooth',block:'center'});toast('지도에서 위치를 클릭하세요.');return}
+ const q=r._q!=null?r._q.trim():r.addr;if(q&&q!==r.addr){r.addr=q;delete r._q;r._=calc(r)}geoRun([r])};
+/* 주소 정제: 괄호·슬래시 뒤 제거, "마산1리"→"마산리", 리·동 뒤 번지 띄우기, 포항시 접두 */
+function qOf(a){let s=String(a||'').normalize('NFKC').split(/[\/,]/)[0].replace(/\([^)]*\)/g,' ').replace(/([가-힣])\d+(리|동)(?![가-힣])/g,'$1$2').replace(/(\d)\s*번지/g,'$1').replace(/(\d+)\s*-\s*(\d+)/g,'$1-$2').replace(/([가-힣](?:리|동|가))(\d)/g,'$1 $2').replace(/\s+/g,' ').trim();
+ return /포항/.test(s)?s:'경상북도 포항시 '+s}
+async function gas(op,items){const u=CFG.gas.trim();if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(u))throw new Error('⚙️ 설정에 Apps Script 웹앱 주소(https://script.google.com/macros/s/…/exec)를 입력하세요.');
+ const r=await fetch(u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({op,items})}).catch(()=>{throw new Error('Apps Script 웹앱에 연결할 수 없습니다. 주소와 배포 설정(액세스: 모든 사용자)을 확인하세요.')});
+ const j=await r.json();if(j.error)throw new Error(j.error);return j.results||[]}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));let osmLast=0;
+async function osm(q){const w=osmLast+1100-Date.now();if(w>0)await sleep(w);osmLast=Date.now();const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q='+encodeURIComponent(q)).catch(()=>{throw new Error('OSM 서버에 연결할 수 없습니다.')});const d=await r.json();return d[0]?{lat:+d[0].lat,lng:+d[0].lon}:null}
+async function geoRun(list){if(GEO)return toast('좌표 변환이 진행 중입니다.');if(!list.length)return toast('변환할 주소가 없습니다.');GEO=true;let ok=0,fail=0;const msg=$('geoMsg');
+ try{await mapInit();
+  if(CFG.mode==='gas'){for(let i=0;i<list.length;i+=20){const B=list.slice(i,i+20),Q=B.map(r=>qOf(r.addr));msg.textContent=`⏳ ${i}/${list.length} 변환 중…`;
+    const A=await gas('address',Q);const miss=[];B.forEach((r,j)=>{const d=A[j];if(d&&d[0]){r.lat=+(+d[0].y).toFixed(6);r.lng=+(+d[0].x).toFixed(6);r.gs='ok';ok++}else miss.push(j)});
+    if(miss.length){const K=await gas('keyword',miss.map(j=>Q[j]));miss.forEach((j,t)=>{const r=B[j],d=(K[t]||[]).find(x=>/포항/.test(x.address_name||''));if(d){r.lat=+(+d.y).toFixed(6);r.lng=+(+d.x).toFixed(6);r.gs='ok';ok++}else{r.gs='fail';fail++}})}
+    B.forEach(blkOne);save()}}
+  else{for(let i=0;i<list.length;i++){const r=list[i];msg.textContent=`⏳ ${i}/${list.length} 변환 중 (OSM은 1초에 1건)…`;const p=await osm(qOf(r.addr));if(p){r.lat=+p.lat.toFixed(6);r.lng=+p.lng.toFixed(6);r.gs='ok';ok++}else{r.gs='fail';fail++}blkOne(r);if(i%10===9)save()}save()}
+  msg.textContent=`✔ 성공 ${ok}건 · 실패 ${fail}건`;FIT=true}
+ catch(e){msg.textContent='⚠️ '+e.message;toast('⚠️ '+e.message,6000);save()}
+ GEO=false;rMap()}
+$('bGeo').onclick=()=>geoRun(R.filter(r=>r.lat==null&&r.gs!=='fail'&&r.addr));
+$('bGeoF').onclick=()=>geoRun(R.filter(r=>r.lat==null&&r.gs==='fail'&&r.addr));
+/* ── 📍 민원지점(기준 위치) — 스마트 물길주소 📍 기준 위치 파일과 같은 기준 ──
+   민원 위치 우선순위: ① 민원지점(같은 해 · 같은 접수번호) ② 지도에서 직접 지정 ③ 주소 검색.
+   같은 접수번호를 해마다 다시 쓰므로(긴급7이 2025·2026 모두 있음) 연도|번호로 찾음. 연도를 모르는 점은 다른 해 점이 없을 때만 씀.
+   같은 해 같은 번호가 여러 곳이면 접수날짜가 가장 가까운 점. 접수번호·좌표·접수날짜·연도만 읽고 주소 등 다른 칸은 저장하지 않음.
+   민원지점이 빠지면(지우기·다른 파일) 원래 주소 검색 좌표(g0)로 되돌림 */
+let REF=null,REF_ON=false;const REF_WARN=150;
+const GSL={ref:'민원지점',manual:'직접 지정',ok:'주소 검색'};
+const refK=(y,c)=>(+y||0)+'|'+c;
+const dM=(a,b,c,d)=>Math.hypot((d-b)*111320*Math.cos(36.2*Math.PI/180),(c-a)*110574);
+function refPickIn(E,r){const c=noKey(r.no);if(!E||!c)return null;const A=E.get(refK(r.date.slice(0,4),c))||E.get(refK(0,c));if(!A||!A.length)return null;if(A.length===1)return A[0];
+ const t=Date.UTC(+r.date.slice(0,4),+r.date.slice(5,7)-1,+r.date.slice(8));let b=A[0],bd=Infinity;for(const p of A)if(p[2]!=null&&Math.abs(p[2]-t)<bd){bd=Math.abs(p[2]-t);b=p}return b}
+function refBlk(r){if(POLY)blkOne(r);else delete r.blk}
+function refApply(){if(!REF_ON)return 0;let n=0;const E=REF&&REF.ent;
+ for(const r of R){const p=refPickIn(E,r);
+  if(p){const la=+(+p[0]).toFixed(6),ln=+(+p[1]).toFixed(6);if(r.gs!=='ref')r.g0=r.lat!=null?{lat:r.lat,lng:r.lng,gs:r.gs}:null;
+   if(r.gs!=='ref'||r.lat!==la||r.lng!==ln){r.lat=la;r.lng=ln;r.gs='ref';refBlk(r);n++}}
+  else if(r.gs==='ref'){const g=r.g0;if(g&&g.lat!=null){r.lat=g.lat;r.lng=g.lng;r.gs=g.gs}else{delete r.lat;delete r.lng;delete r.gs}delete r.g0;refBlk(r);n++}}
+ return n}
+/* 파일 → [{y,c,la,ln,d}] : SHP ZIP(점, 폴더·파일 이름의 2025년 = 연도) 또는 엑셀·CSV(첫 시트) */
+async function refParse(f){const out=[],cnt={rows:0,noCode:0,bad:0,noYr:0};
+ try{await need('proj4');[['EPSG:5179','+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs'],['EPSG:5185','+proj=tmerc +lat_0=38 +lon_0=125 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs'],['EPSG:5186','+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs'],['EPSG:5187','+proj=tmerc +lat_0=38 +lon_0=129 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs']].forEach(d=>proj4.defs(d[0],d[1]))}catch(_){}
+ const inKR=(la,ln)=>la>32.5&&la<39&&ln>124&&ln<132.5,inPH=(la,ln)=>la>35.7&&la<36.5&&ln>128.8&&ln<129.8;
+ const toLL=(x,y)=>{x=+x;y=+y;if(!isFinite(x)||!isFinite(y)||(!x&&!y))return null;if(Math.abs(x)<=180&&Math.abs(y)<=90)return inKR(y,x)?[y,x]:inKR(x,y)?[x,y]:null;
+  if(typeof proj4==='undefined')return null;let fb=null;for(const c of ['EPSG:5186','EPSG:5187','EPSG:5179','EPSG:5185']){try{const q=proj4(c,'EPSG:4326',[x,y]);if(inPH(q[1],q[0]))return [q[1],q[0]];if(!fb&&inKR(q[1],q[0]))fb=[q[1],q[0]]}catch(_){}}return fb};
+ const fyr=t=>{t=String(t||'').normalize('NFC');const x=/(20\d\d)\s*년/.exec(t)||/(?:^|[^\d])(20\d\d)(?:[^\d]|$)/.exec(t);return x?+x[1]:0};
+ const kOf=(ks,re)=>ks.find(k=>re.test(String(k).normalize('NFC').replace(/\s/g,'')));
+ const dU=v=>{if(v instanceof Date&&!isNaN(v))return Date.UTC(v.getFullYear(),v.getMonth(),v.getDate());if(typeof v==='number'&&v>20000&&v<80000)return Math.round((v-25569)*864e5);
+  let t=String(v??'').trim();if(/^\d{8}$/.test(t)){if(t==='00000000')return null;t=t.slice(0,4)+'-'+t.slice(4,6)+'-'+t.slice(6)}const x=/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(t);if(!x)return null;const y=+x[1];return y>=2000&&y<=2100?Date.UTC(y,+x[2]-1,+x[3]):null};
+ const row=(o,ks,ll,fy)=>{cnt.rows++;const kc=kOf(ks,/^(접수번|접수no|민원번호)/i);let c='';
+  if(kc){const v=o[kc],k=typeof v==='number'?String(Math.round(v)):noKey(v);if(k&&/\d$/.test(k))c=k}
+  if(!c)for(const v of Object.values(o)){const x=/(긴급)\s*[-_#.:]?\s*(\d{1,7})/.exec(String(v??'').normalize('NFC'));if(x){c=x[1]+(+x[2]);break}}
+  if(!c){cnt.noCode++;return}if(!ll){cnt.bad++;return}
+  const kd=kOf(ks,/^(접수날|접수일)/),d=kd?dU(o[kd]):null,ky=kOf(ks,/^(연도|년도)$/);
+  const y=fy||(d!=null?new Date(d).getUTCFullYear():0)||(ky?(+String(o[ky]).slice(0,4)||0):0);if(!y)cnt.noYr++;
+  out.push({y,c,la:+ll[0].toFixed(7),ln:+ll[1].toFixed(7),d})};
+ const buf=await f.arrayBuffer();
+ if(/\.zip$/i.test(f.name)){await need('shp');const gj=await shp(buf);
+  for(const fc of (Array.isArray(gj)?gj:[gj])){const fy=fyr(fc.fileName)||fyr(f.name);
+   for(const ft of fc.features||[]){const g=ft.geometry,o=ft.properties||{};let p=null;
+    if(g&&g.coordinates){p=g.type==='Point'?g.coordinates:null;if(!p){let a=g.coordinates;while(Array.isArray(a[0]))a=a[0];p=a}}
+    row(o,Object.keys(o),p&&toLL(p[0],p[1]),fy)}}}
+ else{await need('XLSX');const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true}),js=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+  const ks=js.length?Object.keys(js[0]):[],fk=re=>kOf(ks,re),fy=fyr(f.name);
+  const kLa=fk(/^(위도|lat|latitude)$/i),kLn=fk(/^(경도|lon|lng|long|longitude)$/i),kX=fk(/^(x|x좌표|xcoord|좌표x|tm_x)$/i),kY=fk(/^(y|y좌표|ycoord|좌표y|tm_y)$/i);
+  if(!(kLa&&kLn)&&!(kX&&kY))throw new Error('좌표 열을 찾지 못했습니다. 머리글을 위도·경도 또는 X·Y로 맞춰 주세요.');
+  for(const r of js)row(r,ks,kLa&&kLn?toLL(r[kLn],r[kLa]):toLL(r[kX],r[kY]),fy)}
+ return {out,cnt}}
+/* 미리보기 → 반영. 같은 해는 새 파일로 바꾸고 다른 해는 그대로 둠(해마다 따로 올려도 됨) */
+async function refLoad(f){const msg=$('geoMsg');msg.textContent='⏳ 민원지점 파일 읽는 중…';
+ try{const {out,cnt}=await refParse(f);
+  if(!out.length)throw new Error(`접수번호가 든 위치를 찾지 못했습니다 (읽은 ${cnt.rows.toLocaleString()}건 · 번호 없음 ${cnt.noCode.toLocaleString()} · 좌표 없음 ${cnt.bad.toLocaleString()})`);
+  const ys=new Set(out.map(e=>e.y)),nw=new Map();if(REF)REF.ent.forEach((a,k)=>{if(!ys.has(+k.split('|')[0]||0))nw.set(k,a.map(p=>p.slice()))});
+  const byY=new Map();let dup=0;
+  for(const e of out){const k=refK(e.y,e.c);let a=nw.get(k);if(!a)nw.set(k,a=[]);if(a.some(p=>Math.abs(p[0]-e.la)<2e-5&&Math.abs(p[1]-e.ln)<2e-5))continue;if(a.length)dup++;a.push([e.la,e.ln,e.d]);byY.set(e.y,(byY.get(e.y)||0)+1)}
+  const yl=[...byY].sort((a,b)=>a[0]-b[0]).map(([y,n])=>`${y?y+'년':'연도 모름'} ${n.toLocaleString()}곳`).join(' · ');
+  let on=0,mv=0,gain=0,lost=0,far=0;
+  for(const r of R){const p=refPickIn(nw,r),cur=r.lat!=null?[r.lat,r.lng]:null;if(p){on++;if(!cur)gain++;else if(dM(cur[0],cur[1],p[0],p[1])>30)mv++;const g=r.gs==='ref'?r.g0:(cur?{lat:cur[0],lng:cur[1]}:null);if(g&&g.lat!=null&&dM(g.lat,g.lng,p[0],p[1])>REF_WARN)far++}else if(r.gs==='ref')lost++}
+  const yrs=[...new Set(R.map(r=>r.date.slice(0,4)))].sort(),noRef=yrs.filter(y=>![...byY.keys()].includes(+y)&&!(REF&&[...REF.ent.keys()].some(k=>k.startsWith(y+'|'))));
+  msg.textContent='';
+  modal(`<h3 class="font-bold text-sm mb-1">📍 민원지점(기준 위치) 미리보기</h3><p class="text-[11px] text-slate-500 mb-3">${esc(f.name)} — ${yl}${cnt.noCode?` · 번호 없는 행 ${cnt.noCode.toLocaleString()}`:''}${cnt.bad?` · 좌표 없는 점 ${cnt.bad.toLocaleString()}`:''}${dup?` · 같은 해 같은 번호 ${dup}곳`:''}</p>
+   <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">민원지점에 놓이는 민원</p><p class="text-xl font-black text-indigo-600">${on.toLocaleString()}<span class="text-xs font-bold text-slate-500"> / ${R.length.toLocaleString()}건</span></p></div>
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">위치가 새로 생김 · 30m 넘게 옮김</p><p class="text-xl font-black text-emerald-600">${gain.toLocaleString()} · ${mv.toLocaleString()}</p></div>
+    <div class="rounded-xl bg-slate-50 p-2"><p class="text-[11px] text-slate-500">주소 검색과 ${REF_WARN}m 넘게 차이</p><p class="text-xl font-black ${far?'text-amber-600':'text-slate-800'}">${far.toLocaleString()}건</p></div></div>
+   ${cnt.noYr?`<p class="text-[11px] text-amber-700">⚠️ 연도를 모르는 점 ${cnt.noYr.toLocaleString()}곳 — 같은 번호의 다른 해 점이 없을 때만 씁니다. 파일·폴더 이름에 2025년처럼 연도를 넣으면 정확합니다.</p>`:''}
+   ${noRef.length?`<p class="text-[11px] text-slate-500">민원지점이 없는 해: ${noRef.join(', ')}년 — 그 해 민원은 직접 지정·주소 검색 위치를 그대로 씁니다.</p>`:''}
+   ${lost?`<p class="text-[11px] text-slate-500">민원지점이 빠지는 민원 ${lost.toLocaleString()}건은 원래 주소 검색 위치로 돌아갑니다.</p>`:''}
+   <p class="text-[11px] text-slate-500 mt-2">${REF_WARN}m 넘게 차이 나는 건은 🧪 자료 점검에 "위치 확인"으로 올립니다(접수번호·연도·주소 오기 후보이며 확정이 아님). 민원지점 파일은 이 브라우저에만 저장되고 🗂 백업에는 들어가지 않습니다.</p>
+   <div class="flex gap-2 mt-3"><button id="refGo" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold py-2">✔ 반영</button><button data-x class="flex-1 rounded-lg border border-slate-300 bg-white text-xs font-bold py-2">취소</button></div>`);
+  $('refGo').onclick=async()=>{mClose();REF={file:f.name,at:Date.now(),ent:nw};REF_ON=true;await pSet('ref|v1',{file:REF.file,at:REF.at,ent:[...nw]});FIT=true;refresh();
+   toast(`📍 민원지점 반영 — 민원 ${on.toLocaleString()}건을 기준 위치에 놓았습니다.`,5000)}}
+ catch(e){msg.textContent='⚠️ '+e.message;toast('⚠️ '+e.message,6000)}}
+function refInfo(){const el=$('refInfo');if(!el)return;
+ if(!REF){el.innerHTML='📍 민원지점: 없음 — 물길주소에서 쓰는 민원지점.zip(기준 위치 파일)을 넣으면 같은 해 같은 접수번호 민원을 그 위치에 놓습니다.';return}
+ const yc=new Map();REF.ent.forEach((a,k)=>{const y=+k.split('|')[0]||0;yc.set(y,(yc.get(y)||0)+a.length)});
+ el.innerHTML=`📍 민원지점 ${esc(REF.file)} (${new Date(REF.at).toLocaleDateString('ko-KR')}) · ${[...yc].sort((a,b)=>a[0]-b[0]).map(([y,n])=>`${y?y+'년':'연도 모름'} ${n.toLocaleString()}곳`).join(' · ')} · 민원 ${R.filter(r=>r.gs==='ref').length.toLocaleString()}건에 사용 <button id="bRefClr" class="ml-1 px-1.5 rounded border border-red-300 text-red-600 bg-white">지우기</button>`;
+ $('bRefClr').onclick=async()=>{if(!confirm('민원지점(기준 위치)을 지울까요? 민원지점에 놓였던 민원은 원래 주소 검색 위치로 돌아갑니다.'))return;REF=null;await pSet('ref|v1',null);refresh();toast('민원지점을 지웠습니다.')}}
+$('fRef').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)refLoad(f)};
+/* 소블록 SHP */
+function pip(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c}return c}
+function blkOne(r){if(!POLY||r.lat==null)return;const f=$('shpF').value;let hit=null;for(const p of POLY){if(r.lng<p.b[0]||r.lng>p.b[2]||r.lat<p.b[1]||r.lat>p.b[3])continue;if(p.P.some(pg=>pip(r.lng,r.lat,pg[0])&&!pg.slice(1).some(h=>pip(r.lng,r.lat,h)))){hit=p.f.properties[f];break}}r.blk=hit==null?'(블록 밖)':String(hit)}
+function blkAll(){R.forEach(blkOne);save()}
+$('fShp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;$('geoMsg').textContent='⏳ SHP 읽는 중…';
+ try{await Promise.all([need('shp'),mapInit()]);let gj=await shp(await f.arrayBuffer());if(Array.isArray(gj))gj={features:gj.flatMap(x=>x.features)};
+  const fs=gj.features.filter(x=>x.geometry&&/Polygon/.test(x.geometry.type));if(!fs.length)throw new Error('폴리곤(면) 도형이 없습니다.');
+  POLY=fs.map(x=>{const P=x.geometry.type==='Polygon'?[x.geometry.coordinates]:x.geometry.coordinates;let b=[1e9,1e9,-1e9,-1e9];P.forEach(pg=>pg[0].forEach(([X,Y])=>{b=[Math.min(b[0],X),Math.min(b[1],Y),Math.max(b[2],X),Math.max(b[3],Y)]}));return {f:x,P,b}});
+  if(Math.abs(POLY[0].b[0])>180)throw new Error('좌표계 정보(.prj)가 없어 위경도로 바꿀 수 없습니다. .prj가 들어 있는 ZIP을 첨부하세요.');
+  const keys=Object.keys(fs[0].properties||{}),def=keys.find(k=>/^BLK_NM$/i.test(k))||keys.find(k=>/BLK|블록/i.test(k))||keys[0];
+  $('shpF').innerHTML=keys.map(k=>`<option>${esc(k)}</option>`).join('');$('shpF').value=def;$('shpF').classList.remove('hidden');
+  if(PLY)PLY.remove();PLY=L.geoJSON({type:'FeatureCollection',features:fs},{style:{color:'#4f46e5',weight:1.2,fillOpacity:.05},onEachFeature:(ft,ly)=>ly.bindTooltip(()=>String(ft.properties[$('shpF').value]??''),{sticky:true})}).addTo(MAP);PLY.bringToBack();
+  blkAll();$('geoMsg').textContent=`✔ 소블록 ${fs.length}개 · 필드 ${def}`;rMap()}catch(er){$('geoMsg').textContent='⚠️ '+er.message;toast('⚠️ '+er.message,6000)}};
+$('shpF').onchange=()=>{blkAll();rMap()};
+$('fBase').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)baseLoad(f)};
+$('pShow').onchange=()=>{try{localStorage.setItem('bsst-minwon-pipe',$('pShow').value)}catch(e){}pipeDraw()};
+try{const v=localStorage.getItem('bsst-minwon-pipe');if(v)$('pShow').value=v}catch(e){}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.mwIl');if(!a)return;e.preventDefault();IJ=a.dataset.id;tab('ilji')});
+function rBlk(L0){const B=L0.filter(r=>r.blk);$('cBlk').classList.toggle('hidden',!B.length);if(!B.length)return;
+ const m=new Map();B.forEach(r=>{if(!m.has(r.blk))m.set(r.blk,[]);m.get(r.blk).push(r)});
+ const rows=[...m].sort((a,b)=>b[1].filter(r=>r.cause==='누수').length-a[1].filter(r=>r.cause==='누수').length||b[1].length-a[1].length);
+ $('blkB').innerHTML=rows.map(([k,L])=>{const lk=L.filter(r=>r.cause==='누수').length,tp=cntBy(L.filter(r=>r.pipe),r=>r.pipe).slice(0,2).map(x=>x[0]+' '+x[1]).join(', ');
+  return `<tr class="border-t hover:bg-indigo-50 cursor-pointer" data-b="${esc(k)}"><td class="text-left font-medium">${esc(k)}</td><td class="font-bold">${L.length}</td><td>${lk>=5?bdg('🚨 '+lk,'r'):lk>=3?bdg('🔍 '+lk,'a'):lk}</td><td>${L.filter(r=>r.cause==='미누수').length}</td><td>${L.filter(r=>r.cause==='돌발').length}</td><td>${L.filter(r=>!['누수','미누수','돌발'].includes(r.cause)).length}</td><td class="text-left text-xs">${esc(tp)}</td></tr>`}).join('')}
+$('blkB').onclick=e=>{const tr=e.target.closest('tr[data-b]');if(!tr||!PLY)return;const b=tr.dataset.b,f=$('shpF').value;if(HL)PLY.resetStyle(HL);HL=null;PLY.eachLayer(ly=>{if(String(ly.feature.properties[f])===b){HL=ly;ly.setStyle({color:'#dc2626',weight:3,fillOpacity:.15});MAP.fitBounds(ly.getBounds(),{maxZoom:16})}});$('map').scrollIntoView({behavior:'smooth',block:'center'})};
+
+/* ── 설정 ── */
+$('cGas').value=CFG.gas||'';$('cMode').value=CFG.mode||'gas';
+function bindCfg(){$('cGas').onchange=()=>{CFG.gas=$('cGas').value.trim();save()};$('cMode').onchange=()=>{CFG.mode=$('cMode').value;save()};$('cHol').onchange=()=>{CFG.hol=$('cHol').value;save();refresh()}}
+
+/* ── 탭 · 전체 갱신 ── */
+const TABS=[['dash','📊 대시보드','민원 현황 대시보드'],['list','📋 민원대장','민원대장 리스트'],['map','🗺️ 지도·블록','민원 위치 지도'],['sum','📑 주간 총괄','민원 대응 주간 총괄'],['ilji','🗒️ 대응관리 일지',''],['rec','📝 업무수행기록부',''],['chk','🧪 자료 점검','민원대장 자료 점검']];
+$('tabs').innerHTML=TABS.map(([k,n])=>`<button class="tbtn" data-t="${k}">${n}</button>`).join('');
+$('tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b)tab(b.dataset.t)};
+function tab(k){CUR=k;MSIDE=false;shClose();fsOff();TABS.forEach(([t])=>$('tb_'+t).classList.toggle('hidden',t!==k));document.querySelectorAll('#tabs [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===k));
+ $('band').classList.toggle('hidden',!['dash','list','map','chk'].includes(k));try{localStorage.setItem('bsst-minwon-tab',k)}catch(e){}
+ mMode();renderTab();if(k==='map')mapInit().then(()=>{setTimeout(()=>MAP.invalidateSize(),50);rMap()}).catch(e=>{$('geoMsg').textContent='⚠️ '+e.message})}
+function renderTab(){const t=TABS.find(x=>x[0]===CUR);$('ptitle').style.display='';$('ptitle').textContent=(t[2]||t[1])+(['dash','list','chk'].includes(CUR)&&R.length?' · '+flText():'');
+ const none=!R.length&&CUR!=='rec';$('empty').classList.toggle('hidden',!none);
+ ({dash:rDash,list:rList,map:rMap,sum:rSum,ilji:rIlji,rec:rRec,chk:rChk})[CUR]();mSync()}
+function refresh(){if(refApply())save();HOL=new Set(String(CFG.hol||'').split(/[,\s]+/).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)));R.sort(cmpR);R.forEach(r=>r._=calc(r));pkSync();perOpts();
+ $('dlCo').innerHTML=[...new Set(R.map(r=>r.co).filter(Boolean).concat(CO.map(c=>c.co)))].map(x=>`<option value="${esc(x)}">`).join('');
+ $('dlAg').innerHTML=[...new Set(R.flatMap(r=>String(r.agent||'').split(',')).map(s=>s.trim()).filter(Boolean))].map(x=>`<option value="${esc(x)}">`).join('');
+ $('coN').textContent=CO.length;$('cHol').value=CFG.hol||'';
+ $('st').textContent=R.length?`${R.length.toLocaleString()}건 · ~${R[R.length-1].date}`:'자료 없음';$('dot').className='w-2.5 h-2.5 rounded-full inline-block '+(R.length?'bg-emerald-400':'bg-slate-300');
+ renderTab()}
+
+/* ── 📱 휴대폰 화면: 지도 첫 화면 · 아래 알약 메뉴 · 지도 위 버튼 ── */
+$('mNav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-t="${k}">${n}</button>`).join('')+'<button type="button" data-t="side">✍️ 입력·자료</button>';
+$('mNav').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;if(b.dataset.t==='side'){shClose();MSIDE=true;mMode();scrollTo(0,0)}else tab(b.dataset.t)};
+function mMode(){const m=MOB(),h=document.documentElement;h.classList.toggle('mm',m&&CUR==='map'&&!MSIDE);h.classList.toggle('mside',m&&MSIDE);
+ document.querySelectorAll('#mNav [data-t]').forEach(b=>b.classList.toggle('on',MSIDE?b.dataset.t==='side':b.dataset.t===CUR));
+ const on=document.querySelector('#mNav .on');if(on&&m)on.scrollIntoView({block:'nearest',inline:'center'});
+ if(!m)shClose();if(MAP)setTimeout(()=>{MAP.invalidateSize();drawMk()},60)}
+try{MQ.addEventListener('change',mMode)}catch(e){MQ.addListener&&MQ.addListener(mMode)}
+const MSEL=[['mPer','fPer'],['mCause','fCause'],['mGu','fGu']];
+function mSync(){MSEL.forEach(([m,f])=>{if($(m).innerHTML!==$(f).innerHTML)$(m).innerHTML=$(f).innerHTML;$(m).value=$(f).value})}
+MSEL.forEach(([m,f])=>$(m).onchange=()=>{$(f).value=$(m).value;FIT=true;renderTab()});
+$('mZi').onclick=()=>MAP&&MAP.zoomIn();$('mZo').onclick=()=>MAP&&MAP.zoomOut();
+$('mPh').onclick=()=>$('fMw').click();
+$('mNew').onclick=()=>{newForm();shClose();MSIDE=true;mMode();scrollTo(0,0)};
+let ME=null;$('mMe').onclick=()=>{if(!navigator.geolocation)return toast('이 기기에서는 위치를 쓸 수 없습니다.');toast('📍 내 위치 찾는 중…');
+ navigator.geolocation.getCurrentPosition(p=>{if(!MAP)return;const ll=[p.coords.latitude,p.coords.longitude];if(ME)ME.remove();ME=L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(MAP);MAP.setView(ll,17);toast('📍 내 위치로 이동했습니다.')},
+  ()=>toast('⚠️ 위치 권한이 없거나 위치를 찾지 못했습니다.',5000),{enableHighAccuracy:true,timeout:10000})};
+/* 아래에서 올라오는 창: 주소찾기 · 소블록 현황 · 미변환 건 · 지도 도구 (기존 카드를 잠시 옮겨 와서 그대로 씀) */
+const MSH={};let MSV=[];
+function shMove(id){const el=$(id);if(!MSH[id]){MSH[id]=document.createComment(id);el.parentNode.insertBefore(MSH[id],el)}$('mSb').appendChild(el);MSV.push(id)}
+function shClose(){MSV.forEach(id=>{const ph=MSH[id];ph.parentNode.insertBefore($(id),ph.nextSibling)});MSV=[];$('mSb').innerHTML='';$('mSheet').classList.add('hidden');$('mBk').classList.add('hidden')}
+function shOpen(k){shClose();const b=$('mSb');
+ if(k==='find'){$('mSt').textContent='🔍 주소·접수번호 찾기';b.innerHTML='<input id="mQ" class="inp" placeholder="주소·접수번호·업체·내용" autocomplete="off"><p class="text-[11px] text-slate-500 mt-1">지금 조건(기간·원인·구)의 민원에서 찾습니다. 누르면 그 위치로 이동합니다.</p><div id="mQr" class="mt-2 flex flex-col"></div>';
+  const go=()=>{const q=$('mQ').value.trim().replace(/\s/g,'');const L0=q?fl().filter(r=>[r.addr,r.no,r.co,r.memo,r.blk].join('|').replace(/\s/g,'').includes(q)).slice(0,80):[];
+   $('mQr').innerHTML=q?(L0.length?L0.map(r=>`<button type="button" data-id="${r.id}" class="text-left border-t py-2"><b>${esc(r.no)}</b> ${cBdg(r.cause)} <span class="text-[11px] text-slate-500">${r.date}</span><br><span class="text-sm">${esc(r.addr)}</span>${r.lat==null?' <span class="text-[11px] text-amber-600">위치 없음</span>':''}</button>`).join(''):'<p class="text-sm text-slate-500">찾는 민원이 없습니다.</p>'):''};
+  $('mQ').oninput=go;$('mQr').onclick=e=>{const t=e.target.closest('[data-id]');if(!t)return;const r=R.find(x=>x.id===t.dataset.id);if(!r)return;
+   if(r.lat==null){toast('위치가 없는 민원입니다. 🧭 미변환에서 재검색하거나 지정하세요.');return}shClose();MAP.setView([r.lat,r.lng],17,{animate:false});drawMk();MKI[r.id]&&MKI[r.id].openPopup()};
+  setTimeout(()=>$('mQ').focus(),50)}
+ else if(k==='blk'){$('mSt').textContent='🧩 소블록별 민원 현황';if($('cBlk').classList.contains('hidden'))b.innerHTML='<p class="text-sm text-slate-500 py-2">🛠 지도 도구에서 물길주소 기준자료나 소블록 SHP를 넣으면 보입니다.</p>';else shMove('cBlk')}
+ else if(k==='fail'){$('mSt').textContent='🧭 좌표 미변환 · 실패 건';shMove('cFail')}
+ else{$('mSt').textContent='🛠 지도 도구';b.insertAdjacentHTML('beforeend',`<p class="text-[11px] text-slate-500 mb-2">${esc($('mpLeg').textContent)}</p>`);shMove('mapTools');shMove('mapInfo')}
+ $('mSheet').classList.remove('hidden');$('mBk').classList.remove('hidden')}
+$('mTop').addEventListener('click',e=>{const b=e.target.closest('[data-sh]');if(b)shOpen(b.dataset.sh)});
+$('mSx').onclick=shClose;$('mBk').onclick=shClose;
+loadLS();bindCfg();$('cGas').value=CFG.gas||'';$('cMode').value=CFG.mode||'gas';newForm();
+let t0='dash';try{t0=localStorage.getItem('bsst-minwon-tab')||'dash'}catch(e){}if(!TABS.some(x=>x[0]===t0))t0='dash';if(MOB())t0='map';
+HOL=new Set();R.forEach(r=>r._=calc(r));CUR=t0;refresh();tab(t0);
+pGet('ref|v1').then(o=>{if(o&&Array.isArray(o.ent))REF={file:o.file||'',at:o.at||0,ent:new Map(o.ent)};REF_ON=true;refresh()}).catch(()=>{REF_ON=true});
+</script>
+</body>
+</html>
