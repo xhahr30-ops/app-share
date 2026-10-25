@@ -447,6 +447,10 @@ progress{width:100%;height:10px;accent-color:#4f46e5}
 .q-ok{color:var(--em);font-weight:700}.q-mid{color:var(--am);font-weight:700}.q-bad{color:var(--rd);font-weight:700}
 .pleg{background:var(--card);color:var(--ink);padding:6px 9px;border-radius:8px;box-shadow:0 1px 4px #0003;font-size:11.5px;line-height:1.55;max-width:210px}
 .pleg i{display:inline-block;width:16px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}.pleg small{color:var(--mute)}
+.pleg .lbr{cursor:pointer;border-radius:4px}.pleg .lbr:hover{background:var(--line)}
+.pleg .lbn{display:flex;flex-wrap:wrap;gap:3px;max-height:140px;overflow:auto;margin:2px 0 4px 21px}
+.pleg .lbn button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:5px;padding:1px 6px;font-size:11px;cursor:pointer}
+.pleg .lbn button.on{background:#f59e0b;color:#fff;border-color:#f59e0b}
 .rthumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:8px}.rthumbs figure{margin:0}.rthumbs img{width:100%;border-radius:8px;border:1px solid var(--line)}.rthumbs figcaption{font-size:11.5px;color:var(--mute)}
 #locReport{display:none}
 @media print{html body.printLoc>*:not(#locReport){display:none!important}html body.printLoc>#locReport{display:block!important}
@@ -1939,7 +1943,7 @@ function initSearch(){
  let pin=null,list=[],sel=-1,busy=false;
  const Ctl=L.Control.extend({options:{position:'topright'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-control gsrch');
-  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 관리번호 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
+  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
   L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});
  const ctl=new Ctl();map.addControl(ctl);
  const box=ctl.getContainer(),corner=box.parentNode;corner.insertBefore(box,corner.firstChild); // 레이어 아이콘보다 위
@@ -1947,9 +1951,10 @@ function initSearch(){
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
  tog.onclick=()=>{const m=!box.classList.contains('min');setMin(m);if(!m)inp.focus()};
- inp.oninput=()=>{clr.hidden=!inp.value};clr.onclick=()=>{inp.value='';clr.hidden=true;lst.innerHTML='';list=[];if(pin){map.removeLayer(pin);pin=null}inp.focus()};
+ inp.oninput=()=>{clr.hidden=!inp.value;const b=inBlocks(inp.value);sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk')){lst.innerHTML='';list=[]}};
+ clr.onclick=()=>{inp.value='';clr.hidden=true;lst.innerHTML='';list=[];if(pin){map.removeLayer(pin);pin=null}if(typeof hlBlock==='function')hlBlock(null);inp.focus()};
  const msg=t=>{lst.innerHTML=`<div class="gsm">${t}</div>`;list=[]};
- const TAG={row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
+ const TAG={blk:['블록','#15803d'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
  function show(){lst.innerHTML=list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
  lst.onclick=e=>{const b=e.target.closest('.gsi');if(b)go(list[+b.dataset.k])};
  inp.onkeydown=e=>{if(!list.length)return;
@@ -1957,6 +1962,7 @@ function initSearch(){
   else if(e.key==='Enter'&&sel>=0){e.preventDefault();go(list[sel])}
   else if(e.key==='Escape'){lst.innerHTML='';list=[]}};
  function go(r){if(!r)return;sel=list.indexOf(r);show();
+  if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);return}
   if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);return}
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
@@ -1964,6 +1970,19 @@ function initSearch(){
   pin.bindPopup(`<div style="font-size:12.5px;line-height:1.5"><b>📍 ${esc(r.t)}</b>${r.s?`<br><span style="color:#64748b">${esc(r.s)}</span>`:''}<br>소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy} <a href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${xy}');this.textContent='복사됨';return false">복사</a><br><a href="#" onclick="window.__gsClear&&window.__gsClear();return false">핀 지우기</a></div>`,{maxWidth:300}).openPopup();
   map.setView([r.lat,r.lng],Math.max(map.getZoom(),17))}
  window.__gsClear=()=>{if(pin){map.removeLayer(pin);pin=null}};
+ /* 블록명 찾기: 소블록 SHP 이름 + 별칭표(BV01,BV02=블루밸리) + 중블록·대블록 이름. 띄어쓰기·대소문자 무시, 같음 > 앞부분 > 포함 */
+ function inBlocks(q){const n=nsp(q).toUpperCase();if(!n||!poly)return [];const fld=$('blkField').value,K=v=>nsp(v).toUpperCase();
+  const names=new Map(),grp=new Map();poly.features.forEach(g=>{const P=g.properties,nm=String(P[fld]??'').trim();if(!nm)return;names.set(K(nm),nm);
+   ['중블록명','대블록명'].forEach(c=>{const v=String(P[c]??'').trim();if(v&&K(v)!==K(nm)){const k=c+'|'+v;if(!grp.has(k))grp.set(k,{c,v,s:new Set()});grp.get(k).s.add(nm)}})});
+  const rank=k=>k===n?0:k.startsWith(n)?1:k.includes(n)?2:-1,seen=new Set(),res=[];
+  const add=(nms,t,s,r)=>{const key=nms.join('|');if(seen.has(key))return;seen.add(key);res.push({k:'blk',names:nms,t,s,r,ex:r===0})};
+  names.forEach((nm,k)=>{const r=rank(k);if(r>=0)add([nm],nm,'소블록 · 경계로 이동',r)});
+  const AG=new Map();aliasMap().forEach((to,a)=>{if(!AG.has(to))AG.set(to,[]);AG.get(to).push(a)});
+  AG.forEach((as,to)=>{const tn=names.get(K(to)),hit=as.filter(x=>names.has(K(x))).map(x=>names.get(K(x)));
+   as.forEach(a=>{const r=rank(K(a));if(r>=0&&tn&&!names.has(K(a)))add([tn],tn,'별칭 '+a+' → '+tn,r)});
+   const r=rank(K(to));if(r>=0&&!tn&&hit.length)add(hit,to,'별칭 · 소블록 '+hit.join(', '),r)});
+  grp.forEach(o=>{const r=rank(K(o.v));if(r>=0)add([...o.s],o.v,o.c.replace('명','')+' · 소블록 '+o.s.size+'개',r)});
+  return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,8)}
  function inRows(q){const n=nsp(q).toLowerCase();if(n.length<2)return [];const exact=[],part=[];
   for(let i=0;i<out.length;i++){const o=out[i];if(!o)continue;const lat=+o['_위도'],lng=+o['_경도'];if(!isFinite(lat)||!isFinite(lng)||(!lat&&!lng))continue;
    const id=[o['관리번호'],o['수용가번호']].map(v=>nsp(v).toLowerCase()),ad=nsp(o['_검색주소']||o['구주소(지번)']).toLowerCase();
@@ -1973,13 +1992,14 @@ function initSearch(){
  async function run(){const q=inp.value.trim();if(!q||busy)return;sel=-1;
   const c=q.match(/^\s*(3[3-9](?:\.\d+)?)\s*[, ]\s*(12[4-9](?:\.\d+)?)\s*$/)||q.match(/^\s*(12[4-9](?:\.\d+)?)\s*[, ]\s*(3[3-9](?:\.\d+)?)\s*$/);
   if(c){const a=+c[1],b=+c[2],lat=a<90?a:b,lng=a<90?b:a;list=[{k:'xy',lat,lng,t:lat.toFixed(6)+', '+lng.toFixed(6),s:'입력한 좌표'}];show();go(list[0]);return}
-  list=inRows(q);
+  const bl=inBlocks(q);if(bl.length&&bl[0].ex){list=bl.concat(inRows(q));show();go(bl[0]);return}
+  list=bl.concat(inRows(q));
   busy=true;btn.disabled=true;btn.textContent='찾는 중…';if(!list.length)msg('검색 중입니다…');
   try{const key=$('kakao').value.trim(),mode=$('gcMode').value,pq=prep(q);
    const p=await addrSearch(pq,key);if(p)list.push({k:'addr',lat:p.lat,lng:p.lng,t:pq,s:'주소 검색 결과'});
    if(mode!=='osm'){const docs=await rawKwDocs(q,key);(docs||[]).slice(0,6).forEach(d=>list.push({k:'place',lat:+d.y,lng:+d.x,t:d.place_name||d.address_name,s:d.road_address_name||d.address_name||''}))}
    if(!list.length)msg('찾은 결과가 없습니다. 시·군·리(동)와 번지까지 넣거나, 번호 붙은 리·동(예: 마산1리)은 번호를 빼고 찾아 보세요.');
-   else{show();if(list.length===1||list[0].k!=='row'&&list.length)go(list[0])}}
+   else{show();if(!bl.length&&(list.length===1||list[0].k!=='row'))go(list[0])}}
   catch(e){if(list.length)show();else msg('⚠️ '+esc(e.message||String(e))+'<br>왼쪽 설정의 <b>주소찾기 설정</b>(변환 방식·키)을 확인하세요.')}
   finally{busy=false;btn.disabled=false;btn.textContent='주소찾기'}}
  f.onsubmit=e=>{e.preventDefault();if(sel>=0&&list[sel]&&inp.value.trim()===inp.dataset.q)return go(list[sel]);inp.dataset.q=inp.value.trim();run()};
@@ -3097,7 +3117,16 @@ function blkColorApply(){if(!polyL||!map||!polyL.setStyle)return;if(BILL.R.lengt
  const by=$('blkColor').value;if(!blkLeg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);return d}});blkLeg=new C();map.addControl(blkLeg)}
  const el=blkLeg.getContainer?blkLeg.getContainer():null;if(!el)return;if(by==='none'||!BILL.R.length||!UI.leg){el.style.display='none';return}el.style.display='';
  const items=by==='grade'?Object.values(B_GR).map(([k,c])=>[k,c]):by==='wy'?[['90% 이상','#16a34a'],['80~90%','#84cc16'],['70~80%','#eab308'],['60~70%','#f97316'],['60% 미만','#dc2626']]:[['5% 미만','#16a34a'],['5~10%','#eab308'],['10~20%','#f97316'],['20% 이상','#dc2626']];
- el.innerHTML=`<b>블록 · ${{grade:'부과 등급',wy:'유수율('+BILL.M[BILL.mi]+')',abn:'현장확인 비율'}[by]}</b>`+items.map(([k,c])=>`<div><i style="background:${c};height:9px"></i>${k}</div>`).join('')}
+ el.innerHTML=`<b>블록 · ${{grade:'부과 등급',wy:'유수율('+BILL.M[BILL.mi]+')',abn:'현장확인 비율'}[by]}</b>`+items.map(([k,c])=>`<div class="lbr" data-c="${c}" title="눌러서 이 색 블록 목록 보기"><i style="background:${c};height:9px"></i>${k} <small>▸</small></div>`).join('');
+ if(!el.dataset.lbn){el.dataset.lbn='1';el.addEventListener('click',blkLegClick)}}
+/* 블록 범례: 색 줄을 누르면 그 색 블록 이름이 펼쳐지고, 이름을 누르면 그 블록으로 이동·강조 */
+function blkLegClick(e){const nb=e.target.closest('.lbn button');if(nb){hlBlock(nb.dataset.n);e.currentTarget.querySelectorAll('.lbn button').forEach(b=>b.classList.toggle('on',b===nb));return}
+ const row=e.target.closest('.lbr');if(!row)return;const nx=row.nextElementSibling,open=nx&&nx.classList.contains('lbn');
+ e.currentTarget.querySelectorAll('.lbn').forEach(x=>x.remove());e.currentTarget.querySelectorAll('.lbr small').forEach(x=>x.textContent='▸');if(open||!poly)return;
+ const fld=$('blkField').value,c=row.dataset.c,S=new Set();poly.features.forEach(f=>{const nm=String(f.properties[fld]??'').trim();if(nm&&blkFillOf(nm)===c)S.add(nm)});
+ const L2=[...S].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})),d=document.createElement('div');d.className='lbn';
+ d.innerHTML=L2.length?L2.map(n=>`<button type="button" data-n="${esc(n)}">${esc(n)}</button>`).join(''):'<small>해당 블록 없음</small>';
+ row.after(d);row.querySelector('small').textContent='▾'}
 function polyPopup(f){const P=f.properties,fld=$('blkField').value,nm=String(P[fld]??'').trim(),s=BILL.BS&&BILL.BS[bNorm(nm)];
  const base=Object.entries(P).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>');if(!s)return base;
  return `<b>${esc(nm)}</b> · ${esc(s.b2||'')}<br>등급 <b style="color:${B_GR[s.gr][1]}">${B_GR[s.gr][0]}</b> (${s.sc.toFixed(1)}점) · 수용가 ${s.n.toLocaleString()}<br>부과량 ${Math.round(s.qm).toLocaleString()}㎥ (${BILL.M[BILL.mi]})${s.dm!=null?` · 전월 ${s.dm>0?'▲':'▼'}${Math.abs(s.dm).toFixed(1)}%`:''}<br>현장확인 ${s.abn.toLocaleString()}명 (${s.pct.toFixed(1)}%)${s.wy?` · 유수율 ${s.wy.v.toFixed(1)}% (${s.wy.m})`:''}<details style="margin-top:4px"><summary>SHP 속성</summary>${base}</details>`}
@@ -3225,7 +3254,7 @@ let hlL=null;
 function hlBlock(name){if(!map)return;if(hlL){map.removeLayer(hlL);hlL=null}
  if(!name)return;const fld=$('blkField').value;
  if(name==='__none'||!poly){const pts=out.filter(o=>!o['_결합블록']&&o['_위도']!=='').map(o=>[o['_위도'],o['_경도']]);if(pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:17});return}
- const fs=poly.features.filter(f=>String(f.properties[fld]??'').trim()===name);if(!fs.length)return;
+ const W=new Set(Array.isArray(name)?name:[name]),fs=poly.features.filter(f=>W.has(String(f.properties[fld]??'').trim()));if(!fs.length)return;
  hlL=L.geoJSON({type:'FeatureCollection',features:fs},{interactive:false,style:{color:'#f59e0b',weight:4,dashArray:'6 4',fill:false}}).addTo(map);
  try{map.fitBounds(hlL.getBounds(),{padding:[30,30],maxZoom:18})}catch(_){}}
 /* ===== 요약 카드 클릭 필터 ===== */
