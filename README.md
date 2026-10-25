@@ -6,5 +6,6 @@
 |---|---|
 | 스마트 물길주소 | https://xhahr30-ops.github.io/app-share/geo-join/ |
 | 웹 관망해석기 (v23) | https://xhahr30-ops.github.io/app-share/pipe-network/ |
+| 민원대장 관리 (긴급누수민원) | https://xhahr30-ops.github.io/app-share/minwon/ |
 
 만든이: 구병순
