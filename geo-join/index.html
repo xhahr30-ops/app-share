@@ -4384,11 +4384,12 @@ function phGroup(){
   const r=m.refOff?null:phRefPick(RI.get(c),m.ts,yh),hit=r&&!r.amb?r:null,y=hit?hit.y:(+m.yr||(m.ts?new Date(m.ts).getFullYear():yh));
   const gk=hit&&hit.y?c+'@'+hit.k+'#'+hit.i:c+'@'+(y||'?')+(m.refOff?'@gps':'');
   let a=cg.get(gk);if(!a)cg.set(gk,a={c,ids:[],r:hit,y,amb:'',ys:null,off:!!m.refOff});a.ids.push(id);if(r&&r.amb&&!a.amb){a.amb=r.amb;a.ys=r.ys}});
- cg.forEach((a,gk)=>{const {c,ids,r}=a;let la=0,ln=0,k=0,ma=0,mn=0,mk=0;for(const id of ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.map){ma+=m.lat;mn+=m.lng;mk++}else{la+=m.lat;ln+=m.lng;k++}}
+ cg.forEach((a,gk)=>{const {c,ids,r}=a;let la=0,ln=0,k=0,ma=0,mn=0,mk=0,ha=0,hn=0,hk=0;for(const id of ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.map){ma+=m.lat;mn+=m.lng;mk++}else if(m.src==='현위치'){ha+=m.lat;hn+=m.lng;hk++}else{la+=m.lat;ln+=m.lng;k++}}
+  if(!k&&hk){la=ha;ln=hn;k=hk;hk=0} /* 현위치(올린 곳 위치)는 사진 GPS가 하나도 없을 때만 사용 */
   let lat=null,lng=null,how='',src='';
   if(r&&r.y){lat=r.la;lng=r.ln;how=`기준 위치 ${r.y}년(${c})`;src='ref'}
   else if(mk){lat=ma/mk;lng=mn/mk;how=`위치도 빨간 점(${c})`;src='map'}else if(r){lat=r.la;lng=r.ln;how=`기준 위치 파일(${c})`;src='ref'}else if(k){lat=la/k;lng=ln/k;how=`같은 번호(${c}) 사진 GPS`;src='gps'}
-  if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&(r.y||!m.map)))inf.set(id,how)}
+  if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&(r.y||!m.map))||(hk&&m.src==='현위치'))inf.set(id,how)}
   groups.push({ids,code:c,gk,yr:a.y||0,rk:r?r.k:'',ri:r?r.i:-1,amb:a.amb,ys:a.ys,off:a.off,lat,lng,ref:src==='map'||src==='ref',src})});
  {const nc=new Map();groups.forEach(g=>{if(g.code)nc.set(g.code,(nc.get(g.code)||0)+1)});groups.forEach(g=>{if(g.code)g.ymul=nc.get(g.code)>1||(RI.get(g.code)||[]).some(e=>e.y&&e.y!==g.yr)})}
  /* 번호도 GPS도 없는 사진 → 파일명이 같은 줄기 또는 10분 안에 찍은 사진의 묶음에 '위치 추정'으로 */
@@ -4502,7 +4503,7 @@ function phSub(g,ids,key){let t0=0,t1=0,memo=false,inf=false,la=0,ln=0,k=0;for(c
 function phView(){const u=PH.per.u;let k=PH.per.k;
  if(u==='all'||!PH.list.length){PH.V={u,k:'*',keys:[],galG:PH.G,gOf:PH.gOf,mapG:PH.G,mOf:PH.gOf,nog:PH.nog,sec:false};return}
  const cnt=new Map(),split=[],of=new Map(),add=(key,n)=>cnt.set(key,(cnt.get(key)||0)+n);
- for(const g of PH.G){const by=new Map();for(const id of g.ids){const key=phPKey(PH.byId.get(id).ts,u);let a=by.get(key);if(!a)by.set(key,a=[]);a.push(id)}
+ for(const g of PH.G){const by=new Map();for(const id of g.ids){const key=phPKey(PH.byId.get(id).ts||g.t0,u); /* 촬영시각 없는 사진(위치도·사진대지)은 같은 묶음의 촬영 시각을 따라감 → 묶음이 기간별로 쪼개지지 않음 */let a=by.get(key);if(!a)by.set(key,a=[]);a.push(id)}
   by.forEach((ids,key)=>{add(key,ids.length);const d=by.size===1?{...g,key}:phSub(g,ids,key);split.push(d);for(const id of ids)of.set(id,d)})}
  for(const id of PH.nog)add(phPKey(PH.byId.get(id).ts,u),1);
  const keys=[...cnt].map(([key,n])=>({key,n,label:phPLabel(key)})).sort((a,b)=>a.key==='none'?1:b.key==='none'?-1:b.key.localeCompare(a.key));
@@ -4535,7 +4536,7 @@ const phYr=g=>g.t0?new Date(g.t0).getFullYear():0;
 const phYC=y=>y?PH_YC[((y-2025)%8+8)%8]:PH_YC0;
 const phColOn=()=>$('phCol').value!=='one',sel0=()=>PH.V&&PH.per.u==='year'?PH.V.k:'';
 function phYrLeg(MG){const on=phColOn()&&$('phShow').value!=='off'&&MG.length>0,cnt=new Map(),sel=sel0();
- if(on)for(const g of PH.G)if(g.lat!=null)for(const id of g.ids){const t=PH.byId.get(id).ts,y=t?new Date(t).getFullYear():0;cnt.set(y,(cnt.get(y)||0)+1)}
+ if(on)for(const g of PH.G)if(g.lat!=null)for(const id of g.ids){const t=PH.byId.get(id).ts||g.t0,y=t?new Date(t).getFullYear():0;cnt.set(y,(cnt.get(y)||0)+1)}
  const ys=[...cnt.keys()].sort((a,b)=>(b||-1)-(a||-1)),key=ys.map(y=>y+':'+cnt.get(y)).join(',')+'|'+sel+'|'+!!UI.leg+'|'+!!PH.legMin;
  if(PH.yrKey===key)return;PH.yrKey=key;
  const lb=y=>y?y+'년':'시각 없음',P=$('phYrLeg');
@@ -4801,7 +4802,7 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
    const m={id,name:f.name,fp:fp||undefined,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
    if(d.dot){m.map=true;m.dot=d.dot;if(wf){const ll=phWorldLL(wf,d.dot[0]*d.w,d.dot[1]*d.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도'}}}
    if(m.lat==null&&dropLL&&(N===1||ALL)){m.lat=+dropLL.lat.toFixed(7);m.lng=+dropLL.lng.toFixed(7);m.src='수동'}
-   if(m.lat==null&&!m.map&&phHereUse(f,m)){const h=await phHere();if(h){m.lat=h.lat;m.lng=h.lng;m.acc=h.acc;m.src='현위치';hereN++}}
+   if(m.lat==null&&!m.map&&!phCodeOf({name:f.name},re)&&phHereUse(f,m)){ /* 분류번호 사진(1880-2.jpg)은 같은 번호 묶음 위치를 따름 → 사무실 현재 위치를 붙이지 않음 */const h=await phHere();if(h){m.lat=h.lat;m.lng=h.lng;m.acc=h.acc;m.src='현위치';hereN++}}
    if(m.lat!=null&&!inKR([m.lng,m.lat]))m.note='국외 좌표 — 위치를 확인하세요';
    if(!m.fp)delete m.fp;
    await idbPut([['ph:'+id,d.big],['pt:'+id,d.th]]);if(PH.byId.has(id)){dup++;return}
