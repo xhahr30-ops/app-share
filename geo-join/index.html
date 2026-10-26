@@ -605,7 +605,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .chgw .chgo .ck{display:flex;gap:4px;align-items:center;font-weight:700;cursor:pointer}
 .chgw .it.go{cursor:pointer}.chgw .it.go:hover{background:var(--ind1)}
 .chgw .it .ic{font-size:18px;flex:none;width:26px;text-align:center}
-.chgw .it .t b{white-space:normal}.chgw .it .t small{display:block}.chgw .it .t small.dt{color:var(--ink);opacity:.8}
+.chgw .it .t b{white-space:normal}.chgw .it .t small{display:block}.chgw .it .t b,.chgw .it .t small{overflow-wrap:anywhere}.chgw .it .t small.dt{color:var(--ink);opacity:.8}
 .chgw .it .gp{flex:none;font-size:15px}
 .chgw .bd{background:#dc2626;color:#fff}
 /* ✨ 새로 받은 사진·시설물 강조: 아이콘 둘레로 퍼지는 링 (아이콘·밸브 방향은 그대로) */
@@ -1917,6 +1917,14 @@ function initFs(){
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);isOn()?off():on()});return d}});
  map.addControl(new Ctl());sync();mapFsToggle=()=>isOn()?off():on();$('mapFsBtn').onclick=mapFsToggle;
  document.addEventListener('fullscreenchange',onChg);document.addEventListener('webkitfullscreenchange',onChg);
+ /* 지도가 브라우저 전체화면(#mapBox)일 때는 그 바깥(body)에 붙은 창이 화면에 안 보임 → 🔔 변경 기록·알림·로드뷰·사진 창 등
+    body 바로 아래의 고정 위치(fixed) 창을 전체화면 안으로 옮겼다가, 전체화면이 끝나면 body로 되돌림 (나중에 만들어지는 창도 같이) */
+ const fsMoved=new Set();
+ const fsOvl=e=>e&&e.nodeType===1&&e!==box&&!e.contains(box)&&!/^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(e.tagName)&&getComputedStyle(e).position==='fixed';
+ const fsHost=()=>{if(native()===box){[...document.body.children].forEach(e=>{if(fsOvl(e)){fsMoved.add(e);box.appendChild(e)}})}
+  else if(fsMoved.size){fsMoved.forEach(e=>{if(e.parentNode===box)document.body.appendChild(e)});fsMoved.clear()}};
+ document.addEventListener('fullscreenchange',fsHost);document.addEventListener('webkitfullscreenchange',fsHost);
+ try{new MutationObserver(()=>{if(native()===box)fsHost()}).observe(document.body,{childList:true})}catch(_){}
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('mapfs'))off()});
  window.addEventListener('beforeprint',()=>{if(isOn())off()});
  /* 앱 시작 화면: 전체 지도 모드로 열고, 처음 누를 때 진짜 전체화면(주소창 숨김)으로 바꿈
