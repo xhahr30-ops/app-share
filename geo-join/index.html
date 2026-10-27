@@ -979,7 +979,7 @@ html.gwOn .afp{top:150px}
  <div class="sec">
   <h4>💾 기준자료 백업 · 다른 PC로 옮기기</h4>
   <p class="hint" style="margin:0">소블록 경계·상수관로·상수도 시설물·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.</p>
-  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkF" checked> 🔧 상수도 시설물</span><span class="ck"><input type="checkbox" id="bkE" checked> ⛰️ 표고</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck"><input type="checkbox" id="bkV" checked> 🎬 동영상 연결</span><span class="ck" title="관리번호·소블록·좌표만 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록)</span></div>
+  <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkF" checked> 🔧 상수도 시설물</span><span class="ck"><input type="checkbox" id="bkE" checked> ⛰️ 표고</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck"><input type="checkbox" id="bkV" checked> 🎬 동영상 연결</span><span class="ck" title="관리번호·소블록·좌표와 사용량 정보(월평균·구경·업종·가구수·이상유형)를 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록·월평균)</span></div>
   <div class="sbtns"><button id="bkSave" type="button" class="btn ol">💾 백업 파일 만들기</button><label class="btn ol">📂 백업 불러오기<input type="file" id="bkLoad" multiple hidden></label></div>
   <p class="hint" id="bkMsg" style="margin:0"></p>
  </div>
@@ -1520,7 +1520,7 @@ try{PT.off=localStorage.getItem('geo-ptoff')==='1'}catch(_){}
 function ptOffUi(){const b=document.getElementById('ptTog');if(!b)return;b.textContent=PT.off?'👥 수용가 켜기':'👥 수용가 끄기';b.setAttribute('aria-pressed',String(!PT.off));b.style.opacity=PT.off?'.7':'';uiPanelSync()}
 function ptToggle(){PT.off=!PT.off;try{localStorage.setItem('geo-ptoff',PT.off?'1':'0')}catch(_){}if(PT.off&&map)map.closePopup();ptOffUi();ptDraw()}
 function ptRadius(z){return z>=21?8:z>=20?7:z>=17?6:z>=16?5.5:z>=15?4.5:z>=14?3.5:z>=13?2.8:2.2}
-function ptReset(n){PT.n=n;PT.lat=new Float64Array(n).fill(NaN);PT.lng=new Float64Array(n).fill(NaN);PT.px=new Float64Array(n);PT.py=new Float64Array(n);PT.fill=new Array(n);PT.col=new Array(n);PT.w=new Float32Array(n);PT.r=new Float32Array(n);PT.vis=new Uint8Array(n);PT.base=new Array(n);PT.grid=new Map();PT.sel=-1;mks.length=0}
+function ptReset(n){PT.n=n;PT.lat=new Float64Array(n).fill(NaN);PT.lng=new Float64Array(n).fill(NaN);PT.px=new Float64Array(n);PT.py=new Float64Array(n);PT.fill=new Array(n);PT.col=new Array(n);PT.w=new Float32Array(n);PT.r=new Float32Array(n);PT.vis=new Uint8Array(n);PT.big=new Uint8Array(n);PT.bigK=null;PT.base=new Array(n);PT.grid=new Map();PT.sel=-1;mks.length=0}
 function ptAdd(i,lat,lng,st){PT.lat[i]=lat;PT.lng[i]=lng;const q=map.project([lat,lng],0);PT.px[i]=q.x;PT.py[i]=q.y;PT.fill[i]=st.fillColor;PT.col[i]=st.color;PT.w[i]=st.weight;PT.r[i]=0;PT.vis[i]=1;
  const k=Math.floor(lng/PT.cs)+','+Math.floor(lat/PT.cs);let a=PT.grid.get(k);if(!a)PT.grid.set(k,a=[]);a.push(i);mks[i]=ptProxy(i)}
 function ptProxy(i){const o={i,options:{radius:6,get color(){return PT.col[i]},get weight(){return PT.w[i]}},
@@ -1528,25 +1528,42 @@ function ptProxy(i){const o={i,options:{radius:6,get color(){return PT.col[i]},g
   bringToFront(){return o},getLatLng(){return L.latLng(PT.lat[i],PT.lng[i])},openPopup(){ptOpen(i);return o},closePopup(){map.closePopup();return o}};return o}
 function ptQuery(w,s,e,n){const cs=PT.cs,r=[];if((Math.floor(e/cs)-Math.floor(w/cs)+1)*(Math.floor(n/cs)-Math.floor(s/cs)+1)>PT.grid.size){for(let i=0;i<PT.n;i++){const a=PT.lat[i],b=PT.lng[i];if(a>=s&&a<=n&&b>=w&&b<=e)r.push(i)}return r}for(let gx=Math.floor(w/cs);gx<=Math.floor(e/cs);gx++)for(let gy=Math.floor(s/cs);gy<=Math.floor(n/cs);gy++){const a=PT.grid.get(gx+','+gy);if(a)for(const i of a)r.push(i)}return r}
 function ptDraw(){if(!PT.ok||PT.raf)return;PT.raf=requestAnimationFrame(()=>{PT.raf=0;ptRender()})}
+/* 🏭 대수용가 ◆: 월평균 bigQ㎥ 이상(💧 단수구역·수용가 라벨과 같은 기준). 자료·기준이 바뀔 때만 한 번 계산 → 그릴 때는 배열만 봄 */
+function ptBigOn(){return UI.bigMk!==false}
+function ptBigSync(){if(!PT.big||PT.big.length!==PT.n){PT.big=new Uint8Array(PT.n);PT.bigK=null}const bq=clBigQ(),k=out.length+'|'+bq+'|'+PT.n;if(PT.bigK===k&&PT.bigO===out)return PT.bigC||0;
+ PT.big.fill(0);let c=0;if(out.length&&bq>0){const K=clKeys();if(K.q)for(let i=0;i<PT.n;i++){const o=out[i];if(!o)continue;const v=o[K.q],q=typeof v==='number'?v:shutNum(v);if(q!=null&&q>=bq){PT.big[i]=1;c++}}}
+ PT.bigK=k;PT.bigO=out;PT.bigC=c;return c}
+function ptBigReset(){PT.bigK=null;ptDraw();if(typeof mLegend==='function')mLegend()}
+function ptDia(g,x,y,r){g.moveTo(x,y-r);g.lineTo(x+r,y);g.lineTo(x,y+r);g.lineTo(x-r,y);g.closePath()}
+/* 대수용가 관리번호: 줌 17부터, 수용가 라벨이 꺼져 있거나 아직 안 보이는 줌일 때만(켜져 있으면 라벨이 대수용가를 먼저 보여 줌) */
+function ptBigLabels(g,bl,R){const K=clKeys();if(!K.mg)return;const fp=+UI.lblPx||11,occ=new Set(),CS=8;let n=0;
+ g.font=`700 ${fp}px "Noto Sans KR","Malgun Gothic",sans-serif`;g.textAlign='left';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3;g.strokeStyle='rgba(255,255,255,.95)';
+ for(let j=0;j<bl.length&&n<600;j+=3){const o=out[bl[j+2]];if(!o)continue;const t=String(o[K.mg]??'').trim();if(!t)continue;const x0=bl[j]+R+3,y=bl[j+1],k=Math.floor(x0/CS)+','+Math.floor(y/CS);if(occ.has(k))continue;
+  const w=t.length*fp*.62+4;for(let cx=Math.floor(x0/CS);cx<=Math.floor((x0+w)/CS);cx++)occ.add(cx+','+Math.floor(y/CS));g.strokeText(t,x0,y);g.fillStyle='#9a3412';g.fillText(t,x0,y);n++}}
 function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=mapDpr(),cv=PT.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=PT.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!PT.n||PT.off)return;
  const b=map.getBounds().pad(pad),z=map.getZoom(),R0=ptRadius(z),ox=-sz.x*pad,oy=-sz.y*pad;
  const ids=ptQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth()),groups=new Map();
- const sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y;
+ const sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,bm=ptBigOn()&&ptBigSync()>0,bl=[];
  for(const i of ids){if(!PT.vis[i]||i===PT.sel)continue;const x=PT.px[i]*sc+ax,y=PT.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;
+  if(bm&&PT.big[i]){bl.push(x,y,i);continue}/* 대수용가는 아래에서 ◆로 맨 위에 */
   const k=PT.fill[i]+'|'+PT.col[i]+'|'+PT.w[i];let a=groups.get(k);if(!a)groups.set(k,a=[]);a.push(x,y,PT.r[i]||R0)}
  g.globalAlpha=.88;
  for(const [k,a] of [...groups].sort((x,y)=>y[1].length-x[1].length)){const [f,c,w]=k.split('|');/* 많은 색부터 → 적은(이상) 점이 위에 보이게 */g.beginPath();for(let j=0;j<a.length;j+=3){g.moveTo(a[j]+a[j+2],a[j+1]);g.arc(a[j],a[j+1],a[j+2],0,6.2832)}
   g.fillStyle=f;g.fill();if(+w>0&&R0>=2.8){g.lineWidth=+w;g.strokeStyle=c;g.globalAlpha=1;g.stroke();g.globalAlpha=.88}}
- g.globalAlpha=1;if(UI.cl&&UI.cl!=='off'&&z>=(+UI.clZ||18))ptLabels(g,ids,sc,ax,ay,W,H,R0);else CLB.n=0;uiClHint();const s=PT.sel;
+ g.globalAlpha=1;const RB=Math.max(R0*1.5,5);
+ if(bl.length){const bg=new Map();for(let j=0;j<bl.length;j+=3){const i=bl[j+2],k=PT.fill[i]+'|'+(PT.w[i]>=2?PT.col[i]:'#431407');let a=bg.get(k);if(!a)bg.set(k,a=[]);a.push(bl[j],bl[j+1],PT.r[i]?PT.r[i]*1.5:RB)}
+  g.lineJoin='miter';g.lineWidth=R0>=2.8?2.2:1.4;for(const [k,a] of bg){const [f,c]=k.split('|');g.beginPath();for(let j=0;j<a.length;j+=3)ptDia(g,a[j],a[j+1],a[j+2]);g.fillStyle=f;g.fill();g.strokeStyle=c;g.stroke()}}
+ const clOn=UI.cl&&UI.cl!=='off'&&z>=(+UI.clZ||18);if(clOn)ptLabels(g,ids,sc,ax,ay,W,H,R0);else{CLB.n=0;if(bl.length&&z>=17)ptBigLabels(g,bl,RB)}uiClHint();const s=PT.sel;
  if(s>=0&&s<PT.n&&!isNaN(PT.lat[s])){const x=PT.px[s]*sc+ax,y=PT.py[s]*sc+ay,r=PT.r[s]||11;
-  g.beginPath();g.arc(x,y,r,0,6.2832);g.fillStyle=PT.fill[s];g.fill();g.lineWidth=4;g.strokeStyle='#facc15';g.stroke()}}
+  g.beginPath();if(ptBigOn()&&PT.big&&PT.big[s]){g.lineJoin='miter';ptDia(g,x,y,r*1.3)}else g.arc(x,y,r,0,6.2832);g.fillStyle=PT.fill[s];g.fill();g.lineWidth=4;g.strokeStyle='#facc15';g.stroke()}}
 function ptHitAt(cp){if(!PT.n||PT.off)return -1;const z=map.getZoom(),R=Math.max(ptRadius(z),5)+3,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
  for(const i of ptQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!PT.vis[i])continue;const p=map.latLngToContainerPoint([PT.lat[i],PT.lng[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
-function ptPopupHtml(i){const o=out[i],mg=o['관리번호']||o['수용가번호']||'';return `<div style="font-size:11.5px;color:#4338ca;font-weight:700">👤 수용가${mg?' · '+esc(mg):''}</div><b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}${navBtn(+o['_위도'],+o['_경도'],'수용가'+(mg?' '+mg:''))}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
+function ptPopupHtml(i){const o=out[i],mg=o['관리번호']||o['수용가번호']||'';const bg=PT.big&&PT.big[i],K=bg?clKeys():null,bq=bg&&K.q?shutNum(o[K.q]):null;
+ return `<div style="font-size:11.5px;color:#4338ca;font-weight:700">👤 수용가${mg?' · '+esc(mg):''}${bg?` <span style="color:#c2410c">· 🏭 대수용가${bq!=null?' (월평균 '+(bq>=100?Math.round(bq).toLocaleString():bq.toFixed(1))+'㎥)':''}</span>`:''}</div><b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}${navBtn(+o['_위도'],+o['_경도'],'수용가'+(mg?' '+mg:''))}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
 function ptSame(i){const la=PT.lat[i],ln=PT.lng[i],e=1e-6,r=[];for(const k of ptQuery(ln-e,la-e,ln+e,la+e))if(PT.vis[k]&&Math.abs(PT.lat[k]-la)<e&&Math.abs(PT.lng[k]-ln)<e)r.push(k);return r.sort((a,b)=>a-b)}
 function ptOpen(i){if(!map||isNaN(PT.lat[i]))return;L.popup({maxWidth:320,offset:[0,-4]}).setLatLng([PT.lat[i],PT.lng[i]]).setContent(ptPopFull(i)).openOn(map)}
 function ptPopFull(i){const same=ptSame(i);let h=ptPopupHtml(i);
@@ -1624,7 +1641,8 @@ function ptLabels(g,ids,sc,ax,ay,W,H,R0){CLB.n=0;if(!out.length)return;const K=c
   if(hit)continue;cells.forEach(k=>occ.add(k));
   g.strokeText(t,x0,c.y);g.fillStyle=c.big?'#c2410c':c.ab?'#b91c1c':'#0f172a';g.fillText(t,x0,c.y);CLB.n++}}
 function uiClHint(){const h=document.getElementById('uiClHint');if(!h)return;let t='';
- if(UI.cl&&UI.cl!=='off'){if(!out.length)t='주소 변환 결과(수용가 점)가 있어야 라벨이 붙습니다.';else if(PT.off)t='👥 수용가 점을 켜야 라벨이 보입니다.';else if(map&&map.getZoom()<(+UI.clZ||18))t=`지도를 줌 ${+UI.clZ||18} 이상으로 확대하면 라벨이 보입니다 (현재 ${map.getZoom()}).`;
+ if(UI.cl&&UI.cl!=='off'){if(!out.length)t='주소 변환 결과(수용가 점)가 있어야 라벨이 붙습니다.';
+  else if((UI.clR==='big'||UI.cl==='q')&&!clKeys().q)t='⚠ 지금 수용가 자료에는 월평균 사용량이 없어 '+(UI.clR==='big'?'대수용가를 알 수 없습니다':'사용량 라벨을 만들 수 없습니다')+'. 부과량 엑셀을 올리거나, 관리자가 새로 만든 💾 백업(10월 27일 이후)을 받아 주세요. (예전 백업은 관리번호·소블록·좌표만 들어 있음)';else if(PT.off)t='👥 수용가 점을 켜야 라벨이 보입니다.';else if(map&&map.getZoom()<(+UI.clZ||18))t=`지도를 줌 ${+UI.clZ||18} 이상으로 확대하면 라벨이 보입니다 (현재 ${map.getZoom()}).`;
   else t=`지금 화면 라벨 ${CLB.n.toLocaleString()}개${CLB.n>=CLB.MAX?' (최대치, 더 확대하면 더 보입니다)':''}`;if(UI.clR==='big')t+=` · 대수용가 = 월평균 ${clBigQ().toLocaleString()}㎥ 이상 (💧 단수구역 설정과 같음)`}
  h.textContent=t;h.hidden=!t}
 
@@ -1707,7 +1725,7 @@ function uiPanel(show,tab){const p=document.getElementById('uiSet');if(!p)return
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
- const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiCl').value=UI.cl||'off';q('uiClR').value=UI.clR||'all';q('uiClZ').value=String(UI.clZ||18);uiClHint();q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
+ const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiBigMk').checked=UI.bigMk!==false;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiCl').value=UI.cl||'off';q('uiClR').value=UI.clR||'all';q('uiClZ').value=String(UI.clZ||18);uiClHint();q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
  const ph=$('pPanel').hidden,fh=$('fPanel').hidden;q('uiPipeBox').hidden=ph;q('uiPipeNo').hidden=!ph;q('uiFacBox').hidden=fh;q('uiFacNo').hidden=!fh;const eh=$('ePanel').hidden;q('uiElevBox').hidden=eh;q('uiElevNo').hidden=!eh;
  q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
  const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
@@ -1745,6 +1763,7 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uir"><input type="checkbox" id="uiVid"> 🎬 동영상 위치 <small style="color:var(--mute)">줌 13부터</small></label>
 <label class="uir"><input type="checkbox" id="uiLeg"> 🗂️ 지도 범례 (관로 · 블록 색칠)</label>
 <p class="uin" style="margin-top:2px">상수관로·시설물 표시는 <a href="#" data-go="pipe">🚰 관로·시설물</a> 탭에 있습니다.</p>
+<label class="uir"><input type="checkbox" id="uiBigMk"> 🏭 대수용가 ◆ 표시 <small style="color:var(--mute)">월평균 기준은 🚰 관로 탭 💧 단수구역 설정과 같음 · 줌 17부터 관리번호</small></label>
 <div class="uig">🏷️ 수용가 라벨 <small>(이름·주소·연락처는 넣지 않음)</small></div>
 <label class="uif">내용<select id="uiCl" class="msel">${opt([['off','끔'],['mg','관리번호'],['blk','소블록 (Y열)'],['q','월평균 사용량'],['u','업종'],['ab','이상유형']])}</select></label>
 <label class="uif">대상<select id="uiClR" class="msel">${opt([['all','전체'],['ab','이상 수용가만'],['big','대수용가만']])}</select></label>
@@ -1804,6 +1823,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiCl').onchange=e=>{UI.cl=e.target.value;uiSave();ptDraw();uiClHint()};
  q('uiClR').onchange=e=>{UI.clR=e.target.value;uiSave();ptDraw();uiClHint()};
  q('uiClZ').onchange=e=>{UI.clZ=+e.target.value||18;uiSave();ptDraw();uiClHint()};
+ q('uiBigMk').onchange=e=>{UI.bigMk=e.target.checked;uiSave();ptDraw();mLegend()};
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
@@ -2482,7 +2502,7 @@ async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now()
  if(map){ptReset(N);let w=180,s=90,e=-180,n=-90,cnt=0;
   for(let i=0;i<N;i++){const o=out[i];if(o['_위도']==='')continue;const la=+o['_위도'],ln=+o['_경도'];if(!isFinite(la)||!isFinite(ln))continue;
    ptAdd(i,la,ln,{color:mBad(o)?'#c0392b':'#fff',weight:mBad(o)?2:1,fillColor:mFill(o)});cnt++;if(ln<w)w=ln;if(ln>e)e=ln;if(la<s)s=la;if(la>n)n=la}
-  applyMapFilter();if(cnt&&!keep&&!vHold())map.fitBounds([[s,w],[n,e]],{padding:[40,40]});ptDraw();if(selI!=null)markSel(selI)}
+  applyMapFilter();if(cnt&&!keep&&!vHold())map.fitBounds([[s,w],[n,e]],{padding:[40,40]});ptDraw();mLegend();if(selI!=null)markSel(selI)}
  if(big){await tick();if(RUN!==JOIN_RUN)return}
  if(PIPE.segs&&big){for(let i0=0;i0<N;i0+=CH){pipeAttachRange(i0,Math.min(N,i0+CH));prog(`관로 매칭 ${Math.min(N,i0+CH).toLocaleString()}/${N.toLocaleString()}`);await tick();if(RUN!==JOIN_RUN)return}}else pipeAttach();
  elevAttach();
@@ -3117,7 +3137,8 @@ function mFill(o){const by=$('mColorBy').value;
  if(by==='match'&&cmpOn()){const m=o['_블록일치'];return m==='일치'?'#16a34a':m==='명칭 차이'?'#84cc16':m==='불일치'?'#dc2626':m==='SHP에 없는 블록'?'#f59e0b':'#94a3b8'}
  return o['_방식']==='구주소'?'#1f8a4c':o['_방식']==='수정주소'?'#d9731a':o['_방식']==='인근대체'?'#9333ea':'#1c5fa5'}
 const mBad=o=>cmpOn()?(o['_블록일치']==='불일치'||o['_블록일치']==='위치 블록 없음'):!o['_결합블록'];
-function mLegendHtml(){const by=$('mColorBy').value;
+function mLegendHtml(){const c=PT.n&&ptBigOn()?ptBigSync():0;return mLegendHtml0()+(c?`<span title="💧 단수구역 설정의 대수용가 기준과 같음"><i style="background:#cbd5e1;border:2px solid #431407;border-radius:0;transform:rotate(45deg) scale(.85)"></i>대수용가 ${c.toLocaleString()}곳 (월평균 ${clBigQ().toLocaleString()}㎥ 이상)</span>`:'')}
+function mLegendHtml0(){const by=$('mColorBy').value;
  if(by==='type'&&BILLMODE)return B_ORD.map(k=>`<span><i style="background:${B_COL[k]}"></i>${B_CT[k]}</span>`).join('')+`<span><i style="background:${B_COL.N}"></i>이상 없음</span><span><i style="background:#fff;border:2px solid #ef4444"></i>블록 불일치</span>`;
  if(by==='match'&&cmpOn())return '<span><i style="background:#16a34a"></i>일치</span><span><i style="background:#84cc16"></i>명칭 차이</span><span><i style="background:#dc2626"></i>불일치</span><span><i style="background:#f59e0b"></i>SHP에 없는 블록</span><span><i style="background:#94a3b8"></i>위치 블록 없음</span>';
  return [['구주소','#1f8a4c'],['신주소','#1c5fa5'],['수정주소','#d9731a'],['인근대체','#9333ea']].map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('')+'<span><i style="background:#fff;border:2px solid #ef4444"></i>미결합</span>'}
@@ -3757,8 +3778,9 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(use.k){bkApplySettings();bkLoad.k=true}
   msg.innerHTML=`✅ 불러오기 완료: ${has.join(' · ')}${use.k?'<br><small>키 설정이 모두 반영되도록 한 번 <b>새로고침(F5)</b> 하세요.</small>':''}`}
  catch(e){msg.textContent='불러오기 실패: '+bkErr(e);return false}return true}
-/* 수용가 좌표 백업: 관리번호·소블록·좌표·변환방식만 담음 (이름·주소·연락처·검색주소·비고는 넣지 않음) */
-const BK_RES_KEEP=['관리번호','소블록'],BK_RES_OUT=['_방식','_위도','_경도'];
+/* 수용가 좌표 백업: 관리번호·소블록·좌표·변환방식 + 사용량 정보(월평균·최근 3·6개월·구경·업종·가구수·이상유형)
+   → 직원 기기에서도 수용가 라벨·🏭 대수용가 ◆·💧 단수구역 대수용가가 됨. 이름·주소·연락처·수용가번호·검색주소·비고는 넣지 않음 */
+const BK_RES_KEEP=['관리번호','소블록','월평균(㎥)','최근3개월(㎥)','최근6개월(㎥)','구경','업종','가구수','이상유형','권장조치'],BK_RES_OUT=['_방식','_위도','_경도','_유형코드'];
 function bkResSnap(){const base=BK_RES_KEEP.filter(k=>out.some(o=>k in o)),cols=base.concat(BK_RES_OUT);
  return{v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,rows:out.map(o=>cols.map(k=>o[k]??''))}}
 async function bkResLoad(res){const cols=res.cols||[],base=cols.filter(k=>!/^_/.test(k));
@@ -3766,10 +3788,10 @@ async function bkResLoad(res){const cols=res.cols||[],base=cols.filter(k=>!/^_/.
  BILLMODE=!!res.bill;setRows(R,(res.name||'백업')+' (백업 · 주소 제외)');
  out=res.rows.map((a,i)=>{const o={...R[i],'_비고':'','_검색주소':'','_방식':'','_위도':'','_경도':'','_수정주소':'','_결합블록':'','_결합방식':''};BK_RES_OUT.forEach(k=>{const j=cols.indexOf(k);if(j>=0)o[k]=a[j]??''});return o});
  TB_LIM=300;pks.length=0;for(const k in drafts)delete drafts[k];$('tb').innerHTML='';
- $('progMsg').textContent=`백업에서 수용가 좌표 ${out.length.toLocaleString()}건을 불러왔습니다 (이름·주소는 없음 · 주소 엑셀을 다시 올리면 전체 정보로 바뀝니다)`;
+ $('progMsg').textContent=`백업에서 수용가 좌표 ${out.length.toLocaleString()}건을 불러왔습니다 (이름·주소는 없음 · 주소 엑셀을 다시 올리면 전체 정보로 바뀝니다)${cols.includes('월평균(㎥)')?'':' · ⚠ 예전 백업이라 월평균이 없어 대수용가·사용량 라벨은 표시되지 않습니다'}`;
  await joinAll()}
 /* ===== 수용가 변환 결과 자동 저장 (이 기기 브라우저 IDB 'res') → 다시 열면 지도 점·표·블록별 현황·엑셀 내보내기 그대로
-   이 기기 안에만 남음: 백업·직원 공유·내보내기 파일에는 넣지 않음(백업은 지금처럼 관리번호·소블록·좌표만) */
+   이 기기 안에만 남음: 백업·직원 공유·내보내기 파일에는 넣지 않음(백업은 관리번호·소블록·좌표·사용량 정보만) */
 const RES={t:0,busy:false,sig:''},RES_GEO=['_비고','_검색주소','_방식','_위도','_경도','_수정주소'];
 function resSoon(){if(RES.busy)return;clearTimeout(RES.t);RES.t=setTimeout(resSave,1200)}
 function resInfo(v){const el=$('resSaved');el.classList.remove('c-sl');resUndoSync();if(!v){el.hidden=true;$('resForget').hidden=true;return}
@@ -6159,7 +6181,7 @@ if(map){
  map.on('preclick',e=>{if(!shutEat(e))return;PT.hit=-1;const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest('.shvi'))return;setTimeout(()=>map.closePopup(),0);shutTap(e.latlng)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(SHUT.pick||SHUT.mode)){SHUT.pick=false;SHUT.mode='';shutRender()}});
  const q=id=>document.getElementById(id),bind=(id,k,re)=>{const el=q(id);if(!el)return;el.value=String(SHUT.opt[k]);if(el.value!==String(SHUT.opt[k]))el.value=el.options[0].value;
-  el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
+  el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(k==='bigQ')ptBigReset();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
  bind('shTol','tol',1);bind('shVtol','vtol',1);bind('shBigQ','bigQ',0);bind('shBigD','bigD',0)}
 /* 지도 길게 누르기(PC 오른쪽 클릭) → 그 지점 주소 핀: 지번·도로명, 소블록, 표고, 좌표. 주소는 화면에만 보이고 저장·내보내기 안 함 */
 const LPA={pin:null,at:0,cache:new Map()};
