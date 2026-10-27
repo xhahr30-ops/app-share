@@ -604,6 +604,8 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phaddpop button.hl{background:#0f766e;border-color:#0f766e;color:#fff}.phaddpop small{color:var(--mute)}
 .phaddpop .f{display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:700}.phaddpop .f input,.phaddpop .f select{flex:1;min-width:0;font:600 12.5px 'Noto Sans KR',sans-serif;padding:6px 8px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink)}.phaddpop .pv{color:#0f766e;font-weight:700}
 #phToast{position:fixed;z-index:100002;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;background:#111827;color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 6px 20px rgba(0,0,0,.35);font:600 12.5px/1.4 'Noto Sans KR',sans-serif}
+#phKdAsk{position:fixed;z-index:100003;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(320px,calc(100% - 32px));display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}#phKdAsk>b{grid-column:1/-1;font-size:13px}#phKdAsk button{border:1px solid var(--line);border-radius:8px;padding:8px 6px;background:var(--bg,#f8fafc);color:inherit;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}#phKdAsk .x{grid-column:1/-1;font-weight:400}#phKdAsk[hidden]{display:none}
+.fph{margin-top:6px;padding-top:5px;border-top:1px dashed var(--line);font-size:12px}.fph .th{display:flex;gap:4px;overflow-x:auto;margin:4px 0}.fph .th img{width:52px;height:52px;object-fit:cover;border-radius:6px;cursor:pointer;background:#e2e8f0;flex:0 0 auto}.fph .bt{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
 #phToast[hidden]{display:none}#phToast button{border:0;border-radius:8px;padding:5px 10px;background:#facc15;color:#111;font:800 12px 'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}#phToast .x{background:transparent;color:#cbd5e1;padding:2px 4px}
 .phtr{position:fixed;z-index:100001;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 .phtr[hidden]{display:none}
@@ -1107,6 +1109,10 @@ html.gwOn .afp{top:150px}
  <div class="sec ph">
   <h4>📷 현장 사진 <small style="font-weight:400;color:var(--mute)">사진 속 GPS 좌표 기준</small></h4>
   <label class="drop"><input type="file" id="phFile" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.pgw,.pngw,.jgw,.wld" multiple><div class="ic">📷</div><b>현장 사진 첨부 (여러 장)</b><span>JPG 원본 · 촬영 위치·시각·방향을 자동으로 읽음 · 위치도(빨간 점) PNG는 월드 파일(.pgw)과 함께 · 지도 위로 끌어다 놓아도 됨</span></label>
+  <div class="g2"><label class="f">📁 올릴 사진 종류<select id="phKdUp" title="이번에 올리는 사진의 종류. 파일명에 아래 '자동 구분' 글자가 있으면 그 종류가 먼저입니다"></select></label>
+  <label class="f">📁 보기 종류<select id="phKF" title="지도·갤러리·내보내기에 이 종류 사진만 보입니다 (지도 왼쪽 아래 범례의 📁 사진 종류를 눌러도 됨)"></select></label></div>
+  <label class="f">📁 파일명 자동 구분 <small style="font-weight:400;color:var(--mute)">글자=종류, 쉼표로 여러 개 · 민원대응·누수탐사·경계밸브·시설물관리·기타</small><input id="phKdW" placeholder="예: 탐사=누수탐사, 경계=경계밸브" title="파일명에 이 글자가 있으면 올릴 때 그 종류로 정합니다 (예: 탐사_대이동_01.jpg → 누수탐사). 긴 글자부터 맞춥니다"></label>
+  <p class="hint" style="margin:0 0 4px">민원 기능(접수번호 묶음·민원지점 위치·접수 리스트 메모·📤 민원대장용·🔎 위치 점검)은 <b>민원대응</b> 사진에만 씁니다. 다른 종류는 번호가 있어도 거리·시간으로만 묶습니다.</p>
   <div class="g2"><label class="f">묶음 거리<select id="phR"><option value="10">10m 이내</option><option value="20" selected>20m 이내</option><option value="30">30m 이내</option><option value="50">50m 이내</option></select></label>
   <label class="f">촬영 시간 간격<select id="phT"><option value="30">30분 이내</option><option value="120" selected>2시간 이내</option><option value="1440">같은 날</option><option value="0">따지지 않음</option></select></label>
   <label class="f">저장 크기<select id="phSize"><option value="1600">보통 (1600px)</option><option value="2400">크게 (2400px)</option><option value="0">원본 그대로</option></select></label>
@@ -3965,7 +3971,7 @@ function facIndex(){FAC.lt=new Map();const fs=FAC.feats,pts=fs.filter(f=>f.c),n=
  FAC.ki=new Map(FAC.kinds.map((k,i)=>[k,i]));FAC.n=n;FAC.x=new Float64Array(n);FAC.y=new Float64Array(n);FAC.px=new Float64Array(n);FAC.py=new Float64Array(n);FAC.k=new Uint16Array(n);FAC.cl=new Uint8Array(n);FAC.dl=new Uint8Array(n);FAC.ed=new Uint8Array(n);FAC.sk=new Array(n);FAC.rot=new Float32Array(n);FAC.pt=pts;FAC.grid=new Map();const KI=FAC.kinds.map(facKindInfo);
  pts.forEach((f,i)=>{FAC.x[i]=f.c[0];FAC.y[i]=f.c[1];FAC.k[i]=FAC.ki.get(f.k);FAC.cl[i]=facClosed(f.p)?1:0;FAC.dl[i]=f.p&&f.p._삭제?1:0;FAC.ed[i]=f.p&&(f.p._현장수정||f.p._추가)?1:0;const sk=facSymOf(KI[FAC.k[i]],f.p);FAC.sk[i]=sk;FAC.rot[i]=FROT.has(sk)?facRot(f.p):NaN;if(map){const q=map.project([f.c[1],f.c[0]],0);FAC.px[i]=q.x;FAC.py[i]=q.y}
   const g=Math.floor(f.c[0]/FAC.cs)+','+Math.floor(f.c[1]/FAC.cs);let a=FAC.grid.get(g);if(!a)FAC.grid.set(g,a=[]);a.push(i)});
- facAreas();facKindsUi();facDraw()}
+ facAreas();facKindsUi();facDraw();try{if(PH.list.some(phFcKd)){clearTimeout(PH.fcT);PH.fcT=setTimeout(phRefresh,300)}}catch(_){}}
 function facQuery(w,s,e,n){const cs=FAC.cs,r=[];for(let gx=Math.floor(w/cs);gx<=Math.floor(e/cs);gx++)for(let gy=Math.floor(s/cs);gy<=Math.floor(n/cs);gy++){const a=FAC.grid.get(gx+','+gy);if(a)for(const i of a)r.push(i)}return r}
 function facOn(k,z){if(FAC.hidden.has(k))return false;const m=$('fShow').value;if(m==='off')return false;return m==='on'||z>=facKindInfo(k).z}
 function facR(z){return z>=18?7:z>=17?6:z>=16?5:z>=14?4:3.2}
@@ -3991,7 +3997,11 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
   for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;g.globalAlpha=FAC.dl[i]?.35:1;
    if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
    const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})
- g.globalAlpha=1;if(FE&&FE.on)feMarks(g,by);
+ g.globalAlpha=1;
+ /* 📷 사진 배지 — 시설물에 붙은 사진 수 */
+ if(FAC.phn&&z>=15){g.font="700 10px 'Noto Sans KR',sans-serif";g.textAlign='center';g.textBaseline='middle';by.forEach((a,k)=>{const s=facSzK(z,KI[k],FAC.kinds[k]);for(let j=0;j<a.length;j+=3){const n=FAC.phn[a[j+2]];if(!n)continue;
+  const t='📷'+(n>99?'99+':n),w=Math.max(18,g.measureText(t).width+8),x=a[j]+s*.45,y=a[j+1]-s*.45;g.beginPath();g.roundRect?g.roundRect(x-w/2,y-8,w,16,8):g.rect(x-w/2,y-8,w,16);g.fillStyle='#1d4ed8';g.fill();g.lineWidth=1.5;g.strokeStyle='#fff';g.stroke();g.fillStyle='#fff';g.fillText(t,x,y+.5)}})}
+ if(FE&&FE.on)feMarks(g,by);
  facLabels(g,z,by,KI,W,H)}
 /* 시설 이름 라벨: 정수장·배수지·가압장은 이름 칸, 유량계는 이름 칸이 없어 소블록명→블록명→중블록명→관리번호 순으로 씀.
    글자 크기는 ⚙️ 관로 라벨 글자 크기를 따르고, 겹치면 왼쪽에 다시 놓아 보고 그래도 겹치면 뺌(큰 시설 먼저) */
@@ -4026,7 +4036,7 @@ function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen
  FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
  const b=poly?blkAt(f.c[0],f.c[1]):'';rows.push(['소블록(위치)',b||'-']);
  return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}${P._추가?' <small style="color:#16a34a;font-weight:700">🆕 현장 추가</small>':''}${P._삭제?' <small style="color:#dc2626;font-weight:700">🗑 삭제 표시</small>':''}${P._현장수정&&I.sym!=='gate'&&!P._추가?' <small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 '+esc(P._현장수정)+'</small>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`+
-  (I.sym==='gate'?facOpUi(i):'')+
+  (I.sym==='gate'?facOpUi(i):'')+(typeof phFacHtml==='function'?phFacHtml(i):'')+
   `<div class="acts" style="margin-top:6px">${kvBtns(FAC.y[i],FAC.x[i],I.name+(P['관리번호']?' '+P['관리번호']:''),b?'소블록 '+b:'',true)}<button type="button" class="kl" onclick="feOpen(${i})" title="시설물 편집 모드에서 이 시설 고치기·옮기기">🛠 편집</button>${vidBtns('fac',P['관리번호']!=null&&P['관리번호']!==''?'m:'+I.name+':'+P['관리번호']:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6),FAC.y[i],FAC.x[i],'🔧 '+I.name+(P['관리번호']?' '+P['관리번호']:''))}</div>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).filter(([k])=>!/^_/.test(k)).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 시설물 현장 수정(제수밸브 개폐·🛠 편집 모드): 고친 칸의 SHP 원래 값은 '_원본', 원래 위치는 '_원좌표'에 보관 → 시설물 저장(이력 '현장 수정', ↶ 되돌리기 가능).
@@ -4426,6 +4436,77 @@ function phIndex(){PH.byId=new Map(PH.list.map(m=>[m.id,m]))}
 /* ---------- 묶기: 거리(격자 색인) + 시간 + 파일명 ---------- */
 /* 분류 번호 (예: 긴급208) — 파일명(없으면 메모)에서 "분류 이름 + 숫자"를 찾음. 같은 번호는 거리와 상관없이 한 묶음 */
 PH.ref=new Map();PH.refAt=0;PH.code=new Map();
+/* 사진 종류 — kd 칸이 없으면 민원대응(예전 사진 모두). 민원 전용 기능(접수번호 묶음·민원지점 위치·리스트 메모·민원대장 ZIP·위치 점검)은 민원대응 사진에만 씀.
+   다른 종류는 번호가 있어도 위치(거리·시간)로만 묶고, 종류가 다르면 같은 자리라도 따로 묶음 */
+const PH_KD={mw:{n:'민원대응',ic:'📷'},ts:{n:'누수탐사',ic:'🎧'},bv:{n:'경계밸브',ic:'🔴'},fc:{n:'시설물관리',ic:'🛠️'},et:{n:'기타',ic:'📎'}};
+const PH_KDS=Object.keys(PH_KD),phKd=m=>m&&PH_KD[m.kd]?m.kd:'mw',phKdOf=v=>{v=String(v||'').normalize('NFC').trim();return PH_KD[v]?v:PH_KDS.find(k=>PH_KD[k].n===v)||''};
+const PH_KDW0='누수탐사=누수탐사, 탐사=누수탐사, 경계=경계밸브, 시설=시설물관리, 점검=시설물관리';
+PH.kf='*';PH.fcL=new Map();PH.fcAmb=new Set();
+/* ---------- 시설물 연결: 경계밸브·시설물관리 사진 → 시설물 아이콘 ----------
+   사진 m.fc = 시설물 열쇠(직접 연결, '-'는 연결 안 함). 직접 연결이 없으면 사진 GPS에서 15m 안 가장 가까운 시설물에 자동 연결
+   (경계밸브 사진은 밸브류만). 가장 가까운 것과 두 번째 거리 차이가 5m 안이면 '연결 확인 필요'로 남김. 자동 연결은 저장하지 않고 그때그때 계산 */
+const PH_FC_R=15,PH_FC_GAP=5,PH_VALVE=new Set(['SA200','SA201','SA202','SA203','SA204','SA205']);
+const phFcKd=m=>{const k=phKd(m);return k==='bv'||k==='fc'};
+function facKey(i){const f=FAC.pt[i],P=f.p||{},id=facId(P);return id?f.k+':'+id.replace(/[;=!]/g,'_'):P._fid?'F:'+P._fid:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6)}
+function facKeyI(){if(FAC.keyI&&FAC.keyIpt===FAC.pt&&FAC.keyIn===FAC.n)return FAC.keyI;const M=new Map();for(let i=0;i<FAC.n;i++){const k=facKey(i);if(!M.has(k))M.set(k,i)}FAC.keyI=M;FAC.keyIpt=FAC.pt;FAC.keyIn=FAC.n;return M}
+function facName(i){const f=FAC.pt[i],id=facId(f.p);return facKindInfo(f.k).name+(id?' '+id:'')}
+function facNear(lat,lng,valve,R){if(!FAC.n||lat==null)return [];const kx=111320*Math.cos(lat*Math.PI/180),ky=110574,dx=R/kx,dy=R/ky,out=[];
+ for(const i of facQuery(lng-dx,lat-dy,lng+dx,lat+dy)){if(FAC.dl[i])continue;if(valve&&!PH_VALVE.has(FAC.kinds[FAC.k[i]]))continue;const d=Math.hypot((FAC.x[i]-lng)*kx,(FAC.y[i]-lat)*ky);if(d<=R)out.push({i,d})}
+ return out.sort((a,b)=>a.d-b.d)}
+function phFacLinks(){const L=new Map(),amb=new Set();PH.fcAmb=amb;PH.fcL=L;if(!FAC.n)return L;const KI=facKeyI();
+ for(const m of PH.list){if(!phFcKd(m)||m.solo)continue;
+  if(m.fc&&m.fc!=='-'){const i=KI.get(m.fc);if(i!=null){L.set(m.id,{key:m.fc,i,man:1});continue}} /* 직접 연결한 시설물이 없어졌으면 자동 연결로 */
+  if(m.fc==='-'||m.lat==null)continue;
+  const c=facNear(m.lat,m.lng,phKd(m)==='bv',PH_FC_R);if(!c.length)continue;
+  if(c.length>1&&c[1].d-c[0].d<PH_FC_GAP){amb.add(m.id);continue}
+  L.set(m.id,{key:facKey(c[0].i),i:c[0].i})}
+ return L}
+/* 지도: 시설물 아이콘에 붙은 사진 수(보기 기간·종류 기준) → 시설물 캔버스에 📷 배지 */
+function facPhSync(MG){const old=FAC.phn;FAC.phn=null;if(FAC.n&&$('phShow').value!=='off'){const KI=facKeyI();let a=null;for(const g of MG){if(!g.fac)continue;const i=KI.get(g.fac);if(i==null)continue;if(!a)a=new Uint16Array(FAC.n);a[i]=Math.min(65535,a[i]+g.n)}FAC.phn=a}
+ if(old||FAC.phn)facDraw()}
+/* 시설물이 지금 줌에서 보이면 사진 아이콘은 따로 그리지 않음(배지로 표시) */
+function phFacHid(g,z){if(!g.fac||!FAC.n)return false;const i=facKeyI().get(g.fac);return i!=null&&facOn(FAC.kinds[FAC.k[i]],z)&&!FAC.dl[i]}
+/* 시설물 정보창 — 붙은 사진 줄 + 사진 넣기 */
+function phFacHtml(i){if(typeof PH==='undefined')return '';const key=facKey(i),g=PH.gById&&PH.gById.get('f:'+key),ids=g?g.ids.slice().sort((a,b)=>(PH.byId.get(b).ts||0)-(PH.byId.get(a).ts||0)):[];
+ const th=ids.slice(0,8).map(id=>`<img data-fph="${esc(id)}" src="${phThumbNow(id)||''}" alt="" title="${esc(PH.byId.get(id).dt||'촬영시각 없음')}" onclick="phFacOpen(this)">`).join('');
+ setTimeout(()=>document.querySelectorAll('img[data-fph]').forEach(im=>{if(!im.getAttribute('src'))phThumb(im.dataset.fph).then(u=>{if(u)im.src=u})}),0);
+ return `<div class="fph"><b>📷 사진 ${ids.length?ids.length.toLocaleString()+'장':'없음'}</b>${ids.length>8?` <small>(최근 8장)</small>`:''}${th?`<div class="th">${th}</div>`:''}<div class="bt"><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'cam')">📸 찍어 넣기</button><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'alb')">🖼️ 앨범에서</button></div></div>`}
+function phFacOpen(el){const id=el.dataset.fph,g=PH.V&&PH.V.mOf.get(id);if(g&&map&&g.lat!=null){map.closePopup();setTimeout(()=>phPopOpen(g.id,id),50)}else phGalOpen(id)}
+function phFacAdd(el,mode){const i=+el.dataset.fi;if(!FAC.pt[i])return;const key=facKey(i),kd=PH_VALVE.has(FAC.kinds[FAC.k[i]])?'bv':'fc',ll={lat:FAC.y[i],lng:FAC.x[i]},nm=facName(i);
+ let inp=document.getElementById('phFacIn');if(!inp){inp=document.createElement('input');inp.type='file';inp.id='phFacIn';inp.hidden=true;document.body.appendChild(inp)}
+ if(mode==='cam'){inp.accept='image/*';inp.setAttribute('capture','environment');inp.multiple=false}else{inp.removeAttribute('capture');inp.accept=$('phFile').accept;inp.multiple=true}
+ inp.onchange=async()=>{const f=[...(inp.files||[])];if(!f.length)return;if(map)map.closePopup();const n0=PH.list.length;
+  try{await phAdd(f,ll,{all:true,kd,fc:key})}finally{inp.value=''}const n=PH.list.length-n0;
+  phToast(n?`🔧 ${nm}에 사진 ${n.toLocaleString()}장을 넣었습니다 (${PH_KD[kd].n}).`:'넣은 사진이 없습니다 (이미 있는 사진이거나 읽지 못한 사진).',{ms:6000})};
+ inp.click()}
+/* 사진 정보창 — 시설물 연결 바꾸기: 30m 안 시설물 목록 */
+async function phFacSet(ids,key){const M=ids.map(id=>PH.byId.get(id)).filter(Boolean);if(!M.length)return;const prev=M.map(m=>[m.id,m.fc,m.kd]);
+ M.forEach(m=>{if(key)m.fc=key;else delete m.fc;if(key&&key!=='-'&&!phFcKd(m)){const i=facKeyI().get(key);m.kd=i!=null&&PH_VALVE.has(FAC.kinds[FAC.k[i]])?'bv':'fc'}});
+ await phSaveMeta(true);phRefresh();phViewsRefresh();try{shKick(true)}catch(_){}
+ phToast(key==='-'?`🔧 사진 ${M.length}장의 시설물 연결을 풀었습니다.`:key?`🔧 사진 ${M.length}장을 ${facName(facKeyI().get(key))}에 붙였습니다.`:`🔧 사진 ${M.length}장을 자동 연결로 되돌렸습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,f,k])=>{const m=PH.byId.get(id);if(!m)return;if(f)m.fc=f;else delete m.fc;if(k)m.kd=k;else delete m.kd});await phSaveMeta(true);phRefresh();phViewsRefresh();try{shKick(true)}catch(_){}phToast('↩ 연결을 되돌렸습니다.',{ms:4000})}})}
+/* 파일명 자동 구분 규칙: '글자=종류' 쉼표로 여러 개. 긴 글자부터 맞춤 */
+function phKdRules(){const v=String(($('phKdW')||{}).value??PH_KDW0);if(PH.kdwV===v)return PH.kdwR;
+ const r=v.split(/[,\n]+/).map(t=>t.split('=').map(x=>x.normalize('NFC').trim())).filter(([w,k])=>w&&phKdOf(k)).map(([w,k])=>[w.toLowerCase(),phKdOf(k)]).sort((a,b)=>b[0].length-a[0].length);
+ PH.kdwV=v;PH.kdwR=r;return r}
+function phKdGuess(name){const nm=String(name||'').normalize('NFC').toLowerCase();for(const [w,k] of phKdRules())if(nm.includes(w))return k;return ''}
+const phKdUp=()=>phKdOf(($('phKdUp')||{}).value)||'mw';
+const phKdOpts=(sel,all)=>(all?`<option value="*">${all}</option>`:'')+PH_KDS.map(k=>`<option value="${k}"${k===sel?' selected':''}>${PH_KD[k].ic} ${PH_KD[k].n}</option>`).join('');
+function phKdCnt(){const c=new Map(PH_KDS.map(k=>[k,0]));for(const m of PH.list)c.set(phKd(m),c.get(phKd(m))+1);return c}
+/* 보기 종류(지도·갤러리·내보내기 공통) */
+/* 종류 고르기 칸 채우기 — 패널(올릴 종류·보기 종류)·갤러리 */
+function phKdSel(sel,c){if(!sel)return;c=c||phKdCnt();const h=`<option value="*">📁 모든 종류 · ${PH.list.length.toLocaleString()}장</option>`+PH_KDS.map(k=>`<option value="${k}">${PH_KD[k].ic} ${PH_KD[k].n} · ${c.get(k).toLocaleString()}장</option>`).join('');
+ if(sel.dataset.h!==h){sel.innerHTML=h;sel.dataset.h=h}sel.value=PH.kf}
+function phKdFill(){const up=$('phKdUp');if(up&&!up.options.length){let v='mw';try{v=phKdOf(localStorage.getItem('geo-phkdup'))||'mw'}catch(_){}up.innerHTML=phKdOpts(v)}phKdSel($('phKF'))}
+/* 방금 올린 사진 등 여러 장의 종류를 한 번에 고르는 작은 창 */
+function phKdAsk(ids){let el=document.getElementById('phKdAsk');if(!el){el=document.createElement('div');el.id='phKdAsk';el.setAttribute('role','dialog');el.setAttribute('aria-label','사진 종류 고르기');document.body.appendChild(el)}
+ el.innerHTML=`<b>📁 사진 ${ids.length.toLocaleString()}장의 종류</b>`+PH_KDS.map(k=>`<button type="button" data-k="${k}">${PH_KD[k].ic} ${PH_KD[k].n}</button>`).join('')+'<button type="button" class="x">닫기</button>';el.hidden=false;
+ el.onclick=async e=>{const b=e.target.closest('button');if(!b)return;el.hidden=true;if(b.dataset.k)await phSetKd(ids,b.dataset.k)}}
+function phSetKf(k){PH.kf=PH_KD[k]?k:'*';try{localStorage.setItem('geo-phkf',PH.kf)}catch(_){}if(map)map.closePopup();phView();phPerUI();phDraw();phStats();PH.views.forEach(x=>{try{x.refresh()}catch(_){}})}
+/* 사진 종류 바꾸기 (여러 장) — 되돌리기 가능 */
+async function phSetKd(ids,kd,quiet){kd=phKdOf(kd)||'mw';const M=ids.map(id=>PH.byId.get(id)).filter(m=>m&&phKd(m)!==kd);if(!M.length){if(!quiet)phToast(`이미 모두 ${PH_KD[kd].n} 사진입니다.`,{ms:3000});return 0}
+ const prev=M.map(m=>[m.id,m.kd]);M.forEach(m=>{if(kd==='mw')delete m.kd;else m.kd=kd});
+ await phSaveMeta(true);phRefresh();phViewsRefresh();try{shKick(true)}catch(_){}
+ phToast(`📁 사진 ${M.length.toLocaleString()}장을 ${PH_KD[kd].ic} ${PH_KD[kd].n}(으)로 바꿨습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,k])=>{const m=PH.byId.get(id);if(!m)return;if(k)m.kd=k;else delete m.kd});await phSaveMeta(true);phRefresh();phViewsRefresh();try{shKick(true)}catch(_){}phToast('↩ 종류를 되돌렸습니다.',{ms:4000})}});return M.length}
 /* 기준 위치(민원지점): PH.ref = Map('연도|번호' → [[위도,경도,접수일(ms)|null],…]). 같은 번호를 해마다 다시 쓰므로(긴급7이 2025·2026 모두 있음) 연도를 붙여 둠.
    연도 ''(0)은 연도를 모르는 예전 기준 위치. IDB 'phref' = {at,ent:[[키,점들]]} — at은 직원 공유(🗺️ 기준자료 공유) 버전 */
 const phRefK=(y,c)=>(y||'')+'|'+c;
@@ -4454,18 +4535,19 @@ function phCodeOf(m,re){if(m.cd)return m.cd;const nm=String(m.name||'').normaliz
 const phRcpLbl=c=>/^\d+$/.test(c)?'접수 '+c:c;
 const phCodeNum=c=>{const x=/(\d+)$/.exec(c||'');return x?+x[1]:Infinity};
 function phGroup(){
- const re=phCodeRe(),code=new Map();for(const m of PH.list){if(m.solo)continue;const c=phCodeOf(m,re);if(c)code.set(m.id,c)}PH.code=code;
+ const re=phCodeRe(),code=new Map();for(const m of PH.list){if(m.solo||phKd(m)!=='mw')continue;const c=phCodeOf(m,re);if(c)code.set(m.id,c)}PH.code=code;
+ const FL=phFacLinks();
  const R=+$('phR').value||20,T=+$('phT').value,kx=111320*Math.cos(36.2*Math.PI/180),ky=110574,cs=R*2;
- const A=PH.list.filter(m=>m.lat!=null&&!code.has(m.id)),n=A.length,par=new Int32Array(n);for(let i=0;i<n;i++)par[i]=i;
+ const A=PH.list.filter(m=>m.lat!=null&&!code.has(m.id)&&!FL.has(m.id)),n=A.length,par=new Int32Array(n);for(let i=0;i<n;i++)par[i]=i;
  const fd=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i]}return i},un=(a,b)=>{a=fd(a);b=fd(b);if(a!==b)par[b]=a};
- const X=new Float64Array(n),Y=new Float64Array(n),S=A.map(m=>phStem(m.name)),D=A.map(m=>(m.dt||'').slice(0,10)),grid=new Map();
+ const X=new Float64Array(n),Y=new Float64Array(n),K=A.map(phKd),S=A.map(m=>phStem(m.name)),D=A.map(m=>(m.dt||'').slice(0,10)),grid=new Map();
  A.forEach((m,i)=>{X[i]=m.lng*kx;Y[i]=m.lat*ky;const k=Math.floor(X[i]/cs)+','+Math.floor(Y[i]/cs);let c=grid.get(k);if(!c)grid.set(k,c={t:[],z:[]});(m.ts?c.t:c.z).push(i)});
  grid.forEach(c=>c.t.sort((a,b)=>A[a].ts-A[b].ts));const TW=T?(T>=1440?86400000:T*60000):0;
  const lb=(arr,v)=>{let lo=0,hi=arr.length;while(lo<hi){const md=(lo+hi)>>1;if(A[arr[md]].ts<v)lo=md+1;else hi=md}return lo};
  const tOK=(a,b)=>{if(!T)return true;const ta=A[a].ts,tb=A[b].ts;if(!ta||!tb)return true;if(T>=1440)return D[a]===D[b];return Math.abs(ta-tb)<=T*60000};
  for(let i=0;i<n;i++){if(A[i].solo)continue;const gx=Math.floor(X[i]/cs),gy=Math.floor(Y[i]/cs);
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const c=grid.get((gx+dx)+','+(gy+dy));if(!c)continue;
-   const chk=j=>{if(j<=i||A[j].solo)return;const dd=Math.hypot(X[i]-X[j],Y[i]-Y[j]);if(dd>cs)return;if((dd<=R||(S[i]&&S[i]===S[j]))&&tOK(i,j))un(i,j)};
+   const chk=j=>{if(j<=i||A[j].solo||K[i]!==K[j])return;const dd=Math.hypot(X[i]-X[j],Y[i]-Y[j]);if(dd>cs)return;if((dd<=R||(S[i]&&S[i]===S[j]))&&tOK(i,j))un(i,j)};
     if(TW&&A[i].ts){const t0=A[i].ts-TW,t1=A[i].ts+TW;for(let k=lb(c.t,t0);k<c.t.length&&A[c.t[k]].ts<=t1;k++)chk(c.t[k])}else c.t.forEach(chk);c.z.forEach(chk)}}
  const gm=new Map();A.forEach((m,i)=>{const r=fd(i);let g=gm.get(r);if(!g)gm.set(r,g={ids:[],la:0,ln:0,k:0});g.ids.push(m.id);g.la+=m.lat;g.ln+=m.lng;g.k++});
  const groups=[...gm.values()].map(g=>({ids:g.ids,code:'',lat:g.la/g.k,lng:g.ln/g.k,ref:false}));
@@ -4484,23 +4566,25 @@ function phGroup(){
   else if(mk){lat=ma/mk;lng=mn/mk;how=`위치도 빨간 점(${c})`;src='map'}else if(r){lat=r.la;lng=r.ln;how=`기준 위치 파일(${c})`;src='ref'}else if(k){lat=la/k;lng=ln/k;how=`같은 번호(${c}) 사진 GPS`;src='gps'}
   if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&(r.y||!m.map))||(hk&&m.src==='현위치'))inf.set(id,how)}
   groups.push({ids,code:c,gk,yr:a.y||0,rk:r?r.k:'',ri:r?r.i:-1,amb:a.amb,ys:a.ys,off:a.off,lat,lng,ref:src==='map'||src==='ref',src})});
+ {const fg=new Map();FL.forEach((v,id)=>{let a=fg.get(v.key);if(!a)fg.set(v.key,a={i:v.i,ids:[],man:0});a.ids.push(id);if(v.man)a.man=1});
+  fg.forEach((a,key)=>groups.push({ids:a.ids,code:'',fac:key,facLb:'🔧 '+facName(a.i),lat:FAC.y[a.i],lng:FAC.x[a.i],ref:false,src:'fac'}))}
  {const nc=new Map();groups.forEach(g=>{if(g.code)nc.set(g.code,(nc.get(g.code)||0)+1)});groups.forEach(g=>{if(g.code)g.ymul=nc.get(g.code)>1||(RI.get(g.code)||[]).some(e=>e.y&&e.y!==g.yr)})}
  /* 번호도 GPS도 없는 사진 → 파일명이 같은 줄기 또는 10분 안에 찍은 사진의 묶음에 '위치 추정'으로 */
- const stemMap=new Map(),anc=[];
- groups.forEach((g,gi)=>{if(g.lat==null)return;for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.ts)anc.push([m.ts,gi]);if(!g.code){const s=phStem(m.name);if(s){let l=stemMap.get(s);if(!l)stemMap.set(s,l=[]);l.push([m.ts||0,gi])}}}});
- anc.sort((a,b)=>a[0]-b[0]);
- const nearT=ts=>{if(!anc.length)return -1;let lo=0,hi=anc.length-1;while(lo<=hi){const md=(lo+hi)>>1;if(anc[md][0]<ts)lo=md+1;else hi=md-1}
+ const stemMap=new Map(),ancK=new Map();
+ groups.forEach((g,gi)=>{if(g.lat==null)return;const gk=phKd(PH.byId.get(g.ids[0]));let anc=ancK.get(gk);if(!anc)ancK.set(gk,anc=[]);for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.ts)anc.push([m.ts,gi]);if(!g.code){const s=phStem(m.name);if(s){const sk=gk+'|'+s;let l=stemMap.get(sk);if(!l)stemMap.set(sk,l=[]);l.push([m.ts||0,gi])}}}});
+ ancK.forEach(a=>a.sort((x,y)=>x[0]-y[0]));
+ const nearT=(ts,kd)=>{const anc=ancK.get(kd)||[];if(!anc.length)return -1;let lo=0,hi=anc.length-1;while(lo<=hi){const md=(lo+hi)>>1;if(anc[md][0]<ts)lo=md+1;else hi=md-1}
   let best=-1,bd=Infinity;for(const k of [lo-1,lo])if(k>=0&&k<anc.length){const d=Math.abs(anc[k][0]-ts);if(d<bd){bd=d;best=anc[k][1]}}return bd<=600000?best:-1};
  const nog=[];
- PH.list.forEach(m=>{if(m.lat!=null||code.has(m.id))return;let gi=-1,how='';const s=m.solo?'':phStem(m.name);
-  if(s&&stemMap.has(s)){const l=stemMap.get(s);gi=l[0][1];if(m.ts){let bd=Infinity;for(const [t,x] of l){const d=t?Math.abs(t-m.ts):9e15;if(d<bd){bd=d;gi=x}}}how='파일명 유사'}
-  else if(m.ts&&!m.solo){gi=nearT(m.ts);how='촬영시각 근접'}
+ PH.list.forEach(m=>{if(m.lat!=null||code.has(m.id)||FL.has(m.id))return;let gi=-1,how='';const mk=phKd(m),s=m.solo?'':phStem(m.name),sk=mk+'|'+s;
+  if(s&&stemMap.has(sk)){const l=stemMap.get(sk);gi=l[0][1];if(m.ts){let bd=Infinity;for(const [t,x] of l){const d=t?Math.abs(t-m.ts):9e15;if(d<bd){bd=d;gi=x}}}how='파일명 유사'}
+  else if(m.ts&&!m.solo){gi=nearT(m.ts,mk);how='촬영시각 근접'}
   if(gi>=0){groups[gi].ids.push(m.id);inf.set(m.id,how)}else nog.push(m.id)});
  const ts=id=>PH.byId.get(id).ts||9e15,nm=id=>PH.byId.get(id).name;
  const mp=id=>PH.byId.get(id).map?0:1;
  PH.G=groups.map(g=>{g.ids.sort((a,b)=>mp(a)-mp(b)||ts(a)-ts(b)||nm(a).localeCompare(nm(b),'ko',{numeric:true}));
   let t0=0,t1=0,memo=false,hasInf=false,man=!g.ref,stem='';for(const id of g.ids){const m=PH.byId.get(id);if(m.ts){if(!t0||m.ts<t0)t0=m.ts;if(m.ts>t1)t1=m.ts}if(m.memo)memo=true;if(inf.has(id))hasInf=true;else if(m.src!=='수동')man=false;if(!stem&&!g.code)stem=phStem(m.name)}
-  return{id:g.code?'c:'+g.gk:'g'+g.ids[0],ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,yr:g.yr||0,ymul:!!g.ymul,rk:g.rk||'',ri:g.ri??-1,amb:g.amb||'',ys:g.ys||null,off:!!g.off,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
+  return{id:g.fac?'f:'+g.fac:g.code?'c:'+g.gk:'g'+g.ids[0],kd:phKd(PH.byId.get(g.ids[0])),fac:g.fac||'',facLb:g.facLb||'',ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,yr:g.yr||0,ymul:!!g.ymul,rk:g.rk||'',ri:g.ri??-1,amb:g.amb||'',ys:g.ys||null,off:!!g.off,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
  PH.G.sort((a,b)=>(b.t1||0)-(a.t1||0)||b.n-a.n);
  /* 사진 번호(묶음 번호): 촬영 시각 순 1,2,3… — 🗜️ 전체 내보내기 엑셀의 '묶음 번호'와 같은 번호 */
  [...PH.G].sort((a,b)=>(a.t0||9e15)-(b.t0||9e15)).forEach((g,i)=>{g.no=i+1});
@@ -4594,16 +4678,20 @@ function phSub(g,ids,key){let t0=0,t1=0,memo=false,inf=false,la=0,ln=0,k=0;for(c
  return{...g,id:g.id+'|'+key,key,ids,n:ids.length,t0,t1,memo,inf,lat:k?la/k:g.lat,lng:k?ln/k:g.lng,lbl:undefined,blk:undefined}}
 /* 보기용 묶음: 갤러리(galG/gOf)와 지도(mapG/mOf). '모두'를 고르면 갤러리는 기간별로 나눠 보여 주고 지도는 전체 */
 function phView(){const u=PH.per.u;let k=PH.per.k;
- if(u==='all'||!PH.list.length){PH.V={u,k:'*',keys:[],galG:PH.G,gOf:PH.gOf,mapG:PH.G,mOf:PH.gOf,nog:PH.nog,sec:false};return}
+ /* 보기 종류: 묶음은 한 종류만 담으므로 묶음 단위로 거름 */
+ let G=PH.G,GOF=PH.gOf,NOG=PH.nog;if(PH.kf!=='*'){G=PH.G.filter(g=>g.kd===PH.kf);GOF=new Map();G.forEach(g=>g.ids.forEach(id=>GOF.set(id,g)));NOG=PH.nog.filter(id=>phKd(PH.byId.get(id))===PH.kf)}PH.KG=G;
+ if(u==='all'||!PH.list.length){PH.V={u,k:'*',keys:[],galG:G,gOf:GOF,mapG:G,mOf:GOF,nog:NOG,sec:false};return}
  const cnt=new Map(),split=[],of=new Map(),add=(key,n)=>cnt.set(key,(cnt.get(key)||0)+n);
- for(const g of PH.G){const by=new Map();for(const id of g.ids){const key=phPKey(PH.byId.get(id).ts||g.t0,u); /* 촬영시각 없는 사진(위치도·사진대지)은 같은 묶음의 촬영 시각을 따라감 → 묶음이 기간별로 쪼개지지 않음 */let a=by.get(key);if(!a)by.set(key,a=[]);a.push(id)}
+ for(const g of G){const by=new Map();for(const id of g.ids){const key=phPKey(PH.byId.get(id).ts||g.t0,u); /* 촬영시각 없는 사진(위치도·사진대지)은 같은 묶음의 촬영 시각을 따라감 → 묶음이 기간별로 쪼개지지 않음 */let a=by.get(key);if(!a)by.set(key,a=[]);a.push(id)}
   by.forEach((ids,key)=>{add(key,ids.length);const d=by.size===1?{...g,key}:phSub(g,ids,key);split.push(d);for(const id of ids)of.set(id,d)})}
- for(const id of PH.nog)add(phPKey(PH.byId.get(id).ts,u),1);
+ for(const id of NOG)add(phPKey(PH.byId.get(id).ts,u),1);
  const keys=[...cnt].map(([key,n])=>({key,n,label:phPLabel(key)})).sort((a,b)=>a.key==='none'?1:b.key==='none'?-1:b.key.localeCompare(a.key));
  if(k!=='*'&&!cnt.has(k))k=PH.per.k='*';
- if(k==='*'){PH.V={u,k,keys,galG:split,gOf:of,mapG:PH.G,mOf:PH.gOf,nog:PH.nog,sec:true};return}
+ if(k==='*'){PH.V={u,k,keys,galG:split,gOf:of,mapG:G,mOf:GOF,nog:NOG,sec:true};return}
  const gs=split.filter(d=>d.key===k),mo=new Map();gs.forEach(d=>d.ids.forEach(id=>mo.set(id,d)));
- PH.V={u,k,keys,galG:gs,gOf:mo,mapG:gs,mOf:mo,nog:PH.nog.filter(id=>phPKey(PH.byId.get(id).ts,u)===k),sec:false}}
+ PH.V={u,k,keys,galG:gs,gOf:mo,mapG:gs,mOf:mo,nog:NOG.filter(id=>phPKey(PH.byId.get(id).ts,u)===k),sec:false}}
+/* 기간·종류를 골라 보는 중이면 그 사진만 (내보내기·민원대장용) */
+const phVIds=()=>PH.V&&(PH.V.k!=='*'||PH.kf!=='*')?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id);
 function phPerFill(su,sk,bp,bn){const V=PH.V||{u:'all',k:'*',keys:[]};su.value=PH.per.u;const on=PH.per.u!=='all';
  [sk,bp,bn].forEach(x=>{if(x)(x.closest('label.f')||x).hidden=!on});if(!on)return;
  const tot=V.keys.reduce((s,x)=>s+x.n,0);sk.innerHTML=`<option value="*">모두 (${PU_LB[PH.per.u]}로 나눠 보기) · ${tot.toLocaleString()}장</option>`+V.keys.map(x=>`<option value="${x.key}">${esc(x.label)} · ${x.n.toLocaleString()}장</option>`).join('');sk.value=V.k;
@@ -4614,14 +4702,14 @@ function phSetPer(u,k,noFit){PH.per={u,k:u==='all'?'*':(k||'*')};try{localStorag
 function phPerUI(){phPerFill($('phPU'),$('phPK'));const V=PH.V;
  $('phPerInfo').textContent=V&&V.u!=='all'?(V.k==='*'?`📅 ${PU_LB[V.u]} ${V.keys.length.toLocaleString()}개 기간 — 지도에는 전체, 갤러리에는 기간별로 나눠 표시`:`📅 ${phPLabel(V.k)}: 사진 ${V.keys.find(x=>x.key===V.k).n.toLocaleString()}장 · 위치 ${V.mapG.length.toLocaleString()}곳만 지도·갤러리에 표시`):'';
  PH.views.forEach(x=>{if(x.perUI)try{x.perUI()}catch(_){}});
- const sel=V&&V.k!=='*';$('phZip').textContent=sel?`🗜️ ${phPLabel(V.k)} 내보내기`:'🗜️ 전체 내보내기'}
+ const sel=V&&V.k!=='*',kf=PH.kf!=='*';$('phZip').textContent=sel||kf?`🗜️ ${[sel&&phPLabel(V.k),kf&&PH_KD[PH.kf].n].filter(Boolean).join(' · ')} 내보내기`:'🗜️ 전체 내보내기'}
 function phBlkAt(lat,lng){if(!poly)return '';try{pidxBuild();const r=pidxFind(lng,lat,+$('tol').value||0);return r?String(poly.features[r.fi].properties[$('blkField').value]??'').trim()+(r.how==='근접'?' (근접)':''):''}catch(_){return ''}}
 const phGBlk=g=>g.blk!==undefined?g.blk:(g.blk=g.lat==null?'':phBlkAt(g.lat,g.lng));
 const phHM=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 const phYMD=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function phGTime(g){if(!g.t0)return '촬영시각 없음';const a=phYMD(g.t0),b=phYMD(g.t1);return a===b?(g.t0===g.t1?`${a} ${phHM(g.t0)}`:`${a} ${phHM(g.t0)}~${phHM(g.t1)}`):`${a} ~ ${b}`}
 const phGLabel=g=>g.lbl||(g.lbl=phGLabel0(g));
-function phGLabel0(g){if(g.code)return phRcpLbl(g.code)+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
+function phGLabel0(g){if(g.fac)return g.facLb||'🔧 시설물';if(g.code)return phRcpLbl(g.code)+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
  const b=phGBlk(g),d=g.t0?new Date(g.t0):null;return (b?b+' ':'')+'현장'+(d?` ${d.getMonth()+1}/${d.getDate()} ${phHM(g.t0)}`:'')}
 /* ---------- 촬영 연도별 아이콘 색 — 연도마다 고정 색(2025=청록, 2026=파랑 …), 촬영시각 없으면 회색 ---------- */
 const PH_YC=['#0f766e','#1d4ed8','#c2410c','#be185d','#4d7c0f','#78350f','#6d28d9','#334155'],PH_YC0='#6b7280';
@@ -4629,26 +4717,29 @@ const phYr=g=>g.t0?new Date(g.t0).getFullYear():0;
 const phYC=y=>y?PH_YC[((y-2025)%8+8)%8]:PH_YC0;
 const phColOn=()=>$('phCol').value!=='one',sel0=()=>PH.V&&PH.per.u==='year'?PH.V.k:'';
 function phYrLeg(MG){const on=phColOn()&&$('phShow').value!=='off'&&MG.length>0,cnt=new Map(),sel=sel0();
- if(on)for(const g of PH.G)if(g.lat!=null)for(const id of g.ids){const t=PH.byId.get(id).ts||g.t0,y=t?new Date(t).getFullYear():0;cnt.set(y,(cnt.get(y)||0)+1)}
- const ys=[...cnt.keys()].sort((a,b)=>(b||-1)-(a||-1)),key=ys.map(y=>y+':'+cnt.get(y)).join(',')+'|'+sel+'|'+!!UI.leg+'|'+!!PH.legMin;
+ const kc=new Map();if($('phShow').value!=='off')for(const g of PH.G)if(g.lat!=null)kc.set(g.kd,(kc.get(g.kd)||0)+g.n);const kds=PH_KDS.filter(k=>kc.get(k)),kOn=kds.length>1||PH.kf!=='*';
+ if(on)for(const g of (PH.KG||PH.G))if(g.lat!=null)for(const id of g.ids){const t=PH.byId.get(id).ts||g.t0,y=t?new Date(t).getFullYear():0;cnt.set(y,(cnt.get(y)||0)+1)}
+ const ys=[...cnt.keys()].sort((a,b)=>(b||-1)-(a||-1)),key=ys.map(y=>y+':'+cnt.get(y)).join(',')+'|'+sel+'|'+!!UI.leg+'|'+!!PH.legMin+'|'+PH.kf+'|'+(kOn?kds.map(k=>k+kc.get(k)).join(','):'');
  if(PH.yrKey===key)return;PH.yrKey=key;
  const lb=y=>y?y+'년':'시각 없음',P=$('phYrLeg');
  if(P)P.innerHTML=ys.length?'🎨 '+ys.map(y=>`<span><i style="background:${phYC(y)}"></i>${lb(y)} ${cnt.get(y).toLocaleString()}장</span>`).join(''):'';
  if(!map)return;if(!PH.leg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg phleg');L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);
    d.addEventListener('click',e=>{if(e.target.closest('.plt')){PH.legMin=!PH.legMin;try{localStorage.setItem('geo-phlegmin',PH.legMin?'1':'0')}catch(_){}phYrLeg(PH.V?PH.V.mapG:PH.G);return}
+    const kr=e.target.closest('[data-kd]');if(kr){phSetKf(PH.kf===kr.dataset.kd?'*':kr.dataset.kd);return}
     const r=e.target.closest('[data-y]');if(!r)return;const k=r.dataset.y==='0'?'none':'Y'+r.dataset.y;phSetPer('year',sel0()===k?'*':k)});return d}});PH.leg=new C();map.addControl(PH.leg);try{PH.legMin=localStorage.getItem('geo-phlegmin')==='1'}catch(_){}}
- const el=PH.leg.getContainer();if(!ys.length||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!PH.legMin);
- el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">📷 촬영 연도 <span style="color:var(--mute)">${PH.legMin?'▸':'▾'}</span></b>`+ys.map(y=>{const k=y?'Y'+y:'none';return `<div data-y="${y}" class="${sel===k?'on':''}" title="눌러서 ${lb(y)} 사진만 보기 (다시 누르면 전체)"><i class="yr" style="background:${phYC(y)}"></i>${lb(y)} <small>${cnt.get(y).toLocaleString()}장</small></div>`}).join('')}
+ const el=PH.leg.getContainer();if((!ys.length&&!kOn)||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!PH.legMin);
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">📷 촬영 연도 <span style="color:var(--mute)">${PH.legMin?'▸':'▾'}</span></b>`+ys.map(y=>{const k=y?'Y'+y:'none';return `<div data-y="${y}" class="${sel===k?'on':''}" title="눌러서 ${lb(y)} 사진만 보기 (다시 누르면 전체)"><i class="yr" style="background:${phYC(y)}"></i>${lb(y)} <small>${cnt.get(y).toLocaleString()}장</small></div>`}).join('')+
+  (kOn?`<div style="margin-top:4px;font-weight:700;cursor:default">📁 사진 종류</div>`+kds.concat(PH.kf!=='*'&&!kds.includes(PH.kf)?[PH.kf]:[]).map(k=>`<div data-kd="${k}" class="${PH.kf===k?'on':''}" title="눌러서 ${PH_KD[k].n} 사진만 보기 (다시 누르면 전체)">${PH_KD[k].ic} ${PH_KD[k].n} <small>${(kc.get(k)||0).toLocaleString()}장</small></div>`).join(''):'')}
 /* ---------- 지도: 화면 안 묶음만, 많으면 칸별로 합쳐 표시 ---------- */
 function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn();
- return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${yc?' yc':''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${yc?` style="background:${phYC(phYr(g))}"`:''}>${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':'📷'}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
+ return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${yc?' yc':''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${yc?` style="background:${phYC(phYr(g))}"`:''}>${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
 function phToggle(){const sh=$('phShow');sh.value=sh.value==='off'?'on':'off';if(sh.value==='off'&&PH.pop&&map)map.closePopup();sh.dispatchEvent(new Event('change'))}
-function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);if(!map)return;if(!PH.L)PH.L=L.layerGroup();
+function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);try{facPhSync(MG)}catch(_){}if(!map)return;if(!PH.L)PH.L=L.layerGroup();
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
- const b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])),z=map.getZoom();
+ const z=map.getZoom(),b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])&&!phFacHid(g,z));
  const ed=PH.ed&&PH.ed.on;if(ed)PH.ed.clu=false;
  if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:hlIc(phIcon(g),g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
    k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else{phPopOpen(g.id);hlSeenPh(g.ids)}});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
@@ -4688,15 +4779,21 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   const loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?{lat:m.lat,lng:m.lng}:g&&g.lat!=null?{lat:g.lat,lng:g.lng}:null,blk=g?phGBlk(g):'';
   inf.innerHTML=`<b>${esc(m.name)}</b><br>${m.dt?'📅 '+esc(m.dt):'📅 촬영시각 없음'}${m.dir!=null?` · 🧭 ${m.dir}°`:''}${m.alt!=null?` · ⛰ ${m.alt}m`:''}<br>`+
    (m.map&&m.lat!=null?`🎯 위치도 빨간 점: ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='수동'?'직접 찍음':'월드 파일 '+esc(m.crs||'')})</small>`:m.map?`<span class="w">🎯 위치도 사진 — 좌표 없음. 월드 파일(.pgw)을 함께 올리거나 📍 위치 찍기로 빨간 점 자리를 지정하세요</span>`:how?`<span class="w">📍 ${m.lat!=null?'사진 GPS 대신 ':'위치 추정 — '}${how} 사용</span>`:m.lat!=null?`📍 ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'})</small>`:cd?`<span class="w">📍 위치 없음 — ${esc(cd)}: 위치도 사진이나 기준 위치 파일을 넣거나, 사진 하나에 위치를 찍으면 같은 번호 전체에 적용</span>`:'<span class="w">📍 위치 없음 — 아래 📍 위치 찍기로 지정하세요</span>')+(cd?`<br>🏷️ 분류 <b>${esc(cd)}</b>`+(m.cd||m.yr?` <small>(직접 정함${m.yr?' · '+m.yr+'년':''})</small>`:''):'')+
+   `<br>📁 종류 <select class="kdS" aria-label="사진 종류" style="font:inherit;padding:0 2px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)">${phKdOpts(phKd(m))}</select>`+
+   (phFcKd(m)?(L1=>L1?`<br>🔧 시설물 <b>${esc(facName(L1.i))}</b> <small>(${L1.man?'직접 연결':'자동 연결 · '+PH_FC_R+'m 안 가장 가까움'})</small>`:PH.fcAmb.has(m.id)?`<br><span class="w">🔧 시설물 연결 확인 필요 — 가까운 시설물이 여러 개입니다. 아래 🔧 시설물에서 고르세요</span>`:m.fc==='-'?'<br><small>🔧 시설물 연결 안 함(직접 풂)</small>':FAC.n?'<br><small>🔧 15m 안에 붙일 시설물 없음</small>':'')(PH.fcL.get(m.id)):'')+
    (blk?`<br>🗺️ 위치상 블록 <b>${esc(blk)}</b>`:'')+(g&&g.n>1?`<br>📚 묶음: ${esc(phGLabel(g))} · ${g.n}장 · ${esc(phGTime(g))}`:'')+(m.solo?'<br><small>✂️ 묶음에서 따로 뺀 사진</small>':'')+(m.note?`<br><span style="color:#dc2626">${esc(m.note)}</span>`:'');
   ta.value=m.memo||'';
   acts.innerHTML=(opts.compact?`<button type="button" class="hl" data-a="gal">🖼️ 크게 보기</button>`:loc&&g&&g.lat!=null?`<button type="button" class="hl" data-a="map">🗺️ 지도에서 보기</button>`:'')+
    (loc?(doc===document&&kvKey()?`<button type="button" data-a="rv" title="이 사진 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`:`<a href="https://map.kakao.com/link/roadview/${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}" target="_blank" rel="noopener">🚶 로드뷰</a>`):'')+
-   `<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+
+   `<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+(phFcKd(m)&&FAC.n?`<button type="button" data-a="fcl" title="이 사진을 붙일 시설물(경계밸브·시설물) 고르기">🔧 시설물</button>`:'')+
    ((g&&g.n>1)||m.solo?`<button type="button" data-a="solo">${m.solo?'🔗 다시 묶기':'✂️ 묶음에서 빼기'}</button>`:'')+
    (doc===document?(n=>`<button type="button" data-a="vid" title="이 사진 묶음에 연결한 유튜브 영상 보기·붙이기">🎬 ${n?'영상 '+n:'영상 붙이기'}</button>`)(vidFind(phVidT(g,m)).length):'')+`<button type="button" data-a="dl">⬇ 저장</button><button type="button" class="del" data-a="del">🗑 삭제</button>`+(g&&g.n>1?`<button type="button" class="del" data-a="delg">🗑 이 묶음 ${g.n}장 모두</button>`:'')};
  q('.nav.p').onclick=e=>{e.stopPropagation();v.go(v.i-1)};q('.nav.n').onclick=e=>{e.stopPropagation();v.go(v.i+1)};
  strip.onclick=e=>{const im=e.target.closest('img[data-k]');if(im)v.go(+im.dataset.k)};
+ /* 📁 종류 바꾸기 — 묶음이면 묶음 전체를 바꿀지 물음 */
+ inf.onchange=async e=>{const sl=e.target.closest('select.kdS');if(!sl)return;const m=PH.byId.get(v.pid);if(!m)return;const g=OF().get(m.id),kd=sl.value;
+  const all=g&&g.n>1&&W.confirm(`이 묶음 사진 ${g.n}장을 모두 ${PH_KD[kd].n}(으)로 바꿀까요?\n\n[취소]를 누르면 이 사진 1장만 바꿉니다.`);
+  await phSetKd(all?g.ids.slice():[m.id],kd)};
  img.onclick=async()=>{if(!v.pid)return;let b=null;try{b=await IDB.get('ph:'+v.pid)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(v.pid);if(!b)return;const u=URL.createObjectURL(b);W.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),120000)};
  let sx=null;const st=q('.stage');st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});st.addEventListener('touchend',e=>{if(sx==null)return;const d=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(d)>40)v.go(v.i+(d<0?1:-1))});
  ta.onchange=()=>{const m=PH.byId.get(v.pid);if(!m)return;m.memo=ta.value.trim();delete m.memoSrc;const g=PH.gOf.get(m.id);if(g)g.memo=g.ids.some(id=>PH.byId.get(id).memo);phSaveMeta();phView();phViewsRefresh(v)};
@@ -4711,6 +4808,12 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
     `<button type="button" class="go" data-a="go1">옮기기</button><button type="button" data-a="gox">취소</button><div class="h">접수번호 → 기준 위치(민원지점)로 · 주소 → 카카오 검색 위치로 · 좌표(36.02, 129.34)도 됩니다. 넣은 주소는 저장하지 않습니다.</div></div>`;
    const inp=acts.querySelector('[data-g="q"]');inp.onkeydown=ev=>{ev.stopPropagation();if(ev.key==='Enter'){ev.preventDefault();acts.querySelector('[data-a="go1"]').click()}else if(ev.key==='Escape')v.show(m.id)};setTimeout(()=>inp.focus(),0)}
   else if(a==='gox')v.show(m.id);
+  else if(a==='fcl'){const g=OF().get(m.id),n=g?g.n:1,c=g&&g.fac?{lat:g.lat,lng:g.lng}:m.lat!=null?{lat:m.lat,lng:m.lng}:g&&g.lat!=null?{lat:g.lat,lng:g.lng}:null,
+    near=c?facNear(c.lat,c.lng,phKd(m)==='bv',30).slice(0,8):[],cur=PH.fcL.get(m.id);
+   acts.innerHTML=`<div class="phgo"><b style="font-size:12px">🔧 붙일 시설물 (30m 안${phKd(m)==='bv'?' · 밸브류':''})</b>`+(near.length?near.map(x=>`<button type="button" data-a="fcs" data-k="${esc(facKey(x.i))}"${cur&&cur.i===x.i?' class="go"':''}>${esc(facName(x.i))} · ${Math.round(x.d)}m</button>`).join(''):'<div class="h">30m 안에 시설물이 없습니다. 📍 위치 고치기로 사진 자리를 먼저 옮기거나, 시설물 아이콘을 눌러 📸 사진을 넣으세요.</div>')+
+    (n>1?`<label><input type="radio" name="phfs" value="g" checked>이 묶음 ${n}장</label><label><input type="radio" name="phfs" value="1">이 사진만</label>`:'')+
+    `<button type="button" data-a="fcs" data-k="-">연결 풀기</button>${m.fc?'<button type="button" data-a="fcs" data-k="">자동 연결로</button>':''}<button type="button" data-a="gox">취소</button></div>`}
+  else if(a==='fcs'){const g=OF().get(m.id),sc=acts.querySelector('input[name="phfs"]:checked'),all=g&&g.n>1&&(!sc||sc.value==='g');await phFacSet(all?g.ids.slice():[m.id],b.dataset.k)}
   else if(a==='go1'||a==='goy'){const h=acts.querySelector('.phgo .h'),inp=acts.querySelector('[data-g="q"]'),sc=acts.querySelector('input[name="phgs"]:checked'),all=!sc||sc.value==='g';
    b.disabled=true;h.textContent='찾는 중…';let r;try{r=await phGoTo(m,inp.value,all,a==='goy'?+b.dataset.y:0)}catch(err){r={err:'찾지 못했습니다: '+((err&&err.message)||err)}}b.disabled=false;
    if(r.err){h.innerHTML='<span style="color:#dc2626">'+esc(r.err)+'</span>';return}
@@ -4723,7 +4826,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
  return v}
 /* 🔢 번호·주소로 옮기기 — 접수번호면 그 번호(촬영 연도)의 기준 위치(민원지점) 묶음에 넣고, 주소·좌표면 그 자리로 옮김(직접 옮긴 위치).
    all=true 묶음 전체 / false 이 사진만. 바꾼 내용은 ↩ 되돌리기 가능. 넣은 주소는 저장하지 않음 */
-const PH_FXK=['cd','yr','solo','refOff','lat','lng','src','note','acc'];
+const PH_FXK=['cd','yr','solo','refOff','lat','lng','src','note','acc','kd'];
 async function phGoTo(m,txt,all,yPick){txt=String(txt||'').normalize('NFC').trim();if(!txt)return {err:'접수번호나 주소를 넣어 주세요.'};
  const g=PH.gOf.get(m.id),ids=all&&g?g.ids.slice():[m.id],M=ids.map(id=>PH.byId.get(id)).filter(Boolean);
  const prev=M.map(x=>[x.id,PH_FXK.map(k=>x[k])]),undo=async()=>{prev.forEach(([id,vs])=>{const x=PH.byId.get(id);if(!x)return;PH_FXK.forEach((k,i)=>{if(vs[i]===undefined)delete x[k];else x[k]=vs[i]})});await phSaveMeta(true);phRefresh();phViewsRefresh()};
@@ -4736,7 +4839,7 @@ async function phGoTo(m,txt,all,yPick){txt=String(txt||'').normalize('NFC').trim
   if(!ys.length)ys=[...new Set(PH.G.filter(x=>x.code===c&&x.lat!=null&&x.yr).map(x=>x.yr))].sort(); // 기준 위치에 없으면 같은 번호 사진 묶음
   if(!ys.length)return {err:`${phRcpLbl(c)}: 기준 위치(민원지점)와 사진 모두에 이 번호의 위치가 없습니다.`};
   const y=yPick||(ys.length===1?ys[0]:0);if(!y)return {ys}; /* 두 해 모두 있으면 직접 고르게 함 */
-  M.forEach(x=>{x.cd=c;x.yr=y;delete x.solo;delete x.refOff});
+  M.forEach(x=>{x.cd=c;x.yr=y;delete x.solo;delete x.refOff;delete x.kd}); /* 접수번호로 옮기면 민원대응 사진 */
   await done(`📍 사진 ${M.length.toLocaleString()}장을 ${phRcpLbl(c)} (${y}년) 위치로 옮겼습니다.`);return {ok:1}}
  let ll=null;
  if(xy){let a=+xy[1],b=+xy[2];if(a>90)[a,b]=[b,a];if(inKR([b,a]))ll={lat:a,lng:b}}
@@ -4755,8 +4858,9 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
  root.className='phg'+(mode==='win'?' win on':'');
  root.innerHTML=`<div class="gh"><h2>🖼️ 현장 사진 갤러리</h2><span class="gs"></span><span class="sp"></span>
   <span class="gper"><select class="gpu" title="기간 단위"><option value="all">📅 전체 기간</option><option value="year">📅 연도별</option><option value="month">📅 월별</option><option value="week">📅 주별</option></select><button type="button" class="gpp" title="이전(과거) 기간">◀</button><select class="gpk" title="기간 고르기"></select><button type="button" class="gpn" title="다음(최근) 기간">▶</button></span>
+  <select class="gkd" title="사진 종류 (지도·내보내기도 같이 바뀜)"></select>
   <input type="search" class="gq" placeholder="🔍 파일명·메모·블록" style="width:150px">
-  <select class="gf" title="보기"><option value="all">전체</option><option value="multi">여러 장 묶음만</option><option value="inf">위치 추정 포함</option><option value="memo">메모 있음</option><option value="code">🏷️ 분류 번호만</option><option value="nog">위치 없는 사진·번호</option></select>
+  <select class="gf" title="보기"><option value="all">전체</option><option value="multi">여러 장 묶음만</option><option value="inf">위치 추정 포함</option><option value="memo">메모 있음</option><option value="code">🏷️ 분류 번호만</option><option value="nog">위치 없는 사진·번호</option><option value="fac">🔧 시설물에 붙은 사진</option><option value="fcamb">🔧 시설물 연결 확인 필요</option></select>
   <select class="go" title="정렬"><option value="new">최근 촬영 순</option><option value="old">오래된 순</option><option value="cnt">사진 많은 순</option><option value="code">분류번호 순</option><option value="blk">소블록 순</option></select>
   <button type="button" class="gx" title="지금 목록(기간·검색·보기 결과)의 사진을 내보냅니다. 내보낼 내용은 왼쪽 설정의 '내보낼 내용'을 따릅니다">🗜️ 목록 내보내기</button>
   ${mode==='win'?'<button type="button" class="gfs">⛶ 전체화면</button><button type="button" class="gback hl">↩ 원래 창</button>':'<button type="button" class="gw">🖥️ 새 창</button><button type="button" class="gfs">⛶ 전체화면</button><button type="button" class="gc hl">✕ 닫기 (Esc)</button>'}</div>
@@ -4765,7 +4869,7 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
  const gal={doc,root,mode,rows:[],top:[],sel:null};
  gal.view=phViewer(doc,q('.gv'),{onChange:pid=>{const g=PH.V.gOf.get(pid);gal.select(g?g.id:'nog',false);const mg=PH.V.mOf.get(pid);if(mode==='win'&&mg&&map&&$('phShow').value!=='off'){PH.sel=mg.id;phDrawSoon()}}});
  gal.isOpen=()=>mode==='win'?!W.closed:root.classList.contains('on');
- gal.perUI=()=>phPerFill(q('.gpu'),q('.gpk'),q('.gpp'),q('.gpn'));
+ gal.perUI=()=>{phPerFill(q('.gpu'),q('.gpk'),q('.gpp'),q('.gpn'));phKdSel(q('.gkd'))};
  const idxAt=y=>{let lo=0,hi=gal.rows.length-1,r=0;while(lo<=hi){const md=(lo+hi)>>1;if(gal.top[md]<=y){r=md;lo=md+1}else hi=md-1}return r};
  let raf=0;const paint=()=>{raf=0;const st=vl.scrollTop,h=vl.clientHeight||600,a=Math.max(0,idxAt(st)-6);let s='';
   for(let i=a;i<gal.rows.length;i++){const r=gal.rows[i],y=gal.top[i];if(y>st+h+RH*6)break;
@@ -4776,7 +4880,7 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
  const paintSoon=()=>{if(!raf)raf=W.requestAnimationFrame(paint)};
  gal.build=()=>{const V=PH.V,qs=q('.gq').value.trim().toLowerCase(),f=q('.gf').value,o=q('.go').value;gal.perUI();
   const hit=id=>{const m=PH.byId.get(id);return m.name.toLowerCase().includes(qs)||(m.memo||'').toLowerCase().includes(qs)};
-  let G=V.galG.filter(g=>f==='nog'?g.lat==null:f==='code'?!!g.code:f==='multi'?g.n>1:f==='inf'?g.inf:f==='memo'?g.memo:true);
+  let G=V.galG.filter(g=>f==='nog'?g.lat==null:f==='fac'?!!g.fac:f==='fcamb'?g.ids.some(id=>PH.fcAmb.has(id)):f==='code'?!!g.code:f==='multi'?g.n>1:f==='inf'?g.inf:f==='memo'?g.memo:true);
   const qz=qs.replace(/\s+/g,'');if(qs)G=G.filter(g=>(g.code||'').toLowerCase().includes(qz)||(g.stem||'').includes(qs)||String(phGBlk(g)).toLowerCase().includes(qs)||g.ids.some(hit));
   if(o==='old')G=G.slice().sort((a,b)=>(a.t0||9e15)-(b.t0||9e15));else if(o==='cnt')G=G.slice().sort((a,b)=>b.n-a.n);else if(o==='code')G=G.slice().sort((a,b)=>phCodeNum(a.code)-phCodeNum(b.code)||String(a.code).localeCompare(String(b.code),'ko')||(b.t1||0)-(a.t1||0));else if(o==='blk')G=G.slice().sort((a,b)=>String(phGBlk(a)||'힣').localeCompare(String(phGBlk(b)||'힣'),'ko',{numeric:true}));
   else G=G.slice().sort((a,b)=>(b.t1||0)-(a.t1||0)||b.n-a.n);
@@ -4800,7 +4904,7 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
  sz.onclick=e=>{const r=e.target.closest('.row');if(!r)return;const x=gal.rows[+r.dataset.i];if(!x)return;if(x.hdr){phSetPer(PH.V.u,PH.V.k===x.key?'*':x.key);return}gal.select(x.id,true)};
  let qt=0;q('.gq').oninput=()=>{clearTimeout(qt);qt=setTimeout(()=>{gal.build();if(!gal.rows.some(r=>r.id===gal.sel)){const f=firstRow();if(f)gal.select(f.id,true)}},220)};
  q('.gf').onchange=q('.go').onchange=()=>{gal.build();vl.scrollTop=0;const f=firstRow();if(f)gal.select(f.id,true);else gal.view.show(null)};
- q('.gpu').onchange=()=>{vl.scrollTop=0;phSetPer(q('.gpu').value,'*')};q('.gpk').onchange=()=>{vl.scrollTop=0;phSetPer(PH.per.u,q('.gpk').value)};
+ q('.gpu').onchange=()=>{vl.scrollTop=0;phSetPer(q('.gpu').value,'*')};q('.gkd').onchange=()=>{vl.scrollTop=0;phSetKf(q('.gkd').value)};q('.gpk').onchange=()=>{vl.scrollTop=0;phSetPer(PH.per.u,q('.gpk').value)};
  q('.gpp').onclick=()=>{vl.scrollTop=0;phPerStep(-1)};q('.gpn').onclick=()=>{vl.scrollTop=0;phPerStep(1)};
  q('.gx').onclick=()=>phExport(gal.rows.flatMap(r=>r.hdr?[]:r.ids),q('.gx'),W);
  q('.gfs').onclick=()=>{const el=mode==='win'?doc.documentElement:root;if(doc.fullscreenElement)doc.exitFullscreen().catch(()=>{});else (el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el)};
@@ -4827,7 +4931,8 @@ function phWinOpen(pid){if(!PH.list.length)return;
  w.addEventListener('beforeunload',()=>{PH.views.delete(g);if(PH.win&&PH.win.g===g)PH.win=null});try{typeof dwPlace==='function'&&dwPlace(w)}catch(_){}}
 /* ---------- 전체 갱신 ---------- */
 function phStats(){const n=PH.list.length,el=$('phStat');
- el.innerHTML=n?`<div><b>${n.toLocaleString()}</b>사진</div><div><b>${PH.G.length.toLocaleString()}</b>위치 묶음</div><div><b>${PH.inf.size.toLocaleString()}</b>위치 추정</div><div><b style="color:${PH.nog.length?'#d97706':''}">${PH.nog.length.toLocaleString()}</b>위치 없음</div>`:'';
+ el.innerHTML=n?`<div><b>${n.toLocaleString()}</b>사진</div><div><b>${PH.G.length.toLocaleString()}</b>위치 묶음</div><div><b>${PH.inf.size.toLocaleString()}</b>위치 추정</div><div><b style="color:${PH.nog.length?'#d97706':''}">${PH.nog.length.toLocaleString()}</b>위치 없음</div>`+(c=>`<div style="grid-column:1/-1;font-size:11.5px;text-align:left;padding:4px 6px">📁 `+PH_KDS.filter(k=>k==='mw'||c.get(k)).map(k=>`${PH_KD[k].ic} ${PH_KD[k].n} <b style="display:inline;font-size:inherit">${c.get(k).toLocaleString()}</b>`).join(' · ')+(PH.fcL.size||PH.fcAmb.size?` · 🔧 시설물 연결 <b style="display:inline;font-size:inherit">${PH.fcL.size.toLocaleString()}</b>`+(PH.fcAmb.size?` · <span class="c-am">확인 필요 ${PH.fcAmb.size.toLocaleString()}</span>`:''):'')+(PH.kf!=='*'?` — <span class="c-am">${PH_KD[PH.kf].n}만 보는 중</span>`:'')+'</div>')(phKdCnt()):'';
+ phKdFill();
  ['phZip','phZip2','phGalBtn','phWinBtn','phMw'].forEach(id=>$(id).disabled=!n);$('phClear').disabled=!n;$('phFit').disabled=!PH.G.length;
  try{navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(e=>{if(e&&e.usage!=null)$('phUse').textContent=`💽 브라우저 저장 공간: ${(e.usage/1048576).toLocaleString(undefined,{maximumFractionDigits:0})}MB 사용`+(e.quota?` / 약 ${(e.quota/1073741824).toFixed(0)}GB 가능`:'')})}catch(_){}}
 /* ---------- 접수 리스트(긴급누수민원 대응관리 리스트) → 사진 메모 ----------
@@ -4886,22 +4991,23 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
  files=files.filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif)$/i.test(f.name));if(!files.length){if(WF.size)phWorldApply(WF);return}
  if(PH.busy){alert('사진을 올리는 중입니다. 끝난 뒤 다시 올려 주세요.');return}
  PH.busy=true;PH.stop=false;const chgN0=PH.list.length;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
- const msg=$('phMsg'),max=+$('phSize').value,N=files.length,t0=Date.now();let add=0,nog=0,heic=0,dup=0,fail=0,done=0,i=0,nmap=0,hereN=0,skipN=0;PH.hereP=null;const DX=phDupIdx(),hold=[];
+ const msg=$('phMsg'),max=+$('phSize').value,N=files.length,t0=Date.now(),KD0=phKdOf(opt&&opt.kd)||phKdUp(),KC=new Map();let add=0,nog=0,heic=0,dup=0,fail=0,done=0,i=0,nmap=0,hereN=0,skipN=0;PH.hereP=null;const DX=phDupIdx(),hold=[];
  $('phProg').hidden=false;$('phStop').hidden=false;$('phProg').firstElementChild.style.width='0';
  const one=async f=>{if(/heic|heif/i.test(f.type)||/\.(heic|heif)$/i.test(f.name)){heic++;return}
   const id='p'+phHash(f.name+'|'+f.size+'|'+f.lastModified);if(PH.byId.has(id)){dup++;return}
   const fp=await phFp(f);if(fp){if(DX.fp.has(fp)){dup++;return}DX.fp.set(fp,id)} /* 이름·수정 시각이 달라도 내용이 같으면 같은 사진 */
   try{const ex=await exifRead(f)||{},wf=WF.get(bn(f.name)),re=phCodeRe(),d=await phDecode(f,max,ex.lat==null&&(wf||/png/i.test(f.type)||/\.png$/i.test(f.name)||(re&&re.test(f.name)))),dt=phDt(ex.dt);
    const m={id,name:f.name,fp:fp||undefined,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
+   const kd=opt&&opt.fc?KD0:(phKdGuess(f.name)||KD0);if(kd!=='mw')m.kd=kd;if(opt&&opt.fc)m.fc=opt.fc; /* 파일명 자동 구분(탐사·경계·시설…) > 올릴 때 고른 종류 */
    if(d.dot){m.map=true;m.dot=d.dot;if(wf){const ll=phWorldLL(wf,d.dot[0]*d.w,d.dot[1]*d.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도'}}}
    if(m.lat==null&&dropLL&&(N===1||ALL)){m.lat=+dropLL.lat.toFixed(7);m.lng=+dropLL.lng.toFixed(7);m.src='수동'}
-   if(m.lat==null&&!m.map&&!phCodeOf({name:f.name},re)&&phHereUse(f,m)){ /* 분류번호 사진(1880-2.jpg)은 같은 번호 묶음 위치를 따름 → 사무실 현재 위치를 붙이지 않음 */const h=await phHere();if(h){m.lat=h.lat;m.lng=h.lng;m.acc=h.acc;m.src='현위치';hereN++}}
+   if(m.lat==null&&!m.map&&!(kd==='mw'&&phCodeOf({name:f.name},re))&&phHereUse(f,m)){ /* 분류번호 사진(1880-2.jpg)은 같은 번호 묶음 위치를 따름 → 사무실 현재 위치를 붙이지 않음 */const h=await phHere();if(h){m.lat=h.lat;m.lng=h.lng;m.acc=h.acc;m.src='현위치';hereN++}}
    if(m.lat!=null&&!inKR([m.lng,m.lat]))m.note='국외 좌표 — 위치를 확인하세요';
    if(!m.fp)delete m.fp;
    await idbPut([['ph:'+id,d.big],['pt:'+id,d.th]]);if(PH.byId.has(id)){dup++;return}
    const sk=phShotKeys(m),like=sk.map(k=>DX.sk.get(k)).find(Boolean);if(like){hold.push({m,like});return} /* 촬영 정보가 같은 사진 → 끝에 확인창 */
    sk.forEach(k=>DX.sk.set(k,id));
-   PH.list.push(m);PH.byId.set(id,m);add++;if(m.map)nmap++;if(m.lat==null&&!m.map)nog++}catch(e){fail++}};
+   PH.list.push(m);PH.byId.set(id,m);add++;KC.set(kd,(KC.get(kd)||0)+1);if(m.map)nmap++;if(m.lat==null&&!m.map)nog++}catch(e){fail++}};
  const worker=async()=>{while(i<N&&!PH.stop){const f=files[i++];await one(f);done++;
   if(done%5===0||done===N){const el=(Date.now()-t0)/1000,rest=done<N?Math.round(el/done*(N-done)):0;$('phProg').firstElementChild.style.width=(done/N*100).toFixed(1)+'%';
    msg.textContent=`사진 처리 중… ${done.toLocaleString()}/${N.toLocaleString()}`+(rest>5?` · 약 ${rest>90?Math.round(rest/60)+'분':rest+'초'} 남음`:'')}
@@ -4914,7 +5020,8 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
   if(keep.size){await phSaveMeta(true);phRefresh(true)}}
  if(WF.size)phWorldApply(WF,true);
  if(add)try{chgPhMine(PH.list.slice(chgN0).map(m=>m.id))}catch(_){}
- msg.innerHTML=`✅ 사진 ${add.toLocaleString()}장 추가`+(nmap?` · 🎯 위치도 ${nmap}장`:'')+(PH.stop?' · ⏹ 중간에 멈춤':'')+(nog?` · <b class="c-am">GPS 없음 ${nog.toLocaleString()}장</b>`:'')+(dup?` · 이미 있음 ${dup.toLocaleString()}장`:'')+(skipN?` · 같은 사진으로 보여 건너뜀 ${skipN.toLocaleString()}장`:'')+(fail?` · 실패 ${fail}장`:'')+
+ if(add&&!(opt&&opt.kd)){const nid=PH.list.slice(chgN0).map(m=>m.id);phToast(`📷 사진 ${add.toLocaleString()}장 · `+[...KC].map(([k,n])=>PH_KD[k].ic+' '+PH_KD[k].n+(KC.size>1?' '+n:'')).join(' · '),{btn:'📁 종류 바꾸기',fn:()=>phKdAsk(nid)})} /* 폰 지도 📷 버튼으로 올린 사진도 바로 종류를 고칠 수 있게 */
+ msg.innerHTML=`✅ 사진 ${add.toLocaleString()}장 추가`+(KC.size?' ('+[...KC].map(([k,n])=>PH_KD[k].ic+' '+PH_KD[k].n+' '+n.toLocaleString()).join(' · ')+')':'')+(nmap?` · 🎯 위치도 ${nmap}장`:'')+(PH.stop?' · ⏹ 중간에 멈춤':'')+(nog?` · <b class="c-am">GPS 없음 ${nog.toLocaleString()}장</b>`:'')+(dup?` · 이미 있음 ${dup.toLocaleString()}장`:'')+(skipN?` · 같은 사진으로 보여 건너뜀 ${skipN.toLocaleString()}장`:'')+(fail?` · 실패 ${fail}장`:'')+
   (heic?`<br><span class="c-rd">아이폰 HEIC ${heic}장은 읽지 못했습니다. 카메라 설정 › 포맷 › "높은 호환성"(JPG)으로 찍거나 JPG로 바꿔 올려 주세요.</span>`:'')+(nog?'<br>GPS 없는 사진은 비슷한 파일명·촬영시각의 묶음에 위치 추정으로 들어가고, 그래도 없으면 갤러리의 "위치 없는 사진"에 모입니다.':'')}
 /* ---------- 같은 사진 중복 막기 (2026-10-21) ----------
    ① 내용 지문(fp): 파일 내용 SHA-256 앞 16자리 → 이름·수정 시각이 달라도 내용이 같으면 자동으로 건너뜀
@@ -4987,12 +5094,12 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
   const partOf=new Map();parts.forEach((p,pi)=>p.forEach(k=>partOf.set(k,pi+1)));
   const rows=[],pts=[];order.forEach((id,k)=>{const m=PH.byId.get(id),g=PH.gOf.get(id),how=PH.inf.get(id),loc=m.lat!=null&&!(g&&(g.src==='map'&&!m.map||g.src==='ref'&&g.yr))?[m.lat,m.lng]:g&&g.lat!=null?[g.lat,g.lng]:null;
    const fn=`${String(k+1).padStart(5,'0')}_${(m.dt||'').slice(0,10).replace(/-/g,'')||'시각없음'}_${fileSafe(m.name.replace(/\.[^.]+$/,''))}${withImg&&blobs[k]&&/png/.test(blobs[k].type)?'.png':'.jpg'}`;
-   const r={'번호':k+1,'묶음 번호':g?(g.no||gNo.get(g.id)):'','분류':PH.code.get(id)||'','사진 파일':withImg?fn:'','ZIP':withImg&&parts.length>1?`${partOf.get(k)}번째`:'','원본 파일명':m.name,'촬영일시':m.dt,'위도':loc?+loc[0].toFixed(7):'','경도':loc?+loc[1].toFixed(7):'',
+   const r={'번호':k+1,'묶음 번호':g?(g.no||gNo.get(g.id)):'','종류':PH_KD[phKd(m)].n,'분류':PH.code.get(id)||'','사진 파일':withImg?fn:'','ZIP':withImg&&parts.length>1?`${partOf.get(k)}번째`:'','원본 파일명':m.name,'촬영일시':m.dt,'위도':loc?+loc[0].toFixed(7):'','경도':loc?+loc[1].toFixed(7):'',
     '위치 출처':m.map&&m.lat!=null?'위치도 빨간 점':how?'추정('+how+')':m.lat!=null?(m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'):'위치 없음','촬영방향(°)':m.dir??'','고도(m)':m.alt??'','위치상 소블록':g?phGBlk(g):'','메모':m.memo||'','로드뷰':loc?`https://map.kakao.com/link/roadview/${loc[0].toFixed(6)},${loc[1].toFixed(6)}`:''};
    rows.push(r);if(loc){const [x,y]=pj(loc[0],loc[1]);pts.push({x,y,r})}});
-  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','연도':g.code?(g.yr||'모름'):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
+  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'종류':PH_KD[g.kd||'mw'].n,'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','연도':g.code?(g.yr||'모름'):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
   btn.textContent='⏳ 목록·SHP 만드는 중…';const z0=new JSZip();
-  const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:6},{wch:7},{wch:10},{wch:36},{wch:8},{wch:24},{wch:18},{wch:11},{wch:11},{wch:16},{wch:8},{wch:7},{wch:12},{wch:30},{wch:40}];
+  const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:6},{wch:7},{wch:10},{wch:10},{wch:36},{wch:8},{wch:24},{wch:18},{wch:11},{wch:11},{wch:16},{wch:8},{wch:7},{wch:12},{wch:30},{wch:40}];
   XLSX.utils.book_append_sheet(wb,ws,'현장사진');const ws2=XLSX.utils.json_to_sheet(grows);ws2['!cols']=[{wch:7},{wch:22},{wch:7},{wch:17},{wch:17},{wch:11},{wch:11},{wch:6},{wch:14},{wch:10},{wch:10},{wch:40}];XLSX.utils.book_append_sheet(wb,ws2,'위치묶음');
   z0.file('현장사진_목록.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
   if(pts.length){const F=[['NO','N',6,0],['GRP','N',6,0],['CODE','C'],['PHOTO','C'],['ORG','C'],['DT','C'],['LAT','N',19,10],['LON','N',19,10],['DIR','N',4,0],['SRC','C'],['BLK_NM','C'],['MEMO','C']];
@@ -5090,6 +5197,12 @@ $('phFit').onclick=phFitAll;
 try{const v=JSON.parse(localStorage.getItem('geo-phper')||'null');if(v&&PU_LB[v.u])PH.per={u:v.u,k:v.k||'*'}}catch(_){}
 $('phPU').onchange=()=>phSetPer($('phPU').value,'*');
 try{const v=localStorage.getItem('geo-phcodep');if(v!=null)$('phCodeP').value=v;const c=localStorage.getItem('geo-phrefcrs');if(c&&[...$('phRefCrs').options].some(o=>o.value===c))$('phRefCrs').value=c}catch(_){}
+/* 사진 종류: 보기 종류·올릴 종류·자동 구분 글자 (이 기기에 기억) */
+try{PH.kf=phKdOf(localStorage.getItem('geo-phkf'))||'*';const w=localStorage.getItem('geo-phkdw');$('phKdW').value=w!=null?w:PH_KDW0}catch(_){$('phKdW').value=PH_KDW0}
+phKdFill();
+$('phKdUp').onchange=()=>{try{localStorage.setItem('geo-phkdup',$('phKdUp').value)}catch(_){}};
+$('phKF').onchange=()=>phSetKf($('phKF').value);
+$('phKdW').oninput=()=>{try{localStorage.setItem('geo-phkdw',$('phKdW').value)}catch(_){}};
 let phCpT=0;$('phCodeP').oninput=()=>{clearTimeout(phCpT);phCpT=setTimeout(()=>{try{localStorage.setItem('geo-phcodep',$('phCodeP').value)}catch(_){}if(PH.list.length)phRefresh()},400)};
 $('phRefCrs').onchange=()=>{try{localStorage.setItem('geo-phrefcrs',$('phRefCrs').value)}catch(_){}};
 $('phRefFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)phRefLoad(f)};
@@ -5099,8 +5212,8 @@ $('phRcpClr').onclick=async()=>{if(!PH.rcp.size){$('phRcpMsg').textContent='불�
  PH.rcp=new Map();try{await IDB.del('phrcp')}catch(_){}PH.list.forEach(m=>{if(m.memoSrc==='list'){m.memo='';delete m.memoSrc}});phSaveMeta(true);phRefresh();$('phRcpMsg').textContent='접수 리스트를 지웠습니다.'};
 $('phRefClr').onclick=async()=>{const n=[...PH.ref.values()].reduce((s,a)=>s+a.length,0);if(!n||!confirm(`기준 위치 ${n.toLocaleString()}곳을 지울까요?`))return;const prev=phRefObj();PH.ref=new Map();await phRefSave();phRefresh();$('phRefMsg').textContent='기준 위치를 지웠습니다.';
  phToast('기준 위치를 지웠습니다.',{btn:'↩ 되돌리기',fn:async()=>{phRefSet(prev);await phRefSave();phRefresh();phToast('↩ 기준 위치를 되살렸습니다.',{ms:4000})}})};$('phChkBtn').onclick=()=>phChkOpen();$('phPK').onchange=()=>phSetPer(PH.per.u,$('phPK').value);phPerUI();$('phGalBtn').onclick=()=>phGalOpen();$('phWinBtn').onclick=()=>phWinOpen();
-$('phZip').onclick=()=>phExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phZip'));$('phZip2').onclick=()=>phExport(PH.list.map(m=>m.id),$('phZip2'));
-$('phMw').onclick=()=>phMwExport(PH.V&&PH.V.k!=='*'?[...PH.V.mOf.keys(),...PH.V.nog]:PH.list.map(m=>m.id),$('phMw'));
+$('phZip').onclick=()=>phExport(phVIds(),$('phZip'));$('phZip2').onclick=()=>phExport(PH.list.map(m=>m.id),$('phZip2'));
+$('phMw').onclick=()=>phMwExport(phVIds(),$('phMw'));
 $('phClear').onclick=async()=>{if(!confirm(`이 PC에 저장된 현장 사진 ${PH.list.length.toLocaleString()}장을 모두 지울까요? 먼저 🗜️ 내보내기로 받아 두는 것을 권합니다.`))return;
  const ids=PH.list.map(m=>m.id);if(map)map.closePopup();for(let k=0;k<ids.length;k+=500){try{await idbDel(ids.slice(k,k+500).flatMap(id=>['ph:'+id,'pt:'+id]))}catch(_){}}
  ids.forEach(phForget);PH.list=[];await phSaveMeta(true);phRefresh();if(PH.gal&&PH.gal.isOpen())PH.gal.close();$('phMsg').textContent='모두 지웠습니다.'};
@@ -5175,11 +5288,11 @@ const shB64=b=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>r
 const shBlob=s=>{const bin=atob(s),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:'image/jpeg'})};
 const shPick=m=>{const o={};['id','name','dt','ts','lat','lng','dir','alt','src','acc','memo','memoSrc','w','h','map','dot'].forEach(k=>{if(m[k]!==undefined&&m[k]!==null&&m[k]!=='')o[k]=m[k]});o.code=shCode(m);return o};
 /* 사진에 직접 정한 것(번호 cd·연도 yr·묶음에서 빼기 solo·사진 GPS 쓰기 refOff) → 서버 code 칸에 '!cd=긴급88;yr=2026;solo;off' 로 */
-const shFx=m=>{const a=[m.cd&&'cd='+m.cd,m.yr&&'yr='+m.yr,m.solo&&'solo',m.refOff&&'off'].filter(Boolean);return a.length?'!'+a.join(';'):''};
+const shFx=m=>{const a=[m.cd&&'cd='+m.cd,m.yr&&'yr='+m.yr,m.solo&&'solo',m.refOff&&'off',PH_KD[m.kd]&&m.kd!=='mw'&&'k='+m.kd,m.fc&&'fc='+m.fc].filter(Boolean);return a.length?'!'+a.join(';'):''};
 /* 서버 code 칸: '!…' = 직접 정한 것('!'만 있으면 모두 풀림), 그 밖은 파일명에서 읽은 번호(예전 판 서버는 meta로 code를 못 바꿈 → 그때는 이 기기 것을 그대로 둠) */
 const shCode=m=>{const f=shFx(m);if(f){m.fxHad=1;return f}return m.fxHad?'!':(PH.code.get(m.id)||'')};
-function shFxSet(m,v){v=String(v||'');let d=false;const o={};if(v[0]!=='!')return false;m.fxHad=1;v.slice(1).split(';').forEach(t=>{const [a,b]=t.split('=');if(a==='cd')o.cd=b;else if(a==='yr')o.yr=+b||0;else if(a==='solo')o.solo=true;else if(a==='off')o.refOff=1});
- ['cd','yr','solo','refOff'].forEach(k=>{if((m[k]||'')!==(o[k]||'')){if(o[k])m[k]=o[k];else delete m[k];d=true}});return d}
+function shFxSet(m,v){v=String(v||'');let d=false;const o={};if(v[0]!=='!')return false;m.fxHad=1;v.slice(1).split(';').forEach(t=>{const [a,b]=t.split('=');if(a==='cd')o.cd=b;else if(a==='yr')o.yr=+b||0;else if(a==='solo')o.solo=true;else if(a==='off')o.refOff=1;else if(a==='k'&&PH_KD[b]&&b!=='mw')o.kd=b;else if(a==='fc'&&b)o.fc=b});
+ ['cd','yr','solo','refOff','kd','fc'].forEach(k=>{if((m[k]||'')!==(o[k]||'')){if(o[k])m[k]=o[k];else delete m[k];d=true}});return d}
 function shStatus(){const chip=$('shChip'),msg=$('shMsg');if(!chip)return;
  if(!SH.on()){chip.textContent='';chip.style.color='';return}
  const wait=PH.list.filter(m=>!m.shUp).length+PH.list.filter(m=>m.shUp&&m.shSig!==shSig(m)).length+SH.del.size,t=SH.last?new Date(SH.last).toTimeString().slice(0,8):'-';
@@ -5423,26 +5536,27 @@ function phEdUndoDel(ids){phToast(`🗑 사진 ${ids.length.toLocaleString()}장
 /* ---------- 편집 모드 켜기/끄기 ---------- */
 function phEdSet(on){if(on&&typeof FE!=='undefined'&&FE&&FE.on)feSet(false);const E=PH.ed;E.on=!!on;E.mode='move';E.pick.clear();if(map){map.closePopup();$('map').classList.remove('phadd')}
  if(E.on&&$('phShow').value==='off')phToggle();if(E.on&&PH.place)phPlaceEnd();
- const bar=document.getElementById('phEd');if(bar)bar.hidden=!E.on;const a=document.getElementById('phEdA');if(a){a.classList.toggle('on',E.on);a.title=E.on?'사진 편집 끝내기':'✏️ 사진 편집 모드 (추가 · 옮기기 · 골라 지우기)';a.setAttribute('aria-pressed',String(E.on))}
+ const bar=document.getElementById('phEd');if(bar)bar.hidden=!E.on;const a=document.getElementById('phEdA');if(a){a.classList.toggle('on',E.on);a.title=E.on?'사진 편집 끝내기':'✏️ 사진 편집 모드 (추가 · 옮기기 · 골라 지우기·종류 바꾸기)';a.setAttribute('aria-pressed',String(E.on))}
  phEdSync();phDraw()}
 function phEdMode(md){const E=PH.ed;if(!E.on)return;E.mode=E.mode===md?'move':md;if(E.mode!=='sel')E.pick.clear();if(map){map.closePopup();$('map').classList.toggle('phadd',E.mode==='add')}phEdSync();phDraw()}
 function phEdCount(){const n=(PH.trash||[]).length;document.querySelectorAll('.phTrN').forEach(x=>{x.textContent=n?n.toLocaleString():''});const b=$('phTrBtn');if(b)b.textContent=`🗂️ 휴지통${n?' ('+n.toLocaleString()+')':''}`}
 function phEdSync(){const E=PH.ed,bar=document.getElementById('phEd');if(!bar)return;
  bar.querySelectorAll('[data-e]').forEach(b=>b.classList.toggle('on',b.dataset.e===E.mode));
- const r2=bar.querySelector('.r2');r2.hidden=E.mode!=='sel';const n=E.pick.size;bar.querySelector('.pkN').textContent=n.toLocaleString();bar.querySelector('[data-p="del"]').disabled=!n;bar.querySelector('[data-p="clr"]').disabled=!n;
+ const r2=bar.querySelector('.r2');r2.hidden=E.mode!=='sel';const n=E.pick.size;bar.querySelector('.pkN').textContent=n.toLocaleString();bar.querySelector('[data-p="del"]').disabled=!n;bar.querySelector('[data-p="kdgo"]').disabled=!n;bar.querySelector('[data-p="clr"]').disabled=!n;
  phEdCount();phEdHint()}
 function phEdHint(){const h=document.querySelector('#phEd .h');if(!h)return;const E=PH.ed,z=map?map.getZoom():0;
- h.textContent=E.mode==='add'?'📍 사진을 넣을 자리를 지도에서 누르세요. (Esc: 취소)':E.mode==='sel'?(E.clu?'사진이 숫자 원으로 합쳐져 있으면 눌러 확대한 뒤 고르세요. ':'')+'지울 사진(묶음)을 누르세요. 다시 누르면 선택이 풀립니다.':
+ h.textContent=E.mode==='add'?'📍 사진을 넣을 자리를 지도에서 누르세요. (Esc: 취소)':E.mode==='sel'?(E.clu?'사진이 숫자 원으로 합쳐져 있으면 눌러 확대한 뒤 고르세요. ':'')+'지우거나 종류를 바꿀 사진(묶음)을 누르세요. 다시 누르면 선택이 풀립니다.':
   (E.clu||z<16?'🔍 줌 16 이상으로 확대하면 📷 사진을 끌어서 옮길 수 있습니다. ':'📷 사진을 끌어서 옮기세요 (묶음은 통째로). ')+'지도를 길게 누르면(PC는 오른쪽 클릭) 그 자리에 사진을 넣습니다.'}
 /* ---------- 고르기 / 옮기기 ---------- */
 function phEdPick(g){const P=PH.ed.pick,all=g.ids.every(id=>P.has(id));g.ids.forEach(id=>all?P.delete(id):P.add(id));phEdSync();phDraw()}
 function phEdPickView(){if(!map||!PH.V)return;const b=map.getBounds();PH.V.mapG.forEach(g=>{if(g.lat!=null&&b.contains([g.lat,g.lng]))g.ids.forEach(id=>PH.ed.pick.add(id))});phEdSync();phDraw()}
+async function phEdKdPicked(){const ids=[...PH.ed.pick].filter(id=>PH.byId.has(id)),sl=document.querySelector('#phEd [data-p="kd"]');if(!ids.length||!sl)return;PH.ed.pick.clear();await phSetKd(ids,sl.value);phEdSync();phDraw()}
 async function phEdDelPicked(){const ids=[...PH.ed.pick].filter(id=>PH.byId.has(id));if(!ids.length)return;if(!phEdConfirmDel(ids))return;PH.ed.pick.clear();await phDelete(ids);phEdSync();phEdUndoDel(ids)}
 async function phEdMove(g,ll){const n=g.ids.length;
  if(!confirm(`📷 ${phGLabel(g)} · 사진 ${n.toLocaleString()}장의 위치를 여기로 옮길까요?\n${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`)){phDraw();return}
  const lat=+ll.lat.toFixed(7),lng=+ll.lng.toFixed(7),prev=g.ids.map(id=>{const m=PH.byId.get(id);return m?[id,m.lat,m.lng,m.src,m.note,m.acc]:null}).filter(Boolean);
  const ra=g.src==='ref'&&g.rk&&PH.ref.get(g.rk),ref=ra&&ra[g.ri]?[g.rk,g.ri,ra[g.ri].slice()]:null;
- prev.forEach(([id])=>{const m=PH.byId.get(id);m.lat=lat;m.lng=lng;m.src='수동';delete m.note;delete m.acc});
+ prev.forEach(([id])=>{const m=PH.byId.get(id);if(g.fac)m.fc='-'; /* 시설물에 붙은 사진을 끌어 옮기면 연결을 풂 */m.lat=lat;m.lng=lng;m.src='수동';delete m.note;delete m.acc});
  if(ref){PH.ref.get(ref[0])[ref[1]]=[lat,lng,ref[2][2]??null];await phRefSave()}/* 기준 위치 파일로 자리 잡은 번호 묶음은 기준 위치도 함께 옮김 */
  await phSaveMeta(true);phRefresh();
  phToast(`📍 사진 ${n.toLocaleString()}장 위치를 옮겼습니다.`,{btn:'↩ 되돌리기',fn:async()=>{prev.forEach(([id,a,b,s,no,ac])=>{const m=PH.byId.get(id);if(!m)return;m.lat=a;m.lng=b;m.src=s;if(no)m.note=no;else delete m.note;if(ac!=null)m.acc=ac;else delete m.acc});
@@ -5459,8 +5573,10 @@ function phEdAddAt(ll){if(!map||!ll)return;const E=PH.ed;let last={c:'',t:'site'
  const box=document.createElement('div');box.className='phaddpop';
  box.innerHTML=`<b>📍 이 자리에 사진 넣기</b><small>${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}</small>
 <div class="f"><input data-f="no" value="${esc(last.c)}" placeholder="🏷️ 사진번호 (예: 긴급250)" aria-label="사진번호" autocomplete="off"><select data-f="ty" aria-label="사진 종류" style="flex:0 0 auto;width:auto">${Object.entries(PH_NOTY).map(([k,t])=>`<option value="${k}"${k===last.t?' selected':''}>${t}</option>`).join('')}</select></div><small class="pv"></small>
+<div class="f"><select data-f="kd" aria-label="사진 구분 (민원대응·누수탐사…)">${phKdOpts(phKdUp())}</select></div>
 <button type="button" class="hl" data-k="cam">📸 카메라로 찍기</button><button type="button" data-k="alb">🖼️ 앨범·파일에서 고르기 (여러 장)</button><small>GPS 있는 사진은 GPS 위치에 놓입니다.</small><button type="button" data-k="cancel">취소</button>`;
- const noI=box.querySelector('[data-f="no"]'),tyS=box.querySelector('[data-f="ty"]'),pv=box.querySelector('.pv');
+ const noI=box.querySelector('[data-f="no"]'),tyS=box.querySelector('[data-f="ty"]'),kdS=box.querySelector('[data-f="kd"]'),pv=box.querySelector('.pv');
+ kdS.onchange=()=>{const up=$('phKdUp');if(up){up.value=kdS.value;up.dispatchEvent(new Event('change'))}};
  const cur=()=>({c:noI.value.trim().replace(/[\\/:*?"<>|]/g,''),t:tyS.value});
  const prev=()=>{const {c,t}=cur();pv.textContent=c?`→ 파일 이름: ${phNoNames(c,t,[{name:'',type:''}])[0].replace(/\.[^.]+$/,'')}${t==='map'?'':', 다음 번호…'} (확장자는 원래대로)`:'번호를 비우면 파일 이름 그대로 넣습니다 (나중에 메모에 번호를 적어도 묶입니다).'};
  noI.oninput=prev;tyS.onchange=prev;noI.onkeydown=e=>{if(e.key!=='Escape')e.stopPropagation()};prev();
@@ -5474,7 +5590,7 @@ function phEdAddAt(ll){if(!map||!ll)return;const E=PH.ed;let last={c:'',t:'site'
   inp.onchange=async()=>{let f=[...(inp.files||[])];if(!f.length)return;map.closePopup(pop);const n0=PH.list.length,{c,t}=cur();
    if(c){try{localStorage.setItem('geo-phno',JSON.stringify({c,t:t==='map'?'site':t}))}catch(_){}const img=f.filter(x=>/^image\//.test(x.type)||/\.(jpe?g|png)$/i.test(x.name)),nm=phNoNames(c,t,img);
     f=f.map(x=>{const i=img.indexOf(x);return i<0?x:new File([x],nm[i],{type:x.type,lastModified:x.lastModified})})}
-   try{await phAdd(f,ll,{all:true})}finally{inp.value=''}const n=PH.list.length-n0;if(E.mode==='add')phEdMode('add');
+   try{await phAdd(f,ll,{all:true,kd:kdS.value})}finally{inp.value=''}const n=PH.list.length-n0;if(E.mode==='add')phEdMode('add');
    phToast(n?`📷 사진 ${n.toLocaleString()}장을 넣었습니다`+(c?` (${c} · ${PH_NOTY[t]})`:'')+'.':'넣은 사진이 없습니다 (이미 있는 사진이거나 읽지 못한 사진). 아래 현장 사진 칸의 안내를 확인하세요.',n?{ms:5000}:{ms:8000})};
   inp.click()};
  L.DomEvent.disableClickPropagation(box);setTimeout(()=>{pop.openOn(map);if(!last.c)setTimeout(()=>{try{noI.focus({preventScroll:true})}catch(_){}},50)},0)}
@@ -5549,15 +5665,15 @@ function phChkXlsx(){if(typeof XLSX==='undefined'){alert('엑셀 기능(SheetJS)
 /* ---------- 지도 버튼 · 편집 줄 · 길게 누르기 ---------- */
 function phEdInit(){if(!map)return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control phedbtn'),a=L.DomUtil.create('a','',d);
-  a.href='#';a.id='phEdA';a.textContent='✏️';a.title='✏️ 사진 편집 모드 (추가 · 옮기기 · 골라 지우기)';a.setAttribute('role','button');a.setAttribute('aria-label','사진 편집 모드');a.setAttribute('aria-pressed','false');
+  a.href='#';a.id='phEdA';a.textContent='✏️';a.title='✏️ 사진 편집 모드 (추가 · 옮기기 · 골라 지우기·종류 바꾸기)';a.setAttribute('role','button');a.setAttribute('aria-label','사진 편집 모드');a.setAttribute('aria-pressed','false');
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);phEdSet(!PH.ed.on)});return d}});
  map.addControl(new Ctl());
  const bar=L.DomUtil.create('div','phed np',map.getContainer());bar.id='phEd';bar.hidden=true;bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','사진 편집');
  L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
- bar.innerHTML=`<div class="r"><b>✏️ 사진 편집</b><button type="button" data-e="add">➕ 사진 넣기</button><button type="button" data-e="sel">☑️ 골라 지우기</button><button type="button" data-b="tr">🗂️ 휴지통<i class="phTrN"></i></button><button type="button" data-b="dup">🔍 중복 찾기</button><button type="button" data-b="end">✕ 끝내기</button></div>
-<div class="r r2" hidden><span>선택 <b class="pkN">0</b>장</span><button type="button" data-p="view">화면 안 모두 고르기</button><button type="button" data-p="clr">선택 풀기</button><button type="button" class="del" data-p="del">🗑 고른 사진 지우기</button></div><div class="h"></div>`;
+ bar.innerHTML=`<div class="r"><b>✏️ 사진 편집</b><button type="button" data-e="add">➕ 사진 넣기</button><button type="button" data-e="sel">☑️ 골라 고치기</button><button type="button" data-b="tr">🗂️ 휴지통<i class="phTrN"></i></button><button type="button" data-b="dup">🔍 중복 찾기</button><button type="button" data-b="end">✕ 끝내기</button></div>
+<div class="r r2" hidden><span>선택 <b class="pkN">0</b>장</span><button type="button" data-p="view">화면 안 모두 고르기</button><button type="button" data-p="clr">선택 풀기</button><select data-p="kd" aria-label="바꿀 종류" style="font:inherit;font-size:12px;border-radius:6px">${phKdOpts(phKdUp())}</select><button type="button" data-p="kdgo">📁 종류 바꾸기</button><button type="button" class="del" data-p="del">🗑 고른 사진 지우기</button></div><div class="h"></div>`;
  bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.e)phEdMode(b.dataset.e);else if(b.dataset.b==='tr')phTrashOpen();else if(b.dataset.b==='dup')phDupOpen();else if(b.dataset.b==='end')phEdSet(false);
-  else if(b.dataset.p==='view')phEdPickView();else if(b.dataset.p==='clr'){PH.ed.pick.clear();phEdSync();phDraw()}else if(b.dataset.p==='del')phEdDelPicked()};
+  else if(b.dataset.p==='view')phEdPickView();else if(b.dataset.p==='clr'){PH.ed.pick.clear();phEdSync();phDraw()}else if(b.dataset.p==='del')phEdDelPicked();else if(b.dataset.p==='kdgo')phEdKdPicked()};
  /* 사진 넣기: '➕ 사진 넣기'를 누른 뒤 지도 클릭, 또는 편집 중 길게 누르기·오른쪽 클릭 */
  map.on('preclick',()=>{if(PH.ed.on&&PH.ed.mode==='add')PT.hit=-1});
  map.on('click',e=>{if(PH.ed.on&&PH.ed.mode==='add'&&!PH.place)phEdAddAt(e.latlng)});
