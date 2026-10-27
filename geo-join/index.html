@@ -1517,7 +1517,7 @@ function ptProxy(i){const o={i,options:{radius:6,get color(){return PT.col[i]},g
   bringToFront(){return o},getLatLng(){return L.latLng(PT.lat[i],PT.lng[i])},openPopup(){ptOpen(i);return o},closePopup(){map.closePopup();return o}};return o}
 function ptQuery(w,s,e,n){const cs=PT.cs,r=[];if((Math.floor(e/cs)-Math.floor(w/cs)+1)*(Math.floor(n/cs)-Math.floor(s/cs)+1)>PT.grid.size){for(let i=0;i<PT.n;i++){const a=PT.lat[i],b=PT.lng[i];if(a>=s&&a<=n&&b>=w&&b<=e)r.push(i)}return r}for(let gx=Math.floor(w/cs);gx<=Math.floor(e/cs);gx++)for(let gy=Math.floor(s/cs);gy<=Math.floor(n/cs);gy++){const a=PT.grid.get(gx+','+gy);if(a)for(const i of a)r.push(i)}return r}
 function ptDraw(){if(!PT.ok||PT.raf)return;PT.raf=requestAnimationFrame(()=>{PT.raf=0;ptRender()})}
-function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=window.devicePixelRatio||1,cv=PT.cv;
+function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=mapDpr(),cv=PT.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=PT.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!PT.n||PT.off)return;
@@ -1652,7 +1652,7 @@ function plblSoon(){if(!PLB.cv||PLB.raf)return;PLB.raf=requestAnimationFrame(()=
 function plblDraw(){const cv=PLB.cv;if(!cv||!map)return;PLB.n=0;const fp=+UI.lblPx||11,fk=fp/11;
  const z=map.getZoom(),onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS));
  if(UI.lbl==='off'||UI.allOff||z<UI.lblZ||!PIPE.grid||!PIPE.feats.length||(!onM&&!onS)){cv.style.display='none';uiLblHint();return}
- const sz=map.getSize(),dpr=Math.min(window.devicePixelRatio||1,2);
+ const sz=map.getSize(),dpr=mapDpr(2);
  L.DomUtil.setPosition(cv,map.containerPointToLayerPoint([0,0]));
  cv.width=Math.round(sz.x*dpr);cv.height=Math.round(sz.y*dpr);cv.style.width=sz.x+'px';cv.style.height=sz.y+'px';cv.style.display='';
  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,sz.x,sz.y);
@@ -1875,6 +1875,10 @@ const MAP_MAXZ=30,TILE_NZ=19;
 const BG={off:false,keep:[],ctl:null,a:null,z:null};
 const BG_FILL=()=>document.documentElement.classList.contains('dark')?'#111827':'#ffffff';
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
+/* PC 큰 화면 지도 끊김 줄이기: ① PC도 폰처럼 배경 타일은 손 뗀 뒤 받기 ② 큰 화면(약 1280×800 이상)은 지도 캔버스 배율을 낮춰 메모리·다시 그리기 부담을 줄임 (폰은 그대로) */
+function mapBig(){return(innerWidth||0)*(innerHeight||0)>=1e6}
+function mapDpr(cap){const d=window.devicePixelRatio||1;if(mapBig())return d>=2&&innerWidth*innerHeight<1.6e6?Math.min(d,2):1;return cap?Math.min(d,cap):d}
+try{if(L.GridLayer)L.GridLayer.prototype.options.updateWhenIdle=true;if(L.Browser&&mapBig())L.Browser.retina=mapDpr()>=2}catch(_){}
 try{
  map=L.map('map',{preferCanvas:true,maxZoom:MAP_MAXZ,zoomSnap:.5}).setView(V0?[V0[0],V0[1]]:[36.019,129.343],V0?V0[2]:11);
  const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri',maxZoom:MAP_MAXZ,maxNativeZoom:TILE_NZ});
@@ -3892,7 +3896,7 @@ const facSzK=(z,I,k)=>Math.max(6,Math.round(facSz(z,I.z===0)*(+UI.fsz||1)*facKS(
 function facShape(g,sh,x,y,r){if(sh==='ci'){g.moveTo(x+r,y);g.arc(x,y,r,0,6.2832)}else if(sh==='di'){g.moveTo(x,y-r*1.25);g.lineTo(x+r*1.25,y);g.lineTo(x,y+r*1.25);g.lineTo(x-r*1.25,y);g.closePath()}
  else if(sh==='tr'){g.moveTo(x,y-r*1.3);g.lineTo(x+r*1.2,y+r*.9);g.lineTo(x-r*1.2,y+r*.9);g.closePath()}else{const s=sh==='SQ'?r*1.6:r;g.rect(x-s,y-s,s*2,s*2)}}
 function facDraw(){if(!FAC.cv||FAC.raf)return;FAC.raf=requestAnimationFrame(()=>{FAC.raf=0;try{facRender()}catch(e){console.warn('시설물 표시',e)}try{if(typeof hlFacDraw==='function')hlFacDraw()}catch(e){console.warn('새 항목 강조',e)}})}
-function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=Math.min(window.devicePixelRatio||1,2),cv=FAC.cv;
+function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=mapDpr(2),cv=FAC.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=FAC.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();facAreaShow(z);facHintUpd(z);if(!FAC.n)return;
@@ -4179,7 +4183,7 @@ function elevInit(){if(!map||ELEV.cv)return;if(!map.getPane('elevPane')){const p
  map.on('moveend zoomend resize viewreset',elevDraw);map.on('zoomstart',()=>{cv.style.visibility='hidden'});map.on('zoomend',()=>{cv.style.visibility=''})}
 function elevOn(z){const m=$('eShow').value;return ELEV.n>0&&m!=='off'&&(m==='on'||z>=15)}
 function elevDraw(){if(!ELEV.cv||ELEV.raf)return;ELEV.raf=requestAnimationFrame(()=>{ELEV.raf=0;try{elevRender()}catch(e){console.warn('표고 표시',e)}})}
-function elevRender(){if(!map||!ELEV.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=Math.min(window.devicePixelRatio||1,2),cv=ELEV.cv;
+function elevRender(){if(!map||!ELEV.cv)return;const sz=map.getSize(),pad=.25,W=Math.round(sz.x*(1+2*pad)),H=Math.round(sz.y*(1+2*pad)),dpr=mapDpr(2),cv=ELEV.cv;
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=ELEV.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();if(!elevOn(z))return;
