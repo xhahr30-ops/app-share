@@ -313,7 +313,7 @@ html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
 html.chipOn .gsrch{max-width:calc(100vw - 24px)}
 html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
-html.chipOn .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipOn .uiset.shutp.fold{max-height:none}
+html.chipPh .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipPh .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
 html.chipOn .leaflet-bottom.leaflet-right .fmctl{flex-direction:column-reverse;gap:10px}
 html.chipOn .leaflet-bottom.leaflet-right.fabrow .fmctl{flex-direction:row-reverse}
@@ -338,6 +338,15 @@ html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:54px;height:54px;b
  html.chipOn .uiset:not(.shutp){left:58px;max-width:calc(100% - 70px)}
  html.chipOn .uiset.shutp,html.chipOn .uiset.shutp.fold{top:auto;bottom:8px}
 }
+/* PC(마우스): 같은 칩 줄을 쓰되 칩은 조금 작게, 줄은 칩 길이만큼만(오른쪽 빈 곳은 지도 끌기 가능), 단수구역 창은 원래 PC 자리(오른쪽 아래) 그대로 */
+html.chipPc .chipbar{right:auto;max-width:100%;box-sizing:border-box;touch-action:auto}
+html.chipPc .chipbar .leaflet-bar a{height:32px!important;line-height:32px!important;padding:0 11px!important;font-size:14px!important;cursor:pointer}
+html.chipPc .chipbar .leaflet-bar a:hover{filter:brightness(.94)}
+html.chipPc .chipbar a[data-lb]::after{font-size:12.5px}
+html.chipPc .leaflet-top{top:48px}
+html.chipPc .uiset:not(.shutp){top:52px;max-height:calc(100% - 62px)}
+html.chipPc .shdraw .shdt{top:54px}
+html.chipPc .uiset.shutp{max-height:min(72%,620px,calc(100% - 82px))}
 @media print{.chipbar{display:none!important}}
 body.touch .dwBtn,body.touch #phWinBtn{display:none!important}
 
@@ -1840,15 +1849,15 @@ function uiInit(){if(!map)return;plblInit();
  try{new ResizeObserver(()=>mapCornerFix()).observe(map._controlCorners.topleft)}catch(_){}
  try{chipInit()}catch(e){console.warn('chipInit',e)}
  uiPanelSync()}
-/* 폰(터치·짧은 쪽 600px 미만): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
+/* 폰(터치·짧은 쪽 600px 미만)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 그대로)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
 const CHIP_ORD=['srch','chg','shut','phed','fe','lock','ui','bg','fs'];
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
 function chipInit(){if(!map||!map._controlCorners||document.documentElement.classList.contains('chipOn'))return;
  let pc=false;try{pc=matchMedia('(pointer:coarse)').matches}catch(_){}
- if(!pc||Math.min(screen.width||9999,screen.height||9999)>=600)return;
- const C=map._controlCorners,root=map._controlContainer;document.documentElement.classList.add('chipOn');
+ const ph=pc&&Math.min(screen.width||9999,screen.height||9999)<600;if(pc&&!ph)return;
+ const C=map._controlCorners,root=map._controlContainer;document.documentElement.classList.add('chipOn',ph?'chipPh':'chipPc');
  const bar=L.DomUtil.create('div','chipbar',root);L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
  const sd=L.DomUtil.create('div','leaflet-bar leaflet-control chsrch',bar),sa=L.DomUtil.create('a','',sd);sd.dataset.ck='srch';
  sa.href='#';sa.textContent='🔍';sa.dataset.lb='주소찾기';sa.title='주소찾기';sa.setAttribute('role','button');
@@ -1863,7 +1872,10 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const scan=()=>{for(const el of [...C.topleft.children]){
   if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
   place(el)}};
- scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);shutDodgeInit(C)}
+ scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
+ if(ph)shutDodgeInit(C);
+ else{const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
+  bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}}
 /* 폰: 💧 단수구역 창이 열려 있으면 아래 귀퉁이(📷·📍·🖼️ 버튼, 범례 상자)를 창 위(세로) 또는 창 왼쪽(가로)으로 비켜 둠 */
 function shutDodgeInit(C){const mc=map.getContainer();let p=null;
  const fix=()=>{let b=0,row=false,rb='';if(p&&!p.hidden&&p.offsetHeight){const M=mc.getBoundingClientRect();
