@@ -190,7 +190,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .shutp .sht tr.brr td{color:var(--mute)}.shutp .shbr{width:auto!important;padding:2px 7px!important;font-size:11px!important;margin:0!important;white-space:nowrap}
 .shvi{background:transparent;border:0}
 .shutp .shtq{display:flex;gap:4px;align-items:center;margin:2px 0 4px}.shutp .shtq input{flex:1;min-width:0;padding:5px 8px;font-size:12px;margin:0}
-.shutp .shtel tr.done td{opacity:.55}.shutp .shshot{margin:6px 0;padding:6px;border:1px solid var(--line2);border-radius:10px;background:var(--sub);display:flex;flex-direction:column;gap:4px}.shutp .shshot img{width:100%;border-radius:6px;cursor:zoom-in;max-height:220px;object-fit:contain;background:#e5e7eb}
+.shutp .shtel tr.done td{opacity:.55}.shutp .shtel td.shtb{white-space:nowrap}.shutp .shtel td.shtb .shbr+.shbr{margin-left:4px!important}.shutp .shtel tr.sel td{background:rgba(250,204,21,.18)}.shutp .shtel tr.sel .tgo{background:#facc15;border-color:#ca8a04;color:#000}.shutp .shshot{margin:6px 0;padding:6px;border:1px solid var(--line2);border-radius:10px;background:var(--sub);display:flex;flex-direction:column;gap:4px}.shutp .shshot img{width:100%;border-radius:6px;cursor:zoom-in;max-height:220px;object-fit:contain;background:#e5e7eb}
 .shutp .shmod{color:#7c3aed;font-weight:700}.shutp .shbr.on{border-color:#7c3aed;background:#f5f3ff}
 .shutp tr.shed td{background:var(--sub);padding:6px}.shutp .shedf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px}.shutp .shedf label{display:flex;flex-direction:column;font-size:10.5px;font-weight:700;color:var(--mute);margin:0}.shutp .shedf label.w{grid-column:1/-1}
 .shutp .shedf input,.shutp .shedf select{margin:2px 0 0;padding:4px 6px;font-size:12px;width:100%;min-width:0;box-sizing:border-box}.shutp .shedb{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap}.shutp .shedb .btn{width:auto;flex:1 1 auto;padding:5px 8px;font-size:12px;margin:0}.shutp .shedf>small{grid-column:1/-1}.shutp .shtel td:first-child input{width:18px;height:18px;margin:0}
@@ -5942,10 +5942,21 @@ function telList(){const el=document.getElementById('shTelList');if(!el)return;c
   .sort((a,b)=>(a.c?1:0)-(b.c?1:0)||(b.big?1:0)-(a.big?1:0)||String(a.o['관리번호']||a.id).localeCompare(String(b.o['관리번호']||b.id),'ko',{numeric:true}));
  const lim=SHUT.telLim||50,nc=I.filter(i=>{const id=telId(shutSrc()[i]);return id&&TEL.call[id]}).length,nt=I.filter(i=>telOf(shutSrc()[i]).t).length;
  const hd=document.getElementById('shTelHd');if(hd)hd.innerHTML=`📞 단수 홍보 연락처 <small>(번호 있음 ${nt.toLocaleString()}/${I.length.toLocaleString()} · 통화 ✓ ${nc.toLocaleString()})</small>`;
- el.innerHTML=(L.length?`<table class="sht shtel"><tr><th>✓</th><th>관리번호 · 주소</th><th>전화</th><th></th></tr>${L.slice(0,lim).map(x=>`<tr class="${x.c?'done':''}"><td><input type="checkbox" data-a="tck" data-id="${esc(x.id)}"${x.c?' checked':''}${x.id?'':' disabled'} aria-label="통화 확인"></td>`+
+ el.innerHTML=(L.length?`<table class="sht shtel"><tr><th>✓</th><th>관리번호 · 주소</th><th>전화</th><th></th></tr>${L.slice(0,lim).map(x=>`<tr class="${x.c?'done':''}${SHUT.telSel===x.i?' sel':''}"><td><input type="checkbox" data-a="tck" data-id="${esc(x.id)}"${x.c?' checked':''}${x.id?'':' disabled'} aria-label="통화 확인"></td>`+
   `<td><b>${esc(x.o['관리번호']||x.id||'-')}</b>${x.big?' <span class="c-am" title="대수용가">🏭</span>':''}<br><small class="mute">${esc(telAddr(x.o))}${x.o['업종']?' · '+esc(x.o['업종']):''}</small></td>`+
-  `<td>${telLinks(x.t.t)}${x.t.ed?' <small class="c-ind" title="직접 고친 번호">✏️</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="ted" data-i="${x.i}"${x.id?'':' disabled'} title="번호 고쳐 저장 (이 기기)">✏️</button></td></tr>`).join('')}</table>`
+  `<td>${telLinks(x.t.t)}${x.t.ed?' <small class="c-ind" title="직접 고친 번호">✏️</small>':''}</td><td class="shtb"><button type="button" class="btn ol shbr tgo" data-a="tgo" data-i="${x.i}" title="지도에서 위치 보기" aria-label="지도에서 위치 보기">📍</button><button type="button" class="btn ol shbr" data-a="ted" data-i="${x.i}"${x.id?'':' disabled'} title="번호 고쳐 저장 (이 기기)">✏️</button></td></tr>`).join('')}</table>`
   +(L.length>lim?`<button type="button" class="btn ol shbr" data-a="tmore" style="margin-top:4px!important">더 보기 (${(L.length-lim).toLocaleString()}곳 남음)</button>`:''):`<p class="uin">${q?'찾는 수용가가 없습니다.':'단수구역 안 수용가가 없습니다.'}</p>`)}
+/* 📍 연락처 행 누르면 그 수용가로: 창에 가리지 않는 쪽 가운데로 이동 + 노란 링 깜빡임 + 정보창 */
+function telGo(i){const o=shutSrc()[i];if(!o||!map)return;const la=+o['_위도'],ln=+o['_경도'];
+ SHUT.telSel=i;document.querySelectorAll('#shTelList tr.sel').forEach(r=>r.classList.remove('sel'));const bt=document.querySelector(`#shTelList .tgo[data-i="${i}"]`);if(bt)bt.closest('tr').classList.add('sel');
+ if(!la||!ln){alert(`${o['관리번호']||telId(o)||'이 수용가'}: 위치(좌표)가 없어 지도에 표시할 수 없습니다.`);return}
+ const ll=L.latLng(la,ln),z=Math.max(map.getZoom(),18),p=SHUT.box,mob=innerWidth<=640,on=p&&!p.hidden,w=on?p.offsetWidth:0,h=on?p.offsetHeight:0,mh=map.getSize().y;
+ const c=map.project(ll,z).add(mob?[0,Math.min(h,mh-80)/2]:[(w+10)/2,0]);
+ map.setView(map.unproject(c,z),z,{animate:false});
+ if(map._popup)map.closePopup();hitMark({t:'sc',ll:[la,ln]});
+ if(SHUT.telFx)map.removeLayer(SHUT.telFx);const fx=SHUT.telFx=L.marker(ll,{icon:L.divIcon({className:'hlnew hlf',iconSize:[28,28],iconAnchor:[14,14],html:''}),interactive:false,keyboard:false,zIndexOffset:900}).addTo(map);
+ setTimeout(()=>{if(SHUT.telFx===fx){map.removeLayer(fx);SHUT.telFx=null}},3300);
+ const pp=L.popup({maxWidth:320,offset:[0,-6],autoPan:false}).setLatLng(ll).setContent(shutCustPop(i));pp._hit={H:[]};pp.openOn(map)}
 async function telEdit(i){const o=shutSrc()[i],id=telId(o);if(!id)return;await telLoad();const cur=telOf(o).t,v=prompt(`${o['관리번호']||id} 전화번호 (여러 개는 / 로 구분 · 비우면 원래 번호로 되돌림)`,cur);if(v==null)return;
  const t=v.trim();if(t)TEL.ed[id]={t,at:Date.now()};else delete TEL.ed[id];try{await IDB.set('telEdit',TEL.ed)}catch(_){alert('이 브라우저에 저장하지 못했습니다.')}shutRender()}
 async function telCheck(id,on){await telLoad();if(on)TEL.call[id]=Date.now();else delete TEL.call[id];try{await IDB.set('telCall',TEL.call)}catch(_){}telList()}
@@ -6175,7 +6186,7 @@ function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset
   else if(a==='ved'){SHUT.vEd=SHUT.vEd===+b.dataset.i?-1:+b.dataset.i;shutRender();const f=p.querySelector('.shedf input');if(f)f.focus()}
   else if(a==='vcan'){SHUT.vEd=-1;shutRender()}
   else if(a==='vsave'||a==='vorig'){const box=b.closest('.shedf'),i=+box.dataset.i;SHUT.vEd=-1;if(a==='vorig')facEdit(i,'orig','원래대로');else{const pt={};box.querySelectorAll('[data-k]').forEach(el=>pt[el.dataset.k]=el.value);facEdit(i,pt,'현장 수정').then(()=>shutRender());shutRender()}}
-  else if(a==='ted')telEdit(+b.dataset.i);else if(a==='tmore'){SHUT.telLim=(SHUT.telLim||50)+100;telList()}else if(a==='telx')telXlsx();else if(a==='tclr')telClear();
+  else if(a==='ted')telEdit(+b.dataset.i);else if(a==='tgo')telGo(+b.dataset.i);else if(a==='tmore'){SHUT.telLim=(SHUT.telLim||50)+100;telList()}else if(a==='telx')telXlsx();else if(a==='tclr')telClear();
   else if(a==='kp')kpFind();else if(a==='kpv')kpView(b.dataset.id);else if(a==='kpmore'){SHUT.kpLim=(SHUT.kpLim||30)+100;shutRender()}});
  p.addEventListener('change',e=>{const b=e.target;if(b.dataset&&b.dataset.a==='tck')telCheck(b.dataset.id,b.checked);else if(b.dataset&&b.dataset.a==='kck')kpCheck(b.dataset.id,b.checked);else if(b.dataset&&b.dataset.a==='plain'){SHUT.opt.plain=b.checked;shutSave();shutPlainSync()}else if(b.dataset&&b.dataset.a==='cust'){SHUT.opt.cust=b.checked;shutSave();shutDraw()}});
  p.addEventListener('input',e=>{const si=e.target.dataset&&e.target.dataset.si;if(si){const I=SHUT.info||(SHUT.info={no:'',addr:'',z:'',ed:new Set(),ll:null});I[si]=e.target.value;I.ed.add(si);return}if(e.target.id==='shTelQ'){SHUT.telQ=e.target.value;SHUT.telLim=50;telList()}else if(e.target.id==='kpQ'){SHUT.kpQ=e.target.value;SHUT.kpLim=30;shutRender()}})}
