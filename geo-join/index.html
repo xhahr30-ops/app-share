@@ -503,6 +503,17 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .vdmk{background:transparent;border:0}.vdmk span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #dc2626;box-shadow:0 1px 4px #0006;font-size:13px;position:relative}.vdmk i{position:absolute;right:-6px;top:-6px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/15px sans-serif;font-style:normal;text-align:center}
 @media (max-width:640px){.vdp{left:0;right:0;bottom:0;width:auto;max-height:80vh;border-radius:16px 16px 0 0;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}}
 @media(max-width:700px){.kvp{left:8px;right:8px;bottom:8px;width:auto;height:55vh;resize:none}}
+.navs{position:fixed;inset:0;z-index:10070;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.35)}
+.navs[hidden]{display:none}
+.navs .nvb{width:min(380px,calc(100vw - 16px));margin:0 8px 8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 32px rgba(15,23,42,.3);padding:12px 12px 10px;font-family:inherit}
+.navs .nvh{display:flex;align-items:center;gap:6px;margin-bottom:8px}.navs .nvh b{font-size:14px}.navs .nvh small{color:var(--mute);font-size:11.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navs .nvx{margin-left:auto;border:0;background:var(--sub2);color:var(--ink2);border-radius:8px;width:32px;height:32px;font-size:15px;cursor:pointer}
+.navs .nvl{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.navs .nvi{display:flex;align-items:center;gap:6px;min-height:46px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--sub);color:var(--ink);font-size:13.5px;font-weight:700;cursor:pointer;text-align:left}
+.navs .nvi:hover{border-color:#818cf8}.navs .nvi.last{border-color:#6366f1;background:#eef2ff;color:#3730a3}html.dark .navs .nvi.last{background:rgba(99,102,241,.25);color:#c7d2fe}
+.navs .nvi i{font-style:normal;font-size:10.5px;font-weight:700;color:#4f46e5;margin-left:auto}html.dark .navs .nvi i{color:#a5b4fc}
+.navs .nvf{margin-top:8px;font-size:11.5px;color:var(--mute);line-height:1.5}.navs .nvf a{color:#4f46e5;font-weight:700}html.dark .navs .nvf a{color:#a5b4fc}
+@media(min-width:701px){.navs{align-items:center}}
 .leaflet-pipes-pane,.leaflet-pipes-pane canvas{pointer-events:none!important}
 /* 📷 현장 사진 v2 — 위치 묶음·넘겨보기·갤러리·새 창 */
 .ph-ic{background:none;border:0}
@@ -1535,7 +1546,7 @@ function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Mat
 function ptHitAt(cp){if(!PT.n||PT.off)return -1;const z=map.getZoom(),R=Math.max(ptRadius(z),5)+3,ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
  for(const i of ptQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!PT.vis[i])continue;const p=map.latLngToContainerPoint([PT.lat[i],PT.lng[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=best){best=d;bi=i}}return bi}
-function ptPopupHtml(i){const o=out[i],mg=o['관리번호']||o['수용가번호']||'';return `<div style="font-size:11.5px;color:#4338ca;font-weight:700">👤 수용가${mg?' · '+esc(mg):''}</div><b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
+function ptPopupHtml(i){const o=out[i],mg=o['관리번호']||o['수용가번호']||'';return `<div style="font-size:11.5px;color:#4338ca;font-weight:700">👤 수용가${mg?' · '+esc(mg):''}</div><b>${esc(o['_검색주소'])}</b><br>${esc(o['_결합블록']||'결합 없음')}${o['_사용자블록']?` · <span style="color:#7c3aed;font-weight:700">🏷️ ${esc(o['_사용자블록'])}</span>`:''}${o['_비고']?`<br><small>${esc(o['_비고'])}</small>`:''}${billPopup(o)}${elevPop(+o['_위도'],+o['_경도'])}<div class="acts" style="margin-top:6px">${kLinks(o)}${navBtn(+o['_위도'],+o['_경도'],'수용가'+(mg?' '+mg:''))}<button type="button" class="kl" onclick="locRun(${i})">🛰️ 위치도</button><button type="button" class="kl" onclick="kvFrom(${i})">🧭 패널</button></div>`}
 function ptSame(i){const la=PT.lat[i],ln=PT.lng[i],e=1e-6,r=[];for(const k of ptQuery(ln-e,la-e,ln+e,la+e))if(PT.vis[k]&&Math.abs(PT.lat[k]-la)<e&&Math.abs(PT.lng[k]-ln)<e)r.push(k);return r.sort((a,b)=>a-b)}
 function ptOpen(i){if(!map||isNaN(PT.lat[i]))return;L.popup({maxWidth:320,offset:[0,-4]}).setLatLng([PT.lat[i],PT.lng[i]]).setContent(ptPopFull(i)).openOn(map)}
 function ptPopFull(i){const same=ptSame(i);let h=ptPopupHtml(i);
@@ -1979,7 +1990,7 @@ function initSearch(){
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
   pin=L.marker([r.lat,r.lng],{icon:L.divIcon({className:'gs-pin',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,26],popupAnchor:[0,-24]}),zIndexOffset:1000}).addTo(map);
-  pin.bindPopup(`<div style="font-size:12.5px;line-height:1.5"><b>📍 ${esc(r.t)}</b>${r.s?`<br><span style="color:#64748b">${esc(r.s)}</span>`:''}<br>소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy} <a href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${xy}');this.textContent='복사됨';return false">복사</a><br><a href="#" onclick="window.__gsClear&&window.__gsClear();return false">핀 지우기</a></div>`,{maxWidth:300}).openPopup();
+  pin.bindPopup(`<div style="font-size:12.5px;line-height:1.5"><b>📍 ${esc(r.t)}</b>${r.s?`<br><span style="color:#64748b">${esc(r.s)}</span>`:''}<br>소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy} <a href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${xy}');this.textContent='복사됨';return false">복사</a><div class="acts" style="margin-top:6px">${navBtn(r.lat,r.lng,r.t)}</div><a href="#" onclick="window.__gsClear&&window.__gsClear();return false">핀 지우기</a></div>`,{maxWidth:300}).openPopup();
   map.setView([r.lat,r.lng],Math.max(map.getZoom(),17))}
  window.__gsClear=()=>{if(pin){map.removeLayer(pin);pin=null}};
  /* 블록명 찾기: 소블록 SHP 이름 + 별칭표(BV01,BV02=블루밸리) + 중블록·대블록 이름. 띄어쓰기·대소문자 무시, 같음 > 앞부분 > 포함 */
@@ -3182,7 +3193,43 @@ function kvWalkOff(){if(KV.wk){if(map)map.removeLayer(KV.wk);KV.wk=null}}
 const kvU=v=>encodeURIComponent(String(v||'')).replace(/'/g,'%27');
 function kvLinkRv(la,ln){return `https://map.kakao.com/link/roadview/${(+la).toFixed(6)},${(+ln).toFixed(6)}`}
 function kvLinkTo(nm,la,ln){return `https://map.kakao.com/link/to/${encodeURIComponent(String(nm||'목적지').replace(/^[^0-9A-Za-z가-힣#]+/u,'').replace(/[,/]/g,' ').slice(0,40)||'목적지')},${(+la).toFixed(6)},${(+ln).toFixed(6)}`}
-function kvBtns(la,ln,t,sub,to){if(!isFinite(+la)||!isFinite(+ln))return '';return `<button type="button" class="kl" onclick="kvGo(${(+la).toFixed(7)},${(+ln).toFixed(7)},'${kvU(t)}','${kvU(sub)}')" title="이 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`+(to?`<a class="kl" href="${kvLinkTo(t,la,ln)}" target="_blank" rel="noopener" title="카카오맵 길찾기">🚗 길찾기</a>`:'')}
+function kvBtns(la,ln,t,sub,to){if(!isFinite(+la)||!isFinite(+ln))return '';return `<button type="button" class="kl" onclick="kvGo(${(+la).toFixed(7)},${(+ln).toFixed(7)},'${kvU(t)}','${kvU(sub)}')" title="이 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`+(to?navBtn(la,ln,t):'')}
+/* 🚗 길찾기: 카카오맵·티맵·네이버지도·구글 지도(안드로이드는 다른 앱도) 중에서 골라 좌표로 엽니다.
+   넘기는 값은 좌표와 짧은 이름(수용가는 관리번호)뿐. 마지막에 고른 앱은 이 기기에만 기억(geo-navlast). */
+function navBtn(la,ln,nm){if(!isFinite(+la)||!isFinite(+ln))return '';return `<button type="button" class="kl" onclick="navGo(${(+la).toFixed(7)},${(+ln).toFixed(7)},'${kvU(nm)}')" title="내비게이션 길찾기 (카카오맵·티맵·네이버·구글)">🚗 길찾기</button>`}
+const NAV={la:0,ln:0,nm:'',isA:/Android/i.test(navigator.userAgent),isI:/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)};
+function navName(nm){return String(nm||'목적지').replace(/^[^0-9A-Za-z가-힣#]+/u,'').replace(/[,/&?#="'<>]/g,' ').replace(/\s+/g,' ').trim().slice(0,40)||'목적지'}
+function navApps(){const a=[{k:'kakao',t:'카카오맵',ic:'🟡'},{k:'tmap',t:'티맵',ic:'🔵'},{k:'naver',t:'네이버지도',ic:'🟢'},{k:'google',t:'구글 지도',ic:'🔴'}];if(NAV.isA)a.push({k:'geo',t:'다른 앱 고르기',ic:'📱'});return a}
+function navUrl(k,la,ln,nm){const y=(+la).toFixed(6),x=(+ln).toFixed(6),n=encodeURIComponent(nm),web=kvLinkTo(nm,la,ln),fb=encodeURIComponent(web),
+  host=encodeURIComponent(location.hostname||'geo-join');
+ if(k==='google')return `https://www.google.com/maps/dir/?api=1&destination=${y},${x}&travelmode=driving`;
+ if(k==='geo')return `geo:${y},${x}?q=${y},${x}(${n})`;
+ if(k==='kakao')return NAV.isA?`intent://route?ep=${y},${x}&by=CAR#Intent;scheme=kakaomap;package=net.daum.android.map;S.browser_fallback_url=${fb};end`:NAV.isI?`kakaomap://route?ep=${y},${x}&by=CAR`:web;
+ if(k==='tmap'){const q=`route?goalname=${n}&goalx=${x}&goaly=${y}`;return NAV.isA?`intent://${q}#Intent;scheme=tmap;package=com.skt.tmap.ku;S.browser_fallback_url=${fb};end`:`tmap://${q}`}
+ if(k==='naver'){const q=`route/car?dlat=${y}&dlng=${x}&dname=${n}&appname=${host}`;return NAV.isA?`intent://${q}#Intent;scheme=nmap;package=com.nhn.android.nmap;S.browser_fallback_url=${fb};end`:NAV.isI?`nmap://${q}`:`https://map.naver.com/p/directions/-/${x},${y},${n},,/-/car`}
+ return web}
+function navLast(){try{return localStorage.getItem('geo-navlast')||''}catch(_){return ''}}
+function navOpen(la,ln,nm){la=+la;ln=+ln;if(!isFinite(la)||!isFinite(ln))return;NAV.la=la;NAV.ln=ln;NAV.nm=navName(nm);
+ let d=$('navSheet');if(!d){d=document.createElement('div');d.id='navSheet';d.className='navs';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','길찾기 앱 고르기');
+  d.addEventListener('click',e=>{if(e.target===d||e.target.closest('.nvx'))navClose();const b=e.target.closest('.nvi');if(b)navPick(b.dataset.k)});document.body.appendChild(d)}
+ const last=navLast(),apps=navApps().sort((a,b)=>(b.k===last)-(a.k===last));
+ d.innerHTML=`<div class="nvb"><div class="nvh"><span style="font-size:20px">🚗</span><div style="min-width:0"><b>길찾기 앱 고르기</b><small>${esc(NAV.nm)} · ${la.toFixed(5)}, ${ln.toFixed(5)}</small></div><button type="button" class="nvx" aria-label="닫기">✕</button></div>
+  <div class="nvl">${apps.map(a=>`<button type="button" class="nvi${a.k===last?' last':''}" data-k="${a.k}"><span>${a.ic}</span>${a.t}${a.k===last?'<i>최근</i>':''}</button>`).join('')}</div>
+  <div class="nvf" id="navFb">출발지는 내 현재 위치입니다. 앱이 없으면 카카오맵 웹 길찾기로 엽니다.</div></div>`;
+ d.hidden=false;const f=d.querySelector('.nvi');if(f)f.focus()}
+function navClose(){const d=$('navSheet');if(d)d.hidden=true}
+function navPick(k){const u=navUrl(k,NAV.la,NAV.ln,NAV.nm),web=kvLinkTo(NAV.nm,NAV.la,NAV.ln);try{localStorage.setItem('geo-navlast',k)}catch(_){}
+ const isWeb=/^https:/.test(u);
+ /* 웹 주소는 새 창, 앱 주소는 같은 화면에서 넘김(앱스 스크립트 틀 안이면 새 창) */
+ if(isWeb||window.top!==window){const w=window.open(u,'_blank','noopener');if(!w&&!isWeb)location.href=u}else location.href=u;
+ if(isWeb){navClose();return}
+ /* 아이폰 등: 앱이 없으면 화면이 그대로 남음 → 1.6초 뒤 웹 길찾기 안내 */
+ let gone=false;const vh=()=>{if(document.hidden)gone=true};document.addEventListener('visibilitychange',vh);window.addEventListener('pagehide',vh);
+ setTimeout(()=>{document.removeEventListener('visibilitychange',vh);window.removeEventListener('pagehide',vh);
+  if(gone||document.hidden){navClose();return}const fb=$('navFb');
+  if(fb)fb.innerHTML=`앱이 안 열렸나요? <a href="${web}" target="_blank" rel="noopener" onclick="navClose()">카카오맵 웹 길찾기로 열기</a>`},1600)}
+window.navGo=(la,ln,nm)=>navOpen(la,ln,nm?decodeURIComponent(nm):'');window.navClose=navClose;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const d=$('navSheet');if(d&&!d.hidden){navClose();e.stopPropagation()}}},true);
 function kvGoAt(la,ln,t,sub){la=+la;ln=+ln;if(!isFinite(la)||!isFinite(ln))return;
  if(!kvKey()){window.open(kvLinkRv(la,ln),'_blank','noopener');return}
  KV.on=true;$('kvPanel').hidden=false;$('kvBtn').classList.add('on');$('kvBtn').setAttribute('aria-pressed','true');
