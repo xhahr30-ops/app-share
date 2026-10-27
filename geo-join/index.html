@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>스마트 물길주소</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#3730a3"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="물길주소"><link rel="apple-touch-icon" href="icon-192.png">
 <script>(function(){var r=document.documentElement,v=null;try{v=localStorage.getItem('geo-dark')}catch(e){}var d=v!=null?v=='1':matchMedia('(prefers-color-scheme: dark)').matches;if(d)r.classList.add('dark')})()</script>
 <style id="pgs">@page{size:A4 portrait;margin:10mm}</style>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1824,7 +1825,8 @@ function uiInit(){if(!map)return;plblInit();
 <p class="uin" style="margin-top:2px">이 기기(브라우저)에만 저장되는 사용자·기기 설정입니다. 자료를 보내고 받는 버튼(지금 동기화·기준자료 올리기/받기)은 왼쪽 📷 현장 사진 › ☁️ 직원 공유에 있습니다.</p>
 <div class="uig">📱 앱 시작 화면</div>
 <label class="uif">앱을 열 때<select id="uiFsStart" class="msel">${opt([['auto','자동 (휴대폰은 전체 지도)'],['on','항상 전체 지도'],['off','평소 화면']])}</select></label>
-<p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.</p>
+<label class="uif">주소창 숨기기 (브라우저 전체화면)<select id="uiFsNat" class="msel">${opt([['on','씀 — 들어갈 때 크롬 안내 문구가 뜸'],['off','쓰지 않음 — 문구 없음, 주소창은 보임']])}</select></label>
+<p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.<br>📲 크롬 메뉴 ⋮ › <b>홈 화면에 추가</b>(앱 설치)로 만든 아이콘으로 열면 안내 문구 없이 처음부터 꽉 찬 화면이 됩니다.</p>
 <div class="uig">☁️ 직원 공유</div><div id="uiShBox"></div>
 <div class="uig">🗺️ 브이월드 배경지도 · 지적도</div><div id="uiVwBox"></div>
 <div class="uig">📷 사진 저장</div><div id="uiPhSzBox"></div>
@@ -1852,7 +1854,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
  q('uiAll').onclick=uiAllToggle;
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
- q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
+ q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
  document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.code==='KeyH'||e.key==='h'||e.key==='H'||e.key==='ㅗ')){e.preventDefault();uiAllToggle()}
   else if(e.key==='Escape'&&!p.hidden&&!document.body.classList.contains('fsOn'))uiPanel(false)});
@@ -1951,8 +1953,11 @@ function initFs(){
  const isOn=()=>native()===box||box.classList.contains('mapfs');
  const sync=()=>{const on=isOn();a.textContent=on?'✕':'⛶';const mb=$('mapFsBtn');if(mb)mb.textContent=on?'✕ 닫기':'⛶ 전체화면';a.title=on?'전체화면 끝내기 (Esc)':'지도 전체화면';a.setAttribute('aria-label',a.title);document.body.classList.toggle('fsOn',on);setTimeout(()=>map.invalidateSize(),150)};
  const rq=box.requestFullscreen||box.webkitRequestFullscreen;
+ /* 브라우저 전체화면을 부를 때마다 크롬이 "전체 화면을 종료하려면…" 문구를 띄움(페이지에서 못 끔) →
+    ⚙️ '주소창 숨기기: 쓰지 않음'이거나 홈 화면 앱(설치본, 이미 꽉 찬 화면)으로 열었으면 부르지 않고 전체 지도 모드(mapfs)만 */
+ const noNat=()=>{if(UI.fsNat==='off')return true;try{return matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(_){return false}};
  const on=()=>{const fb=()=>{box.classList.add('mapfs');sync()};
-  if(!rq)return fb();try{const p=rq.call(box);if(p&&p.catch)p.catch(fb)}catch(_){fb()}};
+  if(!rq||noNat())return fb();try{const p=rq.call(box);if(p&&p.catch)p.catch(fb)}catch(_){fb()}};
  /* 카메라·파일 선택·공유 화면으로 나가면 폰 브라우저가 전체화면을 강제로 풀어 버림 → 전체 지도 모드(mapfs)는 그대로 두고, 돌아와서 화면을 한 번 누르면 다시 꽉 채움 */
  let want=false,outT=0,guard=false,reArm=false;
  const stamp=()=>{outT=Date.now()};
@@ -1960,7 +1965,7 @@ function initFs(){
  window.addEventListener('blur',stamp);window.addEventListener('pagehide',stamp);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stamp()});
  const external=()=>document.hidden||Date.now()-outT<3000||(document.hasFocus&&!document.hasFocus());
- const reEnter=e=>{if(!reArm)return;reArm=false;if(!want||native()||!rq||!isOn())return;if(e&&e.target&&e.target.closest&&e.target.closest('.fsbtn,#mapFsBtn,#uiFs'))return;try{const p=rq.call(box);if(p&&p.catch)p.catch(()=>{})}catch(_){}};
+ const reEnter=e=>{if(!reArm)return;reArm=false;if(!want||native()||!rq||!isOn()||noNat())return;if(e&&e.target&&e.target.closest&&e.target.closest('.fsbtn,#mapFsBtn,#uiFs'))return;try{const p=rq.call(box);if(p&&p.catch)p.catch(()=>{})}catch(_){}};
  const arm=()=>{reArm=true;document.addEventListener('click',reEnter,{once:true,capture:true})};
  const off=()=>{want=false;reArm=false;if(native())(document.exitFullscreen||document.webkitExitFullscreen).call(document);box.classList.remove('mapfs');sync();
   if(guard){guard=false;try{history.back()}catch(_){}}};
@@ -2000,7 +2005,7 @@ function initFs(){
     evs.forEach(t=>document.removeEventListener(t,first,true));
     if(!box.classList.contains('mapfs')||native())return;
     if(!guard){try{history.pushState({mapfs:1},'');guard=true}catch(_){}}
-    if(rq){try{const p=rq.call(box);if(p&&p.catch)p.catch(()=>{})}catch(_){}}};
+    if(rq&&!noNat()){try{const p=rq.call(box);if(p&&p.catch)p.catch(()=>{})}catch(_){}}};
    evs.forEach(t=>document.addEventListener(t,first,true))}}catch(e){console.warn('시작 전체화면',e)}
 }
 /* ===== 지도 주소찾기 (오른쪽 위) =====
