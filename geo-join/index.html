@@ -3954,7 +3954,8 @@ function facRot(p){const v=+((p||{}).rotation??(p||{})['회전GIS']);return isFi
 function facKindOf(name,feats){const m=String(name).match(/SA\d{3}/i);if(m)return m[0].toUpperCase();
  const c=new Map();feats.slice(0,500).forEach(f=>{const v=String((f.p||{})['지물부호']||(f.p||{}).FTR_CDE||'').toUpperCase().match(/SA\d{3}/);if(v)c.set(v[0],(c.get(v[0])||0)+1)});
  const top=[...c].sort((a,b)=>b[1]-a[1])[0];return top?top[0]:String(name).replace(/\.(shp|dbf)$/i,'')}
-const facClosed=p=>/^(폐|close|closed|닫힘|폐쇄)$/i.test(String((p||{})['개폐여부']??'').trim());
+/* 닫힘 판단: 개폐 칸이 폐·닫힘이면 닫힘. 경계밸브는 평소 닫혀 있으므로 개폐 칸이 비어 있으면 닫힘으로 봄 (사용자 확인 2026-10-28) */
+const facClosed=p=>{const v=String((p||{})['개폐여부']??'').trim();return v?/^(폐|close|closed|닫힘|폐쇄)$/i.test(v):facBnd(p)};
 const facId=p=>{for(const k of FAC_ID){const v=(p||{})[k];if(v!=null&&!badId(v))return String(v).trim()}return ''};
 
 /* ---------- SHP 읽기: Web Worker (속성 파일이 100MB가 넘어도 화면이 멈추지 않게), 안 되면 화면에서 직접 ---------- */
@@ -4103,7 +4104,10 @@ window.facInfoSave=async(i,btn)=>{const box=btn.closest('.fied');if(!box)return;
  if(!ch.length){phToast('바뀐 칸이 없습니다.',{ms:3000});return}FAC.infoOpen=-1;
  await facEdit(i,pt,ch.length===1&&ch[0]==='현장메모'?'비고 수정':ch.length===1&&ch[0]==='밸브구분'?(pt['밸브구분']?'경계밸브로':'제수밸브로'):'정보 수정 ('+ch.map(k=>k==='현장메모'?'비고':k).join(', ')+')');
  try{phToast('💾 저장했습니다: '+ch.map(k=>k==='현장메모'?'비고':k).join(', '))}catch(_){}};
-window.facBndSet=(i,on)=>facEdit(i,{'밸브구분':on?'경계밸브':''},on?'경계밸브로':'제수밸브로');
+/* 경계밸브로 = 평소 닫힘이라 개폐도 '폐'로 같이 바꿈. 제수밸브로 되돌리면 개폐도 원래 값으로 */
+window.facBndSet=(i,on)=>{const P=FAC.pt[i]&&FAC.pt[i].p||{},o=P['_원본']||{},pt={'밸브구분':on?'경계밸브':''};
+ if(on)pt['개폐여부']='폐';else if('개폐여부' in o)pt['개폐여부']=o['개폐여부']==null?'':o['개폐여부'];
+ return facEdit(i,pt,on?'경계밸브로 (닫힘)':'제수밸브로')};
 function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
 window.facOpSet=facOpSet;
 function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
@@ -6290,7 +6294,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   {const ne=V.filter(v=>{const P=FAC.pt[v.i].p||{};return shutVE(P,'관리번호')&&shutVE(P,'구경')&&shutVE(P,'개폐여부')}).length;
    if(ne)h+=`<p class="uin c-am" style="margin:2px 0 4px">⚠️ 시설물 SHP에 관리번호·구경·개폐가 모두 빈 밸브 ${ne}개 — 자료에 없는 값이라 "확인 필요"로 표시했습니다. 현장 값은 ✏️로 넣을 수 있습니다.</p>`}
   if(V.length)h+=`<table class="sht shvt"><tr><th>#</th><th>관리번호</th><th>구경</th><th>개폐</th><th></th><th></th></tr>${V.map(v=>{const P=FAC.pt[v.i].p||{},ed=P['_현장수정'],o=P['_원본']||{},mk=k=>k in o?' class="shmod" title="원래: '+esc(o[k]==null||o[k]===''?'빈칸':o[k])+'"':'';
-   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${facBnd(P)?' <small style="color:#dc2626;font-weight:700">🔴 경계</small>':''}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
+   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${facBnd(P)?' <small style="color:#dc2626;font-weight:700">🔴 경계</small>':''}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?`<br><small class="mute">${facBnd(P)?'경계밸브라 닫힘으로 봄':'열림으로 봄'}</small>`:''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
    if(SHUT.vEd===v.i){const cur=String(P['개폐여부']??''),ops=[...new Set(['개','폐','미분류',cur].filter(Boolean))];
     r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">비고 (현장 특이사항)<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
      `<div class="shedb"><button type="button" class="btn" data-a="vsave">💾 저장</button>${ed?`<button type="button" class="btn ol" data-a="vorig" title="${esc(facOrigTxt(P))}">↩ SHP 원래대로</button>`:''}<button type="button" class="btn ol" data-a="vcan">취소</button></div>${ed?`<small class="mute">✏️ 현장 수정 ${esc(ed)} · 원래 ${esc(facOrigTxt(P))}</small>`:''}</div></td></tr>`}
