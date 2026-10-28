@@ -3904,6 +3904,9 @@ const FSVG=(()=>{const W=(vb,b)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBo
  const BG=(col,d,u)=>W('0 0 32 32',`<circle cx="16" cy="16" r="14.6" fill="${u?'#fff':col}" stroke="${u?col:'#fff'}" stroke-width="${u?2.4:1.8}"/><g transform="translate(6.6 6.6) scale(1.253)" fill="${u?col:'#fff'}">${d}</g>`);
  const S={gate:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   gateC:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  /* 경계밸브 = 제수밸브 나비 모양 + 빨간 테두리 원 (닫힘이면 검은 나비). 원이라 관로 방향으로 돌려도 모양 같음 */
+  bnd:W('-5 -5 38 38','<circle cx="14" cy="14" r="17.6" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/><polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  bndC:W('-5 -5 38 38','<circle cx="14" cy="14" r="17.6" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/><polygon points="27,1 27,27 1,1 1,27" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   check:W('0 0 28 28','<polygon points="27,6 27,22 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   drain:W('-17 -17 20.5 20.5','<rect x="-17" y="-17" width="20.5" height="20.5" fill="#fff" fill-opacity=".75"/><line x1="-16.3" y1="-4" x2="2.8" y2="-4" stroke="#000" stroke-width="1.4"/><polyline fill="none" stroke="#000" stroke-width="1.4" points="-2.9,0.7 -6.7,0.7 -6.7,-6.7"/><polygon points="-3.5,-1.3 0,0.7 -3.5,2.7"/>'),
   air:W('0 0 26 26',`<circle cx="13" cy="13" r="12" fill="#fff" stroke="#000" stroke-width="1.6"/><text x="13" y="20.5" font-size="20" ${T}>A</text>`),
@@ -3940,8 +3943,12 @@ function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/
 function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
  const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
 /* 시설마다 심볼: 닫힌 제수밸브는 검은 심볼, 소화전은 지상·지하 형식별 */
-function facSymOf(I,p){const s=I.sym;if(s==='gate'&&facClosed(p))return 'gateC';if(s==='hyd'){const t=String((p||{})['소화전형식']||'');return /지상/.test(t)?'hydG':/지하/.test(t)?'hydU':'hyd'}return s}
-const FROT=new Set(['gate','gateC','check','drain','prv']);
+function facSymOf(I,p){const s=I.sym;if(s==='gate'){if(facBnd(p))return facClosed(p)?'bndC':'bnd';if(facClosed(p))return 'gateC'}if(s==='hyd'){const t=String((p||{})['소화전형식']||'');return /지상/.test(t)?'hydG':/지하/.test(t)?'hydU':'hyd'}return s}
+const FROT=new Set(['gate','gateC','bnd','bndC','check','drain','prv']);
+/* 경계밸브: 제수밸브(밸브류 gate)에 속성 '밸브구분=경계밸브'를 붙여 구분. 종류 코드(SA200)는 그대로라 단수구역·사진 연결·SHP 다시 올리기가 같게 동작 */
+const facBnd=p=>String((p||{})['밸브구분']??'').trim()==='경계밸브';
+const facBndI=i=>{const k=FAC.sk&&FAC.sk[i];return k==='bnd'||k==='bndC'};
+function facDispName(i){const f=FAC.pt[i],I=facKindInfo(f.k);return I.sym==='gate'&&facBnd(f.p)?'경계밸브':I.name}
 function facRot(p){const v=+((p||{}).rotation??(p||{})['회전GIS']);return isFinite(v)&&v!==0?v:NaN}
 /* 레이어 종류: 파일명에 SA000 지물부호가 있으면 그것, 없으면 지물부호 속성의 대표값, 그래도 없으면 파일명 */
 function facKindOf(name,feats){const m=String(name).match(/SA\d{3}/i);if(m)return m[0].toUpperCase();
@@ -4001,7 +4008,8 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
  const g=FAC.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();facAreaShow(z);facHintUpd(z);if(!FAC.n)return;
  const on=FAC.kinds.map(k=>facOn(k,z));if(!on.some(Boolean))return;
  const b=map.getBounds().pad(pad),sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,R=facR(z),by=FAC.kinds.map(()=>[]);
- for(const i of facQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth())){const k=FAC.k[i];if(!on[k]||(FAC.dl[i]&&!(FE&&FE.on)))continue;const x=FAC.px[i]*sc+ax,y=FAC.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;by[k].push(x,y,i)}
+ const hb=FAC.hidden.has('#bnd');
+ for(const i of facQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth())){const k=FAC.k[i];if(!on[k]||(FAC.dl[i]&&!(FE&&FE.on))||(hb&&facBndI(i)))continue;const x=FAC.px[i]*sc+ax,y=FAC.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;by[k].push(x,y,i)}
  /* 심볼(사용자 제공 SVG)로 찍음. 밸브는 관로 방향(rotation 속성: 동쪽 기준 시계방향 각도, 관로 1,500개와 대조해 90%가 10° 이내로 맞음)으로 돌림. 심볼이 없는 종류는 색 점 */
  const KI=FAC.kinds.map(facKindInfo);g.lineJoin='round';
  /* 많은 종류(제수밸브)부터 그려서 적은 시설(소화전·정수장 등)이 위에 보이게 */
@@ -4042,21 +4050,22 @@ function facAreas(){if(FAC.areaL&&map){map.removeLayer(FAC.areaL)}FAC.areaL=null
 function facAreaShow(z){const l=FAC.areaL;if(!l||!map)return;const on=$('fShow').value!=='off'&&($('fShow').value==='on'||z>=12);if(on&&!map.hasLayer(l))l.addTo(map);else if(!on&&map.hasLayer(l))map.removeLayer(l)}
 function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),RK=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),k)/2,5)+3),R=Math.max(5,...RK),ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
- for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z)||(FAC.dl[i]&&!(FE&&FE.on)))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=RK[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
-const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)'],['현장메모','현장 메모']];
-function facPopup(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),rows=[],seen=new Set();try{if(typeof hlSeenFac==='function')hlSeenFac(P._fid)}catch(_){}
+ for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z)||(FAC.dl[i]&&!(FE&&FE.on))||(FAC.hidden.has('#bnd')&&facBndI(i)))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=RK[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
+const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)'],['비고','비고 (SHP)'],['현장메모','비고']];
+function facPopup(i){const f=FAC.pt[i],P=f.p||{},I0=facKindInfo(f.k),I={...I0,name:facDispName(i)},rows=[],seen=new Set();try{if(typeof hlSeenFac==='function')hlSeenFac(P._fid)}catch(_){}
  FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
+ if(!seen.has('비고'))rows.push(['비고','-']);
  const b=poly?blkAt(f.c[0],f.c[1]):'';rows.push(['소블록(위치)',b||'-']);
- return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}${P._추가?' <small style="color:#16a34a;font-weight:700">🆕 현장 추가</small>':''}${P._삭제?' <small style="color:#dc2626;font-weight:700">🗑 삭제 표시</small>':''}${P._현장수정&&I.sym!=='gate'&&!P._추가?' <small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 '+esc(P._현장수정)+'</small>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`+
-  (I.sym==='gate'?facOpUi(i):'')+(typeof phFacHtml==='function'?phFacHtml(i):'')+
-  `<div class="acts" style="margin-top:6px">${kvBtns(FAC.y[i],FAC.x[i],I.name+(P['관리번호']?' '+P['관리번호']:''),b?'소블록 '+b:'',true)}<button type="button" class="kl" onclick="feOpen(${i})" title="시설물 편집 모드에서 이 시설 고치기·옮기기">🛠 편집</button>${vidBtns('fac',P['관리번호']!=null&&P['관리번호']!==''?'m:'+I.name+':'+P['관리번호']:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6),FAC.y[i],FAC.x[i],'🔧 '+I.name+(P['관리번호']?' '+P['관리번호']:''))}</div>`+
+ return `<b>${I.sym?facSym({sym:FAC.sk[i]},18):'🔧'} ${esc(I.name)}</b>${FAC.cl[i]?' <span style="color:#dc2626;font-weight:700">⛔ 닫힘</span>':''}${P._추가?' <small style="color:#16a34a;font-weight:700">🆕 현장 추가</small>':''}${P._삭제?' <small style="color:#dc2626;font-weight:700">🗑 삭제 표시</small>':''}${P._현장수정&&I.sym!=='gate'&&!P._추가?' <small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 '+esc(P._현장수정)+'</small>':''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${esc(k)}</td><td${k==='비고'&&v!=='-'?' style="color:#7c3aed;font-weight:700;white-space:pre-wrap"':''}>${esc(v)}</td></tr>`).join('')}</table>`+
+  (I.sym==='gate'?facOpUi(i):'')+facInfoForm(i)+(typeof phFacHtml==='function'?phFacHtml(i):'')+
+  `<div class="acts" style="margin-top:6px">${kvBtns(FAC.y[i],FAC.x[i],I.name+(P['관리번호']?' '+P['관리번호']:''),b?'소블록 '+b:'',true)}<button type="button" class="kl" onclick="feOpen(${i})" title="시설물 편집 모드에서 이 시설 고치기·옮기기">🛠 편집</button>${vidBtns('fac',P['관리번호']!=null&&P['관리번호']!==''?'m:'+I0.name+':'+P['관리번호']:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6),FAC.y[i],FAC.x[i],'🔧 '+I.name+(P['관리번호']?' '+P['관리번호']:''))}</div>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).filter(([k])=>!/^_/.test(k)).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 시설물 현장 수정(제수밸브 개폐·🛠 편집 모드): 고친 칸의 SHP 원래 값은 '_원본', 원래 위치는 '_원좌표'에 보관 → 시설물 저장(이력 '현장 수정', ↶ 되돌리기 가능).
    공유 서버가 켜져 있으면 20초 뒤 자동으로 받아 합친 뒤 올림(facSync). 시설물 SHP를 새로 올릴 때 현장 수정을 유지할지 고름(facReapply) */
 const facNow=()=>{const d=new Date();return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 const facOrigTxt=P=>Object.entries(P['_원본']||{}).map(([k,v])=>`${k}: ${v==null||v===''?'빈칸':v}`).join(', ');
-function facOpUi(i){const P=FAC.pt[i].p||{},cl=!!FAC.cl[i],ed=P['_현장수정'];
- return `<div class="acts" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center"><button type="button" class="kl" onclick="facOpSet(${i},'${cl?'open':'close'}')">${cl?'🔓 열림으로 바꾸기':'⛔ 닫힘으로 바꾸기'}</button>${ed?`<button type="button" class="kl" onclick="facOpSet(${i},'orig')" title="SHP 원래 값으로 (${esc(facOrigTxt(P))})">↩ 원래대로</button><small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 ${esc(ed)}</small>`:''}</div>`}
+function facOpUi(i){const P=FAC.pt[i].p||{},cl=!!FAC.cl[i],ed=P['_현장수정'],bd=facBnd(P);
+ return `<div class="acts" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center"><button type="button" class="kl" onclick="facOpSet(${i},'${cl?'open':'close'}')">${cl?'🔓 열림으로 바꾸기':'⛔ 닫힘으로 바꾸기'}</button><button type="button" class="kl" onclick="facBndSet(${i},${bd?0:1})" title="${bd?'일반 제수밸브로 되돌리기':'블록 경계에 있는 밸브로 표시 (빨간 원 아이콘)'}">${bd?'🔧 제수밸브로':'🔴 경계밸브로'}</button>${ed?`<button type="button" class="kl" onclick="facOpSet(${i},'orig')" title="SHP 원래 값으로 (${esc(facOrigTxt(P))})">↩ 원래대로</button><small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 ${esc(ed)}</small>`:''}</div>`}
 /* 속성 고치기: 처음 바뀌는 칸만 원래 값을 _원본에 보관, 원래 값으로 돌아오면 지움 */
 function facPatch(P,patch){const o={...(P['_원본']||{})};let n=0;
  for(const k in patch){const v=patch[k]==null?'':String(patch[k]).trim(),cur=P[k]==null?'':String(P[k]);if(v===cur)continue;n++;if(!(k in o))o[k]=P[k]==null?null:P[k];if(v==='')delete P[k];else P[k]=v;if((o[k]==null?'':String(o[k]))===v)delete o[k]}
@@ -4075,6 +4084,26 @@ async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p
  if(typeof shutRefresh==='function')shutRefresh();
  try{chgFacMine(f,label)}catch(_){}
  await facSave('현장 수정',facKindInfo(f.k).name+(P['관리번호']?' '+P['관리번호']:'')+' '+label,{upd:1})}
+/* ✏️ 정보 고치기 (정보창 안): 그 시설의 속성 칸 전부 + 기본 칸(빈칸 채우기용) + 비고(현장 특이사항 = '현장메모' 칸). 저장은 facEdit 그대로 */
+const FAC_SYS=/^(FeatId\d*|FID|OBJECTID|OID|지물부호|rotation|회전GIS|현장메모|밸브구분|개폐여부|SHAPE.*)$/i;
+function facInfoKeys(i){const f=FAC.pt[i],P=f.p||{},I=facKindInfo(f.k),has=k=>P[k]!=null;
+ const dia=has('소화전구경')?'소화전구경':'구경',typ=['밸브류형식','소화전형식','유량계형식','가압형식','형식'].find(has)||(I.sym==='hyd'?'소화전형식':FROT.has(I.sym)||I.sym==='gate'?'밸브류형식':I.sym==='meter'?'유량계형식':'형식');
+ const ks=['관리번호',dia,typ,'설치일자'];Object.keys(P).concat(Object.keys(P['_원본']||{})).forEach(k=>{if(k[0]!=='_'&&!FAC_SYS.test(k)&&!ks.includes(k))ks.push(k)});return ks}
+function facInfoForm(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKindInfo(f.k),o=P['_원본']||{};
+ const inp=k=>`<label style="display:contents"><span style="color:#64748b;font-size:11.5px;align-self:center${k in o?';color:#7c3aed;font-weight:700':''}"${k in o?` title="원래 값: ${esc(o[k]==null||o[k]===''?'빈칸':o[k])}"`:''}>${esc(k)}</span><input data-k="${esc(k)}" value="${esc(P[k]??'')}" style="min-width:0;font-size:12.5px;padding:3px 5px;border:1px solid #cbd5e1;border-radius:5px"></label>`;
+ let g=facInfoKeys(i).map(inp).join('');
+ if(I.sym==='gate'){const op=String(P['개폐여부']??''),ops=[...new Set(['','개','폐',op])],sel=(k,t,a)=>`<label style="display:contents"><span style="color:#64748b;font-size:11.5px;align-self:center">${t}</span><select data-k="${k}" style="font-size:12.5px;padding:3px">${a}</select></label>`;
+  g+=sel('개폐여부','개폐',ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join(''))+sel('밸브구분','밸브 구분',`<option value=""${facBnd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option>`)}
+ return `<details class="fied" style="margin-top:6px;font-size:12px"${FAC.infoOpen===i?' open':''} ontoggle="FAC.infoOpen=this.open?${i}:-1"><summary style="cursor:pointer;font-weight:700;color:#4338ca">✏️ 정보 고치기 · 비고</summary><div onkeydown="event.stopPropagation()" style="margin-top:4px">
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 6px">${g}</div>
+  <label style="display:block;margin-top:5px;font-weight:700;color:#7c3aed">📝 ${P['비고']!=null?'현장 비고':'비고'} (현장 특이사항)<textarea data-k="현장메모" rows="2" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모, 차량 주차 잦음" style="display:block;width:100%;box-sizing:border-box;font-size:12.5px;padding:4px 5px;border:1px solid #c4b5fd;border-radius:5px;margin-top:2px;resize:vertical">${esc(P['현장메모']??'')}</textarea></label>
+  <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap"><button type="button" class="kl" onclick="facInfoSave(${i},this)">💾 저장</button>${P['_원본']&&Object.keys(P['_원본']).length?`<button type="button" class="kl" onclick="if(confirm('이 시설의 고친 정보를 SHP 원래 값으로 되돌릴까요? (위치 이동·삭제 표시도 함께 되돌림)'))facEdit(${i},'orig','원래대로')" title="${esc(facOrigTxt(P))}">↩ 원래대로</button>`:''}<small style="color:#64748b;align-self:center">고친 칸은 원래 값을 보관하고, 공유 서버가 켜져 있으면 직원에게도 공유됩니다</small></div></div></details>`}
+window.facInfoSave=async(i,btn)=>{const box=btn.closest('.fied');if(!box)return;const pt={};box.querySelectorAll('[data-k]').forEach(el=>pt[el.dataset.k]=el.value);
+ const P=FAC.pt[i]&&FAC.pt[i].p||{},ch=Object.keys(pt).filter(k=>String(pt[k]).trim()!==(P[k]==null?'':String(P[k])));
+ if(!ch.length){phToast('바뀐 칸이 없습니다.',{ms:3000});return}FAC.infoOpen=-1;
+ await facEdit(i,pt,ch.length===1&&ch[0]==='현장메모'?'비고 수정':ch.length===1&&ch[0]==='밸브구분'?(pt['밸브구분']?'경계밸브로':'제수밸브로'):'정보 수정 ('+ch.map(k=>k==='현장메모'?'비고':k).join(', ')+')');
+ try{phToast('💾 저장했습니다: '+ch.map(k=>k==='현장메모'?'비고':k).join(', '))}catch(_){}};
+window.facBndSet=(i,on)=>facEdit(i,{'밸브구분':on?'경계밸브':''},on?'경계밸브로':'제수밸브로');
 function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
 window.facOpSet=facOpSet;
 function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
@@ -4083,7 +4112,8 @@ function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=ma
  /* 클릭은 hitInit(수용가 점 · 시설물 · 관로 · 소블록 통합)에서 */}
 const facSym=(I,s=16)=>I.sym?`<img src="${facSymUrl(I.sym)}" width="${s}" height="${s}" alt="" style="flex:none;vertical-align:-3px">`:`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${I.col};border:1.5px solid #fff;box-shadow:0 0 0 1px #94a3b8"></span>`;
 function facKindsUi(){const box=$('fKinds');if(!box)return;const cnt=new Map(),clc=new Map();FAC.feats.forEach(f=>{cnt.set(f.k,(cnt.get(f.k)||0)+1);if(f.c&&facClosed(f.p))clc.set(f.k,(clc.get(f.k)||0)+1)});
- box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span class="fkn" title="${esc(I.name)}${I.name!==k?' ('+esc(k)+')':''}">${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
+ const bnc=new Map();FAC.feats.forEach(f=>{if(f.c&&facBnd(f.p)&&facKindInfo(f.k).sym==='gate')bnc.set(f.k,(bnc.get(f.k)||0)+1)});
+ box.innerHTML=FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span class="fkn" title="${esc(I.name)}${I.name!==k?' ('+esc(k)+')':''}">${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`+(bnc.get(k)?`<div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" data-k="#bnd"${FAC.hidden.has('#bnd')?'':' checked'}> ${facSym({sym:'bnd'})} <span class="fkn" title="제수밸브 중 경계밸브로 표시한 것 (정보창 🔴 경계밸브로)">경계밸브</span> <small class="mute">${bnc.get(k).toLocaleString()}개 (${esc(I.name)} 중)</small></label></div>`:'')}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
  box.querySelectorAll('button[data-sz]').forEach(bt=>bt.onclick=()=>{const k=bt.dataset.k,cur=facKS(k);let i=FKS_STEPS.findIndex(v=>Math.abs(v-cur)<.01);if(i<0)i=2;i=Math.max(0,Math.min(FKS_STEPS.length-1,i+(+bt.dataset.sz)));
   FAC.ksz=FAC.ksz||{};if(FKS_STEPS[i]===1)delete FAC.ksz[k];else FAC.ksz[k]=FKS_STEPS[i];facCfgSave();facKindsUi();facDraw()});
  const rs=box.querySelector('#fSzReset');if(rs)rs.onclick=()=>{FAC.ksz={};facCfgSave();facKindsUi();facDraw()};
@@ -4461,7 +4491,7 @@ const PH_FC_R=15,PH_FC_GAP=5,PH_VALVE=new Set(['SA200','SA201','SA202','SA203','
 const phFcKd=m=>{const k=phKd(m);return k==='bv'||k==='fc'};
 function facKey(i){const f=FAC.pt[i],P=f.p||{},id=facId(P);return id?f.k+':'+id.replace(/[;=!]/g,'_'):P._fid?'F:'+P._fid:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6)}
 function facKeyI(){if(FAC.keyI&&FAC.keyIpt===FAC.pt&&FAC.keyIn===FAC.n)return FAC.keyI;const M=new Map();for(let i=0;i<FAC.n;i++){const k=facKey(i);if(!M.has(k))M.set(k,i)}FAC.keyI=M;FAC.keyIpt=FAC.pt;FAC.keyIn=FAC.n;return M}
-function facName(i){const f=FAC.pt[i],id=facId(f.p);return facKindInfo(f.k).name+(id?' '+id:'')}
+function facName(i){const f=FAC.pt[i],id=facId(f.p);return facDispName(i)+(id?' '+id:'')}
 function facNear(lat,lng,valve,R){if(!FAC.n||lat==null)return [];const kx=111320*Math.cos(lat*Math.PI/180),ky=110574,dx=R/kx,dy=R/ky,out=[];
  for(const i of facQuery(lng-dx,lat-dy,lng+dx,lat+dy)){if(FAC.dl[i])continue;if(valve&&!PH_VALVE.has(FAC.kinds[FAC.k[i]]))continue;const d=Math.hypot((FAC.x[i]-lng)*kx,(FAC.y[i]-lat)*ky);if(d<=R)out.push({i,d})}
  return out.sort((a,b)=>a.d-b.d)}
@@ -4469,7 +4499,8 @@ function phFacLinks(){const L=new Map(),amb=new Set();PH.fcAmb=amb;PH.fcL=L;if(!
  for(const m of PH.list){if(!phFcKd(m)||m.solo)continue;
   if(m.fc&&m.fc!=='-'){const i=KI.get(m.fc);if(i!=null){L.set(m.id,{key:m.fc,i,man:1});continue}} /* 직접 연결한 시설물이 없어졌으면 자동 연결로 */
   if(m.fc==='-'||m.lat==null)continue;
-  const c=facNear(m.lat,m.lng,phKd(m)==='bv',PH_FC_R);if(!c.length)continue;
+  let c=facNear(m.lat,m.lng,phKd(m)==='bv',PH_FC_R);if(!c.length)continue;
+  if(phKd(m)==='bv'){const cb=c.filter(o=>facBndI(o.i));if(cb.length)c=cb} /* 경계밸브 사진은 경계밸브로 표시한 밸브에 먼저 붙임 */
   if(c.length>1&&c[1].d-c[0].d<PH_FC_GAP){amb.add(m.id);continue}
   L.set(m.id,{key:facKey(c[0].i),i:c[0].i})}
  return L}
@@ -5901,7 +5932,7 @@ function shutDraw(){if(!map)return;shutLayer();
  if(SHUT.opt.cust!==false){const I=telRows();if(I.length&&I.length<=30000){shutRowStats();const src=shutSrc(),big=SHUT.bigSet||new Set(),ord=I.filter(i=>!big.has(i)).concat(I.filter(i=>big.has(i)));
   SHUT.cust=[];ord.forEach(i=>{const r=src[i],la=+r['_위도'],ln=+r['_경도'];if(!la||!ln)return;const b=big.has(i);SHUT.cust.push(i,la,ln);L.circleMarker([la,ln],{...o,radius:b?7:4.2,color:'#fff',weight:b?2:1.2,fillColor:b?'#f59e0b':'#0284c7',fillOpacity:1}).addTo(SHUT.L)})}}
  SHUT.res.V.slice(0,300).forEach(v=>{const cls=v.st===2?'br':v.st===1?'cl':'',m=L.marker([FAC.y[v.i],FAC.x[v.i]],{icon:L.divIcon({className:'shvi',html:`<span class="shv ${cls}">${v.no}</span>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:900,keyboard:false,
-  title:`${v.no}번 제수밸브 ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
+  title:`${v.no}번 ${facBndI(v.i)?'경계밸브':'제수밸브'} ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
   m.on('click',()=>shutBroken(v.n));m.addTo(SHUT.L)});
  {const rl=shutRefLL();if(rl)L.marker(rl,{icon:L.divIcon({className:'shvi',html:'<span class="shv st">!</span>',iconSize:[22,22],iconAnchor:[11,11]}),interactive:false,zIndexOffset:950}).addTo(SHUT.L)}}
 function shutBounds(){const N=SHUT.net,seen=SHUT.seen;if(!seen)return null;let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;
@@ -6046,7 +6077,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  const F=(w,sz)=>Fq(w,sz,q);g.textBaseline='middle';
  /* 밸브 목록 (x0 = 칸 왼쪽, tw = 글자 칸 폭) */
  const drawValves=(x0,y,tw)=>{list.forEach(v=>{const P=FAC.pt[v.i].p||{};badge(x0+12*q,y+lh*q/2,String(v.no),col(v),v.st===2,q);g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(600,14);
-   g.fillText(`제수밸브 ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,x0+32*q,y+lh*q/2,tw);y+=lh*q});
+   g.fillText(`${facBnd(P)?'경계밸브':'제수밸브'} ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,x0+32*q,y+lh*q/2,tw);y+=lh*q});
   if(more){g.fillStyle='#475569';g.font=F(600,14);g.fillText(`외 ${more}개 (지도에 번호로 표시)`,x0+32*q,y+lh*q/2);y+=lh*q}return y};
  /* 수용가 현황 칸 */
  const drawCust=(x0,cw,yy)=>{g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(800,14);g.fillText('👥 단수구역 수용가 현황',x0,yy+11*q,cw);
@@ -6259,9 +6290,9 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   {const ne=V.filter(v=>{const P=FAC.pt[v.i].p||{};return shutVE(P,'관리번호')&&shutVE(P,'구경')&&shutVE(P,'개폐여부')}).length;
    if(ne)h+=`<p class="uin c-am" style="margin:2px 0 4px">⚠️ 시설물 SHP에 관리번호·구경·개폐가 모두 빈 밸브 ${ne}개 — 자료에 없는 값이라 "확인 필요"로 표시했습니다. 현장 값은 ✏️로 넣을 수 있습니다.</p>`}
   if(V.length)h+=`<table class="sht shvt"><tr><th>#</th><th>관리번호</th><th>구경</th><th>개폐</th><th></th><th></th></tr>${V.map(v=>{const P=FAC.pt[v.i].p||{},ed=P['_현장수정'],o=P['_원본']||{},mk=k=>k in o?' class="shmod" title="원래: '+esc(o[k]==null||o[k]===''?'빈칸':o[k])+'"':'';
-   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
+   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${facBnd(P)?' <small style="color:#dc2626;font-weight:700">🔴 경계</small>':''}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?'<br><small class="mute">열림으로 봄</small>':''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
    if(SHUT.vEd===v.i){const cur=String(P['개폐여부']??''),ops=[...new Set(['개','폐','미분류',cur].filter(Boolean))];
-    r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">현장 메모<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
+    r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">비고 (현장 특이사항)<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
      `<div class="shedb"><button type="button" class="btn" data-a="vsave">💾 저장</button>${ed?`<button type="button" class="btn ol" data-a="vorig" title="${esc(facOrigTxt(P))}">↩ SHP 원래대로</button>`:''}<button type="button" class="btn ol" data-a="vcan">취소</button></div>${ed?`<small class="mute">✏️ 현장 수정 ${esc(ed)} · 원래 ${esc(facOrigTxt(P))}</small>`:''}</div></td></tr>`}
    return r}).join('')}</table><p class="uin" style="margin-top:4px">✏️로 고친 값은 이 기기 시설물 자료에 저장됩니다(직원 공유는 ⏫ 올리기). "못 닫음"은 이번 단수 계산에만 씁니다.</p>`;
   else h+=`<p class="uin">구역 둘레에 제수밸브가 없습니다 (밸브가 관로에서 멀리 찍혔거나 망이 끊긴 곳일 수 있음).</p>`;
@@ -6418,8 +6449,8 @@ function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKi
  const inp=(k,t,o)=>`<label>${t}</label><input data-k="${esc(k)}" value="${esc(P[k]??'')}"${o||''}>`;
  const op=String(P['개폐여부']??''),ops=[...new Set(['','개','폐',op])];
  const badge=(P._추가?'<span class="feb add">🆕 현장 추가</span>':'')+(P._삭제?'<span class="feb del">🗑 삭제 표시</span>':'')+(P._원좌표?'<span class="feb">📍 위치 옮김</span>':'')+(P._원본&&Object.keys(P._원본).length?'<span class="feb">✏️ 속성 수정</span>':'');
- return `<div class="fef" data-i="${i}"><div class="r"><b>${I.sym?facSym({sym:FAC.sk[i]},16):'🔧'} ${esc(I.name)}${P['관리번호']?' '+esc(P['관리번호']):''}</b>${badge}</div>
-  <div class="feg">${inp('관리번호','관리번호')}${inp(dia,'구경',' inputmode="numeric"')}${inp(typ,'형식')}${I.sym==='gate'?`<label>개폐</label><select data-k="개폐여부">${ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join('')}</select>`:''}${inp('설치일자','설치일자')}${inp('현장메모','현장 메모')}
+ return `<div class="fef" data-i="${i}"><div class="r"><b>${I.sym?facSym({sym:FAC.sk[i]},16):'🔧'} ${esc(facDispName(i))}${P['관리번호']?' '+esc(P['관리번호']):''}</b>${badge}</div>
+  <div class="feg">${inp('관리번호','관리번호')}${inp(dia,'구경',' inputmode="numeric"')}${inp(typ,'형식')}${I.sym==='gate'?`<label>개폐</label><select data-k="개폐여부">${ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join('')}</select>`:''}${I.sym==='gate'?`<label>밸브 구분</label><select data-k="밸브구분"><option value=""${facBnd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option></select>`:''}${inp('설치일자','설치일자')}${inp('현장메모','비고')}
   ${feRotKind(i)?`<label>회전</label><span class="ferot"><input data-k="rotation" value="${esc(P.rotation??'')}" inputmode="decimal" style="width:64px">° <button type="button" data-e="pdir" title="가까운 관로 방향으로 (접합점이면 누를 때마다 다른 관로)">🧭 관로 방향</button><button type="button" data-e="r90">↻ 90°</button></span>`:''}</div>
   <div class="r"><button type="button" data-e="save" class="on">💾 저장</button>${P._추가?`<button type="button" data-e="rm" class="del">🗑 추가 취소</button>`:`<button type="button" data-e="dl" class="${P._삭제?'':'del'}">${P._삭제?'♻ 되살리기':'🗑 삭제 표시'}</button>`}${P._현장수정&&!P._추가?`<button type="button" data-e="orig" title="SHP 원래 값·위치로">↩ 원래대로</button>`:''}<button type="button" data-e="desel">닫기</button></div></div>`}
 function feUi(){if(!FE.bar)return;const b=FE.bar,n=FAC.feats.filter(f=>f.p&&(f.p._현장수정||f.p._추가)).length,ks=feKinds();if(!FE.addK||!ks.includes(FE.addK))FE.addK=ks.includes('SA200')?'SA200':ks[0]||'';
@@ -6503,8 +6534,8 @@ function feMarks(g,by){if(!FE.on)return;g.save();
 function facChgXlsx(){const rows=[];FAC.feats.forEach(f=>{const P=f.p||{};if(!P._현장수정&&!P._추가)return;const o=P._원본||{},ks=Object.keys(o),c=f.c||[],oc=P._원좌표;
   const kind=[P._추가?'추가':'',P._삭제?'삭제 표시':'',oc?'위치 이동':'',ks.length?'속성 수정':''].filter(Boolean).join(', ');
   const dm=oc&&c.length?Math.round(Math.hypot((c[0]-oc[0])*Math.cos(c[1]*Math.PI/180)*111320,(c[1]-oc[1])*110574)*100)/100:'';
-  rows.push({'구분':kind,'종류':facKindInfo(f.k).name,'지물부호':f.k,'관리번호':P['관리번호']??'','바뀐 항목':ks.join(', '),'원래 값':ks.map(k=>`${k}: ${o[k]==null||o[k]===''?'빈칸':o[k]}`).join(' / '),'새 값':ks.map(k=>`${k}: ${P[k]==null||P[k]===''?'빈칸':P[k]}`).join(' / '),
-   '경도':c[0]??'','위도':c[1]??'','원래 경도':oc?oc[0]:'','원래 위도':oc?oc[1]:'','이동 거리(m)':dm,'회전(°)':P.rotation??'','현장 메모':P['현장메모']??'','수정 시각':P._현장수정||P._추가||''})});
+  rows.push({'구분':kind,'종류':facKindInfo(f.k).sym==='gate'&&facBnd(P)?'경계밸브':facKindInfo(f.k).name,'지물부호':f.k,'관리번호':P['관리번호']??'','바뀐 항목':ks.join(', '),'원래 값':ks.map(k=>`${k}: ${o[k]==null||o[k]===''?'빈칸':o[k]}`).join(' / '),'새 값':ks.map(k=>`${k}: ${P[k]==null||P[k]===''?'빈칸':P[k]}`).join(' / '),
+   '경도':c[0]??'','위도':c[1]??'','원래 경도':oc?oc[0]:'','원래 위도':oc?oc[1]:'','이동 거리(m)':dm,'회전(°)':P.rotation??'','비고 (현장 특이사항)':P['현장메모']??'','수정 시각':P._현장수정||P._추가||''})});
  if(!rows.length){alert('현장에서 고친 시설이 없습니다.');return}
  try{const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:16},{wch:12},{wch:9},{wch:14},{wch:18},{wch:30},{wch:30},{wch:12},{wch:12},{wch:12},{wch:12},{wch:10},{wch:8},{wch:20},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws,'현장수정');XLSX.writeFile(wb,`시설물_현장수정_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}catch(e){alert('엑셀 만들기 실패: '+((e&&e.message)||e))}}
