@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v29 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v30 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4885,6 +4885,80 @@ html.dark .cx-id{color:#a5b4fc}html.dark .cx-id:hover,html.dark .cx-id:focus{bac
 .cx-all{cursor:pointer;margin-left:4px;font-size:11px;opacity:.75}.cx-all:hover{opacity:1}`;document.head.appendChild(st);
 window.__gw29={linkify,scan,look,go,goAll,cpOut,cpIn,CP};
 })()}catch(e){console.warn('v29',e)}
+/* ════ v30 추적 결과 활용: 결과 상세에서 보기 · 반전 선택 · 추적 경로 동수경사도 ════ */
+try{(()=>{
+const TR=TT.trc,G18=window.__gw18||{};
+// 추적 때 해석 시각을 기억(동수경사도 경로를 그 시각 흐름 방향으로 찾기 위해)
+const tr0=traceRun;traceRun=function(){const r=tr0.apply(this,arguments);if(r)r.k=S.k;return r};
+const live=()=>{const r=T.trc;return r&&S.net&&r.ni&&r.ni.length===S.net.nodes.length&&r.li.length===S.net.links.length?r:null};
+
+// ── 1·2. 추적 범위를 선택으로 · 반전 선택 · 결과 상세에서 보기
+function selTrace(inv){const r=live();if(!r)return false;const m=T.multi;m.n.clear();m.l.clear();
+ r.ni.forEach((v,i)=>{if(!v!==!inv)m.n.add(i)});r.li.forEach((v,i)=>{if(!v!==!inv)m.l.add(i)});T.trcInv=!!inv;renderMulti();requestDraw();return true}
+function invMulti(){const m=T.multi,N=S.net.nodes,L=S.net.links,nn=m.n.size,nl=m.l.size;if(!nn&&!nl){toast('반전할 선택이 없습니다.');return}
+ const flip=(set,len)=>{const o=new Set(set);set.clear();for(let i=0;i<len;i++)if(!o.has(i))set.add(i)};
+ if(nn||!nl)flip(m.n,N.length);if(nl||!nn)flip(m.l,L.length);T.trcInv=!T.trcInv;renderMulti();requestDraw();
+ toast(`선택을 반전했습니다: 절점 ${m.n.size.toLocaleString()} · 관로 ${m.l.size.toLocaleString()}`)}
+function showRes(){if(!S.res){toast('먼저 해석을 실행하세요.');return}
+ if(!T.multi.n.size&&!T.multi.l.size&&!selTrace(false)){toast('먼저 상류·하류 추적을 실행하세요.');return}
+ T.rsSel=true;if(!['n','l'].includes(T.rsT||'n'))T.rsT='l';winOpen('res');try{winRender('res')}catch(e){}
+ toast(`해석결과 상세에 선택한 절점 ${T.multi.n.size.toLocaleString()} · 관로 ${T.multi.l.size.toLocaleString()}만 보입니다. '선택한 것만'을 끄면 전체로 돌아갑니다.`,5000)}
+
+// ── 3. 추적 경로 동수경사도(종단면)
+// 고정 경로: 종단면이 이 두 절점이면 전체 최단경로 대신 추적 범위 안 경로를 씀
+let FP=null;
+const sp0=shortestPath;shortestPath=function(a,b){const f=FP;if(f&&f.net===S.net){const p=GR.prof&&GR.prof.pts||[];
+  if(p.length===2&&((p[0]===f.a&&p[1]===f.b)||(p[0]===f.b&&p[1]===f.a))){if(a===f.a&&b===f.b)return{links:f.links.slice(),len:f.len};if(a===f.b&&b===f.a)return{links:f.links.slice().reverse(),len:f.len}}}
+ return sp0.apply(this,arguments)};
+function dj(src,ok,step){const L=S.net.links,n=S.net.nodes.length,dist=new Float64Array(n).fill(1/0),prev=new Int32Array(n).fill(-1),done=new Uint8Array(n),h=[[0,src]];dist[src]=0;
+ const push=x=>{h.push(x);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p][0]<=h[i][0])break;[h[p],h[i]]=[h[i],h[p]];i=p}};
+ const pop=()=>{const t=h[0],e=h.pop();if(h.length){h[0]=e;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;if(l<h.length&&h[l][0]<h[m][0])m=l;if(r<h.length&&h[r][0]<h[m][0])m=r;if(m===i)break;[h[m],h[i]]=[h[i],h[m]];i=m}}return t};
+ while(h.length){const[d,i]=pop();if(done[i])continue;done[i]=1;nbr(i,li=>{if(!ok(li))return;const j=step(li,i);if(j<0)return;const w=d+(L[li].len||1);if(w<dist[j]){dist[j]=w;prev[j]=li;push([w,j])}})}
+ return{dist,prev}}
+const back=(D,b)=>{const L=S.net.links,ls=[];let c=b;while(D.prev[c]>=0){const li=D.prev[c];ls.push(li);c=oth(L[li],c)}return ls.reverse()};
+function pfTrace(){const r=live(),R=S.res;if(!r||r.mode==='path'){toast('먼저 상류·하류 추적을 실행하세요.');return}if(!R){toast('먼저 해석을 실행하세요.');return}
+ const N=S.net.nodes,L=S.net.links,k=r.k??S.k,Q=R.Q[k];
+ const fwd=(li,i)=>{const v=Q[li];if(Math.abs(v)<1e-7)return -1;const a=v>0?L[li].n1-1:L[li].n2-1;return a===i?oth(L[li],i):-1};
+ const und=(li,i)=>oth(L[li],i);const ok=li=>!!r.li[li]&&isOpenL(li);
+ // 시작 절점: 절점에서 시작했으면 그 절점, 관로에서 시작했으면 흐름상 앞(하류 추적)·뒤(상류 추적) 끝
+ let s=findNode(r.start);if(s<0){const li=findLink(r.start);if(li<0){toast('추적 시작점을 찾지 못했습니다.');return}const l=L[li],v=Q[li],a=v<0?l.n2-1:l.n1-1,b=v<0?l.n1-1:l.n2-1;s=r.mode==='up'?b:a}
+ const em=T.trcPfE||'low';let a,b,D;
+ const pick=(D,cand)=>{let best=-1,bv=0;const sel=S.sel&&S.sel.t==='n'?S.sel.i:-1;
+  if(em==='sel'){if(sel>=0&&isFinite(D.dist[sel])&&sel!==s)return sel;toast('지도에서 추적 범위 안의 절점을 먼저 고르세요.');return -2}
+  cand.forEach(i=>{if(i===s||!isFinite(D.dist[i]))return;const v=em==='far'?D.dist[i]:-R.P[k][i];if(best<0||v>bv){best=i;bv=v}});return best};
+ const cand=[];r.ni.forEach((v,i)=>{if(v&&N[i].type===0)cand.push(i)});
+ if(r.mode==='up'){const srcs=r.srcs.map(findNode).filter(i=>i>=0),want=T.trcPfS||'';
+  if(srcs.length){let best=null;for(const x of (want&&srcs.includes(findNode(want))?[findNode(want)]:srcs)){let d=dj(x,ok,fwd);if(!isFinite(d.dist[s]))d=dj(x,ok,und);if(isFinite(d.dist[s])&&(!best||d.dist[s]<best.d.dist[s]))best={x,d}}
+   if(!best){toast('급수원에서 시작점까지 이어진 경로를 찾지 못했습니다.');return}a=best.x;b=s;D=best.d}
+  else{const d=dj(s,ok,und),e=pick(d,cand.concat(srcs));if(e===-2)return;if(e<0){toast('경로로 쓸 절점이 없습니다.');return}const f=dj(e,ok,fwd);D=isFinite(f.dist[s])?f:dj(e,ok,und);a=e;b=s}}
+ else{let d=dj(s,ok,r.mode==='down'?fwd:und);if(r.mode==='down'&&!cand.some(i=>i!==s&&isFinite(d.dist[i])))d=dj(s,ok,und);const e=pick(d,cand);if(e===-2)return;if(e<0){toast('경로로 쓸 절점이 없습니다.');return}a=s;b=e;D=d}
+ const links=back(D,b);if(!links.length){toast('경로가 너무 짧습니다.');return}
+ FP={net:S.net,a,b,links,len:D.dist[b]};if(!G18.pfSet){toast('종단면 그래프를 열 수 없습니다.');return}G18.pfSet([a,b]);GR.type='pf';winOpen('graph');try{winRender('graph')}catch(e){}requestDraw();
+ const ew={low:'최저 수압 절점',far:'가장 먼 절점',sel:'고른 절점'}[em];
+ toast(`동수경사도: ${N[a].id} → ${N[b].id} · 관로 ${links.length}개 · ${fmt(D.dist[b],0)} m (${r.mode==='up'?'급수원 → 시작점':'시작점 → '+ew})`,5000)}
+
+// ── 추적 결과 창에 버튼 붙이기
+const out0=TR.out,ob0=TR.outBind;
+TR.out=function(){let h=out0.apply(this,arguments);const r=live();if(!r)return h;
+ if(r.mode==='path')return h+tbox('🎯 경로 활용',`<div class="flex flex-wrap gap-2">${tbtn('tRs','📋 해석결과 상세에서 보기')}${tbtn('tInv','🔄 반전 선택')}${tbtn('tPf','📈 이 경로 동수경사도')}</div>`);
+ const N=S.net.nodes,em=T.trcPfE||'low',srcs=r.mode==='up'?r.srcs:[];
+ const endSel=r.mode==='up'&&srcs.length?(srcs.length>1?tsel('tPfS','급수원',[['','가장 가까운 곳'],...srcs.map(x=>[x,x])],T.trcPfS||''):''):tsel('tPfE','끝점',[['low','최저 수압 절점'],['far','가장 먼 절점'],['sel','지도에서 고른 절점']],em);
+ h+=tbox('🎯 추적 결과 활용',`<div class="flex flex-wrap gap-2">${tbtn('tSel','⬚ 추적 범위 선택')}${tbtn('tInv','🔄 반전 선택')}${tbtnP('tRs','📋 해석결과 상세에서 보기')}</div>
+  <div class="flex flex-wrap items-center gap-2">${endSel}${tbtnP('tPf','📈 추적 경로 동수경사도')}</div>`+
+  tnote(`<b>추적 범위 선택</b>은 추적된 절점·관로를 선택(하늘색)으로 만들어 일괄입력·복사에 씁니다. <b>반전 선택</b>은 그 반대(추적 밖 전부)를 고릅니다. <b>해석결과 상세</b>는 지금 선택된 것만 표로 보여 줍니다. 동수경사도는 ${r.mode==='up'?'급수원에서 시작점까지':'시작점에서 고른 끝점까지'} 추적 범위 안의 흐름 경로로 종단면 그래프를 엽니다.`),'border-pink-200');
+ return h};
+TR.outBind=function(){if(ob0)ob0.apply(this,arguments);const on=(id,f,ev)=>{const e=$(id);if(e)e[ev||'onclick']=f};const r=live();
+ on('tSel',()=>{if(selTrace(false))toast(`추적 범위를 선택했습니다: 절점 ${T.multi.n.size.toLocaleString()} · 관로 ${T.multi.l.size.toLocaleString()}`)});
+ on('tInv',()=>{if(r&&r.mode!=='path'&&!T.multi.n.size&&!T.multi.l.size){selTrace(true);toast(`추적 밖을 선택했습니다: 절점 ${T.multi.n.size.toLocaleString()} · 관로 ${T.multi.l.size.toLocaleString()}`)}else invMulti()});
+ on('tRs',showRes);
+ on('tPfE',e=>{T.trcPfE=e.target.value},'onchange');on('tPfS',e=>{T.trcPfS=e.target.value},'onchange');
+ on('tPf',()=>{if(r&&r.mode==='path'){const a=findNode(r.start),b=findNode(r.end);if(a<0||b<0||!G18.pfSet)return;if(!S.res){toast('먼저 해석을 실행하세요.');return}G18.pfSet([a,b]);GR.type='pf';winOpen('graph');try{winRender('graph')}catch(e){}requestDraw()}else pfTrace()})};
+
+// ── 지도 위 선택 막대에도 반전 버튼
+const rm0=renderMulti;renderMulti=function(){const x=rm0.apply(this,arguments);try{const c=$('mClr');if(c&&!$('mInv')){c.insertAdjacentHTML('beforebegin',tbtn('mInv','🔄 반전')+tbtn('mRs','📋 결과 상세'));$('mInv').onclick=invMulti;$('mRs').onclick=showRes}}catch(e){}return x};
+
+window.__gw30={selTrace,invMulti,showRes,pfTrace,get FP(){return FP}};
+})()}catch(e){console.warn('v30',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
