@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v32 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v33 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -3442,7 +3442,8 @@ function inpOut(){let t=inpOut0();if(!S.net)return t;
  const tags=S.tags&&S.tags.n,ser=o=>{const k=Object.keys(o).filter(x=>o[x]!=null&&String(o[x])!=='');if(k.length===1&&k[0]==='tag')return String(o.tag);return k.filter(x=>x!=='tag'||!o.dma_name).map(x=>x+':'+String(o[x]).replace(/[|\s]+/g,'_')).join('|')};
  const lines=[];S.net.nodes.forEach(n=>{const o=Object.assign({},tags&&tags.get(n.id)||{});if(n.blk)o.dma_name=n.blk;else delete o.dma_name;const v=ser(o);if(v)lines.push(`NODE \t${n.id}\t${v}`)});
  const re=/^[ \t]*\[TAGS\][^\n]*\n([\s\S]*?)(?=^[ \t]*\[|(?![\s\S]))/im,m=t.match(re);
- if(m){const keep=m[1].split('\n').filter(l=>{const s=l.trim();return s&&!/^NODE\s/i.test(s)});t=t.slice(0,m.index)+m[0].slice(0,m[0].indexOf('\n')+1)+[...keep,...lines].join('\n')+'\n\n'+t.slice(m.index+m[0].length)}
+ /* v33: 블록이 있는 관로도 LINK 줄에 dma_name 저장 */const LB=S.net.links.filter(l=>l.blk),own=new Set(LB.map(l=>l.id));LB.forEach(l=>{const o=Object.assign({},S.tags&&S.tags.l.get(l.id)||{});o.dma_name=l.blk;lines.push(`LINK \t${l.id}\t${ser(o)}`)});
+ if(m){const keep=m[1].split('\n').filter(l=>{const s=l.trim();if(!s||/^NODE\s/i.test(s))return false;const w=s.split(/\s+/);return !(/^LINK$/i.test(w[0])&&own.has(w[1]))});t=t.slice(0,m.index)+m[0].slice(0,m[0].indexOf('\n')+1)+[...keep,...lines].join('\n')+'\n\n'+t.slice(m.index+m[0].length)}
  else if(lines.length){const sec='[TAGS]\n'+lines.join('\n')+'\n\n';t=/^\s*\[END\]/im.test(t)?t.replace(/^\s*\[END\]/im,sec+'[END]'):t+'\n'+sec}
  return t}
 function inpOut0(){S.prj.saveInpFile('out.inp');let t=S.ws.readFile('out.inp');if(typeof t!=='string')t=new TextDecoder().decode(t);
@@ -5123,7 +5124,7 @@ const metal=k=>{k=String(k||'').trim().toUpperCase();if(!k||k==='-')return -1;re
 let PATC=null;
 function patOf(n){if(!PATC||PATC.net!==S.net){PATC={net:S.net,m:new Map()}}if(PATC.m.has(n.i))return PATC.m.get(n.i);let v='(패턴 없음)';try{const k=S.prj.getNodeValue(n.i,2);if(k>0)v=S.prj.getPatternId(k)}catch(e){}PATC.m.set(n.i,v);return v}
 function gOf(n){if(!n)return NB;switch(DG.grp){case 'mid':return n.blk?(String(n.blk).replace(/[-_ .]*\d+$/,'')||n.blk):NB;case 'pat':return patOf(n);case 'all':return '관망 전체';default:return n.blk||NB}}
-function gOfL(l){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1];return gOf(a&&a.type===0?a:b)}
+function gOfL(l){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1],n=a&&a.type===0?a:b;return l.blk&&(DG.grp==='blk'||DG.grp==='mid')?gOf(Object.assign({},n,{blk:l.blk})):gOf(n)}
 const GRPS=[['blk','소블록'],['mid','중블록(소블록 이름 앞부분)'],['pat','수요 패턴(계통)'],['all','관망 전체만']];
 
 // ── 해석 시각: 마지막 24시간에서 시간최대·평균·시간최소
@@ -5253,6 +5254,28 @@ const _ra32=rbAct;rbAct=function(a,btn){if(XC[a]&&!(DDM[a]&&btn&&btn.closest('#g
 try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
 window.__gw32={DG,calc,csvOf,dlAll,times,selGroup};
 })()}catch(e){console.warn('v32',e)}
+
+/* ════ v33 관로에도 소블록: 블록 경계 SHP로 관로 블록 지정 · INP [TAGS] LINK dma_name 저장·읽기 ════ */
+try{(()=>{
+// 관로 중간점(꼭짓점 포함 길이 기준)
+function lmid(l){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1];const P=[[a.x,a.y],...(l.vs||[]),[b.x,b.y]].filter(p=>isFinite(p[0])&&isFinite(p[1]));if(!P.length)return null;if(P.length===1)return P[0];
+ let L=0;const d=[];for(let j=0;j<P.length-1;j++){const s=Math.hypot(P[j+1][0]-P[j][0],P[j+1][1]-P[j][1]);d.push(s);L+=s}let h=L/2;for(let j=0;j<d.length;j++){if(h<=d[j]){const t=d[j]?h/d[j]:0;return[P[j][0]+(P[j+1][0]-P[j][0])*t,P[j][1]+(P[j+1][1]-P[j][1])*t]}h-=d[j]}return P[P.length-1]}
+function setLblk(l,v){l.blk=v||'';if(!S.tags)S.tags={n:new Map(),l:new Map()};const t=Object.assign({},S.tags.l.get(l.id)||{});if(v)t.dma_name=v;else delete t.dma_name;S.tags.l.set(l.id,t)}
+// 양 끝 절점이 같은 블록이면 그 블록, 아니면(경계 관로) 한쪽 블록
+function fromNodes(l){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1],ba=a&&a.type===0?a.blk:'',bb=b&&b.type===0?b.blk:'';return ba&&ba===bb?ba:(ba||bb||'')}
+// 블록 경계 면으로 관로 지정: 중간점이 든 면 → 없으면 절점 기준
+function assignLinks(polys,field){const L=S.net.links;let n=0,bd=0;
+ L.forEach(l=>{let nm='';const m=lmid(l);if(m)for(const pg of polys){const b=pg.bb;if(b&&(m[0]<b[0]||m[0]>b[2]||m[1]<b[1]||m[1]>b[3]))continue;if(pip(m[0],m[1],pg.rings)){nm=String(pg.attr[field]??pg.attr.__i).trim()||('블록'+pg.attr.__i);break}}
+  if(!nm)nm=fromNodes(l);if(nm){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1];if(a&&b&&a.blk&&b.blk&&a.blk!==b.blk)bd++;setLblk(l,nm);n++}});
+ T.lblk={n,bd};return n}
+const ab0=assignBlocks;assignBlocks=function(polys,field){const r=ab0.apply(this,arguments);try{const n=assignLinks(polys,field);setTimeout(()=>toast(`관로 ${n.toLocaleString()}개에도 블록을 지정했습니다${T.lblk.bd?` (블록 경계에 걸친 관로 ${T.lblk.bd.toLocaleString()}개는 관 가운데가 든 블록)`:''}.`,6000),900)}catch(e){console.warn('v33 관로 블록',e)}return r};
+// 읽기: [TAGS] LINK … dma_name → l.blk. LINK 블록이 하나도 없고 절점 블록만 있으면 절점 기준으로 채움
+const rn0=readNet;readNet=function(){const r=rn0.apply(this,arguments);try{if(S.net){const L=S.net.links;let has=0;L.forEach(l=>{const t=S.tags&&S.tags.l.get(l.id);l.blk=t&&t.dma_name||'';if(l.blk)has++});
+  if(!has&&S.net.nodes.some(n=>n.blk))L.forEach(l=>{const v=fromNodes(l);if(v)setLblk(l,v)})}}catch(e){console.warn('v33 읽기',e)}return r};
+// 저장은 v17 inpOut 안에서 처리(LINK 줄 dma_name) — 이 블록 밖 함수라 감쌀 수 없어 그 자리에서 고침
+// 관로 말풍선·속성에서 보이게: 관로 표 CSV 등은 l.blk를 그대로 씀
+window.__gw33={assignLinks,fromNodes,setLblk,lmid};
+})()}catch(e){console.warn('v33',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
