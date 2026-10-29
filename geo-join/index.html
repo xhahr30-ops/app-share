@@ -4476,7 +4476,7 @@ async function phDecode(file,max,dot){let src,W,H,close=()=>{};
  try{const mk=(m,q)=>{const s=Math.min(1,m/Math.max(W,H)),w=Math.max(1,Math.round(W*s)),h=Math.max(1,Math.round(H*s));
    const dr=x=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(src,0,0,w,h)};if(typeof OffscreenCanvas!=='undefined'){const c=new OffscreenCanvas(w,h);dr(c.getContext('2d'));return c.convertToBlob({type:'image/jpeg',quality:q})}
    const c=document.createElement('canvas');c.width=w;c.height=h;dr(c.getContext('2d'));return new Promise(r=>c.toBlob(r,'image/jpeg',q))};
-  const th=await mk(220,.7),big=max>0&&Math.max(W,H)>max?await mk(max,.86):file;return{th,big,w:W,h:H,dot:dot?phRedDot(src,W,H):null}}finally{close()}}
+  const th=await mk(220,.7),big=max>0&&Math.max(W,H)>max?await mk(max,.86):file;return{th,big,w:W,h:H,dot:dot?phRedDot(src,W,H,dot==='png'):null}}finally{close()}}
 function phSaveMeta(now){clearTimeout(PH.saveT);const go=async()=>{try{await IDB.set('photos',PH.list)}catch(e){$('phMsg').textContent='사진 목록을 저장하지 못했습니다: '+((e&&e.message)||e)}};if(now)return go();PH.saveT=setTimeout(go,500);return Promise.resolve()}
 function phIndex(){PH.byId=new Map(PH.list.map(m=>[m.id,m]))}
 /* ---------- 묶기: 거리(격자 색인) + 시간 + 파일명 ---------- */
@@ -4584,8 +4584,10 @@ const phCodeNum=c=>{const x=/(\d+)$/.exec(c||'');return x?+x[1]:Infinity};
 function phGroup(){
  const re=phCodeRe(),code=new Map();for(const m of PH.list){if(m.solo||phKd(m)!=='mw')continue;const c=phCodeOf(m,re);if(c)code.set(m.id,c)}PH.code=code;
  const FL=phFacLinks();
+ /* 민원 외 종류(누수탐사·경계밸브·시설물관리·기타)도 파일명 번호로 묶음 — '종류|번호@연도'. 민원 접수번호·민원지점 기준 위치와는 섞지 않음 */
+ const kcode=new Map();for(const m of PH.list){if(m.solo||phKd(m)==='mw'||FL.has(m.id))continue;const c=phCodeOf(m,re);if(c)kcode.set(m.id,c)}PH.kcode=kcode;
  const R=+$('phR').value||20,T=+$('phT').value,kx=111320*Math.cos(36.2*Math.PI/180),ky=110574,cs=R*2;
- const A=PH.list.filter(m=>m.lat!=null&&!code.has(m.id)&&!FL.has(m.id)),n=A.length,par=new Int32Array(n);for(let i=0;i<n;i++)par[i]=i;
+ const A=PH.list.filter(m=>m.lat!=null&&!code.has(m.id)&&!kcode.has(m.id)&&!FL.has(m.id)),n=A.length,par=new Int32Array(n);for(let i=0;i<n;i++)par[i]=i;
  const fd=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i]}return i},un=(a,b)=>{a=fd(a);b=fd(b);if(a!==b)par[b]=a};
  const X=new Float64Array(n),Y=new Float64Array(n),K=A.map(phKd),S=A.map(m=>phStem(m.name)),D=A.map(m=>(m.dt||'').slice(0,10)),grid=new Map();
  A.forEach((m,i)=>{X[i]=m.lng*kx;Y[i]=m.lat*ky;const k=Math.floor(X[i]/cs)+','+Math.floor(Y[i]/cs);let c=grid.get(k);if(!c)grid.set(k,c={t:[],z:[]});(m.ts?c.t:c.z).push(i)});
@@ -4613,25 +4615,37 @@ function phGroup(){
   else if(mk){lat=ma/mk;lng=mn/mk;how=`위치도 빨간 점(${c})`;src='map'}else if(r){lat=r.la;lng=r.ln;how=`기준 위치 파일(${c})`;src='ref'}else if(k){lat=la/k;lng=ln/k;how=`같은 번호(${c}) 사진 GPS`;src='gps'}
   if(lat!=null)for(const id of ids){const m=PH.byId.get(id);if(m.lat==null||(src==='map'&&!m.map)||(src==='ref'&&(r.y||!m.map))||(hk&&m.src==='현위치'))inf.set(id,how)}
   groups.push({ids,code:c,gk,yr:a.y||0,rk:r?r.k:'',ri:r?r.i:-1,amb:a.amb,ys:a.ys,off:a.off,lat,lng,ref:src==='map'||src==='ref',src})});
+ /* 민원 외 종류 번호 묶음 — 위치: ① 위치도 빨간 점(월드 파일) ② 직접 넣은 위치(🔢 번호·주소로·끌어 옮기기) ③ 같은 번호 사진 GPS ④ 현위치. 한 장에 위치를 넣으면 묶음 전체가 그 자리로 */
+ {const ky=new Map(),yOf=m=>+m.yr||(m.ts?new Date(m.ts).getFullYear():0);
+  kcode.forEach((c,id)=>{const m=PH.byId.get(id),y=yOf(m);if(y){const k=phKd(m)+'|'+c;let s=ky.get(k);if(!s)ky.set(k,s=new Set());s.add(y)}});
+  const kg=new Map();kcode.forEach((c,id)=>{const m=PH.byId.get(id),kd=phKd(m),k=kd+'|'+c;let y=yOf(m);if(!y){const s=ky.get(k);if(s&&s.size===1)y=[...s][0]}
+   const gk=k+'@'+(y||'?');let a=kg.get(gk);if(!a)kg.set(gk,a={c,kd,y,ids:[]});a.ids.push(id)});
+  kg.forEach((a,gk)=>{const S={map:[0,0,0],man:[0,0,0],gps:[0,0,0],here:[0,0,0]};
+   for(const id of a.ids){const m=PH.byId.get(id);if(m.lat==null)continue;const t=m.map?S.map:m.src==='수동'?S.man:m.src==='현위치'?S.here:S.gps;t[0]+=m.lat;t[1]+=m.lng;t[2]++}
+   const hit=['map','man','gps','here'].find(k=>S[k][2]),t=hit?S[hit]:null,lat=t?t[0]/t[2]:null,lng=t?t[1]/t[2]:null,nm=PH_KD[a.kd].n+' '+a.c;
+   const how=hit==='map'?`위치도 빨간 점(${nm})`:hit==='man'?`직접 넣은 위치(${nm})`:`같은 번호(${nm}) 사진 위치`;
+   if(lat!=null)for(const id of a.ids){const m=PH.byId.get(id);if(m.lat==null||(hit==='map'&&!m.map))inf.set(id,how)}
+   groups.push({ids:a.ids,code:'',kc:a.c,gk,yr:a.y||0,lat,lng,ref:hit==='map',src:hit==='map'?'map':hit?'gps':''})})}
  {const fg=new Map();FL.forEach((v,id)=>{let a=fg.get(v.key);if(!a)fg.set(v.key,a={i:v.i,ids:[],man:0});a.ids.push(id);if(v.man)a.man=1});
   fg.forEach((a,key)=>groups.push({ids:a.ids,code:'',fac:key,facLb:'🔧 '+facName(a.i),lat:FAC.y[a.i],lng:FAC.x[a.i],ref:false,src:'fac'}))}
- {const nc=new Map();groups.forEach(g=>{if(g.code)nc.set(g.code,(nc.get(g.code)||0)+1)});groups.forEach(g=>{if(g.code)g.ymul=nc.get(g.code)>1||(RI.get(g.code)||[]).some(e=>e.y&&e.y!==g.yr)})}
+ {const nc=new Map();groups.forEach(g=>{if(g.code)nc.set(g.code,(nc.get(g.code)||0)+1)});groups.forEach(g=>{if(g.code)g.ymul=nc.get(g.code)>1||(RI.get(g.code)||[]).some(e=>e.y&&e.y!==g.yr)});
+  const nk=new Map(),kk=g=>phKd(PH.byId.get(g.ids[0]))+'|'+g.kc;groups.forEach(g=>{if(g.kc)nk.set(kk(g),(nk.get(kk(g))||0)+1)});groups.forEach(g=>{if(g.kc)g.ymul=nk.get(kk(g))>1})}
  /* 번호도 GPS도 없는 사진 → 파일명이 같은 줄기 또는 10분 안에 찍은 사진의 묶음에 '위치 추정'으로 */
  const stemMap=new Map(),ancK=new Map();
- groups.forEach((g,gi)=>{if(g.lat==null)return;const gk=phKd(PH.byId.get(g.ids[0]));let anc=ancK.get(gk);if(!anc)ancK.set(gk,anc=[]);for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.ts)anc.push([m.ts,gi]);if(!g.code){const s=phStem(m.name);if(s){const sk=gk+'|'+s;let l=stemMap.get(sk);if(!l)stemMap.set(sk,l=[]);l.push([m.ts||0,gi])}}}});
+ groups.forEach((g,gi)=>{if(g.lat==null)return;const gk=phKd(PH.byId.get(g.ids[0]));let anc=ancK.get(gk);if(!anc)ancK.set(gk,anc=[]);for(const id of g.ids){const m=PH.byId.get(id);if(m.lat==null)continue;if(m.ts)anc.push([m.ts,gi]);if(!g.code&&!g.kc){const s=phStem(m.name);if(s){const sk=gk+'|'+s;let l=stemMap.get(sk);if(!l)stemMap.set(sk,l=[]);l.push([m.ts||0,gi])}}}});
  ancK.forEach(a=>a.sort((x,y)=>x[0]-y[0]));
  const nearT=(ts,kd)=>{const anc=ancK.get(kd)||[];if(!anc.length)return -1;let lo=0,hi=anc.length-1;while(lo<=hi){const md=(lo+hi)>>1;if(anc[md][0]<ts)lo=md+1;else hi=md-1}
   let best=-1,bd=Infinity;for(const k of [lo-1,lo])if(k>=0&&k<anc.length){const d=Math.abs(anc[k][0]-ts);if(d<bd){bd=d;best=anc[k][1]}}return bd<=600000?best:-1};
  const nog=[];
- PH.list.forEach(m=>{if(m.lat!=null||code.has(m.id)||FL.has(m.id))return;let gi=-1,how='';const mk=phKd(m),s=m.solo?'':phStem(m.name),sk=mk+'|'+s;
+ PH.list.forEach(m=>{if(m.lat!=null||code.has(m.id)||kcode.has(m.id)||FL.has(m.id))return;let gi=-1,how='';const mk=phKd(m),s=m.solo?'':phStem(m.name),sk=mk+'|'+s;
   if(s&&stemMap.has(sk)){const l=stemMap.get(sk);gi=l[0][1];if(m.ts){let bd=Infinity;for(const [t,x] of l){const d=t?Math.abs(t-m.ts):9e15;if(d<bd){bd=d;gi=x}}}how='파일명 유사'}
   else if(m.ts&&!m.solo){gi=nearT(m.ts,mk);how='촬영시각 근접'}
   if(gi>=0){groups[gi].ids.push(m.id);inf.set(m.id,how)}else nog.push(m.id)});
  const ts=id=>PH.byId.get(id).ts||9e15,nm=id=>PH.byId.get(id).name;
  const mp=id=>PH.byId.get(id).map?0:1;
  PH.G=groups.map(g=>{g.ids.sort((a,b)=>mp(a)-mp(b)||ts(a)-ts(b)||nm(a).localeCompare(nm(b),'ko',{numeric:true}));
-  let t0=0,t1=0,memo=false,hasInf=false,man=!g.ref,stem='';for(const id of g.ids){const m=PH.byId.get(id);if(m.ts){if(!t0||m.ts<t0)t0=m.ts;if(m.ts>t1)t1=m.ts}if(m.memo)memo=true;if(inf.has(id))hasInf=true;else if(m.src!=='수동')man=false;if(!stem&&!g.code)stem=phStem(m.name)}
-  return{id:g.fac?'f:'+g.fac:g.code?'c:'+g.gk:'g'+g.ids[0],kd:phKd(PH.byId.get(g.ids[0])),fac:g.fac||'',facLb:g.facLb||'',ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,yr:g.yr||0,ymul:!!g.ymul,rk:g.rk||'',ri:g.ri??-1,amb:g.amb||'',ys:g.ys||null,off:!!g.off,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
+  let t0=0,t1=0,memo=false,hasInf=false,man=!g.ref,stem='';for(const id of g.ids){const m=PH.byId.get(id);if(m.ts){if(!t0||m.ts<t0)t0=m.ts;if(m.ts>t1)t1=m.ts}if(m.memo)memo=true;if(inf.has(id))hasInf=true;else if(m.src!=='수동')man=false;if(!stem&&!g.code&&!g.kc)stem=phStem(m.name)}
+  return{id:g.fac?'f:'+g.fac:g.code?'c:'+g.gk:g.kc?'k:'+g.gk:'g'+g.ids[0],kd:phKd(PH.byId.get(g.ids[0])),fac:g.fac||'',facLb:g.facLb||'',ids:g.ids,lat:g.lat,lng:g.lng,n:g.ids.length,t0,t1,stem,code:g.code,kc:g.kc||'',yr:g.yr||0,ymul:!!g.ymul,rk:g.rk||'',ri:g.ri??-1,amb:g.amb||'',ys:g.ys||null,off:!!g.off,ref:g.ref,src:g.src||'',memo,inf:hasInf,man:man&&g.lat!=null,blk:undefined}});
  PH.G.sort((a,b)=>(b.t1||0)-(a.t1||0)||b.n-a.n);
  /* 사진 번호(묶음 번호): 촬영 시각 순 1,2,3… — 🗜️ 전체 내보내기 엑셀의 '묶음 번호'와 같은 번호 */
  [...PH.G].sort((a,b)=>(a.t0||9e15)-(b.t0||9e15)).forEach((g,i)=>{g.no=i+1});
@@ -4695,14 +4709,15 @@ function phCodeInfo(){const el=$('phRefMsg');if(!el||el.dataset.busy||el.querySe
  el.innerHTML=`🏷️ 분류 번호 ${cs.size.toLocaleString()}개 (사진 ${PH.code.size.toLocaleString()}장) · 기준 위치 ${yl||'0'}곳`+(amb?` · <b class="c-am">연도 모름 ${amb}묶음</b>`:'')+(noLoc?` · <b class="c-am">위치 없는 번호 ${noLoc}개</b> — 🔎 위치 점검에서 확인하거나 기준 위치 파일을 넣으세요`:'')}
 
 /* 위치도(빨간 점) 이미지 — 가운데 빨간 점을 찾아 월드 파일(.pgw)로 좌표 계산 */
-function phRedDot(src,W,H){try{const s=Math.min(1,800/Math.max(W,H)),w=Math.max(1,Math.round(W*s)),h=Math.max(1,Math.round(H*s));
+function phRedDot(src,W,H,lax){try{const s=Math.min(1,800/Math.max(W,H)),w=Math.max(1,Math.round(W*s)),h=Math.max(1,Math.round(H*s));
  const c=typeof OffscreenCanvas!=='undefined'?new OffscreenCanvas(w,h):Object.assign(document.createElement('canvas'),{width:w,height:h}),x=c.getContext('2d');
  x.drawImage(src,0,0,w,h);const d=x.getImageData(0,0,w,h).data,C=8,gw=Math.ceil(w/C),gh=Math.ceil(h/C),cnt=new Uint16Array(gw*gh);let tot=0;
  const red=k=>d[k]>185&&d[k+1]<80&&d[k+2]<80&&d[k+3]>180;
  for(let y=0;y<h;y++)for(let i=0;i<w;i++)if(red((y*w+i)*4)){cnt[((y/C)|0)*gw+((i/C)|0)]++;tot++}
  if(tot<40)return null;let best=0,bx=-1,by=-1;
  for(let gy=1;gy<gh-1;gy++)for(let gx=1;gx<gw-1;gx++){let sm=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)sm+=cnt[(gy+dy)*gw+gx+dx];if(sm>best){best=sm;bx=gx;by=gy}}
- if(best<C*C*9*.4)return null;const cx0=(bx+.5)*C,cy0=(by+.5)*C,r=C*4;let sx=0,sy=0,n=0;
+ /* lax(PNG 위치도): QGIS 등으로 큰 화면에 작은 별·점을 찍은 그림 — 빨간 칸이 한곳에 거의 다 모여 있으면 점으로 봄 */
+ if(best<C*C*9*.4&&!(lax&&best>=60&&best>=tot*.85))return null;const cx0=(bx+.5)*C,cy0=(by+.5)*C,r=C*4;let sx=0,sy=0,n=0;
  for(let y=Math.max(0,cy0-r|0);y<Math.min(h,cy0+r);y++)for(let i=Math.max(0,cx0-r|0);i<Math.min(w,cx0+r);i++)if(red((y*w+i)*4)){sx+=i;sy+=y;n++}
  return n?[(sx/n+.5)/w,(sy/n+.5)/h]:null}catch(_){return null}}
 function phWorld(txt){const v=String(txt).trim().split(/\s+/).map(Number);return v.length>=6&&v.slice(0,6).every(isFinite)?v.slice(0,6):null}
@@ -4756,7 +4771,7 @@ const phHM=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+'
 const phYMD=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function phGTime(g){if(!g.t0)return '촬영시각 없음';const a=phYMD(g.t0),b=phYMD(g.t1);return a===b?(g.t0===g.t1?`${a} ${phHM(g.t0)}`:`${a} ${phHM(g.t0)}~${phHM(g.t1)}`):`${a} ~ ${b}`}
 const phGLabel=g=>g.lbl||(g.lbl=phGLabel0(g));
-function phGLabel0(g){if(g.fac)return g.facLb||'🔧 시설물';if(g.code)return phRcpLbl(g.code)+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
+function phGLabel0(g){if(g.fac)return g.facLb||'🔧 시설물';if(g.code)return phRcpLbl(g.code)+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.kc)return (PH_KD[g.kd]||PH_KD.mw).n+' '+g.kc+(g.ymul?(g.yr?` (${g.yr})`:' (연도 모름)'):'');if(g.stem){const m=PH.byId.get(g.ids.find(id=>phStem(PH.byId.get(id).name)===g.stem)||g.ids[0]);let s=m.name.replace(/\.[^.]+$/,''),p;do{p=s;s=s.replace(/[\s_\-.()\[\]~#]*\d+[\s_\-.()\[\]~#]*$/,'')}while(s!==p);return s.trim()||g.stem}
  const b=phGBlk(g),d=g.t0?new Date(g.t0):null;return (b?b+' ':'')+'현장'+(d?` ${d.getMonth()+1}/${d.getDate()} ${phHM(g.t0)}`:'')}
 /* ---------- 촬영 연도별 아이콘 색 — 연도마다 고정 색(2025=청록, 2026=파랑 …), 촬영시각 없으면 회색 ---------- */
 const PH_YC=['#0f766e','#1d4ed8','#c2410c','#be185d','#4d7c0f','#78350f','#6d28d9','#334155'],PH_YC0='#6b7280';
@@ -4779,7 +4794,7 @@ function phYrLeg(MG){const on=phColOn()&&$('phShow').value!=='off'&&MG.length>0,
   (kOn?`<div style="margin-top:4px;font-weight:700;cursor:default">📁 사진 종류</div>`+kds.concat(PH.kf!=='*'&&!kds.includes(PH.kf)?[PH.kf]:[]).map(k=>`<div data-kd="${k}" class="${PH.kf===k?'on':''}" title="눌러서 ${PH_KD[k].n} 사진만 보기 (다시 누르면 전체)">${PH_KD[k].ic} ${PH_KD[k].n} <small>${(kc.get(k)||0).toLocaleString()}장</small></div>`).join(''):'')}
 /* ---------- 지도: 화면 안 묶음만, 많으면 칸별로 합쳐 표시 ---------- */
 function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn();
- return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${yc?' yc':''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${yc?` style="background:${phYC(phYr(g))}"`:''}>${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
+ return L.divIcon({className:'ph-ic',iconSize:[32,32],iconAnchor:[16,16],html:`<div class="phb${yc?' yc':''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${yc?` style="background:${phYC(phYr(g))}"`:''}>${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.kc?`<em class="phcd">${esc(g.kc)}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
@@ -4788,7 +4803,7 @@ function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
  const z=map.getZoom(),b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])&&!phFacHid(g,z));
  const ed=PH.ed&&PH.ed.on;if(ed)PH.ed.clu=false;
- if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:hlIc(phIcon(g),g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
+ if(z>=17||vis.length<=250){vis.forEach(g=>{const dr=ed&&PH.ed.mode==='move'&&z>=16,k=L.marker([g.lat,g.lng],{icon:hlIc(phIcon(g),g),zIndexOffset:500,keyboard:false,draggable:dr,autoPan:dr,title:`${g.code||g.kc?'':g.no?'No.'+g.no+' · ':''}${phGLabel(g)} · 사진 ${g.n}장 · ${phGTime(g)}`+(dr?' — 끌어서 옮기기':'')});
    k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else{phPopOpen(g.id);hlSeenPh(g.ids)}});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
  if(ed){PH.ed.clu=true;phEdHint()}
  const yc=phColOn(),cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,w:0,la:0,ln:0,b:L.latLngBounds([]),y:new Map()});c.n+=g.n;if(HL.p.size)c.w+=hlPhN(g);if(yc){const y=phYr(g);c.y.set(y,(c.y.get(y)||0)+g.n)}c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
@@ -4881,6 +4896,8 @@ async function phGoTo(m,txt,all,yPick){txt=String(txt||'').normalize('NFC').trim
  const xy=/^(\d{2}\.\d+)\s*[,\s]\s*(\d{3}\.\d+)$/.exec(txt)||/^(\d{3}\.\d+)\s*[,\s]\s*(\d{2}\.\d+)$/.exec(txt);
  const pre=String(($('phCodeP')||{}).value||'').split(/[,\s]+/).filter(Boolean),k=phRcpKey(txt),kx=/^(\D*)(\d{1,7})$/.exec(k);
  const isCode=!xy&&kx&&(!kx[1]||pre.some(p=>p.normalize('NFC')===kx[1]));
+ if(isCode&&phKd(m)!=='mw'){const c=kx[1]+(+kx[2]),kd=phKd(m),tg=PH.G.find(x=>x.kc===c&&x.kd===kd&&x!==g);
+  if(tg){M.forEach(x=>{x.cd=c;delete x.solo;if(phKd(x)!==kd)x.kd=kd});await done(`🔢 사진 ${M.length.toLocaleString()}장을 ${PH_KD[kd].n} ${c} 묶음에 넣었습니다.`+(tg.lat==null?' 묶음에 아직 위치가 없습니다 — 주소로 한 번 넣어 주세요.':''));return {ok:1}}}
  if(isCode){const c=kx[1]+(+kx[2]),RI=phRefIdx(),L=(RI.get(c)||[]).filter(e=>e.y);
   let ys=[...new Set(L.map(e=>e.y))].sort();
   if(!ys.length)ys=[...new Set(PH.G.filter(x=>x.code===c&&x.lat!=null&&x.yr).map(x=>x.yr))].sort(); // 기준 위치에 없으면 같은 번호 사진 묶음
@@ -4929,7 +4946,7 @@ function phGalMount(doc,root,mode){const W=doc.defaultView||window,RH=64,HH=36;
   const hit=id=>{const m=PH.byId.get(id);return m.name.toLowerCase().includes(qs)||(m.memo||'').toLowerCase().includes(qs)};
   let G=V.galG.filter(g=>f==='nog'?g.lat==null:f==='fac'?!!g.fac:f==='fcamb'?g.ids.some(id=>PH.fcAmb.has(id)):f==='code'?!!g.code:f==='multi'?g.n>1:f==='inf'?g.inf:f==='memo'?g.memo:true);
   const qz=qs.replace(/\s+/g,'');if(qs)G=G.filter(g=>(g.code||'').toLowerCase().includes(qz)||(g.stem||'').includes(qs)||String(phGBlk(g)).toLowerCase().includes(qs)||g.ids.some(hit));
-  if(o==='old')G=G.slice().sort((a,b)=>(a.t0||9e15)-(b.t0||9e15));else if(o==='cnt')G=G.slice().sort((a,b)=>b.n-a.n);else if(o==='code')G=G.slice().sort((a,b)=>phCodeNum(a.code)-phCodeNum(b.code)||String(a.code).localeCompare(String(b.code),'ko')||(b.t1||0)-(a.t1||0));else if(o==='blk')G=G.slice().sort((a,b)=>String(phGBlk(a)||'힣').localeCompare(String(phGBlk(b)||'힣'),'ko',{numeric:true}));
+  if(o==='old')G=G.slice().sort((a,b)=>(a.t0||9e15)-(b.t0||9e15));else if(o==='cnt')G=G.slice().sort((a,b)=>b.n-a.n);else if(o==='code')G=G.slice().sort((a,b)=>phCodeNum(a.code||a.kc)-phCodeNum(b.code||b.kc)||String(a.code||a.kc).localeCompare(String(b.code||b.kc),'ko')||(b.t1||0)-(a.t1||0));else if(o==='blk')G=G.slice().sort((a,b)=>String(phGBlk(a)||'힣').localeCompare(String(phGBlk(b)||'힣'),'ko',{numeric:true}));
   else G=G.slice().sort((a,b)=>(b.t1||0)-(a.t1||0)||b.n-a.n);
   const ng=(f==='all'||f==='nog')?V.nog.filter(id=>!qs||hit(id)):[];
   let rows=ng.length?[{id:'nog',ids:ng,n:ng.length,nog:true}]:[];
@@ -5043,7 +5060,7 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
  const one=async f=>{if(/heic|heif/i.test(f.type)||/\.(heic|heif)$/i.test(f.name)){heic++;return}
   const id='p'+phHash(f.name+'|'+f.size+'|'+f.lastModified);if(PH.byId.has(id)){dup++;return}
   const fp=await phFp(f);if(fp){if(DX.fp.has(fp)){dup++;return}DX.fp.set(fp,id)} /* 이름·수정 시각이 달라도 내용이 같으면 같은 사진 */
-  try{const ex=await exifRead(f)||{},wf=WF.get(bn(f.name)),re=phCodeRe(),d=await phDecode(f,max,ex.lat==null&&(wf||/png/i.test(f.type)||/\.png$/i.test(f.name)||(re&&re.test(f.name)))),dt=phDt(ex.dt);
+  try{const ex=await exifRead(f)||{},wf=WF.get(bn(f.name)),re=phCodeRe(),png=/png/i.test(f.type)||/\.png$/i.test(f.name),d=await phDecode(f,max,ex.lat==null&&(png?'png':!!(wf||(re&&re.test(f.name))))),dt=phDt(ex.dt);
    const m={id,name:f.name,fp:fp||undefined,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
    const kd=opt&&opt.fc?KD0:(phKdGuess(f.name)||KD0);if(kd!=='mw')m.kd=kd;if(opt&&opt.fc)m.fc=opt.fc; /* 파일명 자동 구분(탐사·경계·시설…) > 올릴 때 고른 종류 */
    if(d.dot){m.map=true;m.dot=d.dot;if(wf){const ll=phWorldLL(wf,d.dot[0]*d.w,d.dot[1]*d.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도'}}}
@@ -5141,10 +5158,10 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
   const partOf=new Map();parts.forEach((p,pi)=>p.forEach(k=>partOf.set(k,pi+1)));
   const rows=[],pts=[];order.forEach((id,k)=>{const m=PH.byId.get(id),g=PH.gOf.get(id),how=PH.inf.get(id),loc=m.lat!=null&&!(g&&(g.src==='map'&&!m.map||g.src==='ref'&&g.yr))?[m.lat,m.lng]:g&&g.lat!=null?[g.lat,g.lng]:null;
    const fn=`${String(k+1).padStart(5,'0')}_${(m.dt||'').slice(0,10).replace(/-/g,'')||'시각없음'}_${fileSafe(m.name.replace(/\.[^.]+$/,''))}${withImg&&blobs[k]&&/png/.test(blobs[k].type)?'.png':'.jpg'}`;
-   const r={'번호':k+1,'묶음 번호':g?(g.no||gNo.get(g.id)):'','종류':PH_KD[phKd(m)].n,'분류':PH.code.get(id)||'','사진 파일':withImg?fn:'','ZIP':withImg&&parts.length>1?`${partOf.get(k)}번째`:'','원본 파일명':m.name,'촬영일시':m.dt,'위도':loc?+loc[0].toFixed(7):'','경도':loc?+loc[1].toFixed(7):'',
+   const r={'번호':k+1,'묶음 번호':g?(g.no||gNo.get(g.id)):'','종류':PH_KD[phKd(m)].n,'분류':PH.code.get(id)||(PH.kcode&&PH.kcode.get(id))||'','사진 파일':withImg?fn:'','ZIP':withImg&&parts.length>1?`${partOf.get(k)}번째`:'','원본 파일명':m.name,'촬영일시':m.dt,'위도':loc?+loc[0].toFixed(7):'','경도':loc?+loc[1].toFixed(7):'',
     '위치 출처':m.map&&m.lat!=null?'위치도 빨간 점':how?'추정('+how+')':m.lat!=null?(m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'):'위치 없음','촬영방향(°)':m.dir??'','고도(m)':m.alt??'','위치상 소블록':g?phGBlk(g):'','메모':m.memo||'','로드뷰':loc?`https://map.kakao.com/link/roadview/${loc[0].toFixed(6)},${loc[1].toFixed(6)}`:''};
    rows.push(r);if(loc){const [x,y]=pj(loc[0],loc[1]);pts.push({x,y,r})}});
-  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'종류':PH_KD[g.kd||'mw'].n,'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','연도':g.code?(g.yr||'모름'):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
+  const grows=G.map(g=>({'묶음 번호':gNo.get(g.id),'종류':PH_KD[g.kd||'mw'].n,'이름':phGLabel(g),'사진 수':g.ids.filter(id=>want.has(id)).length,'첫 촬영':g.t0?phYMD(g.t0)+' '+phHM(g.t0):'','마지막 촬영':g.t1?phYMD(g.t1)+' '+phHM(g.t1):'','위도':g.lat!=null?+g.lat.toFixed(7):'','경도':g.lat!=null?+g.lng.toFixed(7):'','연도':g.code||g.kc?(g.yr||'모름'):'','위치 기준':g.src==='map'?'위치도 빨간 점':g.src==='ref'?(g.yr?'기준 위치 '+g.yr+'년':'기준 위치 파일'):g.lat==null?'위치 없음':'사진 GPS','위치상 소블록':phGBlk(g),'위치 추정 포함':g.inf?'예':'','로드뷰':g.lat!=null?`https://map.kakao.com/link/roadview/${g.lat.toFixed(6)},${g.lng.toFixed(6)}`:''}));
   btn.textContent='⏳ 목록·SHP 만드는 중…';const z0=new JSZip();
   const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:6},{wch:7},{wch:10},{wch:10},{wch:36},{wch:8},{wch:24},{wch:18},{wch:11},{wch:11},{wch:16},{wch:8},{wch:7},{wch:12},{wch:30},{wch:40}];
   XLSX.utils.book_append_sheet(wb,ws,'현장사진');const ws2=XLSX.utils.json_to_sheet(grows);ws2['!cols']=[{wch:7},{wch:22},{wch:7},{wch:17},{wch:17},{wch:11},{wch:11},{wch:6},{wch:14},{wch:10},{wch:10},{wch:40}];XLSX.utils.book_append_sheet(wb,ws2,'위치묶음');
