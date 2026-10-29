@@ -5837,27 +5837,85 @@ function phEdInit(){if(!map)return;
 function mapShotSrcs(){if(typeof mkBaseSrcs==='function'){try{return mkBaseSrcs().filter(s=>LOC_SRC[s])}catch(_){}}
  let u='';map.eachLayer(l=>{if(!u&&l instanceof L.TileLayer&&l._url)u=l._url});const hasKey=!!(($('vwKey')||{}).value||'').trim();
  return[...new Set([/vworld/.test(u)&&hasKey?'vw':'',LOC_SRC.osm?'osm':'','esri'])].filter(s=>s&&LOC_SRC[s])}
-/* ext(k,Hm) → {w,h}: 지도 오른쪽·아래에 더 붙일 칸(단수구역 가로 캡처의 오른쪽 정보 칸), kk: 배율 직접 지정 */
-async function mapShotBase(skip,bandH,ext,kk){
+/* 화면에 켜진 배경 칸(브이월드 일반·위성·지명도로·지적도·OSM·Esri)을 화면과 같은 순서·같은 타일 줌으로 다시 받음 */
+function mapShotLayers(){const tp=map.getPane('tilePane'),kids=[...tp.children],ls=[];
+ map.eachLayer(l=>{if(l instanceof L.TileLayer&&l._container&&l._container.parentNode===tp&&l._tileZoom!=null&&(l.options.opacity==null||l.options.opacity>0))ls.push(l)});
+ return ls.sort((a,b)=>(+a.options.zIndex||0)-(+b.options.zIndex||0)||kids.indexOf(a._container)-kids.indexOf(b._container))}
+async function mapShotTileLayer(g,l,c0,cw,ch,k){const Z=map.getZoom(),Zt=l._tileZoom,ts=l.getTileSize(),sc=map.getZoomScale(Z,Zt),o=map.project(c0,Zt),tiles=[];
+ for(let ty=Math.floor(o.y/ts.y);ty<=Math.floor((o.y+ch/sc)/ts.y);ty++)for(let tx=Math.floor(o.x/ts.x);tx<=Math.floor((o.x+cw/sc)/ts.x);tx++){const c=L.point(tx,ty);c.z=Zt;tiles.push(c)}
+ if(!tiles.length||tiles.length>150)return 0;
+ const ims=await Promise.all(tiles.map(c=>{let u;try{u=l.getTileUrl(c)}catch(_){return null}const hit=TILE_CACHE.get(u);if(hit)return hit;
+  return loadImg(u,true).then(im=>{if(im){TILE_CACHE.set(u,im);if(TILE_CACHE.size>600)TILE_CACHE.delete(TILE_CACHE.keys().next().value)}return im})}));
+ const ok=ims.filter(Boolean).length;if(ok<tiles.length*.6)return ok/tiles.length;
+ g.save();g.globalAlpha=l.options.opacity==null?1:+l.options.opacity;
+ tiles.forEach((c,i)=>{if(ims[i])try{g.drawImage(ims[i],(c.x*ts.x-o.x)*sc*k,(c.y*ts.y-o.y)*sc*k,ts.x*sc*k+.6,ts.y*sc*k+.6)}catch(_){}});g.restore();return ok/tiles.length}
+const LYR_NM=l=>{const o=lyrCtl&&lyrCtl._layers.find(x=>x.layer===l);return o?o.name:'배경지도'};
+/* 🖼️ 캡처용: 지도 위 HTML 표시(핀·사진 아이콘·내 위치·밸브 번호·정보창)를 그림으로. 캡처할 때만 html2canvas를 불러옴 */
+const H2C_URLS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js','https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js'];
+let H2C_P=null;
+function needH2C(){if(window.html2canvas)return Promise.resolve(true);if(H2C_P)return H2C_P;
+ H2C_P=(async()=>{for(const u of H2C_URLS){const ok=await new Promise(r=>{const s=document.createElement('script');s.src=u;const t=setTimeout(()=>r(false),12000);s.onload=()=>{clearTimeout(t);r(!!window.html2canvas)};s.onerror=()=>{clearTimeout(t);r(false)};document.head.appendChild(s)});if(ok)return true}H2C_P=null;return false})();return H2C_P}
+/* 고객 정보 정보창: 수용가(👤)·전화번호가 든 창 */
+const mshotPii=el=>{const t=el.textContent||'';return /👤/.test(t)||!!el.querySelector('a[href^="tel:"]')};
+/* 지도 칸 중 zMin ≤ z < zMax 인 칸의 HTML 표시만 그림 (캔버스는 따로 복사하므로 뺌) */
+async function mapShotDom(S,zMin,zMax){const {g,k,W,Hm}=S,mc=map.getContainer(),mp=map.getPane('mapPane'),masks=[];
+ const R=mc.getBoundingClientRect(),zOf=e=>+getComputedStyle(e).zIndex||0;
+ const panes=[...mp.children].filter(p=>p!==map.getPane('tilePane')&&zOf(p)>=zMin&&zOf(p)<zMax&&p.querySelector(':not(canvas)'));
+ if(!panes.length)return 0;
+ panes.forEach(p=>p.querySelectorAll('.leaflet-popup').forEach(pp=>{if(mshotPii(pp)){const r=pp.getBoundingClientRect();masks.push(r)}}));
+ const keep=new Set(panes);mc.setAttribute('data-mshot','1');let cv;try{cv=await html2canvas(mc,{backgroundColor:null,scale:k,logging:false,useCORS:true,imageTimeout:8000,
+  onclone:d=>{const c=d.querySelector('[data-mshot]');if(c)c.style.cssText+=';background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important'},
+  ignoreElements:el=>{if(el===mc||el===mp||el.contains&&el.contains(mc))return false;if(!mc.contains(el))return !(el.tagName==='HEAD'||el.tagName==='STYLE'||el.tagName==='LINK');
+   if(el.parentElement===mc)return el!==mp;if(el.parentElement===mp)return !keep.has(el);if(el.tagName==='CANVAS')return true;
+   if(el.classList&&(el.classList.contains('leaflet-control-container')||el.classList.contains('leaflet-popup')&&mshotPii(el)))return true;return false}})}finally{mc.removeAttribute('data-mshot')}
+ g.drawImage(cv,0,0,W,Hm);
+ masks.forEach(r=>{const x=(r.left-R.left)*k,y=(r.top-R.top)*k,w=r.width*k,h=Math.max(40*k,r.height*k-12*k);g.save();g.fillStyle='rgba(241,245,249,.97)';g.strokeStyle='#94a3b8';g.lineWidth=1.5*k;
+  if(g.roundRect){g.beginPath();g.roundRect(x,y,w,h,10*k);g.fill();g.stroke()}else{g.fillRect(x,y,w,h);g.strokeRect(x,y,w,h)}
+  g.fillStyle='#475569';g.font=`700 ${13*k}px "Noto Sans KR","Malgun Gothic",sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('🔒 고객 정보 가림',x+w/2,y+h/2,w-10*k);g.restore()});
+ return masks.length}
+/* ext(k,Hm) → {w,h}: 지도 오른쪽·아래에 더 붙일 칸(단수구역 가로 캡처의 오른쪽 정보 칸), kk: 배율 직접 지정, opt.dom: 핀·사진 아이콘·정보창까지 (🖼️ 화면 그대로 캡처) */
+async function mapShotBase(skip,bandH,ext,kk,opt){opt=opt||{};
  const mc=map.getContainer(),R=mc.getBoundingClientRect(),cw=Math.round(R.width),ch=Math.round(R.height),k=kk||Math.min(2,Math.max(1,1600/Math.max(cw,ch)));
  const Z=map.getZoom(),c0=map.containerPointToLatLng([0,0]),W=Math.round(cw*k),Hm=Math.round(ch*k),bh=typeof bandH==='function'?bandH(k):bandH||0,ex=ext?ext(k,Hm):{w:0,h:0};
  const cv=document.createElement('canvas');cv.width=W+ex.w;cv.height=Hm+bh+ex.h;const g=cv.getContext('2d');g.fillStyle='#e5e7eb';g.fillRect(0,0,W,Hm);
- let used=null,note='';
+ let used=null,note='',attr='';
  if(BG.off){g.fillStyle=BG_FILL();g.fillRect(0,0,W,Hm)}
- for(const src of BG.off?[]:mapShotSrcs()){const max=LOC_SRC[src].max,Zt=Math.min(max,Math.round(k>1.4?Z+1:Z)),f=2**(Zt-Z),o=map.project(c0,Zt),ox=o.x,oy=o.y,tiles=[];
+ /* 1) 화면과 같은 배경 칸을 그대로 */
+ const lys=BG.off?[]:mapShotLayers(),miss=[],at=new Set();let baseOk=false;
+ for(let i=0;i<lys.length;i++){const l=lys[i];let r=0;try{r=await mapShotTileLayer(g,l,c0,cw,ch,k)}catch(_){r=0}
+  if(r>=.6){if(i===0)baseOk=true;const a=(l.options.attribution||'').replace(/<[^>]*>/g,'').trim();if(a)at.add(a);if(r<1)note='배경지도 일부 조각을 받지 못했습니다.'}else miss.push(LYR_NM(l))}
+ if(baseOk||(lys.length&&at.size)){used='screen';attr=[...at].join(' · ')}
+ /* 2) 화면 배경을 못 받으면 예전처럼 위성 사진으로 대신 */
+ if(!baseOk&&!BG.off){for(const src of mapShotSrcs()){const max=LOC_SRC[src].max,Zt=Math.min(max,Math.round(k>1.4?Z+1:Z)),f=2**(Zt-Z),o=map.project(c0,Zt),ox=o.x,oy=o.y,tiles=[];
   for(let ty=Math.floor(oy/256);ty<=Math.floor((oy+ch*f)/256);ty++)for(let tx=Math.floor(ox/256);tx<=Math.floor((ox+cw*f)/256);tx++)tiles.push({z:Zt,x:tx,y:ty});
   if(tiles.length>120)continue;let r;try{r=await fetchTiles(src,tiles)}catch(_){continue}
   const ok=r.ims.filter(Boolean).length;if(ok<tiles.length*.6)continue;
-  tiles.forEach((t,i)=>{if(r.ims[i])g.drawImage(r.ims[i],(t.x*256-ox)/f*k,(t.y*256-oy)/f*k,256/f*k+.6,256/f*k+.6)});used=src;if(ok<tiles.length)note='배경지도 일부 조각을 받지 못했습니다.';break}
+  /* 위성 위에 이미 그린 겹침(지명·지적도)이 있으면 그 아래로 깔리게 */
+  const tmp=document.createElement('canvas');tmp.width=W;tmp.height=Hm;const tg=tmp.getContext('2d');
+  tiles.forEach((t,i)=>{if(r.ims[i])tg.drawImage(r.ims[i],(t.x*256-ox)/f*k,(t.y*256-oy)/f*k,256/f*k+.6,256/f*k+.6)});
+  g.save();g.globalCompositeOperation='destination-over';g.drawImage(tmp,0,0);g.restore();
+  used=used||src;attr=[LOC_SRC[src].attr,attr].filter(Boolean).join(' · ');note=(lys.length?`화면 배경(${miss[0]||LYR_NM(lys[0])})을 이미지로 받지 못해 위성 사진으로 대신했습니다.`:'')+(ok<tiles.length?' 배경지도 일부 조각을 받지 못했습니다.':'');break}}
  if(!used&&!BG.off)note='배경지도를 이미지로 받지 못해 회색 바탕으로 만들었습니다 (관로·밸브는 그대로).';
+ else if(miss.length&&baseOk)note=(note?note+' ':'')+`${miss.join('·')}을(를) 이미지로 받지 못해 빠졌습니다.`;
+ /* 3) 지도 위 캔버스(관로·경계·시설물·수용가 점·단수구역·그리기)를 칸 순서대로. dom이면 HTML 표시(핀·사진·정보창)를 칸 높이에 맞춰 끼워 넣음 */
  const mp=map.getPane('mapPane'),sk=(skip||[]).map(n=>map.getPane(n)).filter(Boolean),zOf=c=>{let e=c;while(e&&e.parentElement!==mp)e=e.parentElement;return e?+getComputedStyle(e).zIndex||0:0};
- [...mp.querySelectorAll('canvas')].filter(c=>c.width&&c.height&&!sk.some(p=>p.contains(c))&&getComputedStyle(c).visibility!=='hidden'&&getComputedStyle(c).display!=='none')
-  .map((c,i)=>({c,i,z:zOf(c)})).sort((a,b)=>a.z-b.z||a.i-b.i).forEach(({c})=>{const r=c.getBoundingClientRect();if(r.right<R.left||r.left>R.right||r.bottom<R.top||r.top>R.bottom)return;
-   try{g.drawImage(c,(r.left-R.left)*k,(r.top-R.top)*k,r.width*k,r.height*k)}catch(_){}});
+ const cvs=[...mp.querySelectorAll('canvas')].filter(c=>c.width&&c.height&&!sk.some(p=>p.contains(c))&&getComputedStyle(c).visibility!=='hidden'&&getComputedStyle(c).display!=='none')
+  .map((c,i)=>({c,i,z:zOf(c)})).sort((a,b)=>a.z-b.z||a.i-b.i);
+ const drawCv=({c})=>{const r=c.getBoundingClientRect();if(r.right<R.left||r.left>R.right||r.bottom<R.top||r.top>R.bottom)return;try{g.drawImage(c,(r.left-R.left)*k,(r.top-R.top)*k,r.width*k,r.height*k)}catch(_){}};
+ const S={cv,g,k,W,Hm,R,used,note,attr,masked:0,dom:false};
+ if(opt.dom&&await needH2C()){
+  /* 캔버스(그리기 칸 640 아래) → 핀·아이콘(마커 600 등) → 🖍 그리기 칸 → 정보창(700) */
+  cvs.filter(x=>x.z<600).forEach(drawCv);
+  try{await mapShotDom(S,0,640)}catch(e){console.warn('캡처 표시',e)}
+  cvs.filter(x=>x.z>=600).forEach(drawCv);
+  try{S.masked=await mapShotDom(S,640,1e9)}catch(e){console.warn('캡처 정보창',e)}
+  S.dom=true;S.note=note;return S}
+ if(opt.dom)note=(note?note+' ':'')+'핀·사진 아이콘·정보창을 그리는 도구(html2canvas)를 불러오지 못해 빠졌습니다.';
+ cvs.forEach(drawCv);
  g.textAlign='center';g.textBaseline='middle';mc.querySelectorAll('.blk-lbl span').forEach(s=>{const r=s.getBoundingClientRect();if(!r.width||r.right<R.left||r.left>R.right||r.bottom<R.top||r.top>R.bottom)return;
   const fs=(parseFloat(getComputedStyle(s).fontSize)||12)*k;g.font=`700 ${fs}px "Noto Sans KR","Malgun Gothic",sans-serif`;const x=(r.left+r.width/2-R.left)*k,y=(r.top+r.height/2-R.top)*k;
   g.lineWidth=3*k;g.strokeStyle='rgba(255,255,255,.9)';g.strokeText(s.textContent,x,y);g.fillStyle='#111827';g.fillText(s.textContent,x,y)});
- return{cv,g,k,W,Hm,R,used,note}}
+ S.note=note;return S}
 /* 방위·축척·출처·대외비 표시 */
 function mapShotDeco(S,secret){const {g,k,W,Hm,used}=S,ctr=map.getCenter();
  if(secret){g.font=`800 ${12*k}px "Noto Sans KR",sans-serif`;g.textAlign='left';g.textBaseline='middle';const t='대외비 (상수관로 포함)',w=g.measureText(t).width+14*k;g.fillStyle='rgba(255,255,255,.9)';g.fillRect(8*k,8*k,w,22*k);g.fillStyle='#dc2626';g.fillText(t,15*k,19*k)}
@@ -5866,7 +5924,7 @@ function mapShotDeco(S,secret){const {g,k,W,Hm,used}=S,ctr=map.getCenter();
  const mpp=156543.03392*Math.cos(ctr.lat*Math.PI/180)/2**map.getZoom(),len=niceLen(mpp*90),px=len/mpp*k;
  g.fillStyle='rgba(255,255,255,.9)';g.fillRect(8*k,Hm-30*k,px+52*k,22*k);g.fillStyle='#111';g.fillRect(14*k,Hm-17*k,px,4*k);g.fillRect(14*k,Hm-23*k,2*k,10*k);g.fillRect(14*k+px-2*k,Hm-23*k,2*k,10*k);
  g.font=`${11*k}px sans-serif`;g.textAlign='left';g.textBaseline='middle';g.fillText(len+'m',20*k+px,Hm-18*k);
- const at=(used?LOC_SRC[used].attr:BG.off?'배경지도 끔':'배경지도 없음');g.font=`${10*k}px sans-serif`;const aw=g.measureText(at).width+10*k;g.fillStyle='rgba(255,255,255,.85)';g.fillRect(W-aw-4*k,Hm-18*k,aw,15*k);g.fillStyle='#111';g.textAlign='right';g.fillText(at,W-9*k,Hm-10.5*k)}
+ const at=(S.attr||(used&&LOC_SRC[used]?LOC_SRC[used].attr:'')||(BG.off?'배경지도 끔':'배경지도 없음'));g.font=`${10*k}px sans-serif`;const aw=g.measureText(at).width+10*k;g.fillStyle='rgba(255,255,255,.85)';g.fillRect(W-aw-4*k,Hm-18*k,aw,15*k);g.fillStyle='#111';g.textAlign='right';g.fillText(at,W-9*k,Hm-10.5*k)}
 /* ===== 💧 단수구역: 관로 하나를 고르면 관망을 따라가다 제수밸브에서 멈춤 (자료상 추정) =====
    관로 끝이 다른 관로 중간에 붙은 곳(T자)과 관로 중간에 찍힌 밸브 위치에서 관로를 잘라 연결표를 만든 뒤(Web Worker),
    고른 관로 조각에서 넓이 우선으로 따라감. 사용자가 조각을 넣고/빼고, 밸브를 '못 닫음'으로 바꾸면 다시 계산. */
@@ -6182,10 +6240,11 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
 function shutShotFile(){const s=SHUT.shot;return new File([s.blob],s.name,{type:'image/jpeg'})}
 async function shutShotShare(){const s=SHUT.shot;if(!s)return;const f=shutShotFile();try{if(navigator.clipboard&&s.text)await navigator.clipboard.writeText(s.text)}catch(_){}
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:s.text,title:'단수구역'})}catch(e){if(e&&e.name!=='AbortError')dlBlob(s.blob,s.name)}}else dlBlob(s.blob,s.name)}
-/* 🖼️ 지도 화면 캡처 (현장 모드 버튼): 지금 보이는 지도(배경·소블록 경계·관로·시설물·단수구역)를 사진 한 장으로. 수용가 점·사진 아이콘·이름·주소·전화는 넣지 않음 */
+/* 🖼️ 지도 화면 캡처 (현장 모드 버튼): 지금 보이는 지도 그대로(같은 배경·관로·시설물·수용가 점·핀·사진 아이콘·그리기·정보창) 사진 한 장으로.
+   수용가(👤)·전화번호 정보창은 가림, 조작 버튼·칩 줄은 넣지 않음 */
 const MSHOT={busy:false,s:null};
 async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='⏳'}
- try{const bh=30,B=await mapShotBase(['ptPane','mkPane'],k=>Math.round(bh*k)),{g,k,W,Hm}=B,secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));
+ try{const bh=30,B=await mapShotBase([],k=>Math.round(bh*k),null,null,{dom:true}),{g,k,W,Hm}=B,secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));
   mapShotDeco(B,secret);const ctr=map.getCenter();let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
   const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`,y=Hm+bh*k/2+1.5*k;
   g.fillStyle='#fff';g.fillRect(0,Hm,W,g.canvas.height-Hm);g.fillStyle='#0f766e';g.fillRect(0,Hm,W,3*k);g.textBaseline='middle';
@@ -6193,7 +6252,7 @@ async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=
   g.textAlign='right';g.fillStyle='#64748b';g.font=F(400,11);g.fillText('스마트 물길주소 · 포항이 · 만든이: 구병순',W-10*k,y,W*.4);
   const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
   if(MSHOT.s&&MSHOT.s.url)URL.revokeObjectURL(MSHOT.s.url);const d=new Date(),pd=v=>String(v).padStart(2,'0');
-  MSHOT.s={blob,url:URL.createObjectURL(blob),note:B.note,secret,name:`지도화면_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}${pd(d.getSeconds())}.jpg`};
+  MSHOT.s={blob,url:URL.createObjectURL(blob),note:B.note,secret,dom:B.dom,masked:B.masked,name:`지도화면_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}${pd(d.getSeconds())}.jpg`};
   mapShotView()}
  catch(e){alert('지도 화면을 캡처하지 못했습니다: '+(e&&e.message||e))}
  finally{MSHOT.busy=false;if(btn){btn.disabled=false;btn.textContent=t0}}}
@@ -6203,7 +6262,7 @@ function mapShotView(){const s=MSHOT.s;if(!s)return;let o=$('mshot');
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!o.hidden){e.stopPropagation();mapShotClose()}},true)}
  /* 지도가 브라우저 전체화면이면 그 안에 붙여야 보임 */
  (document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(o);const sh=!!navigator.canShare;
- o.innerHTML=`<div class="ms"><img src="${s.url}" alt="지도 화면 캡처"><div class="mb"><button type="button" class="btn" data-m="s">${sh?'📤 공유 (카톡 등)':'💾 저장'}</button>${sh?'<button type="button" class="btn ol" data-m="d">💾 저장</button>':''}<button type="button" class="btn ol" data-m="x">✕ 닫기</button></div>${s.note?`<small class="c-am">${esc(s.note)}</small>`:''}<small class="mute">수용가 점·현장 사진 아이콘·고객 정보는 넣지 않았습니다.${s.secret?' 상수관로가 보여 왼쪽 위에 대외비 표시를 넣었습니다.':''}</small></div>`;o.hidden=false}
+ o.innerHTML=`<div class="ms"><img src="${s.url}" alt="지도 화면 캡처"><div class="mb"><button type="button" class="btn" data-m="s">${sh?'📤 공유 (카톡 등)':'💾 저장'}</button>${sh?'<button type="button" class="btn ol" data-m="d">💾 저장</button>':''}<button type="button" class="btn ol" data-m="x">✕ 닫기</button></div>${s.note?`<small class="c-am">${esc(s.note)}</small>`:''}<small class="mute">${s.dom?'지금 보이는 지도 그대로 찍었습니다 (버튼·칩 줄은 뺌).'+(s.masked?' 고객 정보 창은 가렸습니다.':''):'수용가 점·현장 사진 아이콘·고객 정보는 넣지 않았습니다.'}${s.secret?' 상수관로가 보여 왼쪽 위에 대외비 표시를 넣었습니다.':''}</small></div>`;o.hidden=false}
 function mapShotClose(){const o=$('mshot');if(o)o.hidden=true}
 async function mapShotShare(){const s=MSHOT.s;if(!s)return;const f=new File([s.blob],s.name,{type:'image/jpeg'});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'지도 화면'})}catch(e){if(e&&e.name!=='AbortError')dlBlob(s.blob,s.name)}}else dlBlob(s.blob,s.name)}
