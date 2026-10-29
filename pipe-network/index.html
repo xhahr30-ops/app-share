@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v30 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v31 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4959,6 +4959,150 @@ const rm0=renderMulti;renderMulti=function(){const x=rm0.apply(this,arguments);t
 
 window.__gw30={selTrace,invMulti,showRes,pfTrace,get FP(){return FP}};
 })()}catch(e){console.warn('v30',e)}
+/* ════ v31 선택 범위 도구: 묶음 저장 · 집계 · 전후 비교 · 범위만 보기 · 경로 수령 · 두 급수원 겹침 ════ */
+try{(()=>{
+const TR=TT.trc,G18=window.__gw18||{},G19=window.__gw19||{};
+const ids=(set,arr)=>[...set].map(i=>arr[i]&&arr[i].id).filter(Boolean);
+const csvQ=v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v;
+const fname=s=>(S.name||'network').replace(/\.inp$/i,'')+'_'+s+'.csv';
+const has=()=>T.multi.n.size||T.multi.l.size;
+
+// ── A. 선택 묶음 저장·불러오기(관망 파일 이름별로 이 브라우저에 보관)
+const SK='gw-selsets';
+const ssAll=()=>{try{return JSON.parse(lsGet(SK)||'{}')||{}}catch(e){return{}}};
+const ssKey=()=>S.name||'(이름 없음)';
+const ssList=()=>ssAll()[ssKey()]||[];
+function ssSave(name){if(!has()){toast('저장할 선택이 없습니다. 먼저 추적하거나 지도에서 고르세요.');return}name=String(name||'').trim()||`선택 ${new Date().toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
+ const a=ssAll(),l=(a[ssKey()]||[]).filter(x=>x.name!==name);l.unshift({name,n:ids(T.multi.n,S.net.nodes),l:ids(T.multi.l,S.net.links),at:Date.now()});a[ssKey()]=l.slice(0,30);
+ const js=JSON.stringify(a);lsSet(SK,js);if(lsGet(SK)!==js){toast('브라우저 저장 공간이 모자라 저장하지 못했습니다. 오래된 묶음을 지워 주세요.',6000);return}
+ toast(`'${name}' 묶음을 저장했습니다(절점 ${T.multi.n.size.toLocaleString()} · 관로 ${T.multi.l.size.toLocaleString()}).`);toolsOut()}
+function ssLoad(j){const x=ssList()[j];if(!x)return;const nm=new Map(S.net.nodes.map((n,i)=>[n.id,i])),lm=new Map(S.net.links.map((l,i)=>[l.id,i]));const m=T.multi;m.n.clear();m.l.clear();let miss=0;
+ x.n.forEach(id=>{const i=nm.get(id);i==null?miss++:m.n.add(i)});x.l.forEach(id=>{const i=lm.get(id);i==null?miss++:m.l.add(i)});renderMulti();requestDraw();
+ const xs=[],ys=[];m.n.forEach(i=>{const n=S.net.nodes[i];xs.push(n.x);ys.push(n.y)});m.l.forEach(i=>{const l=S.net.links[i];if(l.xs){xs.push(l.xs[0]);ys.push(l.ys[0])}});if(xs.length)zoomTo(xs,ys);
+ toast(`'${x.name}' 묶음을 불러왔습니다${miss?` (지금 관망에 없는 ID ${miss}개는 건너뜀)`:''}.`)}
+function ssDel(j){const a=ssAll(),l=a[ssKey()]||[];const x=l.splice(j,1)[0];a[ssKey()]=l;lsSet(SK,JSON.stringify(a));if(x)toast(`'${x.name}' 묶음을 지웠습니다.`);toolsOut()}
+
+// ── B. 선택 범위 집계
+function stats(){const m=T.multi,N=S.net.nodes,L=S.net.links,R=S.res,k=S.k,c=crit();
+ const add=(map,key,len)=>{const o=map.get(key)||{n:0,len:0};o.n++;o.len+=len;map.set(key,o)};
+ const byD=new Map(),byK=new Map(),byY=new Map();let np=0,nv=0,len=0;
+ m.l.forEach(i=>{const l=L[i];if(!l)return;if(l.type>1){nv++;return}np++;const ln=l.len||0;len+=ln;add(byD,Math.round(l.dia||0),ln);add(byK,String(l.kind||'').trim()||'(미지정)',ln);const y=+l.year;add(byY,y>1900?Math.floor(y/10)*10+'년대':'(미지정)',ln)});
+ let nj=0,nf=0,base=0,dem=0,pmn=1/0,ps=0,low=0;
+ m.n.forEach(i=>{const n=N[i];if(!n)return;if(n.type!==0){nf++;return}nj++;base+=n.base||0;if(R){dem+=R.D[k][i];const p=R.P[k][i];if(p<pmn)pmn=p;ps+=p;if(p<c.pmin)low++}});
+ return{np,nv,len,byD:[...byD].sort((a,b)=>a[0]-b[0]),byK:[...byK].sort((a,b)=>b[1].len-a[1].len),byY:[...byY].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))),nj,nf,base,dem,pmn,pav:nj?ps/nj:NaN,low,c}}
+function statsCsv(){const s=stats(),r=['구분,항목,관로 수,연장(m),비율(%)'];const sec=(t,a,f)=>a.forEach(([k,o])=>r.push([t,csvQ(f?f(k):k),o.n,o.len.toFixed(1),s.len?(o.len/s.len*100).toFixed(1):''].join(',')));
+ sec('관경',s.byD,k=>k+'mm');sec('관종',s.byK);sec('설치연도',s.byY);
+ r.push('',`절점,${s.nj}`,`기본수요(L/s),${s.base.toFixed(3)}`,`관로,${s.np}`,`밸브·가압장,${s.nv}`,`총연장(m),${s.len.toFixed(1)}`);if(S.res)r.push(`해석 시각,${hhmm(S.res.t[S.k])}`,`수요(L/s),${s.dem.toFixed(3)}`,`평균 수압(m),${s.pav.toFixed(2)}`,`최저 수압(m),${isFinite(s.pmn)?s.pmn.toFixed(2):''}`);
+ offer('﻿'+r.join('\n'),fname('선택집계'),'text/csv')}
+function statsHtml(){const s=stats(),pct=o=>s.len?fmt(o.len/s.len*100,1)+'%':'-';
+ const t=(head,a,f)=>tbl([head,'개수','연장(m)','비율'],a.map(([k,o])=>`<tr class="border-t"><td class="text-left">${esc(f?f(k):String(k))}</td><td>${o.n.toLocaleString()}</td><td>${fmt(o.len,1)}</td><td>${pct(o)}</td></tr>`),{h:150});
+ return`<div class="grid gap-x-4" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${kv('관로',`${s.np.toLocaleString()}개 · ${fmt(s.len/1000,2)} km`)}${s.nv?kv('밸브·가압장',s.nv+'개'):''}${kv('절점',s.nj.toLocaleString()+'개'+(s.nf?` (+배수지·탱크 ${s.nf})`:''))}${kv('기본수요',flqU(s.base,2))}${S.res?kv(`수요(${hhmm(S.res.t[S.k])})`,`${flqU(s.dem,2)} (${fmt(s.dem*86.4,0)} ㎥/일)`)+kv('평균·최저 수압',s.nj?`${fmt(s.pav,2)} · ${fmt(s.pmn,2)} m`:'-')+kv(`최소 수압(${s.c.pmin}m) 미달`,s.low?`<b class="text-red-600">${s.low}곳</b>`:'없음'):''}</div>`+
+  (s.np?`<div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">${t('관경',s.byD,k=>k+' mm')}${t('관종',s.byK)}${t('설치연도',s.byY)}</div>`:'')}
+
+// ── D. 선택 범위만 보기(나머지 흐리게)
+let FC=null;
+function fcSet(on){if(on){if(!has()){toast('먼저 추적하거나 지도에서 범위를 고르세요.');return}FC={net:S.net,n:new Set(T.multi.n),l:new Set(T.multi.l)};if(!FC.n.size)FC.l.forEach(i=>{const l=S.net.links[i];FC.n.add(l.n1-1);FC.n.add(l.n2-1)})}else FC=null;fcChip();requestDraw();try{toolsOut()}catch(e){}}
+function fcChip(){let c=$('fcChip');if(!FC||FC.net!==S.net){if(c)c.remove();return}
+ if(!c){c=document.createElement('div');c.id='fcChip';MAP.cv.parentNode.appendChild(c)}c.innerHTML=`<span>👁 선택 범위만 보기 · 관로 ${FC.l.size.toLocaleString()} · 절점 ${FC.n.size.toLocaleString()}</span><button type="button">✕ 해제</button>`;c.querySelector('button').onclick=()=>fcSet(false)}
+const draw0=draw;draw=function(){const f=FC;if(!f||f.net!==S.net||!S.net)return draw0.apply(this,arguments);
+ const dark=document.documentElement.classList.contains('dark'),fade=dark?'rgba(100,116,139,.18)':'rgba(148,163,184,.22)',sv=[];
+ S.net.links.forEach((l,i)=>{if(!f.l.has(i)){sv.push([l,l.col]);l.col=fade}});S.net.nodes.forEach((n,i)=>{if(n.type===0&&!f.n.has(i)){sv.push([n,n.col]);n.col=fade}});
+ try{return draw0.apply(this,arguments)}finally{sv.forEach(([o,c])=>o.col=c)}};
+
+// ── C. 밸브 닫기 전후 비교(직전 해석 또는 고정한 기준과)
+const CMP={prev:null,pin:null};
+const run0=run;run=async function(){const prev=S.res&&S.net?{res:S.res,net:S.net,at:new Date()}:null;const r=await run0.apply(this,arguments);if(prev&&S.res&&S.res!==prev.res)CMP.prev=prev;try{if(T.cmpOn&&T.tab==='trc')toolsOut()}catch(e){}return r};
+const tm=d=>d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function cmpData(){const B=CMP.pin||CMP.prev,R=S.res;if(!B||!R)return null;const N=S.net.nodes,L=S.net.links,BN=B.net.nodes,BL=B.net.links,k=S.k,c=crit();
+ const same=B.net===S.net,nm=same?null:new Map(BN.map((n,i)=>[n.id,i])),lm=same?null:new Map(BL.map((l,i)=>[l.id,i]));
+ const bn=i=>same?i:(nm.get(N[i].id)??-1),bl=i=>same?i:(lm.get(L[i].id)??-1);
+ let bk=0,bd=1/0;B.res.t.forEach((t,j)=>{const d=Math.abs(t-R.t[k]);if(d<bd){bd=d;bk=j}});
+ const m=T.multi,tr=T.trc&&T.trc.ni&&T.trc.ni.length===N.length?T.trc:null;
+ let ns=[],ls=[],scope;
+ if(m.n.size||m.l.size){ns=[...m.n];ls=[...m.l];if(!ns.length)ls.forEach(i=>{ns.push(L[i].n1-1,L[i].n2-1)});ns=[...new Set(ns)];scope='지금 선택'}
+ else if(tr){tr.ni.forEach((v,i)=>{if(v)ns.push(i)});tr.li.forEach((v,i)=>{if(v)ls.push(i)});scope='추적 범위'}
+ else{ns=N.map((_,i)=>i);ls=L.map((_,i)=>i);scope='관망 전체'}
+ const mn=(P,i)=>{let v=1/0;for(let t=0;t<P.length;t++)if(P[t][i]<v)v=P[t][i];return v};
+ const nr=[],lr=[];
+ ns.forEach(i=>{if(N[i].type!==0)return;const j=bn(i);if(j<0)return;const a=B.res.P[bk][j],b=R.P[k][i];nr.push({i,a,b,d:b-a,ma:mn(B.res.P,j),mb:mn(R.P,i)})});
+ ls.forEach(i=>{const j=bl(i);if(j<0)return;const a=B.res.Q[bk][j],b=R.Q[k][i],va=Math.abs(B.res.V[bk][j]||0),vb=Math.abs(R.V[k][i]||0);lr.push({i,a,b,d:b-a,va,vb,rev:Math.abs(a)>1e-3&&Math.abs(b)>1e-3&&Math.sign(a)!==Math.sign(b),stop:Math.abs(a)>1e-3&&Math.abs(b)<=1e-3})});
+ const drop=nr.filter(r=>r.d<-0.05),newLow=nr.filter(r=>r.b<c.pmin&&r.a>=c.pmin),neg=nr.filter(r=>r.b<=0&&r.a>0);
+ return{B,scope,c,nr,lr,drop,newLow,neg,rev:lr.filter(r=>r.rev),stop:lr.filter(r=>r.stop),vUp:lr.filter(r=>r.vb>c.vmax&&r.va<=c.vmax),avg:nr.length?nr.reduce((s,r)=>s+r.d,0)/nr.length:0,tb:B.res.t[bk],tn:R.t[k]}}
+function cmpHtml(){const d=cmpData();if(!d)return tnote(S.res?'비교할 기준이 없습니다. <b>📌 지금 결과를 기준으로</b>를 누르거나, 밸브를 닫고 다시 해석하면 직전 결과와 비교합니다.':'먼저 해석을 실행하세요.');
+ const N=S.net.nodes,L=S.net.links,worst=d.nr.slice().sort((a,b)=>a.d-b.d).slice(0,40),lw=d.lr.slice().sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,40);
+ const sg=v=>`<b class="${v<-0.005?'text-red-600':v>0.005?'text-blue-600':''}">${v>0?'+':''}${fmt(v,2)}</b>`;
+ return kv('비교 범위',`${d.scope} (절점 ${d.nr.length.toLocaleString()} · 관로 ${d.lr.length.toLocaleString()})`)+kv('기준 → 지금',`${hhmm(d.tb)} 결과 → ${hhmm(d.tn)} 결과`)+
+  kv('평균 수압 변화',sg(d.avg)+' m')+kv('수압 떨어진 절점',d.drop.length.toLocaleString()+'곳')+kv(`새로 ${d.c.pmin}m 미달`,d.newLow.length?`<b class="text-red-600">${d.newLow.length}곳</b>`:'없음')+(d.neg.length?kv('새로 단수(수압 0 이하)',`<b class="text-red-600">${d.neg.length}곳</b>`):'')+
+  kv('흐름 방향 바뀐 관로',d.rev.length+'개')+kv('흐름 멈춘 관로',d.stop.length+'개')+(d.vUp.length?kv(`새로 유속 ${d.c.vmax}m/s 초과`,`<b class="text-amber-600">${d.vUp.length}개</b>`):'')+
+  `<div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">`+
+  tbl(['절점','전(m)','후(m)','변화','하루 최저 후'],worst.map(r=>`<tr ${rowAttr('n',r.i)}><td class="text-left">${esc(N[r.i].id)}</td><td>${fmt(r.a,2)}</td><td>${fmt(r.b,2)}</td><td>${sg(r.d)}</td><td>${fmt(r.mb,2)}</td></tr>`),{h:220})+
+  tbl(['관로',`전(${flU()})`,`후(${flU()})`,'유속 후','비고'],lw.map(r=>`<tr ${rowAttr('l',r.i)}><td class="text-left">${esc(L[r.i].id)}</td><td>${fmt(r.a*flF(),2)}</td><td>${fmt(r.b*flF(),2)}</td><td>${fmt(r.vb,2)}</td><td class="text-left">${r.rev?'⇄ 방향':r.stop?'⏹ 멈춤':''}</td></tr>`),{h:220})+`</div>`+
+  `<div class="flex flex-wrap gap-2">${tbtn('cmpSelLow','⬚ 수압 떨어진 절점 선택')}${tbtn('cmpCsv','⬇ 비교 CSV')}</div>`}
+function cmpCsv(){const d=cmpData();if(!d)return;const N=S.net.nodes,L=S.net.links;const r=['구분,ID,전,후,변화,하루 최저 전,하루 최저 후,비고'];
+ d.nr.forEach(x=>r.push(['절점 수압(m)',csvQ(N[x.i].id),x.a.toFixed(3),x.b.toFixed(3),x.d.toFixed(3),x.ma.toFixed(3),x.mb.toFixed(3),''].join(',')));
+ d.lr.forEach(x=>r.push(['관로 유량(L/s)',csvQ(L[x.i].id),x.a.toFixed(3),x.b.toFixed(3),x.d.toFixed(3),'','',x.rev?'방향 바뀜':x.stop?'멈춤':''].join(',')));offer('﻿'+r.join('\n'),fname('전후비교'),'text/csv')}
+
+// ── F. 두 급수원 추적 겹침(두 곳에서 함께 물을 받는 구역)
+function srcList(){return S.net.nodes.map((n,i)=>[i,n]).filter(([i,n])=>n.type>0)}
+function overlap(a,b){if(!S.res){toast('먼저 해석을 실행하세요.');return}if(a===b){toast('서로 다른 두 급수원을 고르세요.');return}
+ const keep={sel:S.sel,trc:T.trc};const ra=traceRun('down',{t:'n',i:a}),rb=traceRun('down',{t:'n',i:b});S.sel=keep.sel;T.trc=keep.trc;if(!ra||!rb)return;
+ const N=S.net.nodes,L=S.net.links,R=S.res,k=S.k,m=T.multi;m.n.clear();m.l.clear();let nA=0,nB=0,nj=0,dem=0,len=0;
+ N.forEach((n,i)=>{const x=ra.ni[i],y=rb.ni[i];if(x&&y){m.n.add(i);if(n.type===0){nj++;dem+=R.D[k][i]}}else if(n.type===0){if(x)nA++;else if(y)nB++}});
+ L.forEach((l,i)=>{if(ra.li[i]&&rb.li[i]){m.l.add(i);len+=l.len||0}});
+ S.hl={nodes:[N[a].id,N[b].id],links:ids(m.l,L),net:null};T.ovl={a:N[a].id,b:N[b].id,nj,nA,nB,dem,len,nl:m.l.size,time:hhmm(R.t[k])};renderMulti();requestDraw();try{hlFocus()}catch(e){}toolsOut();
+ const idle=[[a,nA+nj],[b,nB+nj]].filter(x=>!x[1]).map(x=>N[x[0]].id);T.ovl.idle=idle;toolsOut();
+ toast(nj?`두 급수원이 함께 공급하는 절점 ${nj.toLocaleString()}개를 선택했습니다.`:idle.length?`${idle.join(', ')}은(는) ${hhmm(R.t[k])}에 물을 내보내지 않습니다(채우는 중이거나 정지). 시간을 바꿔 다시 찾아 보세요.`:'이 시각에는 두 급수원이 함께 공급하는 구역이 없습니다.',6000)}
+
+// ── 추적·단수 창에 상자 붙이기
+const out0=TR.out,ob0=TR.outBind;
+TR.out=function(){let h=out0.apply(this,arguments);if(!S.net)return h;const m=T.multi,on=FC&&FC.net===S.net;
+ if(has())h+=tbox(`🧰 선택 범위 · 절점 ${m.n.size.toLocaleString()} · 관로 ${m.l.size.toLocaleString()}`,`<div class="flex flex-wrap gap-2">${tbtn('v31Fc',on?'👁 범위만 보기 해제':'👁 이 범위만 보기',on?'bg-amber-500 text-slate-900':'')}${tbtn('v31Csv','⬇ 집계 CSV')}${tbtn('v31Rs','📋 해석결과 상세')}</div>`+statsHtml(),'border-cyan-200');
+ const L0=ssList();
+ h+=tbox('📁 선택 묶음',`<div class="flex flex-wrap items-center gap-2"><input id="v31Nm" class="px-2 py-1 border border-slate-300 rounded bg-white text-xs" style="width:180px" placeholder="이름(예: 학산배수지 하류)">${tbtn('v31Save','💾 지금 선택 저장')}</div>`+
+  (L0.length?tbl(['이름','절점','관로','저장','',''],L0.map((x,j)=>`<tr class="border-t"><td class="text-left">${esc(x.name)}</td><td>${x.n.length.toLocaleString()}</td><td>${x.l.length.toLocaleString()}</td><td>${new Date(x.at).toLocaleDateString('ko-KR')}</td><td><button type="button" data-ssl="${j}" class="text-indigo-600 font-bold">불러오기</button></td><td><button type="button" data-ssd="${j}" class="text-red-500">지우기</button></td></tr>`),{h:160}):tnote('추적 결과나 지도에서 고른 범위에 이름을 붙여 두면 다음에 같은 관망을 열었을 때 다시 불러올 수 있습니다(이 브라우저에 관망 파일 이름별로 저장).')));
+ const B=CMP.pin||CMP.prev;
+ h+=tbox('⚖️ 밸브 닫기 전후 비교',`<div class="flex flex-wrap items-center gap-2">${tbtn('cmpPin',CMP.pin?'📌 기준 다시 고정':'📌 지금 결과를 기준으로')}${CMP.pin?tbtn('cmpUnpin','기준 고정 풀기'):''}${tbtnP('cmpGo',T.cmpOn?'⚖️ 비교 닫기':'⚖️ 비교 보기')}<span class="text-[11px] text-slate-500">${B?(CMP.pin?'기준: 고정('+tm(B.at)+')':'기준: 직전 해석('+tm(B.at)+')'):'기준 없음'}</span></div>`+
+  (T.cmpOn?cmpHtml():tnote('밸브를 닫고 다시 해석하면(단수 영향의 🚫 버튼, 말풍선 🔒 잠그고 해석) 직전 결과와 수압·유량을 비교합니다. 범위는 지금 선택 → 추적 범위 → 관망 전체 순으로 정합니다.')),'border-amber-200');
+ if(S.res){const sl=srcList();if(sl.length>=2){const o=T.ovl,a=T.ovlA??sl[0][0],b=T.ovlB??sl[1][0],opt=sl.map(([i,n])=>[i,n.id]);
+  h+=tbox('🤝 두 급수원 겹침',`<div class="flex flex-wrap items-center gap-2">${tsel('ovA','급수원 1',opt,a)}${tsel('ovB','급수원 2',opt,b)}${tbtnP('ovGo','🤝 함께 공급하는 구역 찾기')}</div>`+
+   (o?kv('겹치는 구역',`절점 ${o.nj.toLocaleString()}개 · 관로 ${o.nl.toLocaleString()}개 · ${fmt(o.len/1000,2)} km`)+kv('겹침 수요',flqU(o.dem,2))+kv(`${esc(o.a)}만`,`절점 ${o.nA.toLocaleString()}개`)+kv(`${esc(o.b)}만`,`절점 ${o.nB.toLocaleString()}개`)+kv('해석 시각',o.time)+(o.idle&&o.idle.length?`<p class="text-amber-600 text-xs font-bold">${o.idle.map(esc).join(', ')}: 이 시각에 물을 내보내지 않음(채우는 중·정지)</p>`:''):'')+
+   tnote('두 급수원에서 각각 하류 추적을 해 둘 다 닿는 절점·관로를 선택합니다. 경계 밸브 위치나 혼합 구역을 볼 때 씁니다. 해석 시각의 흐름 방향을 따릅니다.'))}}
+ return h};
+TR.outBind=function(){if(ob0)ob0.apply(this,arguments);const on=(id,f,ev)=>{const e=$(id);if(e)e[ev||'onclick']=f};
+ on('v31Fc',()=>fcSet(!(FC&&FC.net===S.net)));on('v31Csv',statsCsv);on('v31Rs',()=>{const b=$('tRs');if(window.__gw30)window.__gw30.showRes();else if(b)b.click()});
+ on('v31Save',()=>ssSave(($('v31Nm')||{}).value));document.querySelectorAll('[data-ssl]').forEach(b=>b.onclick=()=>ssLoad(+b.dataset.ssl));document.querySelectorAll('[data-ssd]').forEach(b=>b.onclick=()=>{if(confirm('이 묶음을 지울까요?'))ssDel(+b.dataset.ssd)});
+ on('cmpPin',()=>{if(!S.res){toast('먼저 해석을 실행하세요.');return}CMP.pin={res:S.res,net:S.net,at:new Date()};toast('지금 결과를 비교 기준으로 고정했습니다. 밸브를 닫거나 값을 바꾼 뒤 다시 해석하세요.');toolsOut()});
+ on('cmpUnpin',()=>{CMP.pin=null;toolsOut()});on('cmpGo',()=>{T.cmpOn=!T.cmpOn;toolsOut()});on('cmpCsv',cmpCsv);
+ on('cmpSelLow',()=>{const d=cmpData();if(!d)return;T.multi.n.clear();T.multi.l.clear();d.drop.forEach(r=>T.multi.n.add(r.i));renderMulti();requestDraw();toolsOut();toast(`수압이 떨어진 절점 ${d.drop.length.toLocaleString()}곳을 선택했습니다.`)});
+ on('ovA',e=>{T.ovlA=+e.target.value},'onchange');on('ovB',e=>{T.ovlB=+e.target.value},'onchange');on('ovGo',()=>overlap(+$('ovA').value,+$('ovB').value));
+ bindRows()};
+
+// 선택이 바뀌면 열린 추적 창을 새로 그림 · 선택 막대에 버튼
+const rm0=renderMulti;renderMulti=function(){const x=rm0.apply(this,arguments);try{const c=$('mClr');if(c&&!$('mFc')){c.insertAdjacentHTML('beforebegin',tbtn('mFc','👁 범위만')+tbtn('mSum','📊 집계·저장'));$('mFc').onclick=()=>fcSet(!(FC&&FC.net===S.net)||!sameFC());$('mSum').onclick=()=>toolsTab('trc')}
+ if(WS.open.has('tools')&&T.tab==='trc')toolsOut()}catch(e){}return x};
+const sameFC=()=>FC&&FC.l.size===T.multi.l.size&&[...T.multi.l].every(i=>FC.l.has(i));
+
+// ── E. 동수경사도 경로 수령(물 나이) 그래프
+function ageSrc(){const W=G19.WA;if(W&&W.res&&W.res.net===S.net)return{v:W.met==='avg'?W.res.av:W.res.mx,lab:`급수도달시간(마지막 24시간 ${W.met==='avg'?'평균':'최대'})`};
+ const R=S.res;if(R&&R.QN&&T.q&&T.q.type===2)return{v:R.QN[S.k],lab:`수령(${hhmm(R.t[S.k])})`};return null}
+function ageHtml(){const d=G18.PF&&G18.PF.data;if(!d||!d.seq||d.seq.length<2)return'';const a=ageSrc(),N=S.net.nodes;
+ if(!a)return`<div class="pf-ins" style="margin-top:10px">⏱ <b>경로 수령(물 나이)</b>을 보려면 급수도달시간을 먼저 계산해야 합니다(정상 해석 결과는 그대로 둠). <button type="button" id="pfAgeGo" class="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-bold ml-1">⏱ 계산하고 보기</button></div>`;
+ const st=d.seq.map(([x,i])=>[x,i,+a.v[i]]).filter(s=>isFinite(s[2]));if(st.length<2)return'';
+ const W=680,H=170,Lm=56,Rm=16,Tp=12,B=34,x1=Math.max(st[st.length-1][0],1);let y1=Math.max(...st.map(s=>s[2]),1);y1*=1.08;
+ const X=x=>Lm+x/x1*(W-Lm-Rm),Y=y=>Tp+(1-y/y1)*(H-Tp-B);let g='';const ys=niceStep(y1/4);for(let v=0;v<=y1;v+=ys)g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(v)}" y2="${Y(v)}" class="pf-gr"/><text x="${Lm-6}" y="${Y(v)+4}" text-anchor="end" class="pf-tx">${+v.toFixed(1)}</text>`;
+ const xs=niceStep(x1/6);for(let v=0;v<=x1+1e-9;v+=xs)g+=`<text x="${X(v)}" y="${H-B+15}" text-anchor="middle" class="pf-tx">${v>=1000?(v/1000).toFixed(v%1000?1:0)+'k':+v.toFixed(0)}</text>`;
+ const lim=G19.WA?G19.WA.lim:24;if(lim<y1)g+=`<line x1="${Lm}" x2="${W-Rm}" y1="${Y(lim)}" y2="${Y(lim)}" stroke="#ef4444" stroke-dasharray="5 4"/><text x="${W-Rm-2}" y="${Y(lim)-3}" text-anchor="end" class="pf-tx" style="fill:#ef4444">기준 ${lim}h</text>`;
+ g+=`<path d="${st.map((s,j)=>(j?'L':'M')+X(s[0]).toFixed(1)+','+Y(s[2]).toFixed(1)).join('')}" fill="none" stroke="#0d9488" stroke-width="2.2"/>`;
+ st.forEach(s=>g+=`<circle cx="${X(s[0]).toFixed(1)}" cy="${Y(s[2]).toFixed(1)}" r="${st.length>150?1.8:3}" fill="${s[2]>lim?'#dc2626':'#0d9488'}"><title>${esc(N[s[1]].id)} · ${fmt(s[0],0)} m · ${fmt(s[2],1)} h</title></circle>`);
+ let mi=0;st.forEach((s,j)=>{if(s[2]>st[mi][2])mi=j});
+ return`<div style="margin-top:12px"><p class="text-xs font-bold text-slate-700">⏱ 경로 수령(물 나이) · ${esc(a.lab)}</p><svg viewBox="0 0 ${W} ${H}" class="w-full" style="max-height:${H+20}px;display:block"><rect x="${Lm}" y="${Tp}" width="${W-Lm-Rm}" height="${H-Tp-B}" class="pf-fr"/>${g}<text x="${(Lm+W-Rm)/2}" y="${H-3}" text-anchor="middle" class="pf-ax">거리(m)</text><text x="13" y="${(Tp+H-B)/2}" text-anchor="middle" class="pf-ax" transform="rotate(-90 13 ${(Tp+H-B)/2})">수령(시간)</text></svg>
+  <div class="pf-ins">💡 ${esc(N[st[0][1]].id)} ${fmt(st[0][2],1)}h → ${esc(N[st[st.length-1][1]].id)} ${fmt(st[st.length-1][2],1)}h. 이 경로에서 물이 가장 오래 머무는 곳은 <b>${esc(N[st[mi][1]].id)}</b>(${fmt(st[mi][2],1)}시간)입니다${st[mi][2]>lim?` — 기준 ${lim}시간을 넘습니다`:''}.</div></div>`}
+const gb0=graphBody;graphBody=function(){const h=gb0.apply(this,arguments);if(GR.type!=='pf')return h;try{return h+ageHtml()}catch(e){console.warn('v31 age',e);return h}};
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('#pfAgeGo');if(!b||!G19.waRun)return;b.disabled=true;b.textContent='계산 중…';await G19.waRun();GR.type='pf';try{winRender('graph')}catch(x){}});
+
+const st=document.createElement('style');st.textContent=`#fcChip{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:15;display:flex;align-items:center;gap:8px;background:#0e7490;color:#fff;border-radius:8px;padding:4px 8px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}#fcChip button{padding:1px 8px;border-radius:5px;background:rgba(255,255,255,.2);color:#fff}#fcChip button:hover{background:rgba(255,255,255,.35)}`;document.head.appendChild(st);
+window.__gw31={ssSave,ssLoad,ssDel,ssList,stats,statsCsv,fcSet,cmpData,CMP,overlap,ageSrc,get FC(){return FC}};
+})()}catch(e){console.warn('v31',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
