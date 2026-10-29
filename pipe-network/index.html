@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v28 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v29 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4778,6 +4778,113 @@ const rm0=renderMulti;renderMulti=function(){const r=rm0.apply(this,arguments);u
 const rs0=refreshSel;refreshSel=function(){const r=rs0.apply(this,arguments);upd();return r};
 window.__gw28={selSets,key};
 })()}catch(e){console.warn('v28',e)}
+/* ════ v29 대화창: 답 속 절점·관로 ID 누르면 지도로 이동 · 대화창을 새 창으로(두 모니터) ════ */
+try{(()=>{
+// ── ID 찾기(관망이 바뀌면 다시 만듦) ──
+let IX=null;
+function ix(){if(!S.net)return null;if(IX&&IX.net===S.net&&IX.nn===S.net.nodes.length&&IX.nl===S.net.links.length)return IX;
+ const n=new Map(),l=new Map(),nlo=new Map(),llo=new Map();
+ S.net.nodes.forEach((x,i)=>{n.set(x.id,i);nlo.set(String(x.id).toLowerCase(),i)});S.net.links.forEach((x,i)=>{l.set(x.id,i);llo.set(String(x.id).toLowerCase(),i)});
+ return IX={net:S.net,nn:S.net.nodes.length,nl:S.net.links.length,n,l,nlo,llo}}
+// pref: 'n' 절점 먼저, 'l' 관로 먼저
+function look(id,pref){const X=ix();if(!X||!id)return null;const lo=id.toLowerCase();
+ const fn=()=>X.n.has(id)?X.n.get(id):X.nlo.get(lo),fl=()=>X.l.has(id)?X.l.get(id):X.llo.get(lo);
+ if(pref==='l'){let i=fl();if(i!=null)return{t:'l',i};i=fn();return i!=null?{t:'n',i}:null}
+ let i=fn();if(i!=null)return{t:'n',i};i=fl();return i!=null?{t:'l',i}:null}
+const UNIT=/^(곳|개|개소|시|시간|분|초|년|배|명|건|회|번째|일|m|mm|km|%|kPa|kgf)/i;
+const CTX=/절점|관로|노드|밸브|펌프|가압|배수지|탱크|지점|위치|구간|요소|\bID\b|node|link|pipe|junction|valve|pump|tank/i;
+const TOK=/[^\s,()\[\]{}:;'"`/·、<>|~=+*]+/g;
+// 글 조각 하나에서 ID 후보를 찾아 [시작,끝,{t,i}] 목록으로
+function scan(txt,pref,loose,ctx){const out=[];let m;TOK.lastIndex=0;
+ while((m=TOK.exec(txt))){let s=m[0],a=m.index;
+  const lead=s.match(/^[#№]+/);if(lead){s=s.slice(lead[0].length);a+=lead[0].length}
+  s=s.replace(/[.!?…]+$/,'');if(!s)continue;
+  let hit=look(s,pref),suf='';
+  if(!hit){const k=s.match(/^(.*?[A-Za-z0-9])([가-힣]{1,3})$/);if(k){suf=k[2];if(!UNIT.test(suf)){s=k[1];hit=look(s,pref)}}}
+  if(!hit)continue;
+  const num=/^\d+$/.test(s);
+  if(!loose){if(num){if(s.length<2||!ctx)continue;const after=txt.slice(a+s.length).replace(/^\s+/,'');if(!suf&&UNIT.test(after))continue}
+   else if(!/\d/.test(s)&&s.length<2)continue}
+  if(/^\d+\.\d+$/.test(s)&&!loose)continue;
+  out.push([a,a+s.length,hit])}
+ return out}
+function wrap(tn,list,doc){if(!list.length)return;const txt=tn.nodeValue,fr=doc.createDocumentFragment();let p=0;
+ list.forEach(([a,b,h])=>{if(a<p)return;if(a>p)fr.appendChild(doc.createTextNode(txt.slice(p,a)));const sp=doc.createElement('span');sp.className='cx-id';sp.dataset.t=h.t;sp.dataset.i=h.i;sp.tabIndex=0;sp.setAttribute('role','button');
+  sp.title=(h.t==='n'?'절점 ':'관로 ')+txt.slice(a,b)+' — 누르면 지도에서 이 위치로 이동';sp.textContent=txt.slice(a,b);fr.appendChild(sp);p=b});
+ if(p<txt.length)fr.appendChild(doc.createTextNode(txt.slice(p)));tn.parentNode.replaceChild(fr,tn)}
+function textNodes(el){const a=[],w=el.ownerDocument.createTreeWalker(el,4);let n;while((n=w.nextNode())){if(n.parentNode.closest('.cx-id,.cx-steps,.cx-think,button,a'))continue;a.push(n)}return a}
+const IDH=/(^|\s)(id|번호|이름|명칭)$|^(id|번호|절점|관로|노드|밸브|펌프|가압장|배수지|탱크|링크|node|link|pipe|위치)(\s*(id|번호|명))?$|절점\s*id|관로\s*id|노드\s*id|링크\s*id/i;
+const VALH=/수압|유속|유량|표고|시각|시간|수요|길이|관경|구경|손실|%|\(m|개수|횟수|비고|값|평균|최대|최소|변화|차이/;
+function prefOf(h){return/관로|링크|밸브|펌프|가압|link|pipe|valve|pump/i.test(h)?'l':/절점|노드|배수지|탱크|node|junction|tank/i.test(h)?'n':''}
+function linkify(body){if(!S.net||!body)return;const doc=body.ownerDocument;
+ // 표: 머리글이 ID 열인 곳은 칸 그대로, 아니면 칸이 대부분 ID인 첫 열
+ body.querySelectorAll('table').forEach(tb=>{const hs=[...tb.querySelectorAll('thead th')].map(t=>t.textContent.trim()),rows=[...tb.querySelectorAll('tbody tr')];
+  hs.forEach((h,c)=>{let ok=IDH.test(h)&&!VALH.test(h);
+   if(!ok&&c===0&&!VALH.test(h)&&rows.length){let hit=0,tot=0;rows.forEach(r=>{const td=r.children[c];const v=td&&td.textContent.trim();if(!v)return;tot++;if(!/^\d+\.\d+$/.test(v)&&look(v,prefOf(h)))hit++});ok=tot>0&&hit/tot>=0.6}
+   if(!ok)return;const pf=prefOf(h),found=[];
+   rows.forEach(r=>{const td=r.children[c];if(!td)return;textNodes(td).forEach(tn=>{const L=scan(tn.nodeValue,pf,true);L.forEach(x=>found.push(x[2]));wrap(tn,L,doc)})});
+   const th=tb.querySelectorAll('thead th')[c];if(found.length>1&&th&&!th.querySelector('.cx-all')){const b=doc.createElement('span');b.className='cx-all';b.textContent='🗺';b.title='이 열의 위치를 모두 지도에 강조';b.dataset.all=JSON.stringify({n:found.filter(f=>f.t==='n').map(f=>S.net.nodes[f.i].id),l:found.filter(f=>f.t==='l').map(f=>S.net.links[f.i].id)});th.appendChild(b)}})});
+ // 글: 문단·목록 한 줄마다, 절점·관로 같은 말이 같이 있을 때만 숫자 ID를 잡음
+ body.querySelectorAll('p,li').forEach(blk=>{if(blk.closest('table'))return;const ctx=CTX.test(blk.textContent);
+  textNodes(blk).forEach(tn=>{const code=!!tn.parentNode.closest('code');wrap(tn,scan(tn.nodeValue,'',code,ctx||code),doc)})})}
+// 답이 다 쓰인 뒤(또는 화면에 그려질 때마다) 처리
+const LOG=$('cxLog');let tm=0,busy=false;
+function sweep(){if(busy)return;busy=true;try{LOG.querySelectorAll('.cx-a .cx-body').forEach(b=>{if(b.querySelector('.cx-think'))return;const k=b.innerHTML.length;if(b._v29===k)return;linkify(b);b._v29=b.innerHTML.length})}catch(e){console.warn('v29 linkify',e)}busy=false}
+new MutationObserver(()=>{if(busy)return;clearTimeout(tm);tm=setTimeout(sweep,250)}).observe(LOG,{childList:true,subtree:true,characterData:true});
+// 새 관망을 열면 예전 답도 다시 살펴봄
+const _ld29=loadText;loadText=async function(){const r=await _ld29.apply(this,arguments);IX=null;try{LOG.querySelectorAll('.cx-body').forEach(b=>{b._v29=-1});sweep()}catch(e){}return r};
+// ── 눌렀을 때: 그 위치로 이동·선택·말풍선 ──
+function go(t,i){if(!S.net)return;const el=t==='n'?S.net.nodes[i]:S.net.links[i];if(!el){toast('지금 관망에 없는 요소입니다.');return}
+ if(innerWidth<1100&&!CP.w&&document.documentElement.classList.contains('chat'))cxOpen(false);
+ focusEl(t,i);try{let x,y;if(t==='n'){x=el.x;y=el.y}else{[x,y]=lMid(el)}S.pop={t,i,x,y};renderPop()}catch(e){}requestDraw();
+ if(CP.w)try{window.focus()}catch(e){}}
+function goAll(o){S.hl={nodes:o.n||[],links:o.l||[],net:null};if(innerWidth<1100&&!CP.w&&document.documentElement.classList.contains('chat'))cxOpen(false);hlFocus();requestDraw();toast(`지도에 ${(o.n||[]).length+(o.l||[]).length}곳을 강조했습니다.`)}
+function onAct(e){const a=e.target.closest&&e.target.closest('.cx-all');if(a){e.preventDefault();e.stopPropagation();try{goAll(JSON.parse(a.dataset.all))}catch(_){}return}
+ const s=e.target.closest&&e.target.closest('.cx-id');if(!s)return;e.preventDefault();go(s.dataset.t,+s.dataset.i)}
+LOG.addEventListener('click',onAct);LOG.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('cx-id'))onAct(e)});
+
+// ── 대화창을 새 브라우저 창으로(두 모니터) ──
+const CP={w:null,geo:(()=>{try{return JSON.parse(lsGet('gw-cxpop')||'null')}catch(e){return null}})()};
+const P0=$('cxPanel'),HOME=P0.parentNode,NEXT=P0.nextSibling;
+// 떼어 낸 창 안의 대화창 요소도 $()로 찾도록
+const g1=document.getElementById,q1=document.querySelector,qa1=document.querySelectorAll;
+document.getElementById=function(id){const e=g1.call(document,id);if(e||!CP.w)return e;try{return CP.w.document.getElementById(id)}catch(_){return null}};
+document.querySelector=function(s){const e=q1.call(document,s);if(e||!CP.w)return e;try{return CP.w.document.querySelector(s)}catch(_){return null}};
+document.querySelectorAll=function(s){const r=qa1.call(document,s);if(!CP.w)return r;try{const x=CP.w.document.querySelectorAll(s);if(!x.length)return r;return[...r,...x]}catch(_){return r}};
+function cpOut(){if(CP.w){try{CP.w.focus()}catch(e){}return}if(innerWidth<760){toast('작은 화면에서는 창 분리를 쓰지 않습니다.');return}
+ const g=CP.geo||{},ww=g.w||460,wh=g.h||Math.min(screen.availHeight-60,860),left=g.x??(screenX+outerWidth+20),top=g.y??(screenY+40);
+ const w=open('','gwpop_chat',`popup=yes,width=${Math.round(ww)},height=${Math.round(wh)},left=${Math.round(left)},top=${Math.round(top)}`);
+ if(!w){toast('팝업이 막혔습니다. 주소창 오른쪽의 팝업 차단 표시에서 이 사이트를 허용한 뒤 다시 누르세요.',7000);return}
+ let d;try{d=w.document}catch(e){toast('새 창을 열지 못했습니다(이 화면에서는 창 분리가 막혀 있습니다).',6000);try{w.close()}catch(_){}return}
+ d.open();d.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI 대화 — 웹 관망해석기</title></head><body><div id="cpHost"></div></body></html>`);d.close();
+ d.documentElement.className=document.documentElement.className;d.body.className=document.body.className;
+ qa1.call(document,'head style, head link[rel="stylesheet"], body > style').forEach(s=>d.head.appendChild(d.importNode(s,true)));
+ const st=d.createElement('style');st.textContent=`html,body{margin:0;height:100%;overflow:hidden;font-family:"Noto Sans KR",system-ui,sans-serif}body{padding:0!important}
+#cpHost{position:fixed;inset:0;display:flex}html body #cpHost>#cxPanel{position:static!important;transform:none!important;width:auto!important;flex:1;min-width:0;border:0;box-shadow:none;display:flex!important}
+#gwLock,#toast,#cxFab{display:none!important}`;d.head.appendChild(st);
+ CP.w=w;document.documentElement.classList.remove('chat');P0.setAttribute('aria-hidden','false');
+ d.getElementById('cpHost').appendChild(d.adoptNode(P0));cpBtn();
+ w.addEventListener('pagehide',()=>{if(CP.w===w)cpIn(true)});
+ setTimeout(()=>{try{resizeMap();requestDraw();d.getElementById('cxIn').focus();cxScroll()}catch(e){}},80);
+ toast('대화창을 새 창으로 뗐습니다. 다른 모니터로 끌어 두고 답 속 절점·관로 번호를 누르면 이 지도가 따라 움직입니다.',6000)}
+function cpIn(closing){const w=CP.w;if(!w)return;try{if(!w.closed)CP.geo={x:w.screenX,y:w.screenY,w:w.outerWidth,h:w.outerHeight};lsSet('gw-cxpop',JSON.stringify(CP.geo))}catch(e){}
+ CP.w=null;try{HOME.insertBefore(document.adoptNode(P0),NEXT&&NEXT.parentNode===HOME?NEXT:null)}catch(e){console.error(e)}
+ if(!closing)try{w.close()}catch(e){}cpBtn();cxOpen(true)}
+function cpBtn(){let b=P0.querySelector('#cxPop');if(!b){b=P0.ownerDocument.createElement('button');b.id='cxPop';b.type='button';b.className='cx-hb';const nw=P0.querySelector('#cxNew');nw.parentNode.insertBefore(b,nw);b.onclick=()=>CP.w?cpIn(false):cpOut()}
+ b.textContent=CP.w?'⧉ 되돌리기':'⧉ 새 창';b.title=CP.w?'대화창을 원래 화면 오른쪽으로 되돌리기':'대화창을 새 브라우저 창으로 떼어 다른 모니터에 두기';
+ const c=P0.querySelector('#cxClose');if(c)c.classList.toggle('hidden',!!CP.w);b.classList.toggle('hidden',!CP.w&&innerWidth<760)}
+const _co29=cxOpen;cxOpen=function(on){if(CP.w){if(on)try{CP.w.focus();CP.w.document.getElementById('cxIn').focus()}catch(e){}else cpIn(false);return}return _co29.apply(this,arguments)};
+addEventListener('gw-lock',()=>{if(CP.w)cpIn(false)});addEventListener('beforeunload',()=>{try{CP.w&&CP.w.close()}catch(e){}});
+new MutationObserver(()=>{if(CP.w)try{const c=document.documentElement.className;CP.w.document.documentElement.className=c.replace(/\bchat\b/,'')}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+cpBtn();addEventListener('resize',()=>{try{cpBtn()}catch(e){}});
+// 뗀 창 모두 되돌리기에 대화창도 포함
+const _ra29=rbAct;rbAct=function(a){if(a==='popAll'&&CP.w){cpIn(false);if(!(window.__gw19&&window.__gw19.POP.m.size))return}return _ra29.apply(this,arguments)};
+
+const st=document.createElement('style');st.textContent=`.cx-id{color:#4338ca;font-weight:600;text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer;border-radius:3px;padding:0 1px}.cx-id:hover,.cx-id:focus{background:#e0e7ff;text-decoration-style:solid;outline:none}
+html.dark .cx-id{color:#a5b4fc}html.dark .cx-id:hover,html.dark .cx-id:focus{background:rgba(99,102,241,.3)}
+.cx-all{cursor:pointer;margin-left:4px;font-size:11px;opacity:.75}.cx-all:hover{opacity:1}`;document.head.appendChild(st);
+window.__gw29={linkify,scan,look,go,goAll,cpOut,cpIn,CP};
+})()}catch(e){console.warn('v29',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
