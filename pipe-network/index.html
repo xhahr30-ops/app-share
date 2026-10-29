@@ -2470,7 +2470,7 @@ WR.res={ui:()=>{const R=S.res;if(!R)return`<p class="text-slate-500 p-2 text-xs"
  if(at==='s'){const pj=N.map((n,i)=>i).filter(i=>N[i].type===0),low=pj.filter(i=>st.n[i][0]<pmin),hi=pj.filter(i=>st.n[i][1]>pmax),fast=L.map((l,i)=>i).filter(i=>L[i].type<=1&&st.l[i][0]>vmax);
   const sup=N.reduce((a,n,i)=>a+(n.type>0&&R.D[k][i]<0?-R.D[k][i]:0),0),dem=pj.reduce((a,i)=>a+R.D[k][i],0);
   return h+`<div class="grid grid-cols-2 gap-2 text-xs">${[['해석 시각',hhmm(R.t[k])+` (전체 ${R.t.length}개 시각)`],['지금 공급량',flqU(sup,1)],['지금 수요량',flqU(dem,1)],['수압 부족 절점(하루 중)',low.length.toLocaleString()+'곳'],['수압 과다 절점(하루 중)',hi.length.toLocaleString()+'곳'],[`유속 ${vmax} m/s 넘는 관로`,fast.length.toLocaleString()+'개'],['원본 대비 변경',c.cnt+'건']].map(([a,b])=>`<div class="rounded-lg border border-slate-200 p-2"><p class="text-slate-500">${a}</p><p class="text-sm font-bold">${b}</p></div>`).join('')}</div>`}
- if(q)rows=rows.filter(r=>r.q.toLowerCase().includes(q));if(bad)rows=rows.filter(r=>r.flag);rows.sort((a,b)=>(cf?(b.ch-a.ch):0)||(b.flag-a.flag)||(a.v-b.v));T.rsRows={head,rows};
+ if(q)rows=rows.filter(r=>r.q.toLowerCase().includes(q));if(bad)rows=rows.filter(r=>r.flag);if(T.rsSelF)rows=T.rsSelF(rows,at);rows.sort((a,b)=>(cf?(b.ch-a.ch):0)||(b.flag-a.flag)||(a.v-b.v));T.rsRows={head,rows};
  const tr=rows.slice(0,500).map(r=>`<tr ${rowAttr(r.t,r.i)} ${r.ch?'style="background:rgba(249,115,22,.10)"':''}><td>${r.ch?B(r.i):''}</td>${r.cells.map((x,j)=>`<td class="${j<2?'text-left':''} ${r.flag&&j===r.cells.length-1?'text-red-600 font-bold':''}">${j===0?esc(x):x}</td>`).join('')}</tr>`);
  return h+tbl([''].concat(head),tr,{h:440})+tnote(`${rows.length.toLocaleString()}개${rows.length>500?' 중 앞의 500개만 보입니다(CSV에는 전부 들어감)':''}. 변경된 것 → 기준 벗어난 것 → 값 순으로 정렬합니다. 행을 누르면 지도에서 찾아갑니다. 시간 막대에서 시각을 바꾸면 목록도 바뀝니다.`)},
  bind:b=>{b.querySelectorAll('[data-rt2]').forEach(x=>x.onclick=()=>{T.rsT=x.dataset.rt2;winRender('res')});const on=(id,ev,f)=>{const e=b.querySelector('#'+id);if(e)e[ev]=f};bindRows(b);
@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v27.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v28 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -4755,6 +4755,29 @@ document.addEventListener('keydown',e=>{if(!g.classList.contains('mfull')||e.ctr
  if(e.key==='['){e.preventDefault();set('l')}else if(e.key===']'){e.preventDefault();set('b')}});
 sync();window.__gw27={set,H};
 })()}catch(e){console.warn('v27',e)}
+/* ════ v28 결과 상세: 지도에서 선택한 관로·절점만 보기 ════ */
+try{(()=>{
+// 고른 것: 영역·다중 선택이 있으면 그것, 없으면 지도에서 하나 누른 것
+function selSets(){const m=T.multi||{n:new Set(),l:new Set()};let n=new Set(m.n),l=new Set(m.l);
+ if(!n.size&&!l.size&&S.sel&&S.sel.i>=0){(S.sel.t==='n'?n:l).add(S.sel.i)}return{n,l}}
+function key(){const{n,l}=selSets();let h=0;n.forEach(i=>h=(h*31+i+1)|0);l.forEach(i=>h=(h*37+i+7)|0);return n.size+'/'+l.size+'/'+h}
+// 절점 표에서 관로만 골랐으면 관로 양 끝 절점, 관로 표에서 절점만 골랐으면 그 절점에 붙은 관로
+T.rsSelF=(rows,at)=>{if(!T.rsSel||!S.net)return rows;const{n,l}=selSets(),L=S.net.links;
+ if(at==='n'||at==='t'){let ns=n;if(!ns.size&&l.size){ns=new Set();l.forEach(i=>{const x=L[i];if(x){ns.add(x.n1-1);ns.add(x.n2-1)}})}return rows.filter(r=>ns.has(r.i))}
+ let ls=l;if(!ls.size&&n.size){ls=new Set();L.forEach((x,i)=>{if(n.has(x.n1-1)||n.has(x.n2-1))ls.add(i)})}return rows.filter(r=>ls.has(r.i))};
+const ui0=WR.res.ui,bind0=WR.res.bind;
+WR.res.ui=function(){let h=ui0.apply(this,arguments);T.rsSelK=key();const a='기준 벗어남만</label>';if(!h.includes(a))return h;
+ const{n,l}=selSets(),cnt=T.rsSel?`<span class="text-[11px] text-slate-500">(절점 ${n.size.toLocaleString()} · 관로 ${l.size.toLocaleString()})</span>`:'';
+ h=h.replace(a,a+`<label class="inline-flex items-center gap-1" title="지도에서 누르거나 영역으로 고른 관로·절점만 표에 보입니다"><input id="rsSel" type="checkbox" ${T.rsSel?'checked':''}> 선택한 것만</label>${cnt}`);
+ if(T.rsSel&&!n.size&&!l.size&&(T.rsT||'n')!=='s')h+=tnote('지도에서 관로·절점을 누르거나, 편집의 영역 선택으로 범위를 끌어 고르면 여기에 그것만 보입니다.');
+ return h};
+WR.res.bind=function(b){bind0.apply(this,arguments);const e=b.querySelector('#rsSel');if(e)e.onchange=()=>{T.rsSel=e.checked;winRender('res')}};
+// 지도에서 고른 것이 바뀌면 열린 결과 상세를 다시 그림
+const upd=()=>{try{if(T.rsSel&&WS.open.has('res')&&T.rsSelK!==key())winRender('res')}catch(e){}};
+const rm0=renderMulti;renderMulti=function(){const r=rm0.apply(this,arguments);upd();return r};
+const rs0=refreshSel;refreshSel=function(){const r=rs0.apply(this,arguments);upd();return r};
+window.__gw28={selSets,key};
+})()}catch(e){console.warn('v28',e)}
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
