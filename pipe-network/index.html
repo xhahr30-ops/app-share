@@ -1297,8 +1297,10 @@ function parseShp(buf){const dv=new DataView(buf),type=dv.getInt32(32,true);if(!
   if(z){const zb=pb+npt*16+16;for(let q=0;q<npt;q++)pts[q][2]=dv.getFloat64(zb+q*8,true)}
   lines.push(parts.map((s,p)=>pts.slice(s,p+1<np?parts[p+1]:npt)))}
  return{lines,z}}
+/* v33.1: .cpg가 없을 때 DBF 글자가 UTF-8로 맞으면 UTF-8, 아니면 고른 인코딩(기본 EUC-KR) */
+function dbfUtf8(buf){const u=new Uint8Array(buf);let hi=false;for(let i=0;i<u.length;i++)if(u[i]>127){hi=true;break}if(!hi)return false;try{new TextDecoder('utf-8',{fatal:true}).decode(u);return true}catch(e){return false}}
 function parseDbf(buf,enc){const dv=new DataView(buf),n=dv.getUint32(4,true),hl=dv.getUint16(8,true),rl=dv.getUint16(10,true),fields=[];const td=new TextDecoder(enc),ad=new TextDecoder('ascii');
- for(let o=32;o<hl-1&&dv.getUint8(o)!==0x0D;o+=32){fields.push({name:ad.decode(new Uint8Array(buf,o,11)).replace(/\0.*$/,'').trim(),len:dv.getUint8(o+16)})}
+ for(let o=32;o<hl-1&&dv.getUint8(o)!==0x0D;o+=32){fields.push({name:(()=>{const u=new Uint8Array(buf,o,11),z=u.indexOf(0),b=z<0?u:u.subarray(0,z);/* v33.1: 한글 필드 이름(소블록 등)도 레코드와 같은 인코딩으로 */try{return td.decode(b).trim()}catch(e){return ad.decode(b).trim()}})(),len:dv.getUint8(o+16)})}
  const recs=[];for(let r=0;r<n;r++){const b=hl+r*rl;let o=b+1;const rec={};fields.forEach(f=>{rec[f.name]=td.decode(new Uint8Array(buf,o,f.len)).trim();o+=f.len});recs.push(rec)}
  return{fields:fields.map(f=>f.name),recs}}
 $('bGis').onclick=()=>{try{const r=buildFromGis();loadText(r.inp,'GIS 관로 → 관망.inp').then(async()=>{const extra=await gisExtras();$('shpInfo').innerHTML=r.msg+(extra?'<br>'+extra:'');toast('GIS 관로로 관망을 만들고 해석했습니다.')}).catch(e=>toast(e.message||String(e),7000))}catch(e){toast('관망을 만들지 못했습니다: '+(e.message||e),7000)}};
@@ -1568,7 +1570,7 @@ async function readLayers(files,enc){const sets=new Map();for(const f of files){
   if(ext==='shp')o.shp=await f.arrayBuffer();else if(ext==='dbf')o.dbf=await f.arrayBuffer();else if(ext==='prj')o.prj=await f.text();else if(ext==='cpg')o.cpg=(await f.text()).trim().toLowerCase();else if(ext==='dxf')o.dxf=decode(await f.arrayBuffer())}
  const out=[];for(const o of sets.values()){try{
   if(o.dxf){const ls=parseDxf(o.dxf);if(!ls.length)throw new Error('선(LINE·POLYLINE)이 없습니다');out.push({name:o.name,kind:'line',role:'dxf',recs:ls.map(l=>[l.pts]),attrs:ls.map(l=>({LAYER:l.layer})),fields:['LAYER'],epsg:'',z:ls.some(l=>l.pts.some(p=>p[2]))});continue}
-  if(!o.shp)continue;const sh=parseShpAny(o.shp),e=o.cpg?(/utf/.test(o.cpg)?'utf-8':'euc-kr'):enc,d=o.dbf?parseDbf(o.dbf,e):{fields:[],recs:[]};
+  if(!o.shp)continue;const sh=parseShpAny(o.shp),e=o.cpg?(/utf/.test(o.cpg)?'utf-8':'euc-kr'):(o.dbf&&dbfUtf8(o.dbf)?'utf-8':enc),d=o.dbf?parseDbf(o.dbf,e):{fields:[],recs:[]};
   let role=null;for(const [re,r] of LAYK)if(re.test(o.name)){role=r;break}if(!role)role=sh.kind==='line'?'pipe':sh.kind==='poly'?'blk':'pt';
   if(sh.kind==='poly'&&role!=='blk')role='blk';if(sh.kind==='point'&&['pipe','sply','blk'].includes(role))role='pt';if(sh.kind==='line'&&!['pipe','sply','elev','ln'].includes(role))role='ln';
   out.push({name:o.name,kind:sh.kind,role,recs:sh.recs,attrs:d.recs,fields:d.fields,epsg:prjEpsg(o.prj||''),z:sh.z})}catch(err){out.push({name:o.name,err:err.message})}}
@@ -2662,7 +2664,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v33 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v33.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
