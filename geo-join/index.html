@@ -679,6 +679,8 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 @media print{.mkbar,.mkov,.mktx,.mkgw{display:none!important}}
 .phpop .leaflet-popup-content{margin:8px!important;width:300px!important}
 .phpop .leaflet-popup-content-wrapper{background:var(--card)}
+.leaflet-popup:not(.phpop) .leaflet-popup-content :is(input,select,textarea){background:#fff;color:#0f172a;border:1px solid #cbd5e1;color-scheme:light}
+.leaflet-popup-scrolled{overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .hitTabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
 .hitTabs button{font:inherit;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--indb);background:transparent;color:var(--ink);cursor:pointer;min-height:28px}
 .hitTabs button.on{background:var(--ind);border-color:var(--ind);color:#fff}.phpop .leaflet-popup-tip{background:var(--card)}
@@ -1656,7 +1658,21 @@ function hitMark(x){if(HIT.hl){map.removeLayer(HIT.hl);HIT.hl=null}if(!x)return;
  else if(x.t==='blk')HIT.hl=L.geoJSON(x.l.feature,{interactive:false,style:{color:Y,weight:5,opacity:.9,fill:false}});
  else if(x.t==='fac'||x.t==='sc'||x.t==='hop')HIT.hl=L.circleMarker(hitPos(x),{interactive:false,radius:14,color:Y,weight:4,fill:false});
  if(HIT.hl)HIT.hl.addTo(map)}
-function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
+/* 정보창이 지도 버튼(위쪽 칩 줄·＋/−·레이어, 왼쪽 아래 범례, 폰 오른쪽 아래 📷📍🖼️)에 가리지 않게:
+   그 사이 빈 곳 크기로 정보창 폭·높이를 정하고, 넘치면 정보창 안에서 위아래로 밀어 봄 */
+function popRoom(){const C=map.getContainer(),M=C.getBoundingClientRect(),mh=M.height,mw=M.width;let t=10,b=10,l=8,r=8;
+ const box=el=>{const R=el.getBoundingClientRect();return R.width>0&&R.height>0?R:null};
+ C.querySelectorAll('.leaflet-top .leaflet-control,.leaflet-control-container .chipbar').forEach(el=>{const R=box(el);if(R&&R.bottom-M.top<mh*.4)t=Math.max(t,R.bottom-M.top+6)});
+ C.querySelectorAll('.leaflet-bottom.leaflet-left .leaflet-control').forEach(el=>{const R=box(el);if(R&&M.bottom-R.top<mh*.3)b=Math.max(b,M.bottom-R.top+6)});
+ if(mw<700)C.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control').forEach(el=>{const R=box(el);if(R&&!el.classList.contains('leaflet-control-attribution')&&M.right-R.left<mw*.25)r=Math.max(r,M.right-R.left+6)});
+ return{t,b,l,r,w:Math.max(220,Math.min(320,mw-l-r-46)),h:Math.max(160,mh-t-b-60)}}
+function popFit(pp){if(!map||!pp)return;try{const o=popRoom();Object.assign(pp.options,{maxWidth:o.w,minWidth:Math.min(pp.options.minWidth||50,o.w),maxHeight:o.h,autoPanPaddingTopLeft:L.point(o.l,o.t),autoPanPaddingBottomRight:L.point(o.r,o.b)})}catch(_){}}
+/* 내용을 다시 만들지 않고(입력 중인 값 유지) 크기·위치만 다시 맞춤: ✏️ 고치기 칸을 펴고 접을 때, 키보드로 지도 크기가 바뀔 때 */
+function popRelayout(pp){if(!pp||!pp.isOpen()||!pp._contentNode)return;popFit(pp);try{pp._updateLayout();pp._updatePosition();pp._adjustPan()}catch(_){}}
+document.addEventListener('toggle',e=>{const t=e.target;if(!t||!t.closest||!t.closest('.leaflet-popup'))return;const pp=map&&map._popup;if(pp&&pp._hit)setTimeout(()=>{popRelayout(pp);if(t.open)popScrollTo(t)},0)},true);
+/* 정보창 안에서만 밀어 펼친 칸이 보이게 (scrollIntoView는 지도까지 밀 수 있어 쓰지 않음) */
+function popScrollTo(el){const sc=el&&el.closest('.leaflet-popup-content');if(!sc||sc.scrollHeight<=sc.clientHeight)return;const d=el.getBoundingClientRect().top-sc.getBoundingClientRect().top-6;if(d>0)sc.scrollTop+=d}
+function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;popFit(pp);pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
  hitMark(x.t==='pt'?null:x);if(x.t==='pt'&&typeof selectRow==='function')selectRow(x.i,'map')}
 /* 내용 바꾸기는 클릭 처리가 끝난 뒤에: 누른 버튼이 바로 사라지면 Leaflet이 지도 클릭으로 보고 정보창을 닫음 */
 window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout(()=>{if(pp.isOpen())hitShow(h,k)},0)};
@@ -1666,7 +1682,8 @@ function hitInit(){if(HIT.on)return;HIT.on=true;
   if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;/* 사진·밸브 번호 같은 마커는 자기 팝업 */
   const H=hitCollect(e);if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk')return;
   setTimeout(()=>{const h={H,cur:0,ll:e.latlng,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true)},0)});
- map.on('popupclose',e=>{if(e.popup&&e.popup._hit)hitMark(null)})}
+ map.on('popupclose',e=>{if(e.popup&&e.popup._hit)hitMark(null)});
+ map.on('resize',()=>{const pp=map._popup;if(pp&&pp._hit)setTimeout(()=>popRelayout(pp),50)})}
 
 /* ---------- 수용가 라벨: 관리번호·소블록(Y)·월평균·업종·이상유형만 (이름·주소·연락처는 선택지에 없음 → 📷 캡처에 들어가도 됨)
    수용가 점 캔버스에 같이 그림. 화면 안 점만, 겹치면 건너뜀, 최대 1,500개 ---------- */
@@ -2830,7 +2847,7 @@ window.pipeInfoSave=async(fi,btn)=>{const box=btn.closest('.pied'),old=PIPE.feat
  const mk=box.querySelector('[data-role="mat"]'),nm=k=>k==='현장메모'?'비고':dk&&k===dk.dataset.k?'관경':mk&&k===mk.dataset.k?'재질':k;
  PIPE.infoOpen=-1;try{await pedSetProps(fi,vals)}catch(err){alert('저장하지 못했습니다: '+(err&&err.message||err));return}
  pipeInfoRefresh(fi,old);try{phToast('💾 관로 저장했습니다: '+ch.map(nm).join(', '))}catch(_){}};
-window.pipeInfoGo=(btn,role)=>{const c=btn.closest('.leaflet-popup-content')||document,d=c.querySelector('details.pied');if(!d)return;d.open=true;const el=d.querySelector(`[data-role="${role}"]`);if(el)setTimeout(()=>{try{el.focus();el.select()}catch(_){}},0)};
+window.pipeInfoGo=(btn,role)=>{const c=btn.closest('.leaflet-popup-content')||document,d=c.querySelector('details.pied');if(!d)return;d.open=true;const el=d.querySelector(`[data-role="${role}"]`);if(el)setTimeout(()=>{try{popScrollTo(d);el.focus({preventScroll:true});el.select()}catch(_){}},0)};
 window.pipeInfoOrig=async fi=>{const old=PIPE.feats[fi];if(!old)return;if(!confirm('이 관로를 SHP 원래 값·모양으로 되돌릴까요?'+(PED.recs.some(x=>x.from===old.properties._ped&&!x.rv)?'\n(여기서 나눈 관로도 함께 없어집니다)':'')))return;PIPE.infoOpen=-1;await pedRevert(fi);pipeInfoRefresh(fi,old)};
 function pipePopFull(f,ll){const e={latlng:ll};return pipePopup(f)+pipeInfoForm(f)+hydPipePop(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · '))+vidBtns('pipe',a.id?'id:'+a.id:'i:'+PIPE.feats.indexOf(f),e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||'')+(a.dia!=null?' '+a.dia+'mm':'')))(attrOf(f))}</div>`}
 function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
