@@ -2662,7 +2662,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v31 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v32 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5103,6 +5103,157 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
 const st=document.createElement('style');st.textContent=`#fcChip{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:15;display:flex;align-items:center;gap:8px;background:#0e7490;color:#fff;border-radius:8px;padding:4px 8px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}#fcChip button{padding:1px 8px;border-radius:5px;background:rgba(255,255,255,.2);color:#fff}#fcChip button:hover{background:rgba(255,255,255,.35)}`;document.head.appendChild(st);
 window.__gw31={ssSave,ssLoad,ssDel,ssList,stats,statsCsv,fcSet,cmpData,CMP,overlap,ageSrc,get FC(){return FC}};
 })()}catch(e){console.warn('v31',e)}
+/* ════ v32 진단 보고서 표: 블록별 수압·유속 분포율과 등급 · 관로 특성 · 블록 평가 · 잔류염소 ════ */
+try{(()=>{
+const NB='(블록 미지정)',KPA=9.80665;
+const GR5=['우수','양호','보통','불량','심각'],GC5=['#2563eb','#16a34a','#64748b','#d97706','#dc2626'];
+const DEF={grp:'blk',wt:'n',pb:[1.5,4.5,7.0],pg:[95,90,85,80],vb:[0.1,0.3,3.0],vg:[55,60,65,70],fv:0.01,fa:72,fg:[2.0,2.5,3.0,3.5],yr:new Date().getFullYear(),ya:30,bs:[2.5,3.0],tab:'p'};
+const DG=Object.assign({},DEF,(()=>{try{return JSON.parse(lsGet('gw-diag')||'{}')||{}}catch(e){return{}}})());
+const dgSave=()=>lsSet('gw-diag',JSON.stringify(DG));
+const csvQ=v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v;
+const f1=v=>isFinite(v)?v.toFixed(1):'',f2=v=>isFinite(v)?v.toFixed(2):'';
+const gHi=(v,th)=>!isFinite(v)?-1:v>=th[0]?0:v>=th[1]?1:v>=th[2]?2:v>=th[3]?3:4;   // 클수록 좋음
+const gLo=(v,th)=>!isFinite(v)?-1:v<th[0]?0:v<th[1]?1:v<th[2]?2:v<th[3]?3:4;      // 작을수록 좋음
+const badge=g=>g<0?'-':`<b style="color:${GC5[g]}">${GR5[g]}</b>`;
+const bin3=(v,b)=>v<b[0]?0:v<b[1]?1:v<b[2]?2:3;
+const METAL_NO=/^(PE|PVC|HI|PB|PP|GRP|FRP|HDPE|ABS|PFP)|비금속|폴리|합성수지/i;
+const metal=k=>{k=String(k||'').trim().toUpperCase();if(!k||k==='-')return -1;return METAL_NO.test(k)?0:1};
+
+// ── 묶음(블록) 정하기
+let PATC=null;
+function patOf(n){if(!PATC||PATC.net!==S.net){PATC={net:S.net,m:new Map()}}if(PATC.m.has(n.i))return PATC.m.get(n.i);let v='(패턴 없음)';try{const k=S.prj.getNodeValue(n.i,2);if(k>0)v=S.prj.getPatternId(k)}catch(e){}PATC.m.set(n.i,v);return v}
+function gOf(n){if(!n)return NB;switch(DG.grp){case 'mid':return n.blk?(String(n.blk).replace(/[-_ .]*\d+$/,'')||n.blk):NB;case 'pat':return patOf(n);case 'all':return '관망 전체';default:return n.blk||NB}}
+function gOfL(l){const N=S.net.nodes,a=N[l.n1-1],b=N[l.n2-1];return gOf(a&&a.type===0?a:b)}
+const GRPS=[['blk','소블록'],['mid','중블록(소블록 이름 앞부분)'],['pat','수요 패턴(계통)'],['all','관망 전체만']];
+
+// ── 해석 시각: 마지막 24시간에서 시간최대·평균·시간최소
+function times(){const R=S.res,N=S.net.nodes;if(!R||!R.t.length)return null;const nt=R.t.length,tEnd=R.t[nt-1];const w=[];for(let k=0;k<nt;k++)if(nt===1||R.t[k]>tEnd-86400)w.push(k);
+ let kx=w[0],kn=w[0],mx=-1/0,mn=1/0;w.forEach(k=>{let s=0;const D=R.D[k];for(let i=0;i<N.length;i++)if(N[i].type===0)s+=D[i];if(s>mx){mx=s;kx=k}if(s<mn){mn=s;kn=k}});
+ return{w,kx,kn,qx:mx,qn:mn,t0:R.t[w[0]],t1:R.t[w[w.length-1]]}}
+const avgOver=(A,w,i)=>{let s=0;for(const k of w)s+=A[k][i];return s/w.length};
+
+// ── 계산(한 번에 모든 표)
+function calc(){const R=S.res,N=S.net.nodes,L=S.net.links,tm=times();if(!tm)return null;const{w,kx,kn}=tm;
+ const G=new Map(),get=k=>{let o=G.get(k);if(!o){o={k,nodes:[],links:[],
+   pw:0,pb:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],ps:[0,0,0],nj:0,pmx:-1/0,pmn:1/0,dmd:0,
+   len:0,vb:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],vs:[0,0,0],fl:0,fok:false,lm:[0,0,0],ly:[0,0,0],ld:[0,0,0],nv:0,np:0,
+   cw:0,cb:[0,0,0,0,0],cmn:1/0,cmx:-1/0,cs:0,cn:0};G.set(k,o)}return o};
+ const pb=DG.pb,vb=DG.vb,cl=R.QN&&T.q&&T.q.type===1,W19=window.__gw19||{},WA=W19.WA,wa=WA&&WA.res&&WA.res.net===S.net?WA.res:null,
+  qa=!wa&&R.QN&&T.q&&T.q.type===2;
+ const age=new Float32Array(N.length);if(wa)for(let i=0;i<N.length;i++)age[i]=wa.av[i];else if(qa)for(let i=0;i<N.length;i++)age[i]=avgOver(R.QN,w,i);
+ N.forEach((n,i)=>{if(n.type!==0||n._f)return;const o=get(gOf(n));o.nodes.push(i);o.nj++;
+  const d=Math.max(0,avgOver(R.D,w,i)),wt=DG.wt==='d'?d:1;o.dmd+=d;o.pw+=wt;
+  const pv=[R.P[kx][i],avgOver(R.P,w,i),R.P[kn][i]];pv.forEach((p,j)=>{o.pb[j][bin3(p/10,pb)]+=wt;o.ps[j]+=p/10});
+  for(const k of w){const p=R.P[k][i];if(p>o.pmx)o.pmx=p;if(p<o.pmn)o.pmn=p}
+  if(cl){const c=R.QN[kn][i],dq=Math.max(0,R.D[kn][i]);o.cw+=dq;o.cb[c<0.1?0:c<0.4?1:c<0.7?2:c<1.0?3:4]+=dq;if(c<o.cmn)o.cmn=c;if(c>o.cmx)o.cmx=c;o.cs+=avgOver(R.QN,w,i);o.cn++}});
+ L.forEach((l,i)=>{if(l._f)return;const o=get(gOfL(l));o.links.push(i);
+  if(l.type>=3){o.nv++;return}if(l.type===2)return;const len=l.len||0;o.np++;o.len+=len;
+  const vv=[R.V[kx][i],avgOver(R.V,w,i),R.V[kn][i]];vv.forEach((v,j)=>{o.vb[j][bin3(v,vb)]+=len;o.vs[j]+=v*len});
+  if(wa||qa){o.fok=true;const a=(age[l.n1-1]+age[l.n2-1])/2;if(vv[1]<=DG.fv&&a>=DG.fa)o.fl+=len}
+  const m=metal(l.kind);o.lm[m<0?2:m?0:1]+=len;
+  const y=+l.year;o.ly[y>1900?(DG.yr-y>=DG.ya?1:0):2]+=len;
+  o.ld[l.dia<=150?0:l.dia>=200?1:2]+=len});
+ // 블록 안 고리 수(망목 판정): 관로 수 - 절점 수 + 연결 덩어리 수
+ G.forEach(o=>{const ns=new Set(o.nodes),par=new Map();const f=x=>{while(par.get(x)!==x){par.set(x,par.get(par.get(x)));x=par.get(x)}return x};
+  ns.forEach(i=>par.set(i,i));let e=0;o.links.forEach(i=>{const l=L[i];if(l.type===2)return;const a=l.n1-1,b=l.n2-1;if(!ns.has(a)||!ns.has(b))return;e++;const ra=f(a),rb=f(b);if(ra!==rb)par.set(ra,rb)});
+  let c=0;ns.forEach(i=>{if(f(i)===i)c++});o.loops=Math.max(0,e-ns.size+c)});
+ const rows=[...G.values()].filter(o=>o.nj||o.np).sort((a,b)=>a.k===NB?1:b.k===NB?-1:String(a.k).localeCompare(String(b.k),'ko',{numeric:true}));
+ // 계
+ const T0={k:'계',nodes:[],links:[],pw:0,pb:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],ps:[0,0,0],nj:0,pmx:-1/0,pmn:1/0,dmd:0,len:0,vb:[[0,0,0,0],[0,0,0,0],[0,0,0,0]],vs:[0,0,0],fl:0,fok:false,lm:[0,0,0],ly:[0,0,0],ld:[0,0,0],nv:0,np:0,cw:0,cb:[0,0,0,0,0],cmn:1/0,cmx:-1/0,cs:0,cn:0,loops:0,tot:true};
+ rows.forEach(o=>{['pw','nj','dmd','len','fl','nv','np','cw','cs','cn','loops'].forEach(k=>T0[k]+=o[k]);for(let j=0;j<3;j++){T0.ps[j]+=o.ps[j];T0.vs[j]+=o.vs[j];for(let b=0;b<4;b++){T0.pb[j][b]+=o.pb[j][b];T0.vb[j][b]+=o.vb[j][b]}T0.lm[j]+=o.lm[j];T0.ly[j]+=o.ly[j];T0.ld[j]+=o.ld[j]}
+  for(let b=0;b<5;b++)T0.cb[b]+=o.cb[b];T0.pmx=Math.max(T0.pmx,o.pmx);T0.pmn=Math.min(T0.pmn,o.pmn);T0.cmn=Math.min(T0.cmn,o.cmn);T0.cmx=Math.max(T0.cmx,o.cmx);T0.fok=T0.fok||o.fok});
+ const all=rows.length>1?[...rows,T0]:rows.map(o=>Object.assign(o,{tot:rows.length===1&&DG.grp==='all'}));
+ all.forEach(o=>{o.pp=o.pb.map(r=>r.map(v=>o.pw?v/o.pw*100:NaN));o.pa=o.ps.map(s=>o.nj?s/o.nj:NaN);o.ok=o.pp[1][1];o.pg=gHi(o.ok,DG.pg);
+  o.vp=o.vb.map(r=>r.map(v=>o.len?v/o.len*100:NaN));o.va=o.vs.map(s=>o.len?s/o.len:NaN);o.slow=o.vp[1][0];o.vg=gLo(o.slow,DG.vg);
+  o.fp=o.fok&&o.len?o.fl/o.len*100:NaN;o.fg=gLo(o.fp,DG.fg);
+  o.dp=(o.pmx-o.pmn)*KPA;o.dpS=!isFinite(o.dp)?'-':o.dp<=200?10:o.dp<=300?9:8;
+  const km=o.len/1000,[a,b]=DG.bs;o.szS=!o.len?'-':km>=a&&km<=b?5:km>=a*0.8&&km<=b*1.2?4:km>=a*0.5&&km<=b*1.5?3:2;o.vd=km?o.nv/km:NaN;
+  o.cp=o.cb.map(v=>o.cw?v/o.cw*100:NaN);o.ca=o.cn?o.cs/o.cn:NaN});
+ return{rows:all,tm,cl,wa:!!wa,qa,src:wa?'급수도달시간 계산':qa?'해석 수질(수령)':''}}
+
+// ── 화면
+const TABS=[['p','수압 분포'],['v','유속·관세척'],['pipe','관로 특성'],['blk','블록 평가'],['cl','잔류염소'],['set','기준 설정']];
+const pc=v=>isFinite(v)?fmt(v,1):'-';
+const tri=a=>`${pc(a[0])} / ${pc(a[1])} / ${pc(a[2])}`;
+const rowA=o=>o.tot?'class="border-t bg-slate-50 font-bold"':`data-dg="${esc(o.k)}" class="border-t hover:bg-indigo-50 cursor-pointer" title="누르면 지도에서 이 묶음을 선택합니다"`;
+const lab=b=>[`${b[0]}미만`,`${b[0]}~${b[1]}`,`${b[1]}~${b[2]}`,`${b[2]}초과`];
+function tabP(d){const b=lab(DG.pb);return tbl(['묶음','절점',`평균수압 kg/㎠<br>최대/평균/최소`,...b.map(x=>x+' (%)'),`적정(${DG.pb[0]}~${DG.pb[1]}) 평균`,'등급'],
+ d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${o.nj.toLocaleString()}</td><td>${f2(o.pa[0])} / ${f2(o.pa[1])} / ${f2(o.pa[2])}</td>${[0,1,2,3].map(j=>`<td>${tri([o.pp[0][j],o.pp[1][j],o.pp[2][j]])}</td>`).join('')}<td>${pc(o.ok)}%</td><td>${badge(o.pg)}</td></tr>`),{h:420})+
+ tnote(`분포율 칸은 <b>시간최대 / 평균 / 시간최소</b> 순서입니다. 수압은 m ÷ 10 = kg/㎠로 바꿨습니다. 비율은 ${DG.wt==='d'?'수요량 가중':'절점 수'} 기준입니다. 등급은 평균 적정 비율 ${DG.pg.join('·')}% 이상 순으로 우수·양호·보통·불량, 그 아래 심각입니다.`)}
+function tabV(d){const b=lab(DG.vb);return tbl(['묶음','관로 연장 km',`평균유속 m/s<br>최대/평균/최소`,...b.map(x=>x+' (%)'),`${DG.vb[0]}미만 평균`,'등급',`관세척 대상(%)`,'등급'],
+ d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${fmt(o.len/1000,2)}</td><td>${f2(o.va[0])} / ${f2(o.va[1])} / ${f2(o.va[2])}</td>${[0,1,2,3].map(j=>`<td>${tri([o.vp[0][j],o.vp[1][j],o.vp[2][j]])}</td>`).join('')}<td>${pc(o.slow)}%</td><td>${badge(o.vg)}</td><td>${isFinite(o.fp)?fmt(o.fp,2)+'%':'-'}</td><td>${badge(o.fg)}</td></tr>`),{h:420})+
+ tnote(`분포율은 관로 연장 기준이고 칸은 시간최대 / 평균 / 시간최소 순서입니다. 관세척 대상은 평균 유속 ${DG.fv} m/s 이하이면서 수령 ${DG.fa}시간 이상인 관 연장 비율입니다(관 양 끝 절점의 평균 수령). `+(d.src?`수령 출처: ${d.src}${d.wa&&window.__gw19.WA.res.dur<(DG.fa+24)*3600?` <b class="text-amber-600">(계산 기간 ${window.__gw19.WA.res.dur/3600}시간이라 수령 ${DG.fa}시간 이상이 잘 안 나옵니다. 급수도달시간 기간을 168시간으로 다시 계산하세요.)</b>`:''}.`:`<b class="text-amber-600">수령 결과가 없어 비어 있습니다.</b> 아래 ⏱ 버튼으로 급수도달시간을 기간 168시간으로 먼저 계산하세요.`))+
+ (d.src?'':`<div>${tbtn('dgWa','⏱ 급수도달시간 계산 창 열기')}</div>`)}
+function tabPipe(d){const km=v=>fmt(v/1000,2),pr=(v,o)=>o.len?fmt(v/o.len*100,1):'-';
+ return tbl(['묶음','총연장 km','최대수압 kg/㎠','금속 km (%)','비금속 km (%)',`${DG.ya}년 미만 km (%)`,`${DG.ya}년 이상 km (%)`,'관경 150 이하 km (%)','관경 200 이상 km (%)','미지정 관종·연도 km'],
+ d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${km(o.len)}</td><td>${isFinite(o.pmx)?fmt(o.pmx/10,2):'-'}</td><td>${km(o.lm[0])} (${pr(o.lm[0],o)})</td><td>${km(o.lm[1])} (${pr(o.lm[1],o)})</td><td>${km(o.ly[0])} (${pr(o.ly[0],o)})</td><td>${km(o.ly[1])} (${pr(o.ly[1],o)})</td><td>${km(o.ld[0])} (${pr(o.ld[0],o)})</td><td>${km(o.ld[1])} (${pr(o.ld[1],o)})</td><td>${km(o.lm[2])} · ${km(o.ly[2])}</td></tr>`),{h:420})+
+ tnote(`경과년수 = 기준 연도 ${DG.yr} − 설치연도. 비금속은 관종 이름이 PE·PVC·HI(HI-VP·HI-3P)·PB·PP·GRP 등으로 시작하는 관이고, 나머지 관종(DCIP·STS·SP·CIP 등)은 금속으로 셉니다. 최대수압은 마지막 24시간 중 묶음 안 절점의 최고 수압입니다.`)}
+function tabBlk(d){return tbl(['묶음','배수관 km','크기 점수(5)','절점','고리 수','구성(10)','최저·최고 수압 kPa','수압편차 kPa','수압 점수(10)','밸브 수','밸브 밀도 개/km',`유속 ${DG.vb[0]}미만 %`],
+ d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${fmt(o.len/1000,2)}</td><td>${o.tot?'-':o.szS}</td><td>${o.nj.toLocaleString()}</td><td>${o.loops.toLocaleString()}</td><td>${o.tot?'-':o.loops>0?'10 (망목)':'8 (수지상)'}</td><td>${isFinite(o.pmn)?fmt(o.pmn*KPA,0)+' · '+fmt(o.pmx*KPA,0):'-'}</td><td>${isFinite(o.dp)?fmt(o.dp,0):'-'}</td><td>${o.tot?'-':o.dpS}</td><td>${o.nv.toLocaleString()}</td><td>${f1(o.vd)}</td><td>${pc(o.slow)}</td></tr>`),{h:420})+
+ tnote(`상수도 관망진단 매뉴얼(2021) 소블록 평가 중 앱이 계산할 수 있는 항목입니다. 크기는 배수관 ${DG.bs[0]}~${DG.bs[1]} km 이내 5점, ±20% 4점, ±50% 3점, 그 밖 2점. 구성은 블록 안 관로로 고리가 생기면 망목(10), 없으면 수지상(8). 수압편차는 마지막 24시간 최고−최저로 200 kPa 이내 10, 300 kPa 이내 9, 초과 8점. 밸브 수는 제수·감압 등 모든 밸브입니다. 정체부·누수량 측정·녹물·스케일 항목은 현장 자료로 채우세요.`)}
+function tabCl(d){if(!d.cl)return tnote('잔류염소 결과가 없습니다. 배수관망모델 › 설정 › <b>수질</b>에서 해석을 "잔류염소 등 물질(mg/L)"로 고르고 수체·관벽 감소계수를 넣은 뒤 다시 해석하세요. 하절기 최저 수요는 수요 배율로 맞춥니다.')+`<div>${tbtn('dgQ','💧 수질 설정 열기')}</div>`;
+ const b=['0.1미만','0.1~0.4','0.4~0.7','0.7~1.0','1.0이상'];
+ return tbl(['묶음','사용량 ㎥/일',...b.map(x=>x+' (%)'),'최적(0.1~0.4) %','최소·평균·최대 mg/L'],
+ d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${fmt(o.dmd*86.4,1)}</td>${o.cp.map(v=>`<td>${pc(v)}</td>`).join('')}<td><b>${pc(o.cp[1])}</b></td><td>${isFinite(o.cmn)?`${fmt(o.cmn,2)} · ${fmt(o.ca,2)} · ${fmt(o.cmx,2)}`:'-'}</td></tr>`),{h:420})+
+ tnote(`농도 범위 비율은 <b>시간최소(${hhmm(S.res.t[d.tm.kn])}) 사용량 가중</b>입니다(= 시간최소 시 범위 안 사용량 ÷ 블록 사용량 합). 평균은 마지막 24시간 평균 농도입니다. 등급 기준은 보고서 기준표에 맞춰 붙이세요.`)}
+function tabSet(){const inp=(id,v,w)=>`<input id="${id}" value="${esc(String(v))}" class="px-1.5 py-1 border border-slate-300 rounded bg-white text-xs" style="width:${w||150}px">`,row=(t,h)=>`<div class="flex flex-wrap items-center gap-2"><span class="text-slate-600" style="min-width:210px">${t}</span>${h}</div>`;
+ return`<div class="flex flex-col gap-2 text-xs">`+
+ row('수압 구간 (kg/㎠, 3개)',inp('dsPb',DG.pb.join(', ')))+row('적정 수압 비율 등급 (%, 우수·양호·보통·불량)',inp('dsPg',DG.pg.join(', ')))+
+ row('유속 구간 (m/s, 3개)',inp('dsVb',DG.vb.join(', ')))+row(`유속 ${DG.vb[0]} 미만 비율 등급 (%, 미만이면)`,inp('dsVg',DG.vg.join(', ')))+
+ row('관세척 대상: 유속 이하 m/s · 수령 이상 h',inp('dsFv',DG.fv,70)+inp('dsFa',DG.fa,70))+row('관세척 대상 비율 등급 (%, 미만이면)',inp('dsFg',DG.fg.join(', ')))+
+ row('경과년수: 기준 연도 · 노후 기준(년)',inp('dsYr',DG.yr,70)+inp('dsYa',DG.ya,70))+row('블록 크기 기준 (배수관 km, 최소·최대)',inp('dsBs',DG.bs.join(', ')))+
+ `<div class="flex gap-2">${tbtnP('dsOk','✔ 적용')}${tbtn('dsDef','↺ 보고서 기본값')}</div>`+
+ tnote('기본값은 제5장 수리 안정성 평가 기준(적정수압 150~450 kPa, 등급 95·90·85·80%, 유속 0.1 m/s 미만 비율 55·60·65·70%, 유속 0.01 m/s 이하 + 체류 72시간 이상)과 매뉴얼 소블록 기준(2.5~3.0 km)입니다. 이 브라우저에 저장됩니다.')+`</div>`}
+function ui(){if(!S.res)return tnote('먼저 해석을 실행하세요. 표는 마지막 24시간 결과에서 시간최대(총수요 최대 시각)·평균·시간최소를 골라 만듭니다.')+`<div class="mt-2">${tbtnP('dgRun','▶ 관망해석 실행')}</div>`;
+ const d=calc();if(!d)return tnote('해석 결과가 없습니다.');const tm=d.tm,nb=S.net.nodes.filter(n=>n.type===0&&n.blk).length;
+ const tabs=TABS.map(([k,t])=>`<button type="button" data-dgt="${k}" class="tab ${DG.tab===k?'on':''}">${t}</button>`).join('');
+ let body=DG.tab==='v'?tabV(d):DG.tab==='pipe'?tabPipe(d):DG.tab==='blk'?tabBlk(d):DG.tab==='cl'?tabCl(d):DG.tab==='set'?tabSet():tabP(d);
+ return`<div class="flex flex-col gap-2 text-xs"><div class="flex flex-wrap items-center gap-2">${tsel('dgG','묶음',GRPS,DG.grp)}${tsel('dgW','비율 기준',[['n','절점 수'],['d','수요량 가중']],DG.wt)}${tbtn('dgCsv','⬇ 이 표 CSV')}${tbtn('dgAll','⬇ 모든 표 CSV(엑셀)')}</div>`+
+ `<div class="grid gap-x-4" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${kv('집계 구간',`${hhmm(tm.t0)} ~ ${hhmm(tm.t1)} (${tm.w.length}개 시각)`)}${kv('시간최대',`${hhmm(S.res.t[tm.kx])} · ${fmt(tm.qx*86.4,0)} ㎥/일 환산`)}${kv('시간최소',`${hhmm(S.res.t[tm.kn])} · ${fmt(tm.qn*86.4,0)} ㎥/일 환산`)}${kv('블록 지정 절점',nb?nb.toLocaleString()+'개':'<b class="text-amber-600">없음</b>')}</div>`+
+ (DG.grp!=='pat'&&DG.grp!=='all'&&!nb?`<p class="text-amber-600 font-bold">절점에 소블록이 지정돼 있지 않아 모두 '${NB}'로 묶입니다. 파일 › 가져오기 › 블록 경계(SHP)로 먼저 지정하거나 묶음을 '수요 패턴(계통)'으로 바꾸세요. ${tbtn('dgBlk','🗂️ 블록 지정 열기')}</p>`:'')+
+ `<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5">${tabs}</div>${body}</div>`}
+
+// ── CSV
+function csvOf(d,tab){const r=[],b=t=>lab(t),J=(...a)=>r.push(a.map(csvQ).join(','));const nm=o=>o.k;
+ if(tab==='p'){J('[수압 분포 현황]');const h=['묶음','절점 수','평균수압 시간최대(kg/㎠)','평균수압 평균','평균수압 시간최소'];b(DG.pb).forEach(x=>['시간최대','평균','시간최소'].forEach(t=>h.push(`${x} ${t}(%)`)));h.push('적정 비율 평균(%)','등급');J(...h);
+  d.rows.forEach(o=>{const a=[nm(o),o.nj,f2(o.pa[0]),f2(o.pa[1]),f2(o.pa[2])];for(let j=0;j<4;j++)for(let t=0;t<3;t++)a.push(f1(o.pp[t][j]));a.push(f1(o.ok),GR5[o.pg]||'');J(...a)})}
+ else if(tab==='v'){J('[유속 및 체류시간 분포 현황]');const h=['묶음','관로 연장(km)','평균유속 시간최대(m/s)','평균유속 평균','평균유속 시간최소'];b(DG.vb).forEach(x=>['시간최대','평균','시간최소'].forEach(t=>h.push(`${x} ${t}(%)`)));h.push(`${DG.vb[0]}미만 평균(%)`,'등급','관세척 대상(%)','관세척 등급');J(...h);
+  d.rows.forEach(o=>{const a=[nm(o),(o.len/1000).toFixed(3),o.va[0].toFixed(3),o.va[1].toFixed(3),o.va[2].toFixed(3)];for(let j=0;j<4;j++)for(let t=0;t<3;t++)a.push(f1(o.vp[t][j]));a.push(f1(o.slow),GR5[o.vg]||'',isFinite(o.fp)?o.fp.toFixed(2):'',GR5[o.fg]||'');J(...a)})}
+ else if(tab==='pipe'){J('[블록별 배수관로 특성]');J('묶음','총연장(km)','최대수압(kg/㎠)','금속(km)','금속(%)','비금속(km)','비금속(%)',`${DG.ya}년 미만(km)`,`${DG.ya}년 미만(%)`,`${DG.ya}년 이상(km)`,`${DG.ya}년 이상(%)`,'150 이하(km)','150 이하(%)','200 이상(km)','200 이상(%)','관종 미지정(km)','연도 미지정(km)');
+  const k=v=>(v/1000).toFixed(3),p=(v,o)=>o.len?(v/o.len*100).toFixed(1):'';d.rows.forEach(o=>J(nm(o),k(o.len),isFinite(o.pmx)?(o.pmx/10).toFixed(2):'',k(o.lm[0]),p(o.lm[0],o),k(o.lm[1]),p(o.lm[1],o),k(o.ly[0]),p(o.ly[0],o),k(o.ly[1]),p(o.ly[1],o),k(o.ld[0]),p(o.ld[0],o),k(o.ld[1]),p(o.ld[1],o),k(o.lm[2]),k(o.ly[2])))}
+ else if(tab==='blk'){J('[블록시스템 평가(앱 계산 항목)]');J('묶음','배수관(km)','크기 점수','절점 수','고리 수','구성 점수','최저수압(kPa)','최고수압(kPa)','수압편차(kPa)','수압 점수','밸브 수','밸브 밀도(개/km)',`유속 ${DG.vb[0]}미만(%)`);
+  d.rows.forEach(o=>J(nm(o),(o.len/1000).toFixed(3),o.tot?'':o.szS,o.nj,o.loops,o.tot?'':o.loops>0?10:8,isFinite(o.pmn)?(o.pmn*KPA).toFixed(0):'',isFinite(o.pmx)?(o.pmx*KPA).toFixed(0):'',isFinite(o.dp)?o.dp.toFixed(0):'',o.tot?'':o.dpS,o.nv,f1(o.vd),f1(o.slow)))}
+ else if(tab==='cl'&&d.cl){J('[잔류염소 예측 결과(시간최소 사용량 가중)]');J('묶음','사용량(㎥/일)','0.1미만(%)','0.1~0.4(%)','0.4~0.7(%)','0.7~1.0(%)','1.0이상(%)','최소(mg/L)','평균(mg/L)','최대(mg/L)');
+  d.rows.forEach(o=>J(nm(o),(o.dmd*86.4).toFixed(1),...o.cp.map(f1),f2(o.cmn),f2(o.ca),f2(o.cmx)))}
+ return r}
+function head(d){return[`관망,${csvQ(S.name||'')}`,`묶음,${csvQ((GRPS.find(g=>g[0]===DG.grp)||[])[1])}`,`비율 기준,${DG.wt==='d'?'수요량 가중':'절점 수'}`,`집계 구간,${hhmm(d.tm.t0)}~${hhmm(d.tm.t1)}`,`시간최대,${hhmm(S.res.t[d.tm.kx])}`,`시간최소,${hhmm(S.res.t[d.tm.kn])}`,'']}
+const fname=s=>(S.name||'network').replace(/\.inp$/i,'')+'_'+s+'.csv';
+function dlTab(){const d=calc();if(!d)return;const t=DG.tab==='set'?'p':DG.tab,r=csvOf(d,t);if(!r.length){toast('이 표는 내보낼 내용이 없습니다.');return}offer('﻿'+[...head(d),...r].join('\n'),fname('진단표_'+(TABS.find(x=>x[0]===t)||[])[1]),'text/csv')}
+function dlAll(){const d=calc();if(!d)return;const r=[...head(d)];['p','v','pipe','blk','cl'].forEach(t=>{const x=csvOf(d,t);if(x.length)r.push(...x,'')});offer('﻿'+r.join('\n'),fname('진단표_전체'),'text/csv')}
+
+function selGroup(k){const d=calc();if(!d)return;const o=d.rows.find(x=>x.k===k);if(!o)return;const m=T.multi;m.n=new Set(o.nodes);m.l=new Set(o.links);renderMulti();
+ const N=S.net.nodes;if(o.nodes.length)zoomTo(o.nodes.map(i=>N[i].x),o.nodes.map(i=>N[i].y));requestDraw();toast(`${k}: 절점 ${o.nodes.length.toLocaleString()} · 관로 ${o.links.length.toLocaleString()} 선택`)}
+const nums=(id,n)=>{const a=String(($(id)||{}).value||'').split(/[,\s]+/).filter(Boolean).map(Number);return a.length===n&&a.every(isFinite)?a:null};
+function bind(b){const on=(id,f,ev)=>{const e=$(id);if(e)e[ev||'onclick']=f};
+ b.querySelectorAll('[data-dgt]').forEach(x=>x.onclick=()=>{DG.tab=x.dataset.dgt;dgSave();winRender('diag',true)});
+ b.querySelectorAll('[data-dg]').forEach(x=>x.onclick=()=>selGroup(x.dataset.dg));
+ on('dgG',e=>{DG.grp=e.target.value;dgSave();winRender('diag',true)},'onchange');on('dgW',e=>{DG.wt=e.target.value;dgSave();winRender('diag',true)},'onchange');
+ on('dgCsv',dlTab);on('dgAll',dlAll);on('dgRun',()=>{if(needNet())run()});on('dgWa',()=>winOpen('wa'));on('dgQ',()=>rbAct('sQual'));on('dgBlk',()=>rbAct('blkLay'));
+ on('dsDef',()=>{const t=DG.tab;Object.assign(DG,JSON.parse(JSON.stringify(DEF)));DG.tab=t;dgSave();winRender('diag',true);toast('보고서 기본값으로 되돌렸습니다.')});
+ on('dsOk',()=>{const pb=nums('dsPb',3),pg=nums('dsPg',4),vb=nums('dsVb',3),vg=nums('dsVg',4),fg=nums('dsFg',4),bs=nums('dsBs',2),fv=+$('dsFv').value,fa=+$('dsFa').value,yr=+$('dsYr').value,ya=+$('dsYa').value;
+  if(!pb||!pg||!vb||!vg||!fg||!bs||!isFinite(fv)||!isFinite(fa)||!(yr>1900)||!(ya>0)){toast('숫자 개수나 값을 확인하세요(구간 3개, 등급 4개, 블록 크기 2개).',5000);return}
+  Object.assign(DG,{pb:pb.sort((a,b)=>a-b),pg,vb:vb.sort((a,b)=>a-b),vg,fg,bs:bs.sort((a,b)=>a-b),fv,fa,yr,ya});dgSave();toast('기준을 적용했습니다.');DG.tab='p';winRender('diag',true)})}
+
+WD.diag={t:'진단 보고서 표',w:940};WR.diag={ui,bind};
+const run32=run;run=async function(){const r=await run32.apply(this,arguments);try{if(WS.open.has('diag'))winRender('diag',true)}catch(e){}return r};
+const _rw32=RIB.wds;RIB.wds=()=>_rw32().replace(/(<button type="button" class="rb-b[^"]*" data-rb="kpi")/,`<button type="button" class="rb-b" data-rb="diag" title="기술진단 보고서용 표: 블록별 수압·유속 분포율과 등급, 관로 특성, 블록 평가, 잔류염소">${ico('table',15)}<span>진단 표</span></button>$1`);
+DDM.exp.push(['diag','진단 보고서 표']);
+const XC={diag:()=>{if(needNet())winOpen('diag')}};
+const _ra32=rbAct;rbAct=function(a,btn){if(XC[a]&&!(DDM[a]&&btn&&btn.closest('#gpRib'))){XC[a](btn);return}return _ra32.apply(this,arguments)};
+try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
+window.__gw32={DG,calc,csvOf,dlAll,times,selGroup};
+})()}catch(e){console.warn('v32',e)}
+
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
 </script>
