@@ -1631,7 +1631,7 @@ function ptInit(){if(!map)return null;if(!map.getPane('ptPane')){const p=map.cre
    소블록 면은 채워진 도형이라 면 안을 누르면 Leaflet이 블록 팝업을 열고 지도 'click'을 멈춤(관로·수용가 정보창이 안 뜨던 원인).
    → preclick에서 누른 자리의 대상을 모두 찾아 두고, 블록 팝업이 열린 뒤(setTimeout 0) 우선순위 첫 대상으로 바꿔 엶.
    여러 개면 정보창 위 탭으로 골라 보고, 고른 대상은 노란 테두리로 표시. 블록만 있으면 블록 팝업 그대로 ===================== */
-const HIT={hl:null},HIT_T={pt:'👤 수용가',sc:'👤 수용가',fac:'🔧 시설물',pipe:'🚰 관로',blk:'🔲 소블록'};
+const HIT={hl:null},HIT_T={pt:'👤 수용가',sc:'👤 수용가',fac:'🔧 시설물',pipe:'🚰 관로',blk:'🔲 소블록',hop:'⌒ 교차'};
 function hitBlkLayer(ll){if(!map||!polyL||!map.hasLayer(polyL)||typeof turf==='undefined')return null;const x=ll.lng,y=ll.lat,pt=turf.point([x,y]);let r=null;
  polyL.eachLayer(l=>{if(r||!l.feature)return;const b=l.feature.properties&&l.feature.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3]))return;try{if(turf.booleanPointInPolygon(pt,l.feature))r=l}catch(_){}});return r}
 /* 💧 단수구역 수용가 점(out이 없을 때 저장된 부과량 자료로 그린 점) */
@@ -1642,17 +1642,18 @@ function shutCustPop(i){const o=shutSrc()[i]||{},big=SHUT.bigSet&&SHUT.bigSet.ha
 function hitCollect(e){const cp=e.containerPoint,ll=e.latlng,H=[];
  const pi=ptHitAt(cp);if(pi>=0)H.push({t:'pt',i:pi});else{const sc=hitShutCust(cp);if(sc)H.push(sc)}
  const fi=typeof facHitAt==='function'?facHitAt(cp):-1;if(fi>=0)H.push({t:'fac',i:fi});
+ const hi=typeof hopHitAt==='function'?hopHitAt(cp):-1;if(hi>=0)H.push({t:'hop',i:hi});
  const pf=typeof pipeHitAt==='function'?pipeHitAt(ll):null;if(pf)H.push({t:'pipe',f:pf});
  const bl=hitBlkLayer(ll);if(bl)H.push({t:'blk',l:bl});return H}
-function hitPos(x,ll){if(x.t==='pt')return [PT.lat[x.i],PT.lng[x.i]];if(x.t==='fac')return [FAC.y[x.i],FAC.x[x.i]];if(x.t==='sc')return x.ll;return ll}
+function hitPos(x,ll){if(x.t==='pt')return [PT.lat[x.i],PT.lng[x.i]];if(x.t==='fac')return [FAC.y[x.i],FAC.x[x.i]];if(x.t==='sc')return x.ll;if(x.t==='hop'&&HOP.list[x.i])return HOP.list[x.i].ll;return ll}
 function hitBlkHtml(l){const p=l.getPopup&&l.getPopup(),c=p&&p._content;return `<div style="font-size:11.5px;color:#c2410c;font-weight:700">🔲 소블록</div>`+(typeof c==='function'?c(l):c||'')}
 function hitHtml(h){const x=h.H[h.cur];let b='';
- try{b=x.t==='pt'?ptPopFull(x.i):x.t==='sc'?shutCustPop(x.i):x.t==='fac'?facPopup(x.i)+elevPop(FAC.y[x.i],FAC.x[x.i]):x.t==='pipe'?pipePopFull(x.f,h.ll):hitBlkHtml(x.l)}catch(err){b='정보를 만들지 못했습니다: '+esc(err&&err.message||err)}
+ try{b=x.t==='pt'?ptPopFull(x.i):x.t==='sc'?shutCustPop(x.i):x.t==='fac'?facPopup(x.i)+elevPop(FAC.y[x.i],FAC.x[x.i]):x.t==='pipe'?pipePopFull(x.f,h.ll):x.t==='hop'?hopPop(x.i):hitBlkHtml(x.l)}catch(err){b='정보를 만들지 못했습니다: '+esc(err&&err.message||err)}
  return (h.H.length>1?`<div class="hitTabs" role="tablist" aria-label="이 자리에 있는 것">${h.H.map((y,k)=>`<button type="button" role="tab" aria-selected="${k===h.cur}" class="${k===h.cur?'on':''}" onclick="hitTab(${k})">${HIT_T[y.t]}</button>`).join('')}</div>`:'')+b}
 function hitMark(x){if(HIT.hl){map.removeLayer(HIT.hl);HIT.hl=null}if(!x)return;const Y='#facc15';
  if(x.t==='pipe')HIT.hl=L.geoJSON(x.f,{interactive:false,style:{color:Y,weight:10,opacity:.6}});
  else if(x.t==='blk')HIT.hl=L.geoJSON(x.l.feature,{interactive:false,style:{color:Y,weight:5,opacity:.9,fill:false}});
- else if(x.t==='fac'||x.t==='sc')HIT.hl=L.circleMarker(hitPos(x),{interactive:false,radius:14,color:Y,weight:4,fill:false});
+ else if(x.t==='fac'||x.t==='sc'||x.t==='hop')HIT.hl=L.circleMarker(hitPos(x),{interactive:false,radius:14,color:Y,weight:4,fill:false});
  if(HIT.hl)HIT.hl.addTo(map)}
 function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
  hitMark(x.t==='pt'?null:x);if(x.t==='pt'&&typeof selectRow==='function')selectRow(x.i,'map')}
@@ -1693,7 +1694,7 @@ function uiClHint(){const h=document.getElementById('uiClHint');if(!h)return;let
  h.textContent=t;h.hidden=!t}
 
 /* ===================== ⚙️ 유저설정 모드: 지도 표시 설정 (이 기기 브라우저에 저장 · geo- 로 시작하므로 백업 파일에도 포함) ===================== */
-var UI={leg:true,legMin:false,lbl:'off',lblZ:17,cl:'off',clR:'all',clZ:18,bcol:'hc',fsz:1,pw:1,lblPx:11,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
+var UI={leg:true,legMin:false,lbl:'off',lblZ:17,cl:'off',clR:'all',clZ:18,bcol:'hc',fsz:1,pw:1,lblPx:11,hop:'on',hopZ:17,hopEnd:1,allOff:false,snap:null},mapFsToggle=null,blkHalo=null;
 var UI_NEW=true;try{const r=localStorage.getItem('geo-ui');UI_NEW=!r;const v=JSON.parse(r||'{}');if(v&&typeof v==='object')Object.assign(UI,v)}catch(_){}
 function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_){}}
 /* 다시 열 때 그대로: 지도 위치·확대(UI.view)·배경 지도(UI.base·UI.ovl)·지도 위 선택칸(UI.sel)
@@ -1771,7 +1772,7 @@ function uiPanel(show,tab){const p=document.getElementById('uiSet');if(!p)return
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
- const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiBigMk').checked=UI.bigMk!==false;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiCl').value=UI.cl||'off';q('uiClR').value=UI.clR||'all';q('uiClZ').value=String(UI.clZ||18);uiClHint();q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
+ const near=(id,v)=>{const el=q(id),o=[...el.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b);el.value=o.value};near('uiFsz',+UI.fsz||1);near('uiPw',+UI.pw||1);near('uiLblPx',+UI.lblPx||11);q('uiLeg').checked=!!UI.leg;q('uiBigMk').checked=UI.bigMk!==false;q('uiLbl').value=UI.lbl;q('uiLblZ').value=String(UI.lblZ);q('uiHop').value=UI.hop==='off'?'off':'on';q('uiHopZ').value=String(+UI.hopZ||17);q('uiHopEnd').value=String(hopEndMin());hopHint();q('uiCl').value=UI.cl||'off';q('uiClR').value=UI.clR||'all';q('uiClZ').value=String(UI.clZ||18);uiClHint();q('uiBcol').value=UI.bcol in BCOL?UI.bcol:'hc';
  const ph=$('pPanel').hidden,fh=$('fPanel').hidden;q('uiPipeBox').hidden=ph;q('uiPipeNo').hidden=!ph;q('uiFacBox').hidden=fh;q('uiFacNo').hidden=!fh;const eh=$('ePanel').hidden;q('uiElevBox').hidden=eh;q('uiElevNo').hidden=!eh;
  q('uiAll').textContent=UI.allOff?'👁️ 표시 다시 켜기':'🙈 표시 모두 끄기';q('uiAll').className='btn '+(UI.allOff?'em':'ol');
  const fs=document.body.classList.contains('fsOn');q('uiFs').textContent=fs?'✕ 전체 지도 닫기':'⛶ 전체 지도 모드';uiLblHint()}
@@ -1826,6 +1827,11 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">관종 / 구경<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경']])}</select></label>
 <label class="uif">보이기 시작<select id="uiLblZ" class="msel">${opt([['16','줌 16부터'],['17','줌 17부터 (권장)'],['18','줌 18부터']])}</select></label>
 <p class="uin" id="uiLblHint" hidden></p>
+<div class="uig">⌒ 관로 교차 반원 <small>(꼭짓점 없이 지나가기만 하는 곳)</small></div>
+<label class="uif">반원 표시<select id="uiHop" class="msel">${opt([['on','켬'],['off','끔']])}</select></label>
+<label class="uif">끝이 살짝 넘어간 곳<select id="uiHopEnd" class="msel">${opt([['0','모두 반원'],['0.5','0.5m 안쪽은 뺌'],['1','1m 안쪽은 뺌 (권장)'],['2','2m 안쪽은 뺌']])}</select></label>
+<label class="uif">보이기 시작<select id="uiHopZ" class="msel">${opt([['16','줌 16부터'],['17','줌 17부터 (권장)'],['18','줌 18부터']])}</select></label>
+<p class="uin" id="uiHopHint"></p>
 <div class="uig">💧 단수구역 <small>(지도 왼쪽 💧 버튼 또는 관로 팝업)</small></div>
 <label class="uif">관로 끝 이음 허용<select id="shTol" class="msel">${opt([['0.1','0.1m (권장)'],['0.3','0.3m'],['0.5','0.5m'],['1','1m']])}</select></label>
 <label class="uif">밸브-관로 붙임 허용<select id="shVtol" class="msel">${opt([['0.5','0.5m (권장)'],['1','1m'],['2','2m'],['3','3m']])}</select></label>
@@ -1867,6 +1873,9 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLeg').onchange=e=>{UI.leg=e.target.checked;uiSave();renderLegend();if(polyL)blkColorApply();if(typeof phDraw==='function')phDraw()};
  q('uiLbl').onchange=e=>{UI.lbl=e.target.value;uiSave();plblSoon()};
  q('uiLblZ').onchange=e=>{UI.lblZ=+e.target.value||17;uiSave();plblSoon()};
+ q('uiHop').onchange=e=>{UI.hop=e.target.value;uiSave();hopRedraw();hopHint()};
+ q('uiHopZ').onchange=e=>{UI.hopZ=+e.target.value||17;uiSave();hopRedraw();hopHint()};
+ q('uiHopEnd').onchange=e=>{UI.hopEnd=+e.target.value;uiSave();hopIndex();hopRedraw();hopHint()};
  q('uiCl').onchange=e=>{UI.cl=e.target.value;uiSave();ptDraw();uiClHint()};
  q('uiClR').onchange=e=>{UI.clR=e.target.value;uiSave();ptDraw();uiClHint()};
  q('uiClZ').onchange=e=>{UI.clZ=+e.target.value||18;uiSave();ptDraw();uiClHint()};
@@ -2803,10 +2812,10 @@ function pipeHitAt(ll){/* 폐관 표시 관로도 누르면 정보가 보이게 
 function pipePopFull(f,ll){const e={latlng:ll};return pipePopup(f)+hydPipePop(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · '))+vidBtns('pipe',a.id?'id:'+a.id:'i:'+PIPE.feats.indexOf(f),e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||'')+(a.dia!=null?' '+a.dia+'mm':'')))(attrOf(f))}</div>`}
 function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
- const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle},main=[],svc=[];
+ const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle,onEachFeature:hopEach},main=[],svc=[];PIPE.rd=rd;
  PIPE.feats.forEach(f=>{if(f.properties&&f.properties._빈)return;(attrOf(f).use==='급수관'?svc:main).push(f)});PIPE.nMain=main.length;PIPE.nS=svc.length;
  PIPE.layer=L.geoJSON({type:'FeatureCollection',features:main},opt);PIPE.layerS=svc.length?L.geoJSON({type:'FeatureCollection',features:svc},opt):null;
- renderLegend();pipeShow();pipeUnknown()}
+ renderLegend();pipeShow();pipeUnknown();hopStart()}
 function pipeUnknown(){const um=new Map(),uu=new Map(),mk=$('pMat').value,uk=$('pUse').value;
  PIPE.feats.forEach(f=>{const a=attrOf(f);if(mk&&a.mat!=='미상'&&!MAT_COL[a.mat]&&!Object.values(PIPE.ct||{}).includes(a.mat))um.set(a.mat,(um.get(a.mat)||0)+1);
   if(uk&&a.use!=='미상'&&!USE_COL[a.use]&&!Object.values(PIPE.ct||{}).includes(a.use))uu.set(a.use,(uu.get(a.use)||0)+1)});
@@ -2817,7 +2826,7 @@ function pipeUnknown(){const um=new Map(),uu=new Map(),mk=$('pMat').value,uk=$('
 function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.getZoom(),few=PIPE.feats.length<=3000;
  const onM=m==='on'||(m==='auto'&&(few||z>=PZ_MAIN)),onS=!!PIPE.layerS&&(m==='on'||(m==='auto'&&(few||z>=PZ_SVC)));let add=false;
  [[PIPE.layer,onM],[PIPE.layerS,onS]].forEach(([l,on])=>{if(!l)return;if(on&&!map.hasLayer(l)){l.addTo(map);add=true}else if(!on&&map.hasLayer(l))map.removeLayer(l)});
- if(add&&mkL&&mkL.bringToFront)mkL.bringToFront();
+ if(add&&mkL&&mkL.bringToFront)mkL.bringToFront();if(add)hopFront();
  let st='';if(m!=='off'){if(!onM)st=`🔍 지도를 <b>줌 ${PZ_MAIN} 이상</b>으로 확대하면 관로가 그려집니다 (현재 ${z})`;else if(PIPE.layerS&&!onS)st=`급수관 ${PIPE.nS.toLocaleString()}개는 <b>줌 ${PZ_SVC}부터</b> 그려집니다 (현재 ${z})`}
  const el=PIPE.legend&&PIPE.legend.getContainer?PIPE.legend.getContainer():null,ps=el&&el.querySelector('.pst');if(ps){ps.innerHTML=st;ps.hidden=!st}
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
@@ -3776,7 +3785,7 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
  try{if($('bkB').checked){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
   if($('bkP').checked){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.raw.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
    if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}
-   try{await pedLoad();if(PED.recs.length){o.pedit={v:1,at:PED.at,recs:PED.recs};parts.push('관로 현장 수정 '+pedLive().length.toLocaleString()+'개')}}catch(_){}}
+   try{await pedLoad();if(PED.recs.length||(PED.hop||[]).length){o.pedit={v:1,at:PED.at,recs:PED.recs,hop:PED.hop||[]};parts.push('관로 현장 수정 '+pedLive().length.toLocaleString()+'개'+(hopLive().length?' · 교차 반원 설정 '+hopLive().length+'곳':''))}}catch(_){}}
   if($('bkF').checked){let f=null;try{f=await IDB.get('facs')}catch(_){}if(f&&f.feats&&f.feats.length){o.facs=f;parts.push('상수도 시설물 '+f.feats.length.toLocaleString()+'개')}}
   if($('bkE').checked){let e=null;try{e=await IDB.get('elev')}catch(_){}if(e&&e.z&&e.z.length){o.elev=e;parts.push('표고 '+e.z.length.toLocaleString()+'개')}}
   if($('bkG').checked){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
@@ -3824,7 +3833,7 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
   if(use.p){let s=null;try{s=await IDB.get('pipes')}catch(_){}if(s)try{await IDB.set('pipes_prev',s)}catch(_){}await IDB.set('pipes',o.pipes);await pipeRestore(true)}
   if(use.v){const r=vidMerge(o.vids.list);if(r.got)await vidSave()}
   if(use.m){const r=mkMerge(o.marks,false);if(r.got)await mkSave()}
-  if(o.pedit&&Array.isArray(o.pedit.recs)&&$('bkP').checked){await pedLoad();const n=pedMerge(o.pedit.recs);if(n){PED.dirty=true;PED.at=Date.now();await pedStore();pedReapply()}}
+  if(o.pedit&&Array.isArray(o.pedit.recs)&&$('bkP').checked){await pedLoad();const nh=hopMerge(o.pedit.hop||[]),n=pedMerge(o.pedit.recs);if(nh&&!n){PED.dirty=true;PED.at=Date.now();await pedStore()}if(n){PED.dirty=true;PED.at=Date.now();await pedStore();pedReapply()}}
   if(use.f){let s=null;try{s=await IDB.get('facs')}catch(_){}if(s)try{await IDB.set('facs_prev',s)}catch(_){}await IDB.set('facs',o.facs);await facRestore(true)}
   if(use.e){let s=null;try{s=await IDB.get('elev')}catch(_){}if(s)try{await IDB.set('elev_prev',s)}catch(_){}{const h=!o.elev.hyd&&hydKeep(s);if(h)o.elev.hyd=h}await IDB.set('elev',o.elev);await elevRestore(true)}
   if(use.ph){const have=new Set(PH.list.map(m=>m.id)),hfp=new Set(PH.list.map(m=>m.fp).filter(Boolean));for(const m of o.photos){if(have.has(m.id)||(m.fp&&hfp.has(m.fp)))continue;const e=zz.file('ph/'+m.id+'.jpg');if(!e)continue;try{const big=new Blob([await e.async('blob')],{type:'image/jpeg'}),te=zz.file('pt/'+m.id+'.jpg');let th=te?new Blob([await te.async('blob')],{type:'image/jpeg'}):null;if(!th&&m.th){try{th=await (await fetch(m.th)).blob()}catch(_){}}if(!th)th=(await phDecode(big,0)).th;delete m.th;if(m.ts==null)m.ts=phTs(m.dt);await idbPut([['ph:'+m.id,big],['pt:'+m.id,th]]);PH.list.push(m);have.add(m.id);if(m.fp)hfp.add(m.fp)}catch(_){}}await phSaveMeta(true);phRefresh()}
@@ -6610,7 +6619,7 @@ function facRotFill(){if(!FAC.n){alert('시설물 자료가 없습니다.');retu
  기록 1건 = 관로 1개 {id,t,by,lb, o:{i,gs,k}(원래 관로 찾기: 번호 자리 → 모양 서명 → 관리번호), p:{칸:새 값}, op:{칸:원래 값}, g:새 모양, del:폐관 표시 시각,
   add:{속성}(현장 추가·나눈 관로), from:나눈 원래 기록 id, rv:1(원래대로·추가 취소)}
  직원 공유: 공유 서버 기준자료 'pedit'(작은 파일) — 먼저 받아 기록별 최신 시각으로 합친 뒤 올림. */
-var PED={recs:[],at:0,sv:0,dirty:false,loaded:false,fi:new Map(),orph:[],conf:[],undo:[],busy:false,tm:0};
+var PED={recs:[],hop:[],at:0,sv:0,dirty:false,loaded:false,fi:new Map(),orph:[],conf:[],undo:[],busy:false,tm:0};
 var PE={tool:'sel',sel:-1,v:null,drag:null,draw:[],tapAt:0,hL:null,eL:null,last:null};
 const PED_DEAD=[1e12,1e12,1e12,1e12,-1],PE_HIT=12,PE_VHIT=20,PE_MHIT=14;
 const pedId=()=>'E'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -6620,8 +6629,8 @@ const pedBy=()=>(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';
 const pedLive=()=>PED.recs.filter(r=>!r.rv);
 function pedLen(g){let L=0;lineParts(g).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);L+=Math.hypot(b[0]-a[0],b[1]-a[1])}});return L}
 async function pedLoad(){if(PED.loaded)return;PED.loaded=true;let v=null;try{v=await IDB.get('pedit')}catch(_){}
- if(v&&Array.isArray(v.recs)){PED.recs=v.recs;PED.at=v.at||0;PED.sv=v.sv||0;PED.dirty=!!v.dirty}}
-async function pedStore(){try{await IDB.set('pedit',{v:1,at:PED.at,sv:PED.sv,dirty:PED.dirty,recs:PED.recs});stoKeep()}catch(e){feMsg('<span class="c-rd">관로 수정 저장 실패: '+esc((e&&e.message)||e)+'</span>')}}
+ if(v&&Array.isArray(v.hop))PED.hop=v.hop;if(v&&Array.isArray(v.recs)){PED.recs=v.recs;PED.at=v.at||0;PED.sv=v.sv||0;PED.dirty=!!v.dirty}}
+async function pedStore(){try{await IDB.set('pedit',{v:1,at:PED.at,sv:PED.sv,dirty:PED.dirty,recs:PED.recs,hop:PED.hop||[]});stoKeep()}catch(e){feMsg('<span class="c-rd">관로 수정 저장 실패: '+esc((e&&e.message)||e)+'</span>')}}
 /* 이 기기에서 고친 뒤 저장 (+ 자동 동기화가 켜져 있으면 20초 뒤 받기 → 올리기) */
 async function pedSave(){PED.at=Date.now();PED.dirty=true;await pedStore();pedInfo();
  clearTimeout(PED.tm);if(typeof SH!=='undefined'&&SH.on()&&SH.cfg.auto)PED.tm=setTimeout(()=>pedSync('both',true).then(r=>{if(r&&r.sent)pedInfo()}),20000)}
@@ -6653,7 +6662,7 @@ function pedLayerSwap(old,nf){if(!map||!PIPE.layer)return;
  if(nf&&!nf.properties._빈){const g=attrOf(nf).use==='급수관'?PIPE.layerS:PIPE.layer;if(!g){renderPipes();return}g.addData(nf)}}
 function pedSwap(fi,old,nf){if(!nf)nf=pedEmpty();const feats=PIPE.feats.slice();feats[fi]=nf;PIPE.feats=feats;PIPE.fc={type:'FeatureCollection',features:feats};
  if(PIPE.segs){if(old){pedSegsOff(fi,old);PIPE.totalM-=old._len||0}PIPE.totalM+=pedSegsOn(fi,nf)}
- pedLayerSwap(old,nf);if(typeof PLB!=='undefined'&&PLB.cache)PLB.cache.delete(fi);plblSoon()}
+ pedLayerSwap(old,nf);if(typeof PLB!=='undefined'&&PLB.cache)PLB.cache.delete(fi);plblSoon();try{hopLocal(fi)}catch(e){console.warn('관로 교차',e)}}
 function pedRefresh(r){if(r.add){let fi=PED.fi.get(r.id);const nf=r.rv?null:pedFeat(r,null);
   if(fi==null){if(!nf)return;fi=PIPE.feats.length;PED.fi.set(r.id,fi);pedSwap(fi,null,nf);return}pedSwap(fi,PIPE.feats[fi],nf);if(!nf)PED.fi.delete(r.id);return}
  const fi=r.o&&r.o.i,raw=PIPE.raw&&PIPE.raw[fi];if(!raw)return;pedSwap(fi,PIPE.feats[fi],r.rv?raw:pedFeat(r,raw));if(r.rv)PED.fi.delete(r.id);else PED.fi.set(r.id,fi)}
@@ -6719,12 +6728,12 @@ async function pedSync(mode,quiet){const say=t=>{if(quiet)return;feMsg(t);const 
   if(s&&s.parts&&s.v!==PED.sv){say('⬇️ 관로 현장 수정 받는 중…');const bufs=[];for(let p=0;p<s.parts;p++){const r=await shReq('refget',{name:'pedit',v:s.v,part:p});bufs.push(shBlob(r.data))}
    const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error('관로 현장 수정 압축 파일이 비었습니다.');const v=JSON.parse(await e.async('string')),sm=new Map((v.recs||[]).map(r=>[r.id,r]));
    const t0m=new Map(PED.recs.map(r=>[r.id,r.t||0])),first=!PED.sv,inc=(v.recs||[]).filter(r=>r&&r.id&&(r.t||0)>(t0m.has(r.id)?t0m.get(r.id):-1));
-   R.got=pedMerge(v.recs);PED.sv=s.v;PED.dirty=PED.recs.some(r=>{const o=sm.get(r.id);return !o||(r.t||0)>(o.t||0)});PED.at=PED.dirty?Date.now():s.v;await pedStore();if(R.got)pedReapply();try{chgPedIn(inc,first)}catch(_){}}
-  if(mode!=='down'&&PED.dirty&&PED.recs.length){say('⏫ 관로 현장 수정 올리는 중…');const at=Date.now(),z=new JSZip();z.file('d.json',JSON.stringify({v:1,at,recs:PED.recs}));
+   const gr=pedMerge(v.recs),gh=hopMerge(v.hop||[]),hm=new Map((v.hop||[]).map(r=>[r&&r.id,r]));R.got=gr+gh;PED.sv=s.v;PED.dirty=PED.recs.some(r=>{const o=sm.get(r.id);return !o||(r.t||0)>(o.t||0)})||(PED.hop||[]).some(r=>{const o=hm.get(r.id);return !o||(r.t||0)>(o.t||0)});PED.at=PED.dirty?Date.now():s.v;await pedStore();if(gr)pedReapply();if(gh)hopHint();try{chgPedIn(inc,first)}catch(_){}}
+  if(mode!=='down'&&PED.dirty&&(PED.recs.length||(PED.hop||[]).length)){say('⏫ 관로 현장 수정 올리는 중…');const at=Date.now(),z=new JSZip();z.file('d.json',JSON.stringify({v:1,at,recs:PED.recs,hop:PED.hop||[]}));
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    for(let p=0;p<parts;p++)await shReq('refput',{name:'pedit',v:at,part:p,parts,size:u8.length,cnt:PED.recs.length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
-   PED.sv=at;PED.at=at;PED.dirty=false;await pedStore();R.sent=pedLive().length}
-  say(`✅ 관로 현장 수정 공유 완료${R.got?` · 받아 합침 ${R.got}건`:''}${R.sent?` · 올림 (고친 관로 ${R.sent}개)`:''}${!R.got&&!R.sent?' · 서버와 같습니다':''}`);pedInfo()}
+   PED.sv=at;PED.at=at;PED.dirty=false;await pedStore();R.sent=pedLive().length+hopLive().length}
+  say(`✅ 관로 현장 수정 공유 완료${R.got?` · 받아 합침 ${R.got}건`:''}${R.sent?` · 올림 (고친 관로·교차 ${R.sent}개)`:''}${!R.got&&!R.sent?' · 서버와 같습니다':''}`);pedInfo()}
  catch(e){const m=String((e&&e.message)||e);R.err=m;R.old=/알 수 없는 (기준자료|요청)/.test(m);
   say('<span class="c-rd">⚠️ 관로 수정 공유 실패: '+esc(m)+'</span>'+(R.old?'<br><small>공유 서버 Code.gs를 2026-10-15 판으로 바꾸고 새 버전으로 배포해 주세요.</small>':''))}
  finally{PED.busy=false}return R}
@@ -6741,11 +6750,155 @@ function pedXlsx(){const rows=[],r1=x=>Math.round(x*10)/10;
  if(!rows.length){alert('현장에서 고친 관로가 없습니다.');return}
  try{const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:16},{wch:22},{wch:14},{wch:12},{wch:8},{wch:14},{wch:8},{wch:16},{wch:28},{wch:28},{wch:10},{wch:10},{wch:40},{wch:20},{wch:10},{wch:12}];
   XLSX.utils.book_append_sheet(wb,ws,'관로현장수정');XLSX.writeFile(wb,`상수관로_현장수정_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}catch(e){alert('엑셀 만들기 실패: '+((e&&e.message)||e))}}
+/* ===================== ⌒ 관로 교차 반원 (건너뛰기 표시)
+   꼭짓점(격점)에서 붙지 않고 서로 지나가기만 하는 관로 = 안 붙은 교차. 단수구역 계산도 꼭짓점이 맞닿아야 연결로 보므로 같은 기준.
+   ① 찾기: 관로 색인(PIPE.segs·100m 격자)에서 두 관로가 선 가운데끼리 지나가는 곳 + 한 관로의 꺾인 꼭짓점이 다른 관로 선 위를 가로지르는 곳.
+      끝점이 다른 관 위에 닿기만 한 곳(T자)·나란히 겹친 곳은 뺌. 9만 5천 관로는 나눠서 계산(화면 멈춤 없음), 관로 하나 고치면 그 관로만 다시.
+   ② 그리기: 넘어가는 관로를 관로 캔버스가 그릴 때 그 자리를 반원으로 (화면 px 기준 고정 크기, 흰 테두리로 아래 관로 위에 떠 보이게).
+   ③ 어느 관이 넘어가나: 자동 = 관경 작은 쪽 → 같으면 급수관 → 관경 미상 → 나중 관로. 교차점을 눌러 바꾸기·숨기기 →
+      IDB 'pedit'의 hop 칸에 저장, 관로 현장 수정과 같은 파일로 직원 공유(공유 서버 Code.gs 변경 없음) ===================== */
+var HOP={list:[],byF:new Map(),L:new WeakMap(),ov:new Map(),job:0,busy:false,segs:null,n:0,ms:0};
+const HOP_C=100,HOP_E=.1,HOP_SIN=.17,HOP_HIT=16;
+const hopKey=(lat,lng)=>lng.toFixed(6)+','+lat.toFixed(6);
+const hopLive=()=>(PED.hop||[]).filter(o=>!o.rv&&(o.top||o.flip||o.hide));
+function hopOn(){return !!map&&UI.hop!=='off'&&!UI.allOff&&map.getZoom()>=(+UI.hopZ||17)}
+function hopDeadArr(){const fs=PIPE.feats,d=new Uint8Array(fs.length);for(let i=0;i<fs.length;i++){const P=fs[i]&&fs[i].properties;if(!fs[i]||!P||P._빈||P._폐관)d[i]=1}return d}
+/* 교차 찾기 본체 (Worker에서도 그대로 돎 — 바깥 변수 안 씀)
+   D.xy = 선분 좌표 [x1,y1,x2,y2]×n (m), D.fi = 선분의 관로 번호(-1 = 지운 선분), D.dead = 폐관·빈 관로, D.grid/D.cells = 볼 격자(없으면 전부), D.only = 이 관로가 낀 것만 */
+function hopScan(D){const xy=D.xy,FI=D.fi,dead=D.dead,C=D.C,E=D.E,SIN=D.SIN,only=D.only==null?-1:D.only,n=FI.length,out=[];let grid=D.grid;
+ if(!grid){grid=new Map();for(let si=0;si<n;si++){if(FI[si]<0)continue;const o=4*si,ax=xy[o],ay=xy[o+1],bx=xy[o+2],by=xy[o+3];
+   for(let gx=Math.floor(Math.min(ax,bx)/C);gx<=Math.floor(Math.max(ax,bx)/C);gx++)for(let gy=Math.floor(Math.min(ay,by)/C);gy<=Math.floor(Math.max(ay,by)/C);gy++){const k=gx+','+gy;let a=grid.get(k);if(!a)grid.set(k,a=[]);a.push(si)}}}
+ const keys=D.cells||grid.keys();
+ for(const key of keys){const arr=grid.get(key);if(!arr||arr.length<2)continue;const cm=key.indexOf(','),gx=+key.slice(0,cm),gy=+key.slice(cm+1),m=arr.length;
+  for(let i=0;i<m;i++){const si=arr[i],fa=FI[si];if(fa<0||dead[fa])continue;const o=4*si,ax=xy[o],ay=xy[o+1],bx=xy[o+2],by=xy[o+3],rx=bx-ax,ry=by-ay,L1=Math.hypot(rx,ry);if(!L1)continue;
+   const s0=Math.min(ax,bx),s1=Math.max(ax,bx),t0=Math.min(ay,by),t1=Math.max(ay,by);
+   /* 이 선분 끝 = 같은 관로가 이어지는 꺾인 꼭짓점이면(그리고 이 칸 안이면) 꼭짓점 검사도 */
+   const vtx=si+1<n&&FI[si+1]===fa&&xy[o+4]===bx&&xy[o+5]===by&&Math.floor(bx/C)===gx&&Math.floor(by/C)===gy,nx2=vtx?xy[o+6]:0,ny2=vtx?xy[o+7]:0;
+   for(let j=0;j<m;j++){if(j===i)continue;const sj=arr[j],fb=FI[sj];if(fb<0||fb===fa||dead[fb])continue;if(only>=0&&fa!==only&&fb!==only)continue;
+    const q=4*sj,cx=xy[q],cy=xy[q+1],dx=xy[q+2],dy=xy[q+3],sx=dx-cx,sy=dy-cy,L2=Math.hypot(sx,sy);if(!L2)continue;
+    if(j>i&&!(Math.max(cx,dx)<s0||Math.min(cx,dx)>s1||Math.max(cy,dy)<t0||Math.min(cy,dy)>t1)){const den=rx*sy-ry*sx;
+     if(Math.abs(den)>=SIN*L1*L2){const qx=cx-ax,qy=cy-ay,t=(qx*sy-qy*sx)/den,v=(qx*ry-qy*rx)/den,e1=E/L1,e2=E/L2;
+      if(t>e1&&t<1-e1&&v>e2&&v<1-e2){const x=ax+t*rx,y=ay+t*ry;if(Math.floor(x/C)===gx&&Math.floor(y/C)===gy)out.push(fa,fb,x,y)}}}
+    if(vtx){if(bx<Math.min(cx,dx)-E||bx>Math.max(cx,dx)+E||by<Math.min(cy,dy)-E||by>Math.max(cy,dy)+E)continue;
+     const w=((bx-cx)*sx+(by-cy)*sy)/(L2*L2),e2=E/L2;if(w<=e2||w>=1-e2)continue;
+     if(Math.abs(sx*(by-cy)-sy*(bx-cx))/L2>E)continue;
+     const a1=sx*(ay-cy)-sy*(ax-cx),a2=sx*(ny2-cy)-sy*(nx2-cx);if(!(a1*a2<0))continue;
+     /* 꼭짓점 앞뒤 방향이 상대 관로와 너무 나란하면 뺌 */
+     const ex=nx2-ax,ey=ny2-ay,LE=Math.hypot(ex,ey);if(!LE||Math.abs(ex*sy-ey*sx)<SIN*LE*L2)continue;
+     out.push(fa,fb,cx+w*sx,cy+w*sy)}}}}
+ return Float64Array.from(out)}
+function hopData(){const S=PIPE.segs,n=S.length,xy=new Float64Array(4*n),fi=new Int32Array(n);
+ for(let i=0;i<n;i++){const s=S[i];xy[4*i]=s[0];xy[4*i+1]=s[1];xy[4*i+2]=s[2];xy[4*i+3]=s[3];fi[i]=s[4]}return{xy,fi,dead:hopDeadArr(),C:HOP_C,E:HOP_E,SIN:HOP_SIN}}
+const hopRows=r=>{const a=[];for(let i=0;i<r.length;i+=4)a.push([r[i],r[i+1],r[i+2],r[i+3]]);return a};
+/* 같은 두 관로가 0.5m 안에서 두 번 잡힌 것(꼭짓점이 선에 아주 가까운 경우) 하나로 */
+function hopDedupe(raw){const m=new Map(),r=[];for(const c of raw){const a=Math.min(c[0],c[1]),b=Math.max(c[0],c[1]),k=a+'|'+b+'|'+Math.round(c[2]/.5)+'|'+Math.round(c[3]/.5);if(m.has(k))continue;m.set(k,1);r.push(c)}return r}
+/* ed = 교차점에서 두 관로 끝점까지 가장 가까운 거리(m): 끝이 살짝 넘어간 곳(T자로 붙인 관의 그리기 오차)을 거르는 데 씀 */
+function hopEndD(fi,x,y){let d=Infinity;const f=PIPE.feats[fi];if(f)lineParts(f.geometry).forEach(p=>{if(!p.length)return;for(const c of [p[0],p[p.length-1]]){const m=toM(c[0],c[1]),e=Math.hypot(m[0]-x,m[1]-y);if(e<d)d=e}});return d}
+function hopItem(c){const ll=fromM(c[2],c[3]);return{a:c[0],b:c[1],x:c[2],y:c[3],ll:L.latLng(ll[0],ll[1]),k:hopKey(ll[0],ll[1]),ed:Math.min(hopEndD(c[0],c[2],c[3]),hopEndD(c[1],c[2],c[3]))}}
+const hopEndMin=()=>UI.hopEnd==null?1:+UI.hopEnd;
+/* 전체 다시 찾기 (관로 색인이 새로 만들어졌을 때만) — Worker에서 계산(화면 멈춤 없음), Worker를 못 쓰면 화면에서 */
+function hopStart(force){if(!PIPE.segs||!PIPE.grid){HOP.list=[];hopIndex();return}
+ if(!force&&HOP.segs===PIPE.segs&&(HOP.busy||HOP.done)){hopFront();return}
+ const job=++HOP.job,segs=PIPE.segs,t0=performance.now();HOP.segs=segs;HOP.busy=true;HOP.done=false;
+ const fin=r=>{if(job!==HOP.job||segs!==PIPE.segs)return;HOP.list=hopDedupe(hopRows(r)).map(hopItem);HOP.busy=false;HOP.done=true;HOP.ms=Math.round(performance.now()-t0);hopIndex();hopFront();hopHint()};
+ const inPage=D=>setTimeout(()=>{try{fin(hopScan(D))}catch(e){HOP.busy=false;console.warn('관로 교차',e)}},50);
+ setTimeout(()=>{if(job!==HOP.job)return;let D;try{D=hopData()}catch(e){HOP.busy=false;return}let w=null,url='';
+  try{url=URL.createObjectURL(new Blob([hopScan.toString()+'\nonmessage=e=>{try{const r=hopScan(e.data);postMessage(r,[r.buffer])}catch(err){postMessage({err:String(err&&err.message||err)})}}'],{type:'text/javascript'}));w=new Worker(url)}catch(_){w=null}
+  if(!w){if(url)URL.revokeObjectURL(url);inPage(D);return}
+  const end=()=>{try{w.terminate()}catch(_){}URL.revokeObjectURL(url)};
+  w.onmessage=e=>{end();if(e.data&&e.data.err){console.warn('관로 교차',e.data.err);inPage(D);return}fin(e.data)};
+  w.onerror=()=>{end();inPage(D)};
+  w.postMessage(D,[D.xy.buffer,D.fi.buffer])},30)}
+/* 관로 하나만 바뀜(현장 수정·폐관·되돌리기): 그 관로가 낀 교차만 다시 */
+function hopLocal(fi){if(!HOP.done||HOP.segs!==PIPE.segs)return;const old=HOP.list.filter(it=>it.a===fi||it.b===fi);
+ HOP.list=HOP.list.filter(it=>it.a!==fi&&it.b!==fi);const f=PIPE.feats[fi],raw=[];
+ if(f&&f.geometry&&!f.properties._빈&&!f.properties._폐관){const C=HOP_C,cells=new Set();
+  lineParts(f.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);
+   for(let gx=Math.floor(Math.min(a[0],b[0])/C);gx<=Math.floor(Math.max(a[0],b[0])/C);gx++)for(let gy=Math.floor(Math.min(a[1],b[1])/C);gy<=Math.floor(Math.max(a[1],b[1])/C);gy++)cells.add(gx+','+gy)}});
+  const D=hopData();D.grid=PIPE.grid;D.cells=[...cells];D.only=fi;raw.push(...hopRows(hopScan(D)))}
+ const add=hopDedupe(raw).map(hopItem);HOP.list.push(...add);
+ const touched=new Set([fi]);old.concat(add).forEach(it=>{touched.add(it.a);touched.add(it.b)});
+ const was=[...touched].map(i=>PIPE.feats[i]).filter(Boolean);hopIndex();hopRedrawF(was)}
+/* 수동 설정 대응표 + 관로별 반원 목록 */
+function hopOvOf(it){const o=HOP.ov.get(it.k);if(o)return o;if(!HOP.ovN)return null;
+ for(const r of HOP.ovL){if(Math.abs(r.x-it.x)<.6&&Math.abs(r.y-it.y)<.6)return r.o}return null}
+function hopAuto(it){const A=attrOf(PIPE.feats[it.a]),B=attrOf(PIPE.feats[it.b]),da=A.dia,db=B.dia;
+ if(da!=null&&db!=null&&da!==db)return da<db?it.a:it.b;const sa=A.use==='급수관',sb=B.use==='급수관';if(sa!==sb)return sa?it.a:it.b;
+ if((da==null)!==(db==null))return da==null?it.a:it.b;return it.a>it.b?it.a:it.b}
+function hopTop(it){const o=hopOvOf(it);it.o=o;let top=hopAuto(it);it.auto=top;if(o&&o.hide)return -1;
+ if(o){const ia=String(attrOf(PIPE.feats[it.a]).id||''),ib=String(attrOf(PIPE.feats[it.b]).id||'');
+  if(o.top&&ia!==ib&&(o.top===ia||o.top===ib))top=o.top===ia?it.a:it.b;else if(o.flip)top=top===it.a?it.b:it.a}return top}
+function hopIndex(){HOP.ov=new Map();HOP.ovL=[];(PED.hop||[]).forEach(o=>{if(o.rv||!(o.top||o.flip||o.hide))return;HOP.ov.set(o.k,o);const c=o.k.split(','),m=toM(+c[0],+c[1]);HOP.ovL.push({x:m[0],y:m[1],o})});HOP.ovN=HOP.ovL.length;
+ const old=HOP.byF;HOP.byF=new Map();let n=0;
+ const em=hopEndMin();HOP.nSkip=0;for(const it of HOP.list){it.skip=it.ed<em;if(it.skip){it.top=-1;HOP.nSkip++;continue}const top=hopTop(it);it.top=top;if(top<0)continue;it.un=top===it.a?it.b:it.a;const f=PIPE.feats[top];if(!f)continue;
+  let a=HOP.byF.get(f);if(!a)HOP.byF.set(f,a=[]);a.push(it);n++}HOP.n=n;HOP.old=old}
+/* 반원 있는 관로를 캔버스 맨 위로(아래 관로가 반원을 덮지 않게) + 다시 그림 */
+function hopFront(){if(!map)return;const seen=new Set();
+ const go=f=>{if(seen.has(f))return;seen.add(f);const l=HOP.L.get(f);if(l&&l._map&&l._renderer){l._project();l._updateBounds&&l._updateBounds();l.bringToFront()}};
+ HOP.byF.forEach((a,f)=>go(f));if(HOP.old)HOP.old.forEach((a,f)=>go(f));HOP.old=null}
+function hopRedrawF(fs){if(!map)return;fs.forEach(f=>{const l=HOP.L.get(f);if(l&&l._map&&l._renderer){l.redraw();if(HOP.byF.has(f))l.bringToFront()}});if(HOP.old)HOP.old.forEach((a,f)=>{const l=HOP.L.get(f);if(l&&l._map)l.redraw()});HOP.old=null}
+function hopRedraw(){hopFront()}
+/* 관로 캔버스가 넘어가는 관로를 그릴 때: 교차 자리 앞뒤 r(px)을 반원으로 바꿔 그림 */
+function hopVis(it){const uf=PIPE.feats[it.un];if(!uf)return false;const g=attrOf(uf).use==='급수관'?PIPE.layerS:PIPE.layer;return !!(g&&map.hasLayer(g))}
+function hopUpd(){const R=this._renderer,hs=HOP.byF.get(this.feature);if(!hs||!R._drawing||!hopOn())return R._updatePoly(this);
+ const parts=this._parts;if(!parts||!parts.length)return;const ctx=R._ctx,m=this._map,W=this.options.weight||1,z=m.getZoom(),zk=z>=19?1.35:z>=18?1.15:1,H=[];
+ for(const it of hs){if(!hopVis(it))continue;let wu=1.5;try{wu=pipeStyle(PIPE.feats[it.un]).weight||1.5}catch(_){}H.push({p:m.latLngToLayerPoint(it.ll),r:Math.max(5,(wu/2+W/2+3))*zk})}
+ if(!H.length)return R._updatePoly(this);
+ const arcs=[];ctx.beginPath();
+ for(const pt of parts){const n=pt.length;if(n<2)continue;const cum=[0];for(let k=1;k<n;k++)cum.push(cum[k-1]+Math.hypot(pt[k].x-pt[k-1].x,pt[k].y-pt[k-1].y));const T=cum[n-1];
+  let iv=[];for(const h of H){let bd=2.5,bs=-1;for(let k=1;k<n;k++){const A=pt[k-1],B=pt[k],dx=B.x-A.x,dy=B.y-A.y,l2=dx*dx+dy*dy;let t=l2?((h.p.x-A.x)*dx+(h.p.y-A.y)*dy)/l2:0;t=t<0?0:t>1?1:t;
+    const d=Math.hypot(A.x+t*dx-h.p.x,A.y+t*dy-h.p.y);if(d<bd){bd=d;bs=cum[k-1]+t*Math.sqrt(l2)}}if(bs>=0)iv.push([Math.max(0,bs-h.r),Math.min(T,bs+h.r)])}
+  iv=iv.filter(v=>v[1]-v[0]>=4).sort((a,b)=>a[0]-b[0]);const mg=[];for(const v of iv){const l=mg[mg.length-1];if(l&&v[0]<=l[1]+1)l[1]=Math.max(l[1],v[1]);else mg.push(v.slice())}
+  const at=s=>{let k=1;while(k<n-1&&cum[k]<s)k++;const A=pt[k-1],B=pt[k],L0=cum[k]-cum[k-1],t=L0?(s-cum[k-1])/L0:0;return{x:A.x+(B.x-A.x)*t,y:A.y+(B.y-A.y)*t}};
+  ctx.moveTo(pt[0].x,pt[0].y);let k=1;
+  for(const [s0,s1] of mg){while(k<n&&cum[k]<=s0){ctx.lineTo(pt[k].x,pt[k].y);k++}const A=at(s0),B=at(s1);ctx.lineTo(A.x,A.y);
+   const cx=(A.x+B.x)/2,cy=(A.y+B.y)/2,rad=Math.hypot(B.x-A.x,B.y-A.y)/2,ang=Math.atan2(B.y-A.y,B.x-A.x),ccw=Math.cos(ang)<=0;
+   ctx.arc(cx,cy,rad,ang+Math.PI,ang,ccw);arcs.push([cx,cy,rad,ang,ccw,A]);while(k<n&&cum[k]<=s1)k++}
+  while(k<n){ctx.lineTo(pt[k].x,pt[k].y);k++}}
+ if(arcs.length&&this.options.stroke!==false){/* 흰 테두리: 반원이 아래 관로 위에 떠 보이게 */
+  const path=new Path2D();arcs.forEach(([cx,cy,rad,ang,ccw,A])=>{path.moveTo(A.x,A.y);path.arc(cx,cy,rad,ang+Math.PI,ang,ccw)});
+  ctx.save();ctx.lineCap='round';ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=W+3.5;ctx.setLineDash([]);ctx.globalAlpha=1;ctx.stroke(path);ctx.restore()}
+ R._fillStroke(ctx,this)}
+function hopBounds(){L.Polyline.prototype._updateBounds.call(this);if(this._pxBounds&&HOP.byF.has(this.feature)){const p=L.point(16,16);this._pxBounds=L.bounds(this._pxBounds.min.subtract(p),this._pxBounds.max.add(p))}}
+/* renderPipes·addData에서 관로 레이어마다 */
+function hopEach(f,l){HOP.L.set(f,l);l._updatePath=hopUpd;l._updateBounds=hopBounds}
+/* ---- 교차점 누르기: 정보창 + 넘어가는 관 바꾸기·숨기기·자동으로 ---- */
+function hopHitAt(cp){if(!hopOn()||!HOP.list.length)return -1;const ll=map.containerPointToLatLng(cp),R=HOP_HIT*156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom(),[px,py]=toM(ll.lng,ll.lat);let bd=R,bi=-1;
+ HOP.list.forEach((it,i)=>{if(it.skip||Math.abs(it.x-px)>bd||Math.abs(it.y-py)>bd)return;const a=PIPE.feats[it.a],b=PIPE.feats[it.b];if(!a||!b)return;
+  const ga=attrOf(a).use==='급수관'?PIPE.layerS:PIPE.layer,gb=attrOf(b).use==='급수관'?PIPE.layerS:PIPE.layer;if(!(ga&&map.hasLayer(ga)&&gb&&map.hasLayer(gb)))return;
+  const d=Math.hypot(it.x-px,it.y-py);if(d<bd){bd=d;bi=i}});return bi}
+function hopPipeTxt(fi){const f=PIPE.feats[fi];if(!f)return '-';const a=attrOf(f);return esc([a.id||f.properties._임시번호||'(관리번호 없음)',a.dia!=null?a.dia+'mm':'',a.mat&&a.mat!=='미상'?a.mat:'',a.use&&a.use!=='미상'?a.use:''].filter(Boolean).join(' · '))}
+function hopPop(i){const it=HOP.list[i];if(!it)return '교차점을 찾지 못했습니다.';const top=hopTop(it),o=it.o,hid=top<0,up=hid?it.auto:top,dn=up===it.a?it.b:it.a;
+ const st=hid?'🙈 반원 숨김':o?'✋ 직접 고침':'🤖 자동 (관경 작은 관이 넘어감)';
+ return `<div style="font-size:11.5px;color:#0f766e;font-weight:700">⌒ 관로 교차 · 붙지 않음</div>
+ <div style="font-size:11.5px;color:#64748b;margin:2px 0 4px">꼭짓점 없이 서로 지나가기만 하는 자리입니다 (단수구역 계산에서도 연결 안 됨).</div>
+ <table style="font-size:12px"><tr><td style="color:#64748b;padding-right:8px">⌒ 넘어가는 관</td><td>${hopPipeTxt(up)}</td></tr><tr><td style="color:#64748b;padding-right:8px">― 아래 관</td><td>${hopPipeTxt(dn)}</td></tr>
+ <tr><td style="color:#64748b;padding-right:8px">설정</td><td>${st}${o&&o.by?` <small class="mute">${esc(o.by)} ${pedTs(o.t)}</small>`:o?` <small class="mute">${pedTs(o.t)}</small>`:''}</td></tr></table>
+ <div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="hopAct(${i},'flip')">⇄ 넘어가는 관 바꾸기</button><button type="button" class="kl" onclick="hopAct(${i},'hide')">${hid?'👁️ 반원 다시 보이기':'🙈 반원 숨기기'}</button>${o?`<button type="button" class="kl" onclick="hopAct(${i},'auto')">↺ 자동으로</button>`:''}</div>
+ <div style="font-size:11px;color:#64748b;margin-top:4px">실제로 붙어 있는 자리라면 관로를 눌러 🛠 이 관로 고치기 › ✂️ 나누기로 꼭짓점을 넣어 주세요. 바꾼 설정은 관로 현장 수정과 함께 직원과 공유됩니다.</div>`}
+window.hopAct=async(i,act)=>{const it=HOP.list[i];if(!it)return;await pedLoad();if(!PED.hop)PED.hop=[];
+ const cur=hopOvOf(it),top=hopTop(it),hid=top<0,base=hid?it.auto:top;let r=PED.hop.find(o=>o.k===(cur?cur.k:it.k));
+ if(!r){r={id:'H'+it.k,k:it.k};PED.hop.push(r)}
+ const ia=String(attrOf(PIPE.feats[it.a]).id||''),ib=String(attrOf(PIPE.feats[it.b]).id||'');
+ if(act==='auto'){r.top='';r.flip=0;r.hide=0}
+ else if(act==='hide'){r.hide=hid?0:1}
+ else{const nt=base===it.a?it.b:it.a,nid=nt===it.a?ia:ib;r.hide=0;if(nid&&ia!==ib){r.top=nid;r.flip=0}else{r.top='';r.flip=nt!==it.auto?1:0}}
+ r.t=Date.now();r.by=pedBy();r.rv=(r.top||r.flip||r.hide)?0:1;
+ const fs=[PIPE.feats[it.a],PIPE.feats[it.b]];hopIndex();hopRedrawF(fs);await pedSave();hopHint();
+ const pp=map&&map._popup,h=pp&&pp._hit;if(h)setTimeout(()=>{if(pp.isOpen()){const k=h.H.findIndex(x=>x.t==='hop');if(k>=0){h.H[k].i=i;hitShow(h,k)}}},0)};
+/* 공유·백업에서 받은 설정 합치기 (기록별 늦은 시각) */
+function hopMerge(list){if(!Array.isArray(list))return 0;if(!PED.hop)PED.hop=[];const m=new Map(PED.hop.map((r,i)=>[r.id,i]));let n=0;
+ for(const r of list){if(!r||!r.id||!r.k)continue;const i=m.get(r.id);if(i==null){m.set(r.id,PED.hop.push(r)-1);n++}else if((r.t||0)>(PED.hop[i].t||0)){PED.hop[i]=r;n++}}
+ if(n&&HOP.done){const fs=new Set();HOP.byF.forEach((a,f)=>fs.add(f));hopIndex();HOP.byF.forEach((a,f)=>fs.add(f));hopRedrawF([...fs])}return n}
+function hopHint(){const el=document.getElementById('uiHopHint');if(!el)return;
+ if(!PIPE.feats||!PIPE.feats.length){el.textContent='상수관로 SHP를 올리면 안 붙은 교차를 찾아 반원으로 그립니다.';return}
+ if(HOP.busy){el.textContent='안 붙은 교차를 찾는 중…';return}const nl=hopLive().length;
+ el.innerHTML=`안 붙은 교차 <b>${(HOP.list.length-(HOP.nSkip||0)).toLocaleString()}곳</b>${HOP.nSkip?` <small>(끝이 살짝 넘어간 ${HOP.nSkip.toLocaleString()}곳 뺌)</small>`:''}${nl?` · 직접 고친 곳 ${nl.toLocaleString()}곳`:''}${map&&UI.hop!=='off'&&map.getZoom()<(+UI.hopZ||17)?` · 줌 ${+UI.hopZ||17} 이상에서 보입니다 (현재 ${map.getZoom()})`:''}<br><small>교차점을 누르면 넘어가는 관을 바꾸거나 반원을 숨길 수 있습니다.</small>`}
 /* ② 상수관로 패널의 현장 수정 요약 */
-function pedInfo(){const box=$('pedBox');if(!box)return;const L=pedLive();if(!L.length&&!PED.orph.length){box.hidden=true;return}box.hidden=false;
+function pedInfo(){const box=$('pedBox');if(!box)return;const L=pedLive(),nh=hopLive().length;if(!L.length&&!PED.orph.length&&!nh){box.hidden=true;return}box.hidden=false;
  const c={a:0,g:0,d:0,p:0};L.forEach(r=>{if(r.add)c.a++;else if(r.g)c.g++;if(r.del)c.d++;if(Object.keys(r.p||{}).length)c.p++});
  const sh=typeof SH!=='undefined'&&SH.on();
- $('pedSum').innerHTML=`🛠 관로 현장 수정 <b>${L.length.toLocaleString()}</b>개 <small class="mute">(추가·나눔 ${c.a} · 모양 ${c.g} · 폐관 ${c.d} · 속성 ${c.p})</small>${PED.orph.length?` · <span class="c-am">기준자료에서 못 찾음 ${PED.orph.length}</span>`:''}${PED.conf.length?` · <span class="c-am">같은 관로 겹친 수정 ${PED.conf.length} (최신 것 사용)</span>`:''}${sh?(PED.dirty?' · <b class="c-am">⏫ 올리기 필요</b>':' · ✅ 공유 서버와 같음'):''}`}
+ $('pedSum').innerHTML=`🛠 관로 현장 수정 <b>${L.length.toLocaleString()}</b>개 <small class="mute">(추가·나눔 ${c.a} · 모양 ${c.g} · 폐관 ${c.d} · 속성 ${c.p}${nh?` · 교차 반원 ${nh}곳`:''})</small>${PED.orph.length?` · <span class="c-am">기준자료에서 못 찾음 ${PED.orph.length}</span>`:''}${PED.conf.length?` · <span class="c-am">같은 관로 겹친 수정 ${PED.conf.length} (최신 것 사용)</span>`:''}${sh?(PED.dirty?' · <b class="c-am">⏫ 올리기 필요</b>':' · ✅ 공유 서버와 같음'):''}`}
 /* ---- 편집 화면 (🛠 편집 모드 🚰 관로 탭) ---- */
 function peVerts(fi){const f=PIPE.feats[fi],r=[];if(!f)return r;lineParts(f.geometry).forEach((p,pi)=>p.forEach((c,vi)=>r.push({pi,vi,n:p.length,c,cp:map.latLngToContainerPoint([c[1],c[0]])})));return r}
 function peHit(cp,all){const ll=map.containerPointToLatLng(cp),h=nearestPipe(ll.lng,ll.lat,PE_HIT*feMpp(),all!==false);if(!h)return -1;const f=PIPE.feats[h.fi];return f&&!f.properties._빈?h.fi:-1}
