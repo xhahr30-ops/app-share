@@ -649,6 +649,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .chgw .chgh{align-items:center}.chgw .chgh select{width:auto;flex:none;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.chgw .chgh b{font-size:12px}
 @media (prefers-reduced-motion:reduce){.hlnew::before{animation:none;transform:scale(1.25);opacity:1}.hlnew::after{display:none}}
 .chgb a{position:relative}
+.refb a.busy{opacity:.75;pointer-events:none}.refb a.busy .ri{display:inline-block;animation:refsp 1.2s linear infinite}@keyframes refsp{to{transform:rotate(360deg)}}
 .chgn{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dc2626;color:#fff;font:800 10.5px/17px 'Noto Sans KR',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff;pointer-events:none;box-sizing:border-box}
 .chgn[hidden]{display:none}
 .chgfl{animation:chgfl .9s ease-in-out 5}@keyframes chgfl{50%{stroke-opacity:.15}}
@@ -1915,7 +1916,7 @@ function uiInit(){if(!map)return;plblInit();
  try{chipInit()}catch(e){console.warn('chipInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
+const CHIP_ORD=['srch','ref','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
@@ -1929,7 +1930,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const LB={ref:'지금 받기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -5668,6 +5669,7 @@ async function phTrashRestore(ids){await phTrashLoad();const s=new Set(ids),back
 async function phTrashPurge(ids){await phTrashLoad();const s=new Set(ids);PH.trash=PH.trash.filter(e=>!s.has(e.m.id));await phTrashKill(ids);await phTrashSave();phEdCount();phTrashRender()}
 /* ---------- 알림 (되돌리기 버튼) ---------- */
 function phToast(t,o){o=o||{};let el=document.getElementById('phToast');if(!el){el=document.createElement('div');el.id='phToast';el.setAttribute('role','status');el.hidden=true;document.body.appendChild(el)}
+ {const fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(el.parentNode!==fe)fe.appendChild(el)}/* 지도 전체화면 중에도 보이게 */
  clearTimeout(PH.toastT);el.innerHTML=`<span>${esc(t)}</span>`+(o.btn?`<button type="button" class="b">${esc(o.btn)}</button>`:'')+'<button type="button" class="x" aria-label="닫기">✕</button>';el.hidden=false;
  const hide=()=>{el.hidden=true;clearTimeout(PH.toastT)};el.querySelector('.x').onclick=hide;if(o.btn)el.querySelector('.b').onclick=()=>{hide();o.fn&&o.fn()};PH.toastT=setTimeout(hide,o.ms||10000)}
 function phEdConfirmDel(ids,W){W=W||window;const sh=SH.on()?ids.filter(id=>{const m=PH.byId.get(id);return m&&m.shUp}).length:0;
@@ -7390,6 +7392,20 @@ function hlFacDraw(){if(!map)return;hlBuild();if(!HL.L)HL.L=L.layerGroup();HL.L.
   L.marker(ll,{icon:L.divIcon({className:'hlnew hlf',iconSize:[s,s],iconAnchor:[s/2,s/2],html:''}),interactive:false,keyboard:false,zIndexOffset:-100}).addTo(HL.L);if(++n>=200)break}
  if(n){if(!map.hasLayer(HL.L))HL.L.addTo(map)}else off()}
 try{chgInit()}catch(e){console.warn('변경 기록',e)}
+/* ---------- ⬇️ 지금 받기 칩 (2026-10-30): 직원 공유 › 기준자료 공유의 [⬇️ 지금 받기]를 지도 위쪽 칩 줄(전체화면 포함)에서 바로 누름. 결과는 아래 알림으로 ---------- */
+function refChipInit(){if(!map||document.getElementById('refChip'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='ref';
+  a.href='#';a.id='refChip';a.setAttribute('role','button');a.setAttribute('aria-label','기준자료 지금 받기');a.title='공유 서버에서 기준자료(관로·시설물·동영상 등) 지금 받기';a.innerHTML='<span class="ri">⬇️</span>';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);refChipGo(a)});return d}});
+ map.addControl(new Ctl())}
+async function refChipGo(a){const k=$('shKey');if(k)k.dispatchEvent(new Event('change'));
+ if(!SH.on()){phToast('⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}
+ if(REF.busy){phToast('⬇️ 이미 받는 중입니다. 잠시 뒤 다시 눌러 주세요.',{ms:4000});return}
+ const lb=a.dataset.lb;a.classList.add('busy');if(a.dataset.lb)a.dataset.lb='받는 중…';phToast('⬇️ 공유 서버에서 기준자료 확인 중…',{ms:60000});
+ try{await refDown(false)}finally{a.classList.remove('busy');if(lb)a.dataset.lb=lb}
+ const m=$('shRefMsg'),tmp=document.createElement('div');tmp.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';const t=tmp.textContent.trim();
+ phToast(t||'✅ 받기를 마쳤습니다.',{ms:/실패/.test(t)?15000:7000})}
+try{refChipInit()}catch(e){console.warn('지금 받기 칩',e)}
 /* ---------- 🖍️ 지도 그리기·글자·아이콘 (2026-10-29 B안) ----------
    펜·직선·화살표·네모·원·글자·아이콘(제수변·누수 등)을 지도 좌표로 저장해 확대·이동해도 제자리. drawPane 캔버스라 🖼️ 캡처에 함께 찍힘.
    화면 고정(🔒) 중에도 그림: 그리는 동안 덮개(.mkov)가 손가락을 받고 지도 끌기는 쓰지 않음. ✋ 이동을 고르면 덮개가 비켜 지도를 옮김.
