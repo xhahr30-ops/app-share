@@ -2653,7 +2653,7 @@ $('f3').onchange=e=>{const f=e.target.files[0];if(!f)return;if(typeof shp==='und
 $('pBy').onchange=()=>pipeRefresh(false);$('pShow').onchange=()=>{pipeRefresh(false)};$('pFar').oninput=()=>pipeRefresh(false);$('pPrint').onchange=()=>pipeRefresh(false);
 $('pCodes').oninput=()=>{PIPE.ct=null;PIPE.stats=null;pipeRefresh(true)};
 {let v={};try{v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}}catch(_){}if(v.by)$('pBy').value=v.by;if(v.show)$('pShow').value=v.show;if(v.far)$('pFar').value=v.far;if(v.codes)$('pCodes').value=v.codes;if(v.print===false)$('pPrint').checked=false}
-if(map){map.on('zoomend',pipeShow)}
+if(map){map.on('zoomend',pipeShow);map.on('zoomend',()=>{const b=($('pBy')||{}).value,k=map.getZoom()>=FA_Z;if((b==='vel'||b==='flow')&&k!==PIPE.faZ){PIPE.faZ=k;renderLegend()}})}
 let pWas=[];window.addEventListener('beforeprint',()=>{pWas=[PIPE.layer,PIPE.layerS].filter(l=>l&&map&&map.hasLayer(l));if(!$('pPrint').checked)pWas.forEach(l=>map.removeLayer(l))});
 window.addEventListener('afterprint',()=>{pWas.forEach(l=>{if(!map.hasLayer(l))l.addTo(map)});pWas=[]});
 function locRun(i){if(i!=null)selectRow(i,'map');['locBtn','locBtn2'].forEach(id=>$(id).disabled=true);locTest().finally(()=>['locBtn','locBtn2'].forEach(id=>$(id).disabled=!out.length))}
@@ -2924,14 +2924,14 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  let st='';if(m!=='off'){if(!onM)st=`🔍 지도를 <b>줌 ${PZ_MAIN} 이상</b>으로 확대하면 관로가 그려집니다 (현재 ${z})`;else if(PIPE.layerS&&!onS)st=`급수관 ${PIPE.nS.toLocaleString()}개는 <b>줌 ${PZ_SVC}부터</b> 그려집니다 (현재 ${z})`}
  const el=PIPE.legend&&PIPE.legend.getContainer?PIPE.legend.getContainer():null,ps=el&&el.querySelector('.pst');if(ps){ps.innerHTML=st;ps.hidden=!st}
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
-function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
+function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
  const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
  const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const a=attrOf(f);const k=by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):a.mat;cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
  let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
- el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div><button type="button" class="pfa" title="물 흐름 방향 화살표 켜기/끄기" style="display:block;margin:3px 0 2px;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;background:${UI.fa===false?'transparent':'#e0f2fe'};color:${UI.fa===false?'var(--mute)':'#075985'};font-size:11px;font-weight:700;cursor:pointer">➤ 흐름 방향 ${UI.fa===false?'꺼짐':'켜짐'}${map&&map.getZoom()<FA_Z&&UI.fa!==false?` <small style="font-weight:400">(줌 ${FA_Z}부터)</small>`:''}</button>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
 async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;renderBlk();return}
  if(!poly._v)poly._v=Math.random();const key=[poly._v,$('blkField').value,$('pYmd').value,PIPE.feats.length].join('|');
@@ -4412,7 +4412,7 @@ function hydSet(h){ELEV.hyd=null;ELEV.lk=null;ELEV.hi=null;if(!h||!h.pmin)return
  if(h.lng&&h.lng.length===h.pmin.length)ELEV.hi=nodeIdx(h.lng,h.lat);else if(h.pmin.length===ELEV.n)ELEV.hi={n:ELEV.n,lng:ELEV.lng,lat:ELEV.lat,mx:ELEV.mx,my:ELEV.my,px:ELEV.px,py:ELEV.py,grid:ELEV.grid,dg:ELEV.dg};else return;
  ELEV.hyd=h;const L0=h.links||{},m=new Map(),ids=L0.id||[];
  /* 한 관리번호가 모델에서 여러 토막으로 나뉜 곳: 유속은 가장 큰 값, 유량은 절댓값이 가장 큰 토막, 끝 절점은 모두 */
- for(let i=0;i<ids.length;i++){const k=String(ids[i]||'').trim();if(!k)continue;let o=m.get(k);if(!o)m.set(k,o={v:0,q:0,n:[],c:0});const v=+L0.v[i]||0,q=+L0.q[i]||0;o.c++;if(v>o.v)o.v=v;if(Math.abs(q)>Math.abs(o.q))o.q=q;
+ for(let i=0;i<ids.length;i++){const k=String(ids[i]||'').trim();if(!k)continue;let o=m.get(k);if(!o)m.set(k,o={v:0,q:0,n:[],c:0,fa:null,fb:null});const v=+L0.v[i]||0,q=+L0.q[i]||0;o.c++;if(v>o.v)o.v=v;if(Math.abs(q)>Math.abs(o.q)||o.fa==null){o.q=q;o.fa=q<0?L0.b[i]:L0.a[i];o.fb=q<0?L0.a[i]:L0.b[i]}
   for(const j of [L0.a[i],L0.b[i]])if(j>=0&&j<ELEV.hi.n&&!o.n.includes(j))o.n.push(j)}
  ELEV.lk=m}
 /* (lat,lng)에서 가장 가까운 절점(150m 안) 번호 */
@@ -4425,7 +4425,7 @@ function hydPop(lat,lng){const r=hydNear(lat,lng);if(!r)return '';const H=ELEV.h
 function hydPipePop(f){if(!ELEV.lk||!f)return '';const id=String(attrOf(f).id||'').trim(),o=id&&ELEV.lk.get(id);
  if(!o)return ELEV.hyd?`<div style="margin-top:4px;font-size:12px;color:#64748b">🌊 관망해석 결과에 이 관리번호가 없습니다</div>`:'';
  const ps=o.n.map(j=>ELEV.hyd.pmin[j]).filter(isFinite),pm=ps.length?Math.min(...ps):null;
- return `<div style="margin-top:4px;font-size:12px">🌊 모델 유속 최대 <b style="color:${o.v>2?'#dc2626':'inherit'}">${o.v.toFixed(2)} m/s</b> · 평균 유량 <b>${Math.round(Math.abs(o.q)).toLocaleString()} ㎥/일</b>${o.c>1?` <small>(모델 토막 ${o.c}개)</small>`:''}${pm!=null?`<br>💧 양 끝 절점 최저 수압 <b style="color:${pm<HYD_LOW?'#dc2626':'inherit'}">${hydF(pm)}m</b>`:''} <small style="color:#64748b">(관망해석 계산 참고값)</small></div>`}
+ return `<div style="margin-top:4px;font-size:12px">🌊 모델 유속 최대 <b style="color:${o.v>2?'#dc2626':'inherit'}">${o.v.toFixed(2)} m/s</b> · 평균 유량 <b>${Math.round(Math.abs(o.q)).toLocaleString()} ㎥/일</b>${Math.abs(o.q)<FA_QMIN||o.v<0.01?' <small>(거의 안 흐름)</small>':' <small>(➤ 화살표 = 평균 흐름 방향)</small>'}${o.c>1?` <small>(모델 토막 ${o.c}개)</small>`:''}${pm!=null?`<br>💧 양 끝 절점 최저 수압 <b style="color:${pm<HYD_LOW?'#dc2626':'inherit'}">${hydF(pm)}m</b>`:''} <small style="color:#64748b">(관망해석 계산 참고값)</small></div>`}
 /* 단수구역 관로(관리번호) → 모델 절점 최저 수압 */
 function hydShut(){if(!ELEV.lk||typeof SHUT==='undefined'||!SHUT.res||!SHUT.res.fs)return null;const H=ELEV.hyd,seen=new Set();let pm=Infinity,low=0,hit=0;
  for(const fi of SHUT.res.fs){const f=PIPE.feats[fi];if(!f)continue;const o=ELEV.lk.get(String(attrOf(f).id||'').trim());if(!o)continue;hit++;
@@ -7039,9 +7039,30 @@ function hopUpd(){const R=this._renderer,hs=HOP.byF.get(this.feature);if(!hs||!R
   const path=new Path2D();arcs.forEach(([cx,cy,rad,ang,ccw,A])=>{path.moveTo(A.x,A.y);path.arc(cx,cy,rad,ang+Math.PI,ang,ccw)});
   ctx.save();ctx.lineCap='round';ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=W+3.5;ctx.setLineDash([]);ctx.globalAlpha=1;ctx.stroke(path);ctx.restore()}
  R._fillStroke(ctx,this)}
-function hopBounds(){L.Polyline.prototype._updateBounds.call(this);if(this._pxBounds&&HOP.byF.has(this.feature)){const p=L.point(16,16);this._pxBounds=L.bounds(this._pxBounds.min.subtract(p),this._pxBounds.max.add(p))}}
+function hopBounds(){L.Polyline.prototype._updateBounds.call(this);if(this._pxBounds&&(HOP.byF.has(this.feature)||(this.feature&&faOn()&&faDir(this.feature)))){const p=L.point(16,16);this._pxBounds=L.bounds(this._pxBounds.min.subtract(p),this._pxBounds.max.add(p))}}
 /* renderPipes·addData에서 관로 레이어마다 */
-function hopEach(f,l){HOP.L.set(f,l);l._updatePath=hopUpd;l._updateBounds=hopBounds}
+function hopEach(f,l){HOP.L.set(f,l);l._updatePath=pipeUpd;l._updateBounds=hopBounds}
+/* ===== 물 흐름 방향 화살표 (관망해석 결과 · 유속/유량 색 · 줌 FA_Z 이상) ===== */
+const FA_Z=16,FA_QMIN=1,FA_GAP=110;
+const faOn=()=>UI.fa!==false&&!!map&&map.getZoom()>=FA_Z&&(($('pBy')||{}).value==='vel'||($('pBy')||{}).value==='flow')&&!!hydLk()&&!SHUT_PL;
+/* 지도 관로 선의 꼭짓점 순서 기준 방향: 1 = 순서대로, -1 = 거꾸로, 0 = 모름/정체 */
+function faDir(f){const H=ELEV.hyd,g=f&&f.geometry;if(!H||!g)return 0;if(f._fdH===H&&f._fdG===g)return f._fd;f._fdH=H;f._fdG=g;f._fd=0;
+ const o=pipeHyd(attrOf(f));if(!o||o.fa==null||Math.abs(o.q)<FA_QMIN||o.v<0.01)return 0;const I=ELEV.hi;if(!I||!(o.fa<I.n)||!(o.fb<I.n))return 0;
+ const A=toM(I.lng[o.fa],I.lat[o.fa]),B=toM(I.lng[o.fb],I.lat[o.fb]),dx=B[0]-A[0],dy=B[1]-A[1],mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;let bd=Infinity,s=0,P0=null,P1=null;
+ lineParts(g).forEach(p=>{if(!p.length)return;if(!P0)P0=p[0];P1=p[p.length-1];for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]),ux=b[0]-a[0],uy=b[1]-a[1],l2=ux*ux+uy*uy;let t=l2?((mx-a[0])*ux+(my-a[1])*uy)/l2:0;t=t<0?0:t>1?1:t;
+  const d=Math.hypot(a[0]+t*ux-mx,a[1]+t*uy-my);if(d<bd){bd=d;const dot=ux*dx+uy*dy;s=dot>0?1:dot<0?-1:0}}});
+ /* 모델 토막이 너무 짧으면(두 절점이 거의 같은 자리) 선의 처음·끝에 가까운 절점으로 */
+ if(Math.hypot(dx,dy)<0.5&&P0&&P1){const a=toM(P0[0],P0[1]),b=toM(P1[0],P1[1]),da=Math.hypot(a[0]-A[0],a[1]-A[1])+Math.hypot(b[0]-B[0],b[1]-B[1]),db=Math.hypot(a[0]-B[0],a[1]-B[1])+Math.hypot(b[0]-A[0],b[1]-A[1]);s=da<db?1:da>db?-1:0}
+ return f._fd=s}
+function faDraw(l){const s=faDir(l.feature),parts=l._parts;if(!s||!parts||!parts.length)return;const ctx=l._renderer._ctx,W=l.options.weight||2,h=Math.max(8,W*1.3+5),hw=h*.6;
+ ctx.save();ctx.setLineDash([]);ctx.globalAlpha=1;ctx.lineJoin='round';ctx.fillStyle='#1e293b';ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=1.6;
+ for(const pt of parts){const n=pt.length;if(n<2)continue;const cum=[0];for(let k=1;k<n;k++)cum.push(cum[k-1]+Math.hypot(pt[k].x-pt[k-1].x,pt[k].y-pt[k-1].y));const T=cum[n-1];if(T<h*2)continue;
+  const cnt=Math.max(1,Math.floor(T/FA_GAP)),st=T/cnt;let k=1;
+  for(let j=0;j<cnt;j++){const d=st*(j+.5);while(k<n-1&&cum[k]<d)k++;const A=pt[k-1],B=pt[k],L0=cum[k]-cum[k-1];if(!L0)continue;const t=(d-cum[k-1])/L0,x=A.x+(B.x-A.x)*t,y=A.y+(B.y-A.y)*t,ux=(B.x-A.x)/L0*s,uy=(B.y-A.y)/L0*s;
+   ctx.beginPath();ctx.moveTo(x+ux*h/2,y+uy*h/2);ctx.lineTo(x-ux*h/2-uy*hw,y-uy*h/2+ux*hw);ctx.lineTo(x-ux*h/4,y-uy*h/4);ctx.lineTo(x-ux*h/2+uy*hw,y-uy*h/2-ux*hw);ctx.closePath();ctx.stroke();ctx.fill()}}
+ ctx.restore()}
+function pipeUpd(){hopUpd.call(this);try{if(this._renderer&&this._renderer._drawing&&this.feature&&faOn())faDraw(this)}catch(_){}}
+function faRedraw(){const R=PIPE.rd;if(R&&R._redraw&&R._map){R._redrawBounds=null;R._redraw()}else renderPipes()}
 /* ---- 교차점 누르기: 정보창 + 넘어가는 관 바꾸기·숨기기·자동으로 ---- */
 function hopHitAt(cp){if(!hopOn()||!HOP.list.length)return -1;const ll=map.containerPointToLatLng(cp),R=HOP_HIT*156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom(),[px,py]=toM(ll.lng,ll.lat);let bd=R,bi=-1;
  HOP.list.forEach((it,i)=>{if(it.skip||Math.abs(it.x-px)>bd||Math.abs(it.y-py)>bd)return;const a=PIPE.feats[it.a],b=PIPE.feats[it.b];if(!a||!b)return;
