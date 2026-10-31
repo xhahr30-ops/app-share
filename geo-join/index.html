@@ -135,12 +135,17 @@ details.x summary{cursor:pointer;font-weight:700;font-size:12.5px}
 #mapBox{display:flex;flex-direction:column}
 #map{height:440px;border-radius:12px;background:#dce6ea;z-index:0}
 #map{-webkit-touch-callout:none}
-.leaflet-control-zoom .zlv{display:block;width:30px;height:18px;line-height:18px;text-align:center;font:700 11px/18px sans-serif;color:#334155;background:#f1f5f9;border-bottom:1px solid #ccc;cursor:default}
+.leaflet-control-zoom .zlv{display:block;width:auto;height:18px;line-height:18px;text-align:center;font:700 11px/18px sans-serif;color:#334155;background:#f1f5f9;border-bottom:1px solid #ccc;cursor:default}
 .leaflet-control-zoom .zlv.hi{background:#fde68a;color:#92400e}
+/* ＋/− 위 ⠿ 손잡이: 끌어서 옮기면 가까운 왼쪽·오른쪽 가장자리에 붙음 (zoomMoveInit) */
+.leaflet-control-zoom .zgrip{display:block;height:16px;line-height:16px;text-align:center;font-size:12px;letter-spacing:1px;color:#64748b;background:#f8fafc;border-bottom:1px solid #ccc;border-radius:4px 4px 0 0;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.leaflet-touch .leaflet-control-zoom .zgrip{height:22px;line-height:22px;font-size:15px}
+.leaflet-control-container>.leaflet-control-zoom.zfree{position:absolute;margin:0!important;float:none;clear:none;z-index:1000}
+.leaflet-control-zoom.zdrag{opacity:.88;box-shadow:0 6px 18px rgba(0,0,0,.3)}.leaflet-control-zoom.zdrag .zgrip{cursor:grabbing;background:#e0e7ff;color:#3730a3}
 .bgbtn a.hi{background:#fde68a}
 #map.bgoff{background:#fff}
 html.dark #map.bgoff{background:#111827}
-html.dark .leaflet-control-zoom .zlv{background:#1f2937;color:#e5e7eb;border-color:#374151}#map .leaflet-map-pane{-webkit-user-select:none;user-select:none}#map .leaflet-popup{-webkit-user-select:text;user-select:text}
+html.dark .leaflet-control-zoom .zlv{background:#1f2937;color:#e5e7eb;border-color:#374151}html.dark .leaflet-control-zoom .zgrip{background:#111827;color:#9ca3af;border-color:#374151}#map .leaflet-map-pane{-webkit-user-select:none;user-select:none}#map .leaflet-popup{-webkit-user-select:text;user-select:text}
 html.dark #map{background:#1a2539}
 .fsb{margin-left:8px;padding:2px 8px;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}.fsb:hover{background:#e0e7ff}
 html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
@@ -1668,7 +1673,7 @@ function hitMark(x){if(HIT.hl){map.removeLayer(HIT.hl);HIT.hl=null}if(!x)return;
    그 사이 빈 곳 크기로 정보창 폭·높이를 정하고, 넘치면 정보창 안에서 위아래로 밀어 봄 */
 function popRoom(){const C=map.getContainer(),M=C.getBoundingClientRect(),mh=M.height,mw=M.width;let t=10,b=10,l=8,r=8;
  const box=el=>{const R=el.getBoundingClientRect();return R.width>0&&R.height>0?R:null};
- C.querySelectorAll('.leaflet-top .leaflet-control,.leaflet-control-container .chipbar').forEach(el=>{const R=box(el);if(R&&R.bottom-M.top<mh*.4)t=Math.max(t,R.bottom-M.top+6)});
+ C.querySelectorAll('.leaflet-top .leaflet-control,.leaflet-control-container .chipbar,.leaflet-control-container>.zfree').forEach(el=>{const R=box(el);if(R&&R.bottom-M.top<mh*.4)t=Math.max(t,R.bottom-M.top+6)});
  C.querySelectorAll('.leaflet-bottom.leaflet-left .leaflet-control').forEach(el=>{const R=box(el);if(R&&M.bottom-R.top<mh*.3)b=Math.max(b,M.bottom-R.top+6)});
  if(mw<700)C.querySelectorAll('.leaflet-bottom.leaflet-right .leaflet-control').forEach(el=>{const R=box(el);if(R&&!el.classList.contains('leaflet-control-attribution')&&M.right-R.left<mw*.25)r=Math.max(r,M.right-R.left+6)});
  return{t,b,l,r,w:Math.max(220,Math.min(320,mw-l-r-46)),h:Math.max(160,mh-t-b-60)}}
@@ -1880,6 +1885,9 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">앱을 열 때<select id="uiFsStart" class="msel">${opt([['auto','자동 (휴대폰은 전체 지도)'],['on','항상 전체 지도'],['off','평소 화면']])}</select></label>
 <label class="uif">주소창 숨기기 (브라우저 전체화면)<select id="uiFsNat" class="msel">${opt([['on','씀 — 들어갈 때 크롬 안내 문구가 뜸'],['off','쓰지 않음 — 문구 없음, 주소창은 보임']])}</select></label>
 <p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.<br>📲 크롬 메뉴 ⋮ › <b>홈 화면에 추가</b>(앱 설치)로 만든 아이콘으로 열면 안내 문구 없이 처음부터 꽉 찬 화면이 됩니다.</p>
+<div class="uig">➕ 확대·축소 버튼 자리</div>
+<div class="uib"><button type="button" id="uiZpos" class="btn ol">↩ 처음 자리로</button></div>
+<p class="uin">지도 ＋/− 버튼 위 <b>⠿ 손잡이</b>를 끌어 원하는 곳에 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙고, 이 기기에 세로·가로 화면 따로 기억합니다. 손잡이를 두 번 눌러도 처음 자리로 돌아갑니다.</p>
 <div class="uig">☁️ 직원 공유</div><div id="uiShBox"></div>
 <div class="uig">🗺️ 브이월드 배경지도 · 지적도</div><div id="uiVwBox"></div>
 <div class="uig">📷 사진 저장</div><div id="uiPhSzBox"></div>
@@ -1908,7 +1916,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
- q('uiAll').onclick=uiAllToggle;
+ q('uiAll').onclick=uiAllToggle;q('uiZpos').onclick=()=>zpReset(true);
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -1919,6 +1927,7 @@ function uiInit(){if(!map)return;plblInit();
  mapCornerFix();window.addEventListener('orientationchange',()=>setTimeout(mapCornerFix,400));map.on('resize',mapCornerFix);
  try{new ResizeObserver(()=>mapCornerFix()).observe(map._controlCorners.topleft)}catch(_){}
  try{chipInit()}catch(e){console.warn('chipInit',e)}
+ try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
 const CHIP_ORD=['srch','ref','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
@@ -1947,6 +1956,45 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  if(ph||tb)shutDodgeInit(C);/* 태블릿도 📷·📍·🖼️가 오른쪽 아래에 있어 단수구역 창과 겹치지 않게 비킴 */
  if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
   bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}}
+/* ＋/− 확대·축소 버튼 옮기기: 위 ⠿ 손잡이를 끌어 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙음. 세로·가로 화면 따로 이 기기에 기억(geo-zpos, 백업 제외) */
+const ZP={el:null,g:null};
+function zpLoad(){try{return JSON.parse(localStorage.getItem('geo-zpos')||'{}')||{}}catch(_){return {}}}
+function zpKey(){const s=map.getSize();return s.x>s.y?'l':'p'}
+function zpRange(side){const mc=map.getContainer(),M=mc.getBoundingClientRect(),z=ZP.el,h=z.offsetHeight,w=z.offsetWidth,C=map._controlCorners;
+ const bar=map._controlContainer.querySelector('.chipbar');let t=10;if(bar&&bar.offsetHeight)t=Math.round(bar.getBoundingClientRect().bottom-M.top)+8;
+ let b=M.height-h-10;
+ if(side){const x0=side==='r'?M.width-w-10:10,x1=x0+w,box=e=>{if(!e||!e.offsetHeight||e.hidden)return null;const q=e.getBoundingClientRect();return q.right-M.left>x0-4&&q.left-M.left<x1+4?q:null};
+  /* 위: 오른쪽 위 주소찾기·레이어 버튼 아래부터 */
+  for(const e of C[side==='r'?'topright':'topleft'].children){if(e===z)continue;const q=box(e);if(q&&q.bottom-M.top<M.height*.5)t=Math.max(t,Math.round(q.bottom-M.top)+8)}
+  /* 아래: 📷·📍·🖼️ 버튼, 범례 상자, 💧 단수구역 창 위에서 멈춤 */
+  const ob=[...C[side==='r'?'bottomright':'bottomleft'].children].filter(e=>!e.classList.contains('leaflet-control-attribution')&&!e.classList.contains('legbox'));ob.push(document.getElementById('shutBox'));
+  for(const e of ob){const q=box(e);if(q&&q.top-M.top>M.height*.4)b=Math.min(b,Math.round(q.top-M.top)-h-8)}}
+ return {W:M.width,H:M.height,t,b,w,h,M,ok:b>=t}}
+function zpApply(){const z=ZP.el;if(!z||!map)return;const o=zpLoad()[zpKey()],TL=map._controlCorners.topleft;
+ if(!o){if(z.parentNode!==TL){z.classList.remove('zfree');z.style.left=z.style.top='';TL.insertBefore(z,TL.firstChild)}return}
+ if(z.parentNode!==map._controlContainer)map._controlContainer.appendChild(z);z.classList.add('zfree');
+ const R=zpRange(o.s);R.b=Math.max(R.t,R.b);const y=Math.min(1,Math.max(0,+o.y||0));z.style.top=Math.round(R.t+(R.b-R.t)*y)+'px';z.style.left=(o.s==='r'?Math.max(0,Math.round(R.W-R.w-10)):10)+'px'}
+function zpReset(msg){try{localStorage.removeItem('geo-zpos')}catch(_){}zpApply();if(msg&&typeof phToast==='function')phToast('➕ 확대·축소 버튼을 처음 자리(왼쪽 위)로 돌렸습니다',2500)}
+function zoomMoveInit(){const zc=map&&map.zoomControl&&map.zoomControl.getContainer();if(!zc||ZP.el)return;ZP.el=zc;
+ const g=L.DomUtil.create('div','zgrip');zc.insertBefore(g,zc.firstChild);ZP.g=g;g.textContent='⠿';g.setAttribute('role','button');
+ g.title='끌어서 원하는 곳으로 옮기기 (두 번 누르면 처음 자리)';g.setAttribute('aria-label','확대·축소 버튼 옮기기');L.DomEvent.disableClickPropagation(g);/* 손잡이를 끌 때 지도가 같이 끌리지 않게 */
+ let st=null;
+ g.addEventListener('pointerdown',e=>{if(e.button>0)return;e.preventDefault();e.stopPropagation();const r=zc.getBoundingClientRect();
+  st={x:e.clientX,y:e.clientY,dx:e.clientX-r.left,dy:e.clientY-r.top,mv:false,id:e.pointerId}});
+ /* 끄는 동안 버튼을 다른 부모로 옮기면 포인터 잡기(capture)가 풀리므로 창 전체에서 받음 */
+ window.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;e.preventDefault();
+  if(!st.mv){if(Math.hypot(e.clientX-st.x,e.clientY-st.y)<6)return;st.mv=true;if(zc.parentNode!==map._controlContainer)map._controlContainer.appendChild(zc);zc.classList.add('zfree','zdrag')}
+  const R=zpRange();zc.style.left=Math.round(Math.max(0,Math.min(R.W-R.w,e.clientX-R.M.left-st.dx)))+'px';zc.style.top=Math.round(Math.max(R.t,Math.min(R.H-R.h,e.clientY-R.M.top-st.dy)))+'px'});
+ const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;zc.classList.remove('zdrag');if(!s.mv)return;
+  const R0=zpRange(),x=parseFloat(zc.style.left)||0,s0=x+R0.w/2>R0.W/2?'r':'l',side=zpRange(s0).ok?s0:(s0==='r'?'l':'r'),R=zpRange(side),y=parseFloat(zc.style.top)||0;
+  const all=zpLoad();all[zpKey()]={s:side,y:R.b>R.t?Math.min(1,Math.max(0,(y-R.t)/(R.b-R.t))):0};try{localStorage.setItem('geo-zpos',JSON.stringify(all))}catch(_){}zpApply()};
+ window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+ g.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();zpReset(true)});
+ map.on('resize',zpApply);window.addEventListener('orientationchange',()=>setTimeout(zpApply,450));
+ const C=map._controlCorners,soon=()=>{if(!st)requestAnimationFrame(zpApply)};try{const ro=new ResizeObserver(soon);[C.bottomright,C.topright].forEach(e=>ro.observe(e))}catch(_){}
+ new MutationObserver(soon).observe(C.bottomright,{attributes:true,attributeFilter:['style','class']});
+ const sh=()=>{const q=document.getElementById('shutBox');if(q&&!q._zp){q._zp=1;new MutationObserver(soon).observe(q,{attributes:true,attributeFilter:['hidden','class','style']});try{new ResizeObserver(soon).observe(q)}catch(_){}}};sh();setTimeout(sh,1500);
+ zpApply()}
 /* 폰: 💧 단수구역 창이 열려 있으면 아래 귀퉁이(📷·📍·🖼️ 버튼, 범례 상자)를 창 위(세로) 또는 창 왼쪽(가로)으로 비켜 둠 */
 function shutDodgeInit(C){const mc=map.getContainer();let p=null;
  const fix=()=>{let b=0,row=false,rb='';if(p&&!p.hidden&&p.offsetHeight){const M=mc.getBoundingClientRect();
@@ -3816,7 +3864,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen|hl-off)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen|hl-off|zpos)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
