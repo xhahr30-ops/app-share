@@ -4211,7 +4211,7 @@ function facPatch(P,patch){const o={...(P['_원본']||{})};let n=0;
  if(Object.keys(o).length)P['_원본']=o;else delete P['_원본'];return n}
 /* 현장 수정 표시: 추가·삭제 표시·위치 이동·속성 수정 중 하나라도 있으면 시각을 남김 */
 function facMark(P){P._et=Date.now();{const b=(typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||'';if(b)P._eb=b;else delete P._eb}if(!P._fid)P._fid='F'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(P._추가||P._삭제||P._원좌표||(P['_원본']&&Object.keys(P['_원본']).length))P['_현장수정']=facNow();else delete P['_현장수정']}
-async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;const P=f.p||(f.p={});let re=false;
+async function facEdit(i,patch,label){const f=FAC.pt[i];if(!f)return;FAC.keyI=null;const P=f.p||(f.p={});let re=false;
  if(patch==='orig'){const o=P['_원본']||{};for(const k in o){if(o[k]==null)delete P[k];else P[k]=o[k]}delete P['_원본'];if(P._원좌표){f.c=P._원좌표.slice();delete P._원좌표;re=true}if(P._삭제){delete P._삭제;re=true}facMark(P)}
  else{patch={...patch};let n=0;
   if(patch.c){const c=patch.c;delete patch.c;if(c[0]!==f.c[0]||c[1]!==f.c[1]){if(!P._원좌표&&!P._추가)P._원좌표=f.c.slice();f.c=c;const oc=P._원좌표;if(oc&&Math.abs(oc[0]-c[0])<1e-7&&Math.abs(oc[1]-c[1])<1e-7)delete P._원좌표;n++;re=true}}
@@ -4633,15 +4633,27 @@ PH.kf='*';PH.fcL=new Map();PH.fcAmb=new Set();
    (경계밸브 사진은 밸브류만). 가장 가까운 것과 두 번째 거리 차이가 5m 안이면 '연결 확인 필요'로 남김. 자동 연결은 저장하지 않고 그때그때 계산 */
 const PH_FC_R=15,PH_FC_GAP=5,PH_VALVE=new Set(['SA200','SA201','SA202','SA203','SA204','SA205']);
 const phFcKd=m=>{const k=phKd(m);return k==='bv'||k==='fc'};
-function facKey(i){const f=FAC.pt[i],P=f.p||{},id=facId(P);return id?f.k+':'+id.replace(/[;=!]/g,'_'):P._fid?'F:'+P._fid:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6)}
-function facKeyI(){if(FAC.keyI&&FAC.keyIpt===FAC.pt&&FAC.keyIn===FAC.n)return FAC.keyI;const M=new Map();for(let i=0;i<FAC.n;i++){const k=facKey(i);if(!M.has(k))M.set(k,i)}FAC.keyI=M;FAC.keyIpt=FAC.pt;FAC.keyIn=FAC.n;return M}
+/* 시설물 사진 연결 키: 종류:관리번호. 같은 종류에 관리번호가 겹치면(현장 추가 '신규' 여러 개, SHP 중복 번호) 시설마다 따로 _fid(현장 고유번호) → 좌표로 씀.
+   예전엔 겹친 번호를 그대로 써서 사진이 첫 시설 하나에만 표시되고, 정보창은 같은 번호 시설 모두에 같은 사진이 보였음 (2026-10-31) */
+function facKey0(i){const f=FAC.pt[i],P=f.p||{},id=facId(P);return id?f.k+':'+id.replace(/[;=!]/g,'_'):facKeyOwn(i)}
+function facKeyOwn(i){const P=FAC.pt[i].p||{};return P._fid?'F:'+P._fid:'xy:'+(+FAC.x[i]).toFixed(6)+','+(+FAC.y[i]).toFixed(6)}
+function facKeyI(){if(FAC.keyI&&FAC.keyIpt===FAC.pt&&FAC.keyIn===FAC.n)return FAC.keyI;const n=FAC.n,raw=new Array(n),cnt=new Map();
+ for(let i=0;i<n;i++){const k=facKey0(i);raw[i]=k;cnt.set(k,(cnt.get(k)||0)+1)}
+ const K=new Array(n),M=new Map(),D=new Map();for(let i=0;i<n;i++){let k=raw[i];if(cnt.get(k)>1){let a=D.get(k);if(!a)D.set(k,a=[]);a.push(i);k=facKeyOwn(i)}K[i]=k;if(!M.has(k))M.set(k,i)}
+ FAC.keyArr=K;FAC.keyDup=D;FAC.keyI=M;FAC.keyIpt=FAC.pt;FAC.keyIn=n;return M}
+function facKey(i){facKeyI();return FAC.keyArr[i]}
+/* 저장된 연결 키가 지금 키와 안 맞을 때(예전 판이 겹친 번호로 저장, 편집 뒤 좌표 키 → _fid 키) 사진 위치에서 가장 가까운 후보로 찾음 */
+function facKeyFind(key,lat,lng){const KI=facKeyI();let i=KI.get(key);if(i!=null)return i;
+ let c=FAC.keyDup.get(key);if(!c&&/^xy:/.test(key)){const [x,y]=key.slice(3).split(',').map(Number);if(isFinite(x)&&isFinite(y)){const o=facNear(y,x,false,2);if(o.length)return o[0].i}return null}
+ if(!c||!c.length)return null;if(lat==null)return c[0];
+ let bi=c[0],bd=1e18;for(const j of c){const d=(FAC.x[j]-lng)**2+(FAC.y[j]-lat)**2;if(d<bd){bd=d;bi=j}}return bi}
 function facName(i){const f=FAC.pt[i],id=facId(f.p);return facDispName(i)+(id?' '+id:'')}
 function facNear(lat,lng,valve,R){if(!FAC.n||lat==null)return [];const kx=111320*Math.cos(lat*Math.PI/180),ky=110574,dx=R/kx,dy=R/ky,out=[];
  for(const i of facQuery(lng-dx,lat-dy,lng+dx,lat+dy)){if(FAC.dl[i])continue;if(valve&&!PH_VALVE.has(FAC.kinds[FAC.k[i]]))continue;const d=Math.hypot((FAC.x[i]-lng)*kx,(FAC.y[i]-lat)*ky);if(d<=R)out.push({i,d})}
  return out.sort((a,b)=>a.d-b.d)}
 function phFacLinks(){const L=new Map(),amb=new Set();PH.fcAmb=amb;PH.fcL=L;if(!FAC.n)return L;const KI=facKeyI();
  for(const m of PH.list){if(!phFcKd(m)||m.solo)continue;
-  if(m.fc&&m.fc!=='-'){const i=KI.get(m.fc);if(i!=null){L.set(m.id,{key:m.fc,i,man:1});continue}} /* 직접 연결한 시설물이 없어졌으면 자동 연결로 */
+  if(m.fc&&m.fc!=='-'){const i=facKeyFind(m.fc,m.lat,m.lng);if(i!=null){L.set(m.id,{key:facKey(i),i,man:1});continue}} /* 직접 연결한 시설물이 없어졌으면 자동 연결로 */
   if(m.fc==='-'||m.lat==null)continue;
   let c=facNear(m.lat,m.lng,phKd(m)==='bv',PH_FC_R);if(!c.length)continue;
   if(phKd(m)==='bv'){const cb=c.filter(o=>facBndI(o.i));if(cb.length)c=cb} /* 경계밸브 사진은 경계밸브로 표시한 밸브에 먼저 붙임 */
@@ -4659,7 +4671,7 @@ function phFacHid(g,z){if(!g.fac||!FAC.n)return false;const i=facKeyI().get(g.fa
 function phFacHtml(i){if(typeof PH==='undefined')return '';const key=facKey(i),g=PH.gById&&PH.gById.get('f:'+key),ids=g?g.ids.slice().sort((a,b)=>(PH.byId.get(b).ts||0)-(PH.byId.get(a).ts||0)):[];
  const th=ids.slice(0,8).map(id=>`<img data-fph="${esc(id)}" src="${phThumbNow(id)||''}" alt="" title="${esc(PH.byId.get(id).dt||'촬영시각 없음')}" onclick="phFacOpen(this)">`).join('');
  setTimeout(()=>document.querySelectorAll('img[data-fph]').forEach(im=>{if(!im.getAttribute('src'))phThumb(im.dataset.fph).then(u=>{if(u)im.src=u})}),0);
- return `<div class="fph"><b>📷 사진 ${ids.length?ids.length.toLocaleString()+'장':'없음'}</b>${ids.length>8?` <small>(최근 8장)</small>`:''}${th?`<div class="th">${th}</div>`:''}<div class="bt"><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'cam')">📸 찍어 넣기</button><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'alb')">🖼️ 앨범에서</button></div></div>`}
+ return `<div class="fph">${ids.length?`<b>📷 사진 ${ids.length.toLocaleString()}장</b>`:''}${ids.length>8?` <small>(최근 8장)</small>`:''}${th?`<div class="th">${th}</div>`:''}<div class="bt"><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'cam')">📸 찍어 넣기</button><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'alb')">🖼️ 앨범에서</button></div></div>`}
 function phFacOpen(el){const id=el.dataset.fph,g=PH.V&&PH.V.mOf.get(id);if(g&&map&&g.lat!=null){map.closePopup();setTimeout(()=>phPopOpen(g.id,id),50)}else phGalOpen(id)}
 function phFacAdd(el,mode){const i=+el.dataset.fi;if(!FAC.pt[i])return;const key=facKey(i),kd=PH_VALVE.has(FAC.kinds[FAC.k[i]])?'bv':'fc',ll={lat:FAC.y[i],lng:FAC.x[i]},nm=facName(i);
  let inp=document.getElementById('phFacIn');if(!inp){inp=document.createElement('input');inp.type='file';inp.id='phFacIn';inp.hidden=true;document.body.appendChild(inp)}
