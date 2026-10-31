@@ -113,6 +113,16 @@ textarea{height:58px;resize:vertical}
 .drop{display:block;border:2px dashed var(--indb);border-radius:12px;padding:12px;text-align:center;background:color-mix(in srgb,var(--ind1) 50%,transparent);cursor:pointer}
 .drop:hover{background:var(--ind1)}.drop .ic{font-size:26px;line-height:1.2}.drop b{display:block;font-size:13px}.drop span{display:block;font-size:11px;color:var(--mute)}
 .drop input{display:none}.drop.am{border-color:var(--amb);background:color-mix(in srgb,var(--am1) 50%,transparent)}
+#uniDlg{position:fixed;inset:0;z-index:100003;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:12px}
+#uniDlg .ubox{background:var(--card);color:var(--ink);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);width:min(640px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:14px}
+#uniDlg h3{margin:0 0 4px;font-size:16px}#uniDlg .hint{margin:0 0 8px}
+#uniDlg .ulist{overflow:auto;flex:1;border:1px solid var(--line);border-radius:10px}
+#uniDlg .urow{display:grid;grid-template-columns:auto 1fr minmax(150px,42%);gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--line)}
+#uniDlg .urow:first-child{border-top:0}#uniDlg .urow.sk{opacity:.6}
+#uniDlg .unm{min-width:0}#uniDlg .unm b{display:block;font-size:13px;overflow-wrap:anywhere}#uniDlg .unm small{display:block;font-size:11.5px;color:var(--mute)}
+#uniDlg .unm small.c-am{color:#b45309}#uniDlg .unm small.c-in{color:#4338ca}#uniDlg select{width:100%;font-size:12.5px}
+#uniDlg .ubtn{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}#uniDlg .ubtn .btn{width:auto;padding:7px 16px}
+@media (max-width:560px){#uniDlg .urow{grid-template-columns:auto 1fr}#uniDlg .urow select{grid-column:2}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;color:#fff;background:var(--ind)}
 html.dark .btn:not(.ol):not(.em):not(.am):not(.sl){background:#6366f1}
@@ -1031,6 +1041,11 @@ html.gwOn .afp{top:150px}
 <button id="sideTab" type="button" class="np" title="설정 창 보이기 (Ctrl+B)" aria-controls="side">▶ 분석 조건·자료 등록</button>
 <section id="side" class="card np">
  <div class="sh"><h2>📋 분석 조건 및 자료 등록</h2><span class="pilltag">엑셀·CSV·SHP</span></div>
+ <div class="sec" id="uniSec">
+  <h4>📥 파일 넣기 <small style="font-weight:400;color:var(--mute)">무엇이든 한 곳에 · 여러 개 함께</small></h4>
+  <label class="drop" id="uniDrop"><input type="file" id="uniFile" multiple><div class="ic">📥</div><b>파일을 여기에 넣거나 끌어다 놓으세요</b><span>부과량·주소 엑셀 · 경계·관로·시설물 SHP(zip) · 관망해석 inp · 사진 · 백업 — 앱이 종류를 알아내고, 한 번 확인한 뒤 아래 각 칸에 반영합니다</span></label>
+  <p class="hint" id="uniMsg" style="margin:4px 0 0"></p>
+ </div>
 
  <div class="sec">
   <h4>💾 기준자료 백업 · 다른 PC로 옮기기</h4>
@@ -1318,6 +1333,7 @@ const TABS=[
   {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
+  {n:'파일 넣기',b:[['uni','open','📥 파일 넣기',1]]},
   {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1]]},
   {n:'부과량',b:[['win:bill','bill','부과량 연동',1]]},
   {n:'변환 · 공간결합',b:[['af','srch','주소찾기 설정',1],['start','bolt','변환 시작',1,'run'],['stop','stop','변환 중지']]}]},
@@ -1347,7 +1363,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
  if(h==='win')return winOpen(v);if(h==='dock')return dockSet(S.dock===v&&!$('gwDock').classList.contains('cl')?'':v);
  if(h==='ui'){F('uiPanel',true,v);return}
  const go={
-  bkLoad:()=>clk('bkLoad'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
+  bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   stop:()=>{const b=$('stopBtn');if(b&&!b.hidden)b.click()},allOff:()=>F('uiAllToggle'),bg:()=>F('bgToggle'),pt:()=>F('ptToggle'),
@@ -1944,7 +1960,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',bk:'백업 불러오기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const LB={ref:'지금 받기',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -5443,7 +5459,10 @@ if(map){map.on('moveend',phDrawSoon);
  const box=$('mapBox'),isF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
  box.addEventListener('dragover',e=>{if(!isF(e))return;e.preventDefault();box.classList.add('phdrop')});
  box.addEventListener('dragleave',e=>{if(e.target===box||!box.contains(e.relatedTarget))box.classList.remove('phdrop')});
- box.addEventListener('drop',e=>{if(!isF(e))return;e.preventDefault();box.classList.remove('phdrop');let ll=null;try{ll=map.mouseEventToLatLng(e)}catch(_){}phAdd(e.dataTransfer.files,ll)})}
+ box.addEventListener('drop',e=>{if(!isF(e))return;e.preventDefault();box.classList.remove('phdrop');let ll=null;try{ll=map.mouseEventToLatLng(e)}catch(_){}
+  /* 사진·위치도는 놓은 자리로, 그 밖의 파일(엑셀·SHP zip·inp·백업)은 📥 파일 넣기로 */
+  const all=[...e.dataTransfer.files],isPh=f=>/\.(jpe?g|png|heic|heif|pgw|pngw|jgw|wld)$/i.test(f.name)||/^image\//.test(f.type||''),ph=all.filter(isPh),ot=all.filter(f=>!isPh(f));
+  if(ph.length)phAdd(ph,ll);if(ot.length&&typeof uniGo==='function')uniGo(ot)})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PH.place){phPlaceEnd();return}
  if(PH.pop&&!(PH.gal&&PH.gal.isOpen())){const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;if(e.key==='ArrowRight'){PH.pop.go(PH.pop.i+1);e.preventDefault()}else if(e.key==='ArrowLeft'){PH.pop.go(PH.pop.i-1);e.preventDefault()}}});
 window.addEventListener('beforeunload',()=>{try{PH.win&&PH.win.w.close()}catch(_){}});
@@ -5914,7 +5933,7 @@ function phEdInit(){if(!map)return;
 
 /* ===================== 왼쪽 설정 창: 카드 접기 + 상단 바로가기 칩 (스크롤 줄이기) — 접은 상태는 geo-sec 으로 이 기기에 저장 ===================== */
 (function(){const side=$('side');if(!side)return;
- const DEF=[['bk',/백업/,'💾','백업'],['bill',/부과량/,'📥','부과량'],['addr',/주소 데이터/,'①','주소'],['blk',/소블록 폴리곤/,'②','소블록'],['pipe',/상수관로/,'🚰','관로'],['fac',/시설물/,'🔧','시설물'],['ph',/현장 사진/,'📷','사진'],['vid',/동영상/,'🎬','영상']];
+ const DEF=[['uni',/^📥 파일 넣기/,'📥','파일 넣기'],['bk',/백업/,'💾','백업'],['bill',/부과량/,'📥','부과량'],['addr',/주소 데이터/,'①','주소'],['blk',/소블록 폴리곤/,'②','소블록'],['pipe',/상수관로/,'🚰','관로'],['fac',/시설물/,'🔧','시설물'],['ph',/현장 사진/,'📷','사진'],['vid',/동영상/,'🎬','영상']];
  const num=n=>Number(n).toLocaleString();
  const STAT={bill:()=>BILL.R.length?`✅ ${num(BILL.R.length)}건`:'',addr:()=>out.length?`✅ ${num(out.length)}행`:'',blk:()=>poly&&poly.features?`✅ ${num(poly.features.length)}개`:'',
   pipe:()=>PIPE.feats.length?`✅ ${num(PIPE.feats.length)}개`:'',fac:()=>FAC.feats.length?`✅ ${num(FAC.feats.length)}개`:'',ph:()=>PH.list.length?`✅ ${num(PH.list.length)}장`:''};
@@ -7509,10 +7528,10 @@ try{refChipInit()}catch(e){console.warn('지금 받기 칩',e)}
 /* 📂 백업 불러오기 칩: 전체화면 지도에서도 백업 파일(zip·json, 분할 여러 개)을 바로 불러옴. 백업 영역의 📂 버튼과 같은 처리(항목 체크 상태 그대로), 진행·결과는 화면 아래 알림으로 */
 function bkChipInit(){if(!map||document.getElementById('bkChip'))return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb bkb np'),a=L.DomUtil.create('a','',d),inp=L.DomUtil.create('input','',d);d.dataset.ck='bk';
-  inp.type='file';inp.multiple=true;inp.hidden=true;inp.id='bkChipF';inp.accept='.zip,.json,application/zip,application/json';
-  a.href='#';a.id='bkChip';a.setAttribute('role','button');a.setAttribute('aria-label','백업 불러오기');a.title='백업 파일(zip·json) 불러오기 — 불러올 항목은 백업 영역 체크 상태를 따름';a.innerHTML='<span class="ri">📂</span>';
+  inp.type='file';inp.multiple=true;inp.hidden=true;inp.id='bkChipF';
+  a.href='#';a.id='bkChip';a.setAttribute('role','button');a.setAttribute('aria-label','파일 넣기');a.title='파일 넣기 — 백업·부과량·SHP·inp·사진 등 무엇이든. 백업만 넣으면 예전처럼 바로 불러옴(항목은 백업 영역 체크 상태)';a.innerHTML='<span class="ri">📂</span>';
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(a.classList.contains('busy')){phToast('📂 이미 불러오는 중입니다.',{ms:4000});return}inp.click()});
-  inp.onchange=()=>bkChipGo(a,inp);return d}});
+  inp.onchange=()=>uniChip(a,inp);return d}});
  map.addControl(new Ctl())}
 async function bkChipGo(a,inp){const fs=[...inp.files];inp.value='';const h=$('bkLoad')&&$('bkLoad').onchange,m=$('bkMsg');if(!fs.length||!h)return;
  const line=()=>{const t=document.createElement('div');t.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';return t.textContent.trim()};
@@ -7522,6 +7541,225 @@ async function bkChipGo(a,inp){const fs=[...inp.files];inp.value='';const h=$('b
  try{await h({target:{files:fs,value:''}})}catch(e){console.warn('백업 칩',e)}finally{mo&&mo.disconnect();a.classList.remove('busy');if(lb)a.dataset.lb=lb}
  const t=line();phToast(t?t+(bkLoad.k&&/✅/.test(t)?' · 키 설정 반영은 새로고침 한 번':''):'📂 불러오기를 취소했습니다.',{ms:/실패|없습니다|아닙니다/.test(t)?15000:9000})}
 try{bkChipInit()}catch(e){console.warn('백업 불러오기 칩',e)}
+/* ---------- 📥 파일 넣기 (2026-10-31 A안): 첨부 칸 하나 + 파일 속 판별 → 확인 창 → 기존 칸의 처리로 넘김 ----------
+   판별은 파일 이름이 아니라 속을 봄: 백업·관망해석 결과(json app 키), SHP(zip 안 .shp 도형 + .dbf 칸 이름), 엑셀(시트 이름·머리글), inp, 사진.
+   한 zip에 경계·관로·시설물이 섞이면 레이어별로 나눠 각 칸에 넘김. 기준자료가 이미 있으면 기본은 변경분 반영(미리보기), 확인 창에서 전체 교체로 바꿀 수 있음.
+   폐관 목록은 관로를 지우므로 자동으로 고르지 않음. 실제 읽기·반영·되돌리기는 원래 칸의 코드를 그대로 씀 */
+const UNI_K={bk:['💾 백업 불러오기','bkLoad','bkMsg'],blk:['② 소블록 경계 · 전체 등록','f2','shpMsg'],blkU:['② 소블록 경계 · 변경분 반영','bUpd','shpMsg'],
+ pipe:['②-1 상수관로 · 전체 등록','f3','pMsg'],pipeU:['②-1 상수관로 · 변경분 반영','pUpd','pMsg'],pipeD:['②-1 상수관로 · 폐관 목록(관리번호)','pDelF','pMsg'],
+ fac:['②-2 시설물 · 전체 등록','f4','fMsg'],facU:['②-2 시설물 · 변경분 반영','fUpd','fMsg'],elev:['②-3 관망해석 inp·결과','f5','eMsg'],
+ bill:['📥 부과량 연동','bFile','bMsg'],billX:['📥 부과량 연동 · FRD 양식으로 맞추기','bFile','bMsg'],addr:['① 주소 데이터','f1','src'],imp:['♻️ 이전 결과 엑셀','impFile','impMsg'],
+ phRef:['📍 사진 기준 위치 (접수번호 좌표)','phRefFile','phRefMsg'],rcp:['📋 민원 접수 리스트 → 메모','phRcpFile','phRcpMsg'],ph:['📷 현장 사진','phFile','phMsg'],skip:['반영 안 함','','']};
+const UNI={busy:false};
+const UNI_ORD=['bk','blk','blkU','pipe','pipeU','pipeD','fac','facU','elev','bill','billX','addr','imp','phRef','rcp','ph'];
+const uniHas={blk:()=>!!poly,pipe:()=>!!(PIPE.raw&&PIPE.raw.length),fac:()=>!!(FAC.feats&&FAC.feats.length)};
+const uniExt=n=>(String(n).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1]||'';
+const uniSz=b=>b>=1048576?(b/1048576).toFixed(1)+'MB':Math.max(1,Math.round(b/1024))+'KB';
+/* zip 안 파일 앞부분만 읽기 (큰 .shp·.dbf를 다 풀지 않음) */
+function uniHead(zf,n){return new Promise(res=>{const parts=[];let len=0,done=false;const fin=()=>{if(done)return;done=true;const o=new Uint8Array(Math.min(len,n));let p=0;for(const c of parts){const k=Math.min(c.length,o.length-p);if(k<=0)break;o.set(c.subarray(0,k),p);p+=k}res(o)};
+ try{const s=zf.internalStream('uint8array');s.on('data',d=>{if(done)return;parts.push(d);len+=d.length;if(len>=n){fin();try{s.pause()}catch(_){}}}).on('error',()=>fin()).on('end',fin);s.resume()}catch(_){zf.async('uint8array').then(u=>{parts.push(u);len=u.length;fin()},()=>fin())}})}
+const uniDec=(u,cp)=>{if(!/949|euc|kor|ansi/i.test(cp||'')){try{return new TextDecoder('utf-8',{fatal:true}).decode(u)}catch(_){}}try{return new TextDecoder('euc-kr').decode(u)}catch(_){return new TextDecoder().decode(u)}};
+/* SHP 레이어 하나: 도형 종류 + 칸 이름 → blk / pipe / fac / phRef */
+async function uniShpLayer(z,p){const base=p.slice(0,-4),nm=base.split('/').pop(),fl=k=>z.file(base+k)||z.file(base+k.toUpperCase());
+ let gt=0;try{const h=await uniHead(z.file(p),100);if(h.length>=36)gt=new DataView(h.buffer,h.byteOffset,h.length).getInt32(32,true)}catch(_){}
+ const g=gt%10,cpf=fl('.cpg'),cp=cpf?String(await cpf.async('string')).trim():'',flds=[];
+ try{const df=fl('.dbf');if(df){const h=await uniHead(df,20000);const hl=h.length>10?h[8]|(h[9]<<8):0;for(let o=32;o+32<=Math.min(hl,h.length)&&h[o]!==13;o+=32){let e=o;while(e<o+11&&h[e])e++;flds.push(uniDec(h.subarray(o,e),cp).trim())}}}catch(_){}
+ const F=flds.join('|'),sa=/SA\d{3}/i.test(nm)||/^(지물부호|FTR_CDE)$/im.test(flds.join('\n'));
+ let k='',why='';
+ if(g===3){k='pipe';why='선 레이어'}
+ else if(g===5){if(/SA\d{3}/i.test(nm)){k='fac';why='면 + 파일명 지물부호'}else if(/BLK|소블록|블록|블럭|WBB|DMA/i.test(F)){k='blk';why='면 + 블록명 칸'}else if(sa||FK_GUESS.some(([re])=>re.test(nm))){k='fac';why='면 + 시설물 이름'}else{k='blk';why='면 레이어(블록 경계로 추정)'}}
+ else if(g===1||g===8){if(/접수번호|민원번호|접수NO/i.test(F)){k='phRef';why='점 + 접수번호 칸'}else{k='fac';why=sa?'점 + 지물부호':FK_GUESS.some(([re])=>re.test(nm))?'점 + 시설물 이름':'점 레이어(시설물로 추정)'}}
+ return{p,base,nm,k,why,gt,prj:!!fl('.prj'),cpg:!!cpf,cp,flds,n:flds.length}}
+async function uniZip(f){if(typeof JSZip==='undefined')return[{f,k:'skip',why:'ZIP 라이브러리를 불러오지 못했습니다'}];
+ let z;try{z=await JSZip.loadAsync(f)}catch(_){return[{f,k:'skip',why:'zip 파일을 열지 못했습니다'}]}
+ const names=Object.keys(z.files).filter(p=>!z.files[p].dir&&!/(^|\/)(__MACOSX|\.)/.test(p));
+ if(z.file('backup.json'))return[{f,k:'bk',why:'이 앱의 백업 파일'}];
+ const shps=names.filter(p=>/\.shp$/i.test(p));
+ if(!shps.length){const js=names.find(p=>/\.json$/i.test(p));if(js){const h=new TextDecoder().decode(await uniHead(z.file(js),400));if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}]}
+  if(names.some(p=>/\.inp$/i.test(p)))return[{f,k:'skip',why:'zip 안 .inp는 풀어서 .inp 파일로 넣어 주세요'}];
+  if(names.some(p=>/\.(jpe?g|png|heic)$/i.test(p)))return[{f,k:'skip',why:'사진 묶음 zip은 풀어서 사진 파일로 넣어 주세요'}];
+  return[{f,k:'skip',why:'zip 안에 SHP(.shp)가 없습니다'}]}
+ const L=[];for(const p of shps)L.push(await uniShpLayer(z,p));
+ const noPrj=L.filter(l=>!l.prj).map(l=>l.nm),cls=[...new Set(L.map(l=>l.k).filter(Boolean))];
+ const one=async(k,ls,file)=>{const kk=k in uniHas&&uniHas[k]()?k+'U':k,why=ls.map(l=>l.why).filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+  const pl=/^(blk|pipe|fac)$/.test(k)?await uniShpFixPlan(z,ls,k):{fix:[]};
+  return{f:file,k:kk,why:why+(ls.length>1?` · 레이어 ${ls.length}개`:'')+(kk!==k?' · 이미 기준자료가 있어 변경분으로':''),L:ls,fix:pl.fix,needPrj:pl.needPrj,crs:pl.crs,crsSure:pl.crsSure,crsWhy:pl.crsWhy}};
+ if(cls.length<=1)return[await one(cls[0]||'skip',L,f)];
+ /* 여러 종류가 섞인 zip → 종류별 zip으로 나눔(같은 이름의 .shp·.dbf·.prj·.cpg·.shx 함께) */
+ const out=[],bn=String(f.name).replace(/\.zip$/i,'');
+ for(const k of cls){const ls=L.filter(l=>l.k===k),nz=new JSZip();
+  for(const l of ls)for(const p of names)if(p.slice(0,p.lastIndexOf('.'))===l.base)nz.file(p.split('/').pop(),await z.file(p).async('uint8array'));
+  const blob=await nz.generateAsync({type:'blob'});out.push(await one(k,ls,new File([blob],`${bn} (${UNI_K[k][0].split(' · ')[0].replace(/^[^\s]+\s/,'')}).zip`,{type:'application/zip'})))}
+ return out}
+/* 엑셀·CSV: 시트 이름 → 머리글 */
+async function uniXl(f){if(typeof XLSX==='undefined')return[{f,k:'skip',why:'엑셀 읽기 기능(SheetJS)을 불러오지 못했습니다'}];
+ let buf,names=[];try{buf=await f.arrayBuffer();names=uniExt(f.name)==='csv'?['Sheet1']:XLSX.read(buf,{type:'array',bookSheets:true}).SheetNames||[]}catch(_){return[{f,k:'skip',why:'엑셀 파일을 열지 못했습니다'}]}
+ if(names.includes('부과량'))return[{f,k:'bill',why:"'부과량' 시트 (열 자리가 FRD와 다르면 종류를 'FRD 양식으로 맞추기'로 바꾸세요)"}];
+ for(const n of names){const H0=(()=>{try{const wb=XLSX.read(buf,{type:'array',sheets:[n],sheetRows:10}),ws=wb.Sheets[n];return ws?XLSX.utils.sheet_to_json(ws,{header:1,defval:null}).flat().map(v=>String(v??'').replace(/\s/g,'')):[]}catch(_){return[]}})();
+  if(H0.includes('수용가번호'))return[{f,k:'billX',why:`'${n}' 시트에 수용가번호 — '부과량' 시트가 아니라 FRD 양식(Y열 소블록 등)으로 바꿔 반영`}]}
+ const head=n=>{try{const wb=XLSX.read(buf,{type:'array',sheets:[n],sheetRows:21}),ws=wb.Sheets[n]||wb.Sheets[wb.SheetNames[0]];const A=ws?XLSX.utils.sheet_to_json(ws,{header:1,defval:null}):[];
+  const hi=A.findIndex(r=>r&&r.filter(v=>typeof v==='string'&&v.trim()).length>=1);return hi<0?[]:A[hi].map(v=>String(v??'').replace(/\s/g,''))}catch(_){return[]}};
+ const rs=names.find(n=>/리스트/.test(n));if(rs){const H=head(rs);if(H.includes('접수번호')||H.includes('현장내용')||/매크로|메크로/.test(rs))return[{f,k:'rcp',why:`'${rs}' 시트`}]}
+ if(names.includes('결과')){const H=head('결과');if(H.includes('_위도')&&H.includes('_경도'))return[{f,k:'imp',why:"'결과' 시트의 _위도·_경도"}]}
+ const H=head(names[0]),has=re=>H.some(h=>re.test(h)),hl=H.filter(Boolean);
+ if(has(/^(접수번|접수no|민원번호)/i)&&(has(/^(위도|lat|latitude)$/i)&&has(/^(경도|lon|lng|long|longitude)$/i)||has(/^(x|x좌표|tm_x)$/i)&&has(/^(y|y좌표|tm_y)$/i)))return[{f,k:'phRef',why:'접수번호 + 좌표 열'}];
+ if(has(/^접수번호$/)&&has(/^현장내용$/))return[{f,k:'rcp',why:'접수번호·현장내용 열'}];
+ 
+ if(has(/지번|구주소|도로명|신주소|^주소$/))return[{f,k:'addr',why:'주소 열'+(has(/^수용가번호$/)?" · 부과량 연동은 시트 이름이 '부과량'이어야 함":'')}];
+ if(hl.length<=2&&has(/관리번호|FTR_IDN/i))return[{f,k:'pipeD',why:'관리번호 한 열 — 폐관 목록이면 체크하세요',off:true}];
+ return[{f,k:'skip',why:'종류를 알 수 없는 표입니다 — 종류 칸에서 직접 고르세요'}]}
+async function uniSniff(f){const e=uniExt(f.name);
+ try{if(/^(jpe?g|png|heic|heif|pgw|pngw|jgw|wld)$/.test(e)||/^image\//.test(f.type||''))return[{f,k:'ph',why:/^(pgw|pngw|jgw|wld)$/.test(e)?'월드 파일(위치도)':'사진'}];
+  if(e==='zip')return await uniZip(f);
+  if(/^(xlsx|xlsm|xls|xlsb|csv)$/.test(e))return await uniXl(f);
+  if(e==='inp'||e==='txt'){const h=await f.slice(0,20000).text();return /\[(JUNCTIONS|PIPES|COORDINATES|TITLE)\]/i.test(h)?[{f,k:'elev',why:'관망해석 inp (표고)'}]:[{f,k:'skip',why:'알 수 없는 글 파일'}]}
+  if(e==='json'){const h=await f.slice(0,400).text();if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}];if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];return[{f,k:'skip',why:'이 앱의 json이 아닙니다'}]}
+  if(/^(shp|dbf|shx|prj|cpg)$/.test(e))return[{f,k:'skip',why:'SHP는 .shp·.dbf·.shx·.prj를 함께 zip 하나로 묶어 넣어 주세요'}]}
+ catch(err){return[{f,k:'skip',why:'읽기 실패: '+((err&&err.message)||err)}]}
+ return[{f,k:'skip',why:'이 앱에서 쓰지 않는 파일입니다'}]}
+/* 확인 창 */
+function uniDlg(items){return new Promise(res=>{const old=$('uniDlg');if(old)old.remove();
+ const d=document.createElement('div');d.id='uniDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','파일 반영 확인');
+ const opts=k=>UNI_ORD.concat('skip').map(x=>`<option value="${x}"${x===k?' selected':''}>${esc(UNI_K[x][0])}</option>`).join('');
+ d.innerHTML=`<div class="ubox"><h3>📥 파일 ${items.length}개를 이렇게 반영합니다</h3><p class="hint">종류가 틀리면 종류 칸에서 바꾸세요. 체크한 것만 반영합니다. 반영 뒤에도 각 칸의 ↩ 되돌리기를 쓸 수 있습니다.</p><div class="ulist">${items.map((it,i)=>`<div class="urow${it.k==='skip'?' sk':''}"><label class="uck"><input type="checkbox" data-i="${i}"${it.k!=='skip'&&!it.off?' checked':''}></label><div class="unm"><b>${esc(it.f.name)}</b><small>${uniSz(it.f.size||0)} · ${esc(it.why||'')}</small>${it.fix&&it.fix.length?`<small class="c-in">🛠 FRD 양식으로 맞춤: ${esc(it.fix.join(' · '))}</small>`:''}${it.needPrj?`<small class="c-am">좌표계 <select data-crs="${i}" class="msel" style="width:auto;font-size:12px;padding:1px 4px">${UNI_CRS.map(c=>`<option${c===it.crs?' selected':''}>${c}</option>`).join('')}</select> ${it.crsSure?'✓ '+esc(it.crsWhy||'우리나라 안'):'⚠ 확인 필요 — 반영 뒤 지도에서 제자리인지 보세요 (5186·5187은 자동 구분 불가)'}</small>`:''}</div><select class="msel" data-i="${i}" aria-label="${esc(it.f.name)} 반영 종류">${opts(it.k)}</select></div>`).join('')}</div><div class="ubtn"><button type="button" class="btn ol" data-a="x">취소</button><button type="button" class="btn" data-a="ok">반영</button></div></div>`;
+ document.body.appendChild(d);const done=v=>{d.remove();document.removeEventListener('keydown',kd,true);res(v)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();done(null)}};document.addEventListener('keydown',kd,true);
+ d.addEventListener('change',e=>{const cs=e.target.closest('select[data-crs]');if(cs){items[+cs.dataset.crs].crs=cs.value;return}const s=e.target.closest('select[data-i]');if(!s)return;const i=+s.dataset.i;items[i].k=s.value;const c=d.querySelector(`input[data-i="${i}"]`);c.checked=s.value!=='skip';s.closest('.urow').classList.toggle('sk',s.value==='skip')});
+ d.addEventListener('click',e=>{if(e.target===d)return done(null);const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='x')return done(null);
+  done(items.filter((it,i)=>d.querySelector(`input[data-i="${i}"]`).checked&&it.k!=='skip'))});
+ setTimeout(()=>{const b=d.querySelector('button[data-a="ok"]');if(b)b.focus()},30)})}
+/* 기존 칸 처리 끝날 때까지 기다림: 핸들러가 돌려준 Promise + 메시지 칸에 '…중' 글자가 없어질 때까지 (최대 10분) */
+async function uniWait(p,mid){try{await p}catch(_){}const m=$(mid);if(!m)return;const busy=()=>/중\s*(…|\.\.\.)|중…|읽는 중|정리 중|비교 중|불러오는 중/.test(m.textContent||'')||m.dataset.busy==='1';
+ const t0=Date.now();let ok=0;await sleep(500);while(Date.now()-t0<600000){if(busy())ok=0;else if(++ok>=3)break;await sleep(400)}}
+const uniLine=mid=>{const m=$(mid);if(!m)return'';const t=document.createElement('div');t.innerHTML=String(m.innerHTML).split(/<br\s*\/?>/i)[0];return t.textContent.trim()};
+async function uniRun(items){const msg=$('uniMsg'),grp=new Map(),pre=[];UNI.out=[];
+ /* A-2: FRD 양식으로 맞추기 (부과량 열 대응 · SHP .prj/.cpg/칸 이름/파일명) */
+ for(const it of items){try{
+   if(it.k==='billX'){phToast(`📥 ${it.f.name} 열 살펴보는 중…`,{ms:120000});const nf=await uniBillConvert(it);if(!nf){pre.push(`⏭ ${it.f.name}: 건너뜀`);it.k='skip';continue}UNI.out.push(nf);pre.push(`🛠 ${it.f.name} → ${nf.name} (FRD 양식)`);it.f=nf}
+   else if(it.fix&&it.fix.length&&!/^(skip|pipeD)$/.test(it.k)&&/\.zip$/i.test(it.f.name)){const nf=await uniShpFix(it);UNI.out.push(nf);pre.push(`🛠 ${it.f.name} → ${nf.name}: ${it.fix.join(' · ')}${it.needPrj?' · 좌표계 '+it.crs:''}`);it.f=nf}}
+  catch(err){pre.push(`❌ ${it.f.name} 양식 맞추기 실패: ${(err&&err.message)||err}`);it.k='skip'}}
+ items=items.filter(it=>it.k!=='skip');items.forEach(it=>{const a=grp.get(it.k)||[];a.push(...(it.fs||[it.f]));grp.set(it.k,a)});
+ const ks=UNI_ORD.filter(k=>grp.has(k)),log=pre;UNI.busy=true;
+ try{for(let i=0;i<ks.length;i++){const k=ks[i],[lb,id,mid]=UNI_K[k],inp=$(id);if(!inp||typeof inp.onchange!=='function'){log.push(`❌ ${lb}: 칸을 찾지 못했습니다`);continue}
+   const fs=grp.get(k),multi=inp.multiple;const run=multi?[fs]:fs.map(f=>[f]);
+   for(const one of run){const t=`📥 ${i+1}/${ks.length} ${lb} — ${one.length>1?one.length+'개 파일':one[0].name} 반영 중…`;if(msg)msg.textContent=t;phToast(t,{ms:600000});
+    let fl=one;try{const dt=new DataTransfer();one.forEach(f=>dt.items.add(f));fl=dt.files}catch(_){}
+    const m=$(mid);if(m&&k!=='bk')m.textContent='';
+    let r;try{r=inp.onchange({target:{files:fl,value:''},currentTarget:inp})}catch(err){log.push(`❌ ${lb}: ${(err&&err.message)||err}`);continue}
+    await uniWait(r,mid);const ln=uniLine(mid);log.push(`${lb}: ${ln||'요청을 넘겼습니다'}`)}}}
+ finally{UNI.busy=false}
+ if(msg)msg.innerHTML=log.map(esc).join('<br>');try{uniAfter()}catch(e){console.warn('파일 넣기 후처리',e)}phToast(log.length===1?'📥 '+log[0]:`📥 ${log.length}건 반영을 마쳤습니다. 결과는 왼쪽 📥 파일 넣기 칸에 있습니다.`,{ms:/실패|❌|없습니다|아닙니다/.test(log.join(' '))?15000:9000})}
+async function uniGo(files){files=[...files||[]].filter(Boolean);if(!files.length)return;if(UNI.busy){phToast('📥 앞의 파일을 아직 반영하는 중입니다. 끝난 뒤 다시 넣어 주세요.',{ms:5000});return}
+ const msg=$('uniMsg');if(msg)msg.textContent=`파일 ${files.length}개 살펴보는 중…`;phToast(`📥 파일 ${files.length}개 종류 살펴보는 중…`,{ms:120000});
+ let items=[];for(const f of files)items=items.concat(await uniSniff(f));
+ /* 사진·월드 파일은 한 줄로 묶음 */
+ const ph=items.filter(x=>x.k==='ph');if(ph.length>1){const at=items.indexOf(ph[0]);items=items.filter(x=>x.k!=='ph');items.splice(at,0,{f:{name:`사진·위치도 ${ph.length}개`,size:ph.reduce((a,x)=>a+(x.f.size||0),0)},fs:ph.map(x=>x.f),k:'ph',why:'촬영 위치·시각은 사진에서 읽음'})}
+ if(msg)msg.textContent='';const pick=await uniDlg(items);if(!pick){phToast('📥 반영을 취소했습니다.',{ms:3000});return}if(!pick.length){phToast('📥 반영할 파일을 고르지 않았습니다.',{ms:4000});return}
+ await uniRun(pick)}
+function uniInit(){const inp=$('uniFile'),box=$('uniDrop');if(!inp)return;inp.onchange=()=>{const fs=[...inp.files];inp.value='';uniGo(fs)};
+ if(box){const isF=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
+  box.addEventListener('dragover',e=>{if(!isF(e))return;e.preventDefault();box.classList.add('am')});
+  box.addEventListener('dragleave',()=>box.classList.remove('am'));
+  box.addEventListener('drop',e=>{if(!isF(e))return;e.preventDefault();box.classList.remove('am');uniGo(e.dataTransfer.files)})}}
+/* ---------- 📥 파일 넣기 · 양식 맞추기 (2026-10-31 A-2): 양식이 다른 파일을 FRD 양식으로 바꿔 반영하고, 바꾼 표준 파일을 내려받게 함 ----------
+   부과량: '부과량' 시트가 없는 수용가 엑셀 → 열 대응(자동 찾기 + 고르기, 이 기기에 기억) → A 수용가번호·B 관리번호·…·X 대블록·Y 소블록·Z~ 월(YYYY-MM) 표준 엑셀.
+     수용가명·상호·전화·검침담당 열은 옮기지 않음(FRD 2장). 월 머리글에 연도가 없으면 연도를 물어봄.
+   SHP: .prj 없으면 고른 좌표계로 .prj 추가, .cpg 없으면 인코딩을 보고 추가, 경계 블록명 칸을 BLK_NM으로, 시설물 파일명에 SA 코드를 붙임.
+   바꾼 파일은 📥 칸의 [⬇ FRD 양식 파일 받기]로 zip 하나에 담아 내려받음 */
+const UNI_SA={gate:'SA200',hyd:'SA119',meter:'SA117',res:'SA114',pump:'SA206',wtp:'SA113',wp:'SA121',air:'SA203',drain:'SA202',prv:'SA204'};
+const UNI_BLKF=/^(SBLK_NM|SBLK_NAM|WBB_NAM|BLK_NAM|BLOCK_NM|BLOCK_NAME|DMA_NM|DMA_NAME|소블록명|소블럭명|소블록|소블럭|블록명|블럭명)$/i;
+const UNI_CRS=['EPSG:5187','EPSG:5186','EPSG:5185','EPSG:5179','EPSG:4326'];
+UNI.out=[];
+/* SHP 첫 점(원래 좌표) */
+async function uniShpPt(zf){try{const h=await uniHead(zf,4096);if(h.length<120)return null;const v=new DataView(h.buffer,h.byteOffset,h.length),t=v.getInt32(108,true);
+ if(t%10===1)return[v.getFloat64(112,true),v.getFloat64(120,true)];if(t%10===8||t%10===3||t%10===5){const np=t%10===8?0:v.getInt32(144,true),o=t%10===8?148:152+np*4;if(o+16<=h.length)return[v.getFloat64(o,true),v.getFloat64(o+8,true)]}}catch(_){}return null}
+/* .prj 없는 레이어의 좌표계 추천: 이미 있는 기준자료(경계·관로) 범위 안에 떨어지는 후보 → 없으면 우리나라 안에 떨어지는 첫 후보 */
+function uniCrsGuess(pt){if(!pt)return{c:'EPSG:5187',sure:false};if(isDeg(pt))return{c:'EPSG:4326',sure:inKR(pt)};
+ let bb=null;try{if(poly){const b=L.geoJSON(poly).getBounds();bb=[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()]}else if(PIPE.fc&&PIPE.feats.length){const b=L.geoJSON(PIPE.fc).getBounds();bb=[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()]}}catch(_){}
+ const ok=UNI_CRS.filter(c=>c!=='EPSG:4326').map(c=>{try{return[c,proj4(c,'EPSG:4326',pt)]}catch(_){return null}}).filter(x=>x&&inKR(x[1]));
+ if(bb){const m=.05,hit=ok.find(([,q])=>q[0]>bb[0]-m&&q[0]<bb[2]+m&&q[1]>bb[1]-m&&q[1]<bb[3]+m);if(hit)return{c:hit[0],sure:true,why:'기준자료와 겹치는 좌표계'}}
+ return{c:(ok[0]||['EPSG:5187'])[0],sure:false}}
+/* 레이어별 고칠 것 목록 */
+async function uniShpFixPlan(z,ls,k){const fix=[];let needPrj=false,pt=null;
+ for(const l of ls){if(!l.prj){needPrj=true;if(!pt)pt=await uniShpPt(z.file(l.p))}
+  if(!l.cpg)fix.push(`${l.nm}: .cpg 추가`);
+  if(k==='blk'&&!l.flds.some(f=>/^BLK_NM$/i.test(f))){const c=l.flds.find(f=>UNI_BLKF.test(f));if(c){l.ren=c;fix.push(`${l.nm}: 블록명 칸 ${c} → BLK_NM`)}}
+  if(k==='fac'&&!/SA\d{3}/i.test(l.nm)&&!/^(지물부호|FTR_CDE)$/im.test(l.flds.join('\n'))){const g=FK_GUESS.find(([re])=>re.test(l.nm)),sa=g&&UNI_SA[g[1]];if(sa){l.sa=sa;fix.push(`${l.nm}: 파일명 앞에 ${sa} 붙임`)}}}
+ const g=needPrj?uniCrsGuess(pt):null;if(needPrj)fix.unshift('.prj 추가 (좌표계 아래에서 선택)');return{fix,needPrj,crs:g&&g.c,crsSure:g&&g.sure,crsWhy:g&&g.why}}
+/* 고친 zip 만들기 */
+async function uniShpFix(it){const z=await JSZip.loadAsync(it.f),nz=new JSZip(),names=Object.keys(z.files).filter(p=>!z.files[p].dir);let ch=0;
+ const bnm=x=>String(x).split('/').pop();
+ for(const p of names){const base=p.slice(0,p.lastIndexOf('.')),ext=p.slice(p.lastIndexOf('.')),l=(it.L||[]).find(x=>bnm(x.base)===bnm(base));let nm=p.split('/').pop(),u=await z.file(p).async('uint8array');
+  if(l&&l.sa)nm=l.sa+'_'+nm;
+  if(l&&l.ren&&/\.dbf$/i.test(ext)){u=u.slice();const hl=u[8]|(u[9]<<8);for(let o=32;o+32<=hl&&u[o]!==13;o+=32){let e=o;while(e<o+11&&u[e])e++;if(uniDec(u.subarray(o,e),l.cp).trim()===l.ren){const t=new TextEncoder().encode('BLK_NM');u.fill(0,o,o+11);u.set(t,o);ch++;break}}}
+  nz.file(nm,u)}
+ for(const l of it.L||[]){const nm=(l.sa?l.sa+'_':'')+bnm(l.base);
+  if(!l.prj&&it.crs&&PRJ[it.crs]){nz.file(nm+'.prj',PRJ[it.crs]);ch++}
+  if(!l.cpg){let cp='UTF-8';try{const dp=names.find(p=>/\.dbf$/i.test(p)&&bnm(p.slice(0,-4))===bnm(l.base)),df=dp&&z.file(dp);if(df){const h=await uniHead(df,262144),hl=h.length>10?h[8]|(h[9]<<8):0;try{new TextDecoder('utf-8',{fatal:true}).decode(h.subarray(Math.min(hl,h.length)),{stream:true})}catch(_){cp='949'}}}catch(_){}nz.file(nm+'.cpg',cp);ch++}}
+ const blob=await nz.generateAsync({type:'blob',compression:'DEFLATE'});return new File([blob],String(it.f.name).replace(/\.zip$/i,'')+'_FRD양식.zip',{type:'application/zip'})}
+/* ---------- 부과량 양식 맞추기 ---------- */
+const UNI_BR=[['id','수용가번호',/^수용가번호$/,1],['mg','관리번호',/^관리번호$|^수용가관리번호$/],['ad','주소',/^(주소|도로명주소|신주소|주소\(도로명\)|도로명)$/],['ji','구주소',/^(구주소|지번주소|구주소\(지번\)|지번)$/],
+ ['u','업종',/^업종/],['d','구경',/^(구경|계량기구경|관경)/],['h','가구수',/^가구수/],['rm','검침입력',/검침입력|원격/],['dn','동명',/^(동명|법정동|행정동)$/],['b2','대블록',/^(대블록|대블럭)/],['b','소블록',/^(소블록|소블럭|블록명|블럭명|블록|블럭|소블록명)$/,1]];
+const UNI_BCOL={id:0,mg:1,ad:2,ji:3,u:4,d:5,h:6,rm:7,dn:8,b2:23,b:24};
+const uniNoRead=/수용가명|성명|상호|고객명|전화|휴대|연락처|핸드폰|^HP$|^TEL|검침원|검침담당|주민|사업자/i;
+function uniMonth(h){if(h instanceof Date||typeof h==='number')return{ym:bYm(h)};const s=String(h??'').replace(/\s/g,'');if(!s)return null;
+ let m=/^(20\d\d)[.\-\/년](\d{1,2})/.exec(s);if(m&&+m[2]>=1&&+m[2]<=12)return{ym:m[1]+'-'+m[2].padStart(2,'0')};
+ m=/^(\d{1,2})월/.exec(s);if(m&&+m[1]>=1&&+m[1]<=12)return{mo:+m[1]};return null}
+async function uniBillScan(f){const buf=await f.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});let sh=null,A=null,hi=-1;
+ for(const n of wb.SheetNames){const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null});const i=a.findIndex((r,k)=>k<10&&r&&r.some(v=>String(v??'').replace(/\s/g,'')==='수용가번호'));if(i>=0){sh=n;A=a;hi=i;break}}
+ if(!A)throw new Error('수용가번호 머리글이 있는 시트를 찾지 못했습니다');
+ const H=A[hi].map(h=>h instanceof Date?h:String(h??'').replace(/\s/g,'')),body=A.slice(hi+1).filter(r=>r&&r.some(v=>v!=null&&String(v).trim()!==''));
+ const map={},used=new Set();for(const [k,,re] of UNI_BR){const i=H.findIndex((h,j)=>!used.has(j)&&typeof h==='string'&&re.test(h)&&!uniNoRead.test(h));if(i>=0){map[k]=i;used.add(i)}}
+ const smp=body.slice(0,300),num=c=>smp.some(r=>typeof r[c]==='number');
+ const mon=[];H.forEach((h,c)=>{if(used.has(c)||(typeof h==='string'&&uniNoRead.test(h)))return;const m=uniMonth(h);if(m&&num(c))mon.push({c,h:h instanceof Date?bYm(h):String(h),...m})});
+ const sig=sh+'|'+H.filter((h,c)=>typeof h==='string'&&!mon.some(m=>m.c===c)).join('|');
+ let mem=null;try{mem=(JSON.parse(localStorage.getItem('geo-billmap')||'{}')||{})[sig]||null}catch(_){}
+ if(mem&&mem.map)for(const k in mem.map){const i=H.indexOf(mem.map[k]);if(i>=0)map[k]=i;else if(mem.map[k]==='')delete map[k]}
+ return{wb,sh,H,body,map,mon,sig,mem,yr:mem&&mem.yr||new Date().getFullYear()}}
+function uniBillDlg(S,fname){return new Promise(res=>{const col=i=>XLSX.utils.encode_col(i),o=(k,sel)=>`<option value="">(없음)</option>`+S.H.map((h,i)=>typeof h==='string'&&!uniNoRead.test(h)?`<option value="${i}"${sel===i?' selected':''}>${col(i)} · ${esc(h||'(빈 머리글)')}</option>`:'').join('');
+ const noYr=S.mon.some(m=>!m.ym),d=document.createElement('div');d.id='uniDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+ d.innerHTML=`<div class="ubox"><h3>📥 부과량 양식 맞추기 — ${esc(fname)}</h3><p class="hint">'${esc(S.sh)}' 시트 · 수용가 ${S.body.length.toLocaleString()}행. 자동으로 찾은 열입니다. 틀린 것만 고르세요. 이름·상호·전화 열은 옮기지 않습니다.</p>
+ <div class="ulist">${UNI_BR.map(([k,lb,,rq])=>`<div class="urow"><span></span><div class="unm"><b>${lb}${rq?' <span class="c-rd">*</span>':''}</b><small>FRD 자리: ${col(UNI_BCOL[k])}열</small></div><select class="msel" data-k="${k}">${o(k,S.map[k])}</select></div>`).join('')}
+ <div class="urow"><span></span><div class="unm"><b>월별 사용량 ${S.mon.length}개 열</b><small>${S.mon.length?esc(S.mon.map(m=>m.h).join(', ')):'⚠ 날짜·월 머리글 열을 찾지 못했습니다'}</small></div>${noYr?`<label class="unm"><small>연도 없는 월의 연도 (확인 필요)</small><input type="number" id="uniYr" min="2000" max="2100" value="${S.yr}" style="width:100%"></label>`:'<span></span>'}</div></div>
+ <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;margin-top:8px"><input type="checkbox" id="uniMem" checked> 이 대응을 기억 (다음 달부터 같은 양식이면 묻지 않음)</label>
+ <div class="ubtn"><button type="button" class="btn ol" data-a="x">이 파일 건너뛰기</button><button type="button" class="btn" data-a="ok">표준 양식으로 바꿔 반영</button></div></div>`;
+ document.body.appendChild(d);const done=v=>{d.remove();res(v)};
+ d.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='x')return done(null);
+  const map={};d.querySelectorAll('select[data-k]').forEach(s=>{if(s.value!=='')map[s.dataset.k]=+s.value});
+  if(map.id==null){alert('수용가번호 열은 꼭 골라야 합니다.');return}if(map.b==null&&!confirm('소블록 열을 고르지 않았습니다. 블록별 현황이 모두 (미지정)이 됩니다. 계속할까요?'))return;
+  if(map.ad==null&&map.ji==null){alert('주소 또는 구주소 열 중 하나는 꼭 골라야 합니다.');return}
+  const y=$('uniYr')?+$('uniYr').value:S.yr;if(noYr&&!(y>=2000&&y<=2100)){alert('연도를 넣어 주세요.');return}
+  done({map,yr:y,mem:$('uniMem').checked})})})}
+async function uniBillConvert(it){const S=await uniBillScan(it.f),need=S.map.id==null||S.map.b==null||(S.map.ad==null&&S.map.ji==null)||!S.mon.length||(S.mon.some(m=>!m.ym)&&!(S.mem&&S.mem.yr));
+ let r={map:S.map,yr:S.yr,mem:false};if(!S.mem||need){r=await uniBillDlg(S,it.f.name);if(!r)return null}
+ if(r.mem){try{const all=JSON.parse(localStorage.getItem('geo-billmap')||'{}')||{},mm={};UNI_BR.forEach(([k])=>{mm[k]=r.map[k]!=null?S.H[r.map[k]]:''});all[S.sig]={map:mm,yr:r.yr,at:Date.now()};localStorage.setItem('geo-billmap',JSON.stringify(all))}catch(_){}}
+ const mon=S.mon.map(m=>({c:m.c,ym:m.ym||r.yr+'-'+String(m.mo).padStart(2,'0')})).sort((a,b)=>a.ym<b.ym?-1:a.ym>b.ym?1:a.c-b.c);const ms=[];mon.forEach(m=>{const i=ms.findIndex(x=>x.ym===m.ym);if(i>=0)ms[i]=m;else ms.push(m)});
+ const W=25+ms.length,hd=new Array(W).fill(null);UNI_BR.forEach(([k,lb])=>hd[UNI_BCOL[k]]=lb);ms.forEach((m,j)=>hd[25+j]=m.ym);
+ const rows=[hd];for(const src of S.body){const o=new Array(W).fill(null);for(const k in r.map){let v=src[r.map[k]];if(v==null)continue;if(k==='mg'||k==='id')v=String(v).trim();else if(k==='b'||k==='b2')v=String(v).trim();o[UNI_BCOL[k]]=v}
+  if(o[0]==null||o[0]==='')continue;ms.forEach((m,j)=>{const v=src[m.c];o[25+j]=v==null||v===''?null:v});rows.push(o)}
+ const nb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);
+ for(let i=1;i<rows.length;i++)for(const c of [0,1]){const a=XLSX.utils.encode_cell({r:i,c});if(ws[a]){ws[a].t='s';ws[a].v=String(ws[a].v)}}
+ XLSX.utils.book_append_sheet(nb,ws,'부과량');if(S.wb.Sheets['유수율(소블록별)'])XLSX.utils.book_append_sheet(nb,S.wb.Sheets['유수율(소블록별)'],'유수율(소블록별)');
+ const how=[['스마트 물길주소 · 부과량 FRD 양식 (만든이: 구병순)'],[`원본: ${it.f.name} · '${S.sh}' 시트 · ${rows.length-1}행 · ${new Date().toLocaleString('ko-KR')}`],
+  ...UNI_BR.map(([k,lb])=>[`${XLSX.utils.encode_col(UNI_BCOL[k])}열 ${lb} = ${r.map[k]!=null?'원본 '+XLSX.utils.encode_col(r.map[k])+'열 "'+S.H[r.map[k]]+'"':'(없음)'}`]),
+  [`Z열부터 월별 사용량 ${ms.length}개 = 원본 ${ms.map(m=>XLSX.utils.encode_col(m.c)+'열').join(', ')}`],...(S.mon.some(m=>!m.ym)?[[`연도 없는 월 머리글은 ${r.yr}년으로 넣음 (확인 필요)`]]:[]),
+  ['빈칸은 0으로 바꾸지 않고 그대로 둠. 수용가명·상호·전화번호·검침담당 열은 넣지 않음.']];
+ XLSX.utils.book_append_sheet(nb,XLSX.utils.aoa_to_sheet(how),'사용법');
+ const u=XLSX.write(nb,{type:'array',bookType:'xlsx'});return new File([u],String(it.f.name).replace(/\.[^.]+$/,'')+'_FRD양식.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+/* ---------- 블록 이름 대조: 부과량 Y열 ↔ 경계 이름, 다른 것만 별칭 후보로 ---------- */
+function uniAliasHint(){try{if(!BILL.R||!BILL.R.length||!poly)return'';const am=aliasMap(),sh=shpNames(),bl=new Set();BILL.R.forEach(r=>{const v=bNorm(r&&r.b!=null?r.b:r&&r[9]);if(v)bl.add(v)});
+ const nk=s=>bParen(s).replace(/[\s\-_.·]/g,'').replace(/블록|블럭|BLOCK/gi,'').toUpperCase(),onlyB=[...bl].filter(b=>!sh.has(b)&&!sh.has(am.get(b)||'')&&!sh.has(bParen(b))),onlyS=[...sh].filter(s=>![...bl].some(b=>b===s||am.get(b)===s||bParen(b)===s));
+ if(!onlyB.length)return`✅ 블록 이름: 부과량 소블록 ${bl.size}개가 모두 경계에 있습니다.`;
+ const pair=[];onlyB.forEach(b=>{const s=onlyS.find(x=>nk(x)===nk(b));if(s)pair.push(b+'='+s)});
+ UNI.alias=pair;return`⚠ 블록 이름: 부과량에만 ${onlyB.length}개(${esc(onlyB.slice(0,8).join(', '))}${onlyB.length>8?' 외':''}) · 경계에만 ${onlyS.length}개.`+(pair.length?` 비슷한 이름 ${pair.length}쌍 <button type="button" class="btn ol" id="uniAl" style="width:auto;padding:2px 8px;font-size:12px">별칭표에 넣기</button>`:' 별칭표(② 소블록)에 직접 맞춰 주세요.')}catch(_){return''}}
+function uniAfter(){const m=$('uniMsg');if(!m)return;let h='';const al=uniAliasHint();if(al)h+='<br>'+al;
+ if(UNI.out.length)h+=`<br><button type="button" class="btn ol" id="uniDl" style="width:auto;padding:4px 10px;font-size:12.5px;margin-top:4px">⬇ FRD 양식 파일 받기 (${UNI.out.length}개)</button> <small>바꾼 표준 파일 — 직원·다른 기기와 나눌 때</small>`;
+ m.insertAdjacentHTML('beforeend',h);const a=$('uniAl');if(a)a.onclick=()=>{const t=$('blkAlias');if(!t)return;t.value=(t.value.trim()?t.value.trim()+'\n':'')+UNI.alias.join('\n');t.dispatchEvent(new Event('change'));a.disabled=true;a.textContent='넣었습니다 ✓'};
+ const d=$('uniDl');if(d)d.onclick=async()=>{if(UNI.out.length===1)return dlBlob(UNI.out[0],UNI.out[0].name);const z=new JSZip();UNI.out.forEach(f=>z.file(f.name,f));dlBlob(await z.generateAsync({type:'blob'}),`현장자료_FRD양식_${fmtD(Date.now()).replace(/-/g,'')}.zip`)}}
+/* 지도 위 📂 칩: 백업만 넣으면 예전처럼 바로 불러오고(bkChipGo), 다른 파일이 섞이면 📥 파일 넣기 확인 창으로 */
+async function uniChip(a,inp){const fs=[...inp.files];if(!fs.length)return;let allBk=true;
+ for(const f of fs){const r=await uniSniff(f);if(!r.every(x=>x.k==='bk')){allBk=false;break}}
+ if(allBk)return bkChipGo(a,inp);inp.value='';uniGo(fs)}
+try{uniInit()}catch(e){console.warn('파일 넣기',e)}
 /* ---------- 🖍️ 지도 그리기·글자·아이콘 (2026-10-29 B안) ----------
    펜·직선·화살표·네모·원·글자·아이콘(제수변·누수 등)을 지도 좌표로 저장해 확대·이동해도 제자리. drawPane 캔버스라 🖼️ 캡처에 함께 찍힘.
    화면 고정(🔒) 중에도 그림: 그리는 동안 덮개(.mkov)가 손가락을 받고 지도 끌기는 쓰지 않음. ✋ 이동을 고르면 덮개가 비켜 지도를 옮김.
