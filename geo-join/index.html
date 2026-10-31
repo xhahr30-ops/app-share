@@ -335,6 +335,9 @@ html.chipOn .legbox .lgb>.pleg>b:first-child{display:none}
 html.chipOn .legbox .lgb>.pleg.min>:not(b):not([hidden]){display:block!important}
 html.chipOn .legbox .lgt:only-child{margin:0}
 html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:54px;height:54px;border-radius:16px;font-size:25px}
+/* 오른쪽 아래 📷·📍·🖼️: 카카오맵식 흰 동그라미 + 회색 선 아이콘 */
+html body .leaflet-container .fmctl button{border-radius:50%!important;border:0;background:#fff;color:#3f3f46;box-shadow:0 2px 8px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.04)}
+html body .leaflet-container .fmctl button.loc{color:#2563eb}html body .leaflet-container .fmctl button:active{background:#f1f5f9}.fmctl button svg{width:52%;height:52%;display:block}
 @media (orientation:landscape) and (max-height:520px){
  html.chipOn .leaflet-bottom.leaflet-right .fmctl{gap:6px}
  html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:44px;height:44px;border-radius:13px;font-size:20px}
@@ -651,7 +654,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .chgw .chgh{align-items:center}.chgw .chgh select{width:auto;flex:none;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.chgw .chgh b{font-size:12px}
 @media (prefers-reduced-motion:reduce){.hlnew::before{animation:none;transform:scale(1.25);opacity:1}.hlnew::after{display:none}}
 .chgb a{position:relative}
-.refb a.busy{opacity:.75;pointer-events:none}.refb a.busy .ri{display:inline-block;animation:refsp 1.2s linear infinite}@keyframes refsp{to{transform:rotate(360deg)}}
+.refb a.busy{opacity:.75;pointer-events:none}.bkb input{display:none}.refb a.busy .ri{display:inline-block;animation:refsp 1.2s linear infinite}@keyframes refsp{to{transform:rotate(360deg)}}
 .chgn{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dc2626;color:#fff;font:800 10.5px/17px 'Noto Sans KR',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff;pointer-events:none;box-sizing:border-box}
 .chgn[hidden]{display:none}
 .chgfl{animation:chgfl .9s ease-in-out 5}@keyframes chgfl{50%{stroke-opacity:.15}}
@@ -1918,7 +1921,7 @@ function uiInit(){if(!map)return;plblInit();
  try{chipInit()}catch(e){console.warn('chipInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
+const CHIP_ORD=['srch','ref','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
@@ -1932,7 +1935,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const LB={ref:'지금 받기',bk:'백업 불러오기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -5322,7 +5325,7 @@ function fmLocate(btn){if(!navigator.geolocation){alert('이 브라우저는 위
   e=>{btn.disabled=false;alert(location.protocol==='file:'?'파일로 연 앱(file://)에서는 위치를 쓸 수 없습니다. 깃허브 페이지(https) 주소로 여세요.':e&&e.code===1?'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.':'현재 위치를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:10000})}
 if(map){const C=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-control fmctl');
-  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기">📷</button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동">📍</button><button type="button" class="shot" title="지금 보이는 지도 화면을 사진 한 장으로 (공유·저장)" aria-label="지도 화면 캡처">🖼️</button>';
+  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button type="button" class="shot" title="지금 보이는 지도 화면을 사진 한 장으로 (공유·저장)" aria-label="지도 화면 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></button>';
   L.DomEvent.disableClickPropagation(d);d.querySelector('.cam').onclick=()=>$('phFile').click();d.querySelector('.loc').onclick=e=>fmLocate(e.currentTarget);d.querySelector('.shot').onclick=e=>mapShot(e.currentTarget);return d}});
  map.addControl(new C())}
 fmApply();
@@ -6287,7 +6290,7 @@ async function shutShotShare(){const s=SHUT.shot;if(!s)return;const f=shutShotFi
 /* 🖼️ 지도 화면 캡처 (현장 모드 버튼): 지금 보이는 지도 그대로(같은 배경·관로·시설물·수용가 점·핀·사진 아이콘·그리기·정보창) 사진 한 장으로.
    수용가(👤)·전화번호 정보창은 가림, 조작 버튼·칩 줄은 넣지 않음 */
 const MSHOT={busy:false,s:null};
-async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='⏳'}
+async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=btn&&btn.innerHTML;if(btn){btn.disabled=true;btn.textContent='⏳'}
  try{const bh=30,B=await mapShotBase([],k=>Math.round(bh*k),null,null,{dom:true}),{g,k,W,Hm}=B,secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));
   mapShotDeco(B,secret);const ctr=map.getCenter();let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
   const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`,y=Hm+bh*k/2+1.5*k;
@@ -6299,7 +6302,7 @@ async function mapShot(btn){if(MSHOT.busy||!map)return;MSHOT.busy=true;const t0=
   MSHOT.s={blob,url:URL.createObjectURL(blob),note:B.note,secret,dom:B.dom,masked:B.masked,name:`지도화면_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}${pd(d.getSeconds())}.jpg`};
   mapShotView()}
  catch(e){alert('지도 화면을 캡처하지 못했습니다: '+(e&&e.message||e))}
- finally{MSHOT.busy=false;if(btn){btn.disabled=false;btn.textContent=t0}}}
+ finally{MSHOT.busy=false;if(btn){btn.disabled=false;btn.innerHTML=t0}}}
 function mapShotView(){const s=MSHOT.s;if(!s)return;let o=$('mshot');
  if(!o){o=document.createElement('div');o.id='mshot';o.setAttribute('role','dialog');o.setAttribute('aria-label','지도 화면 캡처');
   o.onclick=e=>{const a=e.target.closest('[data-m]');if(!a){if(e.target===o)mapShotClose();return}const m=a.dataset.m;if(m==='s')mapShotShare();else if(m==='d')dlBlob(MSHOT.s.blob,MSHOT.s.name);else mapShotClose()};
@@ -7408,6 +7411,22 @@ async function refChipGo(a){const k=$('shKey');if(k)k.dispatchEvent(new Event('c
  const m=$('shRefMsg'),tmp=document.createElement('div');tmp.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';const t=tmp.textContent.trim();
  phToast(t||'✅ 받기를 마쳤습니다.',{ms:/실패/.test(t)?15000:7000})}
 try{refChipInit()}catch(e){console.warn('지금 받기 칩',e)}
+/* 📂 백업 불러오기 칩: 전체화면 지도에서도 백업 파일(zip·json, 분할 여러 개)을 바로 불러옴. 백업 영역의 📂 버튼과 같은 처리(항목 체크 상태 그대로), 진행·결과는 화면 아래 알림으로 */
+function bkChipInit(){if(!map||document.getElementById('bkChip'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb bkb np'),a=L.DomUtil.create('a','',d),inp=L.DomUtil.create('input','',d);d.dataset.ck='bk';
+  inp.type='file';inp.multiple=true;inp.hidden=true;inp.id='bkChipF';inp.accept='.zip,.json,application/zip,application/json';
+  a.href='#';a.id='bkChip';a.setAttribute('role','button');a.setAttribute('aria-label','백업 불러오기');a.title='백업 파일(zip·json) 불러오기 — 불러올 항목은 백업 영역 체크 상태를 따름';a.innerHTML='<span class="ri">📂</span>';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(a.classList.contains('busy')){phToast('📂 이미 불러오는 중입니다.',{ms:4000});return}inp.click()});
+  inp.onchange=()=>bkChipGo(a,inp);return d}});
+ map.addControl(new Ctl())}
+async function bkChipGo(a,inp){const fs=[...inp.files];inp.value='';const h=$('bkLoad')&&$('bkLoad').onchange,m=$('bkMsg');if(!fs.length||!h)return;
+ const line=()=>{const t=document.createElement('div');t.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';return t.textContent.trim()};
+ const lb=a.dataset.lb;a.classList.add('busy');if(lb)a.dataset.lb='읽는 중…';if(m)m.textContent='';
+ phToast('📂 백업 파일 읽는 중… (크면 1~2분 걸릴 수 있음)',{ms:300000});
+ const mo=m?new MutationObserver(()=>{const t=line();if(t)phToast('📂 '+t,{ms:300000})}):null;if(mo)mo.observe(m,{childList:true,characterData:true,subtree:true});
+ try{await h({target:{files:fs,value:''}})}catch(e){console.warn('백업 칩',e)}finally{mo&&mo.disconnect();a.classList.remove('busy');if(lb)a.dataset.lb=lb}
+ const t=line();phToast(t?t+(bkLoad.k&&/✅/.test(t)?' · 키 설정 반영은 새로고침 한 번':''):'📂 불러오기를 취소했습니다.',{ms:/실패|없습니다|아닙니다/.test(t)?15000:9000})}
+try{bkChipInit()}catch(e){console.warn('백업 불러오기 칩',e)}
 /* ---------- 🖍️ 지도 그리기·글자·아이콘 (2026-10-29 B안) ----------
    펜·직선·화살표·네모·원·글자·아이콘(제수변·누수 등)을 지도 좌표로 저장해 확대·이동해도 제자리. drawPane 캔버스라 🖼️ 캡처에 함께 찍힘.
    화면 고정(🔒) 중에도 그림: 그리는 동안 덮개(.mkov)가 손가락을 받고 지도 끌기는 쓰지 않음. ✋ 이동을 고르면 덮개가 비켜 지도를 옮김.
