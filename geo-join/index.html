@@ -669,6 +669,16 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .chgw .chgh{align-items:center}.chgw .chgh select{width:auto;flex:none;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.chgw .chgh b{font-size:12px}
 @media (prefers-reduced-motion:reduce){.hlnew::before{animation:none;transform:scale(1.25);opacity:1}.hlnew::after{display:none}}
 .chgb a{position:relative}
+.hlpw{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10060;width:min(520px,calc(100vw - 24px));max-height:min(720px,88vh);overflow:auto;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid var(--line2);box-shadow:0 18px 40px #0f172a66;color:var(--ink);font-size:13px;line-height:1.6}
+.hlpw[hidden]{display:none}.hlpw .hh{display:flex;align-items:center;gap:8px;margin-bottom:8px}.hlpw .hh b{font-size:15px;flex:1}
+.hlpw .hlpx{flex:0 0 34px;height:34px;border-radius:10px;border:1px solid var(--line2);background:transparent;color:var(--ink);font-size:16px;cursor:pointer}.hlpw .hlpx:hover{background:#eef2ff;color:#312e81}
+.hlpw .hman{display:block;text-align:center;padding:10px;border-radius:12px;background:#4f46e5;color:#fff!important;font-weight:800;font-size:14px;text-decoration:none}.hlpw .hman:hover{background:#4338ca}
+.hlpw .hrow{display:flex;gap:6px;margin:8px 0}.hlpw .hrow .btn{flex:1}
+.hlpw .hbx{border:1px solid var(--line2);border-radius:12px;padding:8px 10px;margin-top:8px}.hlpw .hbx h4{margin:0 0 4px;font-size:13px;font-weight:800}
+.hlpw ol,.hlpw ul{margin:0;padding-left:18px}.hlpw .hq{display:grid;grid-template-columns:1fr 1fr;gap:5px;list-style:none;padding:0}
+.hlpw .hq a{display:block;padding:6px 8px;border-radius:9px;border:1px solid var(--line2);text-decoration:none;color:var(--ink)}.hlpw .hq a:hover{background:#eef2ff;color:#312e81}
+.hlpw small{color:var(--mute,#64748b)}
+@media (max-width:640px){.hlpw{left:0;right:0;top:auto;bottom:0;transform:none;width:auto;max-height:84vh;border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom))}}
 .refb a.busy{opacity:.75;pointer-events:none}.bkb input{display:none}.refb a.busy .ri{display:inline-block;animation:refsp 1.2s linear infinite}@keyframes refsp{to{transform:rotate(360deg)}}
 .chgn{position:absolute;top:-5px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#dc2626;color:#fff;font:800 10.5px/17px 'Noto Sans KR',sans-serif;text-align:center;box-shadow:0 0 0 2px #fff;pointer-events:none;box-sizing:border-box}
 .chgn[hidden]{display:none}
@@ -949,7 +959,7 @@ html.gwOn .afp{top:150px}
   <div class="hchip hide-s"><span class="hlbl">만든이:</span> <b>구병순</b></div>
   <button id="sideBtn" type="button" class="hbtn np" title="분석 조건 및 자료 등록 창 숨기기/보이기 (Ctrl+B)" aria-controls="side">◀ 설정 숨기기</button><button id="fmBtn" type="button" class="hbtn np" title="현장 모드: 지도 먼저 · 큰 버튼 · 📷 사진 찍기 · 📍 내 위치 (휴대폰·태블릿은 자동)">📱 현장 모드</button>
   <button id="gwBtn" type="button" class="hbtn np" title="BsstGis 작업 화면: 리본 메뉴 · 레이어 창 · 아래 결과 표 · 상태줄 (Alt+W) — 자료는 그대로, 배치만 바뀜">🖥️<span class="gwbl"> 작업 화면</span></button>
-  <button id="vdHelpBtn" type="button" class="hbtn np" title="기능별 사용법 안내 영상 (유튜브)">📖 사용법</button>
+  <button id="vdHelpBtn" type="button" class="hbtn np" title="사용법: 화면 구성 요약 · 📘 사용 매뉴얼(새 탭) · 🎬 사용법 영상 (F1)">📖 사용법</button>
   <button id="dm" type="button" class="hbtn np">🌙 다크</button>
   <label class="hlab np">출력<select id="po" class="hsel"><option value="portrait">세로</option><option value="landscape">가로</option></select></label>
   <button id="hpr" type="button" class="hpdf np" disabled title="PDF 미리보기 및 내보내기">📄 <span class="hlong">PDF 미리보기 및 내보내기</span><span class="hshort">PDF</span></button>
@@ -1946,7 +1956,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs'];
+const CHIP_ORD=['srch','ref','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs','help'];
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
@@ -1960,7 +1970,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면'};
+ const LB={ref:'지금 받기',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -7341,7 +7351,7 @@ async function vidSync(quiet){if(!SH.on())return{};if(VID.busy)return{busy:true}
  finally{VID.busy=false}}
 (function(){try{
  const b1=$('vdList0'),b2=$('vdHelp0'),b3=$('vdSync0');if(b1)b1.onclick=()=>vidOpen({k:'all'});if(b2)b2.onclick=()=>vidOpen({k:'help',key:'help',keys:['help'],lb:'사용법'});
- const hb=$('vdHelpBtn');if(hb)hb.onclick=()=>vidOpen({k:'help',key:'help',keys:['help'],lb:'사용법'});
+ const hb=$('vdHelpBtn');if(hb)hb.onclick=()=>hlpOpen();
  if(b3)b3.onclick=async()=>{const m=$('vdMsg0');if(!SH.on()){m.textContent='📷 현장 사진 › ☁️ 직원 공유에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.';return}m.textContent='공유 서버와 맞추는 중…';
   try{const r=await vidSync(false);m.innerHTML=r.old?'<span class="c-am">공유 서버 Code.gs가 예전 판입니다. 2026-10-19 판으로 바꾸고 새 버전으로 배포해 주세요.</span>':r.busy?'이미 맞추는 중입니다.':`✅ 받은 영상 ${r.got||0}개 · 올린 목록 ${r.sent?r.sent+'개':'없음(같은 버전)'}`}catch(e){m.innerHTML='<span class="c-rd">⚠️ 실패: '+esc((e&&e.message)||e)+'</span>'}};
  const c=$('uiVid');if(c){c.checked=UI.vid!==false;c.onchange=e=>{UI.vid=e.target.checked;uiSave();vidDraw()}}
@@ -7525,6 +7535,32 @@ async function refChipGo(a){const k=$('shKey');if(k)k.dispatchEvent(new Event('c
  const m=$('shRefMsg'),tmp=document.createElement('div');tmp.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';const t=tmp.textContent.trim();
  phToast(t||'✅ 받기를 마쳤습니다.',{ms:/실패/.test(t)?15000:7000})}
 try{refChipInit()}catch(e){console.warn('지금 받기 칩',e)}
+/* ---------- 📖 사용법 (2026-11-01, 웹 관망해석기 도움말과 같은 방식): 도움말 창(화면 구성 요약·자주 하는 일) + 📘 사용 매뉴얼(manual.html, 새 탭) + 🎬 사용법 영상. 머리글 📖 사용법·위쪽 칩 줄 맨 끝·F1 ---------- */
+function hlpUrl(h){const web=/^https?:$/.test(location.protocol)&&!/script\.google|googleusercontent/.test(location.hostname);
+ return (web?'manual.html':'https://xhahr30-ops.github.io/app-share/geo-join/manual.html')+(h?'#'+h:'')}
+function hlpOpen(){let w=$('hlpW');
+ if(!w){w=document.createElement('div');w.id='hlpW';w.className='hlpw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','사용법');
+  const Q=[['c1','🔑 처음: 공유 키 설정'],['c2','🗺️ 화면 익히기'],['c4','🔍 블록·주소 찾기'],['c5','📷 사진 올리기'],['c6','💧 단수구역'],['c7','👆 길게 눌러 주소'],['c8','🖼️ 화면 캡처'],['c9','🔔 변경 기록'],['c12','🛠 시설물 편집'],['c13','🛠 관로 편집'],['c19','⛰️ 표고·수압 보기'],['c99','🛠️ 안 될 때']];
+  w.innerHTML=`<div class="hh"><b>📖 사용법</b><button type="button" class="hlpx" id="hlpX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
+<a class="hman" href="${hlpUrl()}" target="_blank" rel="noopener">📘 사용 매뉴얼 열기 (새 탭)</a>
+<div class="hrow"><button type="button" class="btn ol" id="hlpVd">🎬 사용법 영상</button></div>
+<div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 🔔 변경 기록 · 💧 단수구역 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: 🖼️ 화면 캡처 · 📍 내 위치 · 📷 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li>PC는 ⛶ 전체화면을 끄면 왼쪽 <b>자료 등록 창</b>(엑셀·SHP·백업·직원 공유)이 보입니다.</li></ol></div>
+<div class="hbx"><h4>자주 하는 일 <small>(누르면 매뉴얼의 그 장으로)</small></h4><ul class="hq">${Q.map(([k,t])=>`<li><a href="${hlpUrl(k)}" target="_blank" rel="noopener">${t}</a></li>`).join('')}</ul></div>
+<p style="margin:8px 0 0"><small>매뉴얼은 인쇄(PDF 저장)도 됩니다. 그림 속 주소·사진은 예시입니다. · 만든이: 구병순</small></p>`;
+  w.querySelector('#hlpX').onclick=()=>{w.hidden=true};
+  w.querySelector('#hlpVd').onclick=()=>{w.hidden=true;vidOpen({k:'help',key:'help',keys:['help'],lb:'사용법'});
+   const v=$('vdPanel'),fe=document.fullscreenElement||document.webkitFullscreenElement;if(v&&fe&&v.parentNode!==fe)fe.appendChild(v)};
+  L.DomEvent&&L.DomEvent.disableClickPropagation(w)}
+ const fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(w.parentNode!==fe)fe.appendChild(w);/* 지도 전체화면 중에도 보이게 */
+ w.hidden=!w.hidden}
+document.addEventListener('keydown',e=>{const w=$('hlpW');if(e.key==='Escape'&&w&&!w.hidden){w.hidden=true;e.stopPropagation()}
+ else if(e.key==='F1'){e.preventDefault();hlpOpen()}},true);
+function hlpChipInit(){if(!map||document.getElementById('hlpChip'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='help';
+  a.href='#';a.id='hlpChip';a.setAttribute('role','button');a.setAttribute('aria-label','사용법');a.title='사용법: 화면 구성 · 사용 매뉴얼 · 사용법 영상 (F1)';a.textContent='📖';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);hlpOpen()});return d}});
+ map.addControl(new Ctl())}
+try{hlpChipInit()}catch(e){console.warn('사용법 칩',e)}
 /* 📂 백업 불러오기 칩: 전체화면 지도에서도 백업 파일(zip·json, 분할 여러 개)을 바로 불러옴. 백업 영역의 📂 버튼과 같은 처리(항목 체크 상태 그대로), 진행·결과는 화면 아래 알림으로 */
 function bkChipInit(){if(!map||document.getElementById('bkChip'))return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb bkb np'),a=L.DomUtil.create('a','',d),inp=L.DomUtil.create('input','',d);d.dataset.ck='bk';
