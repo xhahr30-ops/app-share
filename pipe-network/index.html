@@ -471,7 +471,7 @@ html.gw-locked #gwLock{display:flex}
    <button id="bCsv" type="button" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50">⬇ 결과 CSV 저장</button>
   </div>
   <button id="bReset" type="button" class="np w-full px-3 py-2 rounded-lg border border-red-300 bg-white text-red-600 text-xs font-bold hover:bg-slate-50">↺ 변경 모두 취소(원본 다시 열기)</button>
-  <p class="text-[11px] text-slate-500">해석 엔진: OWA-EPANET 2.3.5(epanet-js, MIT). 결과 단위는 원본 단위와 관계없이 m, m/s로, 유량·수요는 톤/h(=㎥/h, 도구 › 유량 단위에서 L/s로 바꿀 수 있음)로 바꿔 보여 줍니다.</p>
+  <p class="text-[11px] text-slate-500">해석 엔진: OWA-EPANET 2.3.5(epanet-js, MIT). 결과 단위는 원본 단위와 관계없이 m, m/s로, 유량·수요는 톤/h(=㎥/h, 보기 › 표시 › 유량에서 L/s로 바꿀 수 있음)로 바꿔 보여 줍니다.</p>
  </section>
 
  <!-- ═══ 오른쪽: 결과 ═══ -->
@@ -2244,8 +2244,8 @@ const WR={
   return tbox('소블록 격리 확인',`<div class="flex flex-wrap items-center gap-2">${tin('iMo','허용 열린 경계 관로 수',mo,3)}<span>${bad?`<b class="text-red-600">격리 안 된 블록 ${bad}개</b>`:'<b class="text-emerald-700">✔ 모든 블록이 격리되어 있습니다</b>'}</span></div>`+tnote('블록 경계를 지나는 관로 가운데 열려 있는 것(유입·유출 지점)이 기준보다 많으면 격리되지 않은 블록으로 봅니다. 행을 누르면 경계 관로를 지도에 표시합니다.')+
    tbl(['블록','절점','경계 관로','열림','흐름 있음','판정'],rs.map(r=>`<tr data-ib="${esc(r.id)}" class="border-t hover:bg-indigo-50 cursor-pointer"><td class="text-left font-bold">${esc(r.id)}</td><td>${r.n}</td><td>${r.bound}</td><td>${r.open}</td><td>${S.res?r.flow:'-'}</td><td class="text-left">${r.ok?'✔ 격리':'<span class="text-red-600 font-bold">⚠️ 격리 안 됨</span>'}</td></tr>`),{h:320}))},
   bind:b=>{const m=$('iMo');if(m)m.onchange=()=>{T.isoMax=tnum('iMo')||0;winRender('iso')};const bb=$('iBlk');if(bb)bb.onclick=()=>toolsTab('blk');b.querySelectorAll('[data-ib]').forEach(tr=>tr.onclick=()=>{const ls=blockLinks(tr.dataset.ib).filter(x=>x.open);T.multi.l=new Set(ls.map(x=>x.i));T.multi.n.clear();renderMulti();S.hl={nodes:[],links:ls.map(x=>x.id),net:null};hlFocus();requestDraw()})}},
- help:{ui:()=>`<div class="flex flex-col gap-2 text-xs leading-relaxed"><a href="manual.html" target="_blank" rel="noopener" class="block text-center px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold no-underline">📘 사용 매뉴얼 열기 (새 탭)</a>${tbox('화면 구성(GISpipe와 같은 배치)',`<p>① 위쪽 <b>리본 메뉴</b>: 파일 · 편집 · 배수관망모델 · 도구 · 도움말 탭마다 기능 묶음이 바뀝니다.<br>② 왼쪽 <b>레이어 창</b>: 관로·절점·시설물·화살표·등고선·시설물 점 레이어를 켜고 끕니다. <b>속성</b> 탭은 고른 요소의 값을 고치는 곳입니다.<br>③ 가운데 <b>지도</b>: 위의 도구 막대로 선택·이동·확대·전체 보기·거리 재기를 합니다.<br>④ 아래 <b>시간 막대</b>: 해석 시각을 고르고 재생합니다. 칸 색은 하늘색=수압 부족, 빨강=부압이 있는 시각입니다.<br>⑤ 맨 아래 <b>상태 막대</b>: 작업 모드, 클릭 좌표, 축척, 지도 EPSG를 보여 줍니다.</p>`)}
-  ${tbox('자주 쓰는 조작',`<p>• 관망 열기: 파일 → 열기(.inp) 또는 파일을 지도에 끌어다 놓기<br>• 해석: 배수관망모델 → 해석실행<br>• 여러 요소 고르기: 편집 → 범위 선택(끌기), Ctrl+클릭으로 하나씩 추가<br>• 최단 경로: 절점 하나를 고른 뒤 Shift+클릭<br>• 절점 병합: 이동 모드에서 절점을 다른 절점 위에 놓기<br>• Esc: 지금 도구 끝내기</p>`)}
+ help:{ui:()=>`<div class="flex flex-col gap-2 text-xs leading-relaxed"><a href="manual.html" target="_blank" rel="noopener" class="block text-center px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold no-underline">📘 사용 매뉴얼 열기 (새 탭)</a>${tbox('화면 구성(GISpipe와 같은 배치)',`<p>① 위쪽 <b>리본 메뉴</b>: 파일 · 모델 만들기 · 편집 · 해석 · 분석 · 결과·레포트 · 보기 · 도움말 탭(일하는 순서)마다 기능 묶음이 바뀝니다.<br>② 왼쪽 <b>레이어 창</b>: 관로·절점·시설물·화살표·등고선·시설물 점 레이어를 켜고 끕니다. <b>속성</b> 탭은 고른 요소의 값을 고치는 곳입니다.<br>③ 가운데 <b>지도</b>: 위의 도구 막대로 선택·이동·확대·전체 보기·거리 재기를 합니다.<br>④ 아래 <b>시간 막대</b>: 해석 시각을 고르고 재생합니다. 칸 색은 하늘색=수압 부족, 빨강=부압이 있는 시각입니다.<br>⑤ 맨 아래 <b>상태 막대</b>: 작업 모드, 클릭 좌표, 축척, 지도 EPSG를 보여 줍니다.</p>`)}
+  ${tbox('자주 쓰는 조작',`<p>• 관망 열기: 파일 → 열기(.inp) 또는 파일을 지도에 끌어다 놓기<br>• 해석: 해석 → 해석실행<br>• 여러 요소 고르기: 편집 → 범위 선택(끌기), Ctrl+클릭으로 하나씩 추가<br>• 최단 경로: 절점 하나를 고른 뒤 Shift+클릭<br>• 절점 병합: 이동 모드에서 절점을 다른 절점 위에 놓기<br>• Esc: 지금 도구 끝내기</p>`)}
   ${tbox('계산 엔진',`<p>OWA-EPANET 2.3.5(epanet-js, MIT)를 브라우저 안에서 돌립니다. 자료는 PC 밖으로 나가지 않습니다(AI 대화·인터넷 표고·배경지도·주소 검색을 쓸 때만 해당 서비스에 요청).</p>`)}
   ${tbox('GISpipe에 없거나 다른 점',`<p>• 3D 보기, 우수·하수(SWMM), 레이어 연산(합·차·교집합)은 넣지 않았습니다.<br>• 등고선은 지도 위 채움 색으로 보여 주며 GIS 레이어로 내보내기 대신 지도 PNG로 저장합니다.</p>`)}</div>`}};
 
@@ -2304,7 +2304,7 @@ function gpSet(on){const R=document.documentElement;if(on===gpOn())return;if(on&
  else{R.classList.remove('gp');document.querySelectorAll('.gw').forEach(w=>w.classList.add('hidden'));WS.open.clear();[...GPH].forEach(([id,c])=>{const el=$(id);if(el&&c.parentNode)c.parentNode.insertBefore(el,c)});}
  setTimeout(()=>{resizeMap();if(S.net)fitView();else requestDraw()},40)}
 function gpRib(t){if(typeof RIB[t]!=='function')t='wds';T.rib=t;lsSet('gw-rib',t);document.querySelectorAll('[data-rt]').forEach(b=>b.classList.toggle('on',b.dataset.rt===t));const keep=['nVar','lVar','cVar','bm','crs','bmA','vkey'].map(id=>$(id)).filter(Boolean);const park=$('gpPark');keep.forEach(el=>{if(el.closest('#gpRib'))park.appendChild(el)});
- $('gpRib').innerHTML=RIB[t]()+ribRight(t);if(t==='wds'){['nVar','lVar','cVar'].forEach(id=>$('rbSels').appendChild($(id)))}else{['nVar','lVar','cVar'].forEach(id=>$('rbSelsR').appendChild($(id)))}{const a=$('rbNl'),b=$('rbLl');a.onchange=()=>labSet('nl',a.value);b.onchange=()=>labSet('ll',b.value)}if(t==='tool'){const bm=$('rbBm');['bm','crs','bmA','vkey'].forEach(id=>{const lab=document.createElement('label');lab.className='rb-fl';lab.innerHTML=`<span>${{bm:'지도',crs:'좌표계',bmA:'진하기',vkey:'키'}[id]}</span>`;bm.appendChild(lab);lab.appendChild($(id))})}
+ $('gpRib').innerHTML=RIB[t]()+ribRight(t);if(t==='wds'){['nVar','lVar','cVar'].forEach(id=>$('rbSels').appendChild($(id)))}else{['nVar','lVar','cVar'].forEach(id=>$('rbSelsR').appendChild($(id)))}{const a=$('rbNl'),b=$('rbLl');if(a)a.onchange=()=>labSet('nl',a.value);if(b)b.onchange=()=>labSet('ll',b.value)}if(t==='tool'&&$('rbBm')){const bm=$('rbBm');['bm','crs','bmA','vkey'].forEach(id=>{const lab=document.createElement('label');lab.className='rb-fl';lab.innerHTML=`<span>${{bm:'지도',crs:'좌표계',bmA:'진하기',vkey:'키'}[id]}</span>`;bm.appendChild(lab);lab.appendChild($(id))})}
  const au=$('rbAuto');if(au){au.checked=$('edAuto').checked;au.onchange=()=>{$('edAuto').checked=au.checked}}gpSync()}
 function gpSync(){document.querySelectorAll('#gpRib [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===ED.m));document.querySelectorAll('#gpMT [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===ED.m));
  const u=document.querySelector('#gpRib [data-rb="undo"]');if(u)u.disabled=$('edUndo').disabled;const r=document.querySelector('#gpRib [data-rb="redo"]');if(r)r.disabled=!T.redo.length;const qu=$('gpQU'),qr=$('gpQR');if(qu)qu.disabled=$('edUndo').disabled;if(qr)qr.disabled=!T.redo.length;
@@ -2664,7 +2664,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v33.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v35 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -3799,7 +3799,7 @@ WR.sch={ui:()=>{if(!S.net)return'';const R=S.res;const nb=new Set(S.net.nodes.fi
  const html=schSvg(),d=SC.data,cnt=k=>[...d.ents.values()].filter(e=>e.kind===k).length;
  return`<div class="sc-bar"><span class="sc-sum">${R?hhmm(R.t[S.k])+' 기준':'해석 전(연결만 표시)'} · 수원 ${cnt('res')+cnt('tank')} · 가압장 ${cnt('pump')} · 소블록 ${cnt('blk')} · 연결 ${d.ed.length}</span><span style="flex:1"></span>
   <button type="button" class="bl-b ${SC.mode==='cur'?'on':''}" data-scm="cur">현재 시각</button><button type="button" class="bl-b ${SC.mode==='avg'?'on':''}" data-scm="avg">하루 평균</button><button type="button" class="bl-b" data-scz="fit">맞춤</button><button type="button" class="bl-b" data-scz="in">＋</button><button type="button" class="bl-b" data-scz="out">－</button><button type="button" class="bl-b" data-scz="svg">⬇ SVG</button></div>
-  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [파일 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}
+  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [모델 만들기 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}
   <div style="height:min(62vh,560px)">${html}</div><p class="text-[11px] text-slate-500 mt-1">상자를 누르면 지도에서 그 시설·블록을 고르고 확대합니다. 선 굵기는 유량, 화살표는 흐름 방향입니다. 끌어서 이동, 휠로 확대·축소.</p>`},
  bind:b=>{const svg=$('scSvg');if(!svg)return;const d=SC.data;
   b.querySelectorAll('[data-scm]').forEach(x=>x.onclick=()=>{SC.mode=x.dataset.scm;winRender('sch',true)});
@@ -3942,7 +3942,7 @@ const _dc19=drawContour;drawContour=function(ctx){if(CON.v!=='wa')return _dc19.a
   g.putImageData(id,0,0);CON.img=img;CON.key=key;CON.net=S.net;if(CON.lg!=='wa'+br.join()){CON.lg='wa'+br.join();setTimeout(paint,0)}}
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(CON.img,0,0,CON.img.width*6,CON.img.height*6);ctx.restore()};
 const _cl19=conLegend;conLegend=function(){if(CON.v!=='wa')return _cl19.apply(this,arguments);if(!waOk())return'<span class="font-bold">등고선 급수도달시간</span> 계산 전';return`<span class="font-bold">등고선 급수도달시간(h)</span>`+[0,1,2,3,4,5].map(j=>`<span class="inline-flex items-center gap-1"><i style="display:inline-block;width:12px;height:10px;opacity:.7;background:${WCOL[j]}"></i>${waLab(j)}</span>`).join('')};
-{const c=$('cVar');if(c&&!c.querySelector('option[value="wa"]')){c.insertAdjacentHTML('beforeend','<option value="wa">등고선: 급수도달시간</option>');c.addEventListener('change',()=>{if(c.value==='wa'&&!waOk()){toast('급수도달시간 계산을 먼저 하세요(배수관망모델 → 급수도달시간).',5000);winOpen('wa')}})}}
+{const c=$('cVar');if(c&&!c.querySelector('option[value="wa"]')){c.insertAdjacentHTML('beforeend','<option value="wa">등고선: 급수도달시간</option>');c.addEventListener('change',()=>{if(c.value==='wa'&&!waOk()){toast('급수도달시간 계산을 먼저 하세요(분석 → 급수도달시간).',5000);winOpen('wa')}})}}
 const _gl19=gpLayers;gpLayers=function(){_gl19.apply(this,arguments);const b=$('gpLay');if(!b)return;b.querySelectorAll('td').forEach(td=>{if(td.childNodes.length&&/등고선 · undefined/.test(td.textContent))td.innerHTML=td.innerHTML.replace('등고선 · undefined','등고선 · 급수도달시간')})};
 // 지도 위 표시
 const _da19=drawArrows;drawArrows=function(ctx){_da19.apply(this,arguments);try{waOverlay(ctx);tsOverlay(ctx)}catch(e){}};
@@ -4257,7 +4257,7 @@ WR.sch={ui:()=>{if(!S.net)return'';const R=S.res,all=build(),P=pages(all),pl=P.l
   <div class="sc-bar"><span class="sc-sum">${R?hhmm(R.t[S.k])+' 기준':'해석 전(연결만 표시)'} · 수원 ${cnt('res')+cnt('tank')} · 소블록 ${cnt('blk')} · 가압장 ${npu} · 연결 ${d.ed.filter(e=>!e.gh).length}</span>${pg.ids&&d.ghN?`<button type="button" class="bl-b ${d.showGh?'on':''}" id="scGh" title="이 계통과 바로 이어진 다른 계통 상자(흐리게) 보이기">경계 이웃 ${d.ghN}</button>`:''}<span style="flex:1"></span>
    <button type="button" class="bl-b ${SC.mode==='cur'?'on':''}" data-scm="cur">현재 시각</button><button type="button" class="bl-b ${SC.mode==='avg'?'on':''}" data-scm="avg">하루 평균</button><button type="button" class="bl-b" data-scz="fit">맞춤</button><button type="button" class="bl-b" data-scz="in">＋</button><button type="button" class="bl-b" data-scz="out">－</button><button type="button" class="bl-b" data-scz="svg">⬇ SVG</button></div>
   ${SYS.view==='sys'&&SYS.edit?mapUi(P.sa):''}
-  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [파일 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}${!R&&SYS.page===0?tnote('해석을 실행하면 수원별·정수계통별 장으로 나눠 볼 수 있습니다.'):''}
+  ${onlyNo?tnote('⚠️ 절점에 소블록 정보가 없어 관망 전체가 하나로 묶였습니다. [모델 만들기 → 가져오기 → 블록 경계]로 소블록 경계 SHP를 올리면 블록별 계통도가 됩니다.'):''}${!R&&SYS.page===0?tnote('해석을 실행하면 수원별·정수계통별 장으로 나눠 볼 수 있습니다.'):''}
   <div style="height:min(62vh,560px)" class="sc-hold">${svg(d)}</div>${puUi(d)}
   <p class="text-[11px] text-slate-500 mt-1">◀ ▶ 또는 키보드 ← →로 장을 넘깁니다. 장은 ${R?hhmm(R.t[S.k]):'-'} 급수구역(해석 결과로 수원별 물 비율 추적) 기준이며, 그 계통 물이 10% 이상 드는 블록을 넣고 90% 미만이면 "혼합"으로 표시합니다. 흐린 상자는 경계에 붙은 다른 계통입니다. 상자를 누르면 지도에서 고르고 확대합니다.</p>`},
  bind:b=>{const svgE=b.querySelector('#scSvg');if(!svgE||!cur)return;const d=cur.d,pl=cur.P.list,re=()=>{SC.vb=null;winRender('sch',true)},go=n=>{SYS.page=(SYS.page+n+pl.length)%pl.length;SYS.pu=null;re()};
@@ -5194,7 +5194,7 @@ function tabPipe(d){const km=v=>fmt(v/1000,2),pr=(v,o)=>o.len?fmt(v/o.len*100,1)
 function tabBlk(d){return tbl(['묶음','배수관 km','크기 점수(5)','절점','고리 수','구성(10)','최저·최고 수압 kPa','수압편차 kPa','수압 점수(10)','밸브 수','밸브 밀도 개/km',`유속 ${DG.vb[0]}미만 %`],
  d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${fmt(o.len/1000,2)}</td><td>${o.tot?'-':o.szS}</td><td>${o.nj.toLocaleString()}</td><td>${o.loops.toLocaleString()}</td><td>${o.tot?'-':o.loops>0?'10 (망목)':'8 (수지상)'}</td><td>${isFinite(o.pmn)?fmt(o.pmn*KPA,0)+' · '+fmt(o.pmx*KPA,0):'-'}</td><td>${isFinite(o.dp)?fmt(o.dp,0):'-'}</td><td>${o.tot?'-':o.dpS}</td><td>${o.nv.toLocaleString()}</td><td>${f1(o.vd)}</td><td>${pc(o.slow)}</td></tr>`),{h:420})+
  tnote(`상수도 관망진단 매뉴얼(2021) 소블록 평가 중 앱이 계산할 수 있는 항목입니다. 크기는 배수관 ${DG.bs[0]}~${DG.bs[1]} km 이내 5점, ±20% 4점, ±50% 3점, 그 밖 2점. 구성은 블록 안 관로로 고리가 생기면 망목(10), 없으면 수지상(8). 수압편차는 마지막 24시간 최고−최저로 200 kPa 이내 10, 300 kPa 이내 9, 초과 8점. 밸브 수는 제수·감압 등 모든 밸브입니다. 정체부·누수량 측정·녹물·스케일 항목은 현장 자료로 채우세요.`)}
-function tabCl(d){if(!d.cl)return tnote('잔류염소 결과가 없습니다. 배수관망모델 › 설정 › <b>수질</b>에서 해석을 "잔류염소 등 물질(mg/L)"로 고르고 수체·관벽 감소계수를 넣은 뒤 다시 해석하세요. 하절기 최저 수요는 수요 배율로 맞춥니다.')+`<div>${tbtn('dgQ','💧 수질 설정 열기')}</div>`;
+function tabCl(d){if(!d.cl)return tnote('잔류염소 결과가 없습니다. 해석 › 설정 › <b>수질</b>에서 해석을 "잔류염소 등 물질(mg/L)"로 고르고 수체·관벽 감소계수를 넣은 뒤 다시 해석하세요. 하절기 최저 수요는 수요 배율로 맞춥니다.')+`<div>${tbtn('dgQ','💧 수질 설정 열기')}</div>`;
  const b=['0.1미만','0.1~0.4','0.4~0.7','0.7~1.0','1.0이상'];
  return tbl(['묶음','사용량 ㎥/일',...b.map(x=>x+' (%)'),'최적(0.1~0.4) %','최소·평균·최대 mg/L'],
  d.rows.map(o=>`<tr ${rowA(o)}><td class="text-left">${esc(o.k)}</td><td>${fmt(o.dmd*86.4,1)}</td>${o.cp.map(v=>`<td>${pc(v)}</td>`).join('')}<td><b>${pc(o.cp[1])}</b></td><td>${isFinite(o.cmn)?`${fmt(o.cmn,2)} · ${fmt(o.ca,2)} · ${fmt(o.cmx,2)}`:'-'}</td></tr>`),{h:420})+
@@ -5213,7 +5213,7 @@ function ui(){if(!S.res)return tnote('먼저 해석을 실행하세요. 표는 �
  let body=DG.tab==='v'?tabV(d):DG.tab==='pipe'?tabPipe(d):DG.tab==='blk'?tabBlk(d):DG.tab==='cl'?tabCl(d):DG.tab==='set'?tabSet():tabP(d);
  return`<div class="flex flex-col gap-2 text-xs"><div class="flex flex-wrap items-center gap-2">${tsel('dgG','묶음',GRPS,DG.grp)}${tsel('dgW','비율 기준',[['n','절점 수'],['d','수요량 가중']],DG.wt)}${tbtn('dgCsv','⬇ 이 표 CSV')}${tbtn('dgAll','⬇ 모든 표 CSV(엑셀)')}</div>`+
  `<div class="grid gap-x-4" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${kv('집계 구간',`${hhmm(tm.t0)} ~ ${hhmm(tm.t1)} (${tm.w.length}개 시각)`)}${kv('시간최대',`${hhmm(S.res.t[tm.kx])} · ${fmt(tm.qx*86.4,0)} ㎥/일 환산`)}${kv('시간최소',`${hhmm(S.res.t[tm.kn])} · ${fmt(tm.qn*86.4,0)} ㎥/일 환산`)}${kv('블록 지정 절점',nb?nb.toLocaleString()+'개':'<b class="text-amber-600">없음</b>')}</div>`+
- (DG.grp!=='pat'&&DG.grp!=='all'&&!nb?`<p class="text-amber-600 font-bold">절점에 소블록이 지정돼 있지 않아 모두 '${NB}'로 묶입니다. 파일 › 가져오기 › 블록 경계(SHP)로 먼저 지정하거나 묶음을 '수요 패턴(계통)'으로 바꾸세요. ${tbtn('dgBlk','🗂️ 블록 지정 열기')}</p>`:'')+
+ (DG.grp!=='pat'&&DG.grp!=='all'&&!nb?`<p class="text-amber-600 font-bold">절점에 소블록이 지정돼 있지 않아 모두 '${NB}'로 묶입니다. 모델 만들기 › 가져오기 › 블록 경계(SHP)로 먼저 지정하거나 묶음을 '수요 패턴(계통)'으로 바꾸세요. ${tbtn('dgBlk','🗂️ 블록 지정 열기')}</p>`:'')+
  `<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5">${tabs}</div>${body}</div>`}
 
 // ── CSV
@@ -5278,6 +5278,168 @@ const rn0=readNet;readNet=function(){const r=rn0.apply(this,arguments);try{if(S.
 // 관로 말풍선·속성에서 보이게: 관로 표 CSV 등은 l.blk를 그대로 씀
 window.__gw33={assignLinks,fromNodes,setLblk,lmid};
 })()}catch(e){console.warn('v33',e)}
+
+/* ════ v34 리본 재배치: 작업 순서대로 8탭(파일·모델 만들기·편집·해석·분석·결과·레포트·보기·도움말), 겹치는 버튼 정리 ════ */
+try{(()=>{
+// 옛 탭 HTML에서 묶음(라벨)·버튼(data-rb)을 그대로 떼어 쓰기 — 각 버전 블록이 붙인 버튼·입력칸을 잃지 않게
+const tpl=h=>{const d=document.createElement('div');d.innerHTML=h;return d};
+const O={file:RIB.file,edit:RIB.edit,wds:RIB.wds,tool:RIB.tool,help:RIB.help};
+const grp=(t,lab)=>{try{const g=[...tpl(O[t]()).querySelectorAll('.rb-g')].find(x=>(x.querySelector('.rb-gl')||{}).textContent===lab);return g?g.outerHTML:''}catch(e){return''}};
+const btn=(t,id)=>{try{const b=tpl(O[t]()).querySelector(`[data-rb="${id}"]`);if(!b)return'';b.classList.remove('big');return b.outerHTML}catch(e){return''}};
+const o=(a,v)=>a.map(([k,x])=>`<option value="${k}" ${k===v?'selected':''}>${x}</option>`).join('');
+RIB.file=()=>grp('file','파일')+grp('file','저장')+grp('file','내보내기')+grp('file','작업 창');
+RIB.mdl=()=>gg('INP 만들기',gb('iw','wiz','INP 만들기',{big:1,tip:'관망 만들기 단계 안내 · 시설 입력표(엑셀) · 수정 대장'}))
+ +gg('가져오기',gb('gis','map','GIS 관망 생성',{big:1,tip:'GIS 관로 SHP로 관망 만들기'})+col(gb('blkLay','blk','블록 경계')+gb('elvIn','mount','표고 입력')+gb('ptLay','pin','시설물 점 레이어')))
+ +gg('수요',col(gb('meter','meter','계량기 절점 할당')+gb('meterPos','target','계량기 할당 위치')+gb('demTab','grid','수요량 테이블'))+col(gb('lkbT','drop','블록 누수',{tip:'소블록 유수율로 누수량(이미터) 배분'})))
+ +gg('변환',col(gb('crsConv','globe','좌표계 변환')+gb('skel','tree','골격화'))+col(gb('fu','swap','유량 단위 변환')+gb('lenRe','ruler','관 길이 재계산')));
+RIB.edit=()=>O.edit()+gg('시설물',gb('fac','valve','시설물 편집',{big:1}));
+RIB.wds=()=>grp('wds','설정')+gg('',gb('run','bolt','해석실행',{big:1}),'rb-run')
+ +gg('색 기준',`<div class="rb-col rb-sel"><label>노드</label><label>링크</label><label>등고선</label></div><div class="rb-col rb-sel2" id="rbSels"></div>`)
+ +gg('검증',col(gb('verify','shield','모델 검증')+gb('elv','mount','표고 검증')+gb('iso','blk','소블록 고립확인')));
+RIB.ana=()=>gg('계통',col(btn('wds','sch')+gb('svc','branch','급수원·급수구역',{tip:'서비스 계통: 급수원별 공급 구역 보기·선택'})+gb('grp','dots4','관망 그룹'))+col(gb('blkT','blk','블록')+gb('trace','route','추적·단수')+btn('wds','wa')))
+ +gg('고급',gb('adv','more','고급 분석',{big:1,dd:1}))+grp('wds','최적화');
+RIB.rep=()=>gg('결과',col(gb('res','table','결과 상세')+gb('chgv','flag','변경 사항')+gb('kpi','info','요약')))
+ +gg('그래프',col(gb('graph','chart','그래프',{dd:1})+btn('wds','pfDraw')+gb('pipeRep','ruler','관로')))
+ +gg('레포트',col(gb('calR','flag','보정')+gb('engR','plug','에너지')+btn('wds','diag')));
+RIB.tool=()=>grp('tool','배경지도')+grp('tool','검색')
+ +gg('표시',`<div class="rb-col rb-form"><label class="rb-fl"><span style="width:26px">절점</span><select id="rbNl" class="rb-in" style="width:96px">${o(LBN,MS.nl)}</select></label><label class="rb-fl"><span style="width:26px">관로</span><select id="rbLl" class="rb-in" style="width:96px">${o(LBL,MS.ll)}</select></label><label class="rb-fl"><span style="width:26px">유량</span><select id="rbFlu" class="rb-in" style="width:64px" title="화면에 보이는 유량·수요 단위"><option value="th" ${FLQ.u==='th'?'selected':''}>톤/h</option><option value="lps" ${FLQ.u==='lps'?'selected':''}>L/s</option></select></label></div>`+col(gb('lab','tag','라벨 설정')+gb('legEd','palette','범례 편집')+gb('arrows','arrow','유향 화살표')))
+ +gg('화면',gb('mfull','full','지도 전체화면',{big:1})+col(gb('mset','gear','지도 설정')+btn('tool','popAll')+gb('ai','chat','AI 대화'))+col(gb('dark','moon','다크 모드')));
+RIB.help=()=>gg('도움말',gb('help','help','사용법',{big:1})+col(gb('manual','info','사용 매뉴얼',{tip:'사용 매뉴얼을 새 탭으로 엽니다'})+gb('basis','info','산정 기준')+gb('about','flask','엔진 정보')));
+// 모든 탭 오른쪽: 색 기준 + 해석실행만 (해석 탭은 자체 칸이 있어 비움)
+ribRight=function(t){return`<div class="rb-sp"></div>`+(t!=='wds'?gg('색 기준',`<div id="rbSelsR" class="rb-col rb-sel2"></div>`,'rb-r')+gg('',gb('run','bolt','해석실행',{big:true}),'rb-run rb-r'):'')};
+// 탭 목록
+RTAB.splice(0,RTAB.length,['file','파일'],['mdl','모델 만들기'],['edit','편집'],['wds','해석'],['ana','분석'],['rep','결과·레포트'],['tool','보기'],['help','도움말']);
+// 새 동작
+const XB34={lkbT:()=>toolsTab('lkb'),manual:()=>{try{window.open('manual.html','_blank','noopener')}catch(e){}}};
+const _ra34=rbAct;rbAct=function(a,b){if(XB34[a]){XB34[a](b);return}return _ra34.apply(this,arguments)};
+// 보고서형 화면 버튼 숨김(GISpipe식만 사용)
+const st=document.createElement('style');st.textContent='#gpTitle [data-rb="classic"]{display:none!important}';document.head.appendChild(st);
+try{if($('gp')){$('gpTabs').innerHTML=RTAB.map(([k,t])=>`<button type="button" data-rt="${k}">${t}</button>`).join('');gpRib(T.rib||'wds')}}catch(e){console.warn('v34 리본',e)}
+window.__gw34={O,grp,btn};
+})()}catch(e){console.warn('v34',e)}
+
+/* ════ v35 자료함: INP 만들 때 쓰는 자료(SHP·엑셀·CSV)를 한 창에서 넣고·확인하고·순서대로 적용 ════ */
+try{(()=>{
+const G23=window.__gw23;if(!G23||!WR.iw)throw new Error('v23 INP 만들기 창이 없습니다');const IW=G23.IW;
+const J={items:[],enc:'euc-kr',dep:0,etg:'zero',unit:'month',busy:false,seq:0};
+const RL={pipe:'상수관로',serv:'배수지',blk:'블록 경계',elev:'표고',meta:'수도계량기',sply:'급수관',valv:'밸브',fire:'소화전',prga:'수압계',flow:'유량계',tap:'급수전',pt:'기타 점',book:'시설 입력표',use:'사용량(부과량)',lk:'블록 유수율',skip:'쓰지 않음'};
+const PTS=['valv','fire','prga','flow','tap','pt'];
+const ext=n=>(n.match(/\.([^.]+)$/)||[])[1]?.toLowerCase()||'';
+const base=n=>n.replace(/\.[^.]+$/,'');
+const ST={ok:['✓','#059669','준비됨'],warn:['!','#d97706','확인 필요'],done:['✔','#4f46e5','적용됨'],err:['✖','#dc2626','오류'],skip:['–','#94a3b8','안 씀'],run:['…','#0284c7','적용 중']};
+const fieldRe={blk:/소블록|BLS_NAM|BLK_NAM|BLK_NM|NAM|NAME|명칭|이름|블록/i,elev:/CONT|ELEV|HEIGHT|HGT|표고|높이|해발|^Z$/i};
+const pickBlk=fs=>fs.find(f=>/소블록/.test(f))||pickF(fs,fieldRe.blk)||fs[0]||'__i';
+const hdrKey=h=>Math.max(0,h.findIndex(x=>/수용가|고객|CUST|번호|NO/i.test(x)));
+const hdrUse=h=>{const v=h.findIndex(x=>/사용량|부과량|사용|USE|량/i.test(x));return v>=0?v:Math.min(1,h.length-1)};
+
+/* ── 파일 읽기·종류 알아보기 ── */
+async function walk(items){const out=[];const rd=en=>new Promise(res=>{if(en.isFile)en.file(f=>{out.push(f);res()},()=>res());else if(en.isDirectory){const r=en.createReader(),all=[];const nx=()=>r.readEntries(async es=>{if(!es.length){for(const e of all)await rd(e);res()}else{all.push(...es);nx()}},()=>res());nx()}else res()});
+ for(const it of items){const en=it.webkitGetAsEntry&&it.webkitGetAsEntry();if(en)await rd(en);else{const f=it.getAsFile&&it.getAsFile();if(f)out.push(f)}}return out}
+async function ingest(files){if(!files.length)return;J.busy=true;render();const sets=new Map(),tabs=[],odd=[];
+ files.forEach(f=>{const e=ext(f.name);if(['shp','dbf','prj','cpg','shx','sbn','sbx','qix','dxf'].includes(e)){const k=base(f.name);(sets.get(k)||sets.set(k,[]).get(k)).push(f)}else if(['xlsx','xls','csv','txt','tsv'].includes(e))tabs.push(f);else odd.push(f)});
+ for(const [k,fs] of sets){const keep=fs.filter(f=>['shp','dbf','prj','cpg','dxf'].includes(ext(f.name)));J.items=J.items.filter(x=>x.name!==k);
+  const it={id:++J.seq,name:k,files:keep,kind:'layer',st:'ok',msg:''};try{const ly=(await readLayers(keep,J.enc))[0];if(!ly)throw new Error('.shp가 없습니다');if(ly.err)throw new Error(ly.err);it.ly=ly;it.n=ly.recs.length;it.geo=ly.kind;
+   it.role=ly.role==='dxf'?'pipe':ly.role==='depth'||ly.role==='chg'||ly.role==='ln'?'skip':ly.role;
+   if(it.role==='blk')it.f1=pickBlk(ly.fields);if(it.role==='elev')it.f1=pickF(ly.fields,fieldRe.elev);if(it.role==='meta'){it.f1=pickF(ly.fields,/CUST|수용가|DMNO|HOMEADDR|CNT_NUM|^NO$/i)||ly.fields[0];it.f2=pickF(ly.fields,/USE|사용량/i)}
+   const miss=['dbf','prj'].filter(e=>!keep.some(f=>ext(f.name)===e));if(!keep.some(f=>ext(f.name)==='dxf')&&miss.length){it.st='warn';it.msg='.'+miss.join('·.')+' 없음'+(miss.includes('prj')?' — 좌표계 확인':'')}
+  }catch(e){it.st='err';it.role='skip';it.msg=e.message||String(e)}J.items.push(it)}
+ for(const f of tabs){J.items=J.items.filter(x=>x.name!==f.name);const it={id:++J.seq,name:f.name,files:[f],kind:'table',st:'ok',msg:''};try{
+   if(/\.xls$/i.test(f.name))throw new Error('예전 엑셀(.xls)은 .xlsx로 저장해 주세요');
+   if(/\.xlsx$/i.test(f.name)){const book=await G23.xlsxRead(await f.arrayBuffer());const sh=Object.keys(book);if(sh.some(s=>/^(배수지|가압장|밸브|패턴|운전규칙|수정대장)/.test(s))){it.kind='book';it.role='book';it.book=book;it.n=sh.length;it.msg='시트 '+sh.slice(0,6).join('·');J.items.push(it);continue}}
+   const rows=await readTable(f);if(rows.length<2)throw new Error('행이 없습니다');it.rows=rows;it.n=rows.length-1;const h=rows[0].map(x=>String(x??''));
+   if(h.some(x=>/유수율/.test(x))){it.role='lk'}else if(h.some(x=>/수용가|고객|사용량|부과/.test(x))){it.role='use';it.f1=hdrKey(h);it.f2=hdrUse(h)}else{it.role='skip';it.st='warn';it.msg='종류를 고르세요'}
+  }catch(e){it.st='err';it.role='skip';it.msg=e.message||String(e)}J.items.push(it)}
+ // 같은 종류가 여럿이면 하나만 쓰기
+ const one=(r,score)=>{const xs=J.items.filter(x=>x.role===r&&x.st!=='err');if(xs.length<2)return;xs.sort((a,b)=>score(b)-score(a)).slice(1).forEach(x=>{x.role='skip';x.st='warn';x.msg=RL[r]+'가 둘 이상 — 쓸 것을 고르세요'})};
+ one('pipe',x=>x.n||0);one('blk',x=>(/소/.test(x.name)?1e9:0)+(x.n||0));one('meta',x=>x.n||0);one('sply',x=>x.n||0);one('book',()=>0);one('use',x=>x.n||0);one('lk',()=>0);
+ if(odd.length)toast(`${odd.map(f=>f.name).slice(0,3).join(', ')}${odd.length>3?' 등':''}은(는) 자료함에서 쓰지 않습니다${odd.some(f=>/\.inp$/i.test(f.name))?' (.inp는 파일 › 열기)':''}.`,6000);
+ J.busy=false;IW.tab='d';winOpen('iw');render()}
+
+/* ── 적용 ── */
+// 관로·배수지 SHP를 모델 생성 창에 넣기 — 같은 파일을 이미 넣었으면(⚙로 필드를 고른 뒤) 다시 읽지 않아 고른 필드를 지킴
+async function feedPipe(P,force){const fs=[...P.files,...live('serv').flatMap(x=>x.files)],key=fs.map(f=>f.name+':'+f.size).sort().join('|')+J.enc;if(!force&&key===J.fedKey&&G.lines)return;$('gEnc').value=J.enc;await $('fShp').onchange({target:{files:fs,value:''}});J.fedKey=key}
+const live=r=>J.items.filter(x=>x.role===r&&x.st!=='err');
+const geoOk={pipe:['line'],sply:['line'],blk:['poly'],meta:['point'],serv:['point'],elev:['point','line','poly']};
+async function step(it,fn){if(geoOk[it.role]&&it.kind==='layer'&&!geoOk[it.role].includes(it.geo)){it.st='err';it.msg=`${RL[it.role]}은(는) ${geoOk[it.role].map(g=>({line:'선',point:'점',poly:'면'})[g]).join('·')} SHP여야 합니다`;return false}
+ it.st='run';render();await new Promise(r=>setTimeout(r,30));try{const m=await fn();it.st='done';it.msg=m||'';return true}catch(e){console.error(e);it.st='err';it.msg=e.message||String(e);return false}finally{render()}}
+async function applyAll(){if(J.busy)return;const P=live('pipe')[0];
+ if(!P&&!S.net){toast('상수관로 SHP가 없습니다. 관로 SHP를 넣거나 INP를 먼저 여세요.',6000);return}
+ J.busy=true;render();let stop=false;
+ try{
+ // 1 관망 생성
+ if(P){let go=true;if(S.net)go=confirm('지금 열린 관망을 두고 GIS 관로로 새로 만들까요?\n[취소]를 누르면 지금 관망에 나머지 자료만 더합니다.');
+  if(go){const ok=await step(P,async()=>{await feedPipe(P);if(!G.lines)throw new Error(($('shpInfo').textContent||'관로를 읽지 못했습니다').slice(0,120));
+    const r=buildFromGis();await loadText(r.inp,'GIS 관로 → 관망.inp');await gisExtras();$('shpInfo').innerHTML=r.msg;live('serv').forEach(x=>{x.st='done';x.msg='관망 생성 때 연결'});return r.msg.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,90)});
+   if(!ok)stop=true}else{P.st='skip';P.msg='지금 관망 유지'}}
+ if(stop||!S.net)return;
+ // 2 블록
+ for(const it of live('blk'))await step(it,()=>{const ly=it.ly,polys=[];ly.recs.forEach((g,r)=>{if(g)polys.push({rings:g.map(p=>p.map(q=>[q[0],q[1]])),attr:Object.assign({__i:r+1},ly.attrs[r]||{})})});
+  T.bpoly={polys,fields:ly.fields,field:it.f1||'__i',name:ly.name};const n=assignBlocks(polys,T.bpoly.field);if(!n)throw new Error('블록 면 안에 든 절점이 없습니다 — 좌표계(.prj)를 확인하세요');S.log.push(`블록 경계 ${polys.length}개로 절점 ${n.toLocaleString()}개에 블록 지정`);renderLog();refresh();return`블록 ${polys.length}개 → 절점 ${n.toLocaleString()}개`});
+ // 3 표고
+ for(const it of live('elev'))await step(it,async()=>{const pts=elevPtsOf(it.ly,it.f1||'');if(!pts.length)throw new Error('표고 값이 있는 점이 없습니다. 표고 필드를 고르세요');const f=idwOf(pts);T.elev={name:it.name,ly:it.ly,fields:it.ly.fields,field:it.f1||'',n:pts.length};
+  const z0=S.net.nodes.filter(n=>n.type===0&&Math.abs(n.elev)<1e-9).length;await applyElev(async xy=>xy.map(([x,y])=>f(x,y)),'표고 '+it.name,J.etg==='zero',+J.dep||0);const z1=S.net.nodes.filter(n=>n.type===0&&Math.abs(n.elev)<1e-9).length;return`표고 0 절점 ${z0.toLocaleString()} → ${z1.toLocaleString()}`});
+ // 4 시설물 점(지도 표시·단수 분석)
+ for(const r of PTS)for(const it of live(r))await step(it,()=>{if(it.geo!=='point')throw new Error('점 SHP가 아닙니다');T.lay[r]={name:it.name,pts:layerPts(it.ly),fields:it.ly.fields,epsg:it.ly.epsg};if(r==='valv')T.vsnap=null;layShowDefault(r);gpLayers();requestDraw();return`지도에 ${it.n.toLocaleString()}개 표시`});
+ // 5 계량기 할당(수요)
+ const Mt=live('meta')[0];if(Mt)await step(Mt,async()=>{const ly=Mt.ly;T.lay.meta={name:ly.name,pts:layerPts(ly),fields:ly.fields,epsg:ly.epsg};layShowDefault('meta');setMeters(T.lay.meta);const M=T.mtr;M.key=Mt.f1||M.key;M.useF=Mt.f2||'';M.unit=J.unit;M.mode='replace';
+  const sp=live('sply')[0];if(sp&&sp.geo==='line'){M.sply=sp.ly.recs;sp.st='done';sp.msg='계량기 할당에 사용'}const U=live('use')[0];if(U){M.utab=U.rows;M.uname=U.name;M.uk=+U.f1||0;M.uv=+U.f2||0}
+  if(!U&&!M.useF)throw new Error('사용량이 없습니다. 사용량 파일을 넣거나 계량기 SHP의 사용량 필드를 고르세요');
+  meterPreview();if(!M.res)throw new Error('할당 미리보기를 만들지 못했습니다');const a=M.res.filter(r=>r.nid).length;if(!a)throw new Error('관로 가까이에 있는 계량기가 없습니다 — 좌표계·최대 거리를 확인하세요');await meterApply();if(U){U.st='done';U.msg=`${U.n.toLocaleString()}행 사용`}return`계량기 ${M.res.length.toLocaleString()}개 중 ${a.toLocaleString()}개 할당`});
+ // 6 시설 입력표
+ for(const it of live('book'))await step(it,()=>{IW.plan=G23.plan(it.book);IW.file=it.name;const P2=IW.plan,c=P2.chg.length;G23.planApply();IW.plan=null;return`바뀐 값 ${c.toLocaleString()}건${P2.warn.length?` · 알림 ${P2.warn.length}건`:''}`});
+ // 7 블록 유수율 → 블록 누수 창에 넣어 두기(계수 보정은 해석을 반복하므로 창에서 확인 후 적용)
+ const L=live('lk')[0];if(L)await step(L,()=>{IW.lkTxt=L.rows.map(r=>r.map(v=>String(v??'').replace(/,/g,'')).join(',')).join('\n');toolsTab('lkb');setTimeout(()=>{const t=$('lkT'),b=$('lkRead');if(t&&b){t.value=IW.lkTxt;b.click()}},80);return'블록 누수 창에 넣음 — [배분 적용]을 누르세요'});
+ }finally{J.busy=false;render()}
+ const d=J.items.filter(x=>x.st==='done').length,e=J.items.filter(x=>x.st==='err').length;toast(`자료함 적용: ${d}개 반영${e?` · 오류 ${e}개`:''}. 단계 안내 탭에서 남은 일을 확인하세요.`,7000)}
+
+/* ── 화면 ── */
+const TABS=[['d','📎 자료함'],['s','🧭 단계 안내'],['t','📗 입력표'],['l','📒 수정 대장']];
+const tabBar=()=>`<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5 mb-2">${TABS.map(([k,t])=>`<button type="button" data-iwt="${k}" class="tab ${IW.tab===k?'on':''}">${t}</button>`).join('')}</div>`;
+const opt=(a,v)=>a.map(([k,x])=>`<option value="${esc(String(k))}" ${String(k)===String(v)?'selected':''}>${esc(x)}</option>`).join('');
+function fieldCell(it){const sel=(k,arr,v,none)=>`<select data-jf="${it.id}" data-jk="${k}" class="jx-s">${none!=null?`<option value="">${none}</option>`:''}${opt(arr,v)}</select>`;const fs=(it.ly&&it.ly.fields||[]).map(f=>[f,f]);
+ if(it.role==='blk')return sel('f1',fs.length?fs:[['__i','(번호)']],it.f1);if(it.role==='elev')return sel('f1',fs,it.f1,'(Z값)');
+ if(it.role==='meta')return'번호 '+sel('f1',fs,it.f1)+' 사용량 '+sel('f2',fs,it.f2,'(없음)');
+ if(it.role==='use'&&it.rows){const h=it.rows[0].map((x,j)=>[j,String(x||'열'+(j+1))]);return'번호 '+sel('f1',h,it.f1)+' 사용량 '+sel('f2',h,it.f2)}
+ if(it.role==='pipe')return`<button type="button" class="jx-b" data-jg="1">⚙ 관경·관종 필드</button>`;return''}
+function uiData(){const rows=J.items.map(it=>{const s=ST[it.role==='skip'&&it.st==='ok'?'skip':it.st]||ST.ok;const roles=it.kind==='layer'?Object.keys(RL).filter(r=>!['book','use','lk'].includes(r)):['book','use','lk','skip'];
+  return`<tr class="border-t"><td style="color:${s[1]};font-weight:800;text-align:center" title="${s[2]}">${s[0]}</td><td class="text-left" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.name)}">${esc(it.name)}</td>
+   <td class="text-left"><select data-jr="${it.id}" class="jx-s">${opt(roles.map(r=>[r,RL[r]]),it.role)}</select></td><td>${it.geo?({line:'선',point:'점',poly:'면'})[it.geo]+' ':''}${(it.n||0).toLocaleString()}</td><td class="text-left">${fieldCell(it)}</td>
+   <td class="text-left text-[11px]" style="max-width:190px">${esc(it.msg||'')}</td><td><button type="button" class="jx-b" data-jd="${it.id}" title="목록에서 빼기">✕</button></td></tr>`});
+ const has=r=>J.items.some(x=>x.role===r&&x.st!=='err'),need=[];if(!has('pipe')&&!S.net)need.push('<b>상수관로 SHP(필수)</b>');[['blk','블록 경계'],['elev','표고'],['meta','수도계량기'],['use','사용량']].forEach(([r,t])=>{if(!has(r))need.push(t)});
+ return tbox('📎 INP 만들 자료를 한곳에',`<div id="jxDrop" class="jx-drop">${J.busy?'⏳ 읽는 중…':'📂 파일이나 폴더를 여기에 끌어다 놓거나'} <label class="jx-b" style="cursor:pointer"><input id="jxF" type="file" multiple class="hidden">파일 고르기</label>
+   <div class="text-[11px] text-slate-500 mt-1">SHP(.shp·.dbf·.prj·.cpg)·DXF·엑셀(.xlsx)·CSV — 파일 이름(WTL_PIPE_LM, WTL_BLSM_AS, WTL_META_PS …)과 엑셀 제목 줄로 종류를 알아서 나눕니다.</div></div>
+  <div class="flex flex-wrap items-center gap-2">${tsel('jxEnc','글자(.cpg 없을 때)',[['euc-kr','EUC-KR'],['utf-8','UTF-8']],J.enc)}${tin('jxDep','매설깊이(m)',J.dep,3)}${tsel('jxEtg','표고 대상',[['zero','표고 0 절점만'],['all','모든 접합점']],J.etg)}${tsel('jxUnit','사용량 단위',[['month','㎥/월'],['day','㎥/일'],['year','㎥/년']],J.unit)}</div>`
+  +(J.items.length?tbl(['','자료','종류','개수','필드','메모',''],rows,{h:300}):'<p class="text-slate-400 p-2 text-xs">아직 넣은 자료가 없습니다.</p>')
+  +(need.length?`<p class="text-[11px] text-slate-500">없는 자료: ${need.join(' · ')}${S.net?' (지금 관망에 있으면 건너뜁니다)':''}</p>`:'')
+  +`<div class="flex flex-wrap gap-2">${tbtnP('jxGo',J.busy?'⏳ 적용 중…':'▶ 순서대로 적용')}${tbtn('jxClr','목록 비우기')}</div>`
+  +tnote('적용 순서: ① 관망 생성(관로·배수지) → ② 블록 지정 → ③ 표고 → ④ 시설물 점 표시 → ⑤ 계량기 할당(수요) → ⑥ 시설 입력표 → ⑦ 블록 유수율(블록 누수 창에서 확인 후 적용). 단계마다 ↶ 되돌리기로 되돌릴 수 있습니다. 자료 목록은 이 탭을 닫아도 남지만 앱을 새로 열면 비워집니다.'),'border-emerald-200 bg-emerald-50/60')}
+const tin=(id,lab,v,w)=>`<label class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600">${lab}<input id="${id}" type="number" step="0.1" value="${esc(String(v))}" class="px-1 py-0.5 border border-slate-300 rounded bg-white" style="width:${w||4}em"></label>`;
+function bindData(b){const q=s=>b.querySelector(s);const dz=q('#jxDrop');
+ if(dz){dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');dz.ondrop=async e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('on');const it=[...(e.dataTransfer.items||[])];await ingest(it.length&&it[0].webkitGetAsEntry?await walk(it):[...e.dataTransfer.files])}}
+ const f=q('#jxF');if(f)f.onchange=e=>{const fs=[...e.target.files];e.target.value='';ingest(fs)};
+ const sv=(id,k,num)=>{const e=q('#'+id);if(e)e.onchange=()=>{J[k]=num?(+e.value||0):e.value}};sv('jxEnc','enc');sv('jxDep','dep',1);sv('jxEtg','etg');sv('jxUnit','unit');
+ b.querySelectorAll('[data-jr]').forEach(s=>s.onchange=()=>{const it=J.items.find(x=>x.id===+s.dataset.jr);if(!it)return;it.role=s.value;if(it.st==='warn'||it.st==='done'||it.st==='err'&&it.ly){it.st='ok';it.msg=''}
+  const fs=it.ly&&it.ly.fields||[];if(it.role==='blk')it.f1=pickBlk(fs);if(it.role==='elev')it.f1=pickF(fs,fieldRe.elev);if(it.role==='meta'){it.f1=pickF(fs,/CUST|수용가|DMNO|CNT_NUM|^NO$/i)||fs[0];it.f2=pickF(fs,/USE|사용량/i)}if(it.role==='use'&&it.rows){const h=it.rows[0].map(String);it.f1=hdrKey(h);it.f2=hdrUse(h)}render()});
+ b.querySelectorAll('[data-jf]').forEach(s=>s.onchange=()=>{const it=J.items.find(x=>x.id===+s.dataset.jf);if(it)it[s.dataset.jk]=s.value});
+ b.querySelectorAll('[data-jd]').forEach(x=>x.onclick=()=>{J.items=J.items.filter(i=>i.id!==+x.dataset.jd);render()});
+ b.querySelectorAll('[data-jg]').forEach(x=>x.onclick=async()=>{const P=live('pipe')[0];if(!P)return;await feedPipe(P,true);winOpen('gis');toast('필드를 고른 뒤 이 창에서 [순서대로 적용]을 누르면 고른 필드로 만듭니다. 모델 생성 창의 [관망 만들기]를 눌러도 됩니다.',7000)});
+ const go=q('#jxGo');if(go)go.onclick=applyAll;const cl=q('#jxClr');if(cl)cl.onclick=()=>{if(J.busy)return;J.items=[];render()}}
+function render(){try{if(WS.open.has('iw'))winRender('iw',true)}catch(e){}}
+
+const ui0=WR.iw.ui,bind0=WR.iw.bind;
+WR.iw.ui=()=>IW.tab==='d'?tabBar()+`<div class="flex flex-col gap-2 text-xs">${uiData()}</div>`:ui0().replace(/<button type="button" data-iwt="s"/,()=>`<button type="button" data-iwt="d" class="tab">📎 자료함</button><button type="button" data-iwt="s"`);
+WR.iw.bind=b=>{bind0(b);if(IW.tab==='d')bindData(b)};
+// 처음 열면 자료함부터
+IW.tab='d';
+// 지도에 SHP·엑셀을 끌어다 놓으면 자료함으로 (.inp는 예전처럼 열기)
+const mb=$('gpMain');if(mb)mb.addEventListener('drop',async e=>{const fs=[...(e.dataTransfer&&e.dataTransfer.files||[])];if(!fs.length||fs.some(f=>/\.(inp)$/i.test(f.name)))return;
+ if(!fs.some(f=>/\.(shp|dbf|dxf|xlsx|csv|tsv)$/i.test(f.name)))return;e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();mb.classList.remove('drop');const it=[...(e.dataTransfer.items||[])];
+ await ingest(it.length&&it[0].webkitGetAsEntry?await walk(it):fs)},true);
+const st=document.createElement('style');st.textContent=`.jx-drop{border:2px dashed #34d399;border-radius:10px;padding:12px;text-align:center;font-size:12px;font-weight:700;color:#047857;background:#fff}.jx-drop.on{background:#ecfdf5;border-color:#059669}
+.jx-s{border:1px solid #cbd5e1;border-radius:6px;padding:1px 3px;font-size:11px;background:#fff;color:inherit;max-width:120px}.jx-b{border:1px solid #94a3b8;border-radius:7px;padding:2px 7px;font-size:11px;font-weight:700;background:#fff;color:#334155}
+html.dark .jx-drop,html.dark .jx-s,html.dark .jx-b{background:transparent;color:inherit}`;document.head.appendChild(st);
+window.__gw35={J,ingest,applyAll,walk};
+})()}catch(e){console.warn('v35',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
