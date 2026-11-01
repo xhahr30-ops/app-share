@@ -1335,7 +1335,8 @@ html.gwOn .afp{top:150px}
    앱 본문(appMain)은 라이브러리를 받은 뒤 실행되므로, 본문의 변수·함수는 G()로 그때그때 찾아 쓴다. */
 (function(){
 const $=id=>document.getElementById(id),R=document.documentElement,gw=$('gw');if(!gw)return;
-const G=n=>{try{return (0,eval)(n)}catch(_){return undefined}};
+/* 'map'은 본문 실행 전에는 id="map" 칸(div)이 잡히므로 Leaflet 지도일 때만 돌려줌 */
+const G=n=>{try{const v=(0,eval)(n);return n==='map'&&v&&typeof v.on!=='function'?undefined:v}catch(_){return undefined}};
 const F=(n,...a)=>{const f=G(n);if(typeof f==='function')try{return f(...a)}catch(e){console.warn('gw',n,e)}};
 const LS={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}}};
 const num=n=>Number(n||0).toLocaleString();
