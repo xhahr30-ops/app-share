@@ -5,6 +5,7 @@
 | 앱 | 공유 주소 |
 |---|---|
 | 스마트 물길주소 | https://xhahr30-ops.github.io/app-share/geo-join/ |
+| 스마트 물길주소 · 의성군 | https://xhahr30-ops.github.io/app-share/geo-join-uiseong/ |
 | 웹 관망해석기 (v23) | https://xhahr30-ops.github.io/app-share/pipe-network/ |
 | 민원대장 관리 (긴급누수민원) | https://xhahr30-ops.github.io/app-share/minwon/ |
 | 포항시 유수율 분석 (자료 미포함 · 통합문서 첨부해 사용) | https://xhahr30-ops.github.io/app-share/nrw/ |
