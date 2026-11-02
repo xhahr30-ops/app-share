@@ -384,6 +384,7 @@
                     <div class="w-full sm:w-auto overflow-hidden">
                         <h3 id="sheetTitleDisplay" class="font-bold text-lg text-slate-800 truncate">식대 정산</h3>
                         <p id="corporationBadgeDisplay" class="text-xs text-indigo-600 font-semibold mt-0.5 truncate">법인명: - | 현장명: -</p>
+                        <p id="syncStateText" class="text-[11px] font-semibold text-slate-400">자동 동기화 꺼짐 (연동 설정에서 웹앱 URL 입력)</p>
                     </div>
                     <div class="flex items-center gap-2 no-print flex-wrap w-full sm:w-auto">
                         <button id="syncSheetBtn" onclick="syncToGoogleSheets()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm" title="구글 시트와 양방향 동기화 (모바일·PC 공유)">
@@ -802,6 +803,7 @@
         }
 
         function dbPut(storeName, item) {
+            if (storeName === STORE_EXPENSES && typeof autoSync !== 'undefined' && !autoSync.applying) scheduleAutoSync(2000);
             return new Promise((resolve) => {
                 if (!db) { resolve(false); return; }
                 const tx = db.transaction([storeName], 'readwrite');
@@ -813,6 +815,7 @@
         }
 
         function dbDelete(storeName, key) {
+            if (storeName === STORE_EXPENSES && typeof autoSync !== 'undefined' && !autoSync.applying) scheduleAutoSync(2000);
             return new Promise((resolve) => {
                 if (!db) { resolve(false); return; }
                 const tx = db.transaction([storeName], 'readwrite');
@@ -982,6 +985,7 @@
                 localStorage.setItem(STORAGE_KEYS.currentSession, JSON.stringify(currentUser));
                 closeAuthModal();
                 applyUserSessionToUI();
+                scheduleAutoSync(500);
             }
         }
 
@@ -1786,8 +1790,8 @@
             }
             expenses = expenses.filter(item => item.id !== id);
             recalculateSequences();
-            await dbDelete(STORE_EXPENSES, id);
             markDeletedForSync(id);
+            await dbDelete(STORE_EXPENSES, id);
             renderTable();
             updateSummary();
             renderCalendar();
@@ -2110,6 +2114,18 @@
         }
 
         // 페이지(A4 1장)마다 따로 캔버스로 그려 PDF에 추가 -> 거대 단일 캔버스 한계(모바일/사파리) 및 페이지 밀림 방지
+        // PDF 글자 밀림 원인: Tailwind 기본 CSS(preflight)가 모든 img 를 display:block 으로 바꾼다.
+        // html2canvas 1.4.1 은 글자 기준선을 잴 때 문서에 작은 img 를 줄 안에 넣고 위치를 재는데,
+        // block 이 되면 기준선이 줄 아래쪽으로 잘못 잡혀 모든 글자가 아래로 밀려 그려지고, 칸 밖으로 나간 부분이 잘린다.
+        // 캡처하는 동안에만 img 를 원래대로(inline) 돌려 기준선을 바르게 잰다. 영수증 사진은 absolute 배치라 영향 없음.
+        function beginCanvasFix() {
+            const st = document.createElement('style');
+            st.id = 'h2cBaselineFix';
+            st.textContent = 'img{display:inline!important;vertical-align:baseline!important}';
+            document.head.appendChild(st);
+            return () => st.remove();
+        }
+
         async function downloadFinalPDF() {
             generateAndRenderPdfReport();
             const JsPDF = window.jspdf && window.jspdf.jsPDF;
@@ -2128,6 +2144,7 @@
             const scale = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 1.5 : 2;
             const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
             document.body.style.cursor = 'progress';
+            const endCanvasFix = beginCanvasFix();
             try {
                 for (let i = 0; i < pages.length; i++) {
                     const canvas = await html2canvas(pages[i], { scale, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
@@ -2141,6 +2158,7 @@
                 console.error(err);
                 alert('PDF 저장 중 오류가 발생했습니다. (페이지 ' + '생성 실패)');
             } finally {
+                endCanvasFix();
                 document.body.style.cursor = '';
                 stage.remove();
             }
@@ -2291,7 +2309,9 @@
             localStorage.setItem(STORAGE_KEYS.geminiKey, geminiApiKey);
             localStorage.setItem(STORAGE_KEYS.geminiModel, (document.getElementById('geminiModelInput').value || '').trim());
             closeConfigModal();
-            alert('설정이 저장되었습니다.');
+            setSyncState('idle');
+            alert(googleScriptUrl ? '설정이 저장되었습니다.\n자동 동기화를 시작합니다.' : '설정이 저장되었습니다.');
+            if (googleScriptUrl) scheduleAutoSync(300);
         }
 
         // ===== 구글 시트 동기화 (Apps Script 웹앱 연동) =====
@@ -2397,7 +2417,10 @@
             return done;
         }
 
-        async function syncToGoogleSheets() {
+        async function syncToGoogleSheets(opts) {
+            const silent = !!(opts && opts.silent);
+            if (autoSync.running) { if (!silent) autoSync.again = true; return; }
+            if (silent && (!googleScriptUrl || !currentUser || currentUser.role === 'pending_admin')) return;
             if (!googleScriptUrl) {
                 alert('구글 웹앱(Apps Script) URL이 설정되지 않았습니다.\n[연동 설정]에서 URL을 입력한 뒤 다시 시도해주세요.');
                 openConfigModal();
@@ -2408,23 +2431,33 @@
 
             const btn = document.getElementById('syncSheetBtn');
             const btnHtml = btn.innerHTML;
+            autoSync.running = true;
+            autoSync.applying = true;
             btn.disabled = true;
-            btn.classList.add('opacity-70', 'cursor-wait');
-            const setStatus = (t) => { btn.innerHTML = `<i class="fa-solid fa-rotate fa-spin"></i> ${t}`; };
+            if (!silent) btn.classList.add('opacity-70', 'cursor-wait');
+            const setStatus = (t) => { btn.innerHTML = `<i class="fa-solid fa-rotate fa-spin"></i> ${t}`; setSyncState('busy', t); };
             setStatus('동기화 중...');
 
             try {
                 const uploaded = await uploadPendingReceipts(setStatus);
                 setStatus('시트 동기화 중...');
                 const pending = getPendingDeletedIds();
+                const syncStartedAt = Date.now();
+                const sinceKey = 'meal_last_sync_' + googleScriptUrl;
+                const since = Number(localStorage.getItem(sinceKey) || 0);
+                // 처음 한 번은 전체, 그 뒤로는 바뀐 내역만 보냄 (30초마다 돌아도 가볍게)
+                const toSend = getVisibleExpenses().filter(e => !since || (e.updatedAt || 0) >= since - 60000);
                 const payload = {
                     action: 'sync',
-                    records: getVisibleExpenses().map(toSheetRecord),
-                    deletedIds: pending
+                    records: toSend.map(toSheetRecord),
+                    deletedIds: pending,
+                    meta: collectSyncMeta()
                 };
                 const data = await callScript(payload);
 
                 localStorage.removeItem(DELETED_SYNC_KEY);
+                localStorage.setItem(sinceKey, String(syncStartedAt));
+                const metaChanged = applySyncMeta(data.meta);
 
                 let added = 0, updated = 0, removed = 0;
 
@@ -2458,24 +2491,122 @@
                 const downloaded = await downloadMissingReceipts(setStatus);
                 expenses.forEach(x => { delete x._localIds; });
                 expenses.sort((a, b) => b.id - a.id);
-                recalculateSequences();
-                initMonthFilter();
-                syncCalendarToFilterMonth();
-                loadDailyPlansForMonth();
-                renderTable();
-                updateSummary();
-                renderCalendar();
+                const changed = added + updated + removed + downloaded > 0 || metaChanged;
+                if (!silent || changed || autoSync.renderPending) refreshAfterSync();
+                setSyncState('ok', '');
 
-                alert(`구글 시트 동기화 완료\n\n· 시트로 전송: ${payload.records.length}건\n· 새로 받아온 내역: ${added}건\n· 수정 반영: ${updated}건\n· 삭제 반영: ${removed}건\n· 사진 업로드: ${uploaded}장\n· 사진 내려받기: ${downloaded}장`);
+                if (!silent) alert(`구글 시트 동기화 완료\n\n· 시트로 전송: ${payload.records.length}건\n· 새로 받아온 내역: ${added}건\n· 수정 반영: ${updated}건\n· 삭제 반영: ${removed}건\n· 사진 업로드: ${uploaded}장\n· 사진 내려받기: ${downloaded}장`);
             } catch (err) {
                 console.error('Sync Error:', err);
-                alert('구글 시트 동기화 실패\n\n' + err.message + '\n\n[연동 설정]의 웹앱 URL과 배포 권한을 확인해주세요.');
+                setSyncState('err', err.message);
+                if (!silent) alert('구글 시트 동기화 실패\n\n' + err.message + '\n\n[연동 설정]의 웹앱 URL과 배포 권한을 확인해주세요.');
             } finally {
+                autoSync.applying = false;
+                autoSync.running = false;
                 btn.disabled = false;
                 btn.classList.remove('opacity-70', 'cursor-wait');
                 btn.innerHTML = btnHtml;
+                if (autoSync.again) { autoSync.again = false; scheduleAutoSync(500); }
             }
         }
+
+        // ===== 자동 동기화: 앱을 열 때 · 저장할 때(2초 뒤) · 화면을 보는 동안 30초마다 =====
+        const AUTO_SYNC_MS = 30000;
+        const META_TIMES_KEY = 'meal_meta_times_global';
+        const autoSync = { running: false, applying: false, again: false, timer: null, renderPending: false, lastOk: 0 };
+
+        function isSyncMetaKey(k) {
+            return typeof k === 'string' && (k.startsWith(STORAGE_KEYS.budget + '_') || k.startsWith(STORAGE_KEYS.dailyPlansPrefix));
+        }
+        function getMetaTimes() { try { return JSON.parse(localStorage.getItem(META_TIMES_KEY) || '{}'); } catch (e) { return {}; } }
+        function collectSyncMeta() {
+            const times = getMetaTimes(), out = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (isSyncMetaKey(k)) out.push({ key: k, value: localStorage.getItem(k), updatedAt: times[k] || 0 });
+            }
+            return out;
+        }
+        // 시트 쪽이 더 최신인 예산·일별 계획만 이 기기에 반영
+        function applySyncMeta(list) {
+            if (!Array.isArray(list)) return false;
+            const times = getMetaTimes();
+            let changed = false;
+            list.forEach(m => {
+                if (!m || !isSyncMetaKey(m.key)) return;
+                const t = Number(m.updatedAt) || 0;
+                if (t > (times[m.key] || 0) && localStorage.getItem(m.key) !== String(m.value)) {
+                    localStorage.setItem(m.key, String(m.value));
+                    changed = true;
+                }
+                if (t > (times[m.key] || 0)) times[m.key] = t;
+            });
+            localStorage.setItem(META_TIMES_KEY, JSON.stringify(times));
+            if (changed) {
+                const b = localStorage.getItem(STORAGE_KEYS.budget + '_' + selectedFilterMonth);
+                if (b !== null && !isNaN(parseFloat(b))) {
+                    monthlyBudget = parseFloat(b);
+                    const box = document.getElementById('budgetInputBox');
+                    if (box && document.activeElement !== box) box.value = monthlyBudget.toLocaleString();
+                }
+            }
+            return changed;
+        }
+        // 이 기기에서 예산·일별 계획을 바꾸면 바뀐 시각을 기록하고 동기화 예약
+        (function () {
+            try {
+                const orig = Storage.prototype.setItem;
+                Storage.prototype.setItem = function (k, v) {
+                    orig.call(this, k, v);
+                    if (this === window.localStorage && !autoSync.applying && isSyncMetaKey(k)) {
+                        const times = getMetaTimes(); times[k] = Date.now();
+                        orig.call(this, META_TIMES_KEY, JSON.stringify(times));
+                        scheduleAutoSync(2000);
+                    }
+                };
+            } catch (e) {}
+        })();
+
+        // 표의 칸을 고치는 중이면 다시 그리지 않고 다음 번으로 미룸 (입력 중 커서가 튀지 않게)
+        function refreshAfterSync() {
+            const a = document.activeElement;
+            if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && a.closest('table')) { autoSync.renderPending = true; return; }
+            autoSync.renderPending = false;
+            recalculateSequences();
+            initMonthFilter();
+            syncCalendarToFilterMonth();
+            loadDailyPlansForMonth();
+            renderTable();
+            updateSummary();
+            renderCalendar();
+        }
+
+        function scheduleAutoSync(delay) {
+            if (!googleScriptUrl) return;
+            clearTimeout(autoSync.timer);
+            autoSync.timer = setTimeout(() => syncToGoogleSheets({ silent: true }), delay);
+        }
+
+        function setSyncState(state, msg) {
+            const el = document.getElementById('syncStateText');
+            const gw = document.getElementById('gwStSync');
+            let t, c;
+            if (!googleScriptUrl) { t = '자동 동기화 꺼짐 (연동 설정에서 웹앱 URL 입력)'; c = 'text-slate-400'; }
+            else if (state === 'busy') { t = '동기화 중…'; c = 'text-sky-600'; }
+            else if (state === 'err') { t = '동기화 실패 · 30초 뒤 다시 시도'; c = 'text-red-600'; }
+            else {
+                if (state === 'ok') autoSync.lastOk = Date.now();
+                t = autoSync.lastOk ? '자동 동기화 켜짐 · ' + new Date(autoSync.lastOk).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' 반영' : '자동 동기화 켜짐';
+                c = 'text-emerald-600';
+            }
+            if (el) { el.textContent = t; el.className = 'text-[11px] font-semibold ' + c; el.title = msg || ''; }
+            if (gw) gw.textContent = t;
+        }
+
+        setInterval(() => { if (document.visibilityState === 'visible' && !autoSync.running) syncToGoogleSheets({ silent: true }); }, AUTO_SYNC_MS);
+        window.addEventListener('load', () => setTimeout(() => { setSyncState('idle'); scheduleAutoSync(0); }, 1500));
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') scheduleAutoSync(300); });
+        window.addEventListener('online', () => scheduleAutoSync(300));
 
         function exportToCSV() {
             const list = getFilteredExpenses();
@@ -2528,6 +2659,7 @@
             <span>건수 <b id="gwStCount">0</b>건</span>
             <span>합계 <b id="gwStTotal">0원</b></span>
             <span>잔액 <b id="gwStRemain">-</b></span>
+            <span id="gwStSync">-</span>
             <span class="r">Alt+W 화면 전환</span>
         </div>
     </div>
