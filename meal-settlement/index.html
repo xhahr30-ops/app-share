@@ -1761,9 +1761,16 @@
         }
 
         function recalculateSequences() {
-            // 순번: 영수증 사용일자 기준 오름차순(같은 날짜는 등록순)
+            // 순번: 월마다 1번부터 다시 셈 (사용일자 오름차순, 같은 날짜는 등록순) → 표기 "월-순번" 예: 11-1
             const visible = getVisibleExpenses().slice().sort(compareByUsageDate);
-            visible.forEach((item, idx) => { item.seq = idx + 1; });
+            const perMonth = {};
+            visible.forEach(item => {
+                const ym = String(item.date || '').substring(0, 7);
+                perMonth[ym] = (perMonth[ym] || 0) + 1;
+                item.seq = perMonth[ym];
+                const m = parseInt(ym.substring(5, 7), 10);
+                item.seqLabel = isNaN(m) ? String(item.seq) : `${m}-${item.seq}`;
+            });
         }
 
         async function updateExpenseField(id, field, value) {
@@ -1886,7 +1893,7 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-slate-600">${item.seq}</td>
+                    <td class="p-3 font-bold text-slate-600 whitespace-nowrap">${item.seqLabel || item.seq}</td>
                     <td class="p-3"><input type="text" value="${item.author}" onchange="updateExpenseField(${item.id}, 'author', this.value)" class="w-20 bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none"></td>
                     <td class="p-3"><input type="date" value="${item.date}" onchange="updateExpenseField(${item.id}, 'date', this.value)" class="bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none text-xs"></td>
                     <td class="p-3"><input type="text" value="${item.storeName}" onchange="updateExpenseField(${item.id}, 'storeName', this.value)" class="w-24 font-semibold bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none"></td>
@@ -2623,7 +2630,7 @@
             const list = getFilteredExpenses();
             if (list.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
             let csv = '\uFEFF법인명,현장명,순번,작성자,사용일자,상점명,승인번호,분류,사용금액,메모\n';
-            list.forEach(i => { csv += `"${i.corporation}","${i.siteName}",${i.seq},"${i.author}","${i.date}","${i.storeName}","${i.approvalNo || ''}","${i.category}",${i.amount},"${i.memo || ''}"\n`; });
+            list.forEach(i => { csv += `"${i.corporation}","${i.siteName}",${i.seqLabel || i.seq},"${i.author}","${i.date}","${i.storeName}","${i.approvalNo || ''}","${i.category}",${i.amount},"${i.memo || ''}"\n`; });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
