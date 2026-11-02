@@ -2456,10 +2456,24 @@ function initSearch(){
    if(I.sym==='meter'){const v=facLblText(i);if(v){FIX.push({i,key:K(v+kn),t:v+' '+kn,kn});FIX.push({i,key:K(v),t:v+' '+kn,kn,lo:1})}}
    const id=String(P['관리번호']??'').trim();if(id&&id!=='-')FIX.push({i,key:K(id),t:kn+' '+id,kn,id:1})}
   return FIX}
- function inFacs(q){const n=nsp(q).toUpperCase();if(n.length<2||typeof FAC==='undefined'||!FAC.n)return [];const seen=new Set(),res=[];
+ /* 종류 이름으로 찾기(2026-11-02): ⚙️ 관로·시설물 목록의 이름(정수장·소화전·제수밸브·경계밸브…)이나 코드(SA119)로 찾으면
+    그 종류를 지도 가운데에서 가까운 순으로 8개 */
+ function inKinds(n,seen){if(!map)return [];const K=v=>nsp(v).toUpperCase(),ks=[];
+  FAC.kinds.forEach((k,ki)=>{const nm=K(facKindInfo(k).name),cd=K(k);if(nm===n||cd===n||(nm.startsWith(n)&&n.length>=2))ks.push({ki,b:0})});
+  if('경계밸브'.startsWith(n)&&n.length>=2)FAC.kinds.forEach((k,ki)=>{if(facKindInfo(k).sym==='gate')ks.push({ki,b:1})});
+  /* 땅이름+종류(예: 도구리가압장 → 이름에 '도구'나 '도구리', 또는 행정구역에 '도구리'가 든 가압장). 이름이 정확히 같으면 이 단계 없이 이름 찾기로 */
+  let pl='',p2='';if(!ks.length&&!facIdx().some(x=>!x.id&&x.key===n))FAC.kinds.forEach((k,ki)=>{const nm=K(facKindInfo(k).name);if(nm.length>=2&&n.length>nm.length+1&&n.endsWith(nm)){pl=n.slice(0,-nm.length);p2=pl.replace(/(리|동|면|읍|지구|마을)$/,'');ks.push({ki,b:0})}});
+  if(!ks.length)return [];const c=map.getCenter(),kx=111320*Math.cos(c.lat*Math.PI/180),ky=110540,out=[];
+  const plOk=i=>{if(!pl)return true;const P=FAC.pt[i].p||{},nm=K(FAC_NM.map(f=>P[f]||'').join(' ')+' '+facLblText(i)),ad=K(P['행정구역']||'');return nm.includes(pl)||(p2.length>=2&&nm.includes(p2))||ad.includes(pl)};
+  ks.slice(0,4).forEach(({ki,b})=>{const near=[];for(let i=0;i<FAC.n;i++){if(FAC.k[i]!==ki||FAC.dl[i])continue;const bd=facBndI(i);if(b?!bd:false)continue;if(!plOk(i))continue;
+    const d=Math.hypot((FAC.x[i]-c.lng)*kx,(FAC.y[i]-c.lat)*ky);if(near.length<8||d<near[near.length-1].d){near.push({i,d});near.sort((p,q)=>p.d-q.d);if(near.length>8)near.pop()}}
+   near.forEach(o=>{if(seen.has(o.i))return;seen.add(o.i);const kn=facDispName(o.i),lb=facLblText(o.i);
+    out.push({k:'fac',i:o.i,t:kn+(lb?' '+lb:''),r:-1+o.d/1e7,dm:o.d})})});
+  return out}
+ function inFacs(q){const n=nsp(q).toUpperCase();if(n.length<2||typeof FAC==='undefined'||!FAC.n)return [];const seen=new Set(),res=inKinds(n,seen);
   for(const x of facIdx()){const r=x.id?(x.key===n&&/\d/.test(n)?3:-1):x.key===n?0:x.key.startsWith(n)?1:x.key.includes(n)?2:-1;if(r<0||seen.has(x.i))continue;seen.add(x.i);
    res.push({k:'fac',i:x.i,t:x.t,r:r+(x.lo?1:0),ex:r===0&&!x.id&&!x.lo});if(res.length>=200)break}
-  return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,8).map(o=>{let b='';try{b=blkAt(FAC.x[o.i],FAC.y[o.i])}catch(_){}o.s=facDispName(o.i)+(b?' · 소블록 '+b:'');return o})}
+  return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,res.some(o=>o.dm!=null)?12:8).map(o=>{let b='';try{b=blkAt(FAC.x[o.i],FAC.y[o.i])}catch(_){}o.s=(o.dm!=null?'가운데서 '+(o.dm>=1000?(o.dm/1000).toFixed(1)+'km':Math.round(o.dm)+'m')+' · ':'')+facDispName(o.i)+(b?' · 소블록 '+b:'');return o})}
  function inRows(q){const n=nsp(q).toLowerCase();if(n.length<2)return [];const exact=[],part=[];
   for(let i=0;i<out.length;i++){const o=out[i];if(!o)continue;const lat=+o['_위도'],lng=+o['_경도'];if(!isFinite(lat)||!isFinite(lng)||(!lat&&!lng))continue;
    const id=[o['관리번호'],o['수용가번호']].map(v=>nsp(v).toLowerCase()),ad=nsp(o['_검색주소']||o['구주소(지번)']).toLowerCase();
