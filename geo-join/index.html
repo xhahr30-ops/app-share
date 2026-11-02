@@ -6610,12 +6610,14 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
   lgRows=(c,mw,s)=>{let r=1,x=0;LGI.forEach(it=>{const w=lgW(c,it,s);if(x&&x+w>mw){r++;x=0}x+=w});return r};
  const foot='스마트 물길주소 · 포항이 단수구역 (자료상 추정 — 현장 판단 우선) · 만든이: 구병순',t=document.createElement('canvas').getContext('2d');
  let INL=[],TL=[],FL=[],TBL=[],hs=0,q=0;
+ /* 항목별 구분선 수(2026-11-02): 제목 아래 · 위치 정보 아래 · 단수 요약 아래(혼탁수 줄 있을 때) · 범례 아래 · 바닥글 위 */
+ const HRN=()=>2+(INL.length?1:0)+(TBL.length?1:0)+1;
  if(side){const w=SW-24;t.font=Fq(600,13,1);INL=shutWrap(t,INF,w);t.font=Fq(700,14,1);TL=shutWrap(t,sumP,w);t.font=Fq(400,11.5,1);FL=shutWrap(t,foot.split(' · '),w);
   t.font=Fq(700,13.5,1);TBL=TBT?shutWrap(t,TBT.split(' · '),w):[];
-  hs=14+26+20+(showC?20:0)+6+INL.length*20+(INL.length?4:0)+TL.length*20+TBL.length*20+lgRows(t,w,1)*20+6+leftH+10+rightH+8+FL.length*16+10}
+  hs=14+26+20+(showC?20:0)+6+HRN()*10+INL.length*20+(INL.length?4:0)+TL.length*20+TBL.length*20+lgRows(t,w,1)*20+6+leftH+10+rightH+8+FL.length*16+10}
  const B=await mapShotBase(['ptPane','mkPane'],side?0:k=>{t.font=Fq(600,13,k);INL=shutWrap(t,INF,(Wl-24)*k);
   t.font=Fq(700,13.5,k);TBL=TBT?shutWrap(t,TBT.split(' · '),(Wl-24)*k):[];
-  return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+TBL.length*20+lgRows(t,(Wl-24)*k,k)*20+4+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
+  return Math.round((14+28+HRN()*10+INL.length*20+(INL.length?4:0)+24+TBL.length*20+lgRows(t,(Wl-24)*k,k)*20+4+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
   side?(k,Hm)=>{q=Math.max(k*.72,Math.min(k,Hm/hs));return{w:Math.round(SW*q),h:Math.max(0,Math.round(hs*q)-Hm)}}:null,side&&(window.devicePixelRatio||1)>1?Math.min(2.5,window.devicePixelRatio):0);
  let {g,k,W,Hm,R}=B;if(!side)q=k;
  const badge=(x,y,t,bg,dash,s)=>{s=s||k;g.font=`800 ${11*s}px sans-serif`;const w=Math.max(22*s,g.measureText(t).width+8*s),h=22*s;g.beginPath();if(g.roundRect)g.roundRect(x-w/2,y-h/2,w,h,h/2);else g.rect(x-w/2,y-h/2,w,h);g.fillStyle=bg;g.fill();
@@ -6665,29 +6667,30 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
    const ln=(c,lw,d)=>{g.beginPath();g.moveTo(x+3*q,y+10*q);g.lineTo(x+29*q,y+10*q);g.strokeStyle=c;g.lineWidth=lw*q;g.setLineDash(d?d.split(' ').map(v=>v*.7*q):[]);g.stroke()};
    g.lineCap='round';ln('#fff',10);g.lineCap='butt';if(st.b)ln(st.b,(st.w+3)*.85);ln(st.c,st.w*.85,st.d);if(st.in)ln(st.in,2.2);g.setLineDash([]);
    g.font=F(600,12);g.textAlign='left';g.fillStyle='#334155';g.fillText(it[0],x+36*q,y+10*q);x+=w});return y+20*q};
+ const hr=(x0,y,w)=>{g.fillStyle='#cbd5e1';g.fillRect(x0,y+4.5*q,w,1*q);return y+10*q};
  const CH=g.canvas.height;
  if(side){const X=W,x=X+14*q,cw=(SW-26)*q;g.fillStyle='#fff';g.fillRect(X,0,g.canvas.width-X,CH);if(CH>Hm){g.fillStyle='#f1f5f9';g.fillRect(0,Hm,X,CH-Hm)}g.fillStyle='#dc2626';g.fillRect(X,0,4*q,CH);
   let y=14*q;g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(ttl,x,y+12*q,cw);y+=26*q;
   g.font=F(700,14);g.fillStyle='#334155';g.fillText(now,x,y+10*q,cw);y+=20*q;
-  if(showC){legC(x+cw,y+10*q);y+=20*q}y+=6*q;
-  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,x,y+9*q,cw);y+=20*q});y+=4*q}
+  if(showC){legC(x+cw,y+10*q);y+=20*q}y+=6*q;y=hr(x,y,cw);
+  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,x,y+9*q,cw);y+=20*q});y+=4*q;y=hr(x,y,cw)}
   g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';TL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});
-  g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});y=legL(x,y,cw);y+=6*q;
-  y=drawValves(x-2*q,y,cw-30*q);g.fillStyle='#e2e8f0';g.fillRect(x,y+5*q,cw,1*q);y=drawCust(x,cw,y+10*q)+8*q;
+  if(TBL.length)y=hr(x,y,cw);g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});y=legL(x,y,cw);y=hr(x,y,cw);y+=6*q;
+  y=drawValves(x-2*q,y,cw-30*q);g.fillStyle='#e2e8f0';g.fillRect(x,y+5*q,cw,1*q);y=drawCust(x,cw,y+10*q)+8*q;y=hr(x,y,cw);
   g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';FL.forEach(s=>{g.fillText(s,x,y+8*q,cw);y+=16*q})}
  else{let y=Hm;g.fillStyle='#fff';g.fillRect(0,y,W,CH-Hm);g.fillStyle='#dc2626';g.fillRect(0,y,W,4*k);y+=14*k;
   g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(ttl,12*k,y+12*k,W*.62);
   g.textAlign='right';g.font=F(700,14);g.fillStyle='#334155';g.fillText(now,W-12*k,y+12*k);
   if(showC&&two){const dw=g.measureText(now).width;legC(W-12*k-dw-18*k,y+12*k)}
-  y+=28*k;
-  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y+=4*k}
+  y+=28*k;y=hr(12*k,y,W-24*k);
+  if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y+=4*k;y=hr(12*k,y,W-24*k)}
   g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';g.fillText(sumP.join(' · '),12*k,y+12*k,W-24*k);y+=24*k;
-  g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y=legL(12*k,y,W-24*k)+4*k;
+  if(TBL.length)y=hr(12*k,y,W-24*k);g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y=legL(12*k,y,W-24*k)+4*k;y=hr(12*k,y,W-24*k);
   const y0=y;y=drawValves(12*k,y,(two?Wl*.5-52:Wl-56)*k);
   {const x0=(two?Wl*.52:12)*k,cw=(two?Wl*.48-12:Wl-24)*k;let yy=two?y0:y+10*k;
    if(two){g.fillStyle='#e2e8f0';g.fillRect(x0-10*k,y0,1*k,Math.max(leftH,rightH)*k)}else{g.fillStyle='#e2e8f0';g.fillRect(12*k,yy-5*k,(Wl-24)*k,1*k)}
    yy=drawCust(x0,cw,yy);y=two?Math.max(y,y0+Math.max(leftH,rightH)*k):yy}
-  y+=8*k;g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';g.fillText(foot,12*k,y+11*k,W-24*k)}
+  y+=8*k;y=hr(12*k,y,W-24*k);g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';g.fillText(foot,12*k,y+11*k,W-24*k)}
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
  let clip=false;try{const bb=shutBounds();clip=!!bb&&!map.getBounds().contains(bb)}catch(_){}
  if(SHUT.shot&&SHUT.shot.url)URL.revokeObjectURL(SHUT.shot.url);const d=new Date(),pd=v=>String(v).padStart(2,'0');
