@@ -201,6 +201,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .shutp .shk small{display:block;color:var(--mute);font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shutp .shk b{font-size:15px;display:block}
 .shutp .shb{display:flex;flex-wrap:wrap;gap:4px}.shutp .shb .btn{flex:1 1 auto;width:auto;padding:5px 7px;font-size:11.5px;margin:0}.shutp .shb .btn.on{background:var(--ind);border-color:var(--ind);color:#fff}
 .shutp .shh{margin:6px 0 2px;font-size:11.5px;line-height:1.5}
+.shutp .tbleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;font-weight:600;margin:4px 0 2px}.shutp .tbleg span{display:inline-flex;align-items:center;gap:4px}.shutp .tbleg svg{flex:none}
 .shutp .shs,.shutp .shc{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;margin:2px 0}.shutp .shc span{background:var(--sub);border:1px solid var(--line2);border-radius:999px;padding:1px 8px}
 .shutp .sht{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:2px}.shutp .sht th{text-align:left;color:var(--mute);font-weight:700;font-size:10.5px;padding:2px 3px;border-bottom:1px solid var(--line2)}.shutp .sht td{padding:2px 3px;border-bottom:1px dashed var(--line2);vertical-align:middle}
 .shutp .sht tr.brr td{color:var(--mute)}.shutp .shbr{width:auto!important;padding:2px 7px!important;font-size:11px!important;margin:0!important;white-space:nowrap}
@@ -6484,8 +6485,9 @@ function shutDraw(){if(!map)return;shutLayer();
   title:`${v.no}번 ${facBndI(v.i)?'경계밸브':'제수밸브'} ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
   m.on('click',()=>shutBroken(v.n));m.addTo(SHUT.L)});
  {const rl=shutRefLL();if(rl)L.marker(rl,{icon:L.divIcon({className:'shvi',html:'<span class="shv st">!</span>',iconSize:[22,22],iconAnchor:[11,11]}),interactive:false,zIndexOffset:950}).addTo(SHUT.L)}}
-function shutBounds(){const N=SHUT.net,seen=SHUT.seen;if(!seen)return null;let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;
- for(let k=0;k<seen.length;k++){if(!seen[k])continue;for(let v=N.eo[k];v<N.eo[k+1];v++){const x=N.exy[2*v],y=N.exy[2*v+1];if(x<w)w=x;if(x>e)e=x;if(y<s)s=y;if(y>n)n=y}}
+/* 🔍 구역 보기·캡처 범위: 단수 관로 + 혼탁수 주의(하류 포함, 2026-11-02) */
+function shutBounds(){const N=SHUT.net,seen=SHUT.seen;if(!seen)return null;let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;const T=SHUT.tb,tb=T&&T.gr&&T.gr.length===seen.length?T:null;
+ for(let k=0;k<seen.length;k++){if(!seen[k]&&!(tb&&(tb.gr[k]||tb.dn[k])))continue;for(let v=N.eo[k];v<N.eo[k+1];v++){const x=N.exy[2*v],y=N.exy[2*v+1];if(x<w)w=x;if(x>e)e=x;if(y<s)s=y;if(y>n)n=y}}
  return w===Infinity?null:L.latLngBounds([fromM(w,s),fromM(e,n)])}
 function shutFit(){const b=shutBounds();if(!b||!map)return;const p=SHUT.box,mob=innerWidth<=640,w=p&&!p.hidden?p.offsetWidth:0,h=p&&!p.hidden?p.offsetHeight:0;
  map.fitBounds(b,{maxZoom:18,paddingTopLeft:[40,40],paddingBottomRight:mob?[20,h+20]:[w+30,30]})}
@@ -6593,13 +6595,18 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  const INF=shutInfoItems(),Fq=(w,sz,q)=>`${w} ${sz*q}px "Noto Sans KR","Malgun Gothic",sans-serif`,showC=SHUT.opt.cust!==false&&!!S;
  const ctr=SHUT.ll||(SHUT.area?L.latLng(...fromM(SHUT.area.c[0],SHUT.area.c[1])):map.getCenter());let blk='';try{blk=blkAt(ctr.lng,ctr.lat)}catch(_){}
  const ttl=`💧 단수구역${blk?' · 소블록 '+blk:''}${SHUT.area?' · ✏️ '+(shutAMode()==='area'?'범위대로':'범위→밸브까지'):''}`,now=fmtDT(Date.now());
- const sumP=[`단수 관로 ${(R0.len/1000).toFixed(2)}km (${R0.nf.toLocaleString()}개)`,`닫을 밸브 ${c0}개`,...(c1?['이미 닫힘 '+c1]:[]),...(c2?['못 닫음 '+c2]:[]),...(S?[`영향 급수전 ${S.n.toLocaleString()}곳`+(S.big.length?` (대수용가 ${S.big.length})`:'')]:[]),...(tbTxt()?[tbTxt()]:[])];
+ const sumP=[`단수 관로 ${(R0.len/1000).toFixed(2)}km (${R0.nf.toLocaleString()}개)`,`닫을 밸브 ${c0}개`,...(c1?['이미 닫힘 '+c1]:[]),...(c2?['못 닫음 '+c2]:[]),...(S?[`영향 급수전 ${S.n.toLocaleString()}곳`+(S.big.length?` (대수용가 ${S.big.length})`:'')]:[])];
+ /* 혼탁수 요약은 따로 한 줄(2026-11-02: 한 줄에 몰아 글씨가 작아지던 것), 그 아래 선 범례(단수 관로·혼탁수) */
+ const TBT=tbTxt(),LGI=tbLegItems(),lgW=(c,it,s)=>{c.font=Fq(600,12,s);return 36*s+c.measureText(it[0]).width+14*s},
+  lgRows=(c,mw,s)=>{let r=1,x=0;LGI.forEach(it=>{const w=lgW(c,it,s);if(x&&x+w>mw){r++;x=0}x+=w});return r};
  const foot='스마트 물길주소 · 포항이 단수구역 (자료상 추정 — 현장 판단 우선) · 만든이: 구병순',t=document.createElement('canvas').getContext('2d');
- let INL=[],TL=[],FL=[],hs=0,q=0;
+ let INL=[],TL=[],FL=[],TBL=[],hs=0,q=0;
  if(side){const w=SW-24;t.font=Fq(600,13,1);INL=shutWrap(t,INF,w);t.font=Fq(700,14,1);TL=shutWrap(t,sumP,w);t.font=Fq(400,11.5,1);FL=shutWrap(t,foot.split(' · '),w);
-  hs=14+26+20+(showC?20:0)+6+INL.length*20+(INL.length?4:0)+TL.length*20+6+leftH+10+rightH+8+FL.length*16+10}
+  t.font=Fq(700,13.5,1);TBL=TBT?shutWrap(t,TBT.split(' · '),w):[];
+  hs=14+26+20+(showC?20:0)+6+INL.length*20+(INL.length?4:0)+TL.length*20+TBL.length*20+lgRows(t,w,1)*20+6+leftH+10+rightH+8+FL.length*16+10}
  const B=await mapShotBase(['ptPane','mkPane'],side?0:k=>{t.font=Fq(600,13,k);INL=shutWrap(t,INF,(Wl-24)*k);
-  return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
+  t.font=Fq(700,13.5,k);TBL=TBT?shutWrap(t,TBT.split(' · '),(Wl-24)*k):[];
+  return Math.round((14+28+INL.length*20+(INL.length?4:0)+24+TBL.length*20+lgRows(t,(Wl-24)*k,k)*20+4+(two?Math.max(leftH,rightH):leftH+10+rightH)+8+24)*k)},
   side?(k,Hm)=>{q=Math.max(k*.72,Math.min(k,Hm/hs));return{w:Math.round(SW*q),h:Math.max(0,Math.round(hs*q)-Hm)}}:null,side&&(window.devicePixelRatio||1)>1?Math.min(2.5,window.devicePixelRatio):0);
  let {g,k,W,Hm,R}=B;if(!side)q=k;
  const badge=(x,y,t,bg,dash,s)=>{s=s||k;g.font=`800 ${11*s}px sans-serif`;const w=Math.max(22*s,g.measureText(t).width+8*s),h=22*s;g.beginPath();if(g.roundRect)g.roundRect(x-w/2,y-h/2,w,h,h/2);else g.rect(x-w/2,y-h/2,w,h);g.fillStyle=bg;g.fill();
@@ -6644,13 +6651,19 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
     g.textAlign='right';g.fillText(x.d!=null?String(x.d):'-',cx[3]-8*q,yy+rh*q/2);g.fillText(x.q!=null?x.q.toFixed(1):'-',x0+cw-4*q,yy+rh*q/2);g.fillStyle='#e2e8f0';g.fillRect(x0,yy+rh*q-1*q,cw,1*q);yy+=rh*q});g.textAlign='left'}
   else{g.font=F(600,12);g.fillStyle='#64748b';g.fillText('없음',x0,yy+rh*q/2);yy+=rh*q}return yy};
  const legC=(rx,y)=>{let lx=rx;g.font=F(600,12);g.textAlign='right';[['대수용가','#f59e0b',6],['단수 대상 수용가','#0284c7',4.5]].forEach(([t,c,r])=>{const tw=g.measureText(t).width;g.fillStyle='#334155';g.fillText(t,lx,y);lx-=tw+8*q;g.beginPath();g.arc(lx,y,r*q,0,7);g.fillStyle=c;g.fill();g.lineWidth=1.5*q;g.strokeStyle='#fff';g.stroke();lx-=r*q+14*q})};
+ /* 선 범례: 흰 테두리+선 모양을 지도와 같게, 폭을 넘으면 다음 줄 */
+ const legL=(x0,y,mw)=>{let x=x0;g.textBaseline='middle';LGI.forEach(it=>{const w=lgW(g,it,q),st=it[1];if(x>x0&&x+w>x0+mw){x=x0;y+=20*q}
+   const ln=(c,lw,d)=>{g.beginPath();g.moveTo(x+3*q,y+10*q);g.lineTo(x+29*q,y+10*q);g.strokeStyle=c;g.lineWidth=lw*q;g.setLineDash(d?d.split(' ').map(v=>v*.7*q):[]);g.stroke()};
+   g.lineCap='round';ln('#fff',10);g.lineCap='butt';if(st.b)ln(st.b,(st.w+3)*.85);ln(st.c,st.w*.85,st.d);if(st.in)ln(st.in,2.2);g.setLineDash([]);
+   g.font=F(600,12);g.textAlign='left';g.fillStyle='#334155';g.fillText(it[0],x+36*q,y+10*q);x+=w});return y+20*q};
  const CH=g.canvas.height;
  if(side){const X=W,x=X+14*q,cw=(SW-26)*q;g.fillStyle='#fff';g.fillRect(X,0,g.canvas.width-X,CH);if(CH>Hm){g.fillStyle='#f1f5f9';g.fillRect(0,Hm,X,CH-Hm)}g.fillStyle='#dc2626';g.fillRect(X,0,4*q,CH);
   let y=14*q;g.textAlign='left';g.fillStyle='#111827';g.font=F(800,17);g.fillText(ttl,x,y+12*q,cw);y+=26*q;
   g.font=F(700,14);g.fillStyle='#334155';g.fillText(now,x,y+10*q,cw);y+=20*q;
   if(showC){legC(x+cw,y+10*q);y+=20*q}y+=6*q;
   if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,x,y+9*q,cw);y+=20*q});y+=4*q}
-  g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';TL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});y+=6*q;
+  g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';TL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});
+  g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,x,y+10*q,cw);y+=20*q});y=legL(x,y,cw);y+=6*q;
   y=drawValves(x-2*q,y,cw-30*q);g.fillStyle='#e2e8f0';g.fillRect(x,y+5*q,cw,1*q);y=drawCust(x,cw,y+10*q)+8*q;
   g.textAlign='left';g.font=F(400,11.5);g.fillStyle='#64748b';FL.forEach(s=>{g.fillText(s,x,y+8*q,cw);y+=16*q})}
  else{let y=Hm;g.fillStyle='#fff';g.fillRect(0,y,W,CH-Hm);g.fillStyle='#dc2626';g.fillRect(0,y,W,4*k);y+=14*k;
@@ -6660,6 +6673,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
   y+=28*k;
   if(INL.length){g.textAlign='left';g.font=F(600,13);g.fillStyle='#1e3a8a';INL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y+=4*k}
   g.textAlign='left';g.font=F(700,14);g.fillStyle='#111827';g.fillText(sumP.join(' · '),12*k,y+12*k,W-24*k);y+=24*k;
+  g.font=F(700,13.5);g.fillStyle='#7c2d12';TBL.forEach(s=>{g.fillText(s,12*k,y+9*k,W-24*k);y+=20*k});y=legL(12*k,y,W-24*k)+4*k;
   const y0=y;y=drawValves(12*k,y,(two?Wl*.5-52:Wl-56)*k);
   {const x0=(two?Wl*.52:12)*k,cw=(two?Wl*.48-12:Wl-24)*k;let yy=two?y0:y+10*k;
    if(two){g.fillStyle='#e2e8f0';g.fillRect(x0-10*k,y0,1*k,Math.max(leftH,rightH)*k)}else{g.fillStyle='#e2e8f0';g.fillRect(12*k,yy-5*k,(Wl-24)*k,1*k)}
@@ -6890,13 +6904,24 @@ function tbTxt(){const T=SHUT.tb;if(!T||T.hi+T.mid+T.down<1)return '';const k=v=
  return `🟤 혼탁수 주의(예상) 높음 ${k(T.hi)} · 보통 ${k(T.mid)} · 밸브 하류 ${k(T.down)}${C&&C.n?` (하류 급수전 ${C.n.toLocaleString()}곳)`:''}`}
 function tbDraw(o,w){const T=SHUT.tb;if(!T||!SHUT.L)return;const L1=[],L2=[],L3=[],I2=[],I3=[];
  for(let e=0;e<T.gr.length;e++){const g=T.gr[e];if(!g&&!T.dn[e])continue;const ll=shutLL(e);if(T.dn[e])(g===3?L3:g===2?L2:L1).push(ll);else(g===3?I3:I2).push(ll)}
- if(L1.length||L2.length||L3.length)L.polyline(L1.concat(L2,L3),{...o,color:'#fff',weight:8*w,opacity:.8}).addTo(SHUT.L);
- if(L1.length)L.polyline(L1,{...o,color:'#a16207',weight:3*w,opacity:.95,dashArray:'7 5'}).addTo(SHUT.L);
- if(L2.length)L.polyline(L2,{...o,color:'#ca8a04',weight:5*w,opacity:.95}).addTo(SHUT.L);
- if(L3.length)L.polyline(L3,{...o,color:'#7c2d12',weight:5*w,opacity:.95}).addTo(SHUT.L);
- /* 단수구역 안: 빨강 선 가운데에 가는 갈색 줄 */
- if(I2.length)L.polyline(I2,{...o,color:'#fde047',weight:2.2*w,opacity:1}).addTo(SHUT.L);
- if(I3.length)L.polyline(I3,{...o,color:'#451a03',weight:2.2*w,opacity:1}).addTo(SHUT.L)}
+ /* 하류(2026-11-02 가독성): 흰 테두리를 넓게 깔고 높음 = 진한 갈색 굵은 선, 보통 = 노랑 선+갈색 테두리, 그 밖 = 갈색 굵은 점선. 배경지도·관로 글자 위에서도 보이게 */
+ const S=TB_ST;if(L1.length||L2.length||L3.length)L.polyline(L1.concat(L2,L3),{...o,color:'#fff',weight:11*w,opacity:.9}).addTo(SHUT.L);
+ if(L1.length)L.polyline(L1,{...o,color:S.lo.c,weight:S.lo.w*w,opacity:1,dashArray:S.lo.d}).addTo(SHUT.L);
+ if(L2.length){L.polyline(L2,{...o,color:S.mid.b,weight:(S.mid.w+3)*w,opacity:1}).addTo(SHUT.L);L.polyline(L2,{...o,color:S.mid.c,weight:S.mid.w*w,opacity:1}).addTo(SHUT.L)}
+ if(L3.length)L.polyline(L3,{...o,color:S.hi.c,weight:S.hi.w*w,opacity:1}).addTo(SHUT.L);
+ /* 단수구역 안: 빨강 선 가운데 줄 (높음 진한 갈색 · 보통 노랑) */
+ if(I2.length)L.polyline(I2,{...o,color:S.mid.c,weight:2.6*w,opacity:1}).addTo(SHUT.L);
+ if(I3.length)L.polyline(I3,{...o,color:'#451a03',weight:2.6*w,opacity:1}).addTo(SHUT.L)}
+/* 혼탁수·단수 선 모양 한곳에서 — 지도·단수 창 범례·캡처 범례가 같은 모양을 씀 */
+const TB_ST={hi:{c:'#7c2d12',w:6},mid:{c:'#facc15',b:'#7c2d12',w:5},lo:{c:'#7c2d12',w:4,d:'10 7'}};
+/* 범례 줄 목록: [이름, 선 모양] — 혼탁수 결과가 없으면 단수 관로만 */
+function tbLegItems(){const T=SHUT.tb,on=T&&T.hi+T.mid+T.down>=1,S=TB_ST,it=[['단수 관로',{c:'#dc2626',w:5}]];
+ if(!on)return it;if(T.iHi+T.iMid>=1)it.push(['구역 안 혼탁수',{c:'#dc2626',w:5,in:'#451a03'}]);
+ if(T.oHi>=1)it.push(['혼탁수 높음',S.hi]);if(T.oMid>=1)it.push(['혼탁수 보통',S.mid]);if(T.oLo>=1)it.push(['밸브 하류',S.lo]);return it}
+/* 단수 창 범례: 작은 캔버스 대신 SVG 선 */
+function tbLegSvg(st){const d=st.d?` stroke-dasharray="${st.d.split(' ').map(v=>v*.7).join(' ')}"`:'';
+ return `<svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><line x1="1" y1="6" x2="29" y2="6" stroke="#fff" stroke-width="10" stroke-linecap="round"/>${st.b?`<line x1="3" y1="6" x2="27" y2="6" stroke="${st.b}" stroke-width="${(st.w+3)*.85}"/>`:''}<line x1="3" y1="6" x2="27" y2="6" stroke="${st.c}" stroke-width="${st.w*.85}"${d}/>${st.in?`<line x1="3" y1="6" x2="27" y2="6" stroke="${st.in}" stroke-width="2.2"/>`:''}</svg>`}
+function tbLegHtml(){return `<div class="tbleg">${tbLegItems().map(([t,st])=>`<span>${tbLegSvg(st)}${t}</span>`).join('')}</div>`}
 function tbHtml(){const O=tbOpt();if(!O.on)return '';let h=`<div class="uig">🟤 혼탁수 주의 <small>(예상 · ${O.mat==='ci'?'덕타일·회주철':'덕타일'} 저유속 · 관망해석 평균 유속)</small></div>`;
  if(!hydLk())return h+`<p class="uin">왼쪽 ②-3 표고·수압에 <b>관망해석 결과 파일</b>을 올리면 단수구역 안과 닫을 밸브 하류의 저유속 덕타일관을 골라 보여 줍니다.</p>`;
  const T=SHUT.tb;if(!T)return h+`<p class="uin">계산 중…</p>`;const m=v=>v>=1000?(v/1000).toFixed(2)+'km':Math.round(v)+'m',C=tbCust();
@@ -6907,7 +6932,7 @@ function tbHtml(){const O=tbOpt();if(!O.on)return '';let h=`<div class="uig">�
  if(T.fs.length){h+=`<table class="sht"><tr><th>관리번호</th><th>구경</th><th>유속 m/s</th><th>위치</th><th>길이</th></tr>${T.fs.slice(0,8).map(x=>{const f=PIPE.feats[x.fi],a=attrOf(f),hy=pipeHyd(a);
    return `<tr><td><b style="color:${x.g===3?'#7c2d12':'#a16207'}">${x.g===3?'●':'○'}</b> ${esc(a.id||'-')}</td><td>${a.dia??'-'}</td><td>${hy?hy.v.toFixed(3):'-'}</td><td>${x.in&&x.dn?'안·하류':x.in?'구역 안':'하류'}</td><td>${m(x.L)}</td></tr>`}).join('')}</table>`+
   `<div class="shb"><button type="button" class="btn ol shbr" data-a="tbx" title="주의 관로 목록 엑셀 (관리번호·구경·유속, 개인정보 없음)">📥 주의 관로 엑셀 (${T.fs.length})</button></div>`}
- return h+`<p class="uin">진한 갈색 = 주의 높음(유속 ${O.v1}m/s 미만) · 노랑 갈색 = 보통(${O.v2}m/s 미만) · 갈색 점선 = 닫을 밸브에서 평소 흐름 방향으로 ${O.dd>=1000?O.dd/1000+'km':O.dd+'m'}까지의 하류. 단수구역 안은 빨강 선 가운데 가는 줄로 표시. 물을 다시 틀 때 하류 끝 소화전·퇴수 밸브로 먼저 빼 주세요. 관망해석 평균값 기준 예상이라 현장과 다를 수 있습니다.</p>`}
+ return h+tbLegHtml()+`<p class="uin">높음 = 유속 ${O.v1}m/s 미만 · 보통 = ${O.v2}m/s 미만 · 밸브 하류(점선) = 닫을 밸브에서 평소 흐름 방향으로 ${O.dd>=1000?O.dd/1000+'km':O.dd+'m'}까지 중 덕타일 저유속이 아닌 관로. 단수구역 안은 빨강 선 가운데 줄로 표시. 물을 다시 틀 때 하류 끝 소화전·퇴수 밸브로 먼저 빼 주세요. 관망해석 평균값 기준 예상이라 현장과 다를 수 있습니다.</p>`}
 function tbXlsx(){const T=SHUT.tb;if(!T||!T.fs.length)return;const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
  const rows=T.fs.map((x,k)=>{const f=PIPE.feats[x.fi],a=attrOf(f),hy=pipeHyd(a),P=f.properties||{};return{'순번':k+1,'주의 등급':x.g===3?'높음':'보통','위치':x.in&&x.dn?'구역 안·하류':x.in?'단수구역 안':'밸브 하류','관리번호':a.id||'','관재질':a.matRaw||a.mat,'구경(mm)':a.dia??'','설치연도':a.year??'','평균 유속(m/s)':hy?+hy.v.toFixed(3):'','평균 유량(㎥/일)':hy?+Math.abs(hy.q).toFixed(1):'','해당 길이(m)':+x.L.toFixed(1),'소블록':shutEB(x.e)}});
  const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();ws['!cols']=[{wch:5},{wch:8},{wch:12},{wch:12},{wch:9},{wch:8},{wch:8},{wch:12},{wch:13},{wch:11},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'혼탁수 주의 관로');
