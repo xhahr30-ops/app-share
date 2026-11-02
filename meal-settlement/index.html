@@ -1,0 +1,2570 @@
+<!DOCTYPE html>
+<html lang="ko" class="gw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 식대정산 앱</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background-color: transparent; }
+
+        @page { size: A4 portrait; margin: 0; }
+        @media print {
+            html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; min-height: 0 !important; display: block !important; }
+            body > *:not(#printReportContainer) { display: none !important; }
+            #printReportContainer { display: block !important; position: static !important; width: 210mm; }
+            .pdf-page-fixed { width: 210mm !important; height: 296mm !important; margin: 0 !important; box-shadow: none !important; overflow: hidden !important;
+                              break-after: page; page-break-after: always; break-inside: avoid; page-break-inside: avoid; }
+            .pdf-page-fixed:last-child { break-after: auto; page-break-after: auto; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        .pdf-page-fixed {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+    <!-- ════════ 🖥️ BsstGis 스타일 (물길주소·관망해석기와 같은 색: 회색 바탕 · 얇은 테두리 · 파란 강조) ════════ -->
+    <style id="bsstgisStyle">
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+        :root{--gw-ch:#f3f3f3;--gw-ch2:#fafafa;--gw-bd:#d6d6d6;--gw-tx:#2b2b2b;--gw-tx2:#6b6b6b;--gw-ac:#2563eb;--gw-ac2:#1d4ed8;--gw-hv:#e6eefc;--gw-on:#d3e2fb;--gw-pn:#fff}
+        html.gw body{font-family:'Noto Sans KR','Inter',sans-serif;background:var(--gw-ch)!important;color:var(--gw-tx)}
+        /* 머리글: 제목줄처럼 회색 바탕 · 아래 얇은 줄 */
+        html.gw header{background:var(--gw-pn)!important;color:var(--gw-tx)!important;box-shadow:none!important;border-bottom:1px solid var(--gw-bd)}
+        html.gw header>div{padding-top:6px!important;padding-bottom:6px!important}
+        html.gw header h1{font-size:16px!important;font-weight:700}
+        html.gw header .text-white{color:var(--gw-tx)!important}
+        html.gw header .text-indigo-100,html.gw header .text-indigo-200{color:var(--gw-tx2)!important}
+        html.gw header .text-amber-300{color:var(--gw-ac)!important}
+        html.gw header .bg-amber-400{background:var(--gw-on)!important;color:var(--gw-ac)!important;border-radius:4px!important}
+        html.gw header .bg-white\/10{background:var(--gw-ch2)!important;border:1px solid var(--gw-bd);backdrop-filter:none!important}
+        html.gw header button{border-radius:4px!important;box-shadow:none!important;backdrop-filter:none!important;font-size:12px!important}
+        html.gw header button.bg-white\/20{background:var(--gw-pn)!important;color:var(--gw-tx)!important;border:1px solid var(--gw-bd);font-weight:600}
+        html.gw header button.bg-white\/20:hover{background:var(--gw-hv)!important;border-color:var(--gw-ac)}
+        html.gw header button.bg-amber-500{background:var(--gw-ac)!important;color:#fff!important}
+        html.gw header button.bg-amber-500:hover{background:var(--gw-ac2)!important}
+        html.gw header button.bg-rose-600\/80{background:var(--gw-pn)!important;color:#b91c1c!important;border:1px solid #fca5a5}
+        /* 카드·창: 각진 모서리 · 그림자 없음 · 얇은 회색 테두리 */
+        html.gw :is(main,.fixed,#gw) :is(.rounded-2xl,.rounded-3xl):not(#printReportContainer *){border-radius:6px!important}
+        html.gw :is(main,.fixed,#gw) .rounded-xl:not(#printReportContainer *){border-radius:5px!important}
+        html.gw :is(main,.fixed,#gw) .rounded-lg:not(#printReportContainer *){border-radius:4px!important}
+        html.gw :is(main,#gw) :is(.shadow-sm,.shadow-md,.shadow):not(#printReportContainer *){box-shadow:none!important}
+        html.gw :is(main,.fixed,#gw) .border-slate-200:not(#printReportContainer *){border-color:var(--gw-bd)!important}
+        html.gw main>section,html.gw main>div>section{background:var(--gw-pn)}
+        /* 강조색: 남색 → 파랑 */
+        html.gw :is(main,.fixed,#gw) :is(.bg-indigo-600,.bg-blue-600):not(#printReportContainer *){background-color:var(--gw-ac)!important}
+        html.gw :is(main,.fixed,#gw) :is(.bg-indigo-700,.hover\:bg-indigo-700:hover):not(#printReportContainer *){background-color:var(--gw-ac2)!important}
+        html.gw :is(main,.fixed,#gw) :is(.text-indigo-600,.text-indigo-700,.text-indigo-800):not(#printReportContainer *){color:var(--gw-ac)!important}
+        html.gw :is(main,.fixed,#gw) .bg-indigo-50:not(#printReportContainer *){background-color:var(--gw-hv)!important}
+        html.gw :is(main,.fixed,#gw) .bg-indigo-100:not(#printReportContainer *){background-color:var(--gw-on)!important}
+        html.gw :is(main,.fixed,#gw) :is(.border-indigo-200,.border-indigo-300):not(#printReportContainer *){border-color:#c5d5f0!important}
+        html.gw :is(main,.fixed,#gw) :is(.bg-indigo-800,.bg-indigo-900):not(#printReportContainer *){background-color:#1e3a8a!important}
+        html.gw :is(main,.fixed,#gw) .bg-gradient-to-r:not(#printReportContainer *){background-image:none!important;background-color:var(--gw-ac)!important}
+        html.gw :is(main,.fixed,#gw) :is(input,select,textarea):focus{--tw-ring-color:var(--gw-ac)!important;border-color:var(--gw-ac)!important}
+        /* 표: 머리행 연회색 · 행 위 파란 강조 */
+        html.gw :is(main,#gw) thead tr:not(#printReportContainer *){background:var(--gw-ch2)!important}
+        html.gw :is(main,#gw) thead th{font-weight:500;color:var(--gw-tx2)}
+        html.gw :is(main,#gw) tbody tr:hover{background:var(--gw-hv)!important}
+        /* 상태줄 */
+        #gwStatus{display:none}
+        html.gw #gwStatus{display:flex;position:sticky;bottom:0;z-index:30;gap:14px;align-items:center;height:24px;padding:0 10px;background:var(--gw-ch);border-top:1px solid var(--gw-bd);color:var(--gw-tx2);font-size:11px;font-family:inherit}
+        html.gw #gwStatus b{color:var(--gw-tx);font-weight:600}
+        @media print{#gwStatus,#gw{display:none!important}}
+        html.gw header #gwBtn{border-color:var(--gw-ac)!important;color:var(--gw-ac)!important}
+        /* ── 작업 화면 (제목줄 · 리본 · 입력 창 | 내역 · 상태줄) ── */
+        #gw{display:none}
+        html.gwOn #gw{display:grid;position:fixed;inset:0;z-index:45;grid-template-rows:auto auto minmax(0,1fr) auto;background:var(--gw-ch);color:var(--gw-tx);font-size:12px;font-family:'Noto Sans KR','Inter',sans-serif}
+        html.gwOn body{overflow:hidden}
+        html.gwOn header,html.gwOn #gwSrcMain,html.gwOn body>#gwStatus{display:none!important}
+        #gw button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;margin:0}
+        #gwTitle{display:flex;align-items:center;gap:8px;height:34px;padding:0 8px;background:var(--gw-pn);border-bottom:1px solid var(--gw-bd)}
+        #gwTitle .tt{flex:1;min-width:0;text-align:center;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        #gwTitle .tt small{color:var(--gw-tx2);font-weight:400}
+        #gw .gw-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--gw-bd);border-radius:4px;background:var(--gw-ch2);font-size:11px;white-space:nowrap}
+        #gw button.gw-pill:hover{background:var(--gw-hv);border-color:var(--gw-ac)}
+        #gwRib{display:flex;align-items:stretch;padding:4px 6px 0;overflow-x:auto;background:var(--gw-ch);border-bottom:1px solid var(--gw-bd);scrollbar-width:thin}
+        .gw-g{display:flex;flex-direction:column;border-right:1px solid var(--gw-bd);padding:0 6px;flex:none}
+        .gw-gi{display:flex;align-items:flex-start;gap:2px;flex:1}
+        .gw-gl{text-align:center;color:var(--gw-tx2);font-size:11px;padding:2px 0 3px;white-space:nowrap}
+        #gw .gw-b{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;min-width:58px;max-width:84px;height:62px;border-radius:3px;border:1px solid transparent;font-size:12px;line-height:14px;text-align:center;word-break:keep-all}
+        #gw .gw-b i{font-size:18px;color:var(--gw-tx2)}
+        #gw .gw-b.run i{color:var(--gw-ac)}
+        #gw .gw-b:hover{background:var(--gw-hv);border-color:#c5d5f0}
+        #gw .gw-b.danger i{color:#dc2626}
+        #gwBody{display:grid;grid-template-columns:360px minmax(0,1fr);gap:4px;min-height:0;padding:4px 4px 0}
+        #gwLeft,#gwMain{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--gw-pn);border:1px solid var(--gw-bd)}
+        .gw-ph{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid var(--gw-bd);font-size:13px;font-weight:600;background:var(--gw-ch2)}
+        .gw-ph i{color:var(--gw-ac)}
+        .gw-slot{overflow:auto;flex:1;min-height:0}
+        #gwLeftSlot>section{border:0!important;border-radius:0!important;position:static!important;padding:10px!important;gap:12px!important;height:auto!important}
+        #gwMainSlot>section{padding:8px;gap:8px!important}
+        #gwMainSlot>section>div{border-radius:4px!important}
+        #gwStat{display:flex;gap:14px;align-items:center;height:24px;padding:0 10px;border-top:1px solid var(--gw-bd);background:var(--gw-ch);color:var(--gw-tx2);font-size:11px;white-space:nowrap;overflow:hidden}
+        #gwStat b{color:var(--gw-tx);font-weight:600}
+        #gwStat .r{margin-left:auto}
+        @media(max-width:899px){
+            #gwBody{grid-template-columns:minmax(0,1fr);overflow:auto}
+            #gwLeft,#gwMain{min-height:auto;min-width:0}
+            #gw #gwTitle>.gw-pill:first-child,#gw #gwUser{display:none}
+            #gwTitle .tt{text-align:left}
+            .gw-slot{overflow:visible}
+            #gwTitle .tt small,#gwStat .r{display:none}
+        }
+    </style>
+</head>
+<body class="bg-slate-50 flex flex-col min-h-screen text-slate-800">
+
+    <header class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                    <i class="fa-solid fa-receipt text-2xl text-amber-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+                        스마트 식대정산 앱 
+                        <span class="text-xs bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-semibold">보안 강화 (플레이스홀더 노출 방지)</span>
+                    </h1>
+                    <p class="text-xs text-indigo-100 flex items-center justify-between gap-4 mt-0.5">
+                        <span>보안 강화: 마스터 시크릿 코드 및 초기 비밀번호 숨김 처리</span>
+                        <span class="text-indigo-200 font-bold">만든이: 구병순</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
+                <div id="currentUserBadge" class="hidden sm:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm text-xs">
+                    <i class="fa-solid fa-user-shield text-amber-300"></i>
+                    <span id="headerUserName" class="font-bold text-white">홍길동 (사용자)</span>
+                </div>
+                <button id="modeToggleBtn" onclick="toggleAdminMode()" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-sliders"></i> <span id="modeToggleText">관리자 모드로 전환</span>
+                </button>
+                <button onclick="openPasswordModal()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 backdrop-blur-sm shadow-sm">
+                    <i class="fa-solid fa-key"></i> 비밀번호 변경
+                </button>
+                <button onclick="openFileStorageModal()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 backdrop-blur-sm shadow-sm">
+                    <i class="fa-solid fa-hard-drive"></i> 백업/복원
+                </button>
+                <button onclick="openConfigModal()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 backdrop-blur-sm">
+                    <i class="fa-solid fa-gear"></i> 연동설정
+                </button>
+                <button id="gwBtn" onclick="gwToggle(true)" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5" title="BsstGis 작업 화면: 리본 메뉴 · 입력 창 · 내역 표 · 상태줄 (Alt+W) — 자료는 그대로, 배치만 바뀜">
+                    <i class="fa-solid fa-display"></i> 작업 화면
+                </button>
+                <button onclick="togglePdfPreviewSection()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-pdf"></i> PDF 보고서
+                </button>
+                <button onclick="logoutUser()" class="bg-rose-600/80 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                    <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="gwSrcMain" class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <section id="gwSrcLeft" class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col gap-5 h-fit lg:sticky lg:top-20">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice-dollar text-indigo-600"></i> 지출 입력 및 등록
+                </h2>
+                <span id="roleBadgeLabel" class="text-xs text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full font-bold border border-indigo-200">사용자 모드</span>
+            </div>
+
+            <div id="pendingAdminBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900 space-y-1">
+                <p class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> 관리자 권한 승인 대기 중</p>
+                <p>최고관리자의 승인이 완료될 때까지 일반 사용자 모드로 동작합니다.</p>
+            </div>
+
+            <div id="adminApprovalSection" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-xs text-indigo-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-check text-indigo-600"></i> 관리자 권한 승인 대기열
+                    </h3>
+                    <span id="pendingCountBadge" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0명 대기</span>
+                </div>
+                <div id="pendingUsersListContainer" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar"></div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">법인명 (소속 회사)</label>
+                        <input type="text" id="corporationNameInput" value="" placeholder="예: (주)OO건설" oninput="saveMetaInputs()" onblur="saveMetaInputs()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">현장명</label>
+                        <input type="text" id="siteNameInput" value="" placeholder="예: OO현장" oninput="saveMetaInputs()" onblur="saveMetaInputs()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">시트명 / 프로젝트 / 부서</label>
+                    <input type="text" id="sheetTitleInput" value="식대 정산" placeholder="예: OO용역/관리팀" oninput="saveMetaInputs()" onblur="saveMetaInputs()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">작성자</label>
+                        <input type="text" id="authorInput" value="" placeholder="이름" oninput="saveMetaInputs()" onblur="saveMetaInputs()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">사용 일자</label>
+                        <!-- 사용자 수정 가능하도록 input type="date" 유지. JavaScript에서 max 속성 제어 -->
+                        <input type="date" id="expenseDate" onchange="onExpenseDateChange()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-2 border-dashed border-indigo-200 rounded-xl p-4 text-center bg-indigo-50/50 hover:bg-indigo-50 transition cursor-pointer relative" id="dropZone">
+                <input type="file" id="receiptFileInput" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handleFileSelect(event)">
+                <div class="flex flex-col items-center justify-center py-2 space-y-2">
+                    <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-camera-retro"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">영수증 사진 촬영 또는 파일 첨부</p>
+                        <p class="text-xs text-slate-500">클릭하거나 여러 장을 드래그하여 업로드하세요</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="uploadPreviewContainer" class="hidden space-y-3">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-600">
+                    <span>첨부된 영수증 미리보기</span>
+                    <button onclick="clearFiles()" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash-can"></i> 전체 삭제</button>
+                </div>
+                <div id="thumbnailList" class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar"></div>
+                <button id="ocrAnalyzeBtn" onclick="analyzeReceiptsWithAI()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-bold shadow transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> AI 영수증 자동 분석 (선택한 사진 · 합계금액·시간 OCR)
+                </button>
+            </div>
+
+            <div id="ocrLoading" class="hidden flex flex-col items-center justify-center p-4 bg-slate-100 rounded-xl space-y-2">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <p class="text-xs font-semibold text-indigo-700">AI가 영수증 데이터를 정밀 추출 및 분류 중입니다...</p>
+            </div>
+
+            <div class="space-y-3 pt-2 border-t">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">상점명 (가맹점)</label>
+                    <input type="text" id="storeNameInput" placeholder="예: 스타벅스 강남점" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">사용금액 (원)</label>
+                        <input type="number" id="amountInput" placeholder="15000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">식사 분류</label>
+                        <select id="categoryInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="아침식사">아침식사</option>
+                            <option value="점심식사">점심식사</option>
+                            <option value="저녁식사">저녁식사</option>
+                            <option value="야근식대">야근식대</option>
+                            <option value="회식비">회식비</option>
+                            <option value="기타간식">기타간식</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">카드 승인번호 <span class="font-normal text-slate-400">(선택 · AI 자동인식)</span></label>
+                    <input type="text" id="approvalNoInput" inputmode="numeric" autocomplete="off" placeholder="예: 12345678" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">참석자 및 메모</label>
+                    <input type="text" id="memoInput" placeholder="예: 팀 회의 후 점심 (4명)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                </div>
+
+                <button onclick="addExpenseRecord()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-circle-plus"></i> 지출 내역 등록하기
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mt-2">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 id="calMonthTitle" class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-days text-indigo-600"></i> 월별 지출 캘린더
+                    </h3>
+                    <div class="flex items-center gap-1">
+                        <button onclick="changeCalendarMonth(-1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button onclick="changeCalendarMonth(1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1">
+                    <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+                </div>
+                <div id="miniCalendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+                <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> 지출 있음</span>
+                    <span id="calMonthlyTotal" class="font-bold text-indigo-600">선택월 합계: 0원</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="gwSrcRight" class="lg:col-span-2 flex flex-col gap-5">
+            
+            <div class="bg-indigo-900 text-white p-4 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-check text-amber-300"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm">정산 월 선택 관리</h3>
+                        <p class="text-[11px] text-indigo-200">조회할 연도를 선택하여 해당 월의 정산내역과 예산을 확인하세요.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <select id="filterMonthSelect" onchange="onMonthFilterChange()" class="w-full sm:w-auto bg-indigo-800 text-white border border-indigo-700 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"></select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">선택월 사용금액 합계</p>
+                        <h3 id="totalAmountDisplay" class="text-xl font-black text-indigo-600 mt-1">0원</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+
+                <div onclick="openDailyBudgetPlanningModal()" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:border-amber-400 hover:shadow-md transition group">
+                    <div class="flex-1 pr-2">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold text-slate-500 group-hover:text-amber-600 transition">기준금액 (예산) <span class="text-[10px] text-amber-600 font-bold">(클릭:일별계획)</span></p>
+                            <span onclick="event.stopPropagation(); focusBudgetInput();" class="text-indigo-600 text-[11px] font-bold hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-pen"></i> 수정
+                            </span>
+                        </div>
+                        <div class="mt-1 flex items-center" onclick="event.stopPropagation()">
+                            <input type="text" id="budgetInputBox" value="0" onblur="updateBudgetFromInput(this.value)" onkeydown="if(event.key==='Enter') this.blur()" class="text-xl font-black text-slate-800 bg-transparent border-b border-dashed border-indigo-400 focus:outline-none focus:border-indigo-600 w-full cursor-pointer">
+                            <span class="text-xl font-black text-slate-800 ml-0.5">원</span>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">현재 남은금액</p>
+                        <h3 id="remainingDisplay" class="text-xl font-black text-emerald-600 mt-1">0원</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col min-w-0">
+                <div class="flex flex-wrap justify-between items-center gap-3 pb-4 border-b">
+                    <div class="w-full sm:w-auto overflow-hidden">
+                        <h3 id="sheetTitleDisplay" class="font-bold text-lg text-slate-800 truncate">식대 정산</h3>
+                        <p id="corporationBadgeDisplay" class="text-xs text-indigo-600 font-semibold mt-0.5 truncate">법인명: - | 현장명: -</p>
+                    </div>
+                    <div class="flex items-center gap-2 no-print flex-wrap w-full sm:w-auto">
+                        <button id="syncSheetBtn" onclick="syncToGoogleSheets()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm" title="구글 시트와 양방향 동기화 (모바일·PC 공유)">
+                            <i class="fa-solid fa-rotate"></i> 구글 시트 동기화
+                        </button>
+                        <button onclick="exportToCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-download"></i> CSV 내보내기
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto mt-4 flex-1 custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-sm min-w-[700px]">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-b">
+                                <th class="p-3 rounded-l-lg">순번</th>
+                                <th class="p-3">작성자</th>
+                                <th class="p-3">사용일자</th>
+                                <th class="p-3">상점명</th>
+                                <th class="p-3">승인번호</th>
+                                <th class="p-3">분류</th>
+                                <th class="p-3">사용금액</th>
+                                <th class="p-3">검증 플래그</th>
+                                <th class="p-3">영수증</th>
+                                <th class="p-3 rounded-r-lg text-center no-print">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-slate-400">
+                    <i class="fa-solid fa-receipt text-4xl mb-3 text-slate-300"></i>
+                    <p class="text-sm font-medium">선택된 월에 등록된 지출 내역이 없습니다.</p>
+                </div>
+            </div>
+
+            <div id="livePdfPreviewSection" class="hidden bg-white rounded-2xl shadow-xl border-2 border-amber-400 p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base text-slate-900">PDF 출력 및 보고서 미리보기</h3>
+                            <p class="text-xs text-slate-500">영수증 카드를 3열×2행(총 6장)으로 배치하고 남은 높이를 모두 할당하여 세로로 긴 영수증도 잘림 없이 크게 출력됩니다.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="downloadFinalPDF()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-download"></i> PDF 다운로드
+                        </button>
+                        <button onclick="triggerPrintReport()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> 인쇄
+                        </button>
+                        <button onclick="togglePdfPreviewSection()" class="text-slate-400 hover:text-slate-700 p-1 text-lg"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <div id="pdfPreviewContentWrapper" class="bg-slate-100 p-4 rounded-xl border border-slate-200 max-h-[700px] overflow-y-auto custom-scrollbar flex flex-col items-center w-full"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-4 bg-indigo-600 text-white">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-key"></i> 비밀번호 변경</h3>
+                <button onclick="closePasswordModal()" class="text-indigo-200 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 비밀번호</label>
+                    <input type="password" id="currentPwInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">새 비밀번호</label>
+                    <input type="password" id="newPwInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">새 비밀번호 확인</label>
+                    <input type="password" id="confirmPwInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t flex justify-end gap-2">
+                <button onclick="closePasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold">취소</button>
+                <button onclick="executePasswordChange()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold">변경 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Budget Planning Modal -->
+    <div id="dailyReviewModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-4 sm:p-5 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="font-black text-sm sm:text-base flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-alt text-amber-300"></i> 스마트 월별 예산 일별 사용계획 산정
+                    </h3>
+                    <p class="text-[10px] sm:text-xs text-indigo-100 mt-0.5" id="dailyModalSubtitle">1식 단가 15,000원 적용 | 횟수 곱하기 반영</p>
+                </div>
+                <button onclick="closeDailyBudgetPlanningModal()" class="text-indigo-200 hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                <div class="flex flex-wrap justify-between items-center gap-3 bg-indigo-50 border border-indigo-200 p-3.5 rounded-2xl w-full">
+                    <div>
+                        <span class="text-xs text-indigo-700 font-semibold">현재 설정된 월 총 예산 (기준금액)</span>
+                        <h4 id="modalTotalBudgetTitle" class="text-lg font-black text-indigo-900">300,000원</h4>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <button onclick="applyHeadquartersPreset()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+                            <i class="fa-solid fa-building-user text-amber-300"></i> '본사 근무' 모드 적용 (점심 1회)
+                        </button>
+                        <div class="text-right">
+                            <span class="text-xs text-indigo-700 font-semibold block">일별 계획 합계 금액</span>
+                            <span id="modalCalculatedSum" class="text-sm font-black text-indigo-700">0원</span>
+                        </div>
+                        <div class="text-right border-l pl-3 border-indigo-200">
+                            <span class="text-xs text-emerald-700 font-semibold block">계획 반영 상태</span>
+                            <span id="allocationStatusBadge" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-300">정상 반영 중</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs min-w-[700px]">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-bold border-b">
+                                <th class="p-3">날짜 / 요일</th>
+                                <th class="p-3 text-center">구분</th>
+                                <th class="p-3 text-center">계획 인원</th>
+                                <th class="p-3">식사 구성 (아침/점심/저녁 횟수)</th>
+                                <th class="p-3 text-right">일별 할당 예산</th>
+                                <th class="p-3 text-center">연차/카드사용 메모</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyReviewTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t flex flex-wrap justify-between items-center gap-3">
+                <p class="text-[11px] text-slate-500">
+                    <i class="fa-solid fa-circle-info text-indigo-600"></i> 1식 단가는 15,000원 고정이며 지정하신 '식사 횟수 × 인원수'로 일별 예산이 계산됩니다.
+                </p>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="resetDefaultDailyPlanning()" class="flex-1 sm:flex-none bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs transition">
+                        기본값 초기화
+                    </button>
+                    <button onclick="saveAndApplyDailyPlanning()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-bold text-xs shadow transition">
+                        예산(기준금액)에 반영 및 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Container -->
+    <div id="printReportContainer" class="hidden"></div>
+
+    <!-- Day Preview Modal -->
+    <div id="dayPreviewModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeDayPreview()">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b bg-indigo-600 text-white">
+                <h3 id="dayPreviewTitle" class="font-bold text-sm flex items-center gap-2"></h3>
+                <button onclick="closeDayPreview()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="dayPreviewBody" class="p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white text-center">
+                <div class="w-14 h-14 bg-white/10 rounded-2xl mx-auto flex items-center justify-center mb-3 backdrop-blur-sm">
+                    <i class="fa-solid fa-user-lock text-2xl text-amber-300"></i>
+                </div>
+                <h2 id="authModalTitle" class="text-xl font-black">스마트 식대정산 앱  로그인</h2>
+                <p id="authModalSubtitle" class="text-xs text-indigo-100 mt-1">공휴일 및 금요일 저녁 0원 자동 산정 시스템으로 시작하세요.</p>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                    <button id="loginTabBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-white text-indigo-600 shadow-sm transition">로그인</button>
+                    <button id="signupTabBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition">회원가입</button>
+                </div>
+
+                <div id="signupFields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">사용자 이름</label>
+                        <input type="text" id="regNameInput" placeholder="이름을 입력하세요" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">소속 법인명</label>
+                            <input type="text" id="regCorpInput" value="" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">현장명</label>
+                            <input type="text" id="regSiteInput" value="본사 스마트오피스" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">계정 권한 신청</label>
+                        <select id="regRoleSelect" onchange="onRegRoleChange()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold text-indigo-700">
+                            <option value="user">일반 사용자 계정</option>
+                            <option value="admin">관리자 계정 신청 (승인 필요)</option>
+                        </select>
+                    </div>
+                    <div id="adminSecretCodeContainer" class="hidden">
+                        <label class="block text-xs font-semibold text-rose-600 mb-1">관리자 마스터 시크릿 코드 입력</label>
+                        <input type="password" id="regSecretInput" placeholder="최고관리자에게 공유된 마스터 코드 입력" class="w-full px-3 py-2 bg-rose-50 border border-rose-300 rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">아이디 (ID)</label>
+                        <input type="text" id="authIdInput" placeholder="아이디 입력" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">비밀번호</label>
+                        <input type="password" id="authPwInput" placeholder="비밀번호 입력" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm" onkeydown="if(event.key==='Enter') executeAuth()">
+                    </div>
+                </div>
+
+                <button id="authSubmitBtn" onclick="executeAuth()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
+                </button>
+            </div>
+            <div class="p-4 bg-slate-50 text-center text-[11px] text-slate-500 border-t">
+                V30 스마트 식대정산 시스템 (만든이: 구병순)
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-4 bg-slate-900 text-white">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-image text-amber-300"></i> 영수증 상세 보기</h3>
+                <button onclick="closeImageModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 flex items-center justify-center bg-slate-100 max-h-[70vh] overflow-auto">
+                <img id="modalReceiptImg" src="" alt="영수증 원본" class="max-w-full rounded-lg shadow-sm object-contain">
+            </div>
+            <div class="p-4 bg-white border-t flex justify-end">
+                <button onclick="closeImageModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Storage Modal -->
+    <div id="fileStorageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-4 bg-indigo-600 text-white">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-hard-drive"></i> V30 데이터 백업 및 복원</h3>
+                <button onclick="closeFileStorageModal()" class="text-indigo-200 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl text-xs text-indigo-900 space-y-2">
+                    <p class="font-bold"><i class="fa-solid fa-shield-halved text-indigo-600"></i> 전체 백업 아키텍처 반영</p>
+                    <p>지출 내역뿐만 아니라 일별 사용 계획, 예산, 설정 정보까지 모두 안전하게 백업 및 복원합니다.</p>
+                </div>
+                <div class="space-y-2">
+                    <button onclick="backupToFileSystem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-arrow-down"></i> V30 백업 파일 저장
+                    </button>
+                    <button onclick="triggerFileRestore()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs border border-slate-300 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-arrow-up"></i> 백업 파일 불러오기 및 복원
+                    </button>
+                    <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="handleFileRestore(event)">
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t flex justify-end">
+                <button onclick="closeFileStorageModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="configModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-4 bg-indigo-600 text-white">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-gear"></i> 연동 설정</h3>
+                <button onclick="closeConfigModal()" class="text-indigo-200 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">구글 웹앱(Apps Script) URL</label>
+                    <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" 
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Gemini API 키 (OCR 분석용)</label>
+                    <input type="password" id="geminiKeyInput" placeholder="AIza로 시작하는 키" 
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Gemini 모델 (비워두면 자동: gemini-3.6-flash)</label>
+                    <input type="text" id="geminiModelInput" placeholder="gemini-3.6-flash"
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                    <p class="text-[10px] text-slate-400 mt-1">모델이 종료되면 자동으로 다른 모델로 재시도합니다.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t flex justify-end gap-2">
+                <button onclick="closeConfigModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold">취소</button>
+                <button onclick="saveConfig()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold">저장 및 연결</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function focusBudgetInput() {
+            setTimeout(() => document.getElementById('budgetInputBox').focus(), 50);
+        }
+
+        const STORAGE_KEYS = {
+            scriptUrl: 'google_script_url_global',
+            budget: 'meal_monthly_budget_global',
+            title: 'meal_sheet_title_global',
+            corporation: 'meal_corporation_name_global',
+            siteName: 'meal_site_name_global',
+            author: 'meal_author_global',
+            geminiKey: 'meal_gemini_api_key_global',
+            geminiModel: 'meal_gemini_model_global',
+            currentSession: 'meal_current_session_global',
+            dailyPlansPrefix: 'meal_daily_plans_'
+        };
+
+        const DB_NAME = 'SmartMealDB_Permanent';
+        const DB_VERSION = 1;
+        const STORE_EXPENSES = 'expenses';
+        const STORE_USERS = 'users';
+        let db = null;
+        const MASTER_ADMIN_SECRET = 'TECH_ADMIN_2026!#';
+        const UNIT_PRICE = 15000; // 1식 단가 고정 상수
+
+        function getLocalDateString(d = new Date()) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function isPublicHoliday(dateStr) {
+            if (!dateStr || dateStr.length < 10) return false;
+            const [yStr, mStr, dStr] = dateStr.split('-');
+            const y = parseInt(yStr, 10);
+            const md = `${mStr}-${dStr}`;
+
+            const fixedHolidays = ['01-01', '03-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25'];
+            if (fixedHolidays.includes(md)) return true;
+
+            const dynamicHolidays = {
+                2026: ['2026-02-16', '2026-02-17', '2026-02-18', '2026-05-24', '2026-09-24', '2026-09-25', '2026-09-26'],
+                2027: ['2027-02-06', '2027-02-07', '2027-02-08', '2027-05-13', '2027-09-14', '2027-09-15', '2027-09-16']
+            };
+            if (dynamicHolidays[y] && dynamicHolidays[y].includes(dateStr)) return true;
+            return false;
+        }
+
+        function getDailyPlan(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dow = dateObj.getDay();
+            const off = dow === 0 || dow === 6 || isPublicHoliday(dateStr);
+            const def = { 
+                headcount: off ? 0 : 1, 
+                breakfast: off ? 0 : 1, 
+                lunch: off ? 0 : 1, 
+                dinner: (off || dow === 5) ? 0 : 1 
+            };
+            return { ...def, ...(dailyPlansCache[dateStr] || {}) };
+        }
+
+        const MEAL_KEY = { 아침식사: 'breakfast', 점심식사: 'lunch', 저녁식사: 'dinner' };
+        
+        function validateExpense(item) {
+            const p = getDailyPlan(item.date);
+            const key = MEAL_KEY[item.category];
+            const flags = [];
+            if (p.headcount === 0) flags.push('휴무일 지출');
+            else if (key && p[key] === 0) flags.push(`${item.category} 예산 0원`);
+            else if (key && item.amount > (p[key] * UNIT_PRICE * p.headcount)) flags.push('끼니 한도 초과');
+            if (!key) flags.push('일반 지출 분류');
+            if (findSameReceipt(item, item.id)) flags.push('중복 영수증');
+            else if (item.approvalNo && expenses.some(o => o.id !== item.id && o.approvalNo === item.approvalNo && o.date === item.date)) flags.push('승인번호 중복');
+            return flags;
+        }
+
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = (event) => reject(event.target.error);
+                request.onsuccess = (event) => { db = event.target.result; resolve(db); };
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_EXPENSES)) database.createObjectStore(STORE_EXPENSES, { keyPath: 'id' });
+                    if (!database.objectStoreNames.contains(STORE_USERS)) database.createObjectStore(STORE_USERS, { keyPath: 'userId' });
+                };
+            });
+        }
+
+        function dbGetAll(storeName) {
+            return new Promise((resolve) => {
+                if (!db) { resolve([]); return; }
+                const tx = db.transaction([storeName], 'readonly');
+                const store = tx.objectStore(storeName);
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+
+        function dbPut(storeName, item) {
+            return new Promise((resolve) => {
+                if (!db) { resolve(false); return; }
+                const tx = db.transaction([storeName], 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.put(item);
+                req.onsuccess = () => resolve(true);
+                req.onerror = () => resolve(false);
+            });
+        }
+
+        function dbDelete(storeName, key) {
+            return new Promise((resolve) => {
+                if (!db) { resolve(false); return; }
+                const tx = db.transaction([storeName], 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.delete(key);
+                req.onsuccess = () => resolve(true);
+                req.onerror = () => resolve(false);
+            });
+        }
+
+        function dbClearStore(storeName) {
+            return new Promise((resolve) => {
+                if (!db) { resolve(false); return; }
+                const tx = db.transaction([storeName], 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.clear();
+                req.onsuccess = () => resolve(true);
+                req.onerror = () => resolve(false);
+            });
+        }
+
+        let currentUser = null;
+        let isAdminModeActive = false;
+        let uploadedFilesData = [];
+        let googleScriptUrl = '';
+        let monthlyBudget = 0;
+        let currentCalendarDate = new Date();
+        let selectedFilterMonth = '';
+        let geminiApiKey = '';
+        let expenses = [];
+        let usersList = [];
+        let authMode = 'login';
+        let dailyPlansCache = {};
+
+        window.onload = async function() {
+            try {
+                await initIndexedDB();
+                usersList = await dbGetAll(STORE_USERS);
+                if (usersList.length === 0) {
+                    const defaultAdmin = { userId: 'admin', password: '123', name: '최고관리자', corporation: '', siteName: '', role: 'admin' };
+                    const defaultUser = { userId: 'user', password: '123', name: '사용자', corporation: '', siteName: '', role: 'user' };
+                    await dbPut(STORE_USERS, defaultAdmin);
+                    await dbPut(STORE_USERS, defaultUser);
+                    usersList = [defaultAdmin, defaultUser];
+                }
+                expenses = await dbGetAll(STORE_EXPENSES);
+                expenses.sort((a, b) => b.id - a.id);
+            } catch (e) {
+                console.error('DB Init Error:', e);
+            }
+
+            // ⭐ 추가 및 개선된 코드: 사용일자 수정 폼 제약 조건 처리 (미래 날짜 방지)
+            const expenseDateInput = document.getElementById('expenseDate');
+            const todayStr = getLocalDateString();
+            expenseDateInput.max = todayStr; // 내일 이후 날짜는 달력에서 선택 불가
+            if (!expenseDateInput.value) {
+                expenseDateInput.value = todayStr; // 초기값을 오늘로 설정 (수정 가능)
+            }
+
+            const savedSession = localStorage.getItem(STORAGE_KEYS.currentSession);
+            if (savedSession) {
+                try { currentUser = JSON.parse(savedSession); } catch (e) { currentUser = null; }
+            }
+
+            if (!currentUser) openAuthModal();
+            else { closeAuthModal(); await refreshCurrentUserFromDB(); applyUserSessionToUI(); }
+
+            loadAppSettings();
+            initMonthFilter();
+            syncCalendarToFilterMonth();
+            loadDailyPlansForMonth();
+            renderTable();
+            updateSummary();
+            renderCalendar();
+            renderAdminApprovalQueue();
+        };
+
+        async function refreshCurrentUserFromDB() {
+            if (!currentUser) return;
+            usersList = await dbGetAll(STORE_USERS);
+            const fresh = usersList.find(u => u.userId === currentUser.userId);
+            if (fresh) {
+                currentUser = fresh;
+                localStorage.setItem(STORAGE_KEYS.currentSession, JSON.stringify(currentUser));
+            }
+        }
+
+        function switchAuthTab(mode) {
+            authMode = mode;
+            const signupFields = document.getElementById('signupFields');
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const signupTabBtn = document.getElementById('signupTabBtn');
+            const titleEl = document.getElementById('authModalTitle');
+            const subEl = document.getElementById('authModalSubtitle');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            if (mode === 'signup') {
+                signupFields.classList.remove('hidden');
+                signupTabBtn.className = "flex-1 py-2 rounded-lg bg-white text-indigo-600 shadow-sm transition";
+                loginTabBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition";
+                titleEl.textContent = "스마트 식대정산 앱  회원가입";
+                subEl.textContent = "안전한 2-Tier 승인 워크플로우를 통한 관리자 가입을 지원합니다.";
+                submitBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> 회원가입 신청하기';
+            } else {
+                signupFields.classList.add('hidden');
+                loginTabBtn.className = "flex-1 py-2 rounded-lg bg-white text-indigo-600 shadow-sm transition";
+                signupTabBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition";
+                titleEl.textContent = "스마트 식대정산 앱  로그인";
+                subEl.textContent = "계정으로 로그인하여 안전하게 식대 정산을 시작하세요.";
+                submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> 로그인하기';
+            }
+        }
+
+        function onRegRoleChange() {
+            const role = document.getElementById('regRoleSelect').value;
+            const secretBox = document.getElementById('adminSecretCodeContainer');
+            if (role === 'admin') {
+                secretBox.classList.remove('hidden');
+            } else {
+                secretBox.classList.add('hidden');
+            }
+        }
+
+        async function executeAuth() {
+            const idVal = document.getElementById('authIdInput').value.trim();
+            const pwVal = document.getElementById('authPwInput').value.trim();
+            if (!idVal || !pwVal) { alert('아이디와 비밀번호를 모두 입력해주세요.'); return; }
+
+            usersList = await dbGetAll(STORE_USERS);
+            if (authMode === 'signup') {
+                const nameVal = document.getElementById('regNameInput').value.trim();
+                const corpVal = document.getElementById('regCorpInput').value.trim();
+                const siteVal = document.getElementById('regSiteInput').value.trim();
+                const roleVal = document.getElementById('regRoleSelect').value;
+
+                if (!nameVal) { alert('사용자 이름을 입력해주세요.'); return; }
+                if (usersList.some(u => u.userId === idVal)) { alert('이미 존재하는 아이디입니다.'); return; }
+
+                let assignedRole = roleVal;
+                if (roleVal === 'admin') {
+                    const secretInput = document.getElementById('regSecretInput').value.trim();
+                    if (secretInput !== MASTER_ADMIN_SECRET) {
+                        alert('관리자 마스터 시크릿 코드가 올바르지 않습니다. 일반 사용자 계정으로 신청됩니다.');
+                        assignedRole = 'user';
+                    } else {
+                        assignedRole = 'pending_admin';
+                    }
+                }
+
+                const newUser = { userId: idVal, password: pwVal, name: nameVal, corporation: corpVal, siteName: siteVal, role: assignedRole };
+                await dbPut(STORE_USERS, newUser);
+                usersList.push(newUser);
+                currentUser = newUser;
+                localStorage.setItem(STORAGE_KEYS.currentSession, JSON.stringify(currentUser));
+                
+                if (assignedRole === 'pending_admin') {
+                    alert(`관리자 가입 신청이 완료되었습니다. 최고관리자의 승인 대기 중입니다.`);
+                } else {
+                    alert(`환영합니다, ${nameVal}님! 회원가입이 완료되었습니다.`);
+                }
+                closeAuthModal();
+                applyUserSessionToUI();
+            } else {
+                const found = usersList.find(u => u.userId === idVal && u.password === pwVal);
+                if (!found) { alert('아이디 또는 비밀번호가 일치하지 않습니다.'); return; }
+                currentUser = found;
+                localStorage.setItem(STORAGE_KEYS.currentSession, JSON.stringify(currentUser));
+                closeAuthModal();
+                applyUserSessionToUI();
+            }
+        }
+
+        function logoutUser() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem(STORAGE_KEYS.currentSession);
+                currentUser = null;
+                isAdminModeActive = false;
+                openAuthModal();
+            }
+        }
+
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        function openPasswordModal() { document.getElementById('passwordModal').classList.remove('hidden'); }
+        function closePasswordModal() { document.getElementById('passwordModal').classList.add('hidden'); }
+
+        async function executePasswordChange() {
+            const currentPw = document.getElementById('currentPwInput').value.trim();
+            const newPw = document.getElementById('newPwInput').value.trim();
+            const confirmPw = document.getElementById('confirmPwInput').value.trim();
+
+            if (!currentPw || !newPw || !confirmPw) { alert('모든 비밀번호 항목을 입력해주세요.'); return; }
+            if (currentPw !== currentUser.password) { alert('현재 비밀번호가 일치하지 않습니다.'); return; }
+            if (newPw !== confirmPw) { alert('새 비밀번호와 확인용 비밀번호가 일치하지 않습니다.'); return; }
+            if (newPw.length < 3) { alert('비밀번호는 최소 3자 이상으로 설정해주세요.'); return; }
+
+            currentUser.password = newPw;
+            await dbPut(STORE_USERS, currentUser);
+            localStorage.setItem(STORAGE_KEYS.currentSession, JSON.stringify(currentUser));
+            alert('비밀번호가 성공적으로 변경되었습니다.');
+            closePasswordModal();
+            document.getElementById('currentPwInput').value = '';
+            document.getElementById('newPwInput').value = '';
+            document.getElementById('confirmPwInput').value = '';
+        }
+
+        async function applyUserSessionToUI() {
+            await refreshCurrentUserFromDB();
+            if (!currentUser) return;
+            
+            const bannerEl = document.getElementById('pendingAdminBanner');
+            const approvalSec = document.getElementById('adminApprovalSection');
+
+            if (currentUser.role === 'pending_admin') {
+                bannerEl.classList.remove('hidden');
+                approvalSec.classList.add('hidden');
+            } else {
+                bannerEl.classList.add('hidden');
+                if (currentUser.role === 'admin' && currentUser.userId === 'admin') {
+                    approvalSec.classList.remove('hidden');
+                    renderAdminApprovalQueue();
+                } else {
+                    approvalSec.classList.add('hidden');
+                }
+            }
+
+            const roleDisplayName = currentUser.role === 'admin' ? '최고관리자' : currentUser.role === 'pending_admin' ? '승인대기자' : '일반사용자';
+            document.getElementById('headerUserName').textContent = `${currentUser.name} (${roleDisplayName})`;
+
+            const savedCorp = localStorage.getItem(STORAGE_KEYS.corporation);
+            document.getElementById('corporationNameInput').value = savedCorp || currentUser.corporation || '';
+
+            const savedSite = localStorage.getItem(STORAGE_KEYS.siteName);
+            document.getElementById('siteNameInput').value = savedSite || currentUser.siteName || '';
+
+            const savedTitle = localStorage.getItem(STORAGE_KEYS.title);
+            if (savedTitle) {
+                document.getElementById('sheetTitleInput').value = savedTitle;
+                document.getElementById('sheetTitleDisplay').textContent = savedTitle;
+            } else {
+                document.getElementById('sheetTitleDisplay').textContent = document.getElementById('sheetTitleInput').value;
+            }
+
+            const savedAuthor = localStorage.getItem(STORAGE_KEYS.author);
+            document.getElementById('authorInput').value = savedAuthor || currentUser.name;
+
+            const modeToggleBtn = document.getElementById('modeToggleBtn');
+            if (currentUser.role === 'admin') modeToggleBtn.classList.remove('hidden');
+            else { modeToggleBtn.classList.add('hidden'); isAdminModeActive = false; }
+
+            updateRoleModeView();
+            updateCorporationBadge();
+            renderTable();
+            updateSummary();
+        }
+
+        async function renderAdminApprovalQueue() {
+            usersList = await dbGetAll(STORE_USERS);
+            const pendingList = usersList.filter(u => u.role === 'pending_admin');
+            const container = document.getElementById('pendingUsersListContainer');
+            document.getElementById('pendingCountBadge').textContent = `${pendingList.length}명 대기`;
+            container.innerHTML = '';
+
+            if (pendingList.length === 0) {
+                container.innerHTML = '<p class="text-[11px] text-slate-400 text-center py-2">승인 대기 중인 관리자 신청이 없습니다.</p>';
+                return;
+            }
+
+            pendingList.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-white p-2 rounded-xl border border-indigo-100 text-xs mt-1';
+                div.innerHTML = `
+                    <div>
+                        <span class="font-bold text-slate-800">${u.name}</span> <span class="text-slate-400">(${u.userId})</span>
+                        <div class="text-[10px] text-indigo-600 font-semibold">${u.corporation} / ${u.siteName}</div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="approveAdmin('${u.userId}', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-sm">승인</button>
+                        <button onclick="approveAdmin('${u.userId}', false)" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-sm">반려</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function approveAdmin(targetUserId, isApproved) {
+            usersList = await dbGetAll(STORE_USERS);
+            const user = usersList.find(u => u.userId === targetUserId);
+            if (!user) return;
+
+            if (isApproved) {
+                user.role = 'admin';
+                await dbPut(STORE_USERS, user);
+                alert(`${user.name}님의 관리자 권한이 승인되었습니다.`);
+            } else {
+                user.role = 'user';
+                await dbPut(STORE_USERS, user);
+                alert(`${user.name}님의 신청이 반려되어 일반 사용자 권한으로 전환되었습니다.`);
+            }
+            renderAdminApprovalQueue();
+        }
+
+        function toggleAdminMode() {
+            if (currentUser.role !== 'admin') return;
+            isAdminModeActive = !isAdminModeActive;
+            updateRoleModeView();
+            renderTable();
+            updateSummary();
+        }
+
+        function updateRoleModeView() {
+            const labelEl = document.getElementById('roleBadgeLabel');
+            const toggleText = document.getElementById('modeToggleText');
+            if (isAdminModeActive) {
+                labelEl.textContent = '관리자 모드 (전체 통합 조회)';
+                labelEl.className = 'text-xs text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full font-bold border border-amber-300';
+                toggleText.textContent = '사용자 모드로 전환';
+            } else {
+                labelEl.textContent = '사용자 모드 (개인/현장 관리)';
+                labelEl.className = 'text-xs text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full font-bold border border-indigo-200';
+                toggleText.textContent = '관리자 모드로 전환';
+            }
+        }
+
+        function loadAppSettings() {
+            try {
+                const savedBudget = localStorage.getItem(STORAGE_KEYS.budget + '_' + (selectedFilterMonth || getLocalDateString().substring(0, 7)));
+                if (savedBudget) {
+                    const parsed = parseFloat(savedBudget);
+                    if (!isNaN(parsed)) monthlyBudget = parsed;
+                }
+                document.getElementById('budgetInputBox').value = monthlyBudget.toLocaleString();
+                
+                // 설정값을 불러올때마다 날짜가 오늘로 고정되지 않게 유지
+                if(!document.getElementById('expenseDate').value) {
+                    document.getElementById('expenseDate').value = getLocalDateString();
+                }
+
+                googleScriptUrl = localStorage.getItem(STORAGE_KEYS.scriptUrl) || '';
+                geminiApiKey = localStorage.getItem(STORAGE_KEYS.geminiKey) || '';
+                if (geminiApiKey) document.getElementById('geminiKeyInput').value = geminiApiKey;
+                const mi = document.getElementById('geminiModelInput');
+                if (mi) mi.value = localStorage.getItem(STORAGE_KEYS.geminiModel) || '';
+                const su = document.getElementById('scriptUrlInput');
+                if (su && googleScriptUrl) su.value = googleScriptUrl;
+                updateCorporationBadge();
+            } catch (e) { console.warn(e); }
+        }
+
+        function updateCorporationBadge() {
+            const corp = document.getElementById('corporationNameInput').value;
+            const site = document.getElementById('siteNameInput').value;
+            document.getElementById('corporationBadgeDisplay').textContent = `법인명: ${corp} | 현장명: ${site}`;
+        }
+
+        function saveMetaInputs() {
+            updateCorporationBadge();
+            const corp = document.getElementById('corporationNameInput').value;
+            const site = document.getElementById('siteNameInput').value;
+            const title = document.getElementById('sheetTitleInput').value;
+            const author = document.getElementById('authorInput').value;
+            document.getElementById('sheetTitleDisplay').textContent = title;
+
+            localStorage.setItem(STORAGE_KEYS.corporation, corp);
+            localStorage.setItem(STORAGE_KEYS.siteName, site);
+            localStorage.setItem(STORAGE_KEYS.title, title);
+            if (author) localStorage.setItem(STORAGE_KEYS.author, author);
+        }
+
+        function onExpenseDateChange() {
+            saveMetaInputs();
+            const dateVal = document.getElementById('expenseDate').value;
+            if (dateVal) {
+                // 사용자가 입력한 날짜의 '월'을 추출하여 전체 보기 필터를 맞춤
+                selectedFilterMonth = dateVal.substring(0, 7);
+                loadAppSettings();
+                initMonthFilter();
+                syncCalendarToFilterMonth();
+                loadDailyPlansForMonth();
+                renderTable();
+                updateSummary();
+                renderCalendar();
+            }
+        }
+
+        function updateBudgetFromInput(valStr) {
+            const cleanVal = parseFloat(valStr.replace(/[^0-9]/g, ''));
+            if (!isNaN(cleanVal) && cleanVal >= 0) {
+                monthlyBudget = cleanVal;
+                localStorage.setItem(STORAGE_KEYS.budget + '_' + selectedFilterMonth, String(monthlyBudget));
+                document.getElementById('budgetInputBox').value = monthlyBudget.toLocaleString();
+                updateSummary();
+            } else {
+                document.getElementById('budgetInputBox').value = monthlyBudget.toLocaleString();
+            }
+        }
+
+        function loadDailyPlansForMonth() {
+            dailyPlansCache = {};
+            const savedData = localStorage.getItem(STORAGE_KEYS.dailyPlansPrefix + selectedFilterMonth);
+            if (savedData) {
+                try { dailyPlansCache = JSON.parse(savedData); } catch (e) { dailyPlansCache = {}; }
+            }
+        }
+
+        function openDailyBudgetPlanningModal() {
+            document.getElementById('dailyReviewModal').classList.remove('hidden');
+            renderDailyPlanningTable();
+        }
+
+        function closeDailyBudgetPlanningModal() {
+            document.getElementById('dailyReviewModal').classList.add('hidden');
+        }
+
+        function renderDailyPlanningTable() {
+            const tbody = document.getElementById('dailyReviewTableBody');
+            document.getElementById('modalTotalBudgetTitle').textContent = monthlyBudget.toLocaleString() + '원';
+            tbody.innerHTML = '';
+
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+            let totalCalculatedSum = 0;
+
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = `${selectedFilterMonth}-${String(d).padStart(2, '0')}`;
+                const p = getDailyPlan(dateStr);
+                const dateObj = new Date(y, m - 1, d);
+                const dow = dateObj.getDay();
+                const isWeekend = (dow === 0 || dow === 6);
+                const isFriday = (dow === 5);
+                const isHoliday = isPublicHoliday(dateStr);
+                const dayName = ['일','월','화','수','목','금','토'][dow];
+
+                const dailyAllocated = (p.breakfast + p.lunch + p.dinner) * UNIT_PRICE * p.headcount;
+                totalCalculatedSum += dailyAllocated;
+                
+                // 메모 빈칸 기본값 반영 (저장된 값이 없으면 빈칸)
+                const memoVal = p.memo !== undefined ? p.memo : '';
+
+                const tr = document.createElement('tr');
+                tr.className = `border-b hover:bg-slate-50 transition text-xs ${(isWeekend || isHoliday) ? 'bg-slate-100/60 text-slate-500' : 'text-slate-800'}`;
+                tr.innerHTML = `
+                    <td class="p-3 font-bold whitespace-nowrap">${dateStr} (${dayName})</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${isHoliday ? 'bg-rose-100 text-rose-700' : isWeekend ? 'bg-slate-200 text-slate-600' : isFriday ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-700'}">
+                            ${isHoliday ? '법정공휴일' : isWeekend ? '주말/휴일' : isFriday ? '금요일' : '영업일'}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <input type="number" min="0" value="${p.headcount}" id="hc_${d}" onchange="recalculateDailyRow(${d})"
+                            class="w-14 text-center bg-white border rounded p-1 font-semibold focus:outline-none">명
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-1 text-[11px] whitespace-nowrap">
+                            <span>조:<input type="number" min="0" max="10" value="${p.breakfast}" id="bc_${d}" onchange="recalculateDailyRow(${d})" class="w-10 bg-white border rounded px-1 py-0.5 text-center font-medium">회</span>
+                            <span>점:<input type="number" min="0" max="10" value="${p.lunch}" id="lc_${d}" onchange="recalculateDailyRow(${d})" class="w-10 bg-white border rounded px-1 py-0.5 text-center font-medium">회</span>
+                            <span>석:<input type="number" min="0" max="10" value="${p.dinner}" id="dc_${d}" onchange="recalculateDailyRow(${d})" class="w-10 bg-white border rounded px-1 py-0.5 text-center font-medium">회</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-right font-black text-slate-900 whitespace-nowrap" id="allocAmt_${d}">${dailyAllocated.toLocaleString()}원</td>
+                    <td class="p-3 text-center">
+                        <input type="text" value="${memoVal}" id="memo_${d}" placeholder="메모 입력" class="w-full min-w-[80px] bg-white border rounded px-2 py-1 text-[11px]">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+            document.getElementById('modalCalculatedSum').textContent = totalCalculatedSum.toLocaleString() + '원';
+            updateAllocationBadge(totalCalculatedSum);
+        }
+
+        function applyHeadquartersPreset() {
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = `${selectedFilterMonth}-${String(d).padStart(2, '0')}`;
+                const isOff = isPublicHoliday(dateStr) || new Date(y, m - 1, d).getDay() === 0 || new Date(y, m - 1, d).getDay() === 6;
+                document.getElementById(`hc_${d}`).value = isOff ? 0 : 1;
+                document.getElementById(`bc_${d}`).value = 0;
+                document.getElementById(`lc_${d}`).value = 1;
+                document.getElementById(`dc_${d}`).value = 0;
+                document.getElementById(`memo_${d}`).value = ''; // 빈칸으로 구성 적용
+                recalculateDailyRow(d);
+            }
+            alert("['본사 근무' 모드]가 적용되었습니다.");
+        }
+
+        function recalculateDailyRow(d) {
+            const hc = parseFloat(document.getElementById(`hc_${d}`).value) || 0;
+            const bc = parseFloat(document.getElementById(`bc_${d}`).value) || 0;
+            const lc = parseFloat(document.getElementById(`lc_${d}`).value) || 0;
+            const dc = parseFloat(document.getElementById(`dc_${d}`).value) || 0;
+            const sum = (bc + lc + dc) * UNIT_PRICE * hc;
+            document.getElementById(`allocAmt_${d}`).textContent = sum.toLocaleString() + '원';
+            updateModalTotalSum();
+        }
+
+        function updateModalTotalSum() {
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+            let total = 0;
+            for (let d = 1; d <= lastDay; d++) {
+                const hc = parseFloat(document.getElementById(`hc_${d}`).value) || 0;
+                const bc = parseFloat(document.getElementById(`bc_${d}`).value) || 0;
+                const lc = parseFloat(document.getElementById(`lc_${d}`).value) || 0;
+                const dc = parseFloat(document.getElementById(`dc_${d}`).value) || 0;
+                total += (bc + lc + dc) * UNIT_PRICE * hc;
+            }
+            document.getElementById('modalCalculatedSum').textContent = total.toLocaleString() + '원';
+            updateAllocationBadge(total);
+        }
+
+        function updateAllocationBadge(totalSum) {
+            const badge = document.getElementById('allocationStatusBadge');
+            if (totalSum === monthlyBudget) {
+                badge.textContent = '예산과 100% 일치';
+                badge.className = 'text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-300 whitespace-nowrap';
+            } else {
+                badge.textContent = `차액 발생 (${(totalSum - monthlyBudget).toLocaleString()}원)`;
+                badge.className = 'text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full border border-amber-300 whitespace-nowrap';
+            }
+        }
+
+        function resetDefaultDailyPlanning() {
+            loadDailyPlansForMonth();
+            renderDailyPlanningTable();
+        }
+
+        function saveAndApplyDailyPlanning() {
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+            let total = 0;
+            dailyPlansCache = {};
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = `${selectedFilterMonth}-${String(d).padStart(2, '0')}`;
+                const hc = parseFloat(document.getElementById(`hc_${d}`).value) || 0;
+                const bc = parseFloat(document.getElementById(`bc_${d}`).value) || 0;
+                const lc = parseFloat(document.getElementById(`lc_${d}`).value) || 0;
+                const dc = parseFloat(document.getElementById(`dc_${d}`).value) || 0;
+                const memo = document.getElementById(`memo_${d}`).value;
+                dailyPlansCache[dateStr] = { headcount: hc, breakfast: bc, lunch: lc, dinner: dc, memo };
+                total += (bc + lc + dc) * UNIT_PRICE * hc;
+            }
+            localStorage.setItem(STORAGE_KEYS.dailyPlansPrefix + selectedFilterMonth, JSON.stringify(dailyPlansCache));
+            monthlyBudget = total;
+            localStorage.setItem(STORAGE_KEYS.budget + '_' + selectedFilterMonth, String(monthlyBudget));
+            document.getElementById('budgetInputBox').value = monthlyBudget.toLocaleString();
+            updateSummary();
+            closeDailyBudgetPlanningModal();
+            alert(`일별 사용계획이 저장되었으며 예산에 총 ${monthlyBudget.toLocaleString()}원이 반영되었습니다.`);
+        }
+
+        // 캘린더에서 선택한 월을 월 선택 드롭다운에 반영 (기존 코드에서 호출만 되고 정의가 없어 오류가 났음)
+        function syncFilterSelectToCalendar() {
+            const selectEl = document.getElementById('filterMonthSelect');
+            if (!selectEl) return;
+            if (!Array.from(selectEl.options).some(o => o.value === selectedFilterMonth)) {
+                const [y, m] = selectedFilterMonth.split('-');
+                const opt = document.createElement('option');
+                opt.value = selectedFilterMonth;
+                opt.textContent = `${y}년 ${parseInt(m, 10)}월 정산 V30`;
+                selectEl.appendChild(opt);
+            }
+            selectEl.value = selectedFilterMonth;
+        }
+
+        function initMonthFilter() {
+            const selectEl = document.getElementById('filterMonthSelect');
+            const monthsSet = new Set();
+            const currentYM = getLocalDateString().substring(0, 7);
+            monthsSet.add(currentYM);
+            if (selectedFilterMonth) monthsSet.add(selectedFilterMonth);
+
+            expenses.forEach(item => { if (item.date && item.date.length >= 7) monthsSet.add(item.date.substring(0, 7)); });
+            const sorted = Array.from(monthsSet).sort().reverse();
+            selectEl.innerHTML = '';
+            sorted.forEach(ym => {
+                const [y, m] = ym.split('-');
+                const opt = document.createElement('option');
+                opt.value = ym;
+                opt.textContent = `${y}년 ${parseInt(m, 10)}월 정산 V30`;
+                selectEl.appendChild(opt);
+            });
+            if (!selectedFilterMonth || !monthsSet.has(selectedFilterMonth)) selectedFilterMonth = currentYM;
+            selectEl.value = selectedFilterMonth;
+        }
+
+        function onMonthFilterChange() {
+            selectedFilterMonth = document.getElementById('filterMonthSelect').value;
+            loadAppSettings();
+            syncCalendarToFilterMonth();
+            loadDailyPlansForMonth();
+            renderTable();
+            updateSummary();
+            renderCalendar();
+        }
+
+        function syncCalendarToFilterMonth() {
+            if (!selectedFilterMonth) return;
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            if (!isNaN(y) && !isNaN(m)) currentCalendarDate = new Date(y, m - 1, 1);
+        }
+
+        function getVisibleExpenses() {
+            if (isAdminModeActive) return expenses;
+            if (!currentUser) return [];
+            return expenses.filter(item => item.userId === currentUser.userId);
+        }
+
+        function compareByUsageDate(a, b) {
+            return String(a.date || '').localeCompare(String(b.date || '')) || (a.id - b.id);
+        }
+
+        function getFilteredExpenses() {
+            const visible = getVisibleExpenses();
+            return visible.filter(item => item.date && item.date.startsWith(selectedFilterMonth)).sort(compareByUsageDate);
+        }
+
+        // OCR 전용 고해상도 이미지(화면/저장용보다 크게 유지: 긴 영수증 글자 뭉개짐 방지)
+        let uploadedOcrData = [];
+        let ocrTargetIndex = 0;
+
+        function resizeToDataUrl(img, maxDim, quality) {
+            const canvas = document.createElement('canvas');
+            let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+            if (w > maxDim || h > maxDim) {
+                if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';            // 투명 PNG → 검은 배경 방지
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            return canvas.toDataURL('image/jpeg', quality);
+        }
+
+        function loadImageFile(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => { resolve({ img, url }); };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('이미지를 열 수 없습니다: ' + file.name)); };
+                img.src = url;
+            });
+        }
+
+        async function handleFileSelect(event) {
+            const input = event.target;
+            const files = Array.from(input.files || []);
+            if (files.length === 0) return;
+            const failed = [];
+            for (const file of files) {                       // 순서 보장을 위해 순차 처리
+                try {
+                    const { img, url } = await loadImageFile(file);
+                    uploadedFilesData.push(resizeToDataUrl(img, 1600, 0.8));
+                    uploadedOcrData.push(resizeToDataUrl(img, 2400, 0.9));
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    console.warn(e);
+                    failed.push(file.name);
+                }
+            }
+            input.value = '';                                 // 같은 사진을 다시 선택해도 동작하도록 초기화
+            renderThumbnails();
+            if (failed.length) alert('열 수 없는 이미지가 있습니다(HEIC 등 미지원 형식일 수 있음):\n' + failed.join('\n') + '\n\n카메라 설정을 JPG(호환성 우선)로 바꾸거나 JPG/PNG로 변환해 주세요.');
+        }
+
+        function renderThumbnails() {
+            const container = document.getElementById('thumbnailList');
+            const previewContainer = document.getElementById('uploadPreviewContainer');
+            container.innerHTML = '';
+            if (ocrTargetIndex >= uploadedFilesData.length) ocrTargetIndex = 0;
+            if (uploadedFilesData.length > 0) {
+                previewContainer.classList.remove('hidden');
+                uploadedFilesData.forEach((src, idx) => {
+                    const div = document.createElement('div');
+                    const selected = idx === ocrTargetIndex;
+                    div.className = 'relative w-16 h-16 shrink-0 rounded-lg overflow-hidden border shadow-sm cursor-pointer ' + (selected ? 'border-indigo-600 ring-2 ring-indigo-500' : 'border-slate-300');
+                    div.title = 'AI 분석 대상으로 선택';
+                    div.onclick = () => { ocrTargetIndex = idx; renderThumbnails(); };
+                    div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button onclick="event.stopPropagation(); removeFile(${idx})" class="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 text-[10px]">&times;</button>` +
+                        (selected ? '<span class="absolute bottom-0 left-0 right-0 bg-indigo-600 text-white text-[9px] text-center">분석</span>' : '');
+                    container.appendChild(div);
+                });
+            } else { previewContainer.classList.add('hidden'); }
+        }
+
+        function removeFile(idx) { uploadedFilesData.splice(idx, 1); uploadedOcrData.splice(idx, 1); renderThumbnails(); }
+        function clearFiles() { uploadedFilesData = []; uploadedOcrData = []; ocrTargetIndex = 0; document.getElementById('thumbnailList').innerHTML = ''; document.getElementById('uploadPreviewContainer').classList.add('hidden'); }
+
+        // ---------- Gemini OCR ----------
+        const GEMINI_DEFAULT_MODEL = 'gemini-3.6-flash';
+        // 지정 모델이 종료/미지원일 때 자동으로 시도할 대체 모델 (gemini-2.5-flash 는 2026-10-16 종료 예정)
+        const GEMINI_FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+
+        class GeminiError extends Error {
+            constructor(msg, status, retryModel) { super(msg); this.status = status; this.retryModel = !!retryModel; }
+        }
+
+        function explainGeminiError(status, apiMsg) {
+            const m = apiMsg || '';
+            if (status === 400 && /API key|api_key/i.test(m)) return 'Gemini API 키가 올바르지 않습니다. 연동 설정에서 키를 다시 확인해주세요.';
+            if (status === 400 && /location|not supported/i.test(m)) return '현재 지역에서는 이 API를 사용할 수 없습니다: ' + m;
+            if (status === 401 || status === 403) return 'API 키 권한 오류(' + status + '): 키가 만료/제한되었거나 Generative Language API가 허용되지 않은 키입니다.\n' + m;
+            if (status === 429) return '요청 한도를 초과했습니다(429). 잠시 후 다시 시도하거나 무료 사용량 한도를 확인해주세요.';
+            if (status === 503 || status === 500) return 'Gemini 서버가 일시적으로 혼잡합니다(' + status + '). 잠시 후 다시 시도해주세요.';
+            return 'Gemini 오류(' + status + '): ' + m;
+        }
+
+        async function callGeminiOnce(model, dataUrl, prompt) {
+            const mimeType = dataUrl.substring(dataUrl.indexOf(':') + 1, dataUrl.indexOf(';'));
+            const base64Data = dataUrl.split(',')[1];
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 60000);
+            let res;
+            try {
+                res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+                    method: 'POST',
+                    signal: ctrl.signal,
+                    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiApiKey },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [ { inlineData: { mimeType, data: base64Data } }, { text: prompt } ] }],
+                        generationConfig: {
+                            responseMimeType: 'application/json',
+                            responseSchema: {
+                                type: 'OBJECT',
+                                properties: {
+                                    storeName: { type: 'STRING', nullable: true },
+                                    amount: { type: 'INTEGER', nullable: true },
+                                    date: { type: 'STRING', nullable: true },
+                                    time: { type: 'STRING', nullable: true },
+                                    approvalNo: { type: 'STRING', nullable: true }
+                                },
+                                required: ['storeName', 'amount', 'date', 'time', 'approvalNo']
+                            }
+                        }
+                    })
+                });
+            } catch (e) {
+                if (e.name === 'AbortError') throw new GeminiError('응답 시간이 초과되었습니다(60초). 네트워크를 확인하고 다시 시도해주세요.', 0, false);
+                throw new GeminiError('Gemini 서버에 연결하지 못했습니다. 인터넷 연결(또는 회사망/방화벽의 googleapis.com 차단 여부)을 확인해주세요.', 0, false);
+            } finally { clearTimeout(timer); }
+
+            let data = null;
+            try { data = await res.json(); } catch (e) { /* 본문이 JSON이 아닌 경우 */ }
+
+            if (!res.ok) {
+                const apiMsg = data?.error?.message || res.statusText || '';
+                // 모델 종료/미존재/미지원 → 다른 모델로 재시도
+                const modelGone = res.status === 404 || (res.status === 400 && /model/i.test(apiMsg) && !/API key/i.test(apiMsg)) || /no longer available|not found|deprecated|not supported/i.test(apiMsg);
+                throw new GeminiError(explainGeminiError(res.status, apiMsg), res.status, modelGone);
+            }
+            if (data?.promptFeedback?.blockReason) throw new GeminiError('이미지 분석이 차단되었습니다(' + data.promptFeedback.blockReason + '). 다른 사진으로 시도해주세요.', 200, false);
+            const cand = data?.candidates?.[0];
+            const parts = cand?.content?.parts || [];
+            const text = parts.filter(p => typeof p.text === 'string' && !p.thought).map(p => p.text).join('').trim();
+            if (!text) throw new GeminiError('AI가 결과를 반환하지 않았습니다(사유: ' + (cand?.finishReason || '알 수 없음') + '). 사진을 더 선명하게 다시 촬영해주세요.', 200, false);
+            return text;
+        }
+
+        function parseOcrJson(text) {
+            let t = text.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+            try { return JSON.parse(t); } catch (e) {
+                const m = t.match(/\{[\s\S]*\}/);
+                if (m) return JSON.parse(m[0]);
+                throw e;
+            }
+        }
+
+        function normalizeOcrAmount(v) {
+            if (v === null || v === undefined) return null;
+            const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10);
+            return (!isNaN(n) && n > 0) ? n : null;
+        }
+
+        function normalizeOcrDate(v) {
+            if (!v) return null;
+            const m = String(v).match(/(\d{2,4})\D+(\d{1,2})\D+(\d{1,2})/);
+            if (!m) return null;
+            let y = parseInt(m[1], 10);
+            if (y < 100) y += 2000;
+            const mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+            if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+            const out = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const today = getLocalDateString();
+            return out > today ? null : out;        // 미래 날짜는 오인식으로 보고 무시(입력창 max=오늘)
+        }
+
+        function normalizeApprovalNo(v) {
+            if (v === null || v === undefined) return '';
+            const t = String(v).replace(/[\s\-]/g, '').replace(/[^0-9A-Za-z]/g, '');
+            return (t.length >= 4 && t.length <= 20) ? t : '';
+        }
+
+        function normalizeOcrTime(v) {
+            if (!v) return null;
+            const m = String(v).match(/(\d{1,2})\s*[:시]\s*(\d{1,2})?/);
+            if (!m) return null;
+            const h = parseInt(m[1], 10);
+            return (h >= 0 && h <= 23) ? h : null;
+        }
+
+        async function analyzeReceiptsWithAI() {
+            if (uploadedFilesData.length === 0) { alert('먼저 영수증 이미지를 업로드해주세요.'); return; }
+            if (!geminiApiKey) { alert('Gemini API 키가 설정되지 않았습니다.'); openConfigModal(); return; }
+
+            const btn = document.getElementById('ocrAnalyzeBtn');
+            const loading = document.getElementById('ocrLoading');
+            btn.disabled = true; btn.classList.add('opacity-60');
+            loading.classList.remove('hidden');
+
+            const idx = Math.min(ocrTargetIndex, uploadedOcrData.length - 1);
+            const dataUrl = uploadedOcrData[idx] || uploadedFilesData[idx];
+            const prompt =
+                '당신은 한국 영수증 판독 전문가입니다. 사진 속 영수증(카드전표 포함)에서 아래 값을 읽어 JSON으로만 답하세요.\n' +
+                '- storeName: 가맹점(상호)명. 지점명이 있으면 포함.\n' +
+                '- amount: 고객이 실제 결제한 최종 총 결제금액(원, 정수). "합계/결제금액/받을금액/승인금액" 기준이며 공급가액·부가세·받은돈·거스름돈·포인트는 제외. 쉼표와 "원"은 제거.\n' +
+                '- date: 결제(거래) 일자 YYYY-MM-DD. 연도가 2자리(예: 26/03/21)면 20XX로 변환. 오늘은 ' + getLocalDateString() + ' 이며 미래 날짜는 있을 수 없음.\n' +
+                '- time: 결제 시각 24시간제 HH:MM (오전/오후 표기는 24시간제로 변환).\n' +
+                '- approvalNo: 카드 승인번호. "승인번호/승인NO/승인No/Approval No" 라벨 옆의 번호(보통 숫자 8자리, 영문 포함 가능). 카드번호, 가맹점번호, 사업자등록번호, 전화번호, 전표번호, 거래일련번호와 혼동하지 말 것. 하이픈·공백 없이 그대로 적음.\n' +
+                '읽을 수 없거나 없는 값은 추측하지 말고 null로 답하세요.';
+
+            const modelPref = (localStorage.getItem(STORAGE_KEYS.geminiModel) || '').trim();
+            const models = [...new Set([modelPref, ...GEMINI_FALLBACK_MODELS].filter(Boolean))];
+
+            try {
+                let text = null, usedModel = null, lastErr = null;
+                for (const model of models) {
+                    try {
+                        text = await callGeminiOnce(model, dataUrl, prompt);
+                        usedModel = model;
+                        break;
+                    } catch (e) {
+                        lastErr = e;
+                        console.warn('[OCR] ' + model + ' 실패:', e.message);
+                        if (!e.retryModel) throw e;      // 키/네트워크/한도 문제는 다른 모델로 바꿔도 소용없음
+                    }
+                }
+                if (text === null) throw lastErr || new Error('사용 가능한 Gemini 모델을 찾지 못했습니다.');
+
+                const parsed = parseOcrJson(text);
+                const filled = [];
+                if (parsed.storeName && String(parsed.storeName).trim()) { document.getElementById('storeNameInput').value = String(parsed.storeName).trim(); filled.push('상점명'); }
+                const amt = normalizeOcrAmount(parsed.amount);
+                if (amt) { document.getElementById('amountInput').value = amt; filled.push('금액'); }
+                const apNo = normalizeApprovalNo(parsed.approvalNo);
+                if (apNo) { document.getElementById('approvalNoInput').value = apNo; filled.push('승인번호'); }
+                const dt = normalizeOcrDate(parsed.date);
+                if (dt) { document.getElementById('expenseDate').value = dt; filled.push('일자'); onExpenseDateChange(); }
+                const hour = normalizeOcrTime(parsed.time);
+                if (hour !== null) {
+                    const cat = document.getElementById('categoryInput');
+                    if (hour >= 5 && hour < 11) cat.value = '아침식사';
+                    else if (hour >= 11 && hour < 17) cat.value = '점심식사';
+                    else cat.value = '저녁식사';
+                    filled.push('분류');
+                }
+                if (filled.length === 0) alert('영수증에서 읽어낸 값이 없습니다. 영수증이 화면에 꽉 차도록 밝은 곳에서 다시 촬영해주세요.');
+                else alert('AI 영수증 분석 완료 (' + filled.join('·') + ' 입력됨)\n인식된 값이 맞는지 꼭 확인해주세요.' + (usedModel !== models[0] ? '\n\n※ 모델 ' + usedModel + ' 사용' : ''));
+            } catch (err) {
+                console.error(err);
+                alert('OCR 분석 실패\n\n' + (err.message || err));
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false; btn.classList.remove('opacity-60');
+            }
+        }
+
+        async function addExpenseRecord() {
+            if (!currentUser) { alert('로그인 정보가 없습니다.'); openAuthModal(); return; }
+            if (currentUser.role === 'pending_admin') { alert('관리자 권한 승인 대기 중에는 지출 내역을 등록할 수 없습니다.'); return; }
+
+            const storeName = document.getElementById('storeNameInput').value.trim();
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            const date = document.getElementById('expenseDate').value;
+            if (!storeName || isNaN(amount) || amount <= 0 || !date) { alert('상점명, 사용금액, 사용일자를 올바르게 입력해주세요.'); return; }
+
+            const approvalNo = normalizeApprovalNo(document.getElementById('approvalNoInput').value);
+            const sameReceipt = findSameReceipt({ date, amount, approvalNo });
+            if (sameReceipt) {
+                alert(`이미 등록된 영수증입니다. 중복 등록을 막았습니다.\n\n· 사용일자: ${sameReceipt.date}\n· 상점명: ${sameReceipt.storeName}\n· 금액: ${Number(sameReceipt.amount).toLocaleString()}원\n· 승인번호: ${sameReceipt.approvalNo}`);
+                return;
+            }
+            if (approvalNo) {
+                const dup = expenses.find(ex => ex.approvalNo === approvalNo && ex.date === date);
+                if (dup && !confirm(`같은 날짜·승인번호(${approvalNo})로 이미 등록된 내역이 있습니다.\n(${dup.storeName} / ${Number(dup.amount).toLocaleString()}원)\n\n중복 등록일 수 있습니다. 그래도 등록하시겠습니까?`)) return;
+            }
+
+            const newRecord = {
+                id: Date.now(),
+                seq: 1,
+                userId: currentUser.userId,
+                author: document.getElementById('authorInput').value || currentUser.name,
+                corporation: document.getElementById('corporationNameInput').value,
+                siteName: document.getElementById('siteNameInput').value,
+                sheetTitle: document.getElementById('sheetTitleInput').value,
+                date,
+                storeName,
+                category: document.getElementById('categoryInput').value,
+                amount,
+                approvalNo,
+                memo: document.getElementById('memoInput').value,
+                receipts: [...uploadedFilesData],
+                updatedAt: Date.now()
+            };
+
+            expenses.unshift(newRecord);
+            recalculateSequences();
+            await dbPut(STORE_EXPENSES, newRecord);
+
+            selectedFilterMonth = date.substring(0, 7);
+            initMonthFilter();
+            syncCalendarToFilterMonth();
+            loadDailyPlansForMonth();
+            renderTable();
+            updateSummary();
+            renderCalendar();
+
+            document.getElementById('storeNameInput').value = '';
+            document.getElementById('amountInput').value = '';
+            document.getElementById('memoInput').value = '';
+            document.getElementById('approvalNoInput').value = '';
+            clearFiles();
+        }
+
+        // 같은 영수증 찾기: 사용일자·금액·승인번호가 모두 같으면 같은 영수증으로 본다 (승인번호가 없으면 비교하지 않음)
+        function findSameReceipt({ date, amount, approvalNo }, excludeId) {
+            if (!approvalNo || !date) return null;
+            return expenses.find(ex => ex.id !== excludeId && ex.approvalNo === approvalNo && ex.date === date && Number(ex.amount) === Number(amount)) || null;
+        }
+
+        function recalculateSequences() {
+            // 순번: 영수증 사용일자 기준 오름차순(같은 날짜는 등록순)
+            const visible = getVisibleExpenses().slice().sort(compareByUsageDate);
+            visible.forEach((item, idx) => { item.seq = idx + 1; });
+        }
+
+        async function updateExpenseField(id, field, value) {
+            const item = expenses.find(ex => ex.id === id);
+            if (!item) return;
+            const before = { amount: item.amount, approvalNo: item.approvalNo, date: item.date };
+            if (field === 'amount') {
+                const num = parseFloat(value.replace(/[^0-9]/g, ''));
+                if (!isNaN(num)) item.amount = num;
+            } else if (field === 'approvalNo') {
+                item.approvalNo = normalizeApprovalNo(value);
+            } else { item[field] = value; }
+            if (['amount', 'approvalNo', 'date'].includes(field)) {
+                const sameReceipt = findSameReceipt(item, item.id);
+                if (sameReceipt) {
+                    Object.assign(item, before);
+                    alert(`같은 사용일자·금액·승인번호의 영수증이 이미 있어 수정을 취소했습니다.\n\n· 상점명: ${sameReceipt.storeName}\n· 금액: ${Number(sameReceipt.amount).toLocaleString()}원\n· 승인번호: ${sameReceipt.approvalNo}`);
+                    renderTable();
+                    return;
+                }
+            }
+            item.updatedAt = Date.now();
+            await dbPut(STORE_EXPENSES, item);
+            renderTable();
+            updateSummary();
+            renderCalendar();
+        }
+
+        async function deleteExpense(id) {
+            const target = expenses.find(item => item.id === id);
+            if (target) {
+                const msg = `다음 사용내역을 삭제하시겠습니까?\n\n` +
+                    `· 사용일자: ${target.date}\n· 상점명: ${target.storeName}\n· 금액: ${Number(target.amount).toLocaleString()}원\n\n삭제 후에는 되돌릴 수 없습니다.`;
+                if (!confirm(msg)) return;
+            }
+            expenses = expenses.filter(item => item.id !== id);
+            recalculateSequences();
+            await dbDelete(STORE_EXPENSES, id);
+            markDeletedForSync(id);
+            renderTable();
+            updateSummary();
+            renderCalendar();
+        }
+
+        function changeCalendarMonth(dir) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir);
+            const y = currentCalendarDate.getFullYear();
+            const m = String(currentCalendarDate.getMonth() + 1).padStart(2, '0');
+            selectedFilterMonth = `${y}-${m}`;
+            syncFilterSelectToCalendar();
+            loadDailyPlansForMonth();
+            renderTable();
+            updateSummary();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            document.getElementById('calMonthTitle').innerHTML = `<i class="fa-solid fa-calendar-days text-indigo-600"></i> ${year}년 ${month + 1}월 지출 캘린더`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const gridEl = document.getElementById('miniCalendarGrid');
+            gridEl.innerHTML = '';
+
+            const expenseMap = {};
+            let monthTotal = 0;
+            getVisibleExpenses().forEach(item => {
+                if (!item.date) return;
+                const d = new Date(item.date);
+                if (d.getFullYear() === year && d.getMonth() === month) {
+                    expenseMap[item.date] = (expenseMap[item.date] || 0) + item.amount;
+                    monthTotal += item.amount;
+                }
+            });
+            document.getElementById('calMonthlyTotal').textContent = `선택월 합계: ${monthTotal.toLocaleString()}원`;
+
+            for (let i = 0; i < firstDayIndex; i++) gridEl.appendChild(document.createElement('div'));
+            for (let day = 1; day <= lastDay; day++) {
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasExpense = expenseMap[dayStr] > 0;
+                const cell = document.createElement('div');
+                cell.className = `py-1 rounded-lg text-xs flex flex-col items-center justify-center relative transition ${hasExpense ? 'bg-indigo-50 font-bold text-indigo-900 border border-indigo-200 cursor-pointer' : 'text-slate-600 hover:bg-slate-100'}`;
+                if (hasExpense) {
+                    cell.onclick = () => {
+                        selectedFilterMonth = dayStr.substring(0, 7);
+                        syncFilterSelectToCalendar();
+                        loadDailyPlansForMonth();
+                        renderTable();
+                        updateSummary();
+                        openDayPreview(dayStr);
+                    };
+                }
+                cell.innerHTML = `<span>${day}</span>${hasExpense ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-0.5"></span>' : '<span class="w-1.5 h-1.5 opacity-0 mt-0.5"></span>'}`;
+                gridEl.appendChild(cell);
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('expenseTableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            recalculateSequences();
+            const filteredList = getFilteredExpenses();
+            if (filteredList.length === 0) { emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+
+            filteredList.forEach((item) => {
+                const flags = validateExpense(item);
+                const flagBadge = flags.length > 0 ? `<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded font-bold" title="${flags.join(', ')}">${flags[0]}</span>` : `<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">정상</span>`;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100 text-xs';
+                
+                let receiptThumb = '<span class="text-slate-400">없음</span>';
+                if (firstReceipt(item)) {
+                    receiptThumb = `<div class="flex items-center gap-1 cursor-pointer" onclick="openImageModal('${firstReceipt(item)}')"><img src="${firstReceipt(item)}" class="w-8 h-8 rounded object-cover border"></div>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-600">${item.seq}</td>
+                    <td class="p-3"><input type="text" value="${item.author}" onchange="updateExpenseField(${item.id}, 'author', this.value)" class="w-20 bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none"></td>
+                    <td class="p-3"><input type="date" value="${item.date}" onchange="updateExpenseField(${item.id}, 'date', this.value)" class="bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none text-xs"></td>
+                    <td class="p-3"><input type="text" value="${item.storeName}" onchange="updateExpenseField(${item.id}, 'storeName', this.value)" class="w-24 font-semibold bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none"></td>
+                    <td class="p-3"><input type="text" value="${escHtml(item.approvalNo || '')}" placeholder="-" onchange="updateExpenseField(${item.id}, 'approvalNo', this.value)" class="w-20 font-mono text-[11px] bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none"></td>
+                    <td class="p-3">
+                        <select onchange="updateExpenseField(${item.id}, 'category', this.value)" class="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[11px]">
+                            <option value="아침식사" ${item.category==='아침식사'?'selected':''}>아침식사</option>
+                            <option value="점심식사" ${item.category==='점심식사'?'selected':''}>점심식사</option>
+                            <option value="저녁식사" ${item.category==='저녁식사'?'selected':''}>저녁식사</option>
+                            <option value="야근식대" ${item.category==='야근식대'?'selected':''}>야근식대</option>
+                            <option value="회식비" ${item.category==='회식비'?'selected':''}>회식비</option>
+                            <option value="기타간식" ${item.category==='기타간식'?'selected':''}>기타간식</option>
+                        </select>
+                    </td>
+                    <td class="p-3"><input type="text" value="${item.amount.toLocaleString()}" onchange="updateExpenseField(${item.id}, 'amount', this.value)" class="w-20 font-bold text-indigo-600 bg-transparent border-b border-transparent hover:border-slate-300 focus:outline-none">원</td>
+                    <td class="p-3">${flagBadge}</td>
+                    <td class="p-3">${receiptThumb}</td>
+                    <td class="p-3 text-center no-print">
+                        <button onclick="deleteExpense(${item.id})" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateSummary() {
+            const filteredList = getFilteredExpenses();
+            filteredList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const total = filteredList.reduce((sum, item) => sum + item.amount, 0);
+            const remaining = monthlyBudget - total;
+
+            document.getElementById('totalAmountDisplay').textContent = total.toLocaleString() + '원';
+            const remEl = document.getElementById('remainingDisplay');
+            remEl.textContent = remaining.toLocaleString() + '원';
+            remEl.className = remaining < 0 ? "text-xl font-black text-red-600 mt-1" : "text-xl font-black text-emerald-600 mt-1";
+        }
+
+        function generateAndRenderPdfReport() {
+            const corporation = document.getElementById('corporationNameInput').value || '(주)테크솔루션';
+            const siteName = document.getElementById('siteNameInput').value || '본사 스마트오피스';
+            const sheetTitle = document.getElementById('sheetTitleInput').value || '식대 정산 보고서';
+            const author = document.getElementById('authorInput').value || (currentUser ? currentUser.name : '작성자');
+
+            const filteredList = getFilteredExpenses();
+            filteredList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const totalAmount = filteredList.reduce((sum, item) => sum + item.amount, 0);
+            const remaining = monthlyBudget - totalAmount;
+
+            const categorySummary = {};
+            filteredList.forEach(item => { categorySummary[item.category] = (categorySummary[item.category] || 0) + item.amount; });
+
+            const [y, m] = selectedFilterMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+            const rowH = Math.floor(750 / (lastDay + 1));
+            let dailyPlanRowsHtml = '';
+
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = `${selectedFilterMonth}-${String(d).padStart(2, '0')}`;
+                const p = getDailyPlan(dateStr);
+                const dateObj = new Date(y, m - 1, d);
+                const dow = dateObj.getDay();
+                const isWeekend = (dow === 0 || dow === 6);
+                const isFriday = (dow === 5);
+                const isHoliday = isPublicHoliday(dateStr);
+                const dayName = ['일','월','화','수','목','금','토'][dow];
+                const dailyAllocated = (p.breakfast + p.lunch + p.dinner) * UNIT_PRICE * p.headcount;
+
+                dailyPlanRowsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0; font-size: 7px; height: ${rowH}px; background-color: ${(isWeekend || isHoliday) ? '#f8fafc' : '#ffffff'}; white-space: nowrap;">
+                        <td style="padding: 0 4px; font-weight: 700; text-align: center; color: ${(isWeekend || isHoliday) ? '#94a3b8' : '#334155'};">${dateStr} (${dayName})</td>
+                        <td style="padding: 0 4px; text-align: center;">${isHoliday ? '<span style="color:#e11d48; font-weight:bold;">공휴일</span>' : isWeekend ? '<span style="color:#64748b; font-weight:bold;">휴일</span>' : isFriday ? '<span style="color:#d97706; font-weight:bold;">금요일</span>' : '<span style="color:#4f46e5; font-weight:bold;">평일</span>'}</td>
+                        <td style="padding: 0 4px; text-align: center;">${p.headcount}명</td>
+                        <td style="padding: 0 4px; text-align: center; color: #475569;">조:${p.breakfast}회 / 점:${p.lunch}회 / 석:${p.dinner}회</td>
+                        <td style="padding: 0 4px; text-align: right; font-weight: 800; color: #0f172a;">${dailyAllocated.toLocaleString()}원</td>
+                        <td style="padding: 0 4px; color: #64748b; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${p.memo || '-'}</td>
+                    </tr>
+                `;
+            }
+
+            let catSummaryHtml = '';
+            for (const [cat, sum] of Object.entries(categorySummary)) {
+                catSummaryHtml += `<div style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8.5px; font-weight: 700; margin-right: 4px; margin-bottom: 2px;">${cat}: <span style="color: #4f46e5;">${sum.toLocaleString()}원</span></div>`;
+            }
+
+            let page1Html = `
+                <div class="pdf-page-fixed" style="padding: 4mm 6mm !important; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 3px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <span style="background: #4f46e5; color: white; padding: 1px 4px; border-radius: 3px; font-size: 8px; font-weight: 800;">식대정산 종합 보고서 V30</span>
+                                <h1 style="font-size: 11.5px; font-weight: 900; color: #0f172a; margin-top: 1px;">${sheetTitle}</h1>
+                            </div>
+                            <div style="text-align: right; font-size: 8px; color: #475569; line-height: 1.1;">
+                                <div><b>법인명:</b> ${corporation}</div>
+                                <div><b>현장명:</b> ${siteName}</div>
+                                <div><b>작성자:</b> ${author} | <b>월:</b> ${selectedFilterMonth}</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 4px;">
+                            <h2 style="font-size: 8.5px; font-weight: 900; color: #1e1b4b; border-left: 3px solid #4f46e5; padding-left: 3px; margin-bottom: 2px;">가. 총괄사용현황</h2>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 3px;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px; text-align: center;">
+                                    <div style="font-size: 6.5px; color: #64748b; font-weight: 700;">월 기준 예산금액</div>
+                                    <div style="font-size: 9px; font-weight: 900; color: #0f172a;">${monthlyBudget.toLocaleString()}원</div>
+                                </div>
+                                <div style="background: #e0e7ff; border: 1px solid #c7d2fe; border-radius: 4px; padding: 3px; text-align: center;">
+                                    <div style="font-size: 6.5px; color: #3730a3; font-weight: 700;">총 사용금액</div>
+                                    <div style="font-size: 9px; font-weight: 900; color: #4338ca;">${totalAmount.toLocaleString()}원</div>
+                                </div>
+                                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 3px; text-align: center;">
+                                    <div style="font-size: 6.5px; color: #065f46; font-weight: 700;">잔액</div>
+                                    <div style="font-size: 9px; font-weight: 900; color: ${remaining < 0 ? '#dc2626' : '#059669'};">${remaining.toLocaleString()}원</div>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px; text-align: center;">
+                                    <div style="font-size: 6.5px; color: #64748b; font-weight: 700;">총 정산 건수</div>
+                                    <div style="font-size: 9px; font-weight: 900; color: #0f172a;">${filteredList.length}건</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 7px; font-weight: 700; color: #475569; margin-bottom: 1px;">[식사 카테고리별 사용내역 요약]</div>
+                                ${catSummaryHtml || '<span style="font-size:8px; color:#94a3b8;">등록된 지출이 없습니다.</span>'}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 style="font-size: 8.5px; font-weight: 900; color: #1e1b4b; border-left: 3px solid #4f46e5; padding-left: 3px; margin-bottom: 2px;">나. 일별계획산정 및 커스텀 현황</h2>
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #cbd5e1;">
+                                <thead>
+                                    <tr style="background-color: #f1f5f9; font-size: 7px; color: #334155; font-weight: 800; border-bottom: 1px solid #cbd5e1;">
+                                        <th style="padding: 1px 2px; text-align: center;">날짜(요일)</th>
+                                        <th style="padding: 1px 2px; text-align: center;">구분</th>
+                                        <th style="padding: 1px 2px; text-align: center;">인원</th>
+                                        <th style="padding: 1px 2px; text-align: center;">식사 구성 (조/점/석)</th>
+                                        <th style="padding: 1px 2px; text-align: right;">일할당 예산</th>
+                                        <th style="padding: 1px 2px; text-align: left;">연차/카드사용 메모</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${dailyPlanRowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; font-size: 6.5px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 2px;">
+                        스마트 식대정산 자동화 시스템 V40 (1페이지 완벽 수납)
+                    </div>
+                </div>
+            `;
+
+            let page2OnwardsHtml = '';
+            const itemsPerPage = 6;
+            const totalPages = Math.ceil(filteredList.length / itemsPerPage) || 1;
+
+            if (filteredList.length === 0) {
+                page2OnwardsHtml = `<div class="pdf-page-fixed" style="padding: 15mm;"><h2 style="font-size: 12px; font-weight: 900;">다. 상세 내역 (0건)</h2></div>`;
+            } else {
+                for (let p = 0; p < totalPages; p++) {
+                    const chunk = filteredList.slice(p * itemsPerPage, (p + 1) * itemsPerPage);
+                    let cardsHtml = '';
+
+                    chunk.forEach((item) => {
+                        let photoHtml = '';
+                        if (firstReceipt(item)) {
+                            photoHtml = `<div style="flex:1; min-height:0; position:relative; background:#fff; overflow:hidden;"><img src="${firstReceipt(item)}" style="position:absolute; left:0; top:0; width:100%; height:100%; object-fit:contain;"></div>`;
+                        } else {
+                            photoHtml = `<div style="flex:1; min-height:0; background:#f8fafc; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; font-size:9px;"><i class="fa-solid fa-image" style="font-size:14px; margin-bottom:2px;"></i><span>영수증 없음</span></div>`;
+                        }
+
+                        cardsHtml += `
+                            <div style="border: 1px solid #cbd5e1; border-radius: 5px; padding: 3px 5px; background: #ffffff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; height: 100%; min-height: 0; min-width: 0; box-sizing: border-box;">
+                                <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 2px;">
+                                    ${photoHtml}
+                                </div>
+                                <div style="flex: none; width: 100%; overflow: hidden;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px; width: 100%;">
+                                        <span style="font-size: 7.5px; background: #e0e7ff; color: #3730a3; padding: 1px 3px; border-radius: 3px; font-weight: 800; white-space: nowrap;">${item.category}</span>
+                                        <span style="font-size: 7.5px; color: #64748b; font-weight: 700; white-space: nowrap;">${item.date}</span>
+                                    </div>
+                                    <div style="font-size: 9px; font-weight: 900; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${item.storeName}">${item.storeName}</div>
+                                    ${item.approvalNo ? `<div style="font-size: 7px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">승인번호: ${item.approvalNo}</div>` : ''}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1px; border-top: 1px dashed #e2e8f0; padding-top: 1px; width: 100%;">
+                                        <span style="font-size: 7.5px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%;">작성자: ${item.author}</span>
+                                        <span style="font-size: 9px; font-weight: 900; color: #4f46e5; white-space: nowrap;">${item.amount.toLocaleString()}원</span>
+                                    </div>
+                                    <div style="font-size: 7px; color: #64748b; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${item.memo || '-'}">비고: ${item.memo || '-'}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // ⭐ 추가된 로직: 그리드 6칸을 다 채우지 못했을 때 세로로 늘어나는 현상을 막기 위한 더미 요소 채우기
+                    const emptySlots = itemsPerPage - chunk.length;
+                    for (let i = 0; i < emptySlots; i++) {
+                        cardsHtml += `
+                            <div style="border: 1px dashed transparent; border-radius: 5px; background: transparent; opacity: 0; display: flex; flex-direction: column; height: 100%;">
+                                <!-- 그리드의 모양을 유지하기 위한 투명한 빈 공간 -->
+                            </div>
+                        `;
+                    }
+
+                    // ⭐ 수정된 로직: grid-auto-rows: minmax(0, 1fr) 추가 및 overflow: hidden 으로 비율 유지
+                    page2OnwardsHtml += `
+                        <div class="pdf-page-fixed" style="padding: 4mm 6mm !important; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                                <div style="flex: none; border-bottom: 2px solid #0f172a; padding-bottom: 2px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                    <h2 style="font-size: 9.5px; font-weight: 900; color: #1e1b4b; border-left: 3px solid #4f46e5; padding-left: 3px;">다. 상세 일별 사용 내역 및 영수증 증빙 (${p + 1} / ${totalPages} 페이지)</h2>
+                                    <span style="font-size: 7.5px; color: #64748b; font-weight: 700;">3열 x 2행 영수증 확장 레이아웃</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 6px; flex: 1; min-height: 0; overflow: hidden;">
+                                    ${cardsHtml}
+                                </div>
+                            </div>
+                            <div style="flex: none; text-align: right; font-size: 6.5px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 2px;">
+                                스마트 식대정산 자동화 시스템 V40 (증빙 페이지 ${p + 1}/${totalPages})
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            window.__reportHtml = page1Html + page2OnwardsHtml;
+            document.getElementById('pdfPreviewContentWrapper').innerHTML = window.__reportHtml;
+        }
+
+        function waitForImages(root) {
+            return Promise.all(Array.from(root.querySelectorAll('img')).map(img =>
+                (img.decode ? img.decode() : Promise.resolve()).catch(() => {})));
+        }
+
+        function togglePdfPreviewSection() {
+            const section = document.getElementById('livePdfPreviewSection');
+            if (!section.classList.contains('hidden')) { section.classList.add('hidden'); }
+            else { generateAndRenderPdfReport(); section.classList.remove('hidden'); section.scrollIntoView({ behavior: 'smooth' }); }
+        }
+
+        // 페이지(A4 1장)마다 따로 캔버스로 그려 PDF에 추가 -> 거대 단일 캔버스 한계(모바일/사파리) 및 페이지 밀림 방지
+        async function downloadFinalPDF() {
+            generateAndRenderPdfReport();
+            const JsPDF = window.jspdf && window.jspdf.jsPDF;
+            if (!window.html2canvas || !JsPDF) { alert('PDF 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); return; }
+            await document.fonts.ready;
+            window.scrollTo(0, 0);
+
+            const stage = document.createElement('div');
+            stage.style.cssText = 'position:absolute;left:0;top:0;width:210mm;background:#fff;z-index:-1;';
+            stage.innerHTML = window.__reportHtml;
+            document.body.appendChild(stage);
+            const pages = Array.from(stage.querySelectorAll('.pdf-page-fixed'));
+            pages.forEach(p => { p.style.margin = '0'; p.style.boxShadow = 'none'; p.style.width = '210mm'; p.style.height = '297mm'; });
+            await waitForImages(stage);
+
+            const scale = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 1.5 : 2;
+            const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+            document.body.style.cursor = 'progress';
+            try {
+                for (let i = 0; i < pages.length; i++) {
+                    const canvas = await html2canvas(pages[i], { scale, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
+                    if (i > 0) pdf.addPage('a4', 'portrait');
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                    canvas.width = 0; canvas.height = 0; // 메모리 즉시 해제
+                    await new Promise(r => setTimeout(r, 30));
+                }
+                pdf.save(`식대정산보고서_${selectedFilterMonth}_V40.pdf`);
+            } catch (err) {
+                console.error(err);
+                alert('PDF 저장 중 오류가 발생했습니다. (페이지 ' + '생성 실패)');
+            } finally {
+                document.body.style.cursor = '';
+                stage.remove();
+            }
+        }
+
+        async function triggerPrintReport() {
+            generateAndRenderPdfReport();
+            const pc = document.getElementById('printReportContainer');
+            pc.innerHTML = window.__reportHtml;
+            await waitForImages(pc);
+            const cleanup = () => { pc.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+            window.addEventListener('afterprint', cleanup);
+            window.print();
+        }
+
+        async function backupToFileSystem() {
+            const backupData = {
+                version: "V30",
+                expenses,
+                users: usersList,
+                dailyPlans: localStorage.getItem(STORAGE_KEYS.dailyPlansPrefix + selectedFilterMonth),
+                budget: monthlyBudget,
+                meta: {
+                    corp: document.getElementById('corporationNameInput').value,
+                    site: document.getElementById('siteNameInput').value,
+                    title: document.getElementById('sheetTitleInput').value,
+                    author: document.getElementById('authorInput').value
+                }
+            };
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `스마트식대정산_V30_백업_${getLocalDateString()}.json`;
+            link.click();
+            closeFileStorageModal();
+        }
+
+        function triggerFileRestore() { document.getElementById('restoreFileInput').click(); }
+
+        async function handleFileRestore(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.expenses) {
+                        await dbClearStore(STORE_EXPENSES);
+                        expenses = parsed.expenses;
+                        for (const ex of expenses) await dbPut(STORE_EXPENSES, ex);
+                    }
+                    if (parsed.dailyPlans && selectedFilterMonth) {
+                        localStorage.setItem(STORAGE_KEYS.dailyPlansPrefix + selectedFilterMonth, parsed.dailyPlans);
+                        loadDailyPlansForMonth();
+                    }
+                    if (parsed.budget) {
+                        monthlyBudget = parsed.budget;
+                        localStorage.setItem(STORAGE_KEYS.budget + '_' + selectedFilterMonth, String(monthlyBudget));
+                    }
+                    if (parsed.meta) {
+                        if (parsed.meta.corp) document.getElementById('corporationNameInput').value = parsed.meta.corp;
+                        if (parsed.meta.site) document.getElementById('siteNameInput').value = parsed.meta.site;
+                        if (parsed.meta.title) document.getElementById('sheetTitleInput').value = parsed.meta.title;
+                        if (parsed.meta.author) document.getElementById('authorInput').value = parsed.meta.author;
+                        saveMetaInputs();
+                    }
+                    renderTable();
+                    updateSummary();
+                    alert('V30 데이터 복원이 성공적으로 완료되었습니다.');
+                    closeFileStorageModal();
+                } catch (err) {
+                    alert('복원 오류: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function openFileStorageModal() { document.getElementById('fileStorageModal').classList.remove('hidden'); }
+        function closeFileStorageModal() { document.getElementById('fileStorageModal').classList.add('hidden'); }
+        function escHtml(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function openDayPreview(dateStr) {
+            const items = getVisibleExpenses().filter(i => i.date === dateStr).sort((a, b) => a.id - b.id);
+            const dow = ['일','월','화','수','목','금','토'][new Date(dateStr).getDay()];
+            const total = items.reduce((sum, i) => sum + i.amount, 0);
+            const plan = getDailyPlan(dateStr);
+            const planAmt = (plan.breakfast + plan.lunch + plan.dinner) * UNIT_PRICE * plan.headcount;
+
+            document.getElementById('dayPreviewTitle').innerHTML = `<i class="fa-solid fa-calendar-day"></i> ${dateStr} (${dow}) 사용현황`;
+            const body = document.getElementById('dayPreviewBody');
+            body.innerHTML = `
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500 font-bold">사용 건수</div><div class="text-sm font-black">${items.length}건</div></div>
+                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-2"><div class="text-[10px] text-indigo-700 font-bold">당일 사용금액</div><div class="text-sm font-black text-indigo-700">${total.toLocaleString()}원</div></div>
+                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500 font-bold">일할당 예산</div><div class="text-sm font-black">${planAmt.toLocaleString()}원</div></div>
+                </div>
+                ${plan.memo ? `<div class="text-xs text-slate-600">메모: <b>${escHtml(plan.memo)}</b></div>` : ''}
+                <div id="dayPreviewCards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>`;
+
+            const cards = body.querySelector('#dayPreviewCards');
+            if (items.length === 0) cards.innerHTML = '<div class="text-xs text-slate-400">해당 날짜의 사용내역이 없습니다.</div>';
+            items.forEach(item => {
+                const flags = validateExpense(item);
+                const card = document.createElement('div');
+                card.className = 'border rounded-xl p-3 flex flex-col gap-2 bg-white shadow-sm';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold">${escHtml(item.category)}</span>
+                        ${flags.length ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">${escHtml(flags[0])}</span>` : '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">정상</span>'}
+                    </div>
+                    <div class="receipt-area flex gap-2 flex-wrap justify-center bg-slate-50 rounded-lg p-2 min-h-[80px]"></div>
+                    <div class="text-sm font-black text-slate-800">${escHtml(item.storeName)}</div>
+                    ${item.approvalNo ? `<div class="text-[11px] text-slate-500">승인번호: <b class="font-mono">${escHtml(item.approvalNo)}</b></div>` : ''}
+                    <div class="flex justify-between text-xs border-t border-dashed pt-1">
+                        <span class="text-slate-500">작성자: ${escHtml(item.author)}</span>
+                        <span class="font-black text-indigo-600">${item.amount.toLocaleString()}원</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500">비고: ${escHtml(item.memo || '-')}</div>`;
+                const area = card.querySelector('.receipt-area');
+                if (firstReceipt(item)) {
+                    item.receipts.filter(Boolean).forEach(src => {
+                        const img = document.createElement('img');
+                        img.src = src;
+                        img.className = 'max-h-64 max-w-full object-contain rounded border bg-white cursor-zoom-in';
+                        img.onclick = () => openImageModal(src);
+                        area.appendChild(img);
+                    });
+                } else {
+                    area.innerHTML = '<span class="text-xs text-slate-400 self-center">영수증 없음</span>';
+                }
+                cards.appendChild(card);
+            });
+            document.getElementById('dayPreviewModal').classList.remove('hidden');
+        }
+        function closeDayPreview() { document.getElementById('dayPreviewModal').classList.add('hidden'); }
+
+        function openImageModal(src) { document.getElementById('modalReceiptImg').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+        function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
+        function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
+
+        function saveConfig() {
+            googleScriptUrl = document.getElementById('scriptUrlInput').value.trim();
+            geminiApiKey = document.getElementById('geminiKeyInput').value.trim();
+            localStorage.setItem(STORAGE_KEYS.scriptUrl, googleScriptUrl);
+            localStorage.setItem(STORAGE_KEYS.geminiKey, geminiApiKey);
+            localStorage.setItem(STORAGE_KEYS.geminiModel, (document.getElementById('geminiModelInput').value || '').trim());
+            closeConfigModal();
+            alert('설정이 저장되었습니다.');
+        }
+
+        // ===== 구글 시트 동기화 (Apps Script 웹앱 연동) =====
+        const DELETED_SYNC_KEY = 'meal_pending_deleted_ids_global';
+
+        function getPendingDeletedIds() {
+            try { return JSON.parse(localStorage.getItem(DELETED_SYNC_KEY) || '[]'); } catch (e) { return []; }
+        }
+        function markDeletedForSync(id) {
+            const list = getPendingDeletedIds();
+            if (!list.includes(id)) list.push(id);
+            localStorage.setItem(DELETED_SYNC_KEY, JSON.stringify(list));
+        }
+        function toSheetRecord(e) {
+            return {
+                id: e.id, userId: e.userId || '', author: e.author || '', corporation: e.corporation || '',
+                siteName: e.siteName || '', sheetTitle: e.sheetTitle || '', date: e.date || '',
+                storeName: e.storeName || '', category: e.category || '', amount: Number(e.amount) || 0,
+                approvalNo: e.approvalNo || '', memo: e.memo || '', updatedAt: e.updatedAt || 0,
+                receiptIds: JSON.stringify(cleanIds(e.receiptIds))
+            };
+        }
+
+        function firstReceipt(item) { return (item.receipts || []).find(Boolean) || ''; }
+
+        function cleanIds(v) {
+            if (typeof v === 'string') { try { v = JSON.parse(v || '[]'); } catch (e) { v = []; } }
+            return Array.isArray(v) ? v.map(x => x || '') : [];
+        }
+
+        async function callScript(payload) {
+            const res = await fetch(googleScriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            let data;
+            try { data = await res.json(); }
+            catch (e) { throw new Error('웹앱 응답을 해석할 수 없습니다. 배포 설정(액세스: 모든 사용자)과 URL(/exec)을 확인해주세요.'); }
+            if (!data.ok) throw new Error(data.error || '서버 오류');
+            return data;
+        }
+
+        // 아직 드라이브에 없는 영수증 사진을 업로드 (사진 1장 = 요청 1회)
+        async function uploadPendingReceipts(setStatus) {
+            const targets = [];
+            getVisibleExpenses().forEach(item => {
+                (item.receipts || []).forEach((src, i) => {
+                    if (src && !cleanIds(item.receiptIds)[i]) targets.push({ item, i, src });
+                });
+            });
+            let done = 0;
+            for (const t of targets) {
+                setStatus(`사진 업로드 중 (${done + 1}/${targets.length})`);
+                const ids = cleanIds(t.item.receiptIds);
+                while (ids.length < (t.item.receipts || []).length) ids.push('');
+                const r = await callScript({
+                    action: 'uploadImage',
+                    name: `${t.item.date}_${(t.item.storeName || '영수증').replace(/[\\/:*?"<>|]/g, '')}_${t.item.id}_${t.i + 1}.jpg`,
+                    dataUrl: t.src
+                });
+                ids[t.i] = r.fileId;
+                t.item.receiptIds = ids;
+                t.item.updatedAt = Date.now();
+                await dbPut(STORE_EXPENSES, t.item);
+                done++;
+            }
+            return done;
+        }
+
+        // 서버 receiptIds 기준으로 로컬 사진을 맞추고, 없는 사진은 드라이브에서 내려받기
+        async function downloadMissingReceipts(setStatus) {
+            const jobs = [];
+            getVisibleExpenses().forEach(item => {
+                const ids = cleanIds(item.receiptIds);
+                if (!ids.length) return;
+                const oldIds = item._localIds !== undefined ? cleanIds(item._localIds) : ids;
+                const oldRecs = item.receipts || [];
+                const next = ids.map((fid, i) => {
+                    const k = oldIds.indexOf(fid);
+                    if (k >= 0 && oldRecs[k]) return oldRecs[k];
+                    if (!fid) return oldRecs[i] || null;
+                    return null;
+                });
+                item.receipts = next;
+                next.forEach((src, i) => { if (!src && ids[i]) jobs.push({ item, i, fid: ids[i] }); });
+            });
+            let done = 0;
+            for (const j of jobs) {
+                setStatus(`사진 내려받는 중 (${done + 1}/${jobs.length})`);
+                try {
+                    const r = await callScript({ action: 'getImage', fileId: j.fid });
+                    j.item.receipts[j.i] = r.dataUrl;
+                    done++;
+                } catch (e) { console.warn('사진 다운로드 실패', j.fid, e); }
+            }
+            // 내려받지 못한 자리는 제거하지 않고 다음 동기화에서 재시도되도록 null 유지 → 저장 전 필터
+            const touched = new Set(jobs.map(j => j.item));
+            for (const item of touched) {
+                item.receipts = item.receipts.map(x => x || null);
+                await dbPut(STORE_EXPENSES, item);
+            }
+            return done;
+        }
+
+        async function syncToGoogleSheets() {
+            if (!googleScriptUrl) {
+                alert('구글 웹앱(Apps Script) URL이 설정되지 않았습니다.\n[연동 설정]에서 URL을 입력한 뒤 다시 시도해주세요.');
+                openConfigModal();
+                return;
+            }
+            if (!currentUser) { alert('로그인 후 이용해주세요.'); openAuthModal(); return; }
+            if (currentUser.role === 'pending_admin') { alert('관리자 승인 대기 중에는 동기화할 수 없습니다.'); return; }
+
+            const btn = document.getElementById('syncSheetBtn');
+            const btnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-wait');
+            const setStatus = (t) => { btn.innerHTML = `<i class="fa-solid fa-rotate fa-spin"></i> ${t}`; };
+            setStatus('동기화 중...');
+
+            try {
+                const uploaded = await uploadPendingReceipts(setStatus);
+                setStatus('시트 동기화 중...');
+                const pending = getPendingDeletedIds();
+                const payload = {
+                    action: 'sync',
+                    records: getVisibleExpenses().map(toSheetRecord),
+                    deletedIds: pending
+                };
+                const data = await callScript(payload);
+
+                localStorage.removeItem(DELETED_SYNC_KEY);
+
+                let added = 0, updated = 0, removed = 0;
+
+                // 다른 기기에서 삭제된 내역 반영
+                for (const rawId of (data.deletedIds || [])) {
+                    const id = Number(rawId);
+                    const idx = expenses.findIndex(x => x.id === id);
+                    if (idx >= 0) { expenses.splice(idx, 1); await dbDelete(STORE_EXPENSES, id); removed++; }
+                }
+
+                // 시트에만 있거나 더 최신인 내역 반영 (영수증 이미지는 각 기기에 보관)
+                for (const r of (data.records || [])) {
+                    r.id = Number(r.id); r.amount = Number(r.amount) || 0; r.updatedAt = Number(r.updatedAt) || 0;
+                    r.receiptIds = cleanIds(r.receiptIds);
+                    if (!isAdminModeActive && r.userId !== currentUser.userId) continue;
+                    const local = expenses.find(x => x.id === r.id);
+                    if (!local) {
+                        const item = { ...r, seq: 1, receipts: [], _localIds: [] };
+                        expenses.push(item);
+                        await dbPut(STORE_EXPENSES, item);
+                        added++;
+                    } else if (r.updatedAt > (local.updatedAt || 0)) {
+                        const keep = local.receipts || [];
+                        const keepIds = cleanIds(local.receiptIds);
+                        Object.assign(local, r, { receipts: keep, _localIds: keepIds });
+                        await dbPut(STORE_EXPENSES, local);
+                        updated++;
+                    }
+                }
+
+                const downloaded = await downloadMissingReceipts(setStatus);
+                expenses.forEach(x => { delete x._localIds; });
+                expenses.sort((a, b) => b.id - a.id);
+                recalculateSequences();
+                initMonthFilter();
+                syncCalendarToFilterMonth();
+                loadDailyPlansForMonth();
+                renderTable();
+                updateSummary();
+                renderCalendar();
+
+                alert(`구글 시트 동기화 완료\n\n· 시트로 전송: ${payload.records.length}건\n· 새로 받아온 내역: ${added}건\n· 수정 반영: ${updated}건\n· 삭제 반영: ${removed}건\n· 사진 업로드: ${uploaded}장\n· 사진 내려받기: ${downloaded}장`);
+            } catch (err) {
+                console.error('Sync Error:', err);
+                alert('구글 시트 동기화 실패\n\n' + err.message + '\n\n[연동 설정]의 웹앱 URL과 배포 권한을 확인해주세요.');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-wait');
+                btn.innerHTML = btnHtml;
+            }
+        }
+
+        function exportToCSV() {
+            const list = getFilteredExpenses();
+            if (list.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+            let csv = '\uFEFF법인명,현장명,순번,작성자,사용일자,상점명,승인번호,분류,사용금액,메모\n';
+            list.forEach(i => { csv += `"${i.corporation}","${i.siteName}",${i.seq},"${i.author}","${i.date}","${i.storeName}","${i.approvalNo || ''}","${i.category}",${i.amount},"${i.memo || ''}"\n`; });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `식대정산_${selectedFilterMonth}.csv`;
+            link.click();
+        }
+    </script>
+
+    <!-- ═══ 🖥️ BsstGis 작업 화면 (보고서형 화면과 버튼 하나로 전환 · 입력 창과 내역 카드는 같은 id 그대로 옮겨 씀) ═══ -->
+    <div id="gw" aria-label="BsstGis 작업 화면">
+        <div id="gwTitle">
+            <span class="gw-pill"><i class="fa-solid fa-receipt" style="color:var(--gw-ac)"></i> 식대정산</span>
+            <div class="tt">스마트 식대정산 앱 <small>· BsstGis 작업 화면 · 만든이: 구병순</small></div>
+            <span class="gw-pill" id="gwUser"><i class="fa-solid fa-user"></i> -</span>
+            <button class="gw-pill" onclick="gwToggle(false)" title="카드형 보고서 화면으로 돌아가기 (Alt+W)"><i class="fa-solid fa-table-columns"></i> 보고서형 화면</button>
+        </div>
+        <div id="gwRib">
+            <div class="gw-g"><div class="gw-gi">
+                <button class="gw-b" onclick="document.getElementById('receiptFileInput').click()"><i class="fa-solid fa-camera"></i>영수증 첨부</button>
+                <button class="gw-b run" onclick="analyzeReceiptsWithAI()"><i class="fa-solid fa-wand-magic-sparkles"></i>AI 인식</button>
+                <button class="gw-b run" onclick="addExpenseRecord()"><i class="fa-solid fa-circle-plus"></i>내역 등록</button>
+            </div><div class="gw-gl">등록</div></div>
+            <div class="gw-g"><div class="gw-gi">
+                <button class="gw-b" onclick="openDailyBudgetPlanningModal()"><i class="fa-solid fa-calendar-days"></i>일별 예산</button>
+                <button class="gw-b run" onclick="syncToGoogleSheets()"><i class="fa-solid fa-rotate"></i>시트 동기화</button>
+            </div><div class="gw-gl">정산</div></div>
+            <div class="gw-g"><div class="gw-gi">
+                <button class="gw-b run" onclick="togglePdfPreviewSection()"><i class="fa-solid fa-file-pdf"></i>PDF 보고서</button>
+                <button class="gw-b" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i>CSV 내보내기</button>
+            </div><div class="gw-gl">출력</div></div>
+            <div class="gw-g"><div class="gw-gi">
+                <button class="gw-b" onclick="openFileStorageModal()"><i class="fa-solid fa-hard-drive"></i>백업/복원</button>
+                <button class="gw-b" onclick="openConfigModal()"><i class="fa-solid fa-gear"></i>연동 설정</button>
+                <button class="gw-b" onclick="openPasswordModal()"><i class="fa-solid fa-key"></i>비밀번호</button>
+                <button class="gw-b danger" onclick="gwToggle(false);logoutUser()"><i class="fa-solid fa-right-from-bracket"></i>로그아웃</button>
+            </div><div class="gw-gl">관리</div></div>
+        </div>
+        <div id="gwBody">
+            <div id="gwLeft"><div class="gw-ph"><i class="fa-solid fa-file-invoice-dollar"></i> 지출 입력</div><div class="gw-slot" id="gwLeftSlot"></div></div>
+            <div id="gwMain"><div class="gw-ph"><i class="fa-solid fa-table-list"></i> 정산 내역</div><div class="gw-slot" id="gwMainSlot"></div></div>
+        </div>
+        <div id="gwStat">
+            <span>정산 월 <b id="gwStMonth">-</b></span>
+            <span>건수 <b id="gwStCount">0</b>건</span>
+            <span>합계 <b id="gwStTotal">0원</b></span>
+            <span>잔액 <b id="gwStRemain">-</b></span>
+            <span class="r">Alt+W 화면 전환</span>
+        </div>
+    </div>
+    <script>
+        // ── BsstGis 작업 화면 전환: 입력 창·내역 카드를 그대로 옮겨 쓰므로 자료와 기능은 두 화면이 같다 ──
+        function gwToggle(on) {
+            const L = document.getElementById('gwSrcLeft'), R = document.getElementById('gwSrcRight'), M = document.getElementById('gwSrcMain');
+            if (!L || !R || !M) return;
+            if (on) {
+                document.getElementById('gwLeftSlot').appendChild(L);
+                document.getElementById('gwMainSlot').appendChild(R);
+                document.documentElement.classList.add('gwOn');
+                gwUpdateStatus();
+            } else {
+                M.appendChild(L); M.appendChild(R);
+                document.documentElement.classList.remove('gwOn');
+            }
+            try { localStorage.setItem('meal_gw_mode', on ? '1' : '0'); } catch (e) {}
+        }
+        function gwUpdateStatus() {
+            try {
+                const month = (typeof selectedFilterMonth !== 'undefined' && selectedFilterMonth) || '';
+                const list = (typeof getVisibleExpenses === 'function') ? getVisibleExpenses().filter(e => !month || month === 'all' || String(e.date || '').startsWith(month)) : [];
+                const sel = document.getElementById('filterMonthSelect');
+                document.getElementById('gwStMonth').textContent = (sel && sel.selectedOptions[0] && sel.selectedOptions[0].textContent.trim()) || month || '-';
+                document.getElementById('gwStCount').textContent = list.length.toLocaleString();
+                document.getElementById('gwStTotal').textContent = (document.getElementById('totalAmountDisplay') || {}).textContent || '-';
+                document.getElementById('gwStRemain').textContent = (document.getElementById('remainingDisplay') || {}).textContent || '-';
+                document.getElementById('gwUser').innerHTML = '<i class="fa-solid fa-user"></i> ' + escHtml((document.getElementById('headerUserName') || {}).textContent || '-');
+            } catch (e) {}
+        }
+        if (typeof updateSummary === 'function') {
+            const _gwBaseSummary = updateSummary;
+            updateSummary = function () { const r = _gwBaseSummary.apply(this, arguments); gwUpdateStatus(); return r; };
+        }
+        document.addEventListener('keydown', e => {
+            if (e.altKey && (e.key === 'w' || e.key === 'W' || e.code === 'KeyW')) { e.preventDefault(); gwToggle(!document.documentElement.classList.contains('gwOn')); }
+        });
+        try { if (localStorage.getItem('meal_gw_mode') === '1') gwToggle(true); } catch (e) {}
+    </script>
+</body>
+</html>
