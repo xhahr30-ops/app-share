@@ -802,6 +802,27 @@ body.hide-mapBox.hide-barCard.hide-tblCard section.stage{grid-template-rows:auto
 :root{--gw-ch:#f3f3f3;--gw-ch2:#fafafa;--gw-bd:#d6d6d6;--gw-tx:#2b2b2b;--gw-tx2:#6b6b6b;--gw-ac:#2563eb;--gw-hv:#e6eefc;--gw-on:#d3e2fb;--gw-pn:#fff;--gwL:270px;--gwDH:34vh}
 html.dark{--gw-ch:#1b2433;--gw-ch2:#162033;--gw-bd:#2f3d55;--gw-tx:#e2e8f0;--gw-tx2:#94a3b8;--gw-ac:#60a5fa;--gw-hv:#23324a;--gw-on:#2b4168;--gw-pn:#0f1a2e}
 #gw{display:none}
+/* BsstGis 머리글: 보고서형 화면 머리글도 작업 화면 제목줄처럼 (회색 바탕 · 얇은 테두리 · 파란 강조) */
+header{background:var(--gw-ch);color:var(--gw-tx);box-shadow:none;border-bottom:1px solid var(--gw-bd)}
+header .hin{padding-top:5px;padding-bottom:5px}
+header p{color:var(--gw-tx2)}
+header .tag{background:var(--gw-on);color:var(--gw-ac);border-radius:4px}
+header .mascot{height:46px}
+header .mascot.empty{border-color:var(--gw-bd);background-color:var(--gw-pn);width:44px;height:44px}
+header .hdot2{box-shadow:0 0 0 2px var(--gw-bd)}
+header .hchip{background:var(--gw-pn);border:1px solid var(--gw-bd);border-radius:4px;padding:5px 10px}
+header .hbtn,header .hsel,header .hmenu{background:var(--gw-pn);border:1px solid var(--gw-bd);color:var(--gw-tx);border-radius:4px;font-weight:600}
+header .hbtn:hover,header .hmenu:hover,header .hchip.dwBtn:hover{background:var(--gw-hv);border-color:var(--gw-ac)}
+header .hmenu[aria-expanded="true"]{background:var(--gw-on);color:var(--gw-ac)}
+header .afbtn{background:var(--gw-pn);color:var(--gw-ac);border:1px solid var(--gw-bd);border-radius:4px;box-shadow:none;font-weight:800}
+header .afbtn:hover{background:var(--gw-hv);border-color:var(--gw-ac)}
+header .afbtn[aria-expanded="true"]{background:var(--gw-on);border-color:var(--gw-ac);box-shadow:none}
+header .exbtn{color:#047857}html.dark header .exbtn{color:#34d399}
+header .hpdf{background:var(--gw-ac);color:#fff;border-radius:4px;box-shadow:none}header .hpdf:hover{background:#1d4ed8}
+header .hpdf:disabled{background:var(--gw-ch2);color:var(--gw-tx2);border:1px solid var(--gw-bd)}
+header #gwBtn{border-color:var(--gw-ac);color:var(--gw-ac)}
+@media(max-width:899px){header .hr{background:var(--gw-ch)!important;border:1px solid var(--gw-bd);border-radius:6px!important;box-shadow:0 8px 22px #0003!important}}
+#sideTab{background:var(--gw-ac);border-radius:0 6px 6px 0}
 html.gwOn #gw{display:grid;position:fixed;inset:0;z-index:900;grid-template-rows:auto auto auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);background:var(--gw-ch);color:var(--gw-tx);font-size:12px;padding-top:env(safe-area-inset-top,0px)}
 html.gwOn body{overflow:hidden}
 html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
@@ -1303,7 +1324,8 @@ html.gwOn .afp{top:150px}
    앱 본문(appMain)은 라이브러리를 받은 뒤 실행되므로, 본문의 변수·함수는 G()로 그때그때 찾아 쓴다. */
 (function(){
 const $=id=>document.getElementById(id),R=document.documentElement,gw=$('gw');if(!gw)return;
-const G=n=>{try{return (0,eval)(n)}catch(_){return undefined}};
+/* 'map'은 본문 실행 전에는 id="map" 칸(div)이 잡히므로 Leaflet 지도일 때만 돌려줌 */
+const G=n=>{try{const v=(0,eval)(n);return n==='map'&&v&&typeof v.on!=='function'?undefined:v}catch(_){return undefined}};
 const F=(n,...a)=>{const f=G(n);if(typeof f==='function')try{return f(...a)}catch(e){console.warn('gw',n,e)}};
 const LS={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}}};
 const num=n=>Number(n||0).toLocaleString();
@@ -1506,8 +1528,8 @@ document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.
 let prW=false;addEventListener('beforeprint',()=>{if(S.on){prW=true;set(false,true)}});addEventListener('afterprint',()=>{if(prW){prW=false;set(true,true)}});
 /* 머리글 전환 버튼 */
 const hb=$('gwBtn');if(hb)hb.onclick=()=>set(!S.on);
-/* 처음: 이 기기에서 마지막에 고른 화면 (처음 쓰는 기기는 보고서형) · 지도 준비를 기다렸다가 */
-if(LS.get('uis-gw')==='1'){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
+/* 처음: 이 기기에서 마지막에 고른 화면 · 처음 쓰는 PC(마우스·폭 900px 이상)는 작업 화면, 폰·태블릿은 평소 화면 · 지도 준비를 기다렸다가 */
+const gw0=LS.get('uis-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coarse)').matches&&innerWidth>=900)){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
 })();
 </script>
 <script>
@@ -2115,7 +2137,7 @@ function initFs(){
  /* 앱 시작 화면: 전체 지도 모드로 열고, 처음 누를 때 진짜 전체화면(주소창 숨김)으로 바꿈
     (브라우저는 사용자가 누르기 전에는 전체화면을 막음) · ⚙️ 앱 설정 › 앱 시작 화면 · 작업 화면(geo-gw)·처음 쓰는 기기는 평소 화면 */
  try{const m=UI.fsStart||'auto',phone=matchMedia('(pointer:coarse)').matches;/* 폰·태블릿(터치) */
-  let gw='0';try{gw=localStorage.getItem('uis-gw')||'0'}catch(_){}
+  let gw='0';try{const g=localStorage.getItem('uis-gw');gw=g==null?(!phone&&innerWidth>=900?'1':'0'):g}catch(_){}
   if((m==='on'||(m==='auto'&&phone&&!UI_NEW))&&gw!=='1'){
    want=true;box.classList.add('mapfs');sync();
    const evs=['pointerup','touchend','click','keydown'];
