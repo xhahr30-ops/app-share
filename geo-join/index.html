@@ -201,7 +201,8 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .shutp .shk small{display:block;color:var(--mute);font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shutp .shk b{font-size:15px;display:block}
 .shutp .shb{display:flex;flex-wrap:wrap;gap:4px}.shutp .shb .btn{flex:1 1 auto;width:auto;padding:5px 7px;font-size:11.5px;margin:0}.shutp .shb .btn.on{background:var(--ind);border-color:var(--ind);color:#fff}
 .shutp .shh{margin:6px 0 2px;font-size:11.5px;line-height:1.5}
-.shutp .tbleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;font-weight:600;margin:4px 0 2px}.shutp .tbleg span{display:inline-flex;align-items:center;gap:4px}.shutp .tbleg svg{flex:none}
+.tbleg{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;font-size:11.5px;font-weight:600;margin:4px 0 2px}.tbleg span{display:inline-flex;align-items:center;gap:4px}.tbleg svg{flex:none}
+.shleg{max-width:240px}.shleg .tbleg{gap:3px 10px;font-size:11px}.shlv i{display:inline-block;min-width:16px;height:16px;border-radius:8px;color:#fff;font:800 9.5px/16px sans-serif;text-align:center;font-style:normal;margin-right:-2px}
 .shutp .shs,.shutp .shc{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;margin:2px 0}.shutp .shc span{background:var(--sub);border:1px solid var(--line2);border-radius:999px;padding:1px 8px}
 .shutp .sht{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:2px}.shutp .sht th{text-align:left;color:var(--mute);font-weight:700;font-size:10.5px;padding:2px 3px;border-bottom:1px solid var(--line2)}.shutp .sht td{padding:2px 3px;border-bottom:1px dashed var(--line2);vertical-align:middle}
 .shutp .sht tr.brr td{color:var(--mute)}.shutp .shbr{width:auto!important;padding:2px 7px!important;font-size:11px!important;margin:0!important;white-space:nowrap}
@@ -2294,13 +2295,15 @@ function legBoxInit(C){let S={t:'',m:0};try{Object.assign(S,JSON.parse(localStor
  const save=()=>{try{localStorage.setItem('geo-legbox',JSON.stringify(S))}catch(_){}};
  const box=L.DomUtil.create('div','leaflet-control legbox'),tabs=L.DomUtil.create('div','lgt',box),body=L.DomUtil.create('div','lgb',box);
  L.DomEvent.disableClickPropagation(box);L.DomEvent.disableScrollPropagation(box);C.bottomleft.appendChild(box);
- const keyOf=el=>el.classList.contains('phleg')?'ph':el===(PIPE.legend&&PIPE.legend.getContainer&&PIPE.legend.getContainer())?'pipe':'blk',ORD={pipe:0,ph:1,blk:2};
+ const keyOf=el=>el.classList.contains('shleg')?'shut':el.classList.contains('phleg')?'ph':el===(PIPE.legend&&PIPE.legend.getContainer&&PIPE.legend.getContainer())?'pipe':'blk',ORD={shut:-1,pipe:0,ph:1,blk:2};
+ let had=new Set();
  const nameOf=(k,el)=>{const t=((el.querySelector('b')||{}).textContent||'').replace(/[▾▸]/g,'').trim();
-  if(k==='pipe')return '🚰 '+(t.split('·')[1]||'관로').trim();if(k==='ph')return '📷 촬영 연도';return '🟩 '+(t.split('·')[1]||'블록').trim().replace(/\(.*\)/,'')};
+  if(k==='shut')return '💧 단수';if(k==='pipe')return '🚰 '+(t.split('·')[1]||'관로').trim();if(k==='ph')return '📷 촬영 연도';return '🟩 '+(t.split('·')[1]||'블록').trim().replace(/\(.*\)/,'')};
  let busy=false;
  const sync=()=>{if(busy)return;busy=true;try{
   const ls=[...body.children].filter(e=>e.classList.contains('pleg')).sort((a,b)=>ORD[keyOf(a)]-ORD[keyOf(b)]);if(ls.some((e,i)=>body.children[i]!==e))ls.forEach(e=>body.appendChild(e));
-  const vis=ls.filter(e=>e.style.display!=='none'&&e.innerHTML.trim());box.hidden=!vis.length;if(!vis.length)return;
+  const vis=ls.filter(e=>e.style.display!=='none'&&e.innerHTML.trim());box.hidden=!vis.length;
+  const ks=new Set(vis.map(keyOf));if(ks.has('shut')&&!had.has('shut')){S.t='shut';S.m=0}had=ks;if(!vis.length)return;
   let cur=vis.find(e=>keyOf(e)===S.t)||vis[0];ls.forEach(e=>e.classList.toggle('lgon',e===cur));
   box.classList.toggle('fold',!!S.m);
   const h=vis.map(e=>{const k=keyOf(e);return `<button type="button" data-k="${k}" class="${e===cur&&!S.m?'on':''}">${esc(nameOf(k,e))}</button>`}).join('')+`<button type="button" class="lgf" title="범례 접기/펴기">${S.m?'▸':'▾'}</button>`;
@@ -6466,7 +6469,13 @@ function shutCalc(){const N=SHUT.net,E=N.ea.length,A=SHUT.area,inE=A?shutAreaIn(
  V.sort((a,b)=>a.st-b.st||a.d-b.d);V.forEach((v,k)=>v.no=k+1);
  SHUT.seen=seen;SHUT.res={len,ne,nf:fs.size,fs,V,ovl,blk:[...blk].sort((a,b)=>b[1]-a[1])};tbCalc()}
 function shutLayer(){if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=396;p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}}
-function shutDraw(){if(!map)return;shutLayer();
+/* 지도 범례 상자의 💧 단수 탭(2026-11-02): 단수 관로·혼탁수 선 모양·밸브 번호 색. 단수구역을 끄면 숨김 */
+function shutLeg(){if(!map)return;if(!SHUT.leg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg shleg');L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});SHUT.leg=new C().addTo(map)}
+ const d=SHUT.leg.getContainer();if(!SHUT.on||!SHUT.res){d.style.display='none';return}
+ const bd=(c,t,dash)=>`<span class="shlv"><i style="background:${c}${dash?';outline:1.5px dashed #dc2626;outline-offset:-1px':''}">${t}</i></span>`;
+ const h=`<b>💧 단수구역 범례</b>${tbLegHtml()}<div class="tbleg">${bd('#1d4ed8','1')}닫을 밸브 ${bd('#111827','2')}이미 닫힘 ${bd('#94a3b8','3',1)}못 닫음</div>`;
+ if(d.innerHTML!==h)d.innerHTML=h;d.style.display=''}
+function shutDraw(){if(!map)return;shutLayer();shutLeg();
  SHUT.L.clearLayers();SHUT.cust=null;if(!SHUT.on||!SHUT.res)return;const N=SHUT.net,seen=SHUT.seen,ls=[],la=[],ld=[],lo=[],o={pane:'shut',renderer:SHUT.rd,interactive:false},inE=SHUT.area&&shutAMode()==='valve'?SHUT.area.inE:null;
  for(let e=0;e<seen.length;e++)if(seen[e])(SHUT.add.has(e)?la:inE&&!inE[e]?lo:ls).push(shutLL(e));SHUT.del.forEach(e=>ld.push(shutLL(e)));
  const w=+UI.pw||1;
@@ -7010,7 +7019,7 @@ function shutDrawStart(){if(!map||SHUT.drawing)return;if(typeof MK!=='undefined'
   last=cp(e);pts=[map.containerPointToLatLng(last)];line=L.polyline(pts,{pane:'shut',renderer:SHUT.rd,color:'#4338ca',weight:3,dashArray:'7 5',interactive:false}).addTo(map)});
  ov.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;e.preventDefault();const p=cp(e);if(p.distanceTo(last)<5)return;last=p;pts.push(map.containerPointToLatLng(p));line.setLatLngs(pts)});
  const up=e=>{if(e.pointerId!==pid)return;pid=null;end(pts.length>=3?pts:[])};ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up)}
-function shutClose(){if(SHUT.drawX)SHUT.drawX();SHUT.area=null;SHUT.info=null;SHUT.dMsg='';SHUT.on=false;SHUT.pick=false;SHUT.mode='';SHUT.res=null;SHUT.seen=null;SHUT.e0=-1;SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutRowT++;if(SHUT.L)SHUT.L.clearLayers();shutPlainSync();shutRender()}
+function shutClose(){if(SHUT.drawX)SHUT.drawX();if(SHUT.leg)SHUT.leg.getContainer().style.display='none';SHUT.area=null;SHUT.info=null;SHUT.dMsg='';SHUT.on=false;SHUT.pick=false;SHUT.mode='';SHUT.res=null;SHUT.seen=null;SHUT.e0=-1;SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutRowT++;if(SHUT.L)SHUT.L.clearLayers();shutPlainSync();shutRender()}
 /* 단수구역 고르기·넣기·빼기 중에는 지도 클릭을 여기서 받고 다른 팝업(수용가·시설물·블록·관로)은 막음 */
 function shutEat(e){if(typeof SHUT==='undefined')return false;if(SHUT.pick||SHUT.mode)return true;const t=e&&e.originalEvent&&e.originalEvent.target;return !!(t&&t.closest&&t.closest('.shvi'))}
 function shutTap(ll){if(SHUT.pick){shutStartAt(ll);return}if(!SHUT.on||!SHUT.net)return;
