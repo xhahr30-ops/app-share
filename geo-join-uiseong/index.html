@@ -879,6 +879,15 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 #gwLay label{display:flex;align-items:center;gap:6px;cursor:pointer}
 #gwLay input{width:14px;height:14px;margin:0;accent-color:var(--gw-ac)}
 .gwl-s{display:inline-block;width:16px;height:10px;border-radius:2px;flex:none}
+.gwl-y{flex:none;display:block;width:20px;height:14px;overflow:visible}#gwLay label img{width:16px;height:16px}
+#gwLay td.sy{display:flex;align-items:center;gap:2px}
+.gwl-x{flex:none;width:16px;height:18px;padding:0;border:0;background:none;color:var(--gw-tx2);font-size:12px;cursor:pointer;line-height:1}.gwl-x:hover{color:var(--gw-ac)}.gwl-x[hidden]{visibility:hidden;display:inline-block}
+#gwLay tr.sub td{padding:0 6px 6px 0;border-bottom:1px solid var(--gw-ch);white-space:normal}
+.gwl-lg{display:flex;flex-direction:column;gap:3px;padding:2px 0 0 26px;font-size:11.5px;color:var(--gw-tx)}
+.gwl-lg>*{display:flex;align-items:center;gap:6px;min-width:0}.gwl-lg small{margin-left:auto;color:var(--gw-tx2);font-size:10.5px;padding-left:6px;white-space:nowrap}
+.gwl-lg i{flex:none;display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #fff;box-shadow:0 0 0 1px #94a3b8}
+.gwl-lg .ln{flex:none;display:inline-block;width:20px;border-radius:2px}.gwl-lg .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gwl-lg .tip{color:var(--gw-tx2);font-size:10.5px}
 .gw-lh{padding:6px 8px;color:var(--gw-tx2);font-size:11px;line-height:1.5;border-top:1px solid var(--gw-bd)}
 #gwProp{overflow:auto;flex:1;min-height:0;padding:8px;font-size:12px}
 #gwProp table{border-collapse:collapse}#gwProp td{padding:2px 4px;vertical-align:top}
@@ -1446,10 +1455,47 @@ const LAY=[
  {k:'leg',n:'지도 범례',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&!!u.leg},set:o=>{const e=$('uiLeg');if(e&&e.checked!==o)e.click()}},
  {k:'bg',n:'배경 지도',s:'#94a3b8',c:()=>null,on:()=>{const b=G('BG');return !!b&&!b.off},set:o=>F('bgToggle',!o),ok:()=>!!G('map')}];
 let layKey='';
+/* 레이어별 심볼: 지도에 그리는 모양을 작게 보여 주고, ▸를 누르면 항목별 범례(지금 보기 설정을 그대로 따름) */
+const SV=(w,h,b)=>`<svg class="gwl-y" viewBox="0 0 ${w} ${h}" aria-hidden="true">${b}</svg>`;
+const escH=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function laySym(k){try{switch(k){
+ case 'blk':{const b=F('blkBase')||{},c=b.color||'#ea580c';return SV(20,14,`<path d="M2 5L8 1.5L17 3.5L16 12L6 12.8L2 9.5Z" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`)}
+ case 'pipe':{const d=G('DIA_BANDS')||[];const c1=(d[0]||[])[2]||'#93c5fd',c2=(d[2]||[])[2]||'#1d4ed8';return SV(20,14,`<line x1="1" y1="4" x2="19" y2="4" stroke="${c1}" stroke-width="1.6" stroke-linecap="round"/><line x1="1" y1="10" x2="19" y2="10" stroke="${c2}" stroke-width="3.4" stroke-linecap="round"/>`)}
+ case 'fac':{const f=G('FAC'),ks=f&&f.kinds||[],fk=x=>F('facKindInfo',x)||{};const k0=ks.find(x=>fk(x).sym==='gate')||ks[0];const h=F('facSym',k0?fk(k0):{sym:'gate'},16);if(h)return h;break}
+ case 'elev':{const e=G('ELB')||[];const c=[0,Math.floor(e.length/2),e.length-1].map(i=>(e[i]||[])[2]||'#a16207');return SV(20,14,c.map((x,i)=>`<circle cx="${4+i*6}" cy="7" r="3.2" fill="${x}" stroke="#fff" stroke-width="1"/>`).join(''))}
+ case 'pt':return SV(20,14,'<circle cx="6" cy="8" r="3.6" fill="#1f8a4c" stroke="#fff" stroke-width="1.2"/><circle cx="13.5" cy="5.5" r="3.6" fill="#1c5fa5" stroke="#fff" stroke-width="1.2"/>');
+ case 'ph':return SV(20,14,'<rect x="3" y="1.5" width="14" height="11" rx="3" fill="#7c3aed" stroke="#fff" stroke-width="1"/><circle cx="10" cy="7.5" r="2.6" fill="none" stroke="#fff" stroke-width="1.4"/><rect x="7" y="2.6" width="3" height="1.6" fill="#fff"/>');
+ case 'vid':return SV(20,14,'<circle cx="10" cy="7" r="6" fill="#dc2626" stroke="#fff" stroke-width="1"/><path d="M8.3 4.4L13 7L8.3 9.6Z" fill="#fff"/>');
+ case 'bl':return SV(20,14,'<text x="10" y="11" text-anchor="middle" font-size="11" font-weight="800" fill="#334155" stroke="#fff" stroke-width="2.4" paint-order="stroke">가</text>');
+ case 'pl':return SV(20,14,'<line x1="0" y1="12" x2="20" y2="12" stroke="#3b82f6" stroke-width="1.6"/><text x="10" y="9" text-anchor="middle" font-size="7.5" font-weight="700" fill="#1e40af">D100</text>');
+ case 'leg':return SV(20,14,'<rect x="2" y="1" width="16" height="12" rx="2" fill="#fff" stroke="#64748b"/><circle cx="5.5" cy="4.5" r="1.5" fill="#1f8a4c"/><circle cx="5.5" cy="9.5" r="1.5" fill="#1c5fa5"/><path d="M8.5 4.5H15M8.5 9.5H15" stroke="#64748b" stroke-width="1.3"/>');
+ case 'bg':return SV(20,14,'<rect x="1" y="1" width="18" height="12" rx="2" fill="#e2e8f0" stroke="#94a3b8"/><path d="M1 9L7 5L12 9L15 7L19 10" fill="none" stroke="#16a34a" stroke-width="1.4"/><path d="M4 1V13M10 1V13M16 1V13" stroke="#cbd5e1" stroke-width=".6"/>');
+ }}catch(_){}const r=LAY.find(x=>x.k===k);return `<span class="gwl-s" style="background:${r?r.s:'#94a3b8'}"></span>`}
+/* 펼친 범례 (기기별 저장 uis-gwLx) */
+const LX=new Set((LS.get('uis-gwLx')||'').split(',').filter(Boolean));const LXC={};
+const lxRow=(sym,nm,n)=>`<div>${sym}<span class="nm" title="${escH(nm)}">${escH(nm)}</span>${n!=null&&n!==''?`<small>${n}</small>`:''}</div>`;
+function laySub(k){try{
+ if(k==='pipe'){const P=G('PIPE');if(!P||!P.feats||!P.feats.length)return'';const by=($('pBy')||{}).value||'',ck=by+'|'+P.feats.length+'|'+(P.fc&&P.fc.features?P.fc.features.length:0);
+  if(!LXC.pipe||LXC.pipe.k!==ck){const d=F('pipeLegData');if(!d)return'';LXC.pipe={k:ck,d}}const {cnt,items}=LXC.pipe.d,DB=G('DIA_BANDS')||[];
+  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by]||'';
+  return `<div class="tip">색 기준: ${T} · ⚙️ 관로 탭에서 바꿈</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3;return lxRow(`<span class="ln" style="height:${w}px;background:${c}"></span>`,n,((cnt.get(n)||0)/1000).toFixed(1)+'km')}).join('')}
+ if(k==='fac'){const f=G('FAC');if(!f||!f.kinds||!f.kinds.length)return'';const ck=f.feats.length+'|'+f.kinds.join(',')+'|'+[...(f.hidden||[])].join(',');
+  if(!LXC.fac||LXC.fac.k!==ck){const cnt=new Map();f.feats.forEach(x=>cnt.set(x.k,(cnt.get(x.k)||0)+1));
+   LXC.fac={k:ck,h:f.kinds.map(kk=>{const I=F('facKindInfo',kk)||{name:kk},off=f.hidden&&f.hidden.has(kk);return lxRow(F('facSym',I,16)||'',I.name+(off?' (숨김)':''),(cnt.get(kk)||0).toLocaleString())}).join('')}}
+  return LXC.fac.h+'<div class="tip">종류별 켜고 끄기·크기는 ⚙️ 시설물 탭</div>'}
+ if(k==='pt'){if(!G('PT')||!G('PT').n)return'';const h=F('mLegendHtml');if(!h)return'';const d=document.createElement('div');d.innerHTML=h;
+  return [...d.children].map(x=>{const i=x.querySelector('i');const st=i?i.getAttribute('style')||'':'';if(i)i.remove();return `<div><i style="${escH(st)}"></i><span class="nm">${escH(x.textContent.trim())}</span></div>`}).join('')}
+ if(k==='ph'||k==='elev'){const el=$(k==='ph'?'phYrLeg':'eLeg');if(!el||!el.textContent.trim())return'';const d=document.createElement('div');d.innerHTML=el.innerHTML;
+  const sp=[...d.querySelectorAll('span')];if(!sp.length)return'';const tip=k==='ph'?'촬영 연도 색':'';
+  return (tip?`<div class="tip">${tip}</div>`:'')+sp.map(x=>{const i=x.querySelector('i'),st=i?i.getAttribute('style')||'':'';if(i)i.remove();const sm=x.querySelector('small'),n=sm?sm.textContent:'';if(sm)sm.remove();return `<div><i style="${escH(st)}"></i><span class="nm">${escH(x.textContent.trim())}</span>${n?`<small>${escH(n)}</small>`:''}</div>`}).join('')}
+}catch(e){console.warn('gw laySub',k,e)}return''}
+const LX_K=new Set(['pipe','fac','pt','ph','elev']);
 function layRender(){const tb=$('gwLayB');if(!tb||gw.querySelector('#gwLay').hidden)return;
- const rows=LAY.map(r=>{if(r.g)return{g:r.g};let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}return{r,c,on,ok}});
- const key=JSON.stringify(rows.map(x=>x.g||[x.r.k,x.c,x.on,x.ok]));if(key===layKey)return;layKey=key;
- tb.innerHTML=rows.map(x=>x.g?`<tr class="g"><td colspan="3">${x.g}</td></tr>`:`<tr class="${x.ok?'':'dis'}"><td><input type="checkbox" data-l="${x.r.k}" ${x.on&&x.ok?'checked':''} ${x.ok?'':'disabled'} aria-label="${x.r.n}"></td><td><label><span class="gwl-s" style="background:${x.r.s}"></span>${x.r.n}</label></td><td class="n">${x.c==null?'':num(x.c)}</td></tr>`).join('')}
+ const rows=LAY.map(r=>{if(r.g)return{g:r.g};let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}
+  const can=LX_K.has(r.k)&&ok,sub=can&&LX.has(r.k)?laySub(r.k):'';return{r,c,on,ok,can,sub,sym:laySym(r.k)}});
+ const key=JSON.stringify(rows.map(x=>x.g||[x.r.k,x.c,x.on,x.ok,x.can,LX.has(x.r.k),x.sub,x.sym]));if(key===layKey)return;layKey=key;
+ tb.innerHTML=rows.map(x=>x.g?`<tr class="g"><td colspan="3">${x.g}</td></tr>`:`<tr class="${x.ok?'':'dis'}"><td><input type="checkbox" data-l="${x.r.k}" ${x.on&&x.ok?'checked':''} ${x.ok?'':'disabled'} aria-label="${x.r.n}"></td><td class="sy"><button type="button" class="gwl-x" data-x="${x.r.k}" ${x.can?'':'hidden'} title="항목별 범례 ${LX.has(x.r.k)?'접기':'펼치기'}" aria-expanded="${LX.has(x.r.k)}">${LX.has(x.r.k)?'▾':'▸'}</button><label>${x.sym}${x.r.n}</label></td><td class="n">${x.c==null?'':num(x.c)}</td></tr>`+(x.sub?`<tr class="sub"><td colspan="3"><div class="gwl-lg">${x.sub}</div></td></tr>`:'')).join('')}
+$('gwLayB').addEventListener('click',e=>{const b=e.target.closest('.gwl-x');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.x;if(LX.has(k))LX.delete(k);else{LX.add(k);delete LXC[k]}LS.set('uis-gwLx',[...LX].join(','));layKey='';layRender()},true);
 $('gwLayB').addEventListener('change',e=>{const k=e.target.dataset.l,r=LAY.find(x=>x.k===k);if(!r)return;try{r.set(e.target.checked)}catch(err){console.warn(err)}layKey='';setTimeout(sync,60)});
 $('gwLayB').addEventListener('click',e=>{const lb=e.target.closest('label');if(!lb)return;e.preventDefault();const c=lb.closest('tr').querySelector('input');if(c&&!c.disabled){c.checked=!c.checked;c.dispatchEvent(new Event('change',{bubbles:true}))}});
 function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classList.remove('nol')}else{gw.classList.toggle('nol');LS.set('uis-gwL',gw.classList.contains('nol')?'0':'1')}}
@@ -2962,12 +3008,16 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  let st='';if(m!=='off'){if(!onM)st=`🔍 지도를 <b>줌 ${PZ_MAIN} 이상</b>으로 확대하면 관로가 그려집니다 (현재 ${z})`;else if(PIPE.layerS&&!onS)st=`급수관 ${PIPE.nS.toLocaleString()}개는 <b>줌 ${PZ_SVC}부터</b> 그려집니다 (현재 ${z})`}
  const el=PIPE.legend&&PIPE.legend.getContainer?PIPE.legend.getContainer():null,ps=el&&el.querySelector('.pst');if(ps){ps.innerHTML=st;ps.hidden=!st}
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
-function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
- const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
+/* 관로 범례 항목(지도 범례·작업 화면 레이어 창 공용): 색 기준 by, 항목 [이름,색], 항목별 연장 cnt */
+function pipeLegData(){
  const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const a=attrOf(f);const k=by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):a.mat;cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
  let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
+ return{by,cnt,items}}
+function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
+ const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
+ const {by,cnt,items}=pipeLegData();
  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
  el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div><button type="button" class="pfa" title="물 흐름 방향 화살표 켜기/끄기" style="display:block;margin:3px 0 2px;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;background:${UI.fa===false?'transparent':'#e0f2fe'};color:${UI.fa===false?'var(--mute)':'#075985'};font-size:11px;font-weight:700;cursor:pointer">➤ 흐름 방향 ${UI.fa===false?'꺼짐':'켜짐'}${map&&map.getZoom()<FA_Z&&UI.fa!==false?` <small style="font-weight:400">(줌 ${FA_Z}부터)</small>`:''}</button>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
@@ -3902,7 +3952,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^uis-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|dskhint|legbox|chg-seen|hl-off|zpos)$/;
+const BK_SKIP=/^uis-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLx|dskhint|legbox|chg-seen|hl-off|zpos)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
