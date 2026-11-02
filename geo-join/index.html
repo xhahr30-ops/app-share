@@ -1331,7 +1331,7 @@ html.gwOn .afp{top:150px}
    <img class="gwm" id="gwmR" alt="서용이">
   </div>
  </div>
- <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 관리번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
+ <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
  <div id="gwRibW"><div id="gwRib"></div><button type="button" id="gwRibX" title="리본 접기·펴기">︿</button></div>
  <div id="gwBody">
   <aside id="gwLeft">
@@ -2405,7 +2405,7 @@ function initSearch(){
  let pin=null,list=[],sel=-1,busy=false;
  const Ctl=L.Control.extend({options:{position:'topright'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-control gsrch');
-  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
+  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
   L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});
  const ctl=new Ctl();map.addControl(ctl);
  const box=ctl.getContainer(),corner=box.parentNode;corner.insertBefore(box,corner.firstChild); // 레이어 아이콘보다 위
@@ -2413,10 +2413,10 @@ function initSearch(){
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
  tog.onclick=()=>{const m=!box.classList.contains('min');setMin(m);if(!m)inp.focus()};
- inp.oninput=()=>{clr.hidden=!inp.value;const b=inBlocks(inp.value);sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk')){lst.innerHTML='';list=[]}};
+ inp.oninput=()=>{clr.hidden=!inp.value;const b=inBlocks(inp.value).concat(inFacs(inp.value));sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk'||r.k==='fac')){lst.innerHTML='';list=[]}};
  clr.onclick=()=>{inp.value='';clr.hidden=true;lst.innerHTML='';list=[];if(pin){map.removeLayer(pin);pin=null}if(typeof hlBlock==='function')hlBlock(null);inp.focus()};
  const msg=t=>{lst.innerHTML=`<div class="gsm">${t}</div>`;list=[]};
- const TAG={blk:['블록','#15803d'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
+ const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
  function show(){lst.innerHTML=list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
  lst.onclick=e=>{const b=e.target.closest('.gsi');if(b)go(list[+b.dataset.k])};
  inp.onkeydown=e=>{if(!list.length)return;
@@ -2425,6 +2425,8 @@ function initSearch(){
   else if(e.key==='Escape'){lst.innerHTML='';list=[]}};
  function go(r){if(!r)return;sel=list.indexOf(r);show();
   if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);return}
+  if(r.k==='fac'){if(pin){map.removeLayer(pin);pin=null}const i=r.i,ll=L.latLng(FAC.y[i],FAC.x[i]);map.setView(ll,Math.max(map.getZoom(),17));
+   setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);return}
   if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);return}
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
@@ -2445,6 +2447,19 @@ function initSearch(){
    const r=rank(K(to));if(r>=0&&!tn&&hit.length)add(hit,to,'별칭 · 소블록 '+hit.join(', '),r)});
   grp.forEach(o=>{const r=rank(K(o.v));if(r>=0)add([...o.s],o.v,o.c.replace('명','')+' · 소블록 '+o.s.size+'개',r)});
   return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,8)}
+ /* 시설물명 찾기(2026-11-02): 정수장·배수지·가압장 이름, 유량계는 소블록명·블록명 + 종류 이름, 시설물 관리번호는 같을 때만.
+    띄어쓰기·대소문자 무시, 같음 > 앞부분 > 포함. 목록은 시설물 자료가 바뀌면 다시 만듦 */
+ const FAC_NM=['정수장명','배수지명','가압장명'];let FIX=null,FIXp=null;
+ function facIdx(){if(FIX&&FIXp===FAC.pt)return FIX;FIX=[];FIXp=FAC.pt;if(!FAC.n)return FIX;const K=v=>nsp(v).toUpperCase();
+  for(let i=0;i<FAC.n;i++){if(FAC.dl[i])continue;const P=FAC.pt[i].p||{},I=facKindInfo(FAC.pt[i].k),kn=facDispName(i);
+   FAC_NM.forEach(c=>{const v=String(P[c]??'').trim();if(v&&v!=='-')FIX.push({i,key:K(v),t:v,kn})});
+   if(I.sym==='meter'){const v=facLblText(i);if(v){FIX.push({i,key:K(v+kn),t:v+' '+kn,kn});FIX.push({i,key:K(v),t:v+' '+kn,kn,lo:1})}}
+   const id=String(P['관리번호']??'').trim();if(id&&id!=='-')FIX.push({i,key:K(id),t:kn+' '+id,kn,id:1})}
+  return FIX}
+ function inFacs(q){const n=nsp(q).toUpperCase();if(n.length<2||typeof FAC==='undefined'||!FAC.n)return [];const seen=new Set(),res=[];
+  for(const x of facIdx()){const r=x.id?(x.key===n&&/\d/.test(n)?3:-1):x.key===n?0:x.key.startsWith(n)?1:x.key.includes(n)?2:-1;if(r<0||seen.has(x.i))continue;seen.add(x.i);
+   res.push({k:'fac',i:x.i,t:x.t,r:r+(x.lo?1:0),ex:r===0&&!x.id&&!x.lo});if(res.length>=200)break}
+  return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,8).map(o=>{let b='';try{b=blkAt(FAC.x[o.i],FAC.y[o.i])}catch(_){}o.s=facDispName(o.i)+(b?' · 소블록 '+b:'');return o})}
  function inRows(q){const n=nsp(q).toLowerCase();if(n.length<2)return [];const exact=[],part=[];
   for(let i=0;i<out.length;i++){const o=out[i];if(!o)continue;const lat=+o['_위도'],lng=+o['_경도'];if(!isFinite(lat)||!isFinite(lng)||(!lat&&!lng))continue;
    const id=[o['관리번호'],o['수용가번호']].map(v=>nsp(v).toLowerCase()),ad=nsp(o['_검색주소']||o['구주소(지번)']).toLowerCase();
@@ -2454,14 +2469,15 @@ function initSearch(){
  async function run(){const q=inp.value.trim();if(!q||busy)return;sel=-1;
   const c=q.match(/^\s*(3[3-9](?:\.\d+)?)\s*[, ]\s*(12[4-9](?:\.\d+)?)\s*$/)||q.match(/^\s*(12[4-9](?:\.\d+)?)\s*[, ]\s*(3[3-9](?:\.\d+)?)\s*$/);
   if(c){const a=+c[1],b=+c[2],lat=a<90?a:b,lng=a<90?b:a;list=[{k:'xy',lat,lng,t:lat.toFixed(6)+', '+lng.toFixed(6),s:'입력한 좌표'}];show();go(list[0]);return}
-  const bl=inBlocks(q);if(bl.length&&bl[0].ex){list=bl.concat(inRows(q));show();go(bl[0]);return}
-  list=bl.concat(inRows(q));
+  const bl=inBlocks(q),fc=inFacs(q);if(bl.length&&bl[0].ex){list=bl.concat(fc,inRows(q));show();go(bl[0]);return}
+  if(fc.length&&fc[0].ex){list=fc.concat(bl,inRows(q));show();go(fc[0]);return}
+  list=bl.concat(fc,inRows(q));
   busy=true;btn.disabled=true;btn.textContent='찾는 중…';if(!list.length)msg('검색 중입니다…');
   try{const key=$('kakao').value.trim(),mode=$('gcMode').value,pq=prep(q);
    const p=await addrSearch(pq,key);if(p)list.push({k:'addr',lat:p.lat,lng:p.lng,t:pq,s:'주소 검색 결과'});
    if(mode!=='osm'){const docs=await rawKwDocs(q,key);(docs||[]).slice(0,6).forEach(d=>list.push({k:'place',lat:+d.y,lng:+d.x,t:d.place_name||d.address_name,s:d.road_address_name||d.address_name||''}))}
    if(!list.length)msg('찾은 결과가 없습니다. 시·군·리(동)와 번지까지 넣거나, 번호 붙은 리·동(예: 마산1리)은 번호를 빼고 찾아 보세요.');
-   else{show();if(!bl.length&&(list.length===1||list[0].k!=='row'))go(list[0])}}
+   else{show();if(!bl.length&&!fc.length&&(list.length===1||list[0].k!=='row'))go(list[0])}}
   catch(e){if(list.length)show();else msg('⚠️ '+esc(e.message||String(e))+'<br>왼쪽 설정의 <b>주소찾기 설정</b>(변환 방식·키)을 확인하세요.')}
   finally{busy=false;btn.disabled=false;btn.textContent='주소찾기'}}
  f.onsubmit=e=>{e.preventDefault();if(sel>=0&&list[sel]&&inp.value.trim()===inp.dataset.q)return go(list[sel]);inp.dataset.q=inp.value.trim();run()};
