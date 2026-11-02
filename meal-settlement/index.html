@@ -840,6 +840,8 @@
         let currentUser = null;
         let isAdminModeActive = false;
         let uploadedFilesData = [];
+        // 기본 구글 웹앱(Apps Script) 주소: [연동 설정]에 입력한 값이 있으면 그 값이 우선
+        const DEFAULT_SCRIPT_URL = '';
         let googleScriptUrl = '';
         let monthlyBudget = 0;
         let currentCalendarDate = new Date();
@@ -1156,7 +1158,16 @@
                     document.getElementById('expenseDate').value = getLocalDateString();
                 }
 
-                googleScriptUrl = localStorage.getItem(STORAGE_KEYS.scriptUrl) || '';
+                // 주소 끝에 #sync=웹앱URL 을 붙여 열면 이 기기에 웹앱 주소를 저장 (주소창 # 뒤는 서버로 전송되지 않음)
+                try {
+                    const m = location.hash.match(/sync=([^&]+)/);
+                    if (m) {
+                        const u = decodeURIComponent(m[1]);
+                        if (/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) localStorage.setItem(STORAGE_KEYS.scriptUrl, u);
+                        history.replaceState(null, '', location.pathname + location.search);
+                    }
+                } catch (e) {}
+                googleScriptUrl = localStorage.getItem(STORAGE_KEYS.scriptUrl) || DEFAULT_SCRIPT_URL;
                 geminiApiKey = localStorage.getItem(STORAGE_KEYS.geminiKey) || '';
                 if (geminiApiKey) document.getElementById('geminiKeyInput').value = geminiApiKey;
                 const mi = document.getElementById('geminiModelInput');
