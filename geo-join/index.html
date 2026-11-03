@@ -879,13 +879,15 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 /* 본문: 레이어 창 | 지도 + 결과 표 */
 #gwBody{display:grid;grid-template-columns:var(--gwL) minmax(0,1fr);gap:4px;min-height:0;padding:4px 4px 0}
 #gw.nol #gwBody{grid-template-columns:minmax(0,1fr)}#gw.nol #gwLeft{display:none}
-#gwLeft{display:flex;flex-direction:column;min-height:0;background:var(--gw-pn);border:1px solid var(--gw-bd)}
+#gwLeft{display:flex;flex-direction:column;min-height:0;background:var(--gw-pn);border:1px solid var(--gw-bd);position:relative}
+/* 레이어 창 오른쪽 가장자리 끌어서 폭 조절 (두 번 누르면 처음 폭) */
+#gwLRs{position:absolute;top:0;bottom:0;right:-6px;width:10px;cursor:col-resize;z-index:5;touch-action:none}#gwLRs::after{content:'';position:absolute;top:50%;left:3px;width:4px;height:36px;margin-top:-18px;border-radius:2px;background:var(--gw-bd);opacity:.9}#gwLRs:hover::after,#gwLRs.on::after,#gwLRs:focus-visible::after{background:var(--gw-ac)}html.gwRs,html.gwRs *{cursor:col-resize!important;user-select:none!important}
 .gw-ph{display:flex;align-items:center;gap:2px;padding:4px 6px;border-bottom:1px solid var(--gw-bd)}
 .gw-ph .lt{padding:3px 10px;font-size:13px;border-bottom:2px solid transparent!important;color:var(--gw-tx2)!important;position:relative}.gw-ph .lt.on{color:var(--gw-tx)!important;border-bottom-color:var(--gw-ac)!important;font-weight:600}
 .gw-ph .lt.new::after{content:'';position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--gw-ac)}
 .gw-ph .x{margin-left:auto;color:var(--gw-tx2)!important;padding:0 6px;font-size:14px}
 #gwLay{overflow:auto;flex:1;min-height:0}
-#gwLay table{width:100%;border-collapse:collapse;font-size:12px}
+#gwLay table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}#gwLay th:first-child{width:26px}#gwLay th:last-child{width:62px}#gwLay td.sy label{min-width:0;overflow:hidden;text-overflow:ellipsis}
 #gwLay th{position:sticky;top:0;z-index:1;background:var(--gw-ch2);font-weight:500;border-bottom:1px solid var(--gw-bd);padding:4px 6px;text-align:center}
 #gwLay td{padding:4px 6px;border-bottom:1px solid var(--gw-ch);white-space:nowrap}
 #gwLay td:first-child{width:26px;text-align:center}#gwLay td.n{text-align:right;color:var(--gw-tx2);font-size:11px;font-variant-numeric:tabular-nums}
@@ -909,7 +911,7 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 html.gwOn label.f:has(>#pShow),html.gwOn label.f:has(>#fShow),html.gwOn label.f:has(>#eShow),html.gwOn label.f:has(>#phShow),html.gwOn label.f:has(>#lblMode),html.gwOn label:has(>#uiVid),html.gwOn label:has(>#uiLeg),html.gwOn #fKinds{display:none!important}
 html.gwOn label.f:has(>#fLbl)::after{content:"🗂 시설물 종류별 켜고 끄기·크기는 왼쪽 레이어 창에서 합니다";display:block;font-weight:400;font-size:11px;color:#64748b;margin-top:4px}
 html.gwOn label.f:has(>#pBy)::after{content:"🗂 관로 켜고 끄기(항목별 포함)는 왼쪽 레이어 창에서 합니다";display:block;font-weight:400;font-size:11px;color:#64748b;margin-top:4px}
-.gwl-lg .gwl-fk{gap:2px;margin:0;font-size:11.5px;align-items:stretch}.gwl-lg .gwl-fk .fkr{gap:4px}.gwl-lg .gwl-fk img{width:15px;height:15px}.gwl-lg .gwl-fk .fszc button{width:20px;height:20px}.gwl-lg .gwl-fk .fszc b{min-width:32px;font-size:10.5px}.gwl-lg .gwl-fk small{margin-left:0;padding-left:2px}.gwl-lg .gwl-fk label,.gwl-lg .gwl-fk .fkn{font-weight:500}
+.gwl-lg .gwl-fk{gap:2px;margin:0;font-size:11.5px;align-items:stretch;min-width:0}.gwl-lg .gwl-fk .fkl .fkn{overflow:hidden;text-overflow:ellipsis}.gwl-lg .gwl-fk>button{align-self:flex-start;max-width:100%;white-space:normal}.gwl-lg .gwl-fk .fkr{gap:4px}.gwl-lg .gwl-fk img{width:15px;height:15px}.gwl-lg .gwl-fk .fszc button{width:20px;height:20px}.gwl-lg .gwl-fk .fszc b{min-width:32px;font-size:10.5px}.gwl-lg .gwl-fk small{margin-left:0;padding-left:2px}.gwl-lg .gwl-fk label,.gwl-lg .gwl-fk .fkn{font-weight:500}
 .gwl-pk{cursor:pointer;border-radius:4px;padding:1px 3px;margin-left:-3px}.gwl-pk:hover{background:var(--gw-hv)}.gwl-pk.on{background:var(--gw-on);font-weight:700}
 .gw-lh{padding:6px 8px;color:var(--gw-tx2);font-size:11px;line-height:1.5;border-top:1px solid var(--gw-bd)}
 #gwProp{overflow:auto;flex:1;min-height:0;padding:8px;font-size:12px}
@@ -971,7 +973,7 @@ html.gwOn .afp{top:150px}
  .gw-b.big,.gw-col .gw-b{flex-direction:column;justify-content:center;gap:2px;height:52px;min-width:52px;max-width:64px;padding:3px 4px;font-size:10.5px;line-height:12px;white-space:normal;text-align:center}
  .gw-b.big .gi,.gw-col .gw-b .gi{width:18px;height:18px}
  #gwBody{grid-template-columns:minmax(0,1fr)!important;padding:2px 2px 0}
- #gwLeft{display:none}
+ #gwLeft{display:none}#gwLRs{display:none}
  #gw.lshow #gwLeft{display:flex;position:fixed;left:4px;top:120px;bottom:40px;width:min(300px,86vw);z-index:1300;box-shadow:0 8px 24px rgba(0,0,0,.3)}
  #gwWin{position:fixed;left:0;right:0;top:auto;bottom:calc(26px + env(safe-area-inset-bottom,0px));width:auto;height:72vh;height:72dvh;border-left:0;border-top:1px solid var(--gw-bd);border-radius:12px 12px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
  #gwDock{--gwDH:40vh}#gwDock.tall{--gwDH:64vh}
@@ -1336,7 +1338,7 @@ html.gwOn .afp{top:150px}
  <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
  <div id="gwRibW"><div id="gwRib"></div><button type="button" id="gwRibX" title="리본 접기·펴기">︿</button></div>
  <div id="gwBody">
-  <aside id="gwLeft">
+  <aside id="gwLeft"><div id="gwLRs" role="separator" aria-orientation="vertical" tabindex="0" title="끌어서 레이어 창 폭 조절 · 두 번 누르면 처음 폭 (← → 키로도)"></div>
    <div class="gw-ph"><button type="button" class="lt on" data-lt="lay">레이어</button><button type="button" class="lt" data-lt="prop">속성</button><button type="button" class="x" data-a="lay" title="창 닫기">✕</button></div>
    <div id="gwLay"><table><thead><tr><th>☑</th><th>레이어</th><th>개수</th></tr></thead><tbody id="gwLayB"></tbody></table>
     <p class="gw-lh">회색 줄은 아직 자료가 없는 레이어입니다. <b>자료</b> 탭에서 SHP·엑셀을 올리면 켜집니다. 자세한 보기 설정은 <b>지도</b> 탭 › 지도 설정.</p></div>
@@ -1543,6 +1545,16 @@ $('gwLayB').addEventListener('click',e=>{if(e.target.closest('.gwl-fk button'))r
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('.gwl-x');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.x;if(LX.has(k))LX.delete(k);else{LX.add(k);delete LXC[k]}LS.set('geo-gwLx',[...LX].join(','));layKey='';layRender()},true);
 $('gwLayB').addEventListener('change',e=>{const k=e.target.dataset.l,r=LAY.find(x=>x.k===k);if(!r)return;try{r.set(e.target.checked)}catch(err){console.warn(err)}layKey='';setTimeout(sync,60)});
 $('gwLayB').addEventListener('click',e=>{const lb=e.target.closest('label');if(!lb||lb.closest('.gwl-lg'))return;e.preventDefault();const c=lb.closest('tr').querySelector('input');if(c&&!c.disabled){c.checked=!c.checked;c.dispatchEvent(new Event('change',{bubbles:true}))}});
+/* 레이어 창 폭: 오른쪽 가장자리 끌기 · ←→ 키 · 두 번 누르면 270px (기기별 geo-gwLW) */
+const LW0=270,lwMax=()=>Math.max(LW0,Math.min(640,Math.round(innerWidth*.6))),lwSet=(w,save)=>{w=Math.max(220,Math.min(lwMax(),Math.round(+w||LW0)));gw.style.setProperty('--gwL',w+'px');if(save)LS.set('geo-gwLW',w===LW0?'':String(w));return w};
+{const w=+LS.get('geo-gwLW');if(w)lwSet(w)}
+{const h=$('gwLRs');let x0=0,w0=0,on=false;
+ h.addEventListener('pointerdown',e=>{if(e.button)return;on=true;x0=e.clientX;w0=$('gwLeft').getBoundingClientRect().width;h.setPointerCapture(e.pointerId);h.classList.add('on');R.classList.add('gwRs');e.preventDefault()});
+ h.addEventListener('pointermove',e=>{if(on)lwSet(w0+e.clientX-x0)});
+ const end=e=>{if(!on)return;on=false;h.classList.remove('on');R.classList.remove('gwRs');lwSet(w0+e.clientX-x0,true)};
+ h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+ h.addEventListener('dblclick',()=>lwSet(LW0,true));
+ h.addEventListener('keydown',e=>{const d=e.key==='ArrowLeft'?-20:e.key==='ArrowRight'?20:0;if(!d)return;e.preventDefault();lwSet($('gwLeft').getBoundingClientRect().width+d,true)})}
 function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classList.remove('nol')}else{gw.classList.toggle('nol');LS.set('geo-gwL',gw.classList.contains('nol')?'0':'1')}}
 gw.querySelectorAll('.gw-ph .lt').forEach(b=>b.onclick=()=>{const p=b.dataset.lt==='prop';gw.querySelectorAll('.gw-ph .lt').forEach(x=>x.classList.toggle('on',x===b));b.classList.remove('new');$('gwLay').hidden=p;$('gwProp').hidden=!p;layKey='';layRender()});
 
@@ -4282,7 +4294,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLx|dskhint|legbox|chg-seen|hl-off|zpos)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|chg-seen|hl-off|zpos)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
