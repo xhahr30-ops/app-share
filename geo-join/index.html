@@ -405,6 +405,7 @@ td .rt{width:auto;padding:5px 10px;font-size:12px}
 .kl{display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border-radius:6px;border:1px solid var(--line2);background:var(--card);color:var(--ink2);font-size:11.5px;font-weight:700;text-decoration:none;white-space:nowrap}
 .pied-go{border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;padding:0 6px;margin-left:4px;font-size:12px;line-height:1.6;cursor:pointer;min-height:24px;vertical-align:middle}
 .kl:hover{background:#fee500;color:#191919;border-color:#e6cf00}
+.bkpk{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:auto;flex:1;min-height:0}.bkpk li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.bkpk li:last-child{border-bottom:0}.bkpk li.no{opacity:.45}.bkpk li b{font-weight:700}.bkpk li small{margin-left:auto;color:var(--mute);font-size:11.5px;text-align:right;white-space:nowrap}.bkpk input{width:16px;height:16px;flex:none}.bkqk{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.bkqk button{border:1px solid var(--line2);background:var(--sub2);color:var(--ink);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;min-height:30px}
 .pcm{position:fixed;inset:0;z-index:20000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}.pcm[hidden]{display:none}
 .pcbox{background:var(--card);border-radius:16px;box-shadow:0 20px 50px #0006;width:min(560px,100%);height:min(620px,92vh);display:flex;flex-direction:column;padding:12px}
 .pchd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}.pchd small{display:block;color:var(--mute);font-size:11.5px;margin-top:2px}
@@ -1105,7 +1106,7 @@ html.gwOn .afp{top:150px}
 
  <div class="sec">
   <h4>💾 기준자료 백업 · 다른 PC로 옮기기</h4>
-  <p class="hint" style="margin:0">소블록 경계·상수관로·상수도 시설물·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.</p>
+  <p class="hint" style="margin:0">소블록 경계·상수관로·상수도 시설물·주소 검색 결과·API 키 설정·사용자 지정블록·현장 사진을 백업 파일로 저장합니다(사진이 많으면 여러 파일로 나눔). 다른 PC나 다른 주소(웹앱 ↔ localhost)에서 불러오면 그대로 이어서 씁니다.<br><b>💾 만들기</b>를 누르면 담을 항목을 고르는 창이 뜹니다. 아래 체크는 <b>📂 불러올 때</b> 받을 항목입니다.</p>
   <div class="ckrow"><span class="ck"><input type="checkbox" id="bkB" checked> 소블록 경계</span><span class="ck"><input type="checkbox" id="bkP" checked> 상수관로</span><span class="ck"><input type="checkbox" id="bkF" checked> 🔧 상수도 시설물</span><span class="ck"><input type="checkbox" id="bkE" checked> ⛰️ 표고</span><span class="ck"><input type="checkbox" id="bkG" checked> 주소 검색 결과</span><span class="ck"><input type="checkbox" id="bkK" checked> API 키·설정</span><span class="ck"><input type="checkbox" id="bkU" checked> 🏷️ 사용자 지정블록</span><span class="ck"><input type="checkbox" id="bkPh" checked> 📷 현장 사진</span><span class="ck"><input type="checkbox" id="bkV" checked> 🎬 동영상 연결</span><span class="ck"><input type="checkbox" id="bkM" checked> 🖍️ 지도 그리기</span><span class="ck" title="관리번호·소블록·좌표와 사용량 정보(월평균·구경·업종·가구수·이상유형)를 저장합니다. 이름·주소·연락처는 넣지 않습니다."><input type="checkbox" id="bkR" checked> 📍 수용가 좌표(관리번호·소블록·월평균)</span></div>
   <div class="sbtns"><button id="bkSave" type="button" class="btn ol">💾 백업 파일 만들기</button><label class="btn ol">📂 백업 불러오기<input type="file" id="bkLoad" multiple hidden></label></div>
   <p class="hint" id="bkMsg" style="margin:0"></p>
@@ -1385,7 +1386,7 @@ const ic=k=>P+(I[k]||I.box)+'"/></svg>';
 /* ── 리본: 탭 › 묶음 › 버튼 [동작, 아이콘, 글자, 크게?] ── */
 const TABS=[
  {k:'file',n:'파일',g:[
-  {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 항목 고르기']]},
+  {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 창']]},
   {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기']]},
   {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
@@ -1677,6 +1678,12 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
  <ul id="locRes" style="margin:0 0 8px;padding-left:4px;list-style:none;font-size:13px;line-height:1.8"></ul>
  <img id="locImg" alt="위성 위치도 미리보기" style="width:100%;border-radius:10px;border:1px solid var(--line);background:#1f2937;min-height:60px">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap"><span class="hint" id="locSum"></span><a id="locDl" class="btn em" style="width:auto;text-decoration:none" hidden>⬇ PNG 저장</a></div></div></div>
+<div id="bkPick" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="bkPickT"><div class="pcbox" style="width:min(520px,100%);height:auto;max-height:92vh">
+ <div class="pchd"><div><b id="bkPickT">💾 저장(백업)할 항목 고르기</b><small>체크한 항목만 백업 파일에 담습니다. 고른 항목은 이 기기에 기억해 두고 다음에도 그대로 보여 줍니다.</small></div><button id="bkPickX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
+ <div class="bkqk"><button type="button" data-q="all">모두 고르기</button><button type="button" data-q="nophoto">사진·동영상 빼고</button><button type="button" data-q="base">기준자료만</button><button type="button" data-q="none">모두 해제</button></div>
+ <ul class="bkpk" id="bkPickL"></ul>
+ <p class="hint" id="bkPickI" style="margin:8px 2px 0"></p>
+ <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="bkPickN" type="button" class="btn ol" style="width:auto">취소</button><button id="bkPickGo" type="button" class="btn" style="width:auto">💾 저장</button></div></div></div>
 <div id="pcModal" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="pcTitle"><div class="pcbox">
  <div class="pchd"><div><b id="pcTitle">주소 찾기</b><small id="pcOrig"></small></div><button id="pcClose" type="button" class="hbtn" aria-label="닫기">✕</button></div>
  <div id="pcWrap"></div>
@@ -4294,7 +4301,7 @@ $('bUpd').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
 $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('bHistBox').hidden};
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|chg-seen|hl-off|zpos)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -4304,21 +4311,21 @@ function bkErr(e){const m=String((e&&e.message)||e||'');
   return '용량이 너무 커서 브라우저 메모리가 부족합니다 ('+m+'). 사진을 빼고 백업하거나(현장 사진 체크 해제), 📷 현장 사진 › 🗜️ 전체 내보내기로 따로 받으세요.';
  return m}
 async function bkZip(z,msg,label){return z.generateAsync({type:'blob',streamFiles:true},md=>{msg.textContent=`${label} 파일로 묶는 중… ${Math.floor(md.percent)}%`})}
-async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)return;btn.disabled=true;msg.textContent='백업 파일 만드는 중… (관로가 많으면 10~30초)';await sleep(30);
+async function bkSave(sel){const C=id=>sel?!!sel[id]:!!($(id)&&$(id).checked);const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)return;btn.disabled=true;msg.textContent='백업 파일 만드는 중… (관로가 많으면 10~30초)';await sleep(30);
  const o={app:'geo-addr-app',ver:1,at:new Date().toISOString()},parts=[],day=fmtD(Date.now()).replace(/-/g,'');
- try{if($('bkB').checked){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
-  if($('bkP').checked){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.raw.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
+ try{if(C('bkB')){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
+  if(C('bkP')){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.raw.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
    if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}
    try{await pedLoad();if(PED.recs.length||(PED.hop||[]).length){o.pedit={v:1,at:PED.at,recs:PED.recs,hop:PED.hop||[]};parts.push('관로 현장 수정 '+pedLive().length.toLocaleString()+'개'+(hopLive().length?' · 교차 반원 설정 '+hopLive().length+'곳':''))}}catch(_){}}
-  if($('bkF').checked){let f=null;try{f=await IDB.get('facs')}catch(_){}if(f&&f.feats&&f.feats.length){o.facs=f;parts.push('상수도 시설물 '+f.feats.length.toLocaleString()+'개')}}
-  if($('bkE').checked){let e=null;try{e=await IDB.get('elev')}catch(_){}if(e&&e.z&&e.z.length){o.elev=e;parts.push('표고 '+e.z.length.toLocaleString()+'개')}}
-  if($('bkG').checked){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
-  if($('bkK').checked){o.settings={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^geo-/.test(k)&&!BK_SKIP.test(k))o.settings[k]=localStorage.getItem(k)}parts.push('API 키·설정')}
-  if($('bkU').checked&&UB.m.size){o.ublk=[...UB.m];parts.push('사용자 지정블록 '+UB.m.size.toLocaleString()+'건')}
-  if($('bkV')&&$('bkV').checked&&vLive().length){o.vids={at:VID.at,list:VID.list};parts.push('동영상 연결 '+vLive().length.toLocaleString()+'개')}
-  if($('bkM')&&$('bkM').checked&&typeof MK!=='undefined'&&mkLive().length){o.marks={at:MK.at,gs:MK.gs,list:MK.list};parts.push('지도 그리기 '+mkLive().length.toLocaleString()+'개')}
-  if($('bkR').checked&&out.length){o.res=bkResSnap();parts.push('수용가 좌표 '+o.res.rows.length.toLocaleString()+'건 (주소 제외)')}
-  const phs=$('bkPh').checked&&PH.list.length?PH.list.map(m=>{const c={...m};if(typeof c.th==='string'&&c.th.startsWith('data:'))delete c.th;return c}):[];
+  if(C('bkF')){let f=null;try{f=await IDB.get('facs')}catch(_){}if(f&&f.feats&&f.feats.length){o.facs=f;parts.push('상수도 시설물 '+f.feats.length.toLocaleString()+'개')}}
+  if(C('bkE')){let e=null;try{e=await IDB.get('elev')}catch(_){}if(e&&e.z&&e.z.length){o.elev=e;parts.push('표고 '+e.z.length.toLocaleString()+'개')}}
+  if(C('bkG')){o.gcache=gcStore;parts.push('주소 검색 결과 '+Object.keys(gcStore).length.toLocaleString()+'건')}
+  if(C('bkK')){o.settings={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^geo-/.test(k)&&!BK_SKIP.test(k))o.settings[k]=localStorage.getItem(k)}parts.push('API 키·설정')}
+  if(C('bkU')&&UB.m.size){o.ublk=[...UB.m];parts.push('사용자 지정블록 '+UB.m.size.toLocaleString()+'건')}
+  if(C('bkV')&&vLive().length){o.vids={at:VID.at,list:VID.list};parts.push('동영상 연결 '+vLive().length.toLocaleString()+'개')}
+  if(C('bkM')&&typeof MK!=='undefined'&&mkLive().length){o.marks={at:MK.at,gs:MK.gs,list:MK.list};parts.push('지도 그리기 '+mkLive().length.toLocaleString()+'개')}
+  if(C('bkR')&&out.length){o.res=bkResSnap();parts.push('수용가 좌표 '+o.res.rows.length.toLocaleString()+'건 (주소 제외)')}
+  const phs=C('bkPh')&&PH.list.length?PH.list.map(m=>{const c={...m};if(typeof c.th==='string'&&c.th.startsWith('data:'))delete c.th;return c}):[];
   if(phs.length)parts.push('현장 사진 '+phs.length.toLocaleString()+'장');
   if(!parts.length){msg.textContent='백업할 자료가 없습니다.';return}
   // 1) 사진 크기 재기 (블롭을 한꺼번에 읽지 않고 크기만 확인)
@@ -4328,7 +4335,7 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
     sl.forEach((m,k)=>{const n=(bb[2*k]?bb[2*k].size:0)+(bb[2*k+1]?bb[2*k+1].size:0);tot+=n;
      if(sizes[sizes.length-1]+n>BK_PART&&groups[groups.length-1].length){groups.push([]);sizes.push(0)}
      groups[groups.length-1].push(m);sizes[sizes.length-1]+=n})}
-   if(groups.length>1&&!confirm(`현장 사진이 ${bkMB(tot)}입니다.\n한 파일로 만들면 메모리 부족으로 실패할 수 있어 ${groups.length}개 파일(_1 ~ _${groups.length})로 나눠 저장합니다.\n\n· 브라우저가 "여러 파일 다운로드"를 물으면 [허용]을 누르세요.\n· 불러올 때는 ${groups.length}개 파일을 한꺼번에 선택하세요.\n\n계속할까요?`)){msg.textContent='백업을 취소했습니다.';return}}
+   if(groups.length>1&&!sel&&!confirm(`현장 사진이 ${bkMB(tot)}입니다.\n한 파일로 만들면 메모리 부족으로 실패할 수 있어 ${groups.length}개 파일(_1 ~ _${groups.length})로 나눠 저장합니다.\n\n· 브라우저가 "여러 파일 다운로드"를 물으면 [허용]을 누르세요.\n· 불러올 때는 ${groups.length}개 파일을 한꺼번에 선택하세요.\n\n계속할까요?`)){msg.textContent='백업을 취소했습니다.';return}}
   const N=groups.length,made=[];
   for(let g=0;g<N;g++){const z=new JSZip(),lb=N>1?`(${g+1}/${N})`:'';
    const meta=g===0?{...o,photos:phs.length?groups[0]:undefined}:{app:o.app,ver:o.ver,at:o.at,part:g+1,parts:N,photos:groups[g]};
@@ -4341,7 +4348,7 @@ async function bkSave(){const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)ret
    const blob=await bkZip(z,msg,lb);
    dlBlob(blob,`주소좌표앱_기준자료_${day}${N>1?`_${g+1}of${N}`:''}.zip`);made.push(bkMB(blob.size));
    if(N>1&&g<N-1)await sleep(1200)}
-  msg.innerHTML=`✅ 백업 파일을 만들었습니다${N>1?` (${N}개로 나눔: ${made.join(' · ')})`:` (${made[0]})`}: ${parts.join(' · ')}${$('bkK').checked?'<br><small class="c-am">API 키가 들어 있으니 외부에 보낼 때는 "API 키·설정"을 끄고 만드세요.</small>':''}${N>1?'<br><small>불러올 때는 나눠진 파일을 <b>한꺼번에 모두 선택</b>하세요.</small>':''}`}
+  msg.innerHTML=`✅ 백업 파일을 만들었습니다${N>1?` (${N}개로 나눔: ${made.join(' · ')})`:` (${made[0]})`}: ${parts.join(' · ')}${C('bkK')?'<br><small class="c-am">API 키가 들어 있으니 외부에 보낼 때는 "API 키·설정"을 끄고 만드세요.</small>':''}${N>1?'<br><small>불러올 때는 나눠진 파일을 <b>한꺼번에 모두 선택</b>하세요.</small>':''}`}
  catch(e){msg.textContent='백업 실패: '+bkErr(e);console.error('백업 실패',e)}
  finally{btn.disabled=false}}
 async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파일 읽는 중… '+f.name;
@@ -4441,7 +4448,38 @@ function bkApplySettings(){try{const vw=JSON.parse(localStorage.getItem('geo-vw'
  try{const m=localStorage.getItem('geo-mode');if(m&&[...$('gcMode').options].some(o=>o.value===m)){curMode=null;$('gcMode').value=m;$('gcMode').onchange()}}catch(_){}
  // 직원 공유 설정도 바로 반영 (새로고침 없이 사진 목록 받기)
  try{const c=JSON.parse(localStorage.getItem('geo-share')||'null');if(c&&c.url){Object.assign(SH.cfg,c);SH.cfg.url=shUrlFix(SH.cfg.url);$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();shTimer();shStatus();if(SH.on())setTimeout(()=>shSync(true),500)}}catch(_){}}
-$('bkSave').onclick=bkSave;$('bkLoad').onchange=async e=>{const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));e.target.value='';if(!fs.length)return;
+/* 💾 저장 누르면 담을 항목부터 고르기 (고른 것은 geo-bkpick에 기억, 왼쪽 체크는 불러오기용으로 그대로) */
+const BKI=[['bkB','소블록 경계',1],['bkP','상수관로 (관로 현장 수정 포함)',1],['bkF','🔧 상수도 시설물',1],['bkE','⛰️ 표고·수압 (관망해석)',1],['bkG','주소 검색 결과',1],['bkR','📍 수용가 좌표 (관리번호·소블록·월평균, 이름·주소 제외)',0],['bkU','🏷️ 사용자 지정블록',0],['bkK','🔑 API 키·설정',0],['bkM','🖍️ 지도 그리기',0],['bkV','🎬 동영상 연결',0],['bkPh','📷 현장 사진',0]];
+const BKP={sel:null,phB:-1,phN:-1};
+function bkPickCnt(id){const n=x=>x.toLocaleString();try{switch(id){
+ case 'bkB':return rawFC&&rawFC.features?n(rawFC.features.length)+'개':'';case 'bkP':return PIPE.raw.length?n(PIPE.raw.length)+'개':'';
+ case 'bkF':return FAC.feats.length?n(FAC.feats.length)+'개':'';case 'bkE':return ELEV.n?n(ELEV.n)+'개':'';
+ case 'bkG':{const k=Object.keys(gcStore).length;return k?n(k)+'건':''}case 'bkR':return out.length?n(out.length)+'건':'';
+ case 'bkU':return UB.m.size?n(UB.m.size)+'건':'';case 'bkK':return '이 기기 설정';case 'bkM':return typeof MK!=='undefined'&&mkLive().length?n(mkLive().length)+'개':'';
+ case 'bkV':return vLive().length?n(vLive().length)+'개':'';
+ case 'bkPh':return PH.list.length?n(PH.list.length)+'장'+(BKP.phB>=0&&BKP.phN===PH.list.length?' · '+bkMB(BKP.phB):' · 용량 재는 중…'):''}}catch(_){}return ''}
+function bkPickInfo(){const sel=BKP.sel,on=BKI.filter(([id])=>sel[id]).length,ph=sel.bkPh&&PH.list.length;const hv=BKI.filter(([id])=>sel[id]&&bkPickCnt(id)).length;let t=on?(hv?`자료가 있는 ${hv}개 항목을 담습니다.`:'고른 항목에 담을 자료가 없습니다.'):'담을 항목을 하나 이상 고르세요.';
+ if(ph&&BKP.phB>=0&&BKP.phN===PH.list.length){const N=Math.max(1,Math.ceil(BKP.phB/BK_PART));t+=N>1?` 사진이 ${bkMB(BKP.phB)}라 <b>${N}개 파일 정도</b>로 나눠 저장됩니다(브라우저가 "여러 파일 다운로드"를 물으면 [허용], 불러올 때는 모두 함께 선택).`:` 사진 ${bkMB(BKP.phB)} 포함.`}
+ if(sel.bkK)t+='<br><small class="c-am">API 키가 들어갑니다. 외부에 보낼 파일이면 🔑 API 키·설정을 끄세요.</small>';
+ $('bkPickI').innerHTML=t;$('bkPickGo').disabled=!on}
+function bkPickDraw(){const sel=BKP.sel;$('bkPickL').innerHTML=BKI.map(([id,t])=>{const c=bkPickCnt(id);
+ return `<li data-id="${id}"${c?'':' class="no" title="지금 이 기기에 자료가 없습니다"'}><input type="checkbox" ${sel[id]?'checked':''} aria-label="${esc(t)}"><b>${esc(t)}</b><small>${c||'자료 없음'}</small></li>`}).join('');bkPickInfo()}
+async function bkPickPh(){const n=PH.list.length;if(!n||BKP.phN===n)return;let t=0;
+ for(let a=0;a<n;a+=300){const sl=PH.list.slice(a,a+300),bb=await idbMany(sl.flatMap(m=>['ph:'+m.id,'pt:'+m.id]));bb.forEach(b=>{if(b)t+=b.size||0});if($('bkPick').hidden)return}
+ BKP.phB=t;BKP.phN=n;if(!$('bkPick').hidden)bkPickDraw()}
+function bkPick(){if($('bkSave').disabled)return;let m=null;try{m=JSON.parse(localStorage.getItem('geo-bkpick')||'null')}catch(_){}
+ BKP.sel={};BKI.forEach(([id])=>{BKP.sel[id]=m&&typeof m[id]==='boolean'?m[id]:true});
+ $('bkPick').hidden=false;bkPickDraw();bkPickPh().catch(()=>{});setTimeout(()=>$('bkPickGo').focus(),30)}
+function bkPickClose(){$('bkPick').hidden=true}
+$('bkPickL').addEventListener('click',e=>{const li=e.target.closest('li');if(!li)return;const id=li.dataset.id,cb=li.querySelector('input');
+ if(e.target!==cb)cb.checked=!cb.checked;BKP.sel[id]=cb.checked;bkPickInfo()});
+document.querySelector('#bkPick .bkqk').addEventListener('click',e=>{const q=e.target.dataset&&e.target.dataset.q;if(!q)return;
+ BKI.forEach(([id,,base])=>{BKP.sel[id]=q==='all'||(q==='nophoto'&&id!=='bkPh'&&id!=='bkV')||(q==='base'&&!!base)});bkPickDraw()});
+$('bkPickX').onclick=$('bkPickN').onclick=bkPickClose;
+$('bkPick').addEventListener('click',e=>{if(e.target.id==='bkPick')bkPickClose()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('bkPick').hidden)bkPickClose()});
+$('bkPickGo').onclick=()=>{const sel={...BKP.sel};if(!BKI.some(([id])=>sel[id]))return;try{localStorage.setItem('geo-bkpick',JSON.stringify(sel))}catch(_){}bkPickClose();bkSave(sel)};
+$('bkSave').onclick=bkPick;$('bkLoad').onchange=async e=>{const fs=[...e.target.files].sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));e.target.value='';if(!fs.length)return;
  bkLoad.k=false;if(fs.length===1)return bkLoad(fs[0]);
  if(!confirm(`백업 파일 ${fs.length}개를 차례로 불러옵니다.\n(첫 파일의 기준자료와 모든 파일의 현장 사진을 합칩니다)\n\n계속할까요?`))return;
  let ok=0;for(let k=0;k<fs.length;k++){if(await bkLoad(fs[k],true))ok++;else break}
