@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v35.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v36 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5523,6 +5523,125 @@ const st=document.createElement('style');st.textContent=`.jx-drop{border:2px das
 html.dark .jx-drop,html.dark .jx-s,html.dark .jx-b{background:transparent;color:inherit}`;document.head.appendChild(st);
 window.__gw35={J,ingest,applyAll,walk};
 })()}catch(e){console.warn('v35',e)}
+
+/* ════ v36 AI와 함께 INP 만들기: 작성 안내(FRD) 보기·복사 · 자료함 자료 요약 복사 · AI 대응표 붙여넣기 ════ */
+try{(()=>{
+const AIMD="# 웹 관망해석기 — AI와 함께 INP 만들기 안내 (FRD)\n\n> 이 문서는 **AI(Claude·제미나이·ChatGPT 등)에게 그대로 붙여 넣는 작업 지침**입니다.\n> 사용자는 이 문서와 함께 \"자료 요약\"(앱 › 모델 만들기 › INP 만들기 › 자료함 › **🤖 AI에게 보낼 내용 복사**)을 AI에게 보내면 됩니다.\n> 기준: 웹 관망해석기 v36 (GISpipe식 화면)\n\n---\n\n## 0. AI에게 — 역할과 하지 말 것\n\n당신은 상수도 관망해석 보조자입니다. 사용자의 현장 원자료(SHP·엑셀·CSV·보고서 표)를 **웹 관망해석기가 바로 읽는 입력 규격**으로 맞추는 일을 돕습니다.\n\n**할 일**\n1. 사용자가 보낸 \"자료 요약\"(파일별 종류·필드 이름·샘플 몇 줄)을 보고, 각 파일이 아래 규격의 어느 자료인지, 어느 필드가 무엇인지 **대응표(JSON)** 를 만든다. (3장)\n2. 앱 규격과 모양이 다른 표(부과량·유량계·시설 제원 등)는 **규격 표로 바꾸는 방법**을 알려 준다. 작으면 직접 바꾼 표(CSV)를 주고, 크면 엑셀 수식이나 파이썬 스크립트를 준다. (4장)\n3. 바꾼 값과 이유를 **가공 기록** 표로 남긴다. (6장)\n4. 점검 목록(5장)으로 결과를 확인하고, 확인하지 못한 것은 \"확인 필요\"로 적는다.\n\n**하지 말 것**\n- INP 파일을 직접 쓰지 않는다. 관망 연결·꺾인점·좌표 변환·C값 추정·INP 저장은 **앱이 한다.**\n- 자료에 없는 숫자를 지어내지 않는다(배수지 수위, 가압장 곡선, 밸브 설정값 등). 모르면 빈칸 + \"확인 필요\".\n- 고객 이름·주소·전화번호를 결과에 넣지 않는다. 수용가 번호·관리번호·소블록 같은 식별용 키만 쓴다.\n- 사용자에게 수백 MB 파일 전체를 올리라고 하지 않는다. 필드 이름과 샘플 몇 줄이면 충분하다.\n\n---\n\n## 1. 전체 흐름\n\n```\n현장 원자료 ──(AI: 대응표·표 변환)──▶ 앱 자료함 ──▶ ▶ 순서대로 적용 ──▶ 검증 ──▶ INP 저장\n                                         │\n                                         └─ 관망이 생긴 뒤: 📗 입력표 내려받기 → (AI가 채우기) → 다시 넣기\n```\n\n앱 자료함의 적용 순서\n1. 관망 생성(상수관로 SHP + 배수지 점)\n2. 블록 지정(블록 경계 면 SHP)\n3. 표고(표고점·등고선 SHP)\n4. 시설물 점 표시(밸브·소화전·수압계·유량계·급수전)\n5. 수요: 수도계량기 점 SHP + 사용량(부과량) 표 → 계량기 절점 할당. 계량기 SHP가 없으면 소블록별 부과량 합계를 블록 절점에 관 연장 비례로 배분\n6. 시설 입력표(엑셀) → 배수지·가압장·밸브·패턴·운전규칙 값 반영\n7. 블록 유수율 → 블록 누수(이미터) 배분\n\n---\n\n## 2. 앱이 받는 자료 규격\n\n### 2-1. 파일 종류(앱이 자동으로 알아보는 이름)\n\n앱은 **파일 이름**과 **도형 종류(선·점·면)** 로 종류를 정합니다. 이름이 아래와 다르면 대응표의 `role`로 알려 주면 됩니다.\n\n| role | 자료 | 도형 | 앱이 알아보는 파일 이름 예 |\n|---|---|---|---|\n| `pipe` | 상수관로(필수) | 선 | WTL_PIPE_LM, 상수관, PIPE, SAA001~SAA004, SAA020, SAA999 |\n| `sply` | 급수관로 | 선 | WTL_SPLY_LS, 급수관, SAA005 (계량기 할당 보조) |\n| `serv` | 배수지 | 점 | WTL_SERV_PS, 배수지 |\n| `blk` | 블록(소블록) 경계 | 면 | WTL_BLSM_AS, WTL_BLBM_AS, WTL_BLBG_AS, 소블록, 블록, DMA |\n| `elev` | 표고 | 점·선·면 | 등고, CONTOUR, 표고, ELEV, DEM, F00100, F00200 |\n| `meta` | 수도계량기 | 점 | WTL_META_PS, 계량기, META |\n| `valv` | 밸브 | 점 | WTL_VALV_PS, 밸브, VALV |\n| `fire` | 소화전 | 점 | WTL_FIRE_PS, 소화전 |\n| `prga` | 수압계 | 점 | WTL_PRGA_PS, 수압계 |\n| `flow` | 유량계 | 점 | WTL_FLOW_PS, 유량계 |\n| `tap` | 급수전 | 점 | 급수전 |\n| `pt` | 기타 점 | 점 | (그 밖의 점) |\n| `use` | 사용량(부과량) 표 | 엑셀·CSV | 제목 줄에 수용가·고객·사용량·부과 |\n| `lk` | 블록 유수율 표 | 엑셀·CSV | 제목 줄에 유수율 |\n| `book` | 시설 입력표 | 엑셀 | 시트 이름 배수지·가압장·밸브·패턴·운전규칙·수정대장 |\n| `skip` | 쓰지 않음 | — | — |\n\n- SHP는 `.shp` `.dbf` `.prj` `.cpg`를 함께 넣는다. `.prj`가 없으면 앱이 DBF의 법정동 코드·시군 이름으로 좌표계를 추정한다(EPSG 5185~5188, 옛 자료 5180~5184).\n- 상수관로가 여러 파일(취수·도수·송수·배수관)이면 모두 `pipe`로 두면 한 관망으로 합친다. 다른 관로와 좌표 범위가 동떨어진 파일은 앱이 뺀다.\n- 글자 인코딩: `.cpg`가 없으면 EUC-KR(CP949)로 읽는다. UTF-8이면 대응표 `enc`에 적는다.\n- 예전 엑셀(.xls)은 .xlsx로 저장해서 넣는다.\n\n### 2-2. 상수관로 필드\n\n| 키 | 뜻 | 단위·형식 | 앱이 알아보는 필드 이름 |\n|---|---|---|---|\n| `dia` | 관경 | mm (숫자만 읽음, \"D150\"→150) | PIP_DIP, DIP, DIA, DIAM, DIAMETER, 관경, 구경 |\n| `id` | 관 고유번호 | 문자 | FTR_IDN, PIPE_ID, ID, 관리번호 |\n| `kind` | 관종(재질) | 문자 | MOP_CDE, PIP_MOP, MOP, 관재질, 관종, 재질 |\n| `year` | 설치일자 | YYYY 또는 YYYYMMDD | IST_YMD, 설치일자, INST_YMD, IST_DT, 설치년도 |\n| `blk` | 소블록 이름 | 문자 | 소블록명, 소블록, BLS_NAM, BLK_NAM, SBLK_NM |\n\n- 관경이 없거나 0이면 앱의 기본 관경(100 mm)이 들어간다 → 점검 목록에서 개수를 확인한다.\n- 관종 코드가 숫자 코드(예: MOP001)면 **코드표**를 함께 주거나, 관종 이름 열을 새로 만드는 방법을 알려 준다. 앱의 C값 추정은 관종 글자에 아래 말이 들어 있어야 동작한다.\n\n### 2-3. 그 밖의 SHP 필드\n\n| role | 키 | 뜻 | 앱이 알아보는 필드 이름 |\n|---|---|---|---|\n| `blk` | `blk` | 소블록 이름 | 소블록이 든 이름, BLS_NAM, BLK_NAM, BLK_NM, NAM, NAME, 명칭, 이름, 블록 |\n| `elev` | `z` | 표고(m) | CONT, ELEV, HEIGHT, HGT, 표고, 높이, 해발, Z (없으면 Z 좌표) |\n| `meta` | `key` | 수용가(계량기) 번호 | CUST, 수용가, DMNO, CNT_NUM, NO |\n| `meta` | `use` | 사용량(있으면) | USE, 사용량 |\n\n### 2-4. 사용량(부과량) 표 — `use`\n\n| 열 | 필수 | 설명 |\n|---|---|---|\n| 수용가번호 | 계량기 SHP가 있을 때 필수 | 계량기 SHP의 `key`와 같은 값 |\n| 사용량 | 필수 | 숫자. 단위는 자료함의 \"사용량 단위\"(㎥/월·㎥/일·㎥/년)로 고른다 |\n| 소블록 | 계량기 SHP가 없을 때 필수 | 모델 블록 이름과 같은 값 |\n\n- 제목 줄에 `수용가`·`고객`·`사용량`·`부과` 중 하나가 있어야 사용량 표로 알아본다.\n- 달별 열(`2026-08` 같은 이름)이 있으면 값이 든 **가장 최근 달**을 쓴다.\n\n### 2-5. 블록 유수율 표 — `lk`\n\n```csv\n소블록,유수율(%),물리적 누수 비율(%)\nYS-01,82.5,70\nYS-02,76.1,\n```\n- 첫 줄이 제목. `유수율` 열은 필수, `물리적 누수 비율`은 선택(비우면 기본값).\n\n### 2-6. 시설 입력표 — `book` (관망을 만든 뒤)\n\n관망을 한 번 만든 뒤 앱 › INP 만들기 › 📗 입력표 › **입력표 내려받기**로 받은 엑셀을 채운다. ID는 모델과 같아야 하므로 **새로 만들지 말고 내려받은 파일에 채운다.**\n\n| 시트 | 열 |\n|---|---|\n| 배수지 | ID, 종류, 수두·바닥표고(m), 초기수위(m), 최저수위(m), 최고수위(m), 지름(m), 최소용량, 메모 |\n| 가압장 | ID, 시작절점, 끝절점, 상태(운전/정지), 속도비, 양정곡선 ID, 유량1·양정1 ~ 유량3·양정3, 메모 |\n| 밸브 | ID, 종류, 관경(mm), 설정값, 설정 단위, 상태(설정대로/열림/닫힘), 메모 |\n| 블록유량 | 소블록, 유입유량(㎥/일), 유출유량(㎥/일), 부과량(㎥/일), 유수율(%), 물리적 누수 비율(%) |\n| 패턴 | 패턴 ID, 적용 소블록(쉼표로 구분), 1, 2, … (시간별 값) |\n| 운전규칙 | 배수지(탱크 ID), 하한수위(m), 상한수위(m), 유입 시설 ID, 하한일 때 설정값, 메모 |\n| 수정대장 | 구분, ID, 항목, 원래값, 새값, 단위, 사유, … |\n\n- 숫자 칸을 비우면 지금 값을 그대로 둔다. ID·열 이름은 바꾸지 않는다.\n- 패턴: 평균이 3보다 크면 유량 값으로 보고 앱이 평균으로 나눠 배율로 바꾼다. 유량계 시간별 값을 그대로 붙여도 된다.\n- 유량 단위는 입력표 \"안내\" 시트의 INP 유량 단위를 따른다.\n\n---\n\n## 3. 대응표(JSON) 형식 — AI가 꼭 돌려줄 것\n\n앱 자료함의 **📥 대응표 붙여넣기**에 그대로 붙이면 종류·필드가 한 번에 맞춰집니다. 반드시 ```json 코드 블록 하나로 준다.\n\n```json\n{\n  \"gw_map\": 1,\n  \"enc\": \"euc-kr\",\n  \"unit\": \"month\",\n  \"items\": [\n    {\"file\": \"SAA004\", \"role\": \"pipe\",\n     \"fields\": {\"dia\": \"구경\", \"id\": \"관리번호\", \"kind\": \"관재질\", \"year\": \"설치일자\", \"blk\": \"소블록명\"}},\n    {\"file\": \"SAA005\", \"role\": \"sply\"},\n    {\"file\": \"소블록경계\", \"role\": \"blk\", \"fields\": {\"blk\": \"소블록\"}},\n    {\"file\": \"표고점\", \"role\": \"elev\", \"fields\": {\"z\": \"HEIGHT\"}},\n    {\"file\": \"WTL_META_PS\", \"role\": \"meta\", \"fields\": {\"key\": \"DMNO\", \"use\": \"\"}},\n    {\"file\": \"부과량_2026.xlsx\", \"role\": \"use\", \"fields\": {\"key\": \"수용가번호\", \"use\": \"2026-08\"}},\n    {\"file\": \"도면_참고.dxf\", \"role\": \"skip\", \"note\": \"관로가 아닌 배경 도면\"}\n  ],\n  \"notes\": [\"SAA004 관재질은 코드(MOP001…) — 코드표 확인 필요\"]\n}\n```\n\n- `file`: 자료 요약에 나온 이름 그대로(SHP는 확장자 없이, 엑셀·CSV는 확장자 포함).\n- `role`: 2-1 표의 값.\n- `fields`: 그 role에서 쓰는 키(2-2·2-3·2-4)와 **원본 필드(열) 이름**. 없으면 빈 문자열.\n- `enc`: `euc-kr` 또는 `utf-8`(.cpg 없는 파일). `unit`: 사용량 단위 `month`·`day`·`year`.\n- `notes`: 사용자에게 확인받을 것.\n\n---\n\n## 4. 규격과 다른 자료 바꾸기\n\n| 흔한 경우 | 바꾸는 방법 |\n|---|---|\n| 사용량이 달별로 열이 여러 개 | 그대로 둔다(가장 최근 달 자동). 연평균을 쓰려면 평균 열을 만들고 `use`로 지정, 단위 `month` |\n| 사용량 표 제목 줄이 2~3줄로 병합 | 한 줄 제목으로 정리(수용가번호·소블록·사용량) |\n| 수용가 번호 형식이 SHP와 다름(하이픈·앞자리 0) | 같은 형식으로 맞추는 수식(예: `=TEXT(A2,\"000000000\")`, `=SUBSTITUTE(A2,\"-\",\"\")`) |\n| 관종이 코드 | 코드표로 관종 이름 열을 만든다(덕타일·PE·강관…) |\n| 설치일자가 \"2003.05\" 같은 글자 | YYYYMMDD 숫자로 |\n| 블록 이름 표기가 자료마다 다름(YS-01 / YS01 / 용산1) | 모델에 쓸 이름 하나로 통일하는 대응 열 |\n| 유량계 1분·15분 자료 | 시간 평균 24개(또는 168개) 값으로 묶어 패턴 시트에 |\n| 배수지 제원이 보고서(hwp·pdf) 표 | 표 값을 배수지 시트 해당 ID 줄에 옮김. 고수위·저수위·바닥표고가 섞이지 않게 주의 |\n\n- 파일이 크면(수만 줄 이상) 직접 바꾼 표 대신 **엑셀 수식** 또는 **파이썬(pandas) 스크립트**를 준다. 스크립트는 입력 파일 이름·출력 파일 이름을 맨 위 변수로 둔다.\n- 결과 표에는 고객 이름·주소·전화번호 열을 남기지 않는다.\n\n---\n\n## 5. 점검 목록 — 넣기 전·적용 후\n\n**넣기 전(AI가 확인)**\n- [ ] 모든 SHP의 좌표계가 같다(또는 .prj가 있다). 좌표 값 크기가 다른 파일(예: y가 10만 m 차이)이 없다.\n- [ ] 관경 필드가 숫자이고 0·빈칸 개수를 셌다.\n- [ ] 관 고유번호가 중복되지 않는다.\n- [ ] 블록 이름이 블록 경계·사용량·유수율 표에서 같은 표기다.\n- [ ] 사용량 단위(월·일·년)를 확인했다.\n- [ ] 고객 이름·주소·전화번호 열을 뺐다.\n\n**적용 후(사용자가 앱에서 확인)**\n- [ ] 해석 › 검증 › **모델 검증**: 고립 절점·연결 오류·0 관경\n- [ ] 해석 › 검증 › **표고 검증**: 표고 0 절점\n- [ ] 해석 › 검증 › **소블록 고립 확인**\n- [ ] 전체 수요 합계(㎥/일) ≈ 부과량 합계 ÷ 기간 — 크게 다르면 단위 확인\n- [ ] 해석 실행이 수렴하고 음압 절점이 몰린 곳이 없는지\n\n---\n\n## 6. 가공 기록 형식\n\nAI가 값을 바꾸거나 추정했으면 아래 표로 남긴다. 사용자는 이 표를 입력표 \"수정대장\" 시트나 작업 폴더에 보관해 다음 해에 다시 쓴다.\n\n| 자료 | 항목 | 원래값 | 새값 | 사유 |\n|---|---|---|---|---|\n| 부과량_2026.xlsx | 수용가번호 형식 | 12-3456 | 123456 | 계량기 SHP DMNO와 맞춤 |\n| SAA004 | 관재질 MOP001 | MOP001 | 덕타일주철관 | 사용자 제공 코드표 |\n\n---\n\n## 7. 앱이 하는 규칙(참고 — AI가 따로 계산하지 않음)\n\n- **C값 추정**(관종·경과연수, 10년 넘으면 해마다 감소, 최저 80): PE·PVC·폴리·HI-3P·PB·GRP 140(-0.1/년) · STS·스테인리스 140(-0.1) · DCIP·덕타일 130(-0.3) · 강관·SP 120(-0.5) · CIP·주철 110(-0.6) · ACP·석면·흄 120(-0.4). 그 밖은 기본 C.\n- **블록**: 블록 경계 면 안의 절점·관로에 소블록 이름 → INP `[TAGS] NODE/LINK id dma_name:이름`.\n- **수요**: 계량기 → 가까운 관로 절점 할당, 또는 소블록 합계 → 블록 절점에 관 연장 비례.\n- **누수**: 블록 유수율 → 이미터 배분(앱 블록 누수 창에서 보정).\n- **저장 단위**: 내부 유량 L/s, 화면 표시 ㎥/h(바꿀 수 있음).\n\n---\n\n## 8. 사용자가 AI에게 보낼 말(복사용)\n\n**① 처음**\n> 아래 \"웹 관망해석기 INP 작성 안내\"와 \"자료 요약\"을 읽고, 3장 형식의 대응표 JSON을 만들어 줘. 확실하지 않은 필드는 notes에 적고, 내가 확인할 질문을 3개 이내로 해 줘.\n\n**② 규격과 다른 표가 있을 때**\n> [파일 이름]을 2-4(또는 2-5·2-6) 규격으로 바꾸고 싶어. 제목 줄과 샘플은 위와 같아. 행이 [몇]만 줄이라 엑셀 수식(또는 파이썬)으로 알려 줘. 바꾼 내용은 6장 가공 기록 표로 정리해 줘.\n\n**③ 시설 입력표 채우기**\n> 첨부한 입력표(앱에서 내려받은 것)의 배수지·가압장·밸브 시트를 첨부한 [보고서/제원표] 값으로 채워 줘. 자료에 없는 값은 비우고 메모에 \"확인 필요\"라고 적어 줘.\n\n**④ 적용 뒤 문제가 생겼을 때**\n> 앱 자료함 메모에 [오류 문구]가 나왔어. 원인과 고칠 방법을 알려 줘.\n\n---\n\n## 9. 사례\n\n- **포항(2026-11)**: 상수관로가 용도별 SAA001(취수)~SAA004(배수)·SAA005(급수)로 나뉨, `.prj` 없음, `.cpg`=949, 필드 이름 한글. SAA020·SAA999는 옛 원점(EPSG:5183) → 앱이 5187로 자동 변환. 부과량은 유수율 엑셀(xlsm) 시트, 계량기 SHP 없이 소블록 열로 블록별 배분.\n- **영양군(2026-10)**: GISpipe에서 내보낸 INP(CP949)에 소블록 정보가 없음 → 소블록 SHP(PolygonZ, 필드 구역·소블록)로 블록 지정 후 저장.\n";
+const G35=window.__gw35;
+const J=G35?G35.J:null;
+const RL={pipe:'상수관로',serv:'배수지',blk:'블록 경계',elev:'표고',meta:'수도계량기',sply:'급수관',valv:'밸브',fire:'소화전',prga:'수압계',flow:'유량계',tap:'급수전',pt:'기타 점',book:'시설 입력표',use:'사용량(부과량)',lk:'블록 유수율',skip:'쓰지 않음'};
+const RK=Object.keys(RL);
+// 개인정보로 보이는 열은 값 가림(필드 이름은 남김)
+const PII=/성명|고객명|수용가명|소유자|사용자명|주소|ADDR|전화|TEL|휴대|핸드폰|연락|E-?MAIL|메일|생년|주민/i;
+const PII2=/^(NAME|NAM|이름|CUST_NM|CUS_NM)$/i;
+const cut=(v,n)=>{const s=String(v??'').replace(/[\r\n\t]+/g,' ').trim();return s.length>(n||30)?s.slice(0,n||30)+'…':s};
+const cell=s=>String(s).replace(/\|/g,'/');
+const mdTbl=(h,rows)=>`| ${h.map(cell).join(' | ')} |\n|${h.map(()=>'---').join('|')}|\n`+rows.map(r=>`| ${h.map((_,j)=>cell(r[j]??'')).join(' | ')} |`).join('\n');
+const hide=(it,f)=>{if(it.role==='blk'||it.role==='lk')return false;return PII.test(f)||((it.role==='meta'||it.role==='use'||it.role==='tap')&&PII2.test(f))};
+
+/* ── 자료 요약(AI에게 보낼 것) ── */
+function summary(){const L=[];const d=new Date();L.push('# 자료 요약 — 웹 관망해석기 자료함','',`만든 시각: ${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} · 개인정보로 보이는 열의 값은 (가림)으로 바꿨습니다.`,'');
+ if(S.net){const N=S.net,bl=[...new Set(N.nodes.filter(n=>n.type===0&&n.blk).map(n=>n.blk))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
+  L.push('## 지금 열린 관망',`- 파일: ${S.name||'(이름 없음)'} · 절점 ${N.nodes.length.toLocaleString()} · 관로 ${N.links.length.toLocaleString()}`,`- 소블록 ${bl.length}개${bl.length?': '+bl.slice(0,60).join(', ')+(bl.length>60?' …':''):''}`,'')}else L.push('## 지금 열린 관망','- 없음(자료함으로 새로 만듦)','');
+ L.push(`## 자료함 설정`,`- 글자(.cpg 없을 때): ${J.enc} · 사용량 단위: ${({month:'㎥/월',day:'㎥/일',year:'㎥/년'})[J.unit]||J.unit}`,'');
+ if(!J.items.length){L.push('## 넣은 자료','- 없음');return L.join('\n')}
+ L.push(`## 넣은 자료 ${J.items.length}개`,'');
+ J.items.forEach((it,k)=>{const geo=it.geo?({line:'선',point:'점',poly:'면'})[it.geo]:'';
+  L.push(`### ${k+1}. ${it.name}`);
+  L.push(`- 앱 판단 종류(role): ${it.role} (${RL[it.role]||''}) · 상태: ${it.st}${it.msg?' · 메모: '+cut(it.msg,140):''}`);
+  if(it.kind==='layer'&&it.ly){const ly=it.ly;L.push(`- SHP ${geo} ${(it.n||0).toLocaleString()}개 · 파일: ${(it.files||[]).map(f=>f.name.replace(/^.*\./,'.')).join(' ')}${ly.epsg?' · EPSG:'+ly.epsg:''}${ly.crsAuto?' (자동 추정)':''}${ly.use?' · 용도: '+ly.use:''}`);
+   const fs=ly.fields||[];L.push(`- 필드 ${fs.length}개: ${fs.join(', ')||'(없음)'}`);
+   const pk=[];if(it.f1)pk.push('f1='+it.f1);if(it.f2)pk.push('f2='+it.f2);if(pk.length)L.push(`- 앱이 고른 필드: ${pk.join(' · ')}`);
+   if(fs.length){const at=ly.attrs||[],st=Math.max(1,Math.floor(at.length/5)),rows=[];for(let r=0;r<at.length&&rows.length<5;r+=st){const a=at[r]||{};rows.push(fs.map(f=>hide(it,f)?'(가림)':cut(a[f])))}
+    const cols=fs.slice(0,24);L.push('','샘플:','',mdTbl(cols,rows.map(r=>r.slice(0,24))));if(fs.length>24)L.push(`(필드가 많아 앞 24개만 보였습니다)`)}}
+  else if(it.kind==='book'&&it.book){L.push(`- 시설 입력표 시트: ${Object.keys(it.book).join(', ')}`)}
+  else if(it.rows){const h=(it.rows[0]||[]).map((x,j)=>String(x||'열'+(j+1)));L.push(`- 표 ${(it.n||0).toLocaleString()}행${it.rows.sheet?' · 시트: '+it.rows.sheet:''} · 열 ${h.length}개: ${h.join(', ')}`);
+   if(it.role==='use')L.push(`- 앱이 고른 열: 번호=${h[+it.f1]??''} · 사용량=${h[+it.f2]??''}`);
+   const rows=[],n=it.rows.length,st=Math.max(1,Math.floor((n-1)/5));for(let r=1;r<n&&rows.length<5;r+=st)rows.push(h.map((c,j)=>hide(it,c)?'(가림)':cut(it.rows[r][j])));
+   const c2=h.slice(0,24);L.push('','샘플:','',mdTbl(c2,rows.map(r=>r.slice(0,24))));if(h.length>24)L.push('(열이 많아 앞 24개만 보였습니다)')}
+  L.push('')});
+ return L.join('\n')}
+const bundle=()=>AIMD+'\n\n---\n\n'+summary();
+
+async function copyText(t,what){try{await navigator.clipboard.writeText(t);toast(`${what}을(를) 복사했습니다. AI 대화창에 붙여 넣으세요. (${t.length.toLocaleString()}자)`,5000);return true}catch(e){}
+ try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();if(ok){toast(`${what}을(를) 복사했습니다.`,4000);return true}}catch(e){}
+ toast('복사가 막혀 있습니다. [내려받기]로 파일을 받아 AI에 첨부하세요.',6000);return false}
+
+/* ── AI 대응표(JSON) 붙여넣기 → 자료함 종류·필드 맞추기 ── */
+const PM={};// 상수관로 레이어 이름 → {dia,id,kind,year,blk}
+function parseMap(txt){let s=String(txt||'').trim();const m=s.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)s=m[1];const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a<0||b<a)throw new Error('JSON을 찾지 못했습니다. AI가 준 ```json … ``` 부분을 붙여 넣으세요.');
+ let o;try{o=JSON.parse(s.slice(a,b+1))}catch(e){throw new Error('JSON 형식이 맞지 않습니다: '+e.message)}if(!o||!Array.isArray(o.items))throw new Error('items 목록이 없습니다.');return o}
+const nk=s=>String(s||'').trim().toLowerCase().replace(/\.(shp|dbf|prj|cpg|shx|dxf)$/i,'');
+function findItem(f){const k=nk(f);if(!k)return null;return J.items.find(x=>nk(x.name)===k)||J.items.find(x=>nk(x.name).replace(/\.[^.]+$/,'')===k.replace(/\.[^.]+$/,''))||null}
+function applyMap(o){const res={ok:0,miss:[],warn:[]};
+ if(o.enc&&/^(euc-kr|utf-8)$/i.test(o.enc))J.enc=o.enc.toLowerCase();if(o.unit&&/^(month|day|year)$/.test(o.unit))J.unit=o.unit;
+ o.items.forEach(m=>{const it=findItem(m.file);if(!it){res.miss.push(String(m.file||'?'));return}const F=m.fields||{};
+  if(m.role&&RK.includes(m.role)){const okKind=it.kind==='layer'?!['book','use','lk'].includes(m.role):['book','use','lk','skip'].includes(m.role);if(okKind)it.role=m.role;else res.warn.push(`${it.name}: ${m.role}은(는) 이 파일 종류에 쓸 수 없음`)}
+  const fs=it.ly&&it.ly.fields||[],has=f=>f&&fs.includes(f);
+  if(it.role==='blk'&&has(F.blk))it.f1=F.blk;
+  if(it.role==='elev'){if(F.z==='')it.f1='';else if(has(F.z))it.f1=F.z}
+  if(it.role==='meta'){if(has(F.key))it.f1=F.key;if(F.use==='')it.f2='';else if(has(F.use))it.f2=F.use}
+  if(it.role==='use'&&it.rows){const h=(it.rows[0]||[]).map(x=>String(x??'').trim()),ix=v=>{if(v==null||v==='')return-1;if(typeof v==='number')return v;const j=h.indexOf(String(v).trim());return j};const a=ix(F.key),b=ix(F.use);if(a>=0)it.f1=a;else if(F.key)res.warn.push(`${it.name}: 열 '${F.key}' 없음`);if(b>=0)it.f2=b;else if(F.use)res.warn.push(`${it.name}: 열 '${F.use}' 없음`)}
+  if(it.role==='pipe'){const p={};[['dia','d'],['id','i'],['kind','k'],['year','y'],['blk','b']].forEach(([a,k])=>{if(F[a]==null)return;if(F[a]===''||has(F[a]))p[k]=F[a];else res.warn.push(`${it.name}: 필드 '${F[a]}' 없음`)});PM[nk(it.name)]=p}
+  if(it.st==='warn'&&it.role!=='skip'&&!/좌표|떨어져/.test(it.msg||'')){it.st='ok'}
+  it.msg=(it.msg?it.msg.replace(/ ?· ?AI 대응표 반영$/,'')+' · ':'')+'AI 대응표 반영';res.ok++});
+ return res}
+// 관망 생성 직전: 대응표의 관로 필드를 모델 생성 창 필드 선택과 레이어별 필드에 넣기
+const bfg0=buildFromGis;buildFromGis=function(){try{if(Object.keys(PM).length&&G.pick){const pk=G.pick,sel={d:'gDia',i:'gId',k:'gKind',y:'gYear'};
+  pk.forEach((l,j)=>{const p=PM[nk(l.name)];if(!p)return;if(G.lpick&&G.lpick[j])Object.keys(p).forEach(k=>{G.lpick[j][k]=p[k]})});
+  const first=pk.map(l=>PM[nk(l.name)]).find(Boolean);if(first){Object.entries(sel).forEach(([k,id])=>{if(first[k]==null)return;const e=$(id);if(e&&[...e.options].some(o=>o.value===first[k]))e.value=first[k]});if(first.b!=null)G.fB=first.b}}}catch(e){console.warn('v36 대응표',e)}
+ return bfg0.apply(this,arguments)};
+
+/* ── 안내 창 ── */
+function md2html(md){const L=md.split('\n'),o=[];let i=0;const inl=s=>esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+ while(i<L.length){const l=L[i];
+  if(/^```/.test(l)){const b=[];i++;while(i<L.length&&!/^```/.test(L[i]))b.push(L[i++]);i++;o.push(`<pre class="am-pre">${esc(b.join('\n'))}</pre>`);continue}
+  if(/^\|/.test(l)){const t=[];while(i<L.length&&/^\|/.test(L[i]))t.push(L[i++]);const rs=t.filter(r=>!/^\|\s*-/.test(r)).map(r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()));o.push(`<div class="am-tw"><table class="am-t"><thead><tr>${rs[0].map(c=>`<th>${inl(c)}</th>`).join('')}</tr></thead><tbody>${rs.slice(1).map(r=>`<tr>${r.map(c=>`<td>${inl(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);continue}
+  let m;if(m=l.match(/^(#{1,4})\s+(.*)/)){o.push(`<div class="am-h${m[1].length}">${inl(m[2])}</div>`);i++;continue}
+  if(/^---\s*$/.test(l)){o.push('<hr class="am-hr">');i++;continue}
+  if(/^>\s?/.test(l)){const b=[];while(i<L.length&&/^>\s?/.test(L[i]))b.push(L[i++].replace(/^>\s?/,''));o.push(`<div class="am-q">${b.map(inl).join('<br>')}</div>`);continue}
+  if(/^\s*([-*]|\d+\.)\s/.test(l)){const b=[];while(i<L.length&&/^\s*([-*]|\d+\.)\s/.test(L[i]))b.push(L[i++]);o.push(`<ul class="am-ul">${b.map(x=>{const ck=x.match(/^\s*[-*]\s\[( |x)\]\s(.*)/);return`<li>${ck?(ck[1]==='x'?'☑ ':'☐ ')+inl(ck[2]):inl(x.replace(/^\s*([-*]|\d+\.)\s/,(a,b)=>/\d/.test(b)?b+' ':''))}</li>`}).join('')}</ul>`);continue}
+  if(!l.trim()){i++;continue}
+  const b=[];while(i<L.length&&L[i].trim()&&!/^(```|\||#|>|---|\s*([-*]|\d+\.)\s)/.test(L[i]))b.push(L[i++]);o.push(`<p>${b.map(inl).join(' ')}</p>`)}
+ return o.join('')}
+WD.aimd={t:'AI와 함께 INP 만들기 — 작성 안내',w:720};
+WR.aimd={ui:()=>`<div class="flex flex-col gap-2 text-xs">${tbox('🤖 AI에게 보내는 방법',`<p class="leading-relaxed">① 자료를 <b>모델 만들기 › INP 만들기 › 📎 자료함</b>에 넣습니다. ② <b>안내+자료 요약 복사</b>를 눌러 AI(Claude·제미나이 등) 대화창에 붙여 넣습니다. ③ AI가 준 <b>대응표(JSON)</b>를 자료함의 <b>📥 대응표 붙여넣기</b>에 넣고 [순서대로 적용]을 누릅니다.<br><span class="text-slate-500">파일 원본(수백 MB)은 보내지 않아도 됩니다. 요약에는 필드 이름과 샘플 5줄만 들어가고, 이름·주소·전화 같은 열의 값은 가립니다.</span></p>
+ <div class="flex flex-wrap gap-2">${tbtnP('amAll','📋 안내+자료 요약 복사')}${tbtn('amMd','안내만 복사')}${tbtn('amDl','⬇ 안내 내려받기(.md)')}${tbtn('amDl2','⬇ 안내+요약 내려받기')}${tbtn('amJx','📎 자료함 열기')}</div>`,'border-indigo-200 bg-indigo-50/60')}
+ <div class="am-doc">${md2html(AIMD)}</div></div>`,
+ bind:b=>{const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};
+  on('amAll',()=>copyText(J?bundle():AIMD,'안내와 자료 요약'));on('amMd',()=>copyText(AIMD,'작성 안내'));
+  on('amDl',()=>offer(AIMD,'AI_INP_작성안내.md','text/markdown'));on('amDl2',()=>offer(J?bundle():AIMD,'AI_INP_안내_자료요약.md','text/markdown'));
+  on('amJx',()=>{const G23=window.__gw23;if(G23)G23.IW.tab='d';winOpen('iw')})}};
+
+/* ── 자료함 탭 아래: AI 상자 ── */
+const AX={open:false,txt:'',res:''};
+if(J&&WR.iw){const ui1=WR.iw.ui,bind1=WR.iw.bind,IW=window.__gw23.IW;
+ WR.iw.ui=()=>{const h=ui1();if(IW.tab!=='d')return h;
+  return h+`<div class="flex flex-col gap-2 text-xs mt-2">${tbox('🤖 AI와 함께 자료 다듬기',`<p class="text-[11px] text-slate-600 leading-relaxed">자료 양식이 앱과 달라 종류·필드가 맞지 않으면, 안내와 자료 요약을 AI에게 보내고 AI가 준 대응표를 붙여 넣으세요. 이름·주소·전화 열의 값은 가려서 보냅니다.</p>
+   <div class="flex flex-wrap gap-2">${tbtnP('axCp','📋 AI에게 보낼 내용 복사')}${tbtn('axDl','⬇ 파일로 받기')}${tbtn('axDoc','📘 작성 안내 보기')}${tbtn('axTg',AX.open?'대응표 닫기':'📥 대응표 붙여넣기')}</div>
+   ${AX.open?`<textarea id="axT" rows="7" class="w-full px-2 py-1 border border-slate-300 rounded bg-white font-mono text-[11px]" placeholder='AI가 준 \`\`\`json { "gw_map":1, "items":[…] } \`\`\` 부분을 붙여 넣으세요'>${esc(AX.txt)}</textarea>
+   <div class="flex flex-wrap items-center gap-2">${tbtnP('axGo','✔ 대응표 반영')}<span class="text-[11px] text-slate-600">${AX.res}</span></div>`:''}`,'border-indigo-200 bg-indigo-50/60')}</div>`};
+ WR.iw.bind=b=>{bind1(b);if(IW.tab!=='d')return;const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};
+  on('axCp',()=>{if(!J.items.length&&!S.net)toast('자료함에 넣은 자료가 없어 안내만 복사합니다.',4000);copyText(bundle(),'안내와 자료 요약')});
+  on('axDl',()=>offer(bundle(),'AI_INP_안내_자료요약.md','text/markdown'));on('axDoc',()=>winOpen('aimd'));
+  on('axTg',()=>{AX.open=!AX.open;winRender('iw',true)});
+  const t=b.querySelector('#axT');if(t)t.oninput=()=>{AX.txt=t.value};
+  on('axGo',()=>{try{const o=parseMap(AX.txt);const r=applyMap(o);AX.res=`${r.ok}개 반영${r.miss.length?` · 자료함에 없는 파일: ${esc(r.miss.slice(0,5).join(', '))}`:''}${r.warn.length?` · 확인: ${esc(r.warn.slice(0,4).join(' / '))}`:''}${(o.notes||[]).length?` · AI 메모 ${o.notes.length}건`:''}`;
+    toast(`AI 대응표: ${r.ok}개 자료에 반영했습니다.${r.miss.length?` 찾지 못한 파일 ${r.miss.length}개.`:''} 표를 확인하고 [순서대로 적용]을 누르세요.`,6000);if(o.notes&&o.notes.length)S.log.push('AI 대응표 메모: '+o.notes.map(String).join(' / '));}catch(e){AX.res='<span style="color:#dc2626">'+esc(e.message||String(e))+'</span>'}winRender('iw',true)})}}
+
+/* ── 리본: 모델 만들기 › INP 만들기, 도움말 ── */
+const m0=RIB.mdl,h0=RIB.help;
+const gIW=gb('iw','wiz','INP 만들기',{big:1,tip:'관망 만들기 단계 안내 · 시설 입력표(엑셀) · 수정 대장'});
+RIB.mdl=()=>m0().replace(gIW,gIW+col(gb('aimd','chat','AI 작성 안내',{tip:'AI와 함께 현장 자료를 다듬어 INP 만들기 — 안내·자료 요약 복사'})));
+RIB.help=()=>h0()+gg('AI',gb('aimd','chat','AI용 INP 작성 안내',{big:1,tip:'새 사용자가 AI에게 주는 INP 작성 안내(FRD)'}));
+const _ra=rbAct;rbAct=function(a){if(a==='aimd'){winOpen('aimd');return}return _ra.apply(this,arguments)};
+const st=document.createElement('style');st.textContent=`.am-doc{font-size:12px;line-height:1.6;color:#1e293b}.am-doc p{margin:4px 0}.am-h1{font-size:16px;font-weight:800;margin:6px 0 4px;color:#312e81}.am-h2{font-size:14px;font-weight:800;margin:12px 0 4px;color:#3730a3;border-bottom:1px solid #c7d2fe;padding-bottom:2px}.am-h3{font-size:12.5px;font-weight:800;margin:8px 0 3px}.am-h4{font-weight:700;margin:6px 0 2px}
+.am-pre{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:8px;font-size:11px;overflow:auto;white-space:pre;margin:4px 0}.am-tw{overflow:auto;margin:4px 0}.am-t{border-collapse:collapse;font-size:11px;min-width:100%}.am-t th{background:#eef2ff;font-weight:700;text-align:left}.am-t th,.am-t td{border:1px solid #cbd5e1;padding:3px 6px;vertical-align:top}
+.am-q{border-left:3px solid #818cf8;background:#f8fafc;padding:4px 8px;margin:4px 0;color:#475569}.am-ul{margin:3px 0 3px 18px;list-style:disc}.am-hr{border:0;border-top:1px dashed #cbd5e1;margin:8px 0}.am-doc code{background:#f1f5f9;border-radius:4px;padding:0 3px;font-size:11px}
+html.dark .am-doc{color:inherit}html.dark .am-t th{background:#1e293b}html.dark .am-q{background:transparent}html.dark .am-doc code{background:#1e293b}html.dark .am-h1,html.dark .am-h2{color:#a5b4fc}`;document.head.appendChild(st);
+try{if($('gp'))gpRib(T.rib||'wds')}catch(e){}
+window.__gw36={AIMD,summary,bundle,parseMap,applyMap,PM};
+})()}catch(e){console.warn('v36',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
