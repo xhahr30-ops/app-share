@@ -7799,12 +7799,13 @@ function pedInfo(){const box=$('pedBox');if(!box)return;const L=pedLive(),nh=hop
 /* ---- 편집 화면 (🛠 편집 모드 🚰 관로 탭) ---- */
 function peVerts(fi){const f=PIPE.feats[fi],r=[];if(!f)return r;lineParts(f.geometry).forEach((p,pi)=>p.forEach((c,vi)=>r.push({pi,vi,n:p.length,c,cp:map.latLngToContainerPoint([c[1],c[0]])})));return r}
 function peHit(cp,all){const ll=map.containerPointToLatLng(cp),h=nearestPipe(ll.lng,ll.lat,PE_HIT*feMpp(),all!==false);if(!h)return -1;const f=PIPE.feats[h.fi];return f&&!f.properties._빈?h.fi:-1}
-/* 놓을 자리: 시설물 점(밸브 등)이 가까우면 시설물, 아니면 관로 선·끝 (ex = 지금 고치는 관로는 빼고) */
-function peSnapAt(cp,ex){const ll=map.containerPointToLatLng(cp);if(!FE.snap)return{lat:ll.lat,lng:ll.lng,raw:1,fi:-1};const m=feMpp();
+/* 놓을 자리: 시설물 점(밸브 등)이 가까우면 시설물, 아니면 관로 선·끝 (ex = 지금 고치는 관로는 빼고)
+   facOnly = 가운데 꼭짓점: 시설물에만 붙고 다른 관로 선에는 안 붙음 */
+function peSnapAt(cp,ex,facOnly){const ll=map.containerPointToLatLng(cp);if(!FE.snap)return{lat:ll.lat,lng:ll.lng,raw:1,fi:-1};const m=feMpp();
  if(FAC.n&&FAC.grid){const R=FE_R*.6*m,dg=R/111000,c=Math.cos(ll.lat*Math.PI/180);let bd=Infinity,bi=-1;
   for(const i of facQuery(ll.lng-dg/c,ll.lat-dg,ll.lng+dg/c,ll.lat+dg)){if(FAC.dl[i])continue;const d=Math.hypot((FAC.x[i]-ll.lng)*c*111320,(FAC.y[i]-ll.lat)*110574);if(d<bd){bd=d;bi=i}}
   if(bi>=0&&bd<=R)return{lat:FAC.y[bi],lng:FAC.x[bi],fac:bi,fi:-1}}
- const s=pipeSnap(ll.lng,ll.lat,FE_R*m,FE_VR*m,ex);return s||{lat:ll.lat,lng:ll.lng,raw:1,fi:-1}}
+ const s=facOnly?null:pipeSnap(ll.lng,ll.lat,FE_R*m,FE_VR*m,ex);return s||{lat:ll.lat,lng:ll.lng,raw:1,fi:-1}}
 function peSnapTxt(s){if(!s)return '';if(s.fac!=null){const I=facKindInfo(FAC.kinds[FAC.k[s.fac]]);return `🧲 시설물(${esc(I.name)}${FAC.pt[s.fac].p&&FAC.pt[s.fac].p['관리번호']?' '+esc(FAC.pt[s.fac].p['관리번호']):''})에 붙음`}return feSnapTxt(s)}
 function peLayers(){if(!PE.hL)PE.hL=L.layerGroup().addTo(map);if(!PE.eL)PE.eL=L.layerGroup().addTo(map)}
 /* 고친 관로 표시 (보라 점) — 편집 모드 관로 탭에서만 */
@@ -7831,20 +7832,32 @@ function peUiHtml(){const has=PIPE.raw&&PIPE.raw.length||PIPE.feats.length,T=PE.
  const place=cx?(T==='sel'?(PE.v?'<button type="button" data-pe="place" class="on">📍 꼭짓점 여기로</button>':''):T==='cut'?'<button type="button" data-pe="place" class="on">✂️ 여기서 나누기</button>':'<button type="button" data-pe="place" class="on">📍 점 찍기</button>'):'';
  const msg=!has?'상수관로 자료가 없습니다. ② 상수관로에서 SHP를 먼저 올리세요.':T==='new'?`점 <b>${PE.draw.length}</b>개 · `+(cx?'십자선을 맞추고 📍 점 찍기를 누르세요.':'지도를 눌러 점을 찍으세요. 관로·시설물 가까이 찍으면 붙습니다.')+' 다 찍었으면 ✔ 다 그림.'
   :T==='cut'?(cx?'십자선을 자를 자리에 맞추고 ✂️ 여기서 나누기를 누르세요.':'자를 자리를 누르세요. 가까이 밸브가 있으면 밸브 자리에서 자릅니다.')
-  :PE.sel<0?'관로를 눌러 고르세요.':(cx?'꼭짓점(흰 점)을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘고, 끝점은 다른 관로·시설물에 붙습니다. 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
+  :PE.sel<0?'관로를 눌러 고르세요.':(cx?'꼭짓점(흰 점)을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘고, 끝점은 다른 관로·시설물에, 가운데 꼭짓점과 선은 제수밸브 등 시설물에 붙습니다. 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
  return `<div class="r"><button type="button" data-pt="sel" class="${T==='sel'?'on':''}">✋ 고르기·꼭짓점</button><button type="button" data-pt="cut" class="${T==='cut'?'on':''}">✂️ 나누기</button><button type="button" data-pt="new" class="${T==='new'?'on':''}">➕ 새 관로</button></div>
  <div class="r"><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="관로 끝·선, 시설물(밸브 등)에 자동으로 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${cx?'on':''}" aria-pressed="${cx}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${place}<button type="button" data-pe="undo" title="마지막 관로 수정 되돌리기">↶ 되돌리기</button><button type="button" data-pe="xls" title="현장에서 고친 관로 목록 (GIS 담당자 전달용, 고객 정보 없음)">📋 수정 목록 엑셀</button><button type="button" data-pe="sync" title="공유 서버에서 먼저 받아 합친 뒤 이 기기에서 고친 것을 올립니다">⏫ 수정분 공유</button></div>
  ${T==='new'&&PE.draw.length?'<div class="r"><button type="button" data-pe="npop">↶ 점 하나 취소</button><button type="button" data-pe="ndone" class="on">✔ 다 그림</button><button type="button" data-pe="ncancel">✕ 그리기 취소</button></div>':''}
  <div class="fem hint">${msg}</div>${T==='sel'&&PE.sel>=0?peFormHtml(PE.sel):''}`}
 function peCrossUpd(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2),T=PE.tool;let s;
  if(T==='cut'){const fi=peHit(cp,false);if(fi<0){FE.last=null;feShow(null);feMsg('십자선 가까이 관로가 없습니다.');return}const ll=map.containerPointToLatLng(cp),q=pipeSnap(ll.lng,ll.lat,PE_HIT*feMpp(),0);s=q||{lat:ll.lat,lng:ll.lng,raw:1,fi};s.cut=fi}
- else s=peSnapAt(cp,T==='sel'?PE.sel:-1);FE.last=s;feShow(s);feMsg(peSnapTxt(s))}
-async function pePlace(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2),s=FE.last||peSnapAt(cp,PE.tool==='sel'?PE.sel:-1);
+ else s=peSnapAt(cp,T==='sel'?PE.sel:-1,peMidV());FE.last=s;feShow(s);feMsg(peSnapTxt(s))}
+/* 옮긴 꼭짓점 양옆 선이 밸브(제수·역지·이토·감압·경계) 옆(화면 12픽셀, 단 0.5m~1.5m)을 지나면 그 밸브 자리에 꼭짓점을 넣어 선도 붙임
+   p = 한 부분 좌표 배열(바꾸지 않음) → {p:새 배열, vi:옮긴 점의 새 번호, n:넣은 수} */
+function peSegValves(p,vi){const r={p,vi,n:0};if(!FE.snap||!FAC.n||!FAC.grid)return r;const R=Math.min(Math.max(PE_HIT*feMpp(),.5),1.5),add=[[],[]];
+ [[vi-1,vi],[vi,vi+1]].forEach(([a,b],k)=>{if(a<0||b>=p.length)return;const A=p[a],B=p[b],c=Math.cos(A[1]*Math.PI/180),kx=111320*c,ky=110574,dg=R/110000;
+  const bx=(B[0]-A[0])*kx,by=(B[1]-A[1])*ky,L2=bx*bx+by*by,L=Math.sqrt(L2);if(L<.6)return;const hit=[];
+  for(const i of facQuery(Math.min(A[0],B[0])-dg/c,Math.min(A[1],B[1])-dg,Math.max(A[0],B[0])+dg/c,Math.max(A[1],B[1])+dg)){if(FAC.dl[i]||!FROT.has(FAC.sk[i]))continue;
+   const px=(FAC.x[i]-A[0])*kx,py=(FAC.y[i]-A[1])*ky,t=(px*bx+py*by)/L2;if(t*L<.3||(1-t)*L<.3)continue;if(Math.hypot(px-t*bx,py-t*by)>R)continue;
+   if(!hit.some(h=>Math.abs(h[0]-t)*L<.3))hit.push([t,FAC.x[i],FAC.y[i]])}
+  hit.sort((x,y)=>x[0]-y[0]);add[k]=hit.map(h=>[h[1],h[2]])});
+ if(!add[0].length&&!add[1].length)return r;r.p=[...p.slice(0,vi),...add[0],p[vi],...add[1],...p.slice(vi+1)];r.vi=vi+add[0].length;r.n=add[0].length+add[1].length;return r}
+/* 고른 꼭짓점이 관로 가운데 점인가 (끝점 아님) */
+function peMidV(){if(PE.tool!=='sel'||PE.sel<0||!PE.v||!PIPE.feats[PE.sel])return false;const p=lineParts(PIPE.feats[PE.sel].geometry)[PE.v.pi];return !!p&&PE.v.vi>0&&PE.v.vi<p.length-1}
+async function pePlace(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2),s=FE.last||peSnapAt(cp,PE.tool==='sel'?PE.sel:-1,peMidV());
  if(PE.tool==='new'){PE.draw.push(s);feUi();peDraw();return}
  if(PE.tool==='cut'){const fi=s&&s.cut!=null?s.cut:peHit(cp,false);if(fi<0){feMsg('십자선 가까이 관로가 없습니다.');return}return peCutAt(fi,cp,s)}
  if(PE.sel<0||!PE.v){feMsg('먼저 관로를 고르고 옮길 꼭짓점을 누르세요.');return}
- const parts=lineParts(PIPE.feats[PE.sel].geometry).map(p=>p.map(c=>[c[0],c[1]])),p=parts[PE.v.pi],end=PE.v.vi===0||PE.v.vi===p.length-1,q=end||s.raw?s:map.containerPointToLatLng(cp);
- p[PE.v.vi]=[q.lng,q.lat];await pedSetGeom(PE.sel,parts,'꼭짓점 옮김')}
+ const parts=lineParts(PIPE.feats[PE.sel].geometry).map(p=>p.map(c=>[c[0],c[1]])),p=parts[PE.v.pi],end=PE.v.vi===0||PE.v.vi===p.length-1,q=end||s.raw||s.fac!=null?s:map.containerPointToLatLng(cp);
+ p[PE.v.vi]=[q.lng,q.lat];const g=peSegValves(p,PE.v.vi);parts[PE.v.pi]=g.p;PE.v={pi:PE.v.pi,vi:g.vi};await pedSetGeom(PE.sel,parts,'꼭짓점 옮김'+(g.n?` · 선이 밸브 ${g.n}개에 붙음`:''))}
 /* 자를 자리: 고른 관로 위 가장 가까운 점, 가까이(화면 12픽셀·1.5m 안) 밸브가 있으면 밸브 자리 */
 function peCutAt(fi,cp,s){let ll=s&&!s.raw&&s.fi===fi?{lng:s.lng,lat:s.lat}:map.containerPointToLatLng(cp);
  if(FAC.n&&FAC.grid){const m=feMpp(),R=PE_HIT*m,dg=R/111000,c=Math.cos(ll.lat*Math.PI/180),gate=new Set(FAC.kinds.map((k,i)=>facKindInfo(k).sym==='gate'?i:-1));let bd=Infinity,bi=-1;
@@ -7880,10 +7893,11 @@ function peDown(e,cp){if(PE.tool!=='sel'||PE.sel<0)return false;const vs=peVerts
  if(!D)return false;const de=map.dragging.enabled();if(de)map.dragging.disable();PE.drag={...D,id:e.pointerId,de,parts,moved:false,s:null};map.closePopup();return true}
 function peMove(e){const D=PE.drag;if(!D||e.pointerId!==D.id)return;const cp=map.mouseEventToContainerPoint(e),p=D.parts[D.pi],end=D.vi===0||D.vi===p.length-1;
  if(!D.moved){const v0=map.latLngToContainerPoint([p[D.vi][1],p[D.vi][0]]);if(Math.hypot(v0.x-cp.x,v0.y-cp.y)<4)return}D.moved=true;
- const s=end?peSnapAt(cp,PE.sel):(()=>{const ll=map.containerPointToLatLng(cp);return{lat:ll.lat,lng:ll.lng,raw:1,fi:-1}})();D.s=s;p[D.vi]=[s.lng,s.lat];
- if(!PE.raf)PE.raf=requestAnimationFrame(()=>{PE.raf=0;if(PE.drag){peDraw(PE.drag.parts);feShow(end&&!s.raw?s:null);feMsg(end?peSnapTxt(s)||'끝점: 붙을 관로·시설물이 가까이 없습니다':'꼭짓점 옮기는 중')}})}
+ const s=peSnapAt(cp,PE.sel,!end);D.s=s;p[D.vi]=[s.lng,s.lat];
+ if(!PE.raf)PE.raf=requestAnimationFrame(()=>{PE.raf=0;const D=PE.drag;if(!D)return;const g=peSegValves(D.parts[D.pi],D.vi),pv=g.n?D.parts.map((q,k)=>k===D.pi?g.p:q):D.parts;D.sv=g.n;
+  peDraw(pv);feShow(!s.raw?s:null);const st=(end||!s.raw)&&peSnapTxt(s)||(end?'끝점: 붙을 관로·시설물이 가까이 없습니다':'꼭짓점 옮기는 중 (시설물 가까이 가면 붙음)');feMsg(st+(g.n?` · 🧲 선이 밸브 ${g.n}개에 붙음`:''))})}
 function peUp(e){const D=PE.drag;if(!D||e.pointerId!==D.id)return;PE.drag=null;if(D.de)map.dragging.enable();feShow(null);
- if(e.type==='pointerup'&&D.moved){FE.justDrag=Date.now();PE.v={pi:D.pi,vi:D.vi};pedSetGeom(PE.sel,D.parts,D.ins?'꼭짓점 추가':'꼭짓점 옮김').catch(er=>feMsg('<span class="c-rd">저장 실패: '+esc(er.message||er)+'</span>'))}
+ if(e.type==='pointerup'&&D.moved){FE.justDrag=Date.now();const g=peSegValves(D.parts[D.pi],D.vi);D.parts[D.pi]=g.p;PE.v={pi:D.pi,vi:g.vi};pedSetGeom(PE.sel,D.parts,(D.ins?'꼭짓점 추가':'꼭짓점 옮김')+(g.n?` · 선이 밸브 ${g.n}개에 붙음`:'')).catch(er=>feMsg('<span class="c-rd">저장 실패: '+esc(er.message||er)+'</span>'))}
  else if(!D.ins){PE.v=PE.v&&PE.v.pi===D.pi&&PE.v.vi===D.vi?null:{pi:D.pi,vi:D.vi};PE.tapAt=Date.now();feUi();peDraw()}else{PE.tapAt=Date.now();peDraw()}}
 window.peOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='pipe';PE.tool='sel';PE.sel=fi;PE.v=null;PE.draw=[];feUi();peMarks();peDraw()};
 try{feInit()}catch(e){console.warn('시설물 편집',e)}
