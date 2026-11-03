@@ -1669,7 +1669,13 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
  <p class="hint" style="margin:6px 2px 0">주소를 고르면 지번 주소로 좌표를 다시 찾고, 없으면 도로명 주소로 찾습니다. 다음(카카오) 우편번호 서비스</p></div></div>
 <script type="text/plain" id="frdMd"># 스마트 물길주소 · 자료 양식 FRD
 
-만든이: 구병순 · 이 문서대로 만든 자료는 앱 코드를 고치지 않고 📥 파일 넣기로 바로 올릴 수 있습니다.
+만든이: 구병순 · FRD 판: 2026-11-03 · 이 문서대로 만든 자료는 앱 코드를 고치지 않고 📥 파일 넣기로 바로 올릴 수 있습니다.
+
+## 0. 두 가지 방법
+
+- **방법 1 · 요약만 AI에 (권장)**: 앱 📑 창의 🔒 원본 살펴보기로 **자료요약.md**를 만든다(이름·전화 값 없음, 주소 번지 가림). AI는 이 요약만 보고 **10장 변환 규칙(JSON)**을 돌려준다. 규칙을 앱에 붙여 넣고 원본을 넣으면 앱이 기기 안에서 바꿔 반영한다. 원본은 밖으로 나가지 않는다.
+- **방법 2 · 원본을 AI에**: 회사 규정이 허락할 때만. AI가 이 양식대로 만든 엑셀·SHP zip을 📥 파일 넣기로 넣는다.
+- 어느 방법이든 넣은 뒤 📑 창의 **📋 검수 보고서**로 빠진 것을 확인하고, 보고서를 AI에 다시 주면 고칠 방법을 받을 수 있다.
 
 ## 1. 자료 6가지
 
@@ -1762,6 +1768,47 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
 - [ ] 경계 BLK_NM 값과 부과량 Y열 소블록 이름이 같음(다르면 별칭표 작성)
 - [ ] 관로·시설물에 관리번호, 제수밸브에 개폐여부
 - [ ] 자료에 없는 값은 지어내지 않고 "확인 필요"로 남김
+
+## 10. 변환 규칙(JSON) — 방법 1에서 AI가 돌려줄 것
+
+자료요약.md만 받았으면 파일을 만들지 말고 아래 꼴의 JSON 하나를 ```json 블록으로 돌려준다. 열은 엑셀 열 글자(A, B, … AA), `header_row`는 머리글이 있는 행 번호(1부터). 모르는 칸은 빈 글자 `""`로 두고 `check`에 적는다.
+
+```json
+{
+  "frd_rule": 1,
+  "bill": [{
+    "file": "원본 파일 이름.xlsx", "sheet": "시트 이름", "header_row": 3,
+    "cols": {"수용가번호": "A", "관리번호": "B", "주소": "D", "구주소": "E", "업종": "F", "구경": "G",
+             "가구수": "", "검침입력": "", "동명": "H", "대블록": "", "소블록": "K"},
+    "months": {"L": "2025-01", "M": "2025-02"}
+  }],
+  "shp": [{"file": "경계.zip", "layer": "BLOCK", "kind": "소블록", "crs": "EPSG:5186", "name_field": "BLOCK_NAME", "sa": ""},
+          {"file": "시설물.zip", "layer": "VALVE", "kind": "시설물", "crs": "", "name_field": "", "sa": "SA200"}],
+  "alias": ["부과량이름=경계이름"],
+  "check": ["확인 필요한 것"]
+}
+```
+
+- `cols`에 수용가명·상호·전화·검침담당 열은 넣지 않는다(넣어도 앱이 버림).
+- `months`: 월 사용량 열 글자 → `YYYY-MM`. 연도가 머리글에 없으면 요약의 다른 단서로 정하고 근거를 `check`에 적는다.
+- `shp.kind`: 소블록 · 관로 · 시설물 · 사진기준위치 · 건너뜀. `crs`는 .prj가 없을 때만(EPSG:5187/5186/5185/5179/4326). `name_field`는 경계의 블록 이름 칸(BLK_NM으로 바뀜). `sa`는 시설물 지물부호.
+- `layer`는 zip 안 .shp 파일 이름(확장자 없이). 비우면 그 zip의 모든 레이어.
+
+## 11. 준비 상태별 시작
+
+| 가진 자료 | 할 수 있는 것 | 다음에 갖출 것 |
+|---|---|---|
+| 수용가 엑셀만 | 주소 → 지도 점, 소블록별 현황(Y열 소블록이 있으면) | 소블록 경계 |
+| + 소블록 경계 | 공간결합, 블록 경계 지도 | 상수관로 |
+| + 상수관로 | 관로 지도·관경·재질·연도 | 제수밸브 시설물 |
+| + 제수밸브 시설물 | 단수구역 찾기 | 관망해석 inp |
+| + 관망해석 | 표고·수압·유속 | — |
+
+없을 때:
+- 경계가 CAD(dwg·dxf)뿐: GIS 프로그램(QGIS 등)에서 면으로 바꿔 SHP로 내보내거나 AI에 변환 방법을 묻는다. 그동안은 부과량 Y열 소블록만으로 시작.
+- 소블록 구분이 없음: Y열을 비우고 시작하면 블록별 현황이 (미지정)으로 나온다. 경계를 받은 뒤 공간결합 결과를 참고해 Y열을 채운다.
+- 월마다 시트(또는 파일)가 따로: 한 시트에 수용가번호 기준으로 옆으로 붙인다(AI에 맡길 수 있음).
+- 관리번호가 없음: 수용가번호를 관리번호 칸에도 넣는다(확인 필요로 표시).
 </script>
 <script type="text/plain" id="frdPr">너는 상수도 자료 정리 담당이다. 함께 올린 "01_FRD_자료양식.md"가 스마트 물길주소 앱의 입력 양식이다.
 아래 원본 자료를 이 양식대로 정리해서, 앱에 바로 넣을 수 있는 파일로 만들어 줘.
@@ -1775,21 +1822,47 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
 6. 관로·시설물 칸 이름은 FRD 5·6장 이름(FTR_IDN, STD_DIP, MOP_CDE, IST_YMD, SAA_CDE, 개폐여부 등)으로 맞추고, 시설물 파일명 앞에 지물부호(SA200 등)를 붙인다.
 7. 작업이 끝나면 (1) 만든 파일 목록, (2) 바꾼 내용 요약, (3) FRD 9장 검수 체크리스트 결과, (4) 확인 필요 항목을 알려 준다.
 8. 원본 구조가 애매하면 바로 바꾸지 말고 정리안 2~3개를 먼저 보여 주고 내가 고르게 한다.
+9. 원본 대신 앱이 만든 "자료요약.md"를 받았으면 파일을 만들지 말고, FRD 10장 꼴의 변환 규칙 JSON 하나를 ```json 블록으로 돌려준다. 요약에 가려진 값(이름·전화·번지)은 묻지 않는다.
+10. 앱의 "검수 보고서.md"를 받았으면 ⚠ 항목마다 원인 후보와 고칠 방법(원본에서 고칠 것 / 변환 규칙에서 고칠 것)을 알려 준다.
 
 [원본 자료]
 (여기에 원본 파일을 첨부하고, 어떤 자료인지 한 줄씩 적어 주세요. 예: 2025년 부과량 엑셀, 블록 경계 shp)
 </script>
-<script type="text/plain" id="frdRd"># 처음 쓰는 분: 기초자료를 클로드로 정리해서 넣기
+<script type="text/plain" id="frdRd"># 처음 쓰는 분: 기초자료를 AI(클로드)로 정리해서 넣기
 
-만든이: 구병순
+만든이: 구병순 · FRD 판: 2026-11-03
 
-1. claude.ai에서 새 대화를 엽니다.
-2. 이 묶음의 **01_FRD_자료양식.md**, **03_부과량_빈양식.xlsx**(필요하면 04·05 양식도)와 정리할 **원본 자료**를 함께 첨부합니다.
-3. **02_클로드_요청문.txt** 내용을 붙여 넣고, 맨 아래에 원본 자료가 무엇인지 적어 보냅니다.
-4. 클로드가 만든 파일(엑셀·SHP zip)을 내려받습니다. "확인 필요" 목록은 원본을 확인해 채웁니다.
-5. 앱에서 **📥 파일 넣기**에 정리된 파일을 한꺼번에 넣으면 종류를 알아서 나눠 반영합니다.
+## 먼저 내 자료 상태 보기
 
-주의: 고객 이름·전화번호가 들어 있는 원본을 외부 서비스에 올려도 되는지 회사 규정을 먼저 확인하세요. 가능하면 이름·전화 열을 지우고 올립니다.
+| 자료 | 필수 | 있음 | 꼴이 다름 | 없음 |
+|---|---|---|---|---|
+| 수용가(부과량) 엑셀 | 필수 | 바로 넣기 | 아래 방법 1 | 이 앱을 시작할 수 없음 |
+| 소블록 경계 SHP | 권장 | 바로 넣기 | 방법 1 (좌표계·블록 이름 칸) | FRD 11장: Y열 소블록만으로 시작 |
+| 상수관로 SHP | 권장 | 바로 넣기 | 방법 1 | 관로 지도·단수구역 없이 사용 |
+| 시설물 SHP(제수밸브) | 선택 | 바로 넣기 | 방법 1 (지물부호) | 단수구역 찾기 없이 사용 |
+| 관망해석 inp | 선택 | 바로 넣기 | FRD 7장 | 표고·수압 없이 사용 |
+| 민원 리스트·사진 위치 | 선택 | 바로 넣기 | FRD 8장 | 사진은 GPS로만 위치 |
+
+자료가 다 없어도 됩니다. 수용가 엑셀 하나로 시작하고 하나씩 더하세요(FRD 11장).
+
+## 방법 1 · 요약만 AI에 (권장, 원본이 밖으로 안 나감)
+
+1. 앱 📑 자료 양식 창 **② 🔒 원본 살펴보기**에서 원본 파일을 고르면 **자료요약.md**가 내려받아집니다. 이름·전화 값은 빠지고 주소 번지는 가려집니다.
+2. claude.ai 새 대화에 **01_FRD_자료양식.md**와 **자료요약.md**를 첨부하고 **02_클로드_요청문.txt**를 붙여 넣어 보냅니다.
+3. AI가 돌려준 **변환 규칙(JSON)**을 복사해 📑 창 **④ AI 변환 규칙**에 붙여 넣고 [규칙 확인] → [원본 넣어 규칙대로 반영]을 누릅니다.
+4. 앱이 원본을 기기 안에서 FRD 양식으로 바꿔 반영합니다. 열 대응 창에서 한 번 더 확인할 수 있습니다.
+
+## 방법 2 · 원본을 AI에 (회사 규정이 허락할 때만)
+
+1. claude.ai 새 대화에 **01_FRD_자료양식.md**, **03_부과량_빈양식.xlsx**(필요하면 04·05)와 원본을 첨부합니다.
+2. **02_클로드_요청문.txt**를 붙여 넣고 원본이 무엇인지 적어 보냅니다.
+3. AI가 만든 파일을 받아 **📥 파일 넣기**에 한꺼번에 넣습니다.
+
+## 넣은 뒤
+
+📑 창 **⑤ 📋 검수 보고서**를 만들어 ⚠ 항목을 확인합니다. 보고서.md를 AI에 주면 고칠 방법을 알려 줍니다.
+
+주의: 고객 이름·전화번호가 든 원본을 외부 서비스에 올려도 되는지 회사 규정을 먼저 확인하세요.
 </script>
 <script type="text/plain" id="appMain">
 const $=id=>document.getElementById(id);
@@ -8032,16 +8105,26 @@ async function frdCopy(b){const t=frdTx('frdPr');let ok=false;try{await navigato
  if(b){const t0=b.dataset.t0||(b.dataset.t0=b.textContent);b.textContent=ok?'✅ 복사했습니다':'⚠️ 복사 안 됨 — 묶음의 02_클로드_요청문.txt를 쓰세요';setTimeout(()=>b.textContent=t0,2500)}}
 function frdOpen(){let w=$('frdW');
  if(!w){w=document.createElement('div');w.id='frdW';w.className='hlpw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','자료 양식 FRD');
-  w.innerHTML=`<div class="hh"><b>📑 처음 쓰는 분 · 기초자료를 클로드로 정리해 넣기</b><button type="button" class="hlpx" id="frdX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
-<p style="margin:2px 0 8px">엑셀·SHP가 앱 양식과 다르거나 다듬어지지 않았으면, 아래 순서로 클로드에게 정리를 맡긴 뒤 넣으세요.</p>
+  w.innerHTML=`<div class="hh"><b>📑 처음 쓰는 분 · 기초자료를 AI로 정리해 넣기 <small class="mute" style="font-weight:400">FRD 판 ${FRD_V}</small></b><button type="button" class="hlpx" id="frdX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
+<p style="margin:2px 0 8px">엑셀·SHP가 앱 양식과 다르거나 다듬어지지 않았으면 아래 순서로 하세요. 자료가 다 없어도 수용가 엑셀 하나로 시작할 수 있습니다(묶음의 00_먼저읽기 · FRD 11장).</p>
 <div class="hbx"><h4>① FRD 묶음 받기</h4><p style="margin:0 0 6px">자료 양식 설명(FRD) · 클로드 요청문 · 빈 양식 엑셀(부과량·민원 리스트·사진 기준 위치)이 든 zip 하나입니다.</p><button type="button" class="btn" id="frdDl" style="width:auto">⬇ FRD 묶음 받기 (zip)</button></div>
-<div class="hbx"><h4>② 클로드에게 맡기기</h4><ol style="margin:0 0 6px;padding-left:18px"><li>claude.ai 새 대화에 <b>01_FRD_자료양식.md</b>·<b>03_부과량_빈양식.xlsx</b>와 정리할 <b>원본 자료</b>를 함께 첨부</li><li>아래 버튼으로 요청문을 복사해 붙여 넣고, 원본이 무엇인지 한 줄씩 적어 보내기</li><li>클로드가 만든 엑셀·SHP zip을 내려받고, "확인 필요" 목록을 채우기</li></ol><button type="button" class="btn ol" id="frdCp" style="width:auto">📋 클로드 요청문 복사</button> <a href="https://claude.ai/new" target="_blank" rel="noopener" class="btn ol" style="width:auto;display:inline-block;text-decoration:none">↗ claude.ai 열기</a></div>
-<div class="hbx"><h4>③ 정리된 파일 넣기</h4><p style="margin:0 0 6px">받은 파일을 <b>📥 파일 넣기</b>에 한꺼번에 넣으면 종류를 알아서 나눠 반영합니다. 양식이 조금 달라도 그 자리에서 맞춰 줍니다.</p><button type="button" class="btn" id="frdUp" style="width:auto">📥 파일 넣기</button></div>
+<div class="hbx"><h4>② 🔒 원본 살펴보기 → 자료요약.md <small class="c-in">권장</small></h4><p style="margin:0 0 6px">원본 엑셀·SHP zip을 고르면 앱이 이 기기 안에서 열·칸 구성과 값 예시만 뽑아 요약합니다. <b>이름·상호·전화 값은 넣지 않고 주소 번지는 가립니다.</b> 원본은 올라가지 않습니다.</p><input type="file" id="frdSrc" multiple accept=".xlsx,.xlsm,.xls,.xlsb,.csv,.zip,.inp" hidden><button type="button" class="btn" id="frdSum" style="width:auto">📂 원본 골라 요약 만들기</button><div id="frdSumBox" hidden></div></div>
+<div class="hbx"><h4>③ AI(클로드)에게 맡기기</h4><ol style="margin:0 0 6px;padding-left:18px"><li>claude.ai 새 대화에 <b>01_FRD_자료양식.md</b>와 <b>자료요약.md</b>를 첨부 (규정이 허락하면 원본 + 03_부과량_빈양식.xlsx)</li><li>아래 버튼으로 요청문을 복사해 붙여 넣고 보내기</li><li>요약을 줬으면 AI가 <b>변환 규칙(JSON)</b>을, 원본을 줬으면 정리된 파일을 돌려줍니다</li></ol><button type="button" class="btn ol" id="frdCp" style="width:auto">📋 클로드 요청문 복사</button> <a href="https://claude.ai/new" target="_blank" rel="noopener" class="btn ol" style="width:auto;display:inline-block;text-decoration:none">↗ claude.ai 열기</a></div>
+<div class="hbx"><h4>④ 넣기 — AI 변환 규칙 또는 정리된 파일</h4><p style="margin:0 0 6px">AI가 준 JSON을 붙여 넣고 [규칙 확인] → [원본 넣어 규칙대로 반영]. 파일 이름이 규칙과 같은 원본에만 쓰고, 열 대응 창에서 한 번 더 확인합니다. 정리된 파일을 받았으면 바로 📥 파일 넣기.</p><textarea id="frdRule" rows="4" style="width:100%;font-size:12px;font-family:ui-monospace,monospace" placeholder="여기에 AI가 준 변환 규칙(JSON)을 붙여 넣으세요"></textarea><div class="hrow"><button type="button" class="btn ol" id="frdRuleOk">✔ 규칙 확인</button><button type="button" class="btn ol" id="frdRuleX">지우기</button></div><pre id="frdRuleInfo" style="white-space:pre-wrap;font-size:12px;margin:4px 0"></pre><div class="hrow"><button type="button" class="btn" id="frdUpR">📥 원본 넣어 규칙대로 반영</button><button type="button" class="btn ol" id="frdUp">📥 파일 넣기</button></div></div>
+<div class="hbx"><h4>⑤ 📋 검수 보고서</h4><p style="margin:0 0 6px">넣은 자료를 FRD 기준으로 확인합니다(빈 소블록·못 찾은 주소·블록 이름 차이·관로 끝점·제수밸브 개폐 등). 보고서.md를 AI에 주면 고칠 방법을 알려 줍니다.</p><button type="button" class="btn" id="frdCk" style="width:auto">📋 검수 보고서 만들기</button><div id="frdCkBox" hidden></div></div>
 <p style="margin:8px 0 0"><small>⚠️ 고객 이름·전화번호가 든 원본을 외부 서비스에 올려도 되는지 회사 규정을 먼저 확인하고, 가능하면 그 열을 지우고 올리세요. 묶음에는 고객 자료가 들어 있지 않습니다. · 만든이: 구병순</small></p>`;
   w.querySelector('#frdX').onclick=()=>{w.hidden=true};
   w.querySelector('#frdDl').onclick=()=>frdZip().catch(e=>alert('FRD 묶음을 만들지 못했습니다: '+e.message));
   w.querySelector('#frdCp').onclick=e=>frdCopy(e.currentTarget);
   w.querySelector('#frdUp').onclick=()=>{w.hidden=true;const f=$('uniFile');if(f)f.click()};
+  const ri=w.querySelector('#frdRuleInfo'),rt=w.querySelector('#frdRule'),rShow=()=>{const r=frdRuleGet();ri.textContent=r?'저장된 규칙 ('+fmtDT(r._at||Date.now())+')\n'+frdRuleTxt(r):'저장된 규칙 없음';w.querySelector('#frdUpR').disabled=!r};rShow();
+  w.querySelector('#frdRuleOk').onclick=()=>{try{const r=frdRuleParse(rt.value);r._at=Date.now();frdRuleSet(r);rShow();rt.value=''}catch(e){ri.textContent='⚠ 규칙을 읽지 못했습니다: '+e.message+'\nAI가 준 ```json … ``` 부분을 통째로 붙여 넣으세요.'}};
+  w.querySelector('#frdRuleX').onclick=()=>{if(frdRuleGet()&&!confirm('저장된 AI 변환 규칙을 지울까요?'))return;frdRuleSet(null);rt.value='';rShow()};
+  w.querySelector('#frdUpR').onclick=()=>{if(!frdRuleGet())return;w.hidden=true;const f=$('uniFile');if(f)f.click()};
+  const src=w.querySelector('#frdSrc');w.querySelector('#frdSum').onclick=()=>src.click();
+  src.onchange=async()=>{const fs=[...src.files];src.value='';if(!fs.length)return;const b=w.querySelector('#frdSum'),t0=b.textContent;b.disabled=true;b.textContent='⏳ 살펴보는 중…';
+   try{const md=await frdSummary(fs);const fn='자료요약_'+fmtD(Date.now()).replace(/-/g,'')+'.md';frdText('frdSumBox',md,fn);dlBlob(new Blob([md],{type:'text/markdown;charset=utf-8'}),fn)}catch(e){alert('요약을 만들지 못했습니다: '+((e&&e.message)||e))}finally{b.disabled=false;b.textContent=t0}};
+  w.querySelector('#frdCk').onclick=()=>{try{const r=frdCheck();frdText('frdCkBox',r.md,'검수보고서_'+fmtD(Date.now()).replace(/-/g,'')+'.md')}catch(e){alert('검수 보고서를 만들지 못했습니다: '+((e&&e.message)||e))}};
   L.DomEvent&&L.DomEvent.disableClickPropagation(w)}
  const fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(w.parentNode!==fe)fe.appendChild(w);
  w.hidden=!w.hidden}
@@ -8108,6 +8191,7 @@ async function uniZip(f){if(typeof JSZip==='undefined')return[{f,k:'skip',why:'Z
   if(names.some(p=>/\.(jpe?g|png|heic)$/i.test(p)))return[{f,k:'skip',why:'사진 묶음 zip은 풀어서 사진 파일로 넣어 주세요'}];
   return[{f,k:'skip',why:'zip 안에 SHP(.shp)가 없습니다'}]}
  const L=[];for(const p of shps)L.push(await uniShpLayer(z,p));
+ try{frdRuleShp(f.name,L)}catch(_){}L.forEach(l=>{if(l.k==='skip')l.k=''});
  const noPrj=L.filter(l=>!l.prj).map(l=>l.nm),cls=[...new Set(L.map(l=>l.k).filter(Boolean))];
  const one=async(k,ls,file)=>{const kk=k in uniHas&&uniHas[k]()?k+'U':k,why=ls.map(l=>l.why).filter((v,i,a)=>a.indexOf(v)===i).join(', ');
   const pl=/^(blk|pipe|fac)$/.test(k)?await uniShpFixPlan(z,ls,k):{fix:[]};
@@ -8122,6 +8206,7 @@ async function uniZip(f){if(typeof JSZip==='undefined')return[{f,k:'skip',why:'Z
 /* 엑셀·CSV: 시트 이름 → 머리글 */
 async function uniXl(f){if(typeof XLSX==='undefined')return[{f,k:'skip',why:'엑셀 읽기 기능(SheetJS)을 불러오지 못했습니다'}];
  let buf,names=[];try{buf=await f.arrayBuffer();names=uniExt(f.name)==='csv'?['Sheet1']:XLSX.read(buf,{type:'array',bookSheets:true}).SheetNames||[]}catch(_){return[{f,k:'skip',why:'엑셀 파일을 열지 못했습니다'}]}
+ {const rb=frdRuleBill(f.name,names);if(rb)return[{f,k:'billX',why:`🤖 AI 변환 규칙대로 FRD 양식으로 바꿔 반영 ('${rb.sheet||names[0]}' 시트)`}]}
  if(names.includes('부과량'))return[{f,k:'bill',why:"'부과량' 시트 (열 자리가 FRD와 다르면 종류를 'FRD 양식으로 맞추기'로 바꾸세요)"}];
  for(const n of names){const H0=(()=>{try{const wb=XLSX.read(buf,{type:'array',sheets:[n],sheetRows:10}),ws=wb.Sheets[n];return ws?XLSX.utils.sheet_to_json(ws,{header:1,defval:null}).flat().map(v=>String(v??'').replace(/\s/g,'')):[]}catch(_){return[]}})();
   if(H0.includes('수용가번호')||(H0.some(h=>UNI_IDRE.test(h))&&H0.filter(h=>uniMonth(h)).length>=2))return[{f,k:'billX',why:`'${n}' 시트에 수용가번호 — '부과량' 시트가 아니라 FRD 양식(Y열 소블록 등)으로 바꿔 반영`}]}
@@ -8210,9 +8295,11 @@ function uniCrsGuess(pt){if(!pt)return{c:'EPSG:5187',sure:false};if(isDeg(pt))re
 async function uniShpFixPlan(z,ls,k){const fix=[];let needPrj=false,pt=null;
  for(const l of ls){if(!l.prj){needPrj=true;if(!pt)pt=await uniShpPt(z.file(l.p))}
   if(!l.cpg)fix.push(`${l.nm}: .cpg 추가`);
-  if(k==='blk'&&!l.flds.some(f=>/^BLK_NM$/i.test(f))){const c=l.flds.find(f=>UNI_BLKF.test(f));if(c){l.ren=c;fix.push(`${l.nm}: 블록명 칸 ${c} → BLK_NM`)}}
-  if(k==='fac'&&!/SA\d{3}/i.test(l.nm)&&!/^(지물부호|FTR_CDE)$/im.test(l.flds.join('\n'))){const g=FK_GUESS.find(([re])=>re.test(l.nm)),sa=g&&UNI_SA[g[1]];if(sa){l.sa=sa;fix.push(`${l.nm}: 파일명 앞에 ${sa} 붙임`)}}}
- const g=needPrj?uniCrsGuess(pt):null;if(needPrj)fix.unshift('.prj 추가 (좌표계 아래에서 선택)');return{fix,needPrj,crs:g&&g.c,crsSure:g&&g.sure,crsWhy:g&&g.why}}
+  if(k==='blk'&&l.ren){fix.push(`${l.nm}: 블록명 칸 ${l.ren} → BLK_NM (AI 규칙)`)}
+  else if(k==='blk'&&!l.flds.some(f=>/^BLK_NM$/i.test(f))){const c=l.flds.find(f=>UNI_BLKF.test(f));if(c){l.ren=c;fix.push(`${l.nm}: 블록명 칸 ${c} → BLK_NM`)}}
+  if(k==='fac'&&l.sa){fix.push(`${l.nm}: 파일명 앞에 ${l.sa} 붙임 (AI 규칙)`)}
+  else if(k==='fac'&&!/SA\d{3}/i.test(l.nm)&&!/^(지물부호|FTR_CDE)$/im.test(l.flds.join('\n'))){const g=FK_GUESS.find(([re])=>re.test(l.nm)),sa=g&&UNI_SA[g[1]];if(sa){l.sa=sa;fix.push(`${l.nm}: 파일명 앞에 ${sa} 붙임`)}}}
+ const rc=ls.map(l=>l.rcrs).find(Boolean),g=needPrj?(rc?{c:rc,sure:true,why:'AI 변환 규칙'}:uniCrsGuess(pt)):null;if(needPrj)fix.unshift('.prj 추가 (좌표계 아래에서 선택)');return{fix,needPrj,crs:g&&g.c,crsSure:g&&g.sure,crsWhy:g&&g.why}}
 /* 고친 zip 만들기 */
 async function uniShpFix(it){const z=await JSZip.loadAsync(it.f),nz=new JSZip(),names=Object.keys(z.files).filter(p=>!z.files[p].dir);let ch=0;
  const bnm=x=>String(x).split('/').pop();
@@ -8245,6 +8332,13 @@ function uniMonth(h){if(h instanceof Date||typeof h==='number')return{ym:bYm(h)}
  let m=/^(20\d\d)[.\-\/년](\d{1,2})/.exec(s);if(m&&+m[2]>=1&&+m[2]<=12)return{ym:m[1]+'-'+m[2].padStart(2,'0')};
  m=/^(\d{1,2})월/.exec(s);if(m&&+m[1]>=1&&+m[1]<=12)return{mo:+m[1]};return null}
 async function uniBillScan(f){const buf=await f.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});let sh=null,A=null,hi=-1;
+ const rb=frdRuleBill(f.name,wb.SheetNames);if(rb){const n=rb.sheet&&wb.Sheets[rb.sheet]?rb.sheet:wb.SheetNames[0],a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null,blankrows:true});
+  const i=rb.header_row?rb.header_row-1:a.findIndex((r,k)=>k<10&&r&&r.some(v=>UNI_IDRE.test(String(v??'').replace(/\s/g,''))));
+  if(i>=0&&a[i]){const H=a[i].map(h=>h instanceof Date?h:String(h??'').replace(/\s/g,'')),body=a.slice(i+1).filter(r=>r&&r.some(v=>v!=null&&String(v).trim()!=='')),dc=XLSX.utils.decode_col,map={},gs=new Map(),mon=[];
+   for(const k in rb.cols){const c=dc(rb.cols[k]);if(c>=0&&!(typeof H[c]==='string'&&uniNoRead.test(H[c]))){map[k]=c;gs.set(k,`🤖 AI 규칙: ${rb.cols[k]}열`)}}
+   for(const c0 in rb.months){const c=dc(c0);if(c>=0&&!Object.values(map).includes(c))mon.push({c,h:c0+'열 → '+rb.months[c0],ym:rb.months[c0]})}
+   const sig=n+'|'+H.filter((h,c)=>typeof h==='string'&&!mon.some(m=>m.c===c)).join('|');
+   return{wb,sh:n,H:H.map((h,c)=>typeof h==='string'&&h?h:(h instanceof Date?bYm(h):'')||'('+XLSX.utils.encode_col(c)+'열)'),body,map,mon,sig,mem:null,gs,yr:new Date().getFullYear(),rule:true}}}
  for(const n of wb.SheetNames){const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null});const i=a.findIndex((r,k)=>k<10&&r&&r.some(v=>{const t=String(v??'').replace(/\s/g,'');return t==='수용가번호'||UNI_IDRE.test(t)}));if(i>=0){sh=n;A=a;hi=i;break}}
  if(!A)throw new Error('수용가번호 머리글이 있는 시트를 찾지 못했습니다');
  const H=A[hi].map(h=>h instanceof Date?h:String(h??'').replace(/\s/g,'')),body=A.slice(hi+1).filter(r=>r&&r.some(v=>v!=null&&String(v).trim()!==''));
@@ -8258,8 +8352,8 @@ async function uniBillScan(f){const buf=await f.arrayBuffer(),wb=XLSX.read(buf,{
  return{wb,sh,H,body,map,mon,sig,mem,gs,yr:mem&&mem.yr||new Date().getFullYear()}}
 function uniBillDlg(S,fname){return new Promise(res=>{const col=i=>XLSX.utils.encode_col(i),o=(k,sel)=>`<option value="">(없음)</option>`+S.H.map((h,i)=>typeof h==='string'&&!uniNoRead.test(h)?`<option value="${i}"${sel===i?' selected':''}>${col(i)} · ${esc(h||'(빈 머리글)')}</option>`:'').join('');
  const noYr=S.mon.some(m=>!m.ym),d=document.createElement('div');d.id='uniDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
- d.innerHTML=`<div class="ubox"><h3>📥 부과량 양식 맞추기 — ${esc(fname)}</h3><p class="hint">'${esc(S.sh)}' 시트 · 수용가 ${S.body.length.toLocaleString()}행. 자동으로 찾은 열입니다. 틀린 것만 고르세요. 이름·상호·전화 열은 옮기지 않습니다.</p>
- <div class="ulist">${UNI_BR.map(([k,lb,,rq])=>`<div class="urow"><span></span><div class="unm"><b>${lb}${rq?' <span class="c-rd">*</span>':''}${S.gs&&S.gs.has(k)?` <small class="c-am" title="${esc(S.gs.get(k))}">🔎 추측 — 확인</small>`:''}</b><small>FRD 자리: ${col(UNI_BCOL[k])}열${S.gs&&S.gs.has(k)?' · '+esc(S.gs.get(k)):''}</small></div><select class="msel" data-k="${k}">${o(k,S.map[k])}</select></div>`).join('')}
+ d.innerHTML=`<div class="ubox"><h3>📥 부과량 양식 맞추기 — ${esc(fname)}</h3><p class="hint">'${esc(S.sh)}' 시트 · 수용가 ${S.body.length.toLocaleString()}행. ${S.rule?'🤖 AI 변환 규칙으로 맞춘 열입니다.':'자동으로 찾은 열입니다.'} 틀린 것만 고르세요. 이름·상호·전화 열은 옮기지 않습니다.</p>
+ <div class="ulist">${UNI_BR.map(([k,lb,,rq])=>`<div class="urow"><span></span><div class="unm"><b>${lb}${rq?' <span class="c-rd">*</span>':''}${S.gs&&S.gs.has(k)?` <small class="c-am" title="${esc(S.gs.get(k))}">${S.rule?'🤖 AI 규칙':'🔎 추측'} — 확인</small>`:''}</b><small>FRD 자리: ${col(UNI_BCOL[k])}열${S.gs&&S.gs.has(k)?' · '+esc(S.gs.get(k)):''}</small></div><select class="msel" data-k="${k}">${o(k,S.map[k])}</select></div>`).join('')}
  <div class="urow"><span></span><div class="unm"><b>월별 사용량 ${S.mon.length}개 열</b><small>${S.mon.length?esc(S.mon.map(m=>m.h).join(', ')):'⚠ 날짜·월 머리글 열을 찾지 못했습니다'}</small></div>${noYr?`<label class="unm"><small>연도 없는 월의 연도 (확인 필요)</small><input type="number" id="uniYr" min="2000" max="2100" value="${S.yr}" style="width:100%"></label>`:'<span></span>'}</div></div>
  <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;margin-top:8px"><input type="checkbox" id="uniMem" checked> 이 대응을 기억 (다음 달부터 같은 양식이면 묻지 않음)</label>
  <div class="ubtn"><button type="button" class="btn ol" data-a="x">이 파일 건너뛰기</button><button type="button" class="btn" data-a="ok">표준 양식으로 바꿔 반영</button></div></div>`;
@@ -8293,14 +8387,162 @@ function uniAliasHint(){try{if(!BILL.R||!BILL.R.length||!poly)return'';const am=
  const pair=[];onlyB.forEach(b=>{const s=onlyS.find(x=>nk(x)===nk(b));if(s)pair.push(b+'='+s)});
  UNI.alias=pair;return`⚠ 블록 이름: 부과량에만 ${onlyB.length}개(${esc(onlyB.slice(0,8).join(', '))}${onlyB.length>8?' 외':''}) · 경계에만 ${onlyS.length}개.`+(pair.length?` 비슷한 이름 ${pair.length}쌍 <button type="button" class="btn ol" id="uniAl" style="width:auto;padding:2px 8px;font-size:12px">별칭표에 넣기</button>`:' 별칭표(② 소블록)에 직접 맞춰 주세요.')}catch(_){return''}}
 function uniAfter(){const m=$('uniMsg');if(!m)return;let h='';const al=uniAliasHint();if(al)h+='<br>'+al;
+ const rr=frdRuleGet(),ta=$('blkAlias'),have=new Set(String(ta&&ta.value||'').split('\n').map(x=>x.trim())),ral=rr?rr.alias.filter(x=>!have.has(x.trim())):[];
+ if(ral.length)h+=`<br>🤖 AI 변환 규칙의 별칭 ${ral.length}줄 <button type="button" class="btn ol" id="uniAl2" style="width:auto;padding:2px 8px;font-size:12px">별칭표에 넣기</button>`;
+ h+=`<br><button type="button" class="btn ol" id="uniChk" style="width:auto;padding:4px 10px;font-size:12.5px;margin-top:4px">📋 검수 보고서 보기</button>`;
  if(UNI.out.length)h+=`<br><button type="button" class="btn ol" id="uniDl" style="width:auto;padding:4px 10px;font-size:12.5px;margin-top:4px">⬇ FRD 양식 파일 받기 (${UNI.out.length}개)</button> <small>바꾼 표준 파일 — 직원·다른 기기와 나눌 때</small>`;
  m.insertAdjacentHTML('beforeend',h);const a=$('uniAl');if(a)a.onclick=()=>{const t=$('blkAlias');if(!t)return;t.value=(t.value.trim()?t.value.trim()+'\n':'')+UNI.alias.join('\n');t.dispatchEvent(new Event('change'));a.disabled=true;a.textContent='넣었습니다 ✓'};
+ const a2=$('uniAl2');if(a2)a2.onclick=()=>{const t=$('blkAlias');if(!t)return;t.value=(t.value.trim()?t.value.trim()+'\n':'')+ral.join('\n');t.dispatchEvent(new Event('change'));a2.disabled=true;a2.textContent='넣었습니다 ✓'};
+ const ck=$('uniChk');if(ck)ck.onclick=()=>{const w=$('frdW');if(!w||w.hidden)frdOpen();setTimeout(()=>{const b=$('frdCk');if(b){b.click();b.scrollIntoView({block:'center'})}},50)};
  const d=$('uniDl');if(d)d.onclick=async()=>{if(UNI.out.length===1)return dlBlob(UNI.out[0],UNI.out[0].name);const z=new JSZip();UNI.out.forEach(f=>z.file(f.name,f));dlBlob(await z.generateAsync({type:'blob'}),`현장자료_FRD양식_${fmtD(Date.now()).replace(/-/g,'')}.zip`)}}
 /* 지도 위 📂 칩: 백업만 넣으면 예전처럼 바로 불러오고(bkChipGo), 다른 파일이 섞이면 📥 파일 넣기 확인 창으로 */
 async function uniChip(a,inp){const fs=[...inp.files];if(!fs.length)return;let allBk=true;
  for(const f of fs){const r=await uniSniff(f);if(!r.every(x=>x.k==='bk')){allBk=false;break}}
  if(allBk)return bkChipGo(a,inp);inp.value='';uniGo(fs)}
 try{uniInit()}catch(e){console.warn('파일 넣기',e)}
+/* ---------- 📑 FRD B안 (2026-11-03): 원본 살펴보기 → 자료요약.md(개인정보 가림) · AI 변환 규칙(JSON) 붙여 넣기 → 기기 안에서 변환 · 넣은 뒤 검수 보고서.md ----------
+   원본은 기기 밖으로 나가지 않음. 요약에는 이름·상호·전화 열 값이 없고, 주소는 번지를 ○로, 전화 모양 숫자는 *로 가림.
+   변환 규칙은 localStorage 'geo-frdrule'에 보관 → 📥 파일 넣기에서 파일 이름이 맞는 엑셀·SHP에 씀(열 대응 창은 그대로 떠서 사람이 확인) */
+const FRD_V='2026-11-03';
+const FRD_KN={blk:'소블록 경계',pipe:'상수관로',fac:'상수도 시설물',phRef:'사진 기준 위치',skip:'건너뜀'};
+const FRD_KR={'소블록':'blk','소블록경계':'blk','경계':'blk','관로':'pipe','상수관로':'pipe','시설물':'fac','상수도시설물':'fac','사진기준위치':'phRef','건너뜀':'skip','skip':'skip','blk':'blk','pipe':'pipe','fac':'fac','phRef':'phRef'};
+const frdNm=s=>String(s||'').split(/[\\/]/).pop().trim().toLowerCase();
+const frdStem=s=>frdNm(s).replace(/\.[^.]+$/,'').replace(/(_frd양식)+$/,'');
+/* 가림: 전화 모양 숫자 · 주소 번지 · 주민번호 모양 */
+function frdMask(v){if(v==null)return'';if(v instanceof Date)return v.toISOString().slice(0,10);let t=String(v).replace(/\s+/g,' ').trim();if(!t)return'';
+ t=t.replace(/\d{6}-?[1-4]\d{6}/g,'******-*******').replace(/(01[016789]|0\d{1,2})[-.\s)]?\d{3,4}[-.\s]?\d{4}/g,'***-****-****');
+ if(/\S(로|길)\s*\d|\S(동|리|가)\s*(산\s*)?\d/.test(t))t=t.replace(/((?:로|길|동|리|가)\s*(?:산\s*)?)\d[\d\-]*(.*)$/,(m,a)=>a+'○')+' (번지 가림)';
+ return t.length>40?t.slice(0,40)+'…':t}
+const frdMd=s=>String(s??'').replace(/\|/g,'\\|').replace(/\n/g,' ');
+/* 이름 의심 열: 머리글이 없어도 값이 2~4글자 한글이고 서로 다른 값이 많으면 가림 */
+function frdNameLike(vals){const v=vals.filter(x=>x!=null&&String(x).trim()!=='').map(x=>String(x).trim());if(v.length<20)return false;
+ const h=v.filter(x=>/^[가-힣]{2,4}$/.test(x)&&!/(동|리|읍|면|가|로|길|용|장|소|관|원|청|구|시|군)$/.test(x));return h.length/v.length>.6&&new Set(h).size/h.length>.5}
+async function frdXlSum(f){const out=[];let wb;try{wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true,sheetRows:400})}catch(_){return['- ⚠ 엑셀을 열지 못했습니다']}
+ const enc=XLSX.utils.encode_col;
+ for(const n of wb.SheetNames.slice(0,12)){const ws=wb.Sheets[n];if(!ws||!ws['!ref']){out.push(`### 시트 '${frdMd(n)}' · 비어 있음`);continue}
+  const full=XLSX.utils.decode_range(ws['!fullref']||ws['!ref']),A=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null,blankrows:true});
+  const nr=full.e.r+1,nc=Math.min(full.e.c+1,80);
+  let hi=-1,best=0;A.slice(0,12).forEach((r,i)=>{const k=(r||[]).filter(v=>typeof v==='string'&&v.trim()&&!/^\d+([.,]\d+)?$/.test(v.trim())).length;if(k>best){best=k;hi=i}});
+  out.push(`### 시트 '${frdMd(n)}' · ${nr.toLocaleString()}행 × ${full.e.c+1}열 · 머리글 추정 ${hi+1}행`);
+  out.push('','맨 위 6행(머리글 찾기용, 값 가림):','','| 행 | '+Array.from({length:Math.min(nc,16)},(_,c)=>enc(c)).join(' | ')+' |','|---|'+'---|'.repeat(Math.min(nc,16)));
+  const H=(A[hi]||[]).map(h=>h instanceof Date?bYm(h)||'':String(h??'').replace(/\s/g,'')),body=A.slice(hi+1).filter(r=>r&&r.some(v=>v!=null&&String(v).trim()!==''));
+  const bad=new Set();for(let c=0;c<nc;c++){if(uniNoRead.test(H[c]||'')||frdNameLike(body.map(r=>r[c])))bad.add(c)}
+  A.slice(0,6).forEach((r,i)=>out.push(`| ${i+1} | `+Array.from({length:Math.min(nc,16)},(_,c)=>i>hi&&bad.has(c)?'(가림)':frdMd(frdMask((r||[])[c]))).join(' | ')+' |'));
+  if(nc>16)out.push(`(맨 위 행은 P열까지만 · 전체 ${full.e.c+1}열은 아래 표)`);
+  out.push('','| 열 | 머리글 | 값 예시(가림) | 빈칸 | 숫자 | 앱 추측 |','|---|---|---|---|---|---|');
+  const BR=UNI_BR.map(([k,lb,re])=>[lb,re]);
+  for(let c=0;c<nc;c++){const h=H[c]||'',col=body.map(r=>r[c]),fill=col.filter(v=>v!=null&&String(v).trim()!=='');
+   const nb=body.length?Math.round((1-fill.length/body.length)*100):0,nn=fill.length?Math.round(fill.filter(v=>typeof v==='number').length/fill.length*100):0;
+   let ex,why='';if(bad.has(c)){ex='(개인정보 열 · 값 넣지 않음)';why='개인정보'}
+   else{ex=[...new Set(fill.map(frdMask))].slice(0,3).map(frdMd).join(' / ');const m=BR.find(([,re])=>re.test(h));if(m)why=m[0];else if(uniMonth(h)||bYm(A[hi]&&A[hi][c]))why='월 사용량?'}
+   if(!h&&!fill.length)continue;out.push(`| ${enc(c)} | ${frdMd(h)||'(없음)'} | ${ex} | ${nb}% | ${nn}% | ${why} |`)}
+  if(full.e.c+1>nc)out.push(`(${enc(nc)}열부터 ${full.e.c+1-nc}열 생략)`);out.push('')}
+ if(wb.SheetNames.length>12)out.push(`(시트 ${wb.SheetNames.length-12}개 더 있음: ${wb.SheetNames.slice(12).map(frdMd).join(', ')})`);
+ return out}
+async function frdDbfRows(z,l,n){const df=z.file(l.base+'.dbf')||z.file(l.base+'.DBF');if(!df)return[];try{const h0=await uniHead(df,32),hl=h0[8]|(h0[9]<<8),rl=h0[10]|(h0[11]<<8);const h=await uniHead(df,hl+rl*n+1);
+ const F=[];for(let o=32;o+32<=hl&&h[o]!==13;o+=32){let e=o;while(e<o+11&&h[e])e++;F.push({nm:uniDec(h.subarray(o,e),l.cp).trim(),len:h[o+16]})}
+ const R=[];for(let i=0;i<n;i++){let p=hl+i*rl+1;if(p+rl-1>h.length)break;const r={};F.forEach(f=>{r[f.nm]=uniDec(h.subarray(p,p+f.len),l.cp).trim();p+=f.len});R.push(r)}return R}catch(_){return[]}}
+const FRD_GT={1:'점',3:'선',5:'면',8:'여러 점'};
+async function frdZipSum(f){let z;try{z=await JSZip.loadAsync(f)}catch(_){return['- ⚠ zip을 열지 못했습니다']}
+ const names=Object.keys(z.files).filter(p=>!z.files[p].dir&&!/(^|\/)(__MACOSX|\.)/.test(p)),shps=names.filter(p=>/\.shp$/i.test(p)),out=[];
+ if(!shps.length){out.push(`- SHP 없음 · 안의 파일: ${names.slice(0,15).map(frdMd).join(', ')}${names.length>15?' 외 '+(names.length-15)+'개':''}`);return out}
+ for(const p of shps){const l=await uniShpLayer(z,p),shx=z.file(l.base+'.shx')||z.file(l.base+'.SHX');let cnt='확인 필요';
+  try{const sz=shx&&shx._data&&shx._data.uncompressedSize;if(sz)cnt=((sz-100)/8).toLocaleString()+'개'}catch(_){}
+  let prjT='';if(l.prj){try{const pf=z.file(l.base+'.prj')||z.file(l.base+'.PRJ');prjT=String(await pf.async('string')).slice(0,90)}catch(_){}}
+  const pt=await uniShpPt(z.file(p)),g=l.prj?null:uniCrsGuess(pt);
+  out.push(`### 레이어 ${frdMd(l.nm)} · ${FRD_GT[l.gt%10]||'도형 '+l.gt} · ${cnt}`,'',
+   `- 앱 판별: ${FRD_KN[l.k]||l.k||'모름'} (${frdMd(l.why)})`,`- .prj: ${l.prj?'있음 · '+frdMd(prjT):'**없음**'+(g?` · 앱 추천 ${g.c}${g.sure?' ('+frdMd(g.why||'')+')':' (확인 필요)'}`:'')} · .cpg: ${l.cpg?frdMd(l.cp):'없음'}`,
+   `- 첫 점 원래 좌표: ${pt?pt.map(v=>Math.round(v*1000)/1000).join(', '):'확인 필요'}`,`- 칸(${l.flds.length}개): ${l.flds.map(frdMd).join(', ')}`);
+  const R=await frdDbfRows(z,l,3);if(R.length){const fs=l.flds.slice(0,14);out.push('','| '+fs.map(frdMd).join(' | ')+' |','|'+'---|'.repeat(fs.length));R.forEach(r=>out.push('| '+fs.map(k=>uniNoRead.test(k)?'(가림)':frdMd(frdMask(r[k]))).join(' | ')+' |'));if(l.flds.length>14)out.push(`(칸 ${l.flds.length-14}개 생략)`)}
+  out.push('')}
+ return out}
+async function frdSummary(files){files=[...files||[]];const it=[];for(const f of files){let r=[];try{r=await uniSniff(f)}catch(_){r=[{f,k:'skip',why:'읽기 실패'}]}it.push({f,r})}
+ const has=k=>it.some(x=>x.r.some(y=>y.k===k||y.k===k+'U'||(k==='bill'&&y.k==='billX')));
+ const inApp={bill:BILL.R.length>0,blk:!!poly,pipe:!!(PIPE.raw&&PIPE.raw.length),fac:!!(FAC.feats&&FAC.feats.length),elev:ELEV.n>0};
+ const st=(k,lb,need)=>`| ${lb} | ${need} | ${has(k)?'✅ 이번 파일에 있음':inApp[k]?'✅ 앱에 이미 있음':'— 없음'} |`;
+ const L=[`# 스마트 물길주소 · 자료요약`,'',`FRD 판 ${FRD_V} · 만든 날 ${new Date().toLocaleString('ko-KR')} · 파일 ${files.length}개`,'',
+  '> 이 요약은 앱이 기기 안에서 만들었습니다. 수용가명·상호·전화·검침담당 열과 이름으로 보이는 열의 값은 넣지 않았고, 주소 번지는 ○, 전화 모양 숫자는 *로 가렸습니다. 올리기 전에 한 번 훑어 보세요.','',
+  '> **AI에게**: 함께 준 01_FRD_자료양식.md 10장 꼴의 변환 규칙 JSON 하나를 ```json 블록으로 돌려주세요. 파일 이름·시트 이름·열 글자는 아래 표 그대로 쓰세요.','',
+  '## 준비 상태','','| 자료 | 필수 | 상태 |','|---|---|---|',st('bill','수용가(부과량)','필수'),st('blk','소블록 경계','권장'),st('pipe','상수관로','권장'),st('fac','상수도 시설물','선택'),st('elev','관망해석','선택'),st('rcp','민원 리스트','선택'),''];
+ const step=!has('bill')&&!inApp.bill?'수용가(부과량) 엑셀부터 준비':!has('blk')&&!inApp.blk?'1단계(수용가만) — 다음은 소블록 경계':!has('pipe')&&!inApp.pipe?'2단계(+경계) — 다음은 상수관로':!has('fac')&&!inApp.fac?'3단계(+관로) — 다음은 제수밸브 시설물':'4단계 이상 — 단수구역까지 가능';
+ L.push(`지금 단계: **${step}** (FRD 11장)`,'','## 파일별 내용','');
+ for(const x of it){const f=x.f,e=uniExt(f.name);L.push(`## 📄 ${frdMd(f.name)} · ${uniSz(f.size||0)}`,'',`앱 판별: ${x.r.map(y=>`${frdMd((UNI_K[y.k]||[y.k])[0])} — ${frdMd(y.why||'')}`).join(' / ')}`,'');
+  if(/^(xlsx|xlsm|xls|xlsb|csv)$/.test(e))L.push(...await frdXlSum(f));
+  else if(e==='zip')L.push(...await frdZipSum(f));
+  else if(e==='inp'||e==='txt'){try{const h=await f.slice(0,200000).text();L.push('- 구역: '+([...h.matchAll(/^\s*\[([A-Z_]+)\]/gm)].map(m=>m[1]).join(', ')||'없음'),'- [TITLE] projection: '+(/<projection>\s*([^<]+)/i.exec(h)||[,'없음 (확인 필요)'])[1],'')}catch(_){}}
+  else L.push('- 내용은 요약하지 않음','')}
+ return L.join('\n')}
+/* 변환 규칙 읽기 */
+function frdRuleParse(t){t=String(t||'');const m=/```(?:json)?\s*([\s\S]*?)```/i.exec(t);let s=m?m[1]:t;const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a<0||b<a)throw new Error('JSON을 찾지 못했습니다');
+ const r=JSON.parse(s.slice(a,b+1));if(!r||typeof r!=='object')throw new Error('JSON 모양이 아닙니다');
+ const arr=v=>Array.isArray(v)?v:v&&typeof v==='object'?[v]:[];r.bill=arr(r.bill);r.shp=arr(r.shp);r.alias=(Array.isArray(r.alias)?r.alias:[]).map(String).filter(x=>/=/.test(x));r.check=(Array.isArray(r.check)?r.check:[]).map(String);
+ const lb2k=Object.fromEntries(UNI_BR.map(([k,lb])=>[lb,k])),cl=v=>{v=String(v??'').trim().toUpperCase();return /^[A-Z]{1,3}$/.test(v)?v:''};
+ r.bill.forEach(b=>{const c={};for(const [lb,v] of Object.entries(b.cols||{})){const k=lb2k[String(lb).replace(/\s/g,'')]||(UNI_BCOL[lb]!=null?lb:null);if(k&&cl(v))c[k]=cl(v)}b.cols=c;
+  const mo={};for(const [c0,ym] of Object.entries(b.months||{})){const m2=/^(20\d\d)\D?(\d{1,2})$/.exec(String(ym).trim());if(cl(c0)&&m2&&+m2[2]>=1&&+m2[2]<=12)mo[cl(c0)]=m2[1]+'-'+m2[2].padStart(2,'0')}b.months=mo;b.header_row=Math.max(1,parseInt(b.header_row)||0)||0});
+ r.shp.forEach(x=>{x.k=FRD_KR[String(x.kind||'').replace(/\s/g,'')]||'';x.crs=UNI_CRS.includes(String(x.crs||'').toUpperCase())?String(x.crs).toUpperCase():/^\d{4}$/.test(String(x.crs||''))&&UNI_CRS.includes('EPSG:'+x.crs)?'EPSG:'+x.crs:'';x.sa=/^SA\d{3}$/i.test(String(x.sa||''))?String(x.sa).toUpperCase():''});
+ if(!r.bill.length&&!r.shp.length&&!r.alias.length)throw new Error('bill·shp·alias 중 하나는 있어야 합니다');return r}
+function frdRuleGet(){if(UNI.rule!==undefined)return UNI.rule;try{UNI.rule=JSON.parse(localStorage.getItem('geo-frdrule')||'null')}catch(_){UNI.rule=null}return UNI.rule}
+function frdRuleSet(r){UNI.rule=r;try{if(r)localStorage.setItem('geo-frdrule',JSON.stringify(r));else localStorage.removeItem('geo-frdrule')}catch(_){}}
+function frdRuleTxt(r){if(!r)return'저장된 규칙 없음';const o=[];
+ r.bill.forEach(b=>o.push(`📊 ${b.file||'(파일 이름 없음)'} · '${b.sheet||'첫 시트'}' 시트 · 머리글 ${b.header_row||'자동'}행 · 열 ${Object.keys(b.cols).length}개(${Object.entries(b.cols).map(([k,v])=>(UNI_BR.find(x=>x[0]===k)||[,k])[1]+' '+v).join(', ')}) · 월 ${Object.keys(b.months).length}개`+(b.cols.id?'':' · ⚠ 수용가번호 열 없음')+(b.cols.b?'':' · ⚠ 소블록 열 없음')));
+ r.shp.forEach(x=>o.push(`🗺 ${x.file||'(파일 이름 없음)'}${x.layer?' / '+x.layer:''} → ${FRD_KN[x.k]||'앱 판별대로'}${x.crs?' · '+x.crs:''}${x.name_field?' · 블록명 칸 '+x.name_field:''}${x.sa?' · '+x.sa:''}`));
+ if(r.alias.length)o.push(`🔤 별칭 ${r.alias.length}줄`);if(r.check.length)o.push(`❓ 확인 필요 ${r.check.length}개: ${r.check.slice(0,5).join(' / ')}`);return o.join('\n')}
+/* 📥 파일 넣기에서 쓰는 곳 */
+function frdRuleBill(fname,sheets){const r=frdRuleGet();if(!r||!r.bill.length)return null;const n=frdStem(fname);
+ return r.bill.find(b=>b.file&&frdStem(b.file)===n)||(r.bill.length===1&&!r.bill[0].file&&(!r.bill[0].sheet||(sheets||[]).includes(r.bill[0].sheet))?r.bill[0]:null)}
+function frdRuleShp(fname,L){const r=frdRuleGet();if(!r||!r.shp.length)return false;const n=frdStem(fname),es=r.shp.filter(x=>x.file&&frdStem(x.file)===n);if(!es.length)return false;let hit=false;
+ for(const l of L){const e=es.find(x=>x.layer&&frdStem(x.layer)===frdStem(l.nm))||es.find(x=>!x.layer);if(!e)continue;hit=true;
+  if(e.k){l.k=e.k;l.why='🤖 AI 변환 규칙'}if(e.crs&&!l.prj)l.rcrs=e.crs;
+  if(e.name_field&&!l.flds.some(f=>/^BLK_NM$/i.test(f))){const c=l.flds.find(f=>f.toUpperCase()===String(e.name_field).toUpperCase());if(c)l.ren=c}
+  if(e.sa&&!/SA\d{3}/i.test(l.nm))l.sa=e.sa}
+ return hit}
+/* ---------- 📋 검수 보고서 ---------- */
+function frdCheck(){const L=[`# 스마트 물길주소 · 검수 보고서`,'',`FRD 판 ${FRD_V} · 만든 날 ${new Date().toLocaleString('ko-KR')}`,'','> 앱에 들어 있는 자료를 FRD 기준으로 확인한 결과입니다. 개수만 있고 고객 정보는 없습니다. ⚠ 항목은 AI에 이 보고서를 주면 고칠 방법을 물어볼 수 있습니다.',''],C=[];
+ const ok=(c,t)=>C.push(`- ${c===1?'✅':c===0?'⚠':'—'} ${t}`),pc=(a,b)=>b?Math.round(a/b*1000)/10+'%':'0%';
+ /* 1 수용가 */
+ L.push('## 1. 수용가(부과량)','');const R=BILL.R||[];
+ if(!R.length){L.push('- — 부과량 자료가 아직 없습니다.','');ok(0,'부과량: 자료 없음')}
+ else{const g=(r,k,i)=>r&&r[k]!=null?r[k]:r&&r[i],nm=R.filter(r=>!String(g(r,'mg',11)??'').trim()).length,nb=R.filter(r=>!String(g(r,'b',9)??'').trim()).length,na=R.filter(r=>!String(g(r,'ad',1)??'').trim()&&!String(g(r,'ji',2)??'').trim()).length,M=BILL.M||[];
+  const qv=(r,j)=>r&&r.q?r.q[j]:r&&r[12+j],allNull=M.map((_,j)=>R.every(r=>qv(r,j)==null)).filter(Boolean).length;
+  L.push(`- 수용가 ${R.length.toLocaleString()}건 · 월 ${M.length}개(${M[0]||''} ~ ${M[M.length-1]||''})`,`- 관리번호 빈 행 ${nm.toLocaleString()}건 (${pc(nm,R.length)}) · 소블록(Y열) 빈 행 ${nb.toLocaleString()}건 (${pc(nb,R.length)}) · 주소·구주소 둘 다 빈 행 ${na.toLocaleString()}건`,
+   `- 값이 하나도 없는 달 ${allNull}개`,'');
+  ok(M.length>=6?1:0,`부과량: 월 사용량 ${M.length}개 (6개월 이상 권장)`);ok(nb?0:1,`부과량: 소블록 빈 행 ${nb.toLocaleString()}건`);ok(nm?0:1,`부과량: 관리번호 빈 행 ${nm.toLocaleString()}건`);ok(na?0:1,`부과량: 주소 없는 행 ${na.toLocaleString()}건`)}
+ /* 2 주소 → 좌표 */
+ L.push('## 2. 주소 → 좌표 · 공간결합','');
+ if(!out.length)L.push('- — 주소 → 좌표(① 주소 변환)를 아직 하지 않았거나 결과가 없습니다.','');
+ else{const fail=out.filter(r=>r['_방식']==='실패').length,pos=out.filter(r=>r['_위도']!==''&&r['_위도']!=null),outB=poly?pos.filter(r=>!String(r['_결합블록']||'').trim()).length:0;
+  L.push(`- 주소 ${out.length.toLocaleString()}행 · 좌표 찾음 ${pos.length.toLocaleString()} · 못 찾음 ${fail.toLocaleString()} (${pc(fail,out.length)})`+(poly?` · 경계 밖(결합 블록 없음) ${outB.toLocaleString()}`:''),'');
+  ok(fail/out.length<.03?1:0,`주소: 못 찾은 주소 ${fail.toLocaleString()}건 (${pc(fail,out.length)}, 3% 아래 권장)`);if(poly)ok(outB/Math.max(1,pos.length)<.03?1:0,`공간결합: 경계 밖 ${outB.toLocaleString()}건`)}
+ /* 3 경계·블록 이름 */
+ L.push('## 3. 소블록 경계 · 블록 이름','');
+ if(!poly){L.push('- — 소블록 경계가 아직 없습니다.','');ok(-1,'경계: 없음 (FRD 11장 1단계)')}
+ else{const fld=$('blkField').value,fs=poly.features,ne=fs.filter(g=>!String(g.properties[fld]??'').trim()).length;L.push(`- 경계 ${fs.length.toLocaleString()}개 · 이름 칸 ${fld||'(없음)'}${/^BLK_NM$/i.test(fld)?'':' (FRD 권장 BLK_NM)'} · 이름 빈 경계 ${ne}개`);ok(ne?0:1,`경계: 이름 빈 경계 ${ne}개`);
+  if(R.length){const am=aliasMap(),sh=shpNames(),bl=new Set();R.forEach(r=>{const v=bNorm(r&&r.b!=null?r.b:r&&r[9]);if(v)bl.add(v)});const onlyB=[...bl].filter(b=>!sh.has(b)&&!sh.has(am.get(b)||'')&&!sh.has(bParen(b))),onlyS=[...sh].filter(s=>![...bl].some(b=>b===s||am.get(b)===s||bParen(b)===s));
+   L.push(`- 부과량 소블록 ${bl.size}개 중 경계에 없는 이름 ${onlyB.length}개${onlyB.length?': '+onlyB.slice(0,30).map(frdMd).join(', ')+(onlyB.length>30?' 외':''):''}`,`- 경계에만 있는 이름 ${onlyS.length}개${onlyS.length?': '+onlyS.slice(0,30).map(frdMd).join(', ')+(onlyS.length>30?' 외':''):''}`);
+   ok(onlyB.length?0:1,`블록 이름: 부과량에만 ${onlyB.length}개 (별칭표 \`부과량이름=경계이름\`)`)}L.push('')}
+ /* 4 관로 */
+ L.push('## 4. 상수관로','');const P=PIPE.feats||[];
+ if(!P.length){L.push('- — 상수관로가 아직 없습니다.','');ok(-1,'관로: 없음')}
+ else{let nid=0,ndia=0,nmat=0,nyr=0;const ids=new Map(),E=new Map(),key=c=>Math.round(c[0]*1e6)+','+Math.round(c[1]*1e6),add=c=>{if(!c)return;const k=key(c);E.set(k,(E.get(k)||0)+1)};
+  for(const f of P){const a=attrOf(f);if(!String(a.id).trim())nid++;else ids.set(a.id,(ids.get(a.id)||0)+1);if(!a.dia)ndia++;if(a.mat==='미상')nmat++;if(!a.year)nyr++;
+   const g=f.geometry;if(!g)continue;const ls=g.type==='MultiLineString'?g.coordinates:[g.coordinates];ls.forEach(l=>{if(l&&l.length){add(l[0]);add(l[l.length-1])}})}
+  let one=0;E.forEach(v=>{if(v===1)one++});const dup=[...ids.values()].filter(v=>v>1).length;
+  L.push(`- 관로 ${P.length.toLocaleString()}개 · 관리번호 없음 ${nid.toLocaleString()} · 같은 관리번호 ${dup.toLocaleString()}개 · 관경 없음 ${ndia.toLocaleString()} · 재질 미상 ${nmat.toLocaleString()} · 설치연도 없음 ${nyr.toLocaleString()}`,
+   `- 다른 관로와 닿지 않는 끝점 ${one.toLocaleString()}곳 (막힌 관 끝도 포함 · 많으면 끝점이 0.1m 안에서 안 맞는 것)`,'');
+  ok(nid?0:1,`관로: 관리번호 없음 ${nid.toLocaleString()}개`);ok(ndia/P.length<.05?1:0,`관로: 관경 없음 ${ndia.toLocaleString()}개 (${pc(ndia,P.length)})`);ok(one/(P.length*2)<.2?1:0,`관로: 닿지 않는 끝점 ${pc(one,P.length*2)}`)}
+ /* 5 시설물 */
+ L.push('## 5. 상수도 시설물','');const F=FAC.feats||[];
+ if(!F.length){L.push('- — 시설물이 아직 없습니다. (단수구역 찾기에는 제수밸브 필요)','');ok(-1,'시설물: 없음')}
+ else{const byK=new Map();F.forEach(f=>byK.set(f.k,(byK.get(f.k)||0)+1));const G=F.filter(f=>{try{return facKindInfo(f.k).sym==='gate'}catch(_){return false}}),gNo=G.filter(f=>!String((f.p||{})['개폐여부']??'').trim()).length,gCl=G.filter(f=>facClosed(f.p)).length;
+  L.push(`- 시설물 ${F.length.toLocaleString()}개 · 종류 ${byK.size}개: ${[...byK].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([k,n])=>{let nm=k;try{nm=facKindInfo(k).name||k}catch(_){}return frdMd(nm)+' '+n.toLocaleString()}).join(', ')}`,`- 제수밸브 ${G.length.toLocaleString()}개 · 개폐여부 빈 칸 ${gNo.toLocaleString()} · 닫힘 ${gCl.toLocaleString()}`,'');
+  ok(G.length?1:0,`시설물: 제수밸브 ${G.length.toLocaleString()}개`);if(G.length)ok(gNo?0:1,`시설물: 제수밸브 개폐여부 빈 칸 ${gNo.toLocaleString()}개`)}
+ /* 6 관망해석 */
+ L.push('## 6. 관망해석','',ELEV.n?`- 표고 점 ${ELEV.n.toLocaleString()}개${ELEV.hyd?' · 수압·유속 결과 있음':''}`:'- — 관망해석 자료 없음 (선택)','');
+ L.push('## 요약 (FRD 9장)','',...C,'');const r=frdRuleGet();if(r&&r.check&&r.check.length)L.push('## AI 변환 규칙의 확인 필요','',...r.check.map(x=>'- '+frdMd(x)),'');
+ return{md:L.join('\n'),warn:C.filter(x=>/⚠/.test(x)).length}}
+function frdText(id,md,fn){const box=$(id);if(!box)return;box.hidden=false;box.innerHTML=`<pre style="max-height:200px;overflow:auto;white-space:pre-wrap;font-size:11.5px;background:var(--bg,#f8fafc);border:1px solid var(--line);border-radius:8px;padding:6px;margin:6px 0">${esc(md)}</pre><button type="button" class="btn ol" data-a="dl" style="width:auto">⬇ ${esc(fn)} 받기</button> <button type="button" class="btn ol" data-a="cp" style="width:auto">📋 복사</button>`;
+ box.querySelector('[data-a="dl"]').onclick=()=>dlBlob(new Blob([md],{type:'text/markdown;charset=utf-8'}),fn);
+ box.querySelector('[data-a="cp"]').onclick=async e=>{const b=e.currentTarget;let ok=false;try{await navigator.clipboard.writeText(md);ok=true}catch(_){}b.textContent=ok?'✅ 복사했습니다':'⚠️ 복사 안 됨 — 받기를 쓰세요';setTimeout(()=>b.textContent='📋 복사',2500)}}
 /* ---------- 🖍️ 지도 그리기·글자·아이콘 (2026-10-29 B안) ----------
    펜·직선·화살표·네모·원·글자·아이콘(제수변·누수 등)을 지도 좌표로 저장해 확대·이동해도 제자리. drawPane 캔버스라 🖼️ 캡처에 함께 찍힘.
    화면 고정(🔒) 중에도 그림: 그리는 동안 덮개(.mkov)가 손가락을 받고 지도 끌기는 쓰지 않음. ✋ 이동을 고르면 덮개가 비켜 지도를 옮김.
