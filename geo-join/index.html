@@ -126,6 +126,7 @@ textarea{height:58px;resize:vertical}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .lqsn{background:#1d4ed8;color:#fff;font:700 11px/18px sans-serif;border:2px solid #fff;border-radius:9px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.45)}.lqsn.on{background:#059669}.lqsn.bvx{background:#dc2626}
 .lqrk{background:#b91c1c;color:#fff;font:700 11px/16px sans-serif;border:2px solid #fff;border-radius:50%;width:16px;height:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.lqk{border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:4px 8px;background:var(--card,#fff)}.lqk small{display:block;font-size:10.5px;opacity:.75}.lqk b{font-size:14px}
 .lqt{border-collapse:collapse;font-size:11.5px;width:100%}.lqt th,.lqt td{border-bottom:1px solid var(--line,#e2e8f0);padding:3px 4px;text-align:left;vertical-align:top}.lqt th{font-weight:700;color:var(--mute);white-space:nowrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;color:#fff;background:var(--ind)}
 html.dark .btn:not(.ol):not(.em):not(.am):not(.sl){background:#6366f1}
@@ -1245,6 +1246,13 @@ html.gwOn .afp{top:150px}
   <p class="hint" id="lqMsg"></p>
   <div id="lqTbl"></div>
   <div id="lqCand"></div>
+  <details id="lqcBox" style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">✅ 누수 확인 지점 · 예측 검증</summary>
+   <p class="hint" style="margin:4px 0">현장에서 누수가 확인된 자리를 적으면 예측(수압 위치·위험 점수·경계밸브 추적)이 얼마나 맞았는지 대조하고, 기록이 쌓이면 위치·위험 비중을 맞힌 쪽으로 고치도록 안내합니다. 좌표는 지도 길게 누르기 → 📍 좌표 <b>복사</b>를 붙여 넣으세요.</p>
+   <div class="g2"><label class="f">좌표 (위도, 경도)<input id="lqcLL" placeholder="36.111748, 129.341274" style="width:100%"></label><label class="f">확인 날짜<input id="lqcD" type="date" style="width:100%"></label></div>
+   <label class="f">메모 <small style="font-weight:400">(지번·관경 등, 고객 이름·연락처는 적지 마세요)</small><input id="lqcM" placeholder="예: 마산리 75-8 PE400 옆" style="width:100%"></label>
+   <div class="sbtns"><button id="lqcAdd" type="button" class="btn ol">＋ 누수 확인 지점 넣기</button></div>
+   <div id="lqcList"></div><div id="lqcVer"></div>
+  </details>
   <div class="sbtns" style="margin-top:4px"><button id="lqOff" type="button" class="btn ol">🙈 지도 표시 지우기</button><button id="lqDel" type="button" class="btn ol">🗑 고른 소블록 1분 자료 지우기</button></div>
   <details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px">⚙ 판정 기준 · 파손 위험 점수 가중치</summary><div id="lqCfg"></div></details>
   <p class="hint">L1: 1분 유량으로 누수 의심 소블록(야간최소유량 증가·급증)을 찾고, 그 안 관로를 <b>파손 위험 점수</b>(경과연수·재질·누수 이력·최고 수압·관경)로 줄 세웁니다. L2: 수압계 3개 이상 자료와 준비 파일이 있으면 평상 날과 최근 날의 같은 시간대 수압 차이를 관망해석 가상 누수와 비교해 위치 가능성을 빨간 원으로 보여 줍니다. 모두 참고값이며 현장 탐사로 확인하세요. 관로 색 기준 '파손 위험 점수'는 ⚙️ 관로 보기 설정에서 고릅니다.</p>
@@ -9011,8 +9019,8 @@ const RISK_MAT={'회주철관(CIP)':1,'아연도강관':1,'석면시멘트관':1
 const riskDia=d=>d==null?.5:d<=50?1:d<=80?.8:d<=100?.6:d<=150?.45:d<=250?.3:.15;
 function lqLeakPts(){/* 누수 이력: 민원대응·누수탐사 사진 묶음(현장 한 곳 = 1건) */const o=[];try{for(const g of (PH.G||[]))if(g&&g.lat!=null&&g.lng!=null&&(g.kd==='mw'||g.kd==='ts'))o.push(g)}catch(_){}return o}
 function lqRiskEnsure(){if(!PIPE.feats||!PIPE.feats.length)return;const W=LQ.cfg.w,hy=!!(ELEV&&ELEV.hyd),pts=lqLeakPts();
- const nU=pts.filter(phLrG).length,key=PIPE.feats.length+'|'+pts.length+'|'+nU+'|'+(hy?ELEV.hi.n:0)+'|'+JSON.stringify(W)+'|'+LQ.cfg.near+'|'+($('pMat')||{}).value+'|'+($('pYmd')||{}).value+'|'+($('pDia')||{}).value;if(key===LQ.rkKey)return;LQ.rkKey=key;
- if(!PIPE.segs)buildPipeIndex();const cnt=new Map(),cu=new Map();for(const g of pts){const r=nearestPipe(+g.lng,+g.lat,+LQ.cfg.near||10);if(r){cnt.set(r.fi,(cnt.get(r.fi)||0)+1);if(phLrG(g))cu.set(r.fi,(cu.get(r.fi)||0)+1)}}
+ const nU=pts.filter(phLrG).length+'c'+LQC.a.filter(c=>!c.rep).map(c=>c.id).join(','),key=PIPE.feats.length+'|'+pts.length+'|'+nU+'|'+(hy?ELEV.hi.n:0)+'|'+JSON.stringify(W)+'|'+LQ.cfg.near+'|'+($('pMat')||{}).value+'|'+($('pYmd')||{}).value+'|'+($('pDia')||{}).value;if(key===LQ.rkKey)return;LQ.rkKey=key;
+ if(!PIPE.segs)buildPipeIndex();const cnt=new Map(),cu=new Map();for(const c of LQC.a)if(!c.rep){const r=nearestPipe(+c.lng,+c.lat,+LQ.cfg.near||10);if(r)cu.set(r.fi,(cu.get(r.fi)||0)+1)}for(const g of pts){const r=nearestPipe(+g.lng,+g.lat,+LQ.cfg.near||10);if(r){cnt.set(r.fi,(cnt.get(r.fi)||0)+1);if(phLrG(g))cu.set(r.fi,(cu.get(r.fi)||0)+1)}}
  PIPE.feats.forEach((f,fi)=>{const a=attrOf(f),n=cnt.get(fi)||0;let s=0,w=0;
   s+=W.age*(a.age==null?.5:Math.min(a.age,50)/50);w+=W.age;s+=W.mat*(RISK_MAT[a.mat]??.5);w+=W.mat;s+=W.his*Math.min(n,3)/3;w+=W.his;s+=W.dia*riskDia(a.dia);w+=W.dia;
   if(hy&&W.pr){const m=lqMid(f);const r=m&&hydNear(m[1],m[0]);if(r){s+=W.pr*Math.max(0,Math.min(1,(ELEV.hyd.pmax[r.i]-30)/40));w+=W.pr}}
@@ -9157,10 +9165,52 @@ function lqLocate(name){const a=lqAnalyze(name),b=lqPB(name);if(!a||!b)return nu
 function lqPipeIdx(){if(LQ.pidx&&LQ.pidx.n===PIPE.feats.length)return LQ.pidx.m;const m=new Map();PIPE.feats.forEach((f,i)=>{const id=String(attrOf(f).id||'').trim();if(id&&!m.has(id))m.set(id,i)});LQ.pidx={n:PIPE.feats.length,m};return m}
 function lqRank(name,loc){if(!PIPE.feats||!PIPE.feats.length)return [];lqRiskEnsure();const b=lqPB(name),M=lqPipeIdx(),o=[];
  if(b&&b.links&&b.links.length){const lw=new Map();b.links.forEach(([id,x,y])=>{const v=loc&&loc.w?(loc.w[x]+loc.w[y])/2:0;lw.set(id,Math.max(lw.get(id)||0,v))});let mx=0;lw.forEach(v=>{if(v>mx)mx=v});
-  lw.forEach((v,id)=>{const fi=M.get(id);if(fi==null)return;const f=PIPE.feats[fi],rk=f._rk??50,lp=mx>0?v/mx:0;o.push({fi,id,rk,lp,un:f._rku||0,sc:loc&&loc.w?.7*lp+.3*rk/100:rk/100})})}
+  lw.forEach((v,id)=>{const fi=M.get(id);if(fi==null)return;const f=PIPE.feats[fi],rk=f._rk??50,lp=mx>0?v/mx:0;o.push({fi,id,rk,lp,un:f._rku||0,sc:loc&&loc.w?lqWL()*lp+(1-lqWL())*rk/100:rk/100})})}
  else{let pi=null;try{const fld=$('blkField').value;pi=fi=>{const m=lqMid(PIPE.feats[fi]);if(!m)return false;const r=pidxFind(m[0],m[1],0);return !!r&&String(poly.features[r.fi].properties[fld]??'').trim()===name}}catch(_){}
   if(pi)PIPE.feats.forEach((f,fi)=>{if(f.properties&&f.properties._폐관)return;if(pi(fi))o.push({fi,id:String(attrOf(f).id||''),rk:f._rk??50,lp:0,un:f._rku||0,sc:(f._rk??50)/100})})}
  /* 🔴 미수리 누수탐사 사진이 붙은 관로는 맨 위 (B안 2026-11-04) */return o.sort((x,y)=>(y.un>0)-(x.un>0)||y.sc-x.sc)}
+/* ---- ✅ 누수 확인 지점 · 예측 검증 (C안 2026-11-04) ----
+   기록 = localStorage geo-lqconf [{id,lat,lng,d,m,rep,blk}] (💾 백업 🎨 화면 설정에 같이 담김). 수리 전(rep 아님)이면 가까운 관로를 점검 순위 맨 위로.
+   검증: 수압 위치(L2, 사진 가중 빼고)에서 가까운 절점 순위 · 위험 점수에서 가까운 관로 순위 · 경계밸브 추적 후보 거리 · 확인 날짜 앞뒤 야간최소유량.
+   보정 안내: 순위 백분위 중앙값 pL·pR → 위치 비중 wL = (1−pL)/((1−pL)+(1−pR)), 0.1~0.9 */
+const LQC={k:'geo-lqconf',a:[]};try{const v=JSON.parse(localStorage.getItem('geo-lqconf')||'[]');if(Array.isArray(v))LQC.a=v}catch(_){}
+const lqcSave=()=>{try{localStorage.setItem(LQC.k,JSON.stringify(LQC.a))}catch(_){}};
+const lqWL=()=>{const v=+LQ.cfg.wL;return isFinite(v)&&v>=0&&v<=1?v:.7};
+function lqcBlk(lat,lng){let bn='',bd=1e9;for(const b of (LQ.prep?LQ.prep.blocks:[])){for(let i=0;i<b.ids.length;i+=1){const d=Math.hypot((b.lng[i]-lng)*88800,(b.lat[i]-lat)*111000);if(d<bd){bd=d;bn=b.name}}}return bd<=300?bn:''}
+function lqcAdd(){const m=/(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)/.exec($('lqcLL').value||'');if(!m){alert('좌표를 "위도, 경도"로 넣으세요 (예: 36.111748, 129.341274)');return}
+ let lat=+m[1],lng=+m[2];if(lat>90){[lat,lng]=[lng,lat]}const d=$('lqcD').value||fmtD(Date.now());LQC.a.push({id:Date.now(),lat,lng,d,m:($('lqcM').value||'').trim().slice(0,80),rep:false,blk:lqcBlk(lat,lng)});lqcSave();$('lqcLL').value='';$('lqcM').value='';LQ.rkKey='';lqcRender()}
+function lqcMarks(g){LQC.a.forEach(c=>L.marker([c.lat,c.lng],{pane:'leak',icon:L.divIcon({className:'',html:`<div class="lqrk" style="background:${c.rep?'#64748b':'#059669'};width:20px;height:20px;line-height:20px">✓</div>`,iconSize:[24,24],iconAnchor:[12,12]})}).bindTooltip(`✅ 누수 확인 ${esc(c.d)}${c.rep?' · 수리 완료':' · 수리 전'}${c.m?' · '+esc(c.m):''}`).addTo(g))}
+const lqPct=(r,n)=>n>1?(r-1)/(n-1):0;
+/* ⚖ 지금 가중치 표 (사용자 요청 2026-11-04 '가중치 표로') */
+function lqWtTable(){const W=LQ.cfg.w,C=LQ.cfg,wl=Math.round(lqWL()*100),tr=(a,b,c)=>`<tr><td>${a}</td><td><b>${b}</b></td><td>${c}</td></tr>`;
+ return `<div style="overflow:auto;margin-top:6px"><table class="lqt"><thead><tr><th>⚖ 항목</th><th>가중치</th><th>기준</th></tr></thead><tbody>
+ ${tr('파손 위험 · 경과연수',W.age,'50년 이상 만점, 모르면 절반')}${tr('파손 위험 · 누수 이력',W.his,`관로 ${C.near}m 안 민원·누수탐사 사진 3묶음 이상 만점`)}${tr('파손 위험 · 재질',W.mat,'회주철·아연도강관·석면 1 → 덕타일 0.3 → 스테인리스 0.2')}${tr('파손 위험 · 최고 수압',W.pr,'관망해석 30m 0 → 70m 만점')}${tr('파손 위험 · 관경',W.dia,'50mm 이하 1 → 250mm 넘으면 0.15')}
+ ${tr('점검 순위 · 수압 위치(L2)',wl+'%','위치 계산이 있을 때')}${tr('점검 순위 · 파손 위험',(100-wl)+'%','')}${tr('점검 순위 · 미수리·수리 전 확인 지점','맨 위','🔴 사진·✅ 기록')}
+ ${tr('사진 가중 · 미수리 누수탐사','+'+LQ_PH.un,`${LQ_PH.R}m마다 약 1/3, ${LQ_PH.R*3}m까지`)}${tr('사진 가중 · 최근 민원','+'+LQ_PH.mw,`${LQ_PH.days}일 안`)}${tr('사진 가중 · 그 밖','+'+LQ_PH.old,'오래된 민원·수리 완료')}
+ ${tr('누수 의심 판정',`+${C.pct}% · +${C.abs}㎥/h`,`야간 ${C.n0}~${C.n1}시 최소유량, 최근 ${C.rec}일`)}${tr('경계밸브 혐의',`넘침 ${LQ_BV.thr}m`,`(넘침 − 기준) × e^(−거리/${LQ_BV.R}m)`)}
+ </tbody></table></div><p class="hint" style="margin:2px 0">모두 판단 기준값 · 확인 필요 · 파손 위험 가중치·판정 기준은 ⚙ 판정 기준에서 고침</p>`}
+async function lqcRender(){const el=$('lqcList'),ve=$('lqcVer');if(!el)return;
+ el.innerHTML=LQC.a.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>날짜</th><th>소블록</th><th>메모</th><th>수리</th><th></th></tr></thead><tbody>${LQC.a.map(c=>`<tr><td>${esc(c.d)}</td><td>${esc(c.blk||'-')}</td><td>${esc(c.m||'')}<br><small>${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}</small></td><td><label class="ck"><input type="checkbox" data-rep="${c.id}"${c.rep?' checked':''}> 완료</label></td><td><button type="button" class="btn ol" data-go="${c.id}" style="padding:1px 6px">📍</button> <button type="button" class="btn ol" data-del="${c.id}" style="padding:1px 6px">🗑</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">아직 기록이 없습니다.</p>';
+ el.querySelectorAll('[data-rep]').forEach(x=>x.onchange=()=>{const c=LQC.a.find(v=>v.id===+x.dataset.rep);if(c){c.rep=x.checked;lqcSave();LQ.rkKey=''}});
+ el.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{const c=LQC.a.find(v=>v.id===+x.dataset.go);if(c&&map){map.setView([c.lat,c.lng],Math.max(map.getZoom(),18));const g=lqLayer();if(g)lqcMarks(g)}});
+ el.querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{if(!confirm('이 누수 확인 기록을 지울까요?'))return;LQC.a=LQC.a.filter(v=>v.id!==+x.dataset.del);lqcSave();LQ.rkKey='';lqcRender()});
+ if(!ve)return;if(!LQC.a.length){ve.innerHTML=lqWtTable();return}ve.innerHTML='<p class="hint">예측과 대조하는 중…</p>';
+ const rows=[],pL=[],pR=[],f1=v=>isFinite(v)?Math.round(v):'-';
+ for(const c of LQC.a){const nm=c.blk||lqcBlk(c.lat,c.lng),b=nm&&lqPB(nm);let l2='-',rk='-',bv='-',mn='-';
+  if(b){if(!b.S)try{await lqEnsureS(nm)}catch(_){}const D=(i)=>Math.hypot((b.lng[i]-c.lng)*88800,(b.lat[i]-c.lat)*111000);
+   if(LQ.data.has(nm)){const loc=lqLocate(nm);if(loc&&!loc.err){const w=loc.w0||loc.w,ord=Array.from(w.keys()).sort((x,y)=>w[y]-w[x]);let bi=0;for(let i=1;i<b.ids.length;i++)if(D(i)<D(bi))bi=i;const r=ord.indexOf(bi)+1,p=lqPct(r,ord.length);pL.push(p);
+     l2=`절점 ${esc(b.ids[bi])}(${f1(D(bi))}m) <b>${r}/${ord.length}위</b> · 1등 ${esc(b.ids[ord[0]])}까지 ${f1(D(ord[0]))}m`}else if(loc&&loc.err)l2='계산 못 함'
+    const r2=lqBvCalc(nm);if(!r2.err&&r2.C.length){const C=r2.C.map((x,j)=>({j,d:Math.hypot((x.lng-c.lng)*88800,(x.lat-c.lat)*111000),x}));C.sort((x,y)=>x.d-y.d);const q=C[0];bv=`${q.j+1}위 ${esc(q.x.nm)} ${f1(q.d)}m (혐의 ${q.x.p})`}
+    const a=lqAnalyze(nm),t=Date.parse(c.d);if(a&&isFinite(t)){const d=Math.floor((t-a.T0)/864e5),bf=a.days.filter(x=>x.d<d&&isFinite(x.mnf)).slice(-3),af=a.days.filter(x=>x.d>d&&isFinite(x.mnf)).slice(0,3);mn=bf.length&&af.length?`${lqF(lqMean(bf.map(x=>x.mnf)))} → ${lqF(lqMean(af.map(x=>x.mnf)))}㎥/h`:(bf.length&&!af.length?'확인 뒤 자료 없음':'자료 기간 밖')}}
+   if(PIPE.feats&&PIPE.feats.length){lqRiskEnsure();const R=lqRank(nm,null).slice().sort((x,y)=>y.rk-x.rk),np=nearestPipe(c.lng,c.lat,30);if(np){const r=R.findIndex(x=>x.fi===np.fi)+1;if(r>0){pR.push(lqPct(r,R.length));rk=`<b>${r}/${R.length}위</b> (점수 ${R[r-1].rk})`}else rk='소블록 관로 아님'}else rk='30m 안 관로 없음'}else rk='관로 없음'}
+  rows.push(`<tr><td>${esc(c.d)}<br><small>${esc(nm||'-')}</small></td><td>${l2}</td><td>${rk}</td><td>${bv}</td><td>${mn}</td></tr>`)}
+ const med=a=>{const v=a.slice().sort((x,y)=>x-y);return v.length?v[v.length>>1]:NaN},mL=med(pL),mR=med(pR);
+ let adv='';if(pL.length){const sL=1-mL,sR=pR.length?1-mR:.5,wl=Math.max(.1,Math.min(.9,Math.round(sL/(sL+sR||1)*10)/10));
+  adv=`<p class="hint" style="margin:4px 0">📏 맞힌 정도(순위 백분위 중앙값, 0%가 1등·50%면 무작위 수준): 수압 위치 <b>상위 ${Math.round(mL*100)}%</b> (${pL.length}건)${pR.length?` · 위험 점수 <b>상위 ${Math.round(mR*100)}%</b> (${pR.length}건)`:' · 위험 점수는 관로가 없어 대조 못 함'}<br>
+  지금 순위 비중: 위치 ${Math.round(lqWL()*100)}% · 위험 ${100-Math.round(lqWL()*100)}% → 기록으로 본 권장: <b>위치 ${Math.round(wl*100)}% · 위험 ${100-Math.round(wl*100)}%</b>${mL>.5?' (수압 위치가 무작위보다 못함)':''} ${Math.abs(wl-lqWL())>=.1?`<button type="button" class="btn ol" id="lqcApply" data-w="${wl}" style="padding:1px 8px">이 비중으로 바꾸기</button>`:'(지금과 같음)'}<br>
+  <small>기록 ${LQC.a.length}건 · 3건 이상 쌓여야 믿을 만함 · 사진 가중·위험 점수 가중치는 ⚙ 판정 기준에서 직접 고치세요 · 확인 필요</small></p>`}
+ ve.innerHTML=`<div style="overflow:auto;margin-top:6px"><table class="lqt"><thead><tr><th>확인</th><th>수압 위치(L2)<br><small>가까운 절점 순위</small></th><th>위험 점수<br><small>가까운 관로 순위</small></th><th>경계밸브 추적<br><small>가장 가까운 후보</small></th><th>야간최소유량<br><small>확인 앞 → 뒤</small></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`+adv+lqWtTable();
+ const ap=$('lqcApply');if(ap)ap.onclick=()=>{LQ.cfg.wL=+ap.dataset.w;lqSaveCfg();LQ.an.clear();lqcRender();if(LQ.sel)lqShow(LQ.sel)}}
 /* ---- 📷 누수·민원 사진 반영 (B안 2026-11-04) ----
    사진 묶음(민원대응 mw·누수탐사 ts) 둘레 절점의 위치 가능성에 가중을 곱함(사전확률): 미수리 누수탐사 +3, 최근 90일 민원 +1, 그 전 민원·수리 완료 누수탐사 +0.3,
    50m에서 e배로 줄어듦(150m까지). 가중값은 판단 기준이라 확인 필요. 수리 효과 = 수리 완료 누수탐사 사진 날짜 앞 3일·뒤 3일 야간최소유량 비교(사진 날짜를 수리 날짜로 봄) */
@@ -9295,8 +9345,56 @@ async function lqShowRecFixed(nm,b0,F,k){const info=$('lqCand');info.innerHTML='
  info.innerHTML=`<p class="hint"><b>${esc(nm)} ${F.length?`이미 잰 측정 지점 ${F.length}곳 + 추가 ${Q.length-F.length}곳`:`수압계 ${Q.length}곳 추천 자리`}</b> (${F.length?'지도 초록=이미 잰 지점, 파랑=추가 자리. 추가1부터 설치':'지도 파랑, P1부터 설치'})<br>${F.length?F.map(f=>esc(f.name)).join(', ')+' 고정<br>':''}${inl>=0&&!Fi.includes(inl)?(F.length?'추가1':'P1')+' = 소블록 유입점(모델 계산에서 물이 가장 많이 들어오는 절점, 수압 측정값이 없어 먼저 설치)<br>':''}${useH?`설치 우선순위 지상식 소화전 → 지하식 소화전 → 대수용가 인근 수용가 (${LQ_HYD_R}m 안 절점: 지상식 ${tc[0]} · 지하식 ${tc[1]} · 대수용가 인근 ${tc[2]}곳)`:`<span class="c-am">🧯 소화전·대수용가 인근 ${LQ_HYD_R}m 안 절점이 ${okh.length}곳뿐이라 모든 절점에서 골랐습니다${hy.n?'':' (상수도 시설물(②-3)을 올리면 소화전 우선으로 고릅니다)'}</span>`}${hy.n&&!hy.cg?' · <span class="c-am">소화전형식(지상/지하) 칸이 없어 모두 지하식 순위로 봄</span>':''}<br>${list.filter(x=>!x.fixed).map(x=>`${esc(x.name)} 절점 ${esc(b.ids[x.i])}${x.hyd?' · '+esc(x.hyd):''}`).join(' / ')}<br>모의시험 예상 위치 오차(중앙값·평균): ${curve.map(([m,e])=>`<b>${m}곳</b> ${Math.round(e[0])}m·${Math.round(e[1])}m`).join(' → ')}<br><small>가상 누수 ${LQ.prep.evalCmh||5}㎥/h · 수압 잡음 ${(LQ.prep.noiseM||.01)*100}cm 가정 · 모델 계산값이라 실제와 다를 수 있음 · 계산 ${((Date.now()-t0)/1000).toFixed(1)}초. 수압계 수를 바꾸고 다시 누르면 다시 계산합니다.</small></p>`}
 function lqTpl(){const nm=$('lqBlk').value||'소블록',b=lqPB(nm),k=+$('lqK').value||6,ps=(b?b.rec.slice(0,k).map(r=>r.name):Array.from({length:k},(_,i)=>'P'+(i+1)));
  dlBlob(new Blob(['﻿'+['시각','유량(㎥/h)'].concat(ps.map(p=>p+'(m)')).join(',')+'\r\n'],{type:'text/csv'}),`1분자료_양식_${nm}.csv`)}
+/* ---- 📐 실측 − 해석(모델) 수압 차이 (2026-11-04) ----
+ 실측: 3시·19시 앞뒤 1시간 날마다 평균의 중앙값(lqBvCalc와 같은 값) · 해석: 준비 파일 p0(관망해석 평상 수압)
+ 공통 차이(모든 지점 중앙값) = 공급 수두(배수지 수위·유입 수압) 차이로 보고, 지점별 '공통 뺀 차이'가 크게 음(−)이면 그 둘레 손실(누수·관 막힘·밸브) 의심 */
+function lqDiffCalc(nm){const r=lqBvCalc(nm);if(r.err)return r;const{b,S,H,hu}=r,rows=S.map((s,j)=>{const o={s,h:{}};hu.forEach(h=>{const m=H[h].P[j],md=+b.p0[h][s.i];o.h[h]={m,md,d:m-md}});const ds=hu.map(h=>o.h[h].d).filter(isFinite);o.d=ds.length?ds.reduce((x,y)=>x+y,0)/ds.length:NaN;o.dh=isFinite(s.zd)?o.d+s.zd:NaN;return o});
+ const cm=lqMed(rows.filter(o=>!o.s.inl).map(o=>o.d));rows.forEach(o=>o.rel=o.d-cm);return{...r,rows,cm}}
+function lqDiffHtml(nm){const r=lqDiffCalc(nm);if(r.err)return'';const{rows,hu,cm}=r,sg=v=>isFinite(v)?(v>=0?'+':'−')+Math.abs(v).toFixed(1):'-',cl=v=>!isFinite(v)?'':v<=-3?' class="c-rd"':v>=3?' class="c-am"':'';
+ const lo=rows.filter(o=>!o.s.inl&&o.rel<=-3).map(o=>esc(lqSnm(o.s.k)));
+ return`<details class="lqx" style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">📐 실측 − 해석 수압 차이 · 공통 ${sg(cm)}m${lo.length?` · <span class="c-rd">따로 낮은 곳 ${lo.length}곳</span>`:''}</summary>
+ <div style="overflow:auto"><table class="lqt"><thead><tr><th>지점</th>${hu.map(h=>`<th>${h}시 실측</th><th>${h}시 해석</th><th>${h}시 차이</th>`).join('')}<th>평균 차이 m</th><th>공통 뺀 차이</th><th>표고 차(대장−모델)</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${esc(lqSnm(o.s.k))}${o.s.inl?' <small>(유입점)</small>':''}</td>${hu.map(h=>{const x=o.h[h];return`<td>${lqF(x.m)}</td><td>${lqF(x.md)}</td><td${cl(x.d)}>${sg(x.d)}</td>`}).join('')}<td><b>${sg(o.d)}</b></td><td${cl(o.rel)}><b>${o.s.inl?'-':sg(o.rel)}</b></td><td>${sg(o.s.zd)}</td></tr>`).join('')}</tbody></table></div>
+ <p class="hint" style="margin:2px 0 0">수압 m(수두) · 실측 = ${hu.map(h=>h+'시').join('·')} 앞뒤 1시간 날마다 평균의 중앙값 · 해석 = 준비 파일의 관망해석 평상 수압 · <b>공통 ${sg(cm)}m</b>는 모든 지점이 함께 다른 몫(배수지 수위·유입 수압·표고 기준 차이)으로 봅니다. <b>공통 뺀 차이가 −3m 이하(빨강)</b>면 그 지점 둘레에 모델에 없는 손실(누수·관 막힘·밸브 덜 열림)이 있을 수 있고, +3m 이상(주황)이면 경계밸브 열림·모델 표고 차이를 의심합니다. 표고 차가 크면 먼저 표고를 확인하세요(확인 필요).</p></details>`}
+function lqSnm(k){return String(k).replace(/\s*@.*$/,'')}
+/* ---- 💧 추정 누수량: 야간최소유량(MNF) 법 + FAVAD 수압 보정 (B안, 2026-11-04) ----
+ 야간 누수 = MNF − 야간 정상 사용(수용가 수 × 1곳당 L/h) · 시간별 누수 = 야간 누수 × (P시간/P야간)^N1 · 하루 누수 = 24시간 합
+ P = 유입점 수압(없으면 모든 수압 지점 평균). N1·1곳당 야간 사용량은 현장마다 다르므로 확인 필요(입력 칸) */
+function lqCustN(b){const pn=typeof PT!=='undefined'&&PT?PT.n:0;if(!pn)return 0;if(b._cn&&b._cn.pn===pn)return b._cn.c;const G=new Map(),cs=40/111000,key=(x,y)=>Math.floor(y/cs)+','+Math.floor(x/(cs*1.25));
+ for(let i=0;i<b.ids.length;i++){const k=key(b.lng[i],b.lat[i]);let a=G.get(k);if(!a)G.set(k,a=[]);a.push(i)}let c=0;
+ for(let p=0;p<pn;p++){const x=PT.lng[p],y=PT.lat[p];if(!isFinite(x)||!isFinite(y))continue;const gy=Math.floor(y/cs),gx=Math.floor(x/(cs*1.25));let ok=false;
+  for(let dy=-1;dy<=1&&!ok;dy++)for(let dx=-1;dx<=1&&!ok;dx++){const a=G.get((gy+dy)+','+(gx+dx));if(a)for(const i of a)if(Math.hypot((b.lng[i]-x)*88800,(b.lat[i]-y)*111000)<=40){ok=true;break}}if(ok)c++}
+ b._cn={pn,c};return c}
+function lqLeakVol(nm){const a=lqAnalyze(nm),D=LQ.data.get(nm);if(!a||!D||!D.q)return{err:'유량 자료가 없어 누수량을 셀 수 없습니다 (대장의 유량 열이나 1분 유량 파일 필요).'};
+ const C=LQ.cfg,b=lqPB(nm),ca=b?lqCustN(b):0,cu=(C.lvc||{})[nm],cn=cu!=null&&cu!==''?+cu:ca,nu=+C.lvu||0,N1=isFinite(+C.lvn)&&C.lvn!==''?+C.lvn:1,leg=cn*nu/1000;
+ const meta=D.meta||{};let pk=meta.inK&&D.P&&D.P[meta.inK]?meta.inK:'';if(!pk&&b){try{const r=lqBvCalc(nm);const s=r.S&&r.S.find(s=>s.inl);if(s)pk=s.k}catch(_){}}const pks=pk?[pk]:Object.keys(D.P||{});
+ /* 날·시간별 평균 유량·수압 */const T0=a.T0,nd=a.days.length,Q=[],P=[];for(let d=0;d<nd;d++){Q.push(Array.from({length:24},()=>[0,0]));P.push(Array.from({length:24},()=>[0,0]))}
+ for(let r=0;r<D.t.length;r++){const k=Math.floor((D.t[r]-T0)/6e4);if(k<0)continue;const d=Math.floor(k/1440),h=Math.floor((k%1440)/60);if(d>=nd)continue;const q=D.q[r];if(isFinite(q)){Q[d][h][0]+=q;Q[d][h][1]++}
+  let s=0,c=0;for(const x of pks){const v=D.P[x][r];if(isFinite(v)){s+=v;c++}}if(c){P[d][h][0]+=s/c;P[d][h][1]++}}
+ const av=c=>c[1]?c[0]/c[1]:NaN,rows=[];
+ a.days.forEach((x,d)=>{const qh=Q[d].map(av),ph=P[d].map(av),nq=qh.filter(isFinite).length;if(!isFinite(x.mnf)||nq<18)return;
+  const sup=qh.reduce((s,v)=>s+(isFinite(v)?v:0),0)*24/nq,pn=lqMean(ph.slice(C.n0,C.n1)),Ln=Math.max(0,x.mnf-leg);
+  let lk=0,nl=0,fv=isFinite(pn)&&pn>0;for(let h=0;h<24;h++){if(!isFinite(qh[h]))continue;const f=fv&&isFinite(ph[h])&&ph[h]>0?Math.pow(ph[h]/pn,N1):1;lk+=Math.min(qh[h],Ln*f);nl++}lk=lk*24/nl;
+  const up=x.mnf*24;rows.push({ts:x.ts,mnf:x.mnf,pn,pd:lqMean(ph),sup,Ln,lk,pct:sup>0?lk/sup*100:NaN,up,upct:sup>0?Math.min(100,up/sup*100):NaN,fv})});
+ if(!rows.length)return{err:'하루 18시간 이상 유량이 있는 날이 없습니다.'};
+ const m=k=>lqMean(rows.map(r=>r[k]));return{rows,ca,cn,nu,N1,leg,pk:pk?lqSnm(pk):'',pkAll:!pk&&pks.length,lk:m('lk'),sup:m('sup'),pct:m('pct'),up:m('up'),upct:m('upct'),Ln:m('Ln'),fv:rows.some(r=>r.fv)}}
+function lqLeakHtml(nm){const v=lqLeakVol(nm),C=LQ.cfg;if(v.err)return`<p class="hint c-am" style="margin:4px 0">💧 추정 누수량: ${esc(v.err)}</p>`;const f0=x=>isFinite(x)?Math.round(x).toLocaleString():'-',cu=(C.lvc||{})[nm];
+ const inp=(k,val,t,st,ph)=>`<label class="f">${t}<input class="lqLv" data-k="${k}" type="number" value="${val??''}" step="${st}" placeholder="${ph||''}" style="width:100%"></label>`;
+ return`<details class="lqx" open style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">💧 추정 누수량 · 하루 약 <span class="c-rd">${f0(v.lk)}㎥</span> (공급량 ${f0(v.sup)}㎥의 ${lqF(v.pct)}%)</summary>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:4px 0">
+  <div class="lqk"><small>야간최소유량 평균</small><b>${lqF(lqMean(v.rows.map(r=>r.mnf)))} ㎥/h</b></div>
+  <div class="lqk"><small>야간 누수(정상 사용 뺌)</small><b>${lqF(v.Ln)} ㎥/h</b></div>
+  <div class="lqk"><small>추정 누수량</small><b class="c-rd">${f0(v.lk)} ㎥/일</b></div>
+  <div class="lqk"><small>누수율(공급량 대비)</small><b class="c-rd">${lqF(v.pct)}%</b></div>
+  <div class="lqk"><small>1년 환산</small><b>${f0(v.lk*365)} ㎥</b></div></div>
+ <div class="g2">${inp('c',cu??'',`수용가 수 (앱 자동 ${v.ca.toLocaleString()})`,1,String(v.ca))}${inp('u',C.lvu??'','1곳당 야간 사용 L/h · 확인 필요',.1,'0')}${inp('n',C.lvn??'','수압 지수 N1 · 확인 필요',.1,'1')}</div>
+ <div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>날짜</th><th>MNF ㎥/h</th><th>야간 수압 m</th><th>하루 평균 수압 m</th><th>공급량 ㎥/일</th><th>추정 누수 ㎥/일</th><th>누수율</th><th>상한(야간 사용 0·보정 없음)</th></tr></thead><tbody>${v.rows.map(r=>`<tr><td>${fmtD(r.ts)}</td><td>${lqF(r.mnf)}</td><td>${lqF(r.pn)}</td><td>${lqF(r.pd)}</td><td>${f0(r.sup)}</td><td><b>${f0(r.lk)}</b></td><td><b>${lqF(r.pct)}%</b></td><td>${f0(r.up)} (${lqF(r.upct)}%)</td></tr>`).join('')}</tbody></table></div>
+ <div class="sbtns" style="margin-top:4px"><button type="button" class="btn ol lqLvXl">⬇ 누수량 엑셀</button></div>
+ <p class="hint" style="margin:2px 0 0">계산: 야간(${C.n0}~${C.n1}시) 최소 유량 − 야간 정상 사용(수용가 ${v.cn.toLocaleString()}곳 × ${v.nu} L/h = ${lqF(v.leg,2)}㎥/h) = 야간 누수 → 시간마다 <b>(그 시간 수압 ÷ 야간 수압)<sup>${v.N1}</sup></b> 곱해 24시간 합(FAVAD) · 수압 = ${v.pk?esc(v.pk)+'(유입점)':v.pkAll?'모든 수압 지점 평균 (유입점 수압 없음)':'없음 → 보정 없이 야간 누수 × 24'} · 공급량 = 시간 평균 유량 24시간 합 · 수용가 수는 앱 수용가 점 가운데 이 소블록 절점 40m 안(추정, 고칠 수 있음). <b>1곳당 야간 사용량 기본 0 = 누수량이 크게 나오는 쪽</b>이므로 현장 값을 넣으세요(확인 필요). N1은 관 재질에 따라 0.5(금속관 구멍)~1.5(플라스틱관 틈) 사이로 알려져 있어 기본 1.0입니다(확인 필요).</p></details>`}
+function lqLvXl(){const nm=LQ.sel,v=lqLeakVol(nm);if(v.err)return;xlsxSave([['추정 누수량',v.rows.map(r=>({'소블록':nm,'날짜':fmtD(r.ts),'야간최소유량(㎥/h)':+lqF(r.mnf,2),'야간수압(m)':+lqF(r.pn,2)||'','하루평균수압(m)':+lqF(r.pd,2)||'','공급량(㎥/일)':Math.round(r.sup),'야간누수(㎥/h)':+lqF(r.Ln,2),'추정누수량(㎥/일)':Math.round(r.lk),'누수율(%)':+lqF(r.pct,1),'상한(㎥/일)':Math.round(r.up)}))],['계산 조건',[{'항목':'수용가 수','값':v.cn},{'항목':'1곳당 야간 사용 L/h (확인 필요)','값':v.nu},{'항목':'수압 지수 N1 (확인 필요)','값':v.N1},{'항목':'야간 시간','값':LQ.cfg.n0+'~'+LQ.cfg.n1+'시'},{'항목':'수압 기준','값':v.pk||'모든 지점 평균'}]]],`추정누수량_${nm}_${fmtD(Date.now())}.xlsx`)}
+function lqLvSet(el){const C=LQ.cfg,k=el.dataset.k,v=el.value.trim();if(k==='c'){C.lvc=C.lvc||{};if(v==='')delete C.lvc[LQ.sel];else C.lvc[LQ.sel]=+v}else if(k==='u')C.lvu=v===''?'':+v;else C.lvn=v===''?'':+v;lqSaveCfg();
+ const box=el.closest('details');if(box){const t=document.createElement('div');t.innerHTML=lqLeakHtml(LQ.sel);box.replaceWith(t.firstElementChild)}}
 function lqShow(nm){{const b0=lqPB(nm);if(b0&&!b0.S){lqEnsureS(nm).then(b1=>{if(b1&&b1.S)lqShow(nm)});return}}LQ.sel=nm;$('lqBlk').value=nm;const a=lqAnalyze(nm),b=lqPB(nm),loc=b&&a?lqLocate(nm):null,info=$('lqCand');lqClear();
- let head=`<div class="lqhd"><b>${esc(nm)}</b> ${a&&a.flag?'<span class="c-rd">⚠ 누수 의심</span>':''}</div>`;if(a)head+=lqSparkline(a);
+ let head=`<div class="lqhd"><b>${esc(nm)}</b> ${a&&a.flag?'<span class="c-rd">⚠ 누수 의심</span>':''}</div>`;if(a)head+=lqSparkline(a);if(a)head+=lqLeakHtml(nm);if(b&&a)head+=lqDiffHtml(nm);
  if(a&&a.ev.length)head+=`<p class="hint" style="margin:4px 0">급증(파손 의심) ${a.ev.length}회: ${a.ev.slice(-5).map(x=>`${fmtDT(x.ts)} +${lqF(x.inc)}㎥/h ${Math.round(x.min)}분${isFinite(x.dp)?` · 수압 ${x.dp>=0?'−':'+'}${lqF(Math.abs(x.dp),2)}m`:''}`).join(' / ')}</p>`;
  if(b){const inst=new Set(loc&&loc.si?loc.si.filter(i=>i>=0):[]);lqSensorMarks(b,Math.max(+$('lqK').value||6,inst.size),inst)}
  if(loc&&loc.err)head+=`<p class="hint c-am">위치 계산(L2) 못 함: ${esc(loc.err)}</p>`;else if(!b)head+=`<p class="hint">이 소블록은 준비 파일이 없어 위치 계산(L2) 없이 <b>파손 위험 점수</b>로만 점검 순서를 냅니다.</p>`;
@@ -9306,11 +9404,11 @@ function lqShow(nm){{const b0=lqPB(nm);if(b0&&!b0.S){lqEnsureS(nm).then(b1=>{if(
   const top=ord[0],dm=i=>Math.hypot((b.lng[i]-b.lng[top])*88800,(b.lat[i]-b.lat[top])*111000),rr=[...ord].sort((x,y)=>dm(x)-dm(y));let c2=0,r50=0;for(const i of rr){c2+=w[i];if(c2>=.5){r50=dm(i);break}}LQ.r50=r50;
   head+=`<p class="hint" style="margin:4px 0">위치 계산(L2): 수압계 ${loc.use.length}개 · ${loc.hu.map(h=>h+'시').join('·')} 평상·최근 수압 차이 비교 · 가장 가능성 큰 곳 절점 ${esc(b.ids[top])} · <b>가능성 50%가 그 둘레 약 ${Math.round(r50)}m 안</b> · 빨간 원이 클수록 가능성 큼</p>`
   if(loc.flat)head+=`<p class="hint c-am" style="margin:4px 0">⚠ <b>위치 근거 부족</b>: 절점 ${b.ids.length.toLocaleString()}곳 가운데 ${loc.tie}곳이 1등과 거의 같습니다. 평상·최근 수압이 모든 지점에서 함께 오르내려(공급 수압 변화로 보고 뺌) 지점끼리 차이가 거의 없습니다. 아래 순위는 사실상 <b>파손 위험 점수 순</b>이니 누수 위치로 보지 마세요. 수압이 평소보다 떨어진 기간이나 유량 자료가 있으면 다시 계산하세요.</p>`}
- if(b)head+=lqPhShow(nm,a,b,loc,g);
+ if(b)head+=lqPhShow(nm,a,b,loc,g);if(g)lqcMarks(g);
  const R=lqRank(nm,loc&&loc.w?loc:null).slice(0,15);LQ.cand={nm,R};
  if(g)R.slice(0,10).forEach((r,j)=>{const f=PIPE.feats[r.fi];lineParts(f.geometry).forEach(p=>{const ll=p.map(c=>[c[1],c[0]]);pts.push(...ll);L.polyline(ll,{pane:'leak',color:'#dc2626',weight:8,opacity:.45}).addTo(g)});const m=lqMid(f);if(m)L.marker([m[1],m[0]],{pane:'leak',icon:L.divIcon({className:'',html:`<div class="lqrk">${j+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).bindPopup(()=>pipePopup(f)).addTo(g)});
  const at=r=>attrOf(PIPE.feats[r.fi]);
- head+=R.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>순위</th><th>관리번호</th><th>재질·관경</th><th>연수</th><th>이력</th><th>위험</th>${loc&&loc.w?'<th>위치</th>':''}<th></th></tr></thead><tbody>${R.map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return `<tr><td>${j+1}</td><td>${esc(r.id)}</td><td>${esc(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}${r.un?' <b class="c-rd" title="미수리 누수탐사">🔴'+r.un+'</b>':''}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}<td><button type="button" class="btn ol lqFly" data-fi="${r.fi}" style="padding:1px 6px">📍</button></td></tr>`}).join('')}</tbody></table></div><div class="sbtns" style="margin-top:4px"><button type="button" id="lqXl" class="btn ol">⬇ 후보 관로 엑셀</button></div><p class="hint" style="margin:2px 0 0">🔴 미수리 누수탐사 사진이 붙은 관로가 맨 위 · 순위 = ${loc&&loc.w?(loc.flat?'위치 가능성 70% + 파손 위험 점수 30% (위치 근거 부족 → 사실상 위험 점수 순)':'위치 가능성 70% + 파손 위험 점수 30%'):'파손 위험 점수'} · 이력 = 관로 ${LQ.cfg.near}m 안 민원대응·누수탐사 사진 묶음 수 · 현장 탐사 순서 참고용</p>`:'<p class="hint">상수관로(②-1)를 올리면 점검 순서 관로가 나옵니다.</p>';
+ head+=R.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>순위</th><th>관리번호</th><th>재질·관경</th><th>연수</th><th>이력</th><th>위험</th>${loc&&loc.w?'<th>위치</th>':''}<th></th></tr></thead><tbody>${R.map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return `<tr><td>${j+1}</td><td>${esc(r.id)}</td><td>${esc(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}${r.un?' <b class="c-rd" title="미수리 누수탐사">🔴'+r.un+'</b>':''}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}<td><button type="button" class="btn ol lqFly" data-fi="${r.fi}" style="padding:1px 6px">📍</button></td></tr>`}).join('')}</tbody></table></div><div class="sbtns" style="margin-top:4px"><button type="button" id="lqXl" class="btn ol">⬇ 후보 관로 엑셀</button></div><p class="hint" style="margin:2px 0 0">🔴 미수리 누수탐사 사진이 붙은 관로가 맨 위 · 순위 = ${loc&&loc.w?(`위치 가능성 ${Math.round(lqWL()*100)}% + 파손 위험 점수 ${100-Math.round(lqWL()*100)}%`+(loc.flat?' (위치 근거 부족 → 사실상 위험 점수 순)':'')):'파손 위험 점수'} · 이력 = 관로 ${LQ.cfg.near}m 안 민원대응·누수탐사 사진 묶음 수 · 현장 탐사 순서 참고용</p>`:'<p class="hint">상수관로(②-1)를 올리면 점검 순서 관로가 나옵니다.</p>';
  info.innerHTML=head;if(map&&pts.length)map.fitBounds(L.latLngBounds(pts).pad(.15))}
 function lqXl(){const c=LQ.cand;if(!c||!c.R.length)return;const rows=c.R.map((r,j)=>{const x=attrOf(PIPE.feats[r.fi]);return{'소블록':c.nm,'순위':j+1,'관리번호':r.id,'재질':x.mat,'관경mm':x.dia??'','경과연수':x.age??'','누수이력(건)':PIPE.feats[r.fi]._rkn||0,'파손위험점수':r.rk,'위치점수':Math.round(r.lp*100)}});xlsxSave([['누수 후보 관로',rows]],`누수후보관로_${c.nm}_${fmtD(Date.now())}.xlsx`)}
 /* ---- 설정 ---- */
@@ -9323,9 +9421,9 @@ async function lqInit(){if(!$('lqSec'))return;lqCfgUi();
  lqPrepShow();lqBlkOpts();lqRenderTbl();
  $('lqPrepF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)lqPrepLoad(f)};
  $('lqDataF').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)lqDataLoad(fs)};
- $('lqRecBtn').onclick=lqShowRec;$('lqBvBtn').onclick=async()=>{const nm=$('lqBlk').value;if(nm&&lqPB(nm)&&!lqPB(nm).S)await lqEnsureS(nm);lqBvShow(nm)};$('lqRecCsv').onclick=lqRecCsv;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
+ $('lqRecBtn').onclick=lqShowRec;$('lqcAdd').onclick=lqcAdd;$('lqcD').value=fmtD(Date.now());$('lqcBox').addEventListener('toggle',e=>{if(e.target.open)lqcRender()});$('lqBvBtn').onclick=async()=>{const nm=$('lqBlk').value;if(nm&&lqPB(nm)&&!lqPB(nm).S)await lqEnsureS(nm);lqBvShow(nm)};$('lqRecCsv').onclick=lqRecCsv;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
  $('lqDel').onclick=async()=>{const nm=$('lqBlk').value;if(!nm||!LQ.data.has(nm)){alert('지울 1분 자료가 있는 소블록(📈)을 고르세요.');return}if(!confirm(nm+'의 1분 유량·수압 자료를 이 PC에서 지울까요?'))return;LQ.data.delete(nm);LQ.an.delete(nm);try{await IDB.del('lqd:'+nm);await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}lqBlkOpts();lqRenderTbl()};
- $('lqSec').addEventListener('click',e=>{const b=e.target.closest('.lqGo');if(b){lqShow(b.dataset.b);return}const f=e.target.closest('.lqFly');if(f&&map){const ft=PIPE.feats[+f.dataset.fi],m=lqMid(ft);if(m)map.setView([m[1],m[0]],Math.max(map.getZoom(),18));return}if(e.target.id==='lqXl')lqXl()});
+ $('lqSec').addEventListener('change',e=>{const x=e.target.closest('.lqLv');if(x)lqLvSet(x)});$('lqSec').addEventListener('click',e=>{if(e.target.closest('.lqLvXl')){lqLvXl();return}const b=e.target.closest('.lqGo');if(b){lqShow(b.dataset.b);return}const f=e.target.closest('.lqFly');if(f&&map){const ft=PIPE.feats[+f.dataset.fi],m=lqMid(ft);if(m)map.setView([m[1],m[0]],Math.max(map.getZoom(),18));return}if(e.target.id==='lqXl')lqXl()});
  $('lqBlk').onchange=()=>{const nm=$('lqBlk').value;if(nm&&LQ.data.has(nm))lqShow(nm);else if(nm&&lqPB(nm))lqShowRec()}}
 try{lqInit()}catch(e){console.warn('누수 지점 예측',e)}
 window.__APP_OK=1;
