@@ -9078,14 +9078,25 @@ async function lqDataLoad(files){const m=$('lqMsg'),out=[];for(const f of files)
  try{await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}m.innerHTML=out.join('<br>');lqBlkOpts();lqRenderTbl()}
 /* 📒 수압측정 대장(용역 서식 xlsm): '…전체수압' 시트 — 2행 머리글 '순번-블록:주소', 4행부터 1분 값(kgf/㎠).
    B열 날짜는 서식상 되풀이되므로 A열(그날 시작)을 날짜로, B열은 시각만 씀. 주소 → 주소 검색 결과(gcStore) 좌표 → 준비 파일의 가장 가까운 절점(80m 안)이면 'P순번@절점' */
-async function lqLedger(f){if(typeof XLSX==='undefined')return null;const buf=await f.arrayBuffer();let wb;try{wb=XLSX.read(buf,{type:'array',bookSheets:true})}catch(_){return null}
- const sn=(wb.SheetNames||[]).find(n=>/전체\s*수압/.test(n));if(!sn)return null;const ln=(wb.SheetNames||[]).find(n=>/리스트/.test(n));wb=XLSX.read(buf,{type:'array',sheets:ln?[sn,ln]:[sn],cellDates:false});
- const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});let hr=A.findIndex(r=>r&&r.some(c=>/^\d+-[^:]+:/.test(String(c||''))));if(hr<0)return null;
+/* 대장 읽기(2026-11-04 '너무 오래 걸림'): '1.리스트' 시트 범위가 A1:KL1048572(100만 행×298열)로 잡혀 있어 통째로 행 변환하면 수억 칸 → 멈춤.
+   리스트는 앞 200행만(sheetRows), 전체수압 시트만 따로 읽고, 둘 다 Web Worker에서 해서 화면이 멈추지 않게 함 */
+const LQ_LED_W=`onmessage=function(e){try{var buf=new Uint8Array(e.data.buf),wb=XLSX.read(buf,{type:'array',bookSheets:true}),N=wb.SheetNames||[],sn=null,ln=null;for(var i=0;i<N.length;i++){if(!sn&&/전체\\s*수압/.test(N[i]))sn=N[i];if(!ln&&/리스트/.test(N[i]))ln=N[i]}
+if(!sn){postMessage({none:1});return}postMessage({p:'수압 시트 읽는 중…'});var w1=XLSX.read(buf,{type:'array',sheets:[sn],cellDates:false}),A=XLSX.utils.sheet_to_json(w1.Sheets[sn],{header:1,raw:true,defval:null});w1=null;var B=null;
+if(ln){postMessage({p:'리스트 시트 읽는 중…'});var w2=XLSX.read(buf,{type:'array',sheets:[ln],sheetRows:200});B=XLSX.utils.sheet_to_json(w2.Sheets[ln],{header:1,raw:true,defval:null})}postMessage({sn:sn,A:A,B:B})}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
+function lqLedgerMain(buf){const wb=XLSX.read(buf,{type:'array',bookSheets:true}),N=wb.SheetNames||[],sn=N.find(n=>/전체\s*수압/.test(n)),ln=N.find(n=>/리스트/.test(n));if(!sn)return null;
+ const A=XLSX.utils.sheet_to_json(XLSX.read(buf,{type:'array',sheets:[sn],cellDates:false}).Sheets[sn],{header:1,raw:true,defval:null}),B=ln?XLSX.utils.sheet_to_json(XLSX.read(buf,{type:'array',sheets:[ln],sheetRows:200}).Sheets[ln],{header:1,raw:true,defval:null}):null;return{sn,A,B}}
+let LQ_LED_URL=null;
+function lqLedgerRead(buf,onMsg){if(typeof Worker==='undefined'||typeof Blob==='undefined')return Promise.resolve(lqLedgerMain(buf));
+ if(!LQ_LED_URL)LQ_LED_URL=URL.createObjectURL(new Blob([`var ok=0,U=${JSON.stringify(XLSX_URLS)};for(var i=0;i<U.length&&!ok;i++){try{importScripts(U[i]);ok=1}catch(e){}}\n`+LQ_LED_W.replace('onmessage=function(e){try{',"onmessage=function(e){try{if(!ok)throw new Error('NOLIB');")],{type:'text/javascript'}));
+ return new Promise((res,rej)=>{let w;const fb=()=>{try{w&&w.terminate()}catch(_){}setTimeout(()=>{try{res(lqLedgerMain(buf))}catch(e){rej(e)}},30)};try{w=new Worker(LQ_LED_URL)}catch(_){fb();return}
+  w.onmessage=e=>{const d=e.data;if(d.p){onMsg&&onMsg(d.p);return}w.terminate();if(d.err){if(d.err==='NOLIB')fb();else rej(new Error(d.err))}else res(d.none?null:d)};w.onerror=ev=>{ev.preventDefault&&ev.preventDefault();fb()};w.postMessage({buf},[buf])})}
+async function lqLedger(f){if(typeof XLSX==='undefined')return null;if(!/\.xls[xmb]?$/i.test(f.name))return null;const buf=await f.arrayBuffer();let R;try{R=await lqLedgerRead(buf.slice(0),p=>{const m=$('lqMsg');if(m)m.textContent=f.name+' · '+p})}catch(_){return null}if(!R)return null;
+ const sn=R.sn,A=R.A,LB=R.B,ln=!!LB;let hr=A.findIndex(r=>r&&r.some(c=>/^\d+-[^:]+:/.test(String(c||''))));if(hr<0)return null;
  const H=A[hr],use=[];H.forEach((c,j)=>{const m=/^(\d+)-([^:]*):(.*)$/.exec(String(c||'').trim());if(m&&m[2].trim()&&m[3].trim()&&!use.some(u=>u.no===+m[1]))use.push({j,no:+m[1],blk:m[2].trim(),addr:m[3].trim()})}); /* 오른쪽 동수두 칸(같은 머리글)은 빼고 첫 수압 칸만 */if(!use.length)return null;
  const qj=H.findIndex(c=>/유량/.test(String(c??''))&&!/수압|압력|누적|적산|^\d+-/.test(String(c??'').trim()));/* 'MS유량' 같은 유량 칸 (단위 없으면 ㎥/h) */
  const blk=use[0].blk,b=lqPB(blk),gk=Object.keys(typeof gcStore==='object'&&gcStore||{}),note=[],meta={gl:{},glNo:{}},zr=A.slice(hr+1,hr+4).find(r=>r&&r.some(c=>String(c??'').trim()==='표고'));/* 표고 줄 = 지점 지반고(G.L) */
  /* '1.리스트' 시트: 유입점 주소·배수지 H.W.L/L.W.L·지점 G.L(표고 줄이 비었을 때) */
- if(ln)try{const B=XLSX.utils.sheet_to_json(wb.Sheets[ln],{header:1,raw:true,defval:null}),hi=B.findIndex(r=>r&&r.some(c=>String(c??'').trim()==='순번')&&r.some(c=>/G\.?L/i.test(String(c??''))));
+ if(ln)try{const B=LB,hi=B.findIndex(r=>r&&r.some(c=>String(c??'').trim()==='순번')&&r.some(c=>/G\.?L/i.test(String(c??''))));
   if(hi>=0){const Hd=B[hi].map(c=>String(c??'').replace(/\s/g,'')),ci=re=>Hd.findIndex(c=>re.test(c)),cB=ci(/^블록$/),cA=ci(/^주소$/),cG=ci(/^G\.?L$/i),cR=ci(/^배수지$/),cH=ci(/^H\.?W\.?L$/i),cL=ci(/^L\.?W\.?L$/i);
    for(let r=hi+1;r<Math.min(B.length,hi+80);r++){const R=B[r];if(!R)continue;if(cA>=0&&R[cA]&&!meta.inlet&&R.some(c=>String(c??'').trim()==='유입점'))meta.inlet=String(R[cA]).trim();
     const no=+R[0];if(!(no>0)||(cB>=0&&String(R[cB]??'').trim()!==blk))continue;if(cR>=0&&R[cR]&&!meta.res)meta.res=String(R[cR]).trim();if(cH>=0&&+R[cH]>0&&meta.hwl==null)meta.hwl=+R[cH];if(cL>=0&&+R[cL]>0&&meta.lwl==null)meta.lwl=+R[cL];
