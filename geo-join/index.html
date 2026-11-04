@@ -124,6 +124,9 @@ textarea{height:58px;resize:vertical}
 #uniDlg .ubtn{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}#uniDlg .ubtn .btn{width:auto;padding:7px 16px}
 @media (max-width:560px){#uniDlg .urow{grid-template-columns:auto 1fr}#uniDlg .urow select{grid-column:2}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lqsn{background:#1d4ed8;color:#fff;font:700 11px/18px sans-serif;border:2px solid #fff;border-radius:9px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.45)}.lqsn.on{background:#059669}
+.lqrk{background:#b91c1c;color:#fff;font:700 11px/16px sans-serif;border:2px solid #fff;border-radius:50%;width:16px;height:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.lqt{border-collapse:collapse;font-size:11.5px;width:100%}.lqt th,.lqt td{border-bottom:1px solid var(--line,#e2e8f0);padding:3px 4px;text-align:left;vertical-align:top}.lqt th{font-weight:700;color:var(--mute);white-space:nowrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;color:#fff;background:var(--ind)}
 html.dark .btn:not(.ol):not(.em):not(.am):not(.sl){background:#6366f1}
 .btn:hover{filter:brightness(.94)}.btn:disabled{background:var(--line2)!important;color:var(--mute)!important;border-color:transparent!important;cursor:not-allowed;filter:none}
@@ -1183,7 +1186,7 @@ html.gwOn .afp{top:150px}
   <div id="pPanel" hidden>
    <div class="g2"><label class="f">관경 필드<select id="pDia" disabled></select></label><label class="f">재질 필드<select id="pMat" disabled></select></label>
    <label class="f">설치일 필드<select id="pYmd" disabled></select></label><label class="f">용도 필드<select id="pUse" disabled></select></label>
-   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option></select></label>
+   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option><option value="risk">파손 위험 점수 (누수 예측)</option></select></label>
    <label class="f">지도 표시<select id="pShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label><label class="f">원거리 기준(m)<input id="pFar" type="number" value="50" min="1"></label></div>
    <p class="hint" id="pZoomHint" hidden>관로가 많아 지도를 더 확대하면(줌 15 이상) 표시됩니다.</p>
    <span class="ck"><input type="checkbox" id="pPrint" checked> PDF 인쇄에 관로 포함</span>
@@ -1229,6 +1232,21 @@ html.gwOn .afp{top:150px}
    <label class="f" id="eByL" hidden>점 색 기준<select id="eBy"><option value="z">⛰️ 표고</option><option value="p">💧 최저 수압 (관망해석 결과)</option></select></label>
    <div id="eLeg" class="hint eleg"></div>
   </div>
+ </div>
+
+ <div class="sec" id="lqSec">
+  <h4>②-4 💧 누수 지점 예측 <small style="font-weight:400;color:var(--mute)">선택 · 1분 유량·수압 · 관망해석 · 파손 위험 점수</small></h4>
+  <label class="drop"><input type="file" id="lqPrepF" accept=".zip,.json"><div class="ic">🧮</div><b>누수 예측 준비 파일(.zip)</b><span>PC에서 관망해석 모델로 만든 소블록별 가상 누수 수압표와 수압계 추천 자리 · 한 번 올리면 이 PC에 저장</span></label>
+  <p class="hint" id="lqPrepMsg"></p>
+  <div class="g2"><label class="f">소블록 <small style="font-weight:400">🧮 준비 파일 · 📈 1분 자료</small><select id="lqBlk"></select></label><label class="f">수압계 수<select id="lqK"><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label></div>
+  <div class="sbtns"><button id="lqRecBtn" type="button" class="btn ol">📍 수압계 추천 자리</button><button id="lqRecCsv" type="button" class="btn ol">⬇ 추천 자리 CSV</button><button id="lqTpl" type="button" class="btn ol">📄 1분 자료 양식</button></div>
+  <label class="drop"><input type="file" id="lqDataF" accept=".csv,.txt,.xlsx,.xls" multiple><div class="ic">📈</div><b>1분 유량·수압 파일 (.csv·.xlsx, 여러 개)</b><span>소블록 하나에 파일 하나 · 첫 열 시각, 유량(㎥/h), P1~P8 수압(m·kgf/㎠·MPa) · 파일 이름에 소블록 이름이 있으면 그 소블록, 없으면 위에서 고른 소블록 · 같은 소블록은 이어 붙임(최근 120일)</span></label>
+  <p class="hint" id="lqMsg"></p>
+  <div id="lqTbl"></div>
+  <div id="lqCand"></div>
+  <div class="sbtns" style="margin-top:4px"><button id="lqOff" type="button" class="btn ol">🙈 지도 표시 지우기</button><button id="lqDel" type="button" class="btn ol">🗑 고른 소블록 1분 자료 지우기</button></div>
+  <details style="margin-top:6px"><summary style="cursor:pointer;font-size:12px">⚙ 판정 기준 · 파손 위험 점수 가중치</summary><div id="lqCfg"></div></details>
+  <p class="hint">L1: 1분 유량으로 누수 의심 소블록(야간최소유량 증가·급증)을 찾고, 그 안 관로를 <b>파손 위험 점수</b>(경과연수·재질·누수 이력·최고 수압·관경)로 줄 세웁니다. L2: 수압계 3개 이상 자료와 준비 파일이 있으면 평상 날과 최근 날의 같은 시간대 수압 차이를 관망해석 가상 누수와 비교해 위치 가능성을 빨간 원으로 보여 줍니다. 모두 참고값이며 현장 탐사로 확인하세요. 관로 색 기준 '파손 위험 점수'는 ⚙️ 관로 보기 설정에서 고릅니다.</p>
  </div>
 
  <div class="sec ph">
@@ -1407,7 +1425,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eye','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['mk','pen','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','지도 잠금']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','drop','누수 지점 예측',1],['mk','pen','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','지도 잠금']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'field',n:'현장',g:[
   {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','pen','사진 편집 모드'],['gal','grid','사진 갤러리']]},
@@ -1420,8 +1438,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -1515,7 +1533,7 @@ function laySub(k){try{
   return `<div class="tip">체크 = 지도에 보이기 · ${on.toLocaleString()} / ${nm.length.toLocaleString()}개 켜짐</div><div class="gwl-bb"><button type="button" data-ba="0">모두 켜기</button><button type="button" data-ba="1">모두 끄기</button></div><div class="gwl-sc">`+nm.map(n=>{const h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-bh="${escH(n)}"${h?'':' checked'}><span class="nm" title="${escH(n)}">${escH(n)}</span></label>`}).join('')+`</div>`}
  if(k==='pipe'){const P=G('PIPE');if(!P||!P.feats||!P.feats.length)return'';const by=($('pBy')||{}).value||'',ck=by+'|'+P.feats.length+'|'+(P.fc&&P.fc.features?P.fc.features.length:0);
   if(!LXC.pipe||LXC.pipe.k!==ck){const d=F('pipeLegData');if(!d)return'';LXC.pipe={k:ck,d}}const {cnt,items}=LXC.pipe.d,DB=G('DIA_BANDS')||[],H=new Set(F('pipeHidList')||[]);
-  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by]||'';
+  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[by]||'';
   return `<div class="tip">색 기준: ${T} · 체크 = 지도에 보이기 (⚙️ 관로 탭에서 색 기준 바꿈)</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3,h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-phd="${escH(n)}"${h?'':' checked'}><span class="ln" style="height:${w}px;background:${c}"></span><span class="nm" title="${escH(n)}">${escH(n)}</span><small>${((cnt.get(n)||0)/1000).toFixed(1)}km</small></label>`}).join('')}
  if(k==='fac'){const f=G('FAC');if(!f||!f.kinds||!f.kinds.length)return'';/* ⚙️ 시설물 탭과 같은 목록(켜고 끄기·크기·사진 있는 것만)을 그대로 그림 → layFill */
   return `<div class="gwl-fk" data-v="${escH(JSON.stringify([f.feats.length,f.kinds,[...(f.hidden||[])],f.ksz||{},!!f.phOnly,f.phc||0]))}"></div><div class="tip">체크 = 지도에 보이기 · −/＋ = 아이콘 크기 (⚙️ 시설물 탭과 같이 바뀜)</div>`}
@@ -3259,7 +3277,7 @@ async function loadPipes(buf,file){
 const PALIAS={dia:['구경','구경2','관경','PIP_DIP','STD_DIP'],mat:['관재질','MOP_CDE','PIP_MOP'],ymd:['설치일자','IST_YMD'],use:['상수관용도','SAA_CDE'],id:['관리번호','FTR_IDN']};
 const pv=(P,k,r)=>{if(k&&P[k]!=null&&P[k]!=='')return P[k];for(const a of PALIAS[r])if(P[a]!=null&&String(P[a]).trim()!=='')return P[a];return null};
 function attrOf(f){const P=f.properties,ct=PIPE.ct||(PIPE.ct=codeTable()),m=pv(P,$('pMat').value,'mat'),y=parseYear(pv(P,$('pYmd').value,'ymd'));
- return{dia:parseDia(pv(P,$('pDia').value,'dia')),mat:m!=null?normMat(m,ct):'미상',matRaw:m??'',year:y,age:ageOf(y),use:(u=>u!=null?normUse(u,ct):'미상')(pv(P,$('pUse').value,'use')),id:pv(P,$('pId').value,'id')??'',layer:P['_레이어']||''}}
+ return{dia:parseDia(pv(P,$('pDia').value,'dia')),mat:m!=null?normMat(m,ct):'미상',matRaw:m??'',year:y,age:ageOf(y),use:(u=>u!=null?normUse(u,ct):'미상')(pv(P,$('pUse').value,'use')),id:pv(P,$('pId').value,'id')??'',layer:P['_레이어']||'',rk:f._rk}}
 function buildPipeIndex(){const fs=PIPE.feats;let sx=0,sy=0,n=0;
  fs.forEach(f=>lineParts(f.geometry).forEach(p=>p.forEach(c=>{sx+=c[0];sy+=c[1];n++})));LX0=sx/n;LY0=sy/n;LCOS=Math.cos(LY0*Math.PI/180);
  const segs=[],grid=new Map(),C=100;let tot=0;
@@ -3286,12 +3304,12 @@ function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  if(by==='age')col=a.age==null?'#94a3b8':band(AGE_BANDS,a.age)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
  else if(by==='use')col=USE_COL[a.use]||catCol(a.use);
- else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else col=MAT_COL[a.mat]||catCol(a.mat);
+ else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else if(by==='risk')col=a.rk==null?'#cbd5e1':band(RISK_BANDS,a.rk)[2];else col=MAT_COL[a.mat]||catCol(a.mat);
  /* 유속·유량 색일 때 굵기 = 유량 (결과 없는 관로는 가늘게) */
  const hq=(by==='vel'||by==='flow')?pipeHyd(a):null,w=(hq?band(FLOW_BANDS,Math.abs(hq.q))[3]:by==='vel'||by==='flow'?1.2:a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};{const g=tbAllG(a);if(g)return{color:g===3?'#7c2d12':'#ca8a04',weight:Math.max(w,2.6),opacity:.95}}return{color:col,weight:w,opacity:.9}}
 const catMap=new Map();function catCol(k){if(k==='미상')return '#94a3b8';if(!catMap.has(k))catMap.set(k,OTHER_COL[catMap.size%OTHER_COL.length]);return catMap.get(k)}
 function pipePopup(f){const a=attrOf(f),P=f.properties;
- const rows=[['레이어',a.layer||'-'],['관리번호',a.id||P._임시번호||''],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];
+ const rows=[['레이어',a.layer||'-'],['관리번호',a.id||P._임시번호||''],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];if(f._rk!=null)rows.push(['파손 위험',`<b>${f._rk}</b>점 · 누수 이력 ${f._rkn||0}건`]);
  return `<b>🚰 상수관로</b>${P._ped||P._폐관?` <span style="font-size:11px;font-weight:700;color:${P._폐관?'#b91c1c':'#7c3aed'}">${P._폐관?'🗑 폐관 표시':P._추가?'🆕 현장 추가':'✏️ 현장 수정'} ${esc(P._현장수정||'')}</span>`:''}${P['현장메모']?`<div style="font-size:11.5px;color:#7c3aed">📝 ${esc(P['현장메모'])}</div>`:''}<table style="font-size:12px;margin-top:4px">${rows.map(([k,v])=>`<tr><td style="color:#64748b;padding-right:8px">${k}</td><td>${k==='재질'?v:esc(v)}${(k==='관경'||k==='재질')&&!P._빈?` <button type="button" class="pied-go" onclick="pipeInfoGo(this,'${k==='관경'?'dia':'mat'}')" title="${k} 바로 고치기" aria-label="${k} 고치기">✏️</button>`:''}</td></tr>`).join('')}</table>`+
   `<details style="margin-top:4px;font-size:11px"><summary>원본 속성</summary>${Object.entries(P).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>')}</details>`}
 /* 관로가 많을 때: 배수관 등 본관은 줌 13부터, 급수관은 줌 16부터 그림 (모두 그리면 시가지 전체 화면에서 느려짐) */
@@ -3322,7 +3340,7 @@ window.pipeInfoSave=async(fi,btn)=>{const box=btn.closest('.pied'),old=PIPE.feat
 window.pipeInfoGo=(btn,role)=>{const c=btn.closest('.leaflet-popup-content')||document,d=c.querySelector('details.pied');if(!d)return;d.open=true;const el=d.querySelector(`[data-role="${role}"]`);if(el)setTimeout(()=>{try{popScrollTo(d);el.focus({preventScroll:true});el.select()}catch(_){}},0)};
 window.pipeInfoOrig=async fi=>{const old=PIPE.feats[fi];if(!old)return;if(!confirm('이 관로를 SHP 원래 값·모양으로 되돌릴까요?'+(PED.recs.some(x=>x.from===old.properties._ped&&!x.rv)?'\n(여기서 나눈 관로도 함께 없어집니다)':'')))return;PIPE.infoOpen=-1;await pedRevert(fi);pipeInfoRefresh(fi,old)};
 function pipePopFull(f,ll){const e={latlng:ll};return pipePopup(f)+pipeInfoForm(f)+hydPipePop(f)+elevPop(e.latlng.lat,e.latlng.lng)+`<div class="acts" style="margin-top:6px"><button type="button" class="kl" onclick="shutFromPopup(${e.latlng.lat},${e.latlng.lng})">💧 여기서 단수구역 보기</button><button type="button" class="kl" onclick="peOpen(${PIPE.feats.indexOf(f)})" title="속성·모양 고치기, 나누기, 폐관 표시">🛠 이 관로 고치기</button>${(a=>kvBtns(e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||''),[a.dia!=null?a.dia+'mm':'',a.mat||''].filter(Boolean).join(' · '))+vidBtns('pipe',a.id?'id:'+a.id:'i:'+PIPE.feats.indexOf(f),e.latlng.lat,e.latlng.lng,'🚰 관로 '+(a.id||'')+(a.dia!=null?' '+a.dia+'mm':'')))(attrOf(f))}</div>`}
-function renderPipes(){if(!map||!PIPE.fc)return;catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
+function renderPipes(){if(!map||!PIPE.fc)return;if($('pBy').value==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
  const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle,onEachFeature:hopEach},main=[],svc=[];PIPE.rd=rd;
  pipeHidMask();const hm=PIPE.hm;PIPE.feats.forEach((f,i)=>{if(f.properties&&f.properties._빈||hm&&hm[i])return;(attrOf(f).use==='급수관'?svc:main).push(f)});PIPE.nMain=main.length;PIPE.nS=svc.length;
@@ -3344,21 +3362,21 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
 /* 관로 범례 항목(지도 범례·작업 화면 레이어 창 공용): 색 기준 by, 항목 [이름,색], 항목별 연장 cnt */
 /* 관로 한 개가 지금 색 기준에서 어느 항목인지 (범례·레이어 창 켜고 끄기 공용) */
-function pipeCat(a,by){return by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):a.mat}
+function pipeCat(a,by){return by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
 /* 관로 항목별 켜고 끄기: 색 기준마다 따로 기억 (UI.pHid[색 기준] = 끈 항목). 끈 관로는 그리지 않고 누르기·라벨에서도 뺌 */
 function pipeHidList(){return ((UI.pHid||{})[$('pBy').value])||[]}
 function pipeHidMask(){const by=$('pBy').value,s=new Set(pipeHidList());if(!s.size){PIPE.hm=null;return}const m=new Uint8Array(PIPE.feats.length);PIPE.feats.forEach((f,i)=>{if(s.has(pipeCat(attrOf(f),by)))m[i]=1});PIPE.hm=m}
 function pipeHidSet(n,hide){const by=$('pBy').value;UI.pHid=UI.pHid||{};const s=new Set(UI.pHid[by]||[]);hide?s.add(n):s.delete(n);if(s.size)UI.pHid[by]=[...s];else delete UI.pHid[by];uiSave();if(map)map.closePopup();if(PIPE.fc)renderPipes();PLB.key='';plblSoon()}
 function pipeLegData(){
- const by=$('pBy').value,cnt=new Map();PIPE.feats.forEach(f=>{const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
- let items;if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
+ const by=$('pBy').value,cnt=new Map();if(by==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();PIPE.feats.forEach(f=>{const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
+ let items;if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
  return{by,cnt,items}}
 function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
  const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
  const {by,cnt,items}=pipeLegData();
- const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
+ const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
  el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div><button type="button" class="pfa" title="물 흐름 방향 화살표 켜기/끄기" style="display:block;margin:3px 0 2px;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;background:${UI.fa===false?'transparent':'#e0f2fe'};color:${UI.fa===false?'var(--mute)':'#075985'};font-size:11px;font-weight:700;cursor:pointer">➤ 흐름 방향 ${UI.fa===false?'꺼짐':'켜짐'}${map&&map.getZoom()<FA_Z&&UI.fa!==false?` <small style="font-weight:400">(줌 ${FA_Z}부터)</small>`:''}</button>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
 async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;renderBlk();return}
@@ -8326,11 +8344,11 @@ try{bkChipInit()}catch(e){console.warn('백업 불러오기 칩',e)}
    폐관 목록은 관로를 지우므로 자동으로 고르지 않음. 실제 읽기·반영·되돌리기는 원래 칸의 코드를 그대로 씀 */
 const UNI_K={bk:['💾 백업 불러오기','bkLoad','bkMsg'],blk:['② 소블록 경계 · 전체 등록','f2','shpMsg'],blkU:['② 소블록 경계 · 변경분 반영','bUpd','shpMsg'],
  pipe:['②-1 상수관로 · 전체 등록','f3','pMsg'],pipeU:['②-1 상수관로 · 변경분 반영','pUpd','pMsg'],pipeD:['②-1 상수관로 · 폐관 목록(관리번호)','pDelF','pMsg'],
- fac:['②-2 시설물 · 전체 등록','f4','fMsg'],facU:['②-2 시설물 · 변경분 반영','fUpd','fMsg'],elev:['②-3 관망해석 inp·결과','f5','eMsg'],
+ fac:['②-2 시설물 · 전체 등록','f4','fMsg'],facU:['②-2 시설물 · 변경분 반영','fUpd','fMsg'],elev:['②-3 관망해석 inp·결과','f5','eMsg'],leak:['②-4 누수 예측 준비 파일','lqPrepF','lqPrepMsg'],
  bill:['📥 부과량 연동','bFile','bMsg'],billX:['📥 부과량 연동 · FRD 양식으로 맞추기','bFile','bMsg'],addr:['① 주소 데이터','f1','src'],imp:['♻️ 이전 결과 엑셀','impFile','impMsg'],
  phRef:['📍 사진 기준 위치 (접수번호 좌표)','phRefFile','phRefMsg'],rcp:['📋 민원 접수 리스트 → 메모','phRcpFile','phRcpMsg'],ph:['📷 현장 사진','phFile','phMsg'],skip:['반영 안 함','','']};
 const UNI={busy:false};
-const UNI_ORD=['bk','blk','blkU','pipe','pipeU','pipeD','fac','facU','elev','bill','billX','addr','imp','phRef','rcp','ph'];
+const UNI_ORD=['bk','blk','blkU','pipe','pipeU','pipeD','fac','facU','elev','leak','bill','billX','addr','imp','phRef','rcp','ph'];
 const uniHas={blk:()=>!!poly,pipe:()=>!!(PIPE.raw&&PIPE.raw.length),fac:()=>!!(FAC.feats&&FAC.feats.length)};
 const uniExt=n=>(String(n).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1]||'';
 const uniSz=b=>b>=1048576?(b/1048576).toFixed(1)+'MB':Math.max(1,Math.round(b/1024))+'KB';
@@ -8354,7 +8372,7 @@ async function uniZip(f){if(typeof JSZip==='undefined')return[{f,k:'skip',why:'Z
  const names=Object.keys(z.files).filter(p=>!z.files[p].dir&&!/(^|\/)(__MACOSX|\.)/.test(p));
  if(z.file('backup.json'))return[{f,k:'bk',why:'이 앱의 백업 파일'}];
  const shps=names.filter(p=>/\.shp$/i.test(p));
- if(!shps.length){const js=names.find(p=>/\.json$/i.test(p));if(js){const h=new TextDecoder().decode(await uniHead(z.file(js),400));if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}]}
+ if(!shps.length){const js=names.find(p=>/\.json$/i.test(p));if(js){const h=new TextDecoder().decode(await uniHead(z.file(js),400));if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];if(/geo-addr-leak/.test(h))return[{f,k:'leak',why:'누수 예측 준비 파일'}];if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}]}
   if(names.some(p=>/\.inp$/i.test(p)))return[{f,k:'skip',why:'zip 안 .inp는 풀어서 .inp 파일로 넣어 주세요'}];
   if(names.some(p=>/\.(jpe?g|png|heic)$/i.test(p)))return[{f,k:'skip',why:'사진 묶음 zip은 풀어서 사진 파일로 넣어 주세요'}];
   return[{f,k:'skip',why:'zip 안에 SHP(.shp)가 없습니다'}]}
@@ -8394,7 +8412,7 @@ async function uniSniff(f){const e=uniExt(f.name);
   if(e==='zip')return await uniZip(f);
   if(/^(xlsx|xlsm|xls|xlsb|csv)$/.test(e))return await uniXl(f);
   if(e==='inp'||e==='txt'){const h=await f.slice(0,20000).text();return /\[(JUNCTIONS|PIPES|COORDINATES|TITLE)\]/i.test(h)?[{f,k:'elev',why:'관망해석 inp (표고)'}]:[{f,k:'skip',why:'알 수 없는 글 파일'}]}
-  if(e==='json'){const h=await f.slice(0,400).text();if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}];if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];return[{f,k:'skip',why:'이 앱의 json이 아닙니다'}]}
+  if(e==='json'){const h=await f.slice(0,400).text();if(/geo-addr-app/.test(h))return[{f,k:'bk',why:'이 앱의 백업 파일'}];if(/geo-addr-hyd/.test(h))return[{f,k:'elev',why:'관망해석 결과 파일'}];if(/geo-addr-leak/.test(h))return[{f,k:'leak',why:'누수 예측 준비 파일'}];return[{f,k:'skip',why:'이 앱의 json이 아닙니다'}]}
   if(/^(shp|dbf|shx|prj|cpg)$/.test(e))return[{f,k:'skip',why:'SHP는 .shp·.dbf·.shx·.prj를 함께 zip 하나로 묶어 넣어 주세요'}]}
  catch(err){return[{f,k:'skip',why:'읽기 실패: '+((err&&err.message)||err)}]}
  return[{f,k:'skip',why:'이 앱에서 쓰지 않는 파일입니다'}]}
@@ -8939,6 +8957,172 @@ function mkInit(){if(!map||$('mkA'))return;mkPane();
  /* 앱을 연 동안 3분마다 서버 버전만 물어보고 새것이면 받음 (화면이 보일 때만) */
  setInterval(()=>{if(typeof SH!=='undefined'&&SH.on()&&document.visibilityState==='visible'&&!MK.busy)mkSync(true).catch(()=>{})},180000)}
 try{mkInit()}catch(e){console.warn('지도 그리기',e)}
+/* ====== 💧 ②-4 누수 지점 예측 ======
+ L1: 1분 유량 → 소블록 야간최소유량·파손(급증) 의심, 관로 파손 위험 점수로 점검 순서
+ L2: 1분 수압(수압계 4~8개) + 준비 파일(관망해석 가상 누수 수압표) → 누수 위치 확률 열지도
+ 설치 자리: 준비 파일의 추천 수압계 자리(P1~P8) 지도 표시
+ 준비 파일(.zip, app 'geo-addr-leak')은 PC에서 관망해석 inp로 만든다. 고객 정보는 쓰지 않는다(관리번호·소블록만). */
+const LQ={prep:null,S:new Map(),data:new Map(),an:new Map(),sel:'',L:null,pidx:null,rkKey:'',
+ cfg:{n0:2,n1:4,rec:3,pct:20,abs:1,near:10,sig:0.01,w:{age:30,mat:20,his:25,pr:15,dia:10}}};
+try{const c=JSON.parse(localStorage.getItem('geo-leak')||'{}');if(c&&typeof c==='object'){Object.assign(LQ.cfg,c);LQ.cfg.w=Object.assign({age:30,mat:20,his:25,pr:15,dia:10},c.w||{})}}catch(_){}
+const lqSaveCfg=()=>{try{localStorage.setItem('geo-leak',JSON.stringify(LQ.cfg))}catch(_){}};
+/* ---- 파손 위험 점수 (0~100) ---- */
+const RISK_BANDS=[[20,'0~20 낮음','#16a34a'],[40,'20~40','#84cc16'],[60,'40~60 보통','#f59e0b'],[80,'60~80 높음','#ea580c'],[1e9,'80~100 매우 높음','#b91c1c']];
+const RISK_MAT={'회주철관(CIP)':1,'아연도강관':1,'석면시멘트관':1,'강관(SP)':.8,'콘크리트관(PC·PCC)':.7,'PVC관(HI-3P·VP)':.6,'GRP관':.5,'동관':.5,'PE관':.4,'덕타일주철관(DCIP)':.3,'스테인리스관(STS)':.2};
+const riskDia=d=>d==null?.5:d<=50?1:d<=80?.8:d<=100?.6:d<=150?.45:d<=250?.3:.15;
+function lqLeakPts(){/* 누수 이력: 민원대응·누수탐사 사진 묶음(현장 한 곳 = 1건) */const o=[];try{for(const g of (PH.G||[]))if(g&&g.lat!=null&&g.lng!=null&&(g.kd==='mw'||g.kd==='ts'))o.push(g)}catch(_){}return o}
+function lqRiskEnsure(){if(!PIPE.feats||!PIPE.feats.length)return;const W=LQ.cfg.w,hy=!!(ELEV&&ELEV.hyd),pts=lqLeakPts();
+ const key=PIPE.feats.length+'|'+pts.length+'|'+(hy?ELEV.hi.n:0)+'|'+JSON.stringify(W)+'|'+LQ.cfg.near+'|'+($('pMat')||{}).value+'|'+($('pYmd')||{}).value+'|'+($('pDia')||{}).value;if(key===LQ.rkKey)return;LQ.rkKey=key;
+ if(!PIPE.segs)buildPipeIndex();const cnt=new Map();for(const g of pts){const r=nearestPipe(+g.lng,+g.lat,+LQ.cfg.near||10);if(r)cnt.set(r.fi,(cnt.get(r.fi)||0)+1)}
+ PIPE.feats.forEach((f,fi)=>{const a=attrOf(f),n=cnt.get(fi)||0;let s=0,w=0;
+  s+=W.age*(a.age==null?.5:Math.min(a.age,50)/50);w+=W.age;s+=W.mat*(RISK_MAT[a.mat]??.5);w+=W.mat;s+=W.his*Math.min(n,3)/3;w+=W.his;s+=W.dia*riskDia(a.dia);w+=W.dia;
+  if(hy&&W.pr){const m=lqMid(f);const r=m&&hydNear(m[1],m[0]);if(r){s+=W.pr*Math.max(0,Math.min(1,(ELEV.hyd.pmax[r.i]-30)/40));w+=W.pr}}
+  f._rk=w?Math.round(s/w*100):null;f._rkn=n})}
+function lqMid(f){const p=lineParts(f.geometry)[0];if(!p||!p.length)return null;return p[Math.floor(p.length/2)]}
+/* ---- 준비 파일 ---- */
+let LQ_F16=null;function lqF16(b64){if(!LQ_F16){LQ_F16=new Float32Array(65536);for(let h=0;h<65536;h++){const e=(h>>10)&31,m=h&1023,s=h&32768?-1:1;LQ_F16[h]=s*(e===0?m*5.960464477539063e-8:e===31?(m?NaN:Infinity):Math.pow(2,e-15)*(1+m/1024))}}
+ const t=atob(b64),n=t.length>>1,o=new Float32Array(n);for(let i=0;i<n;i++)o[i]=LQ_F16[t.charCodeAt(2*i)|(t.charCodeAt(2*i+1)<<8)];return o}
+function lqPB(name){return LQ.prep&&LQ.prep.blocks.find(b=>b.name===name)||null}
+function lqTab(b,h){const k=b.name+'|'+h;let S=LQ.S.get(k);if(!S){S=lqF16(b.S[h]);LQ.S.set(k,S)}return S}
+async function lqPrepRead(f){let t;if(/\.zip$/i.test(f.name)){if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');const z=await JSZip.loadAsync(f),e=Object.values(z.files).find(x=>!x.dir&&/\.json$/i.test(x.name));if(!e)throw new Error('ZIP 안에 .json이 없습니다.');t=await e.async('string')}else t=await f.text();
+ let d;try{d=JSON.parse(t)}catch(_){throw new Error('준비 파일(JSON)을 읽지 못했습니다.')}if(!d||d.app!=='geo-addr-leak'||!Array.isArray(d.blocks))throw new Error('스마트물길주소용 누수 예측 준비 파일이 아닙니다.');
+ d.blocks.forEach(b=>{const n=b.ids.length;if(b.lng.length!==n||b.lat.length!==n)throw new Error(b.name+': 절점 개수가 맞지 않습니다.');for(const h of d.hours)if(!b.S[h]||atob(b.S[h]).length!==n*n*2)throw new Error(b.name+': 수압표 크기가 맞지 않습니다.')});d.name=f.name;d.at=Date.now();return d}
+async function lqPrepLoad(f){const m=$('lqPrepMsg');m.textContent=f.name+' 읽는 중…';
+ try{const d=await lqPrepRead(f),old=LQ.prep;if(old&&!confirm(`누수 예측 준비 파일을 바꿀까요?\n\n· 지금: ${old.blocks.map(b=>b.name).join(', ')}\n· 새 파일: ${d.blocks.map(b=>b.name).join(', ')}`)){m.textContent='취소했습니다.';return}
+  await IDB.set('leak_prep',d);LQ.prep=d;LQ.S.clear();LQ.an.clear();lqBlkOpts();lqPrepShow();lqRenderTbl()}
+ catch(e){m.textContent='준비 파일 읽기 실패: '+((e&&e.message)||e)}}
+function lqPrepShow(){const m=$('lqPrepMsg');if(!m)return;const d=LQ.prep;if(!d){m.innerHTML='준비 파일이 없습니다. 위치 계산(L2)과 수압계 추천 자리에 필요합니다. 야간최소유량·파손 의심·관로 점검 순서(L1)는 없어도 됩니다.';return}
+ m.innerHTML=`준비 파일: <b>${esc(d.name||'')}</b> · ${esc(d.made||'')} · 소블록 ${d.blocks.map(b=>`${esc(b.name)}(절점 ${b.ids.length})`).join(', ')}<br><small>${esc(d.src||'')} · 시점 ${d.hours.map(h=>h+'시').join('·')} · 가상 누수 ${d.leakCmh}㎥/h · 모델 계산 참고값</small>`}
+/* ---- 1분 자료 읽기 (CSV는 Web Worker) ---- */
+const LQ_WK=`function tp(v){if(v==null||v==='')return NaN;if(typeof v==='number'){if(v>20000&&v<90000){var d=new Date(Math.round((v-25569)*864e5));return d.getTime()+d.getTimezoneOffset()*6e4}return NaN}
+var s=String(v).trim(),m=/^(\\d{4})[-.\\/](\\d{1,2})[-.\\/](\\d{1,2})[ T]+(\\d{1,2}):(\\d{2})(?::(\\d{2}))?/.exec(s);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)).getTime();
+m=/^(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})/.exec(s);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime();var n=+s;if(isFinite(n))return tp(n);return NaN}
+function sp(l,c){var o=[],q=false,b='';for(var i=0;i<l.length;i++){var ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){b+='"';i++}else q=!q}else if(ch===c&&!q){o.push(b);b=''}else b+=ch}o.push(b);return o}
+onmessage=function(e){try{var t=e.data.text.replace(/^\\ufeff/,''),L=t.split(/\\r?\\n/),c=(L[0].split('\\t').length>L[0].split(',').length)?'\\t':',',h=sp(L[0],c).map(function(x){return x.trim()}),n=L.length,T=new Float64Array(n),C=h.map(function(){return new Float32Array(n)}),k=0;
+for(var i=1;i<n;i++){if(!L[i])continue;var r=sp(L[i],c),tt=tp(r[0]);if(!isFinite(tt))continue;T[k]=tt;for(var j=1;j<h.length;j++){var v=parseFloat(String(r[j]==null?'':r[j]).replace(/,/g,''));C[j][k]=isFinite(v)?v:NaN}k++;if(!(i%50000))postMessage({p:i})}
+var o={hdr:h,t:T.slice(0,k),cols:C.map(function(a){return a.slice(0,k)})};postMessage(o,[o.t.buffer].concat(o.cols.map(function(a){return a.buffer})))}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
+let LQ_WURL=null;function lqCsv(text,onP){return new Promise((res,rej)=>{let w;try{LQ_WURL=LQ_WURL||URL.createObjectURL(new Blob([LQ_WK],{type:'text/javascript'}));w=new Worker(LQ_WURL)}catch(e){rej(e);return}
+ w.onmessage=e=>{const d=e.data;if(d.p){onP&&onP(d.p);return}w.terminate();d.err?rej(new Error(d.err)):res(d)};w.onerror=e=>{w.terminate();rej(new Error(e.message||'읽기 오류'))};w.postMessage({text})})}
+function lqTp(v){if(v==null||v==='')return NaN;if(v instanceof Date)return v.getTime();if(typeof v==='number'){if(v>20000&&v<90000){const d=new Date(Math.round((v-25569)*864e5));return d.getTime()+d.getTimezoneOffset()*6e4}return NaN}
+ const s=String(v).trim();let m=/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})[ T]+(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(s);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)).getTime();m=/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/.exec(s);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime();const n=+s;return isFinite(n)?lqTp(n):NaN}
+/* 머리글 → 열 종류·단위 */
+function lqColKind(h){const s=String(h||'').replace(/\s/g,'');if(/누적|적산|합계/.test(s))return null;if(/유량|flow|^Q\b|^Q\(|㎥|m3|CMH|CMD|L\/s|lps/i.test(s)&&!/수압|압력/.test(s))return 'q';if(/^P\d+|수압|압력|press|kgf|MPa|bar/i.test(s))return 'p';return null}
+function lqQmul(h){const s=String(h);return /㎥\/일|m3\/d|CMD/i.test(s)?1/24:/L\/s|lps/i.test(s)?3.6:/L\/min|lpm/i.test(s)?.06:1}
+function lqPmul(h,arr){const s=String(h);if(/MPa/i.test(s))return[101.97,'MPa'];if(/kgf|kg\/|㎏/i.test(s))return[10,'kgf/㎠'];if(/bar/i.test(s))return[10.2,'bar'];if(/\(m\)|\bm$|mH2O|수두/i.test(s))return[1,'m'];
+ const v=[];for(let i=0;i<arr.length&&v.length<2000;i+=Math.max(1,arr.length/2000|0))if(isFinite(arr[i]))v.push(arr[i]);v.sort((a,b)=>a-b);const md=v[v.length>>1]||0;return md<1.5?[101.97,'MPa (값으로 추정)']:md<15?[10,'kgf/㎠ (값으로 추정)']:[1,'m (값으로 추정)']}
+function lqBlkFromName(fn){const s=String(fn||'').normalize('NFC').toUpperCase(),c=lqBlkNames().sort((a,b)=>b.length-a.length);return c.find(n=>n&&s.includes(String(n).toUpperCase()))||''}
+function lqBlkNames(){const s=new Set();if(LQ.prep)LQ.prep.blocks.forEach(b=>s.add(b.name));LQ.data.forEach((_,k)=>s.add(k));try{if(poly&&poly.features){const fld=$('blkField').value;poly.features.forEach(f=>{const v=String(f.properties[fld]??'').trim();if(v)s.add(v)})}}catch(_){}return [...s].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}))}
+async function lqDataLoad(files){const m=$('lqMsg'),out=[];for(const f of files){try{m.textContent=f.name+' 읽는 중…';let hdr,t,cols;
+  if(/\.(csv|txt)$/i.test(f.name)){const buf=await f.arrayBuffer();let text=new TextDecoder('utf-8').decode(buf);if(text.includes('�'))try{text=new TextDecoder('euc-kr').decode(buf)}catch(_){}const d=await lqCsv(text,p=>{m.textContent=`${f.name} 읽는 중… ${p.toLocaleString()}행`});hdr=d.hdr;t=d.t;cols=d.cols}
+  else{const r=await xlsxJson(await f.arrayBuffer(),{defval:''},p=>{m.textContent=f.name+' · '+p});const rows=r.rows;if(!rows.length)throw new Error('행이 없습니다');hdr=Object.keys(rows[0]);t=new Float64Array(rows.length);cols=hdr.map(()=>new Float32Array(rows.length));let k=0;
+   for(const row of rows){const tt=lqTp(row[hdr[0]]);if(!isFinite(tt))continue;t[k]=tt;hdr.forEach((h,j)=>{if(j){const v=parseFloat(String(row[h]).replace(/,/g,''));cols[j][k]=isFinite(v)?v:NaN}});k++}t=t.slice(0,k);cols=cols.map(a=>a.slice(0,k))}
+  if(!t.length)throw new Error('첫 열에서 시각을 읽지 못했습니다 (예: 2026-11-01 02:00)');
+  const blk=lqBlkFromName(f.name)||$('lqBlk').value;if(!blk)throw new Error('소블록을 먼저 고르세요');
+  let q=null,qh='';const P={},pu=[];hdr.forEach((h,j)=>{if(!j)return;const k=lqColKind(h);if(k==='q'&&!q){const mul=lqQmul(h);q=cols[j].map(v=>v*mul);qh=h}else if(k==='p'){const [mul,u]=lqPmul(h,cols[j]);P[String(h).replace(/\s*\(.*\)\s*$/,'').trim()]=cols[j].map(v=>v*mul);pu.push(h+'→'+u)}});
+  if(!q&&!Object.keys(P).length)throw new Error('유량·수압 열을 찾지 못했습니다. 양식(📄)의 머리글을 쓰세요');
+  const ord=Array.from(t.keys()).sort((a,b)=>t[a]-t[b]),nt=Float64Array.from(ord,i=>t[i]),nq=q?Float32Array.from(ord,i=>q[i]):null,nP={};for(const k in P)nP[k]=Float32Array.from(ord,i=>P[k][i]);
+  const cur=LQ.data.get(blk)||(await IDB.get('lqd:'+blk).catch(()=>null));const v=lqMerge(cur,{t:nt,q:nq,P:nP});v.files=((cur&&cur.files)||[]).concat([{name:f.name,at:Date.now(),n:nt.length}]).slice(-50);v.units=pu;
+  LQ.data.set(blk,v);LQ.an.delete(blk);await IDB.set('lqd:'+blk,v);out.push(`${esc(blk)}: ${f.name} ${nt.length.toLocaleString()}행 (${fmtDT(nt[0])} ~ ${fmtDT(nt[nt.length-1])})${q?' · 유량 '+esc(qh):' · 유량 열 없음'}${pu.length?' · 수압 '+pu.map(esc).join(', '):''}`)}
+ catch(e){out.push(`<span class="c-rd">${esc(f.name)}: ${esc((e&&e.message)||e)}</span>`)}}
+ try{await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}m.innerHTML=out.join('<br>');lqBlkOpts();lqRenderTbl()}
+/* 같은 소블록 자료 합치기 (같은 시각은 새 값) · 최근 120일만 */
+function lqMerge(a,b){if(!a||!a.t||!a.t.length)return lqTrim(b);const mp=new Map(),keys=new Set([...Object.keys(a.P||{}),...Object.keys(b.P||{})]);
+ const put=(s)=>{for(let i=0;i<s.t.length;i++){const k=Math.round(s.t[i]/6e4);let r=mp.get(k);if(!r)mp.set(k,r={});if(s.q&&isFinite(s.q[i]))r.q=s.q[i];for(const c in s.P)if(isFinite(s.P[c][i]))r[c]=s.P[c][i]}};put(a);put(b);
+ const ks=[...mp.keys()].sort((x,y)=>x-y),o={t:Float64Array.from(ks,k=>k*6e4),q:Float32Array.from(ks,k=>mp.get(k).q??NaN),P:{}};keys.forEach(c=>o.P[c]=Float32Array.from(ks,k=>mp.get(k)[c]??NaN));return lqTrim(o)}
+function lqTrim(o){const n=o.t.length;if(!n)return o;const lim=o.t[n-1]-120*864e5;let s=0;while(s<n&&o.t[s]<lim)s++;if(!s)return o;const r={t:o.t.slice(s),q:o.q?o.q.slice(s):null,P:{}};for(const c in o.P)r.P[c]=o.P[c].slice(s);return r}
+/* ---- 분석 ---- */
+const lqMed=a=>{const v=a.filter(isFinite).sort((x,y)=>x-y);return v.length?v[v.length>>1]:NaN},lqMean=a=>{let s=0,n=0;for(const x of a)if(isFinite(x)){s+=x;n++}return n?s/n:NaN};
+function lqAnalyze(name){const c=LQ.an.get(name);if(c)return c;const D=LQ.data.get(name);if(!D||!D.t.length)return null;const C=LQ.cfg,n=D.t.length;
+ const d0=new Date(D.t[0]);d0.setHours(0,0,0,0);const T0=d0.getTime(),nd=Math.ceil((D.t[n-1]-T0+6e4)/864e5),NM=nd*1440;
+ const grid=a=>{const g=new Float32Array(NM).fill(NaN);if(!a)return g;for(let i=0;i<n;i++){const k=Math.round((D.t[i]-T0)/6e4);if(k>=0&&k<NM&&isFinite(a[i]))g[k]=a[i]}return g};
+ const roll=(g,w)=>{const o=new Float32Array(g.length).fill(NaN),h=w>>1;let s=0,c=0;for(let i=0;i<g.length+h;i++){if(i<g.length&&isFinite(g[i])){s+=g[i];c++}const j=i-w;if(j>=0&&isFinite(g[j])){s-=g[j];c--}const k=i-h;if(k>=0&&k<g.length&&c>=w*.6)o[k]=s/c}return o};
+ const q=grid(D.q),q15=roll(q,15),pn=Object.keys(D.P||{}),P=pn.map(k=>grid(D.P[k]));
+ const hrs=(LQ.prep&&LQ.prep.hours||['3','19']).map(Number),days=[];
+ for(let d=0;d<nd;d++){const o=d*1440,w0=o+C.n0*60,w1=o+C.n1*60;let mn=Infinity,cv=0;for(let k=w0;k<w1;k++)if(isFinite(q15[k])){cv++;if(q15[k]<mn)mn=q15[k]}
+  const win={};hrs.forEach(h=>{const a=o+(h-1)*60,b=o+(h+1)*60;win[h]={q:lqMean(q.subarray(a,b)),p:P.map(g=>lqMean(g.subarray(a,b)))}});
+  days.push({d,ts:T0+d*864e5,mnf:cv>=(w1-w0)*.6?mn:NaN,win})}
+ const ok=days.filter(x=>isFinite(x.mnf)||hrs.some(h=>x.win[h].p.some(isFinite)));let rec=ok.slice(-C.rec),base=ok.slice(0,-C.rec).slice(-14),split=0;
+ /* 급증 찾기: 최근 날을 뺀 모든 날의 같은 시각 중앙값(평상 모양)보다 30분 넘게 높으면 급증. 6시간 넘게 이어지면(새 누수) 그 시각 앞뒤로 평상·최근을 나눔 */
+ const ev=[],b0=ok.slice(0,-C.rec);if(b0.length>=3&&D.q){const prof=new Float32Array(1440);for(let m=0;m<1440;m++)prof[m]=lqMed(b0.map(x=>q15[x.d*1440+m]));
+  const res=new Float32Array(NM).fill(NaN);for(let k=0;k<NM;k++)if(isFinite(q15[k])&&isFinite(prof[k%1440]))res[k]=q15[k]-prof[k%1440];
+  const br=[];b0.forEach(x=>{for(let m=0;m<1440;m+=5){const v=res[x.d*1440+m];if(isFinite(v))br.push(v)}});const md=lqMed(br),mad=lqMed(br.map(v=>Math.abs(v-md))),th=Math.max(C.abs,md+3*1.4826*mad);
+  let run=0;for(let k=0;k<=NM;k++){const hi=k<NM&&res[k]>th;if(hi)run++;else{if(run>=30){const s0=k-run;const pd=P.length?lqMean(P.map(g=>lqMean(g.subarray(Math.max(0,s0-60),s0))-lqMean(g.subarray(s0,Math.min(NM,s0+60))))):NaN;ev.push({ts:T0+s0*6e4,min:run,inc:lqMean(res.subarray(s0,k)),dp:pd,d:Math.floor(s0/1440)})}run=0}}
+  const lg=ev.filter(x=>x.min>=360).pop();if(lg){const bb=ok.filter(x=>x.d<lg.d).slice(-14),rr=ok.filter(x=>x.d>lg.d);if(bb.length>=3&&rr.length>=1){base=bb;rec=rr.slice(-7);split=lg.ts}}}
+ const mb=lqMed(base.map(x=>x.mnf)),mr=lqMean(rec.map(x=>x.mnf)),inc=mr-mb,pct=mb>0?inc/mb*100:NaN,flag=base.length>=3&&isFinite(inc)&&inc>=C.abs&&(!(mb>0)||pct>=C.pct||!!split);
+ /* 수압 비교(L2): 같은 시간대 평상 평균 − 최근 평균 */
+ const loc={};hrs.forEach(h=>{const r=pn.map((_,j)=>lqMean(base.map(x=>x.win[h].p[j]))-lqMean(rec.map(x=>x.win[h].p[j]))),dq=lqMean(rec.map(x=>x.win[h].q))-lqMean(base.map(x=>x.win[h].q));loc[h]={r,dq}});
+ const o={name,T0,nd,days,base:base.length,rec:rec.length,recD:new Set(rec.map(x=>x.d)),split,mb,mr,inc,pct,flag,ev,loc,pn,from:D.t[0],to:D.t[n-1]};LQ.an.set(name,o);return o}
+/* 수압계 이름 → 준비 파일 절점 (P1~P8 = 추천 자리, 'P3@22606'이나 절점번호가 들어간 이름은 그 절점) */
+function lqSensorIdx(b,pn){return pn.map(nm=>{const s=String(nm);let m=/@\s*([^\s)]+)/.exec(s);if(m){const i=b.ids.indexOf(m[1]);if(i>=0)return i}m=/^P(\d+)$/i.exec(s.trim());if(m){const r=b.rec.find(x=>x.name.toUpperCase()==='P'+m[1]);if(r)return r.i}const tok=s.split(/[^0-9A-Za-z가-힣_-]+/);for(const t of tok){const i=b.ids.indexOf(t);if(i>=0)return i}return -1})}
+function lqLocate(name){const a=lqAnalyze(name),b=lqPB(name);if(!a||!b)return null;const si=lqSensorIdx(b,a.pn),use=si.map((v,j)=>v>=0?j:-1).filter(j=>j>=0);if(use.length<3)return {err:`수압계가 ${use.length}개 연결됨 (3개 이상 필요)`,si};
+ const n=b.ids.length,e=new Float64Array(n),sig2=2*LQ.cfg.sig*LQ.cfg.sig;let hu=[];
+ for(const hs of LQ.prep.hours){const h=+hs,L=a.loc[h];if(!L)continue;const r=use.map(j=>L.r[j]);if(r.some(v=>!isFinite(v)))continue;hu.push(hs);const S=lqTab(b,hs),k=use.length,rm=r.reduce((x,y)=>x+y,0)/k,rc=r.map(v=>v-rm),s2=sig2+.01*rc.reduce((x,y)=>x+y*y,0)/k,cols=use.map(j=>si[j]),qs=isFinite(L.dq)&&L.dq>.5?L.dq/LQ.prep.leakCmh:null;
+  for(let i=0;i<n;i++){const sv=cols.map(c=>S[i*n+c]),sm=sv.reduce((x,y)=>x+y,0)/k,sc=sv.map(v=>v-sm);let ss=0,rs=0;for(let j=0;j<k;j++){ss+=sc[j]*sc[j];rs+=rc[j]*sc[j]}const fit=Math.max(0,ss>0?rs/ss:0),qq=qs!=null?Math.min(1.3*qs,Math.max(.7*qs,fit)):fit;let er=0;for(let j=0;j<k;j++){const d=rc[j]-qq*sc[j];er+=d*d}e[i]+=er/s2}}
+ if(!hu.length)return {err:'비교할 시간대 수압이 비어 있습니다 (평상·최근 날짜 모두 필요)',si};
+ let mn=Infinity;for(const v of e)if(v<mn)mn=v;const w=new Float64Array(n);let sw=0;for(let i=0;i<n;i++){w[i]=Math.exp(-(e[i]-mn)/2);sw+=w[i]}for(let i=0;i<n;i++)w[i]/=sw;
+ return {w,hu,si,use}}
+/* 관로 순위: 위치 확률(있으면) + 파손 위험 점수 */
+function lqPipeIdx(){if(LQ.pidx&&LQ.pidx.n===PIPE.feats.length)return LQ.pidx.m;const m=new Map();PIPE.feats.forEach((f,i)=>{const id=String(attrOf(f).id||'').trim();if(id&&!m.has(id))m.set(id,i)});LQ.pidx={n:PIPE.feats.length,m};return m}
+function lqRank(name,loc){if(!PIPE.feats||!PIPE.feats.length)return [];lqRiskEnsure();const b=lqPB(name),M=lqPipeIdx(),o=[];
+ if(b&&b.links&&b.links.length){const lw=new Map();b.links.forEach(([id,x,y])=>{const v=loc&&loc.w?(loc.w[x]+loc.w[y])/2:0;lw.set(id,Math.max(lw.get(id)||0,v))});let mx=0;lw.forEach(v=>{if(v>mx)mx=v});
+  lw.forEach((v,id)=>{const fi=M.get(id);if(fi==null)return;const f=PIPE.feats[fi],rk=f._rk??50,lp=mx>0?v/mx:0;o.push({fi,id,rk,lp,sc:loc&&loc.w?.7*lp+.3*rk/100:rk/100})})}
+ else{let pi=null;try{const fld=$('blkField').value;pi=fi=>{const m=lqMid(PIPE.feats[fi]);if(!m)return false;const r=pidxFind(m[0],m[1],0);return !!r&&String(poly.features[r.fi].properties[fld]??'').trim()===name}}catch(_){}
+  if(pi)PIPE.feats.forEach((f,fi)=>{if(f.properties&&f.properties._폐관)return;if(pi(fi))o.push({fi,id:String(attrOf(f).id||''),rk:f._rk??50,lp:0,sc:(f._rk??50)/100})})}
+ return o.sort((x,y)=>y.sc-x.sc)}
+/* ---- 화면: 표 ---- */
+function lqBlkOpts(){const s=$('lqBlk');if(!s)return;const v=s.value||LQ.sel,ns=lqBlkNames(),pb=new Set(LQ.prep?LQ.prep.blocks.map(b=>b.name):[]);s.innerHTML='<option value="">— 소블록 고르기 —</option>'+ns.map(n=>`<option value="${esc(n)}">${esc(n)}${pb.has(n)?' 🧮':''}${LQ.data.has(n)?' 📈':''}</option>`).join('');if(ns.includes(v))s.value=v}
+const lqF=(v,d=1)=>isFinite(v)?(+v).toFixed(d):'-';
+function lqRenderTbl(){const el=$('lqTbl');if(!el)return;if(!LQ.data.size){el.innerHTML='';return}
+ const rows=[...LQ.data.keys()].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})).map(nm=>{const a=lqAnalyze(nm);if(!a)return '';const b=lqPB(nm),ev=a.ev.slice(-3);
+  return `<tr${a.flag?' style="background:rgba(220,38,38,.08)"':''}><td><b>${esc(nm)}</b>${b?' 🧮':''}</td><td>${fmtD(a.from)}~${fmtD(a.to).slice(5)}<br><small>평상 ${a.base}일 · 최근 ${a.rec}일</small></td><td>${lqF(a.mb)} → <b>${lqF(a.mr)}</b><br><small>${isFinite(a.inc)?(a.inc>=0?'+':'')+lqF(a.inc)+'㎥/h'+(isFinite(a.pct)?` (${a.pct>=0?'+':''}${lqF(a.pct,0)}%)`:''):''}</small></td><td>${a.flag?'<span class="c-rd"><b>⚠ 누수 의심</b></span>':a.base<3?'<small>평상 자료 부족</small>':'정상'}${ev.length?`<br><small class="c-am">급증 ${a.ev.length}회: ${ev.map(x=>fmtDT(x.ts).slice(5)+` +${lqF(x.inc)}㎥/h`).join(', ')}</small>`:''}</td><td><button type="button" class="btn ol lqGo" data-b="${esc(nm)}" style="padding:2px 8px">🔎 보기</button></td></tr>`}).join('');
+ el.innerHTML=`<div style="overflow:auto"><table class="lqt"><thead><tr><th>소블록</th><th>자료 기간</th><th>야간최소유량 ㎥/h<br><small>평상 → 최근</small></th><th>판정</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><p class="hint" style="margin:4px 0 0">야간최소유량 = 매일 ${LQ.cfg.n0}~${LQ.cfg.n1}시 15분 평균 유량의 최솟값 · 평상 = 최근 ${LQ.cfg.rec}일 앞의 최대 14일 중앙값(6시간 넘게 이어진 급증이 있으면 그 앞뒤로 나눔) · ⚠ 기준 +${LQ.cfg.pct}% 그리고 +${LQ.cfg.abs}㎥/h 이상, 또는 이어진 급증</p>`}
+function lqSparkline(a){const v=a.days.map(x=>x.mnf),f=v.filter(isFinite);if(f.length<2)return '';const lo=Math.min(...f),hi=Math.max(...f),W=260,H=46,sx=W/(v.length-1||1),y=x=>H-4-(x-lo)/((hi-lo)||1)*(H-10);
+ let p='';v.forEach((x,i)=>{if(isFinite(x))p+=(p?'L':'M')+(i*sx).toFixed(1)+','+y(x).toFixed(1)});const rr=a.days.filter(x=>a.recD.has(x.d)).map(x=>`<rect x="${(x.d-.5)*sx}" y="0" width="${sx}" height="${H}" fill="rgba(220,38,38,.1)"/>`).join('');
+ return `<svg width="${W}" height="${H}" style="display:block;max-width:100%">${rr}<path d="${p}" fill="none" stroke="#2563eb" stroke-width="1.6"/>${isFinite(a.mb)?`<line x1="0" x2="${W}" y1="${y(a.mb)}" y2="${y(a.mb)}" stroke="#94a3b8" stroke-dasharray="3 3"/>`:''}<text x="2" y="10" font-size="9" fill="#64748b">${lqF(hi)}</text><text x="2" y="${H-1}" font-size="9" fill="#64748b">${lqF(lo)}</text></svg><small style="color:var(--mute)">날마다 야간최소유량 · 점선 = 평상 · 붉은 칸 = 최근(비교) ${a.rec}일${a.split?` · ${fmtDT(a.split)} 급증 앞뒤 비교`:''}</small>`}
+/* ---- 화면: 지도 ---- */
+function lqLayer(){if(!map)return null;if(!LQ.L){if(!map.getPane('leak')){const p=map.createPane('leak');p.style.zIndex=640}LQ.L=L.layerGroup().addTo(map);LQ.cv=L.canvas({pane:'leak',padding:.3})}else if(!map.hasLayer(LQ.L))LQ.L.addTo(map);return LQ.L}
+function lqClear(){if(LQ.L)LQ.L.clearLayers()}
+function lqSensorMarks(b,k,inst){const g=lqLayer();if(!g)return;b.rec.slice(0,k).forEach((r,j)=>{const ok=inst&&inst.has(r.i);L.marker([b.lat[r.i],b.lng[r.i]],{pane:'leak',icon:L.divIcon({className:'',html:`<div class="lqsn${ok?' on':''}">${esc(r.name)}</div>`,iconSize:[30,20],iconAnchor:[15,10]})})
+  .bindPopup(`<b>🔵 수압계 추천 자리 ${esc(r.name)}</b> (설치 순서 ${j+1})<br>절점 ${esc(b.ids[r.i])} · 표고 ${lqF(b.elev[r.i])}m<br>모델 수압 ${LQ.prep.hours.map(h=>`${h}시 ${lqF(b.p0[h][r.i])}m`).join(' · ')}<br><small>${ok?'✅ 1분 자료에 이 수압계가 있음':'1분 자료 머리글을 '+esc(r.name)+'로 쓰면 이 자리로 연결됩니다'}</small>`).addTo(g)})}
+function lqShowRec(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6,info=$('lqCand');if(!b){info.innerHTML=`<p class="hint c-am">${nm?esc(nm)+'은(는) 준비 파일에 없습니다.':'소블록을 고르세요.'} 준비 파일에 있는 소블록에는 🧮 표시가 있습니다.</p>`;return}
+ lqClear();lqSensorMarks(b,k,null);if(map)map.fitBounds(L.latLngBounds(b.rec.slice(0,k).map(r=>[b.lat[r.i],b.lng[r.i]])).pad(.4));
+ const er=LQ.prep.hours.map(h=>{const e=(b.err[h]||{})[k];return e?`${h}시 중앙값 ${e[0]}m·평균 ${e[1]}m`:''}).filter(Boolean).join(' / ');
+ info.innerHTML=`<p class="hint"><b>${esc(nm)} 수압계 ${k}개 추천 자리</b> (지도 파란 P1~P${k}, P1부터 설치)<br>모의시험 예상 위치 오차: ${er||'확인 필요'}<br><small>가상 누수 ${LQ.prep.evalCmh||5}㎥/h · 수압 잡음 ${(LQ.prep.noiseM||.01)*100}cm 가정 · 모델 계산값이라 실제와 다를 수 있음. 오차가 큰 시간대는 위치 계산에 덜 믿을 만합니다.</small></p>`}
+function lqRecCsv(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6;if(!b){alert('준비 파일에 있는 소블록(🧮)을 고르세요.');return}
+ const rows=[['이름','설치 순서','절점번호','위도','경도','표고m'].join(',')].concat(b.rec.slice(0,k).map((r,j)=>[r.name,j+1,b.ids[r.i],b.lat[r.i],b.lng[r.i],b.elev[r.i]].join(',')));dlBlob(new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv'}),`수압계추천자리_${nm}_${k}개.csv`)}
+function lqTpl(){const nm=$('lqBlk').value||'소블록',b=lqPB(nm),k=+$('lqK').value||6,ps=(b?b.rec.slice(0,k).map(r=>r.name):Array.from({length:k},(_,i)=>'P'+(i+1)));
+ dlBlob(new Blob(['﻿'+['시각','유량(㎥/h)'].concat(ps.map(p=>p+'(m)')).join(',')+'\r\n'],{type:'text/csv'}),`1분자료_양식_${nm}.csv`)}
+function lqShow(nm){LQ.sel=nm;$('lqBlk').value=nm;const a=lqAnalyze(nm),b=lqPB(nm),loc=b&&a?lqLocate(nm):null,info=$('lqCand');lqClear();
+ let head=`<div class="lqhd"><b>${esc(nm)}</b> ${a&&a.flag?'<span class="c-rd">⚠ 누수 의심</span>':''}</div>`;if(a)head+=lqSparkline(a);
+ if(a&&a.ev.length)head+=`<p class="hint" style="margin:4px 0">급증(파손 의심) ${a.ev.length}회: ${a.ev.slice(-5).map(x=>`${fmtDT(x.ts)} +${lqF(x.inc)}㎥/h ${Math.round(x.min)}분${isFinite(x.dp)?` · 수압 ${x.dp>=0?'−':'+'}${lqF(Math.abs(x.dp),2)}m`:''}`).join(' / ')}</p>`;
+ if(b){const inst=new Set(loc&&loc.si?loc.si.filter(i=>i>=0):[]);lqSensorMarks(b,Math.max(+$('lqK').value||6,inst.size),inst)}
+ if(loc&&loc.err)head+=`<p class="hint c-am">위치 계산(L2) 못 함: ${esc(loc.err)}</p>`;else if(!b)head+=`<p class="hint">이 소블록은 준비 파일이 없어 위치 계산(L2) 없이 <b>파손 위험 점수</b>로만 점검 순서를 냅니다.</p>`;
+ const g=lqLayer();let pts=[];
+ if(loc&&loc.w&&g){const w=loc.w;let mx=0;for(const v of w)if(v>mx)mx=v;const ord=Array.from(w.keys()).sort((x,y)=>w[y]-w[x]);let cum=0;
+  for(const i of ord){if(cum>.95||w[i]<mx*.02)break;cum+=w[i];const r=w[i]/mx;pts.push([b.lat[i],b.lng[i]]);L.circleMarker([b.lat[i],b.lng[i]],{renderer:LQ.cv,pane:'leak',radius:4+8*r,color:'#7f1d1d',weight:.5,fillColor:r>.6?'#dc2626':r>.3?'#f97316':'#facc15',fillOpacity:.25+.5*r}).bindTooltip(`절점 ${esc(b.ids[i])} · 위치 가능성 ${(w[i]*100).toFixed(1)}%`).addTo(g)}
+  const top=ord[0],dm=i=>Math.hypot((b.lng[i]-b.lng[top])*88800,(b.lat[i]-b.lat[top])*111000),rr=[...ord].sort((x,y)=>dm(x)-dm(y));let c2=0,r50=0;for(const i of rr){c2+=w[i];if(c2>=.5){r50=dm(i);break}}LQ.r50=r50;
+  head+=`<p class="hint" style="margin:4px 0">위치 계산(L2): 수압계 ${loc.use.length}개 · ${loc.hu.map(h=>h+'시').join('·')} 평상·최근 수압 차이 비교 · 가장 가능성 큰 곳 절점 ${esc(b.ids[top])} · <b>가능성 50%가 그 둘레 약 ${Math.round(r50)}m 안</b> · 빨간 원이 클수록 가능성 큼</p>`}
+ const R=lqRank(nm,loc&&loc.w?loc:null).slice(0,15);LQ.cand={nm,R};
+ if(g)R.slice(0,10).forEach((r,j)=>{const f=PIPE.feats[r.fi];lineParts(f.geometry).forEach(p=>{const ll=p.map(c=>[c[1],c[0]]);pts.push(...ll);L.polyline(ll,{pane:'leak',color:'#dc2626',weight:8,opacity:.45}).addTo(g)});const m=lqMid(f);if(m)L.marker([m[1],m[0]],{pane:'leak',icon:L.divIcon({className:'',html:`<div class="lqrk">${j+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).bindPopup(()=>pipePopup(f)).addTo(g)});
+ const at=r=>attrOf(PIPE.feats[r.fi]);
+ head+=R.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>순위</th><th>관리번호</th><th>재질·관경</th><th>연수</th><th>이력</th><th>위험</th>${loc&&loc.w?'<th>위치</th>':''}<th></th></tr></thead><tbody>${R.map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return `<tr><td>${j+1}</td><td>${esc(r.id)}</td><td>${esc(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}<td><button type="button" class="btn ol lqFly" data-fi="${r.fi}" style="padding:1px 6px">📍</button></td></tr>`}).join('')}</tbody></table></div><div class="sbtns" style="margin-top:4px"><button type="button" id="lqXl" class="btn ol">⬇ 후보 관로 엑셀</button></div><p class="hint" style="margin:2px 0 0">순위 = ${loc&&loc.w?'위치 가능성 70% + 파손 위험 점수 30%':'파손 위험 점수'} · 이력 = 관로 ${LQ.cfg.near}m 안 민원대응·누수탐사 사진 묶음 수 · 현장 탐사 순서 참고용</p>`:'<p class="hint">상수관로(②-1)를 올리면 점검 순서 관로가 나옵니다.</p>';
+ info.innerHTML=head;if(map&&pts.length)map.fitBounds(L.latLngBounds(pts).pad(.15))}
+function lqXl(){const c=LQ.cand;if(!c||!c.R.length)return;const rows=c.R.map((r,j)=>{const x=attrOf(PIPE.feats[r.fi]);return{'소블록':c.nm,'순위':j+1,'관리번호':r.id,'재질':x.mat,'관경mm':x.dia??'','경과연수':x.age??'','누수이력(건)':PIPE.feats[r.fi]._rkn||0,'파손위험점수':r.rk,'위치점수':Math.round(r.lp*100)}});xlsxSave([['누수 후보 관로',rows]],`누수후보관로_${c.nm}_${fmtD(Date.now())}.xlsx`)}
+/* ---- 설정 ---- */
+function lqCfgUi(){const c=LQ.cfg,el=$('lqCfg');if(!el)return;const inp=(id,v,t,st)=>`<label class="f">${t}<input id="${id}" type="number" value="${v}" step="${st||1}" style="width:100%"></label>`;
+ el.innerHTML=`<div class="g2">${inp('lqN0',c.n0,'야간 시작(시)')}${inp('lqN1',c.n1,'야간 끝(시)')}${inp('lqRec',c.rec,'최근 일수')}${inp('lqPct',c.pct,'⚠ 증가 %')}${inp('lqAbs',c.abs,'⚠ 증가 ㎥/h',.1)}${inp('lqNear',c.near,'누수 이력 거리 m')}</div>
+ <p class="hint" style="margin:4px 0 2px">파손 위험 점수 가중치 (합이 100이 아니어도 비율로 계산) · 확인 필요</p><div class="g2">${inp('lqWage',c.w.age,'경과연수')}${inp('lqWmat',c.w.mat,'재질')}${inp('lqWhis',c.w.his,'누수 이력')}${inp('lqWpr',c.w.pr,'최고 수압(관망해석)')}${inp('lqWdia',c.w.dia,'관경(작을수록)')}</div>`;
+ el.querySelectorAll('input').forEach(x=>x.onchange=()=>{const g=id=>+$(id).value;Object.assign(c,{n0:g('lqN0'),n1:g('lqN1'),rec:Math.max(1,g('lqRec')|0),pct:g('lqPct'),abs:g('lqAbs'),near:Math.max(1,g('lqNear'))});c.w={age:g('lqWage'),mat:g('lqWmat'),his:g('lqWhis'),pr:g('lqWpr'),dia:g('lqWdia')};lqSaveCfg();LQ.an.clear();LQ.rkKey='';lqRenderTbl();if($('pBy').value==='risk'&&PIPE.fc)renderPipes()})}
+async function lqInit(){if(!$('lqSec'))return;lqCfgUi();
+ try{LQ.prep=await IDB.get('leak_prep')||null}catch(_){}try{const ls=await IDB.get('lqd_list')||[];for(const k of ls){const v=await IDB.get('lqd:'+k);if(v&&v.t)LQ.data.set(k,v)}}catch(_){}
+ lqPrepShow();lqBlkOpts();lqRenderTbl();
+ $('lqPrepF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)lqPrepLoad(f)};
+ $('lqDataF').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)lqDataLoad(fs)};
+ $('lqRecBtn').onclick=lqShowRec;$('lqRecCsv').onclick=lqRecCsv;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
+ $('lqDel').onclick=async()=>{const nm=$('lqBlk').value;if(!nm||!LQ.data.has(nm)){alert('지울 1분 자료가 있는 소블록(📈)을 고르세요.');return}if(!confirm(nm+'의 1분 유량·수압 자료를 이 PC에서 지울까요?'))return;LQ.data.delete(nm);LQ.an.delete(nm);try{await IDB.del('lqd:'+nm);await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}lqBlkOpts();lqRenderTbl()};
+ $('lqSec').addEventListener('click',e=>{const b=e.target.closest('.lqGo');if(b){lqShow(b.dataset.b);return}const f=e.target.closest('.lqFly');if(f&&map){const ft=PIPE.feats[+f.dataset.fi],m=lqMid(ft);if(m)map.setView([m[1],m[0]],Math.max(map.getZoom(),18));return}if(e.target.id==='lqXl')lqXl()});
+ $('lqBlk').onchange=()=>{const nm=$('lqBlk').value;if(nm&&LQ.data.has(nm))lqShow(nm);else if(nm&&lqPB(nm))lqShowRec()}}
+try{lqInit()}catch(e){console.warn('누수 지점 예측',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
