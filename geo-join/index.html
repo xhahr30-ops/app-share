@@ -1241,7 +1241,7 @@ html.gwOn .afp{top:150px}
   <p class="hint" id="lqPrepMsg"></p>
   <div class="g2"><label class="f">소블록 <small style="font-weight:400">🧮 준비 파일 · 📈 1분 자료</small><select id="lqBlk"></select></label><label class="f">수압계 수<select id="lqK"><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label></div>
   <div class="sbtns"><button id="lqRecBtn" type="button" class="btn ol">📍 수압계 추천 자리</button><button id="lqRecCsv" type="button" class="btn ol">⬇ 추천 자리 CSV</button><button id="lqTpl" type="button" class="btn ol">📄 1분 자료 양식</button><button id="lqBvBtn" type="button" class="btn ol" title="동수두(지반고+수압)가 유입점 기준보다 높은 지점 → 둘레 경계밸브 열림 의심 순위">🔴 경계밸브 추적</button></div>
-  <label class="drop"><input type="file" id="lqDataF" accept=".csv,.txt,.xlsx,.xls" multiple><div class="ic">📈</div><b>1분 유량·수압 파일 (.csv·.xlsx, 여러 개)</b><span>소블록 하나에 파일 하나 · 첫 열 시각, 유량(㎥/h), P1~P8 수압(m·kgf/㎠·MPa) · 파일 이름에 소블록 이름이 있으면 그 소블록, 없으면 위에서 고른 소블록 · 같은 소블록은 이어 붙임(최근 120일)</span></label>
+  <label class="drop"><input type="file" id="lqDataF" accept=".csv,.txt,.xlsx,.xls,.xlsm" multiple><div class="ic">📈</div><b>1분 유량·수압 파일 (.csv·.xlsx, 여러 개)</b><span>소블록 하나에 파일 하나 · 첫 열 시각, 유량(㎥/h), P1~P8 수압(m·kgf/㎠·MPa) · 파일 이름에 소블록 이름이 있으면 그 소블록, 없으면 위에서 고른 소블록 · 같은 소블록은 이어 붙임(최근 120일)</span></label>
   <p class="hint" id="lqMsg"></p>
   <div id="lqTbl"></div>
   <div id="lqCand"></div>
@@ -9011,12 +9011,12 @@ const RISK_MAT={'회주철관(CIP)':1,'아연도강관':1,'석면시멘트관':1
 const riskDia=d=>d==null?.5:d<=50?1:d<=80?.8:d<=100?.6:d<=150?.45:d<=250?.3:.15;
 function lqLeakPts(){/* 누수 이력: 민원대응·누수탐사 사진 묶음(현장 한 곳 = 1건) */const o=[];try{for(const g of (PH.G||[]))if(g&&g.lat!=null&&g.lng!=null&&(g.kd==='mw'||g.kd==='ts'))o.push(g)}catch(_){}return o}
 function lqRiskEnsure(){if(!PIPE.feats||!PIPE.feats.length)return;const W=LQ.cfg.w,hy=!!(ELEV&&ELEV.hyd),pts=lqLeakPts();
- const key=PIPE.feats.length+'|'+pts.length+'|'+(hy?ELEV.hi.n:0)+'|'+JSON.stringify(W)+'|'+LQ.cfg.near+'|'+($('pMat')||{}).value+'|'+($('pYmd')||{}).value+'|'+($('pDia')||{}).value;if(key===LQ.rkKey)return;LQ.rkKey=key;
- if(!PIPE.segs)buildPipeIndex();const cnt=new Map();for(const g of pts){const r=nearestPipe(+g.lng,+g.lat,+LQ.cfg.near||10);if(r)cnt.set(r.fi,(cnt.get(r.fi)||0)+1)}
+ const nU=pts.filter(phLrG).length,key=PIPE.feats.length+'|'+pts.length+'|'+nU+'|'+(hy?ELEV.hi.n:0)+'|'+JSON.stringify(W)+'|'+LQ.cfg.near+'|'+($('pMat')||{}).value+'|'+($('pYmd')||{}).value+'|'+($('pDia')||{}).value;if(key===LQ.rkKey)return;LQ.rkKey=key;
+ if(!PIPE.segs)buildPipeIndex();const cnt=new Map(),cu=new Map();for(const g of pts){const r=nearestPipe(+g.lng,+g.lat,+LQ.cfg.near||10);if(r){cnt.set(r.fi,(cnt.get(r.fi)||0)+1);if(phLrG(g))cu.set(r.fi,(cu.get(r.fi)||0)+1)}}
  PIPE.feats.forEach((f,fi)=>{const a=attrOf(f),n=cnt.get(fi)||0;let s=0,w=0;
   s+=W.age*(a.age==null?.5:Math.min(a.age,50)/50);w+=W.age;s+=W.mat*(RISK_MAT[a.mat]??.5);w+=W.mat;s+=W.his*Math.min(n,3)/3;w+=W.his;s+=W.dia*riskDia(a.dia);w+=W.dia;
   if(hy&&W.pr){const m=lqMid(f);const r=m&&hydNear(m[1],m[0]);if(r){s+=W.pr*Math.max(0,Math.min(1,(ELEV.hyd.pmax[r.i]-30)/40));w+=W.pr}}
-  f._rk=w?Math.round(s/w*100):null;f._rkn=n})}
+  f._rk=w?Math.round(s/w*100):null;f._rkn=n;f._rku=cu.get(fi)||0})}
 function lqMid(f){const p=lineParts(f.geometry)[0];if(!p||!p.length)return null;return p[Math.floor(p.length/2)]}
 /* ---- 준비 파일 ---- */
 let LQ_F16=null;function lqF16(b64){if(!LQ_F16){LQ_F16=new Float32Array(65536);for(let h=0;h<65536;h++){const e=(h>>10)&31,m=h&1023,s=h&32768?-1:1;LQ_F16[h]=s*(e===0?m*5.960464477539063e-8:e===31?(m?NaN:Infinity):Math.pow(2,e-15)*(1+m/1024))}}
@@ -9081,22 +9081,27 @@ async function lqDataLoad(files){const m=$('lqMsg'),out=[];for(const f of files)
 async function lqLedger(f){if(typeof XLSX==='undefined')return null;const buf=await f.arrayBuffer();let wb;try{wb=XLSX.read(buf,{type:'array',bookSheets:true})}catch(_){return null}
  const sn=(wb.SheetNames||[]).find(n=>/전체\s*수압/.test(n));if(!sn)return null;const ln=(wb.SheetNames||[]).find(n=>/리스트/.test(n));wb=XLSX.read(buf,{type:'array',sheets:ln?[sn,ln]:[sn],cellDates:false});
  const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});let hr=A.findIndex(r=>r&&r.some(c=>/^\d+-[^:]+:/.test(String(c||''))));if(hr<0)return null;
- const H=A[hr],use=[];H.forEach((c,j)=>{const m=/^(\d+)-([^:]*):(.*)$/.exec(String(c||'').trim());if(m&&m[2].trim()&&m[3].trim()&&!use.some(u=>u.no===+m[1]))use.push({j,no:+m[1],blk:m[2].trim(),addr:m[3].trim()})}); // 오른쪽 동수두 칸(같은 머리글)은 빼고 첫 수압 칸만if(!use.length)return null;
- const blk=use[0].blk,b=lqPB(blk),gk=Object.keys(typeof gcStore==='object'&&gcStore||{}),note=[],meta={gl:{}},zr=A.slice(hr+1,hr+4).find(r=>r&&r.some(c=>String(c??'').trim()==='표고'));/* 표고 줄 = 지점 지반고(G.L) */
- const hdr=['시각'];for(const u of use){let nm=`수압${u.no}`,why='';const at=/@\s*([^\s]+)\s*$/.exec(u.addr);if(at){u.addr=u.addr.replace(/@.*$/,'').trim()}const k=at?null:gk.find(x=>x.endsWith(' '+u.addr))||gk.find(x=>x.endsWith(u.addr));let c=k&&gcStore[k],gsrc='';
-  if(!at&&!Array.isArray(c)&&b){/* 주소 검색 결과에 없으면 카카오 주소 검색(키 있을 때) */const key=($('kakao')&&$('kakao').value||'').trim();if(key)try{const p=await geocode(prep(u.addr),key);if(p){c=[p.lat,p.lng];gsrc=' · 카카오 주소 검색'}}catch(_){}}
-  if(!b)why='준비 파일에 '+blk+' 없음';else if(at&&b.ids.includes(at[1])){nm=`수압${u.no}@${at[1]}`;why=`대장에 적은 절점 ${at[1]}`}else if(!Array.isArray(c))why='주소 좌표 없음 (대장 머리글 주소 끝에 @절점번호를 붙이면 그 절점으로 연결)';else{let bi=-1,bd=1e18;for(let i=0;i<b.ids.length;i++){const d=Math.hypot((b.lng[i]-c[1])*88800,(b.lat[i]-c[0])*111000);if(d<bd){bd=d;bi=i}}if(bd<=80){nm=`수압${u.no}@${b.ids[bi]}`;why=`절점 ${b.ids[bi]} · ${Math.round(bd)}m${gsrc}`}else why=`가까운 절점 ${Math.round(bd)}m (80m 넘음)`}
-  note.push(`${u.no}. ${esc(u.addr)} → ${nm.includes('@')?'✅ ':'⚠️ 위치 확인 필요 · '}${esc(why)}`);hdr.push(nm+'(kgf/㎠)');{const z=zr?+zr[u.j]:NaN;if(isFinite(z)&&z>0)meta.gl[nm]=z}}
- const day=v=>{if(typeof v==='number')return Math.floor(v);return NaN},tp=v=>{const d=new Date(Math.round((v-25569)*864e5));return d.getTime()+d.getTimezoneOffset()*6e4};
- const N=A.length-hr-1,t=new Float64Array(N),cols=hdr.map(()=>new Float32Array(N));let k=0,d0=NaN;
- for(let r=hr+1;r<A.length;r++){const R=A[r];if(!R)continue;const a=day(R[0]);if(isFinite(a)&&a>20000)d0=a;const b2=R[1];if(typeof b2!=='number'||!isFinite(d0))continue;let any=false;
-  use.forEach((u,x)=>{const v=R[u.j];const n=typeof v==='number'?v:parseFloat(v);cols[x+1][k]=isFinite(n)?n:NaN;if(isFinite(n))any=true});if(!any)continue;t[k]=tp(d0+(b2-Math.floor(b2)));k++}
+ const H=A[hr],use=[];H.forEach((c,j)=>{const m=/^(\d+)-([^:]*):(.*)$/.exec(String(c||'').trim());if(m&&m[2].trim()&&m[3].trim()&&!use.some(u=>u.no===+m[1]))use.push({j,no:+m[1],blk:m[2].trim(),addr:m[3].trim()})}); /* 오른쪽 동수두 칸(같은 머리글)은 빼고 첫 수압 칸만 */if(!use.length)return null;
+ const qj=H.findIndex(c=>/유량/.test(String(c??''))&&!/수압|압력|누적|적산|^\d+-/.test(String(c??'').trim()));/* 'MS유량' 같은 유량 칸 (단위 없으면 ㎥/h) */
+ const blk=use[0].blk,b=lqPB(blk),gk=Object.keys(typeof gcStore==='object'&&gcStore||{}),note=[],meta={gl:{},glNo:{}},zr=A.slice(hr+1,hr+4).find(r=>r&&r.some(c=>String(c??'').trim()==='표고'));/* 표고 줄 = 지점 지반고(G.L) */
  /* '1.리스트' 시트: 유입점 주소·배수지 H.W.L/L.W.L·지점 G.L(표고 줄이 비었을 때) */
  if(ln)try{const B=XLSX.utils.sheet_to_json(wb.Sheets[ln],{header:1,raw:true,defval:null}),hi=B.findIndex(r=>r&&r.some(c=>String(c??'').trim()==='순번')&&r.some(c=>/G\.?L/i.test(String(c??''))));
   if(hi>=0){const Hd=B[hi].map(c=>String(c??'').replace(/\s/g,'')),ci=re=>Hd.findIndex(c=>re.test(c)),cB=ci(/^블록$/),cA=ci(/^주소$/),cG=ci(/^G\.?L$/i),cR=ci(/^배수지$/),cH=ci(/^H\.?W\.?L$/i),cL=ci(/^L\.?W\.?L$/i);
    for(let r=hi+1;r<Math.min(B.length,hi+80);r++){const R=B[r];if(!R)continue;if(cA>=0&&R[cA]&&!meta.inlet&&R.some(c=>String(c??'').trim()==='유입점'))meta.inlet=String(R[cA]).trim();
     const no=+R[0];if(!(no>0)||(cB>=0&&String(R[cB]??'').trim()!==blk))continue;if(cR>=0&&R[cR]&&!meta.res)meta.res=String(R[cR]).trim();if(cH>=0&&+R[cH]>0&&meta.hwl==null)meta.hwl=+R[cH];if(cL>=0&&+R[cL]>0&&meta.lwl==null)meta.lwl=+R[cL];
-    if(cG>=0&&+R[cG]>0){const key=hdr.slice(1).map(x=>x.replace(/\(.*$/,'')).find(x=>new RegExp('^수압'+no+'(@|$)').test(x));if(key&&meta.gl[key]==null)meta.gl[key]=+R[cG]}}}}catch(_){}
+    if(cG>=0&&+R[cG]>0)meta.glNo[no]=+R[cG]}}}catch(_){}
+ const hdr=['시각'];for(const u of use){let nm=`수압${u.no}`,why='';const at=/@\s*([^\s]+)\s*$/.exec(u.addr);if(at){u.addr=u.addr.replace(/@.*$/,'').trim()}
+  /* '유량계 수압'·'유입점' 지점 = 유입점: 리스트의 유입점 주소로 찾고, 없으면 모델 유입 절점 */const isIn=!at&&/유량계|유입/.test(u.addr),qa=isIn&&meta.inlet?meta.inlet:u.addr,qs=qa.replace(/^(경북|경상북도)\s*포항시\s*(북구|남구)\s*/,'');
+  const k=at?null:gk.find(x=>x.endsWith(' '+qs))||gk.find(x=>x.endsWith(qs));let c=k&&gcStore[k],gsrc='';
+  if(!at&&!Array.isArray(c)&&b){/* 주소 검색 결과에 없으면 카카오 주소 검색(키 있을 때) */const key=($('kakao')&&$('kakao').value||'').trim();if(key)try{const p=await geocode(prep(qa),key);if(p){c=[p.lat,p.lng];gsrc=' · 카카오 주소 검색'}}catch(_){}}
+  if(!b)why='준비 파일에 '+blk+' 없음';else if(at&&b.ids.includes(at[1])){nm=`수압${u.no}@${at[1]}`;why=`대장에 적은 절점 ${at[1]}`}else if(!Array.isArray(c)&&isIn&&b.inlet&&b.inlet.length){const ii=b.inlet[0].i;nm=`수압${u.no}@${b.ids[ii]}`;why=`유입점: 주소 좌표가 없어 모델 유입 절점 ${b.ids[ii]}으로 연결 · 확인 필요`}else if(!Array.isArray(c))why='주소 좌표 없음 (대장 머리글 주소 끝에 @절점번호를 붙이면 그 절점으로 연결)';else{let bi=-1,bd=1e18;for(let i=0;i<b.ids.length;i++){const d=Math.hypot((b.lng[i]-c[1])*88800,(b.lat[i]-c[0])*111000);if(d<bd){bd=d;bi=i}}if(bd<=80){nm=`수압${u.no}@${b.ids[bi]}`;why=`절점 ${b.ids[bi]} · ${Math.round(bd)}m${gsrc}`}else why=`가까운 절점 ${Math.round(bd)}m (80m 넘음)`}
+  if(isIn&&nm.includes('@'))meta.inK=nm;note.push(`${u.no}. ${isIn?'🚰 ':''}${esc(u.addr)}${isIn&&meta.inlet?' ('+esc(meta.inlet)+')':''} → ${nm.includes('@')?'✅ ':'⚠️ 위치 확인 필요 · '}${esc(why)}`);hdr.push(nm+'(kgf/㎠)');{const z=zr?+zr[u.j]:NaN;if(isFinite(z)&&z>0)meta.gl[nm]=z;else if(meta.glNo[u.no])meta.gl[nm]=meta.glNo[u.no]}}
+ if(qj>=0){hdr.push('유량(㎥/h)');note.push(`유량 칸 '${esc(String(H[qj]))}' → ㎥/h로 읽음 (단위 확인 필요)`)}
+ const day=v=>{if(typeof v==='number')return Math.floor(v);return NaN},tp=v=>{const d=new Date(Math.round((v-25569)*864e5));return d.getTime()+d.getTimezoneOffset()*6e4};
+ const N=A.length-hr-1,t=new Float64Array(N),cols=hdr.map(()=>new Float32Array(N));let k=0,d0=NaN,bb=NaN;
+ /* A열 날짜가 하루 건너 비어 있으면(이틀치가 한 칸 아래 이어짐) B열 날짜가 넘어간 만큼 더함 */
+ for(let r=hr+1;r<A.length;r++){const R=A[r];if(!R)continue;const a=day(R[0]);if(isFinite(a)&&a>20000){d0=a;bb=NaN}const b2=R[1];if(typeof b2!=='number'||!isFinite(d0))continue;if(!isFinite(bb))bb=Math.floor(b2);let dd=Math.floor(b2)-bb;if(dd<0||dd>6)dd=0;let any=false;
+  use.forEach((u,x)=>{const v=R[u.j];const n=typeof v==='number'?v:parseFloat(v);cols[x+1][k]=isFinite(n)?n:NaN;if(isFinite(n))any=true});if(qj>=0){const v=R[qj],n=typeof v==='number'?v:parseFloat(v);cols[hdr.length-1][k]=isFinite(n)?n:NaN;if(isFinite(n))any=true}if(!any)continue;t[k]=tp(d0+dd+(b2-Math.floor(b2)));k++}
  if(!k)return null;return{hdr,t:t.slice(0,k),cols:cols.map(c=>c.slice(0,k)),blk,meta,note:'📒 수압측정 대장 '+esc(sn)+' · 측정 지점: '+note.join(' · ')}}
 /* 같은 소블록 자료 합치기 (같은 시각은 새 값) · 최근 120일만 */
 function lqMerge(a,b){if(!a||!a.t||!a.t.length)return lqTrim(b);const mp=new Map(),keys=new Set([...Object.keys(a.P||{}),...Object.keys(b.P||{})]);
@@ -9127,7 +9132,7 @@ function lqAnalyze(name){const c=LQ.an.get(name);if(c)return c;const D=LQ.data.g
  const o={name,T0,nd,days,base:base.length,rec:rec.length,recD:new Set(rec.map(x=>x.d)),split,mb,mr,inc,pct,flag,ev,loc,pn,from:D.t[0],to:D.t[n-1]};LQ.an.set(name,o);return o}
 /* 수압계 이름 → 준비 파일 절점 (P1~P8 = 추천 자리, 'P3@22606'이나 절점번호가 들어간 이름은 그 절점) */
 function lqSensorIdx(b,pn){return pn.map(nm=>{const s=String(nm);let m=/@\s*([^\s)]+)/.exec(s);if(m){const i=b.ids.indexOf(m[1]);if(i>=0)return i}m=/^P(\d+)$/i.exec(s.trim());if(m){const r=b.rec.find(x=>x.name.toUpperCase()==='P'+m[1]);if(r)return r.i}const tok=s.split(/[^0-9A-Za-z가-힣_-]+/);for(const t of tok){const i=b.ids.indexOf(t);if(i>=0)return i}return -1})}
-function lqLocate(name){const a=lqAnalyze(name),b=lqPB(name);if(!a||!b)return null;const si=lqSensorIdx(b,a.pn),use=si.map((v,j)=>v>=0?j:-1).filter(j=>j>=0);if(use.length<3)return {err:`수압계가 ${use.length}개 연결됨 (3개 이상 필요)`,si};
+function lqLocate(name){const a=lqAnalyze(name),b=lqPB(name);if(!a||!b)return null;const si=lqSensorIdx(b,a.pn),inK=((LQ.data.get(name)||{}).meta||{}).inK,use=si.map((v,j)=>v>=0&&a.pn[j]!==inK?j:-1).filter(j=>j>=0);/* 유입점(유량계) 수압은 공급 쪽 변화라 위치 계산에서 뺌(경계밸브 추적 기준으로만 씀) */if(use.length<3)return {err:`수압계가 ${use.length}개 연결됨 (3개 이상 필요)`,si};
  const n=b.ids.length,e=new Float64Array(n),sig2=2*LQ.cfg.sig*LQ.cfg.sig;let hu=[];
  for(const hs of LQ.prep.hours){const h=+hs,L=a.loc[h];if(!L)continue;const r=use.map(j=>L.r[j]);if(r.some(v=>!isFinite(v)))continue;hu.push(hs);const S=lqTab(b,hs),k=use.length,rm=r.reduce((x,y)=>x+y,0)/k,rc=r.map(v=>v-rm),s2=sig2+.01*rc.reduce((x,y)=>x+y*y,0)/k,cols=use.map(j=>si[j]),qs=isFinite(L.dq)&&L.dq>.5?L.dq/LQ.prep.leakCmh:null;
   for(let i=0;i<n;i++){const sv=cols.map(c=>S[i*n+c]),sm=sv.reduce((x,y)=>x+y,0)/k,sc=sv.map(v=>v-sm);let ss=0,rs=0;for(let j=0;j<k;j++){ss+=sc[j]*sc[j];rs+=rc[j]*sc[j]}const fit=Math.max(0,ss>0?rs/ss:0),qq=qs!=null?Math.min(1.3*qs,Math.max(.7*qs,fit)):fit;let er=0;for(let j=0;j<k;j++){const d=rc[j]-qq*sc[j];er+=d*d}e[i]+=er/s2}}
@@ -9135,15 +9140,34 @@ function lqLocate(name){const a=lqAnalyze(name),b=lqPB(name);if(!a||!b)return nu
  let mn=Infinity;for(const v of e)if(v<mn)mn=v;const w=new Float64Array(n);let sw=0;for(let i=0;i<n;i++){w[i]=Math.exp(-(e[i]-mn)/2);sw+=w[i]}for(let i=0;i<n;i++)w[i]/=sw;
  /* 1등과 거의 같은(90% 넘는) 절점이 많으면 위치 근거 부족: 수압이 모든 지점에서 같이 움직여 지점끼리 차이가 없을 때 */
  let mx2=0;for(const v of w)if(v>mx2)mx2=v;let tie=0;for(const v of w)if(v>=mx2*.9)tie++;const flat=tie>=Math.max(5,n*.1);
- return {w,hu,si,use,tie,flat}}
+ const P=lqPhPrior(b),w2=new Float64Array(n);let s2=0;for(let i=0;i<n;i++){w2[i]=w[i]*P.p[i];s2+=w2[i]}for(let i=0;i<n;i++)w2[i]/=s2||1;
+ return {w:P.n?w2:w,w0:w,ph:P,hu,si,use,tie,flat}}
 /* 관로 순위: 위치 확률(있으면) + 파손 위험 점수 */
 function lqPipeIdx(){if(LQ.pidx&&LQ.pidx.n===PIPE.feats.length)return LQ.pidx.m;const m=new Map();PIPE.feats.forEach((f,i)=>{const id=String(attrOf(f).id||'').trim();if(id&&!m.has(id))m.set(id,i)});LQ.pidx={n:PIPE.feats.length,m};return m}
 function lqRank(name,loc){if(!PIPE.feats||!PIPE.feats.length)return [];lqRiskEnsure();const b=lqPB(name),M=lqPipeIdx(),o=[];
  if(b&&b.links&&b.links.length){const lw=new Map();b.links.forEach(([id,x,y])=>{const v=loc&&loc.w?(loc.w[x]+loc.w[y])/2:0;lw.set(id,Math.max(lw.get(id)||0,v))});let mx=0;lw.forEach(v=>{if(v>mx)mx=v});
-  lw.forEach((v,id)=>{const fi=M.get(id);if(fi==null)return;const f=PIPE.feats[fi],rk=f._rk??50,lp=mx>0?v/mx:0;o.push({fi,id,rk,lp,sc:loc&&loc.w?.7*lp+.3*rk/100:rk/100})})}
+  lw.forEach((v,id)=>{const fi=M.get(id);if(fi==null)return;const f=PIPE.feats[fi],rk=f._rk??50,lp=mx>0?v/mx:0;o.push({fi,id,rk,lp,un:f._rku||0,sc:loc&&loc.w?.7*lp+.3*rk/100:rk/100})})}
  else{let pi=null;try{const fld=$('blkField').value;pi=fi=>{const m=lqMid(PIPE.feats[fi]);if(!m)return false;const r=pidxFind(m[0],m[1],0);return !!r&&String(poly.features[r.fi].properties[fld]??'').trim()===name}}catch(_){}
-  if(pi)PIPE.feats.forEach((f,fi)=>{if(f.properties&&f.properties._폐관)return;if(pi(fi))o.push({fi,id:String(attrOf(f).id||''),rk:f._rk??50,lp:0,sc:(f._rk??50)/100})})}
- return o.sort((x,y)=>y.sc-x.sc)}
+  if(pi)PIPE.feats.forEach((f,fi)=>{if(f.properties&&f.properties._폐관)return;if(pi(fi))o.push({fi,id:String(attrOf(f).id||''),rk:f._rk??50,lp:0,un:f._rku||0,sc:(f._rk??50)/100})})}
+ /* 🔴 미수리 누수탐사 사진이 붙은 관로는 맨 위 (B안 2026-11-04) */return o.sort((x,y)=>(y.un>0)-(x.un>0)||y.sc-x.sc)}
+/* ---- 📷 누수·민원 사진 반영 (B안 2026-11-04) ----
+   사진 묶음(민원대응 mw·누수탐사 ts) 둘레 절점의 위치 가능성에 가중을 곱함(사전확률): 미수리 누수탐사 +3, 최근 90일 민원 +1, 그 전 민원·수리 완료 누수탐사 +0.3,
+   50m에서 e배로 줄어듦(150m까지). 가중값은 판단 기준이라 확인 필요. 수리 효과 = 수리 완료 누수탐사 사진 날짜 앞 3일·뒤 3일 야간최소유량 비교(사진 날짜를 수리 날짜로 봄) */
+const LQ_PH={R:50,un:3,mw:1,old:.3,days:90};
+function lqPhPts(b){const o=[];let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<b.ids.length;i++){x0=Math.min(x0,b.lng[i]);x1=Math.max(x1,b.lng[i]);y0=Math.min(y0,b.lat[i]);y1=Math.max(y1,b.lat[i])}
+ for(const g of lqLeakPts()){const x=+g.lng,y=+g.lat;if(!(x>=x0-.002&&x<=x1+.002&&y>=y0-.002&&y<=y1+.002))continue;const un=phLrG(g),t=g.t1||g.t0||0,age=t?(Date.now()-t)/864e5:1e9;
+  o.push({g,x,y,un,t,kd:g.kd,a:un?LQ_PH.un:g.kd==='mw'&&age<=LQ_PH.days?LQ_PH.mw:LQ_PH.old})}return o}
+function lqPhPrior(b){const n=b.ids.length,p=new Float64Array(n).fill(1),P=lqPhPts(b),R=LQ_PH.R;for(const q of P)for(let i=0;i<n;i++){const d=Math.hypot((b.lng[i]-q.x)*88800,(b.lat[i]-q.y)*111000);if(d<=3*R)p[i]+=q.a*Math.exp(-d/R)}
+ return{p,n:P.length,un:P.filter(q=>q.un).length,mw:P.filter(q=>q.kd==='mw'&&q.a===LQ_PH.mw).length,P}}
+function lqPhShow(nm,a,b,loc,g){const P=loc&&loc.ph?loc.ph.P:lqPhPts(b);if(!P.length)return '<p class="hint" style="margin:2px 0">📷 이 소블록 둘레에 민원대응·누수탐사 사진이 없습니다.</p>';
+ if(g)P.forEach(q=>{const c=q.un?'#dc2626':q.kd==='mw'&&q.a===LQ_PH.mw?'#2563eb':'#94a3b8';L.circleMarker([q.y,q.x],{renderer:LQ.cv,pane:'leak',radius:q.un?8:6,color:c,weight:3,fillColor:'#fff',fillOpacity:.6}).bindTooltip(`${PH_KD[q.kd]?PH_KD[q.kd].n:''}${q.un?' 🔴 미수리':q.kd==='ts'?' 수리 완료':''} · ${q.t?fmtD(q.t):'날짜 없음'} · ${q.g.n}장`).addTo(g)});
+ const un=P.filter(q=>q.un).length,mwN=P.filter(q=>q.kd==='mw'&&q.a===LQ_PH.mw).length;
+ let h=`<p class="hint" style="margin:2px 0">📷 사진 반영: 둘레 사진 묶음 ${P.length}곳 (<span class="c-rd">🔴 미수리 ${un}</span> · <span style="color:#2563eb">최근 ${LQ_PH.days}일 민원 ${mwN}</span> · 회색 = 그 전 민원·수리 완료)${loc&&loc.w?' → 위치 가능성에 사진 둘레 가중을 곱함':''} · 가중값 확인 필요</p>`;
+ /* 수리 효과: 자료 기간 안에 찍힌 수리 완료 누수탐사 */
+ if(a&&a.days){const R=P.filter(q=>q.kd==='ts'&&!q.un&&q.t&&q.t>a.from&&q.t<a.to).sort((x,y)=>x.t-y.t).slice(-5);const rows=R.map(q=>{const d=Math.floor((q.t-a.T0)/864e5),bf=a.days.filter(x=>x.d<d&&isFinite(x.mnf)).slice(-3),af=a.days.filter(x=>x.d>d&&isFinite(x.mnf)).slice(0,3);
+   if(!bf.length||!af.length)return `${fmtD(q.t)} 누수탐사: 앞뒤 야간최소유량 자료 부족`;const m0=lqMean(bf.map(x=>x.mnf)),m1=lqMean(af.map(x=>x.mnf)),dd=m1-m0;return `${fmtD(q.t)} 누수탐사 수리 → 야간최소유량 ${lqF(m0)} → ${lqF(m1)}㎥/h (<b class="${dd<0?'':'c-rd'}">${dd>0?'+':''}${lqF(dd)}</b>, 앞 ${bf.length}일·뒤 ${af.length}일)`});
+  if(rows.length)h+=`<p class="hint" style="margin:2px 0">🔧 수리 효과(사진 날짜를 수리 날짜로 봄 · 확인 필요): ${rows.join(' / ')}</p>`}
+ return h}
 /* ---- 🔴 경계밸브 추적 (2026-11-04 사용자 기준) ----
    동수두(지반고+수압)는 유입점이 가장 높아야 함 → 기준보다 높은 지점이 있으면 그 둘레 경계밸브가 열렸다고 의심.
    기준 수두 = 유입점 실측(있으면) → 없으면 대장 배수지 H.W.L → 없으면 모델 유입점 수두.
@@ -9157,7 +9181,7 @@ function lqBvCalc(nm){const b=lqPB(nm),D=LQ.data.get(nm);if(!b)return{err:(nm?es
  const S=[];for(const k of Object.keys(D.P||{})){const m=/@\s*([^\s)]+)/.exec(k);if(!m)continue;const i=b.ids.indexOf(m[1]);if(i<0)continue;const g=+gl[k];S.push({k,i,gl:isFinite(g)&&g>0?g:NaN,ze:+b.elev[i]})}
  if(!S.length)return{err:'절점에 연결된 수압 지점이 없습니다 (열 이름 수압N@절점, 대장은 주소 → 절점 ✅ 필요).'};
  const in0=b.inlet&&b.inlet.length?b.inlet[0].i:-1,Hmod=(i,h)=>+b.elev[i]+(+b.p0[h][i]);
- S.forEach(s=>{s.z=useGl&&isFinite(s.gl)?s.gl:s.ze;s.zsrc=useGl&&isFinite(s.gl)?'대장':'모델';s.zd=isFinite(s.gl)?s.gl-s.ze:NaN;s.inl=in0>=0&&(s.i===in0||lqDistI(b,s.i,b.lat[in0],b.lng[in0])<=50)});
+ S.forEach(s=>{s.z=useGl&&isFinite(s.gl)?s.gl:s.ze;s.zsrc=useGl&&isFinite(s.gl)?'대장':'모델';s.zd=isFinite(s.gl)?s.gl-s.ze:NaN;s.inl=meta.inK===s.k||(in0>=0&&(s.i===in0||lqDistI(b,s.i,b.lat[in0],b.lng[in0])<=50))});
  /* 시간대(3시·19시 ±1시간) 날마다 평균 → 날짜 중앙값 (m) */
  const win=h=>{const day=new Map();for(let r=0;r<D.t.length;r++){const d=new Date(D.t[r]),hh=d.getHours()+d.getMinutes()/60;if(Math.abs(hh-h)>1)continue;const dk=d.getFullYear()*500+d.getMonth()*40+d.getDate();let a=day.get(dk);if(!a)day.set(dk,a=S.map(()=>[0,0]));S.forEach((s,j)=>{const v=D.P[s.k][r];if(isFinite(v)){a[j][0]+=v;a[j][1]++}})}
   const o=S.map(()=>[]);day.forEach(a=>a.forEach(([x,c],j)=>{if(c>=30)o[j].push(x/c)}));return o.map(v=>lqMed(v))};
@@ -9174,7 +9198,9 @@ function lqBvCalc(nm){const b=lqPB(nm),D=LQ.data.get(nm);if(!b)return{err:(nm?es
  const thr=LQ_BV.thr,R=LQ_BV.R;C.forEach(c=>{let s=0,bd=1e9,bj=-1;S.forEach((x,j)=>{const d=lqDistI(b,x.i,c.lat,c.lng);if(isFinite(x.ex)&&x.ex>thr){s+=(x.ex-thr)*Math.exp(-d/R);if(d<bd){bd=d;bj=j}}});c.sc=s;c.near=bj;c.nd=bd});
  const mx=Math.max(0,...C.map(c=>c.sc));C.forEach(c=>c.p=mx>0?Math.round(c.sc/mx*100):0);C.sort((x,y)=>y.sc-x.sc||x.nm.localeCompare(y.nm));
  return{nm,b,S,H,hu,ref,C,meta,ab:S.filter(s=>s.ex>thr)}}
-function lqBvShow(nm){const info=$('lqCand');lqClear();const r=lqBvCalc(nm);LQ.bv=r;if(r.err){info.innerHTML=`<p class="hint c-am">🔴 경계밸브 추적: ${r.err}</p>`;return}
+/* 결과 칸(lqCand)은 파일 넣기 칸 아래라 폰에서 안 보임 → 결과로 스크롤 + 알림 (2026-11-04 '눌러도 변동 없음') */
+function lqBvSee(msg){const el=$('lqCand');try{el.scrollIntoView({behavior:'smooth',block:'start'})}catch(_){}try{phToast(msg)}catch(_){}}
+function lqBvShow(nm){const info=$('lqCand');lqClear();const r=lqBvCalc(nm);LQ.bv=r;if(r.err){info.innerHTML=`<p class="hint c-am">🔴 경계밸브 추적: ${r.err}</p>`;lqBvSee('🔴 경계밸브 추적: '+r.err.replace(/<[^>]+>/g,''));return}
  const {b,S,C,ab,meta}=r,f1=v=>isFinite(v)?v.toFixed(1):'-',f2=v=>isFinite(v)?v.toFixed(2):'-',thr=LQ_BV.thr;
  let h=`<div class="lqhd"><b>🔴 ${esc(nm)} 경계밸브 추적</b> ${ab.length?`<span class="c-rd">⚠ 기준보다 높은 지점 ${ab.length}곳</span>`:'<span style="color:#059669">✅ 열림 징후 없음</span>'}</div>
  <div class="g2" style="margin:4px 0"><label class="f">표고 기준<select id="lqBvZ"><option value="gl"${LQ_BV.Z==='gl'?' selected':''}>대장 G.L (현장)</option><option value="model"${LQ_BV.Z==='model'?' selected':''}>모델 표고</option></select></label><label class="f">넘침 기준 m<input id="lqBvThr" type="number" step="0.5" min="0" value="${thr}" style="width:100%"></label></div>
@@ -9193,6 +9219,7 @@ function lqBvShow(nm){const info=$('lqCand');lqClear();const r=lqBvCalc(nm);LQ.b
   if(map&&pts.length)map.fitBounds(L.latLngBounds(pts).pad(.2))}
  $('lqBvZ').onchange=e=>{LQ_BV.Z=e.target.value;lqBvShow(nm)};$('lqBvThr').onchange=e=>{const v=+e.target.value;LQ_BV.thr=isFinite(v)&&v>=0?v:1;lqBvShow(nm)};
  info.querySelectorAll('.lqBvGo').forEach(x=>x.onclick=()=>{const c=C[+x.dataset.j];if(map&&c)map.setView([c.lat,c.lng],Math.max(map.getZoom(),18))});
+lqBvSee(`🔴 ${nm} 경계밸브 추적: 기준보다 높은 지점 ${ab.length}곳${ab.length&&C.length?' · 1위 '+C[0].nm:''}`);
  const xb=$('lqBvXl');if(xb)xb.onclick=()=>xlsxSave([['지점',S.map(s=>({'소블록':nm,'지점':s.k,'대장G.L':isFinite(s.gl)?s.gl:'','모델표고':+f2(s.ze),'수압m':+f2(s.pm),'동수두m':+f2(s.hm),'넘침m':+f2(s.ex),'기준':r.ref.replace(/<[^>]+>/g,'')}))],['경계밸브 후보',C.map((c,j)=>({'순위':j+1,'이름':c.nm,'시설물':c.fac||'','건너편':c.to||'','관경':c.dia??'','모델상태':c.st||'','시설물상태':c.fst||'','가까운이상지점':c.near>=0?S[c.near].k:'','거리m':c.near>=0?Math.round(c.nd):'','혐의':c.p}))]],`경계밸브추적_${nm}_${fmtD(Date.now())}.xlsx`)}
 /* ---- 화면: 표 ---- */
 function lqBlkOpts(){const s=$('lqBlk');if(!s)return;const v=s.value||LQ.sel,ns=lqBlkNames(),pb=new Set(LQ.prep?LQ.prep.blocks.map(b=>b.name):[]);s.innerHTML='<option value="">— 소블록 고르기 —</option>'+ns.map(n=>`<option value="${esc(n)}">${esc(n)}${pb.has(n)?' 🧮':''}${LQ.data.has(n)?' 📈':''}</option>`).join('');if(ns.includes(v))s.value=v}
@@ -9221,11 +9248,18 @@ function lqRecCsv(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6;if
 function lqFixedIdx(nm,b){const d=LQ.data.get(nm);if(!d||!d.P)return[];const ks=Object.keys(d.P).filter(k=>/@/.test(k));const ix=lqSensorIdx(b,ks);return[...new Set(ix.filter(i=>i>=0))].map((i,j)=>({i,name:ks[ix.indexOf(i)]}))}
 /* 수압계는 소화전에 우선 설치(사용자 기준) — 절점마다 가장 가까운 소화전(시설물 SA119 등 sym 'hyd')과 거리 */
 const LQ_HYD_R=30;
-function lqHyd(b){if(b._hy&&b._hy.fn===FAC.n)return b._hy;const n=b.ids.length,d=new Float32Array(n).fill(1e9),w=new Int32Array(n).fill(-1);let c=0;
- if(typeof FAC!=='undefined'&&FAC.n){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<n;i++){x0=Math.min(x0,b.lng[i]);x1=Math.max(x1,b.lng[i]);y0=Math.min(y0,b.lat[i]);y1=Math.max(y1,b.lat[i])}
-  const KI=FAC.kinds.map(k=>facKindInfo(k).sym==='hyd');for(let h=0;h<FAC.n;h++){if(!KI[FAC.k[h]]||FAC.dl&&FAC.dl[h])continue;const hx=FAC.x[h],hy=FAC.y[h];if(hx<x0-.001||hx>x1+.001||hy<y0-.001||hy>y1+.001)continue;c++;
-   for(let i=0;i<n;i++){const e=Math.hypot((b.lng[i]-hx)*88800,(b.lat[i]-hy)*111000);if(e<d[i]){d[i]=e;w[i]=h}}}}
- return b._hy={fn:FAC.n,n:c,d,w}}
+/* 수압계 자리 우선순위(사용자 기준 2026-11-04): 1 지상식 소화전 → 2 지하식 소화전(형식 모름 포함) → 3 대수용가 인근 수용가. 절점마다 30m(LQ_HYD_R) 안에 있는 가장 앞 순위 = t[i] (0 = 없음) */
+function lqHyd(b){const pn=typeof PT!=='undefined'&&PT?PT.n:0;if(b._hy&&b._hy.fn===FAC.n&&b._hy.pn===pn)return b._hy;const n=b.ids.length,d=new Float32Array(n).fill(1e9),w=new Int32Array(n).fill(-1),t=new Uint8Array(n),wt=new Int32Array(n).fill(-1),dt=new Float32Array(n).fill(1e9),R=LQ_HYD_R;let c=0,cg=0,cu=0,cb=0;
+ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<n;i++){x0=Math.min(x0,b.lng[i]);x1=Math.max(x1,b.lng[i]);y0=Math.min(y0,b.lat[i]);y1=Math.max(y1,b.lat[i])}const inB=(x,y)=>x>=x0-.001&&x<=x1+.001&&y>=y0-.001&&y<=y1+.001;
+ const put=(i,e,tier,h)=>{if(e>R)return;if(!t[i]||tier<t[i]||(tier===t[i]&&e<dt[i])){t[i]=tier;dt[i]=e;wt[i]=h}};
+ if(typeof FAC!=='undefined'&&FAC.n){const KI=FAC.kinds.map(k=>facKindInfo(k).sym==='hyd');for(let h=0;h<FAC.n;h++){if(!KI[FAC.k[h]]||FAC.dl&&FAC.dl[h])continue;const hx=FAC.x[h],hy=FAC.y[h];if(!inB(hx,hy))continue;c++;
+   const ty=String(((FAC.pt[h]||{}).p||{})['소화전형식']??''),tier=/지상/.test(ty)?1:2;if(tier===1)cg++;else cu++;
+   for(let i=0;i<n;i++){const e=Math.hypot((b.lng[i]-hx)*88800,(b.lat[i]-hy)*111000);if(e<d[i]){d[i]=e;w[i]=h}put(i,e,tier,h)}}}
+ /* 3순위: 대수용가(◆, 월평균 기준은 단수구역 설정과 같음) 50m 안 수용가 점 */
+ try{if(pn&&typeof ptBigSync==='function'){ptBigSync();const big=[];for(let i=0;i<pn;i++)if(PT.big&&PT.big[i]&&inB(PT.lng[i],PT.lat[i]))big.push(i);
+  if(big.length)for(let p=0;p<pn;p++){const px=PT.lng[p],py=PT.lat[p];if(!isFinite(px)||!inB(px,py))continue;let nb=false;for(const q of big)if(Math.hypot((PT.lng[q]-px)*88800,(PT.lat[q]-py)*111000)<=50){nb=true;break}if(!nb)continue;cb++;
+   for(let i=0;i<n;i++){const e=Math.hypot((b.lng[i]-px)*88800,(b.lat[i]-py)*111000);put(i,e,3,p)}}}}catch(_){}
+ return b._hy={fn:FAC.n,pn,n:c,cg,cu,cb,d,w,t,wt,dt}}
 function lqRng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function lqGauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 function lqEval(b,Ss,Q,Ls,seed,reps){const n=b.ids.length,K=Q.length,sc=(LQ.prep.evalCmh||5)/(LQ.prep.leakCmh||10),nz=LQ.prep.noiseM||.01,r=lqRng(seed),X=b.lng.map(v=>v*88800),Y=b.lat.map(v=>v*111000),errs=[];
@@ -9236,17 +9270,18 @@ function lqEval(b,Ss,Q,Ls,seed,reps){const n=b.ids.length,K=Q.length,sc=(LQ.prep
 async function lqShowRecFixed(nm,b0,F,k){const info=$('lqCand');info.innerHTML='<p class="hint">이미 잰 측정 지점을 고정하고 추가 자리 계산 중…</p>';await sleep(30);
  const b=await lqEnsureS(nm);if(!b||!b.S){info.innerHTML='<p class="hint c-rd">이 소블록 수압표를 불러오지 못했습니다. 준비 파일을 다시 넣어 주세요.</p>';return}
  const n=b.ids.length,Ss=LQ.prep.hours.map(h=>lqTab(b,h)),r=lqRng(7),pick=(arr,m)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,m)};
- const all=[...Array(n).keys()],Ls=n<=300?all:pick(all,n>800?150:300),base=LQ.prep.hours.map(h=>b.p0[h]),okc=all.filter(i=>base.every(p=>p[i]>5)),Fi=F.map(f=>f.i),hy=lqHyd(b),okh=okc.filter(i=>hy.d[i]<=LQ_HYD_R&&!Fi.includes(i)),useH=okh.length>=Math.max(1,k-Fi.length),C=pick(useH?okh:okc.filter(i=>!Fi.includes(i)),n>800?80:150);
+ const all=[...Array(n).keys()],Ls=n<=300?all:pick(all,n>800?150:300),base=LQ.prep.hours.map(h=>b.p0[h]),okc=all.filter(i=>base.every(p=>p[i]>5)),Fi=F.map(f=>f.i),hy=lqHyd(b),okh=okc.filter(i=>hy.t[i]&&!Fi.includes(i)),useH=okh.length>=Math.max(1,k-Fi.length),C0=pick(useH?okh:okc.filter(i=>!Fi.includes(i)),n>800?80:150),tc=[1,2,3].map(x=>okh.filter(i=>hy.t[i]===x).length);
+ /* 순위가 앞선 자리(지상식→지하식→대수용가 인근)가 남아 있으면 그 안에서만 고름 */const C=useH?C0.slice().sort((x,y)=>hy.t[x]-hy.t[y]):C0,tierOf=i=>useH?hy.t[i]:0;
  const Q=Fi.slice(),t0=Date.now();
  const inl=b.inlet&&b.inlet.length?b.inlet[0].i:-1;if(inl>=0&&!Q.includes(inl))Q.push(inl);
  if(!Q.length&&C.length){let bs=-1,bc=C[0];for(const c of C){let s=0;for(const l of Ls)for(const S of Ss)s+=S[l*n+c];if(s>bs){bs=s;bc=c}}Q.push(bc)}
- while(Q.length<k&&C.length){let best=1e18,bq=-1;for(let j=0;j<C.length;j++){const c=C[j];if(Q.includes(c))continue;let e;
+ while(Q.length<k&&C.length){let best=1e18,bq=-1;/* 같은 소화전·수용가 한 곳에 수압계 둘은 달 수 없으니 이미 쓴 자리는 빼기 */const used=new Set(Q.filter(q=>useH&&hy.t[q]).map(q=>hy.t[q]+':'+hy.wt[q])),free=c=>!Q.includes(c)&&!(useH&&hy.t[c]&&used.has(hy.t[c]+':'+hy.wt[c]));const fr=C.filter(free);if(!fr.length)break;const tmin=Math.min(...fr.map(tierOf));for(let j=0;j<C.length;j++){const c=C[j];if(!free(c)||tierOf(c)!==tmin)continue;let e;
    if(Q.length<2){let s=0;for(const l of Ls){let a=0,z=0;for(const S of Ss){a+=S[l*n+c];z+=S[l*n+Q[0]]}s+=Math.abs(a-z)}e=-s}else e=lqEval(b,Ss,Q.concat(c),Ls,1,1)[1];
    if(e<best){best=e;bq=c}if(j%10===9){info.innerHTML=`<p class="hint">추가 자리 ${Q.length-Fi.length+1}번째 고르는 중… ${j+1}/${C.length}</p>`;await sleep(0)}}if(bq<0)break;Q.push(bq)}
- const hn=i=>hy.w[i]>=0&&hy.d[i]<=LQ_HYD_R?`🧯 ${facName(hy.w[i])} ${Math.round(hy.d[i])}m`:'',list=Q.map((i,j)=>j<F.length?{i,name:F[j].name.split('@')[0],fixed:true,hyd:hn(i)}:{i,name:(F.length?'추가':'P')+(j-F.length+1)+(i===inl?' 유입점':''),hyd:(i===inl?'🚰 소블록 유입점 (모델 유입량 '+lqF(b.inlet[0].q/24)+'㎥/h)'+(hn(i)?' · '+hn(i):''):hn(i))}),curve=[];
+ const hn=i=>!hy.t[i]?'':hy.t[i]===3?`🏭 대수용가 인근 수용가 ${Math.round(hy.dt[i])}m`:`🧯 ${hy.t[i]===1?'지상식':'지하식'} ${facName(hy.wt[i])} ${Math.round(hy.dt[i])}m`,list=Q.map((i,j)=>j<F.length?{i,name:F[j].name.split('@')[0],fixed:true,hyd:hn(i)}:{i,name:(F.length?'추가':'P')+(j-F.length+1)+(i===inl?' 유입점':''),hyd:(i===inl?'🚰 소블록 유입점 (모델 유입량 '+lqF(b.inlet[0].q/24)+'㎥/h)'+(hn(i)?' · '+hn(i):''):hn(i))}),curve=[];
  for(let m=Math.max(2,F.length);m<=Q.length;m++){curve.push([m,lqEval(b,Ss,Q.slice(0,m),Ls,3,2)]);await sleep(0)}
  LQ.recFix={nm,k,list};lqClear();lqSensorMarks(b,0,null,list);if(map)map.fitBounds(L.latLngBounds(list.map(x=>[b.lat[x.i],b.lng[x.i]])).pad(.4));
- info.innerHTML=`<p class="hint"><b>${esc(nm)} ${F.length?`이미 잰 측정 지점 ${F.length}곳 + 추가 ${Q.length-F.length}곳`:`수압계 ${Q.length}곳 추천 자리`}</b> (${F.length?'지도 초록=이미 잰 지점, 파랑=추가 자리. 추가1부터 설치':'지도 파랑, P1부터 설치'})<br>${F.length?F.map(f=>esc(f.name)).join(', ')+' 고정<br>':''}${inl>=0&&!Fi.includes(inl)?(F.length?'추가1':'P1')+' = 소블록 유입점(모델 계산에서 물이 가장 많이 들어오는 절점, 수압 측정값이 없어 먼저 설치)<br>':''}${useH?`🧯 소화전 우선: 소화전 ${LQ_HYD_R}m 안 절점 ${okh.length}곳 중에서 골랐습니다`:`<span class="c-am">🧯 소화전 ${LQ_HYD_R}m 안 절점이 ${okh.length}곳뿐이라 모든 절점에서 골랐습니다${hy.n?'':' (상수도 시설물(②-3)을 올리면 소화전 우선으로 고릅니다)'}</span>`}<br>${list.filter(x=>!x.fixed).map(x=>`${esc(x.name)} 절점 ${esc(b.ids[x.i])}${x.hyd?' · '+esc(x.hyd):''}`).join(' / ')}<br>모의시험 예상 위치 오차(중앙값·평균): ${curve.map(([m,e])=>`<b>${m}곳</b> ${Math.round(e[0])}m·${Math.round(e[1])}m`).join(' → ')}<br><small>가상 누수 ${LQ.prep.evalCmh||5}㎥/h · 수압 잡음 ${(LQ.prep.noiseM||.01)*100}cm 가정 · 모델 계산값이라 실제와 다를 수 있음 · 계산 ${((Date.now()-t0)/1000).toFixed(1)}초. 수압계 수를 바꾸고 다시 누르면 다시 계산합니다.</small></p>`}
+ info.innerHTML=`<p class="hint"><b>${esc(nm)} ${F.length?`이미 잰 측정 지점 ${F.length}곳 + 추가 ${Q.length-F.length}곳`:`수압계 ${Q.length}곳 추천 자리`}</b> (${F.length?'지도 초록=이미 잰 지점, 파랑=추가 자리. 추가1부터 설치':'지도 파랑, P1부터 설치'})<br>${F.length?F.map(f=>esc(f.name)).join(', ')+' 고정<br>':''}${inl>=0&&!Fi.includes(inl)?(F.length?'추가1':'P1')+' = 소블록 유입점(모델 계산에서 물이 가장 많이 들어오는 절점, 수압 측정값이 없어 먼저 설치)<br>':''}${useH?`설치 우선순위 지상식 소화전 → 지하식 소화전 → 대수용가 인근 수용가 (${LQ_HYD_R}m 안 절점: 지상식 ${tc[0]} · 지하식 ${tc[1]} · 대수용가 인근 ${tc[2]}곳)`:`<span class="c-am">🧯 소화전·대수용가 인근 ${LQ_HYD_R}m 안 절점이 ${okh.length}곳뿐이라 모든 절점에서 골랐습니다${hy.n?'':' (상수도 시설물(②-3)을 올리면 소화전 우선으로 고릅니다)'}</span>`}${hy.n&&!hy.cg?' · <span class="c-am">소화전형식(지상/지하) 칸이 없어 모두 지하식 순위로 봄</span>':''}<br>${list.filter(x=>!x.fixed).map(x=>`${esc(x.name)} 절점 ${esc(b.ids[x.i])}${x.hyd?' · '+esc(x.hyd):''}`).join(' / ')}<br>모의시험 예상 위치 오차(중앙값·평균): ${curve.map(([m,e])=>`<b>${m}곳</b> ${Math.round(e[0])}m·${Math.round(e[1])}m`).join(' → ')}<br><small>가상 누수 ${LQ.prep.evalCmh||5}㎥/h · 수압 잡음 ${(LQ.prep.noiseM||.01)*100}cm 가정 · 모델 계산값이라 실제와 다를 수 있음 · 계산 ${((Date.now()-t0)/1000).toFixed(1)}초. 수압계 수를 바꾸고 다시 누르면 다시 계산합니다.</small></p>`}
 function lqTpl(){const nm=$('lqBlk').value||'소블록',b=lqPB(nm),k=+$('lqK').value||6,ps=(b?b.rec.slice(0,k).map(r=>r.name):Array.from({length:k},(_,i)=>'P'+(i+1)));
  dlBlob(new Blob(['﻿'+['시각','유량(㎥/h)'].concat(ps.map(p=>p+'(m)')).join(',')+'\r\n'],{type:'text/csv'}),`1분자료_양식_${nm}.csv`)}
 function lqShow(nm){{const b0=lqPB(nm);if(b0&&!b0.S){lqEnsureS(nm).then(b1=>{if(b1&&b1.S)lqShow(nm)});return}}LQ.sel=nm;$('lqBlk').value=nm;const a=lqAnalyze(nm),b=lqPB(nm),loc=b&&a?lqLocate(nm):null,info=$('lqCand');lqClear();
@@ -9260,10 +9295,11 @@ function lqShow(nm){{const b0=lqPB(nm);if(b0&&!b0.S){lqEnsureS(nm).then(b1=>{if(
   const top=ord[0],dm=i=>Math.hypot((b.lng[i]-b.lng[top])*88800,(b.lat[i]-b.lat[top])*111000),rr=[...ord].sort((x,y)=>dm(x)-dm(y));let c2=0,r50=0;for(const i of rr){c2+=w[i];if(c2>=.5){r50=dm(i);break}}LQ.r50=r50;
   head+=`<p class="hint" style="margin:4px 0">위치 계산(L2): 수압계 ${loc.use.length}개 · ${loc.hu.map(h=>h+'시').join('·')} 평상·최근 수압 차이 비교 · 가장 가능성 큰 곳 절점 ${esc(b.ids[top])} · <b>가능성 50%가 그 둘레 약 ${Math.round(r50)}m 안</b> · 빨간 원이 클수록 가능성 큼</p>`
   if(loc.flat)head+=`<p class="hint c-am" style="margin:4px 0">⚠ <b>위치 근거 부족</b>: 절점 ${b.ids.length.toLocaleString()}곳 가운데 ${loc.tie}곳이 1등과 거의 같습니다. 평상·최근 수압이 모든 지점에서 함께 오르내려(공급 수압 변화로 보고 뺌) 지점끼리 차이가 거의 없습니다. 아래 순위는 사실상 <b>파손 위험 점수 순</b>이니 누수 위치로 보지 마세요. 수압이 평소보다 떨어진 기간이나 유량 자료가 있으면 다시 계산하세요.</p>`}
+ if(b)head+=lqPhShow(nm,a,b,loc,g);
  const R=lqRank(nm,loc&&loc.w?loc:null).slice(0,15);LQ.cand={nm,R};
  if(g)R.slice(0,10).forEach((r,j)=>{const f=PIPE.feats[r.fi];lineParts(f.geometry).forEach(p=>{const ll=p.map(c=>[c[1],c[0]]);pts.push(...ll);L.polyline(ll,{pane:'leak',color:'#dc2626',weight:8,opacity:.45}).addTo(g)});const m=lqMid(f);if(m)L.marker([m[1],m[0]],{pane:'leak',icon:L.divIcon({className:'',html:`<div class="lqrk">${j+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).bindPopup(()=>pipePopup(f)).addTo(g)});
  const at=r=>attrOf(PIPE.feats[r.fi]);
- head+=R.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>순위</th><th>관리번호</th><th>재질·관경</th><th>연수</th><th>이력</th><th>위험</th>${loc&&loc.w?'<th>위치</th>':''}<th></th></tr></thead><tbody>${R.map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return `<tr><td>${j+1}</td><td>${esc(r.id)}</td><td>${esc(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}<td><button type="button" class="btn ol lqFly" data-fi="${r.fi}" style="padding:1px 6px">📍</button></td></tr>`}).join('')}</tbody></table></div><div class="sbtns" style="margin-top:4px"><button type="button" id="lqXl" class="btn ol">⬇ 후보 관로 엑셀</button></div><p class="hint" style="margin:2px 0 0">순위 = ${loc&&loc.w?(loc.flat?'위치 가능성 70% + 파손 위험 점수 30% (위치 근거 부족 → 사실상 위험 점수 순)':'위치 가능성 70% + 파손 위험 점수 30%'):'파손 위험 점수'} · 이력 = 관로 ${LQ.cfg.near}m 안 민원대응·누수탐사 사진 묶음 수 · 현장 탐사 순서 참고용</p>`:'<p class="hint">상수관로(②-1)를 올리면 점검 순서 관로가 나옵니다.</p>';
+ head+=R.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>순위</th><th>관리번호</th><th>재질·관경</th><th>연수</th><th>이력</th><th>위험</th>${loc&&loc.w?'<th>위치</th>':''}<th></th></tr></thead><tbody>${R.map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return `<tr><td>${j+1}</td><td>${esc(r.id)}</td><td>${esc(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}${r.un?' <b class="c-rd" title="미수리 누수탐사">🔴'+r.un+'</b>':''}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}<td><button type="button" class="btn ol lqFly" data-fi="${r.fi}" style="padding:1px 6px">📍</button></td></tr>`}).join('')}</tbody></table></div><div class="sbtns" style="margin-top:4px"><button type="button" id="lqXl" class="btn ol">⬇ 후보 관로 엑셀</button></div><p class="hint" style="margin:2px 0 0">🔴 미수리 누수탐사 사진이 붙은 관로가 맨 위 · 순위 = ${loc&&loc.w?(loc.flat?'위치 가능성 70% + 파손 위험 점수 30% (위치 근거 부족 → 사실상 위험 점수 순)':'위치 가능성 70% + 파손 위험 점수 30%'):'파손 위험 점수'} · 이력 = 관로 ${LQ.cfg.near}m 안 민원대응·누수탐사 사진 묶음 수 · 현장 탐사 순서 참고용</p>`:'<p class="hint">상수관로(②-1)를 올리면 점검 순서 관로가 나옵니다.</p>';
  info.innerHTML=head;if(map&&pts.length)map.fitBounds(L.latLngBounds(pts).pad(.15))}
 function lqXl(){const c=LQ.cand;if(!c||!c.R.length)return;const rows=c.R.map((r,j)=>{const x=attrOf(PIPE.feats[r.fi]);return{'소블록':c.nm,'순위':j+1,'관리번호':r.id,'재질':x.mat,'관경mm':x.dia??'','경과연수':x.age??'','누수이력(건)':PIPE.feats[r.fi]._rkn||0,'파손위험점수':r.rk,'위치점수':Math.round(r.lp*100)}});xlsxSave([['누수 후보 관로',rows]],`누수후보관로_${c.nm}_${fmtD(Date.now())}.xlsx`)}
 /* ---- 설정 ---- */
