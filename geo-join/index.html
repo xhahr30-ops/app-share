@@ -1431,7 +1431,8 @@ const TABS=[
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
   {n:'파일 넣기',b:[['uni','open','📥 파일 넣기',1]]},
-  {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1]]},
+  {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1],['win:leak','drop','②-4 누수 예측',1]]},
+  {n:'누수 자료',b:[['lrIn','xls','누수·민원 대장',1]]},
   {n:'부과량',b:[['win:bill','bill','부과량 연동',1]]},
   {n:'변환 · 공간결합',b:[['af','srch','주소찾기 설정',1],['start','bolt','변환 시작',1,'run'],['stop','stop','변환 중지']]}]},
  {k:'map',n:'지도',g:[
@@ -1460,7 +1461,8 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
  if(h==='win')return winOpen(v);if(h==='dock')return dockSet(S.dock===v&&!$('gwDock').classList.contains('cl')?'':v);
  if(h==='ui'){F('uiPanel',true,v);return}
  const go={
-  bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
+  bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),
+  /* 2026-11-05 '자료 탭에 누수탐사·민원 대장 넣기 없음' → ②-4 창 열고 📒 칸 펼침 */lrIn:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const d=$('lqLrSec');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},80)},frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   stop:()=>{const b=$('stopBtn');if(b&&!b.hidden)b.click()},allOff:()=>F('uiAllToggle'),bg:()=>F('bgToggle'),pt:()=>F('ptToggle'),
