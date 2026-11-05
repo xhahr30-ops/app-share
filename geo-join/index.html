@@ -1249,6 +1249,7 @@ html.gwOn .afp{top:150px}
   <details id="lqLrSec" style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">📒 누수탐사·민원 대장 → 누수 발생율</summary>
    <label class="drop" style="margin-top:4px"><input type="file" id="lqLrF" accept=".xlsx,.xls,.xlsm" multiple><div class="ic">📒</div><b>누수탐사 대장 · 민원 대장 (.xlsm, 여러 개)</b><span>누수탐사총괄표·Sheet1(X·Y) / 리스트(매크로용) 시트를 읽어 재질·관경·경과연수·소블록별 누수 발생율(건/100km)을 세고 파손 위험 점수에 씁니다 · 고객 이름·연락처는 읽지 않음 · 한 번 넣으면 이 기기에 저장</span></label>
    <p class="hint" id="lqLrMsg"></p><div id="lqLrBox"></div></details>
+  <details id="lqWtSec" style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">⚖ 누수 지점 예측 배점표 (가중치 고치며 분석)</summary><div id="lqWtBox"></div></details>
   <details id="lqcBox" style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">✅ 누수 확인 지점 · 예측 검증</summary>
    <p class="hint" style="margin:4px 0">현장에서 누수가 확인된 자리를 적으면 예측(수압 위치·위험 점수·경계밸브 추적)이 얼마나 맞았는지 대조하고, 기록이 쌓이면 위치·위험 비중을 맞힌 쪽으로 고치도록 안내합니다. 좌표는 지도 길게 누르기 → 📍 좌표 <b>복사</b>를 붙여 넣으세요.</p>
    <div class="g2"><label class="f">좌표 (위도, 경도)<input id="lqcLL" placeholder="36.111748, 129.341274" style="width:100%"></label><label class="f">확인 날짜<input id="lqcD" type="date" style="width:100%"></label></div>
@@ -9015,8 +9016,9 @@ try{mkInit()}catch(e){console.warn('지도 그리기',e)}
  설치 자리: 준비 파일의 추천 수압계 자리(P1~P8) 지도 표시
  준비 파일(.zip, app 'geo-addr-leak')은 PC에서 관망해석 inp로 만든다. 고객 정보는 쓰지 않는다(관리번호·소블록만). */
 const LQ={prep:null,S:new Map(),data:new Map(),an:new Map(),sel:'',L:null,pidx:null,rkKey:'',
- cfg:{n0:2,n1:4,rec:3,pct:20,abs:1,near:10,sig:0.01,w:{age:30,mat:20,his:25,pr:15,dia:10}}};
-try{const c=JSON.parse(localStorage.getItem('geo-leak')||'{}');if(c&&typeof c==='object'){Object.assign(LQ.cfg,c);LQ.cfg.w=Object.assign({age:30,mat:20,his:25,pr:15,dia:10},c.w||{})}}catch(_){}
+ cfg:{n0:2,n1:4,rec:3,pct:20,abs:1,near:10,sig:0.01,w:{age:10,mat:20,his:25,pr:30,dia:10,blk:10}}};
+try{const c=JSON.parse(localStorage.getItem('geo-leak')||'{}');if(c&&typeof c==='object'){Object.assign(LQ.cfg,c);LQ.cfg.w=Object.assign({age:10,mat:20,his:25,pr:30,dia:10,blk:10},c.w||{});
+ /* 2026-11-05 기본 가중치 바꿈(수압 15→30·연수 30→10): 옛 기본값 그대로 저장된 경우만 새 기본값으로 */const w=LQ.cfg.w;if(!(c.wv>=2)&&w.age===30&&w.pr===15&&w.mat===20&&w.his===25&&w.dia===10){w.age=10;w.pr=30}}}catch(_){}
 const lqSaveCfg=()=>{try{localStorage.setItem('geo-leak',JSON.stringify(LQ.cfg))}catch(_){}};
 /* ---- 파손 위험 점수 (0~100) ---- */
 const RISK_BANDS=[[20,'0~20 낮음','#16a34a'],[40,'20~40','#84cc16'],[60,'40~60 보통','#f59e0b'],[80,'60~80 높음','#ea580c'],[1e9,'80~100 매우 높음','#b91c1c']];
@@ -9114,6 +9116,7 @@ function lrRefresh(){try{lqRenderTbl();if(LQ.sel)lqShow(LQ.sel);if($('pBy')&&$('
 function lrXl(){const S=lrStats();if(!S)return;const m=a=>a.map(x=>({'구분':x.k,'누수(건)':x.n,'관로(km)':+lqF(x.km,2),'건/100km':+lqF(x.r,2)||0,'계수':x.f==null?'기본':+x.f.toFixed(3)}));
  xlsxSave([['재질',m(S.mat)],['관경',m(S.dia)],['경과연수',m(S.age)],['소블록',m(S.blk)],['누수 목록',LR.recs.filter(o=>o.ok).map(o=>({'구분':o.src,'번호':o.no||'','소블록':o.blk,'날짜':o.d,'결과':o.res,'관종':o.mat,'관경':o.dia??'','원인':o.cause,'위도':o.ll?o.ll[0]:'','경도':o.ll?o.ll[1]:''}))]],`누수발생율_${fmtD(Date.now())}.xlsx`)}
 async function lrInit(){try{const v=await IDB.get('leak_ledger');if(v&&v.recs){LR.recs=v.recs;LR.names=v.names||[];LR.at=v.at||'';try{await gcReady}catch(_){}lrLocate()}}catch(_){}
+ $('lqWtSec').addEventListener('toggle',e=>{if(e.target.open)lqWtRender()});$('lqWtSec').addEventListener('change',e=>{const x=e.target.closest('.lqWtI');if(!x)return;const k=x.dataset.k,v=Math.max(0,+x.value||0);if(k==='wL')LQ.cfg.wL=Math.min(100,v)/100;else LQ.cfg.w[k]=v;lqWtApply()});$('lqWtSec').addEventListener('click',e=>{if(e.target.id!=='lqWtDef')return;LQ.cfg.w=Object.assign({},LQ_W0);LQ.cfg.wL=.7;lqWtApply()});
  $('lqLrSec').addEventListener('toggle',e=>{if(e.target.open){lrLocate();LR.st=null;lrShow()}});
  $('lqLrF').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)lrLoad(fs)};if(LR.recs.length){LQ.rkKey='';lrShow()}}
 function lqMid(f){const p=lineParts(f.geometry)[0];if(!p||!p.length)return null;return p[Math.floor(p.length/2)]}
@@ -9275,11 +9278,29 @@ const lqPct=(r,n)=>n>1?(r-1)/(n-1):0;
 /* ⚖ 지금 가중치 표 (사용자 요청 2026-11-04 '가중치 표로') */
 function lqWtTable(){const W=LQ.cfg.w,C=LQ.cfg,wl=Math.round(lqWL()*100),tr=(a,b,c)=>`<tr><td>${a}</td><td><b>${b}</b></td><td>${c}</td></tr>`;
  return `<div style="overflow:auto;margin-top:6px"><table class="lqt"><thead><tr><th>⚖ 항목</th><th>가중치</th><th>기준</th></tr></thead><tbody>
- ${tr('파손 위험 · 경과연수',W.age,'50년 이상 만점, 모르면 절반')}${tr('파손 위험 · 누수 이력',W.his,`관로 ${C.near}m 안 민원·누수탐사 사진 3묶음 이상 만점`)}${tr('파손 위험 · 재질',W.mat,'회주철·아연도강관·석면 1 → 덕타일 0.3 → 스테인리스 0.2')}${tr('파손 위험 · 최고 수압',W.pr,'관망해석 30m 0 → 70m 만점')}${tr('파손 위험 · 관경',W.dia,'50mm 이하 1 → 250mm 넘으면 0.15')}${lrOn()?tr('파손 위험 · 소블록 누수 발생율',W.blk??10,'📒 대장 건/100km ÷ 가장 높은 소블록')+tr('📒 대장 반영','켜짐','재질·관경·경과연수 계수 = 대장 건/100km ÷ 가장 높은 묶음, 대장 누수 자리 = 누수 이력'):''}
+ ${tr('파손 위험 · 경과연수',W.age,lqWtCoef('age'))}${tr('파손 위험 · 누수 이력',W.his,`관로 ${C.near}m 안 민원·누수탐사 사진 3묶음 이상 만점`)}${tr('파손 위험 · 재질',W.mat,lqWtCoef('mat'))}${tr('파손 위험 · 최고 수압',W.pr,lqWtCoef('pr'))}${tr('파손 위험 · 관경',W.dia,lqWtCoef('dia'))}${lrOn()?tr('파손 위험 · 소블록 누수 발생율',W.blk??10,'📒 대장 건/100km ÷ 가장 높은 소블록')+tr('📒 대장 반영','켜짐','재질·관경·경과연수 계수 = 대장 건/100km ÷ 가장 높은 묶음, 대장 누수 자리 = 누수 이력'):''}
  ${tr('점검 순위 · 수압 위치(L2)',wl+'%','위치 계산이 있을 때')}${tr('점검 순위 · 파손 위험',(100-wl)+'%','')}${tr('점검 순위 · 미수리·수리 전 확인 지점','맨 위','🔴 사진·✅ 기록')}
  ${tr('사진 가중 · 미수리 누수탐사','+'+LQ_PH.un,`${LQ_PH.R}m마다 약 1/3, ${LQ_PH.R*3}m까지`)}${tr('사진 가중 · 최근 민원','+'+LQ_PH.mw,`${LQ_PH.days}일 안`)}${tr('사진 가중 · 그 밖','+'+LQ_PH.old,'오래된 민원·수리 완료')}
  ${tr('누수 의심 판정',`+${C.pct}% · +${C.abs}㎥/h`,`야간 ${C.n0}~${C.n1}시 최소유량, 최근 ${C.rec}일`)}${tr('경계밸브 혐의',`넘침 ${LQ_BV.thr}m`,`(넘침 − 기준) × e^(−거리/${LQ_BV.R}m)`)}
- </tbody></table></div><p class="hint" style="margin:2px 0">모두 판단 기준값 · 확인 필요 · 파손 위험 가중치·판정 기준은 ⚙ 판정 기준에서 고침</p>`}
+ </tbody></table></div><p class="hint" style="margin:2px 0">모두 판단 기준값 · 확인 필요 · 가중치는 ⚖ 배점표에서 바로 고침</p>`}
+/* ---- ⚖ 배점표: 가중치를 표에서 바로 고치고 다시 분석 (2026-11-05) ---- */
+const LQ_W0={age:10,mat:20,his:25,pr:30,dia:10,blk:10};/* 수압 분석 기법 → 최고 수압 30·경과연수 10 (2026-11-05 사용자) */
+function lqWtCoef(k){const LS=lrOn()?lrStats():null,f=a=>a.filter(x=>x.f!=null).map(x=>`${esc(x.k)} ${x.f.toFixed(2)}`).join(' · ');
+ if(k==='age')return LS?f(LS.age)+' · 모르면 0.5 (📒 대장)':'0년 0 → 50년 이상 1 · 모르면 0.5';
+ if(k==='mat')return LS?f(LS.mat)+' · 그 밖은 기존 계수 (📒 대장)':'회주철·아연도강관·석면 1 → PVC 0.6 → PE 0.4 → 덕타일 0.3 → 스테인리스 0.2';
+ if(k==='dia')return LS?f(LS.dia)+' (📒 대장)':'50mm 이하 1 → 80 0.8 → 100 0.6 → 150 0.45 → 250 0.3 → 그 위 0.15';
+ if(k==='his')return `관로 ${LQ.cfg.near}m 안 민원·누수탐사 사진${LS?'·대장 누수':''} 1건 0.33 · 2건 0.67 · 3건 이상 1`;
+ if(k==='pr')return (ELEV&&ELEV.hyd?'':'<span class="c-am">관망해석 결과(②-3)가 없으면 이 항목은 빠짐</span> · ')+'관망해석 최고 수압 30m 이하 0 → 70m 이상 1';
+ if(k==='blk')return LS?`가장 높은 소블록(${esc((LS.blk.find(x=>x.f!=null)||{}).k||'-')})을 1로 둔 비율 · 표본 구역 소블록만`:'<span class="hint">📒 누수 대장을 넣으면 쓰임</span>';return''}
+function lqWtRender(){const el=$('lqWtBox');if(!el)return;const W=LQ.cfg.w,on=k=>k==='blk'?lrOn():k==='pr'?!!(ELEV&&ELEV.hyd):true,
+ rows=[['pr','최고 수압'],['his','누수 이력'],['mat','재질'],['age','경과연수'],['dia','관경'],['blk','소블록 누수 발생율']],sum=rows.reduce((s,[k])=>s+(on(k)?+(W[k]??LQ_W0[k])||0:0),0),wl=Math.round(lqWL()*100);
+ const inp=(k,v,st)=>`<input type="number" class="lqWtI" data-k="${k}" value="${v}" min="0" step="${st||1}" style="width:64px">`;
+ el.innerHTML=`<div style="overflow:auto"><table class="lqt"><thead><tr><th>파손 위험 항목</th><th>가중치</th><th>비중</th><th>계수 (1이 만점)</th></tr></thead><tbody>${rows.map(([k,n])=>{const v=+(W[k]??LQ_W0[k])||0;return`<tr${on(k)?'':' style="opacity:.55"'}><td>${n}</td><td>${inp(k,v)}</td><td><b>${on(k)&&sum?Math.round(v/sum*100)+'%':'-'}</b></td><td>${lqWtCoef(k)}</td></tr>`}).join('')}</tbody></table></div>
+ <div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>점검 순위</th><th>비중</th><th>기준</th></tr></thead><tbody>
+ <tr><td>수압 위치(L2)</td><td>${inp('wL',wl,5)} %</td><td>1분 수압 + 준비 파일이 있을 때</td></tr><tr><td>파손 위험 점수</td><td><b>${100-wl}%</b></td><td>위 표 점수</td></tr><tr><td>미수리·수리 전 확인 지점</td><td><b>맨 위</b></td><td>🔴 미수리 누수탐사 사진 · ✅ 수리 전 기록</td></tr></tbody></table></div>
+ <div class="sbtns" style="margin-top:4px"><button type="button" class="btn ol" id="lqWtDef">↺ 기본값 (수압 30 · 이력 25 · 재질 20 · 연수 10 · 관경 10 · 소블록 10 · L2 70%)</button></div>
+ <p class="hint" style="margin:2px 0 0">가중치를 고치면 파손 위험 점수·점검 순위·관로 색(위험 점수 보기)을 바로 다시 계산합니다 · 비중 = 가중치 ÷ 쓰이는 항목 가중치 합 · 흐린 줄은 자료가 없어 빠진 항목 · 모두 판단 기준값(확인 필요)</p>`}
+function lqWtApply(){LQ.cfg.wv=2;lqSaveCfg();LQ.rkKey='';try{lqCfgUi()}catch(_){}lqWtRender();try{if($('lqcBox')&&$('lqcBox').open)lqcRender()}catch(_){}lrRefresh()}
 async function lqcRender(){const el=$('lqcList'),ve=$('lqcVer');if(!el)return;
  el.innerHTML=LQC.a.length?`<div style="overflow:auto;margin-top:4px"><table class="lqt"><thead><tr><th>날짜</th><th>소블록</th><th>메모</th><th>수리</th><th></th></tr></thead><tbody>${LQC.a.map(c=>`<tr><td>${esc(c.d)}</td><td>${esc(c.blk||'-')}</td><td>${esc(c.m||'')}<br><small>${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}</small></td><td><label class="ck"><input type="checkbox" data-rep="${c.id}"${c.rep?' checked':''}> 완료</label></td><td><button type="button" class="btn ol" data-go="${c.id}" style="padding:1px 6px">📍</button> <button type="button" class="btn ol" data-del="${c.id}" style="padding:1px 6px">🗑</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">아직 기록이 없습니다.</p>';
  el.querySelectorAll('[data-rep]').forEach(x=>x.onchange=()=>{const c=LQC.a.find(v=>v.id===+x.dataset.rep);if(c){c.rep=x.checked;lqcSave();LQ.rkKey=''}});
@@ -9506,7 +9527,7 @@ function lqXl(){const c=LQ.cand;if(!c||!c.R.length)return;const rows=c.R.map((r,
 function lqCfgUi(){const c=LQ.cfg,el=$('lqCfg');if(!el)return;const inp=(id,v,t,st)=>`<label class="f">${t}<input id="${id}" type="number" value="${v}" step="${st||1}" style="width:100%"></label>`;
  el.innerHTML=`<div class="g2">${inp('lqN0',c.n0,'야간 시작(시)')}${inp('lqN1',c.n1,'야간 끝(시)')}${inp('lqRec',c.rec,'최근 일수')}${inp('lqPct',c.pct,'⚠ 증가 %')}${inp('lqAbs',c.abs,'⚠ 증가 ㎥/h',.1)}${inp('lqNear',c.near,'누수 이력 거리 m')}</div>
  <p class="hint" style="margin:4px 0 2px">파손 위험 점수 가중치 (합이 100이 아니어도 비율로 계산) · 확인 필요</p><div class="g2">${inp('lqWage',c.w.age,'경과연수')}${inp('lqWmat',c.w.mat,'재질')}${inp('lqWhis',c.w.his,'누수 이력')}${inp('lqWpr',c.w.pr,'최고 수압(관망해석)')}${inp('lqWdia',c.w.dia,'관경(작을수록)')}${inp('lqWblk',c.w.blk??10,'소블록 누수 발생율(📒 대장)')}</div>`;
- el.querySelectorAll('input').forEach(x=>x.onchange=()=>{const g=id=>+$(id).value;Object.assign(c,{n0:g('lqN0'),n1:g('lqN1'),rec:Math.max(1,g('lqRec')|0),pct:g('lqPct'),abs:g('lqAbs'),near:Math.max(1,g('lqNear'))});c.w={age:g('lqWage'),mat:g('lqWmat'),his:g('lqWhis'),pr:g('lqWpr'),dia:g('lqWdia'),blk:g('lqWblk')};lqSaveCfg();LQ.an.clear();LQ.rkKey='';lqRenderTbl();if($('pBy').value==='risk'&&PIPE.fc)renderPipes()})}
+ el.querySelectorAll('input').forEach(x=>x.onchange=()=>{const g=id=>+$(id).value;Object.assign(c,{n0:g('lqN0'),n1:g('lqN1'),rec:Math.max(1,g('lqRec')|0),pct:g('lqPct'),abs:g('lqAbs'),near:Math.max(1,g('lqNear'))});c.w={age:g('lqWage'),mat:g('lqWmat'),his:g('lqWhis'),pr:g('lqWpr'),dia:g('lqWdia'),blk:g('lqWblk')};c.wv=2;lqSaveCfg();try{lqWtRender()}catch(_){}LQ.an.clear();LQ.rkKey='';lqRenderTbl();if($('pBy').value==='risk'&&PIPE.fc)renderPipes()})}
 async function lqInit(){if(!$('lqSec'))return;lqCfgUi();try{await lrInit()}catch(e){console.warn('누수 대장',e)}
  try{LQ.prep=await IDB.get('leak_prep')||null;if(LQ.prep&&LQ.prep.blocks.some(b=>b.S)){const d=LQ.prep;LQ.prep=await lqPrepPut(null,d);LQ.prep.name=d.name;LQ.prep.at=d.at;await IDB.set('leak_prep',LQ.prep)}}catch(_){}try{const ls=await IDB.get('lqd_list')||[];for(const k of ls){const v=await IDB.get('lqd:'+k);if(v&&v.t)LQ.data.set(k,v)}}catch(_){}
  lqPrepShow();lqBlkOpts();lqRenderTbl();
