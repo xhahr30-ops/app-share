@@ -2327,7 +2327,7 @@ const RIB={
   +gg('레포트',col(gb('graph','chart','그래프',{dd:1})+gb('exp','down','내보내기',{dd:1})+gb('pipeRep','ruler','관로'))+col(gb('calR','flag','보정')+gb('engR','plug','에너지')+gb('kpi','info','요약')))
   +gg('최적화',col(gb('optC','grid','유속계수')+gb('optK','drop','관벽반응계수')+gb('optP','cal','Pump Schedule'))),
  tool:()=>gg('배경지도',`<div class="rb-col rb-form" id="rbBm"></div>`)+gg('좌표·표고',col(gb('crsConv','globe','좌표계 변환')+gb('elvIn','mount','표고 입력')+gb('elv','shield','표고 검증')))+gg('관망 변환',col(gb('skel','tree','골격화')+gb('fu','swap','유량 단위 변환')+gb('lenRe','ruler','관 길이 재계산')))
-  +gg('검색',`<div class="rb-col rb-form"><input id="rbAddr" placeholder="주소·장소(브이월드)" class="rb-in"><button type="button" class="rb-b" data-rb="addr">${ico('search',15)}<span>주소로 이동</span></button><button type="button" class="rb-b" data-rb="kakao">${ico('pin',15)}<span>이 위치 카카오맵</span></button></div>`)
+  +gg('검색',`<div class="rb-col rb-form"><input id="rbAddr" placeholder="주소·시설물·관로·절점번호" class="rb-in" title="주소·장소, 시설물(배수지·밸브·소화전…), 관로번호(관리번호), 절점번호로 찾습니다"><button type="button" class="rb-b" data-rb="addr" title="주소·시설물·관로번호·절점번호로 찾아 지도 이동">${ico('search',15)}<span>찾아 이동</span></button><button type="button" class="rb-b" data-rb="kakao">${ico('pin',15)}<span>이 위치 카카오맵</span></button></div>`)
   +gg('화면',gb('mfull','full','지도 전체화면',{big:true})+col(gb('mset','gear','지도 설정')+gb('arrows','arrow','유향 화살표')+gb('legEd','palette','범례 편집'))+col(gb('classic','list','보고서형 화면')+gb('ai','chat','AI 대화')+gb('dark','moon','다크 모드'))),
  help:()=>gg('도움말',gb('help','help','사용법',{big:1})+col(gb('basis','info','산정 기준')+gb('about','flask','엔진 정보')))};
 const RTAB=[['file','파일'],['edit','편집'],['wds','배수관망모델'],['tool','도구'],['help','도움말']];
@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v36 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v37 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -3547,6 +3547,59 @@ async function newNet(){if(!okDiscard('새 관망 만들기'))return;const pv=S.
 /* ── 새 앱 열기 ── */
 function newApp(){const u=location.href.split('#')[0];let w=null;try{w=window.open(u,'_blank')}catch(e){}if(!w){toast(EMB?'이 화면에서는 새 창을 열 수 없습니다. HTML 파일을 브라우저로 직접 열어 쓰세요.':'팝업이 막혔습니다. 주소창 오른쪽의 팝업 차단을 풀어 주세요.',6000);return}toast('🗗 새 관망해석기를 열었습니다. 각 창은 서로 독립적으로 작업합니다.')}
 
+/* ── v37 관망 찾기: 시설물·관로번호·절점번호로 찾아 지도 이동(주소 찾기 창의 첫 탭) ── */
+const NS=(()=>{
+ const LYN={fire:'소화전',prga:'수압계',flow:'유량계',valv:'제수밸브',tap:'급수탑',pt:'시설물 점'},LYS={fire:'지상소화전',prga:'수압계',flow:'기존유량계',valv:'제수밸브',tap:'급수탑'};
+ const KN=[['all','전체'],['fac','시설물'],['l','관로'],['n','절점']];let K=lsGet('gw-nsk')||'all',last=[],PC=null;
+ const lo=v=>String(v==null?'':v).toLowerCase();
+ const nKind=n=>n.type===1?'배수지':n.type===2?'탱크':'절점';
+ const lKind=l=>l.type===2?'가압장(펌프)':l.type>=3?'밸브':'관로';
+ const mg=l=>{const t=S.tags&&S.tags.l.get(l.id);return String(t&&(t.pipe||t.sply||t.trans)||'').trim()};
+ const sc=(v,q)=>{v=lo(v);if(!v||!q)return 9;return v===q?0:v.startsWith(q)?1:v.includes(q)?2:9};
+ // 시설물 점 레이어(계량기 제외) 찾기용 글자 — 레이어가 바뀌면 다시 만듦
+ function pts(){const out=[];if(!T.lay)return out;Object.keys(T.lay).forEach(k=>{const ly=T.lay[k];if(k==='meta'||!ly||!ly.pts)return;
+  if(!ly.__ns||ly.__ns.n!==ly.pts.length){ly.__ns={n:ly.pts.length,a:ly.pts.map(p=>{const a=p.attr||{},ks=Object.keys(a).filter(x=>x!=='__i'),
+   idk=ks.find(x=>/관리번호|FTR_IDN|^ID$|번호|명칭|시설명|이름|NAME/i.test(x)&&String(a[x]).trim());return{id:idk?String(a[idk]).trim():'#'+a.__i,txt:lo(ks.map(x=>a[x]).join(' '))}})}}
+  ly.pts.forEach((p,j)=>out.push({k,ly,p,m:ly.__ns.a[j]}))});return out}
+ function find(q,k){if(!S.net)return[];q=lo(String(q||'').trim());k=k||K;const H=new Map(),add=(key,h)=>{const o=H.get(key);if(!o||h.sc<o.sc)H.set(key,h)};
+  const N=S.net.nodes,L=S.net.links;
+  if(k!=='l'&&k!=='fac')N.forEach((n,i)=>{let s=sc(n.id,q);if(s>2&&q.length>=2&&lo(n.blk).includes(q))s=4;if(s<9||(!q&&n.type>0&&k==='n'))add('n'+i,{t:'n',i,id:n.id,kind:nKind(n),sub:n.blk?'블록 '+n.blk:'',sc:s})});
+  if(k!=='n'&&k!=='fac')L.forEach((l,i)=>{const m=mg(l);let s=Math.min(sc(l.id,q),sc(m,q));if(s<9)add('l'+i,{t:'l',i,id:l.id,kind:lKind(l),sub:[m&&m!==l.id?'관리번호 '+m:'',l.dia?'D'+Math.round(l.dia):'',l.kind,l.year?l.year+'년':''].filter(Boolean).join(' · '),sc:s})});
+  if(k==='all'||k==='fac'){
+   (S.fac||[]).forEach(f=>{const nm=SYML[f.s]||f.s,el=f.t==='n'?N[f.i]:L[f.i];if(!el)return;if(!q&&f.s==='관말')return;
+    let s=q?Math.min(sc(el.id,q),lo(nm).includes(q)||lo(f.s).includes(q)?1.5:9):3;if(s>=9)return;
+    const sub=f.t==='l'?[mg(el)&&mg(el)!==el.id?'관리번호 '+mg(el):'',el.dia?'D'+Math.round(el.dia):''].filter(Boolean).join(' · '):(el.blk?'블록 '+el.blk:'');
+    add(f.t+f.i,{t:f.t,i:f.i,id:el.id,kind:nm,sym:f.s,sub,sc:s})});
+   if(q||k==='fac')pts().forEach(({k:r,ly,p,m})=>{const nm=LYN[r]||ly.name;let s=q?Math.min(sc(m.id,q),m.txt.includes(q)?2.5:9,lo(nm).includes(q)?1.5:9):3;if(s>=9)return;
+    add('p'+r+p.attr.__i,{t:'p',x:p.x,y:p.y,id:m.id,kind:nm,sym:LYS[r]||'',sub:ly.name,sc:s})})}
+  const col=new Intl.Collator('ko',{numeric:true});
+  return [...H.values()].sort((a,b)=>a.sc-b.sc||col.compare(String(a.id),String(b.id)))}
+ // 번호가 꼭 하나만 맞으면 바로 이동할 대상
+ function exact(q){if(!S.net)return null;const h=find(q,'all').filter(x=>x.sc===0);return h.length===1?h[0]:null}
+ function go(h){if(!h)return;if(h.t==='p'){zoomTo([h.x],[h.y]);T.addr={x:h.x,y:h.y,t:h.kind+' '+h.id};pinLoop();toast('📍 '+h.kind+' '+h.id);return}
+  if(window.__gw29&&window.__gw29.go)window.__gw29.go(h.t,h.i);else focusEl(h.t,h.i)}
+ function icon(h){const u=h.sym&&SYM[h.sym];return u?`<img src="${u}" alt="" width="16" height="16" style="flex:none">`:`<span class="ns-ic ns-${h.t}" aria-hidden="true"></span>`}
+ function html(){return `<div class="ad-r"><input id="nsQ" type="text" placeholder="시설물 이름·종류, 관로번호(관리번호), 절점번호 (예: 배수지, PL05232, J-120)" autocomplete="off"><button type="button" class="ad-b ad-p" id="nsGo">찾기</button></div>
+  <div class="ad-r" style="margin-top:6px"><span class="ad-t" id="nsK">${KN.map(([v,t])=>`<button type="button" data-nsk="${v}"${v===K?' class="on"':''}>${t}</button>`).join('')}</span><span id="nsN" class="ad-n" style="margin-left:auto"></span></div>
+  <div id="nsList" class="ad-l" style="margin-top:6px;max-height:300px"></div>
+  <div class="ad-r" style="margin-top:6px"><button type="button" class="ad-b" id="nsAll" title="찾은 절점·관로를 지도에 모두 강조">🗺 모두 지도에 표시</button><span class="ad-n">번호 일부만 넣어도 됩니다 · 빈칸에 [시설물]을 누르면 시설물 전체 목록</span></div>`}
+ function run(){const L=$('nsList');if(!L)return;const q=$('nsQ').value.trim();
+  if(!S.net){L.innerHTML='<p class="ad-n" style="padding:6px">관망을 먼저 여세요. (주소는 [우편번호 창]·[직접 검색] 탭에서 찾습니다)</p>';$('nsN').textContent='';last=[];return}
+  if(!q&&K!=='fac'){L.innerHTML='<p class="ad-n" style="padding:6px">시설물 이름·종류(배수지·가압장·밸브·소화전…), 관로번호, 절점번호를 넣으세요.</p>';$('nsN').textContent='';last=[];return}
+  last=find(q,K);const MX=300,cnt=c=>c.toLocaleString();$('nsN').textContent=last.length?`${cnt(last.length)}건${last.length>MX?` · 앞 ${MX}건만 표시`:''}`:'';
+  if(!last.length){L.innerHTML=`<p class="ad-n" style="padding:6px">관망에서 "${esc(q)}"와 맞는 것이 없습니다. 주소라면 [직접 검색] 탭을 쓰세요.</p>`;return}
+  L.innerHTML=last.slice(0,MX).map((h,j)=>`<button type="button" data-nsi="${j}" style="display:flex;gap:6px;align-items:center">${icon(h)}<span style="min-width:0;flex:1"><b>${esc(h.id)}</b> <small>${esc(h.kind)}</small>${h.sub?`<br><small>${esc(h.sub)}</small>`:''}</span></button>`).join('');
+  L.querySelectorAll('[data-nsi]').forEach(b=>b.onclick=()=>{L.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));b.classList.add('on');go(last[+b.dataset.nsi])});
+  if(last.length===1)go(last[0])}
+ function all(){const n=[],l=[],p=[];last.forEach(h=>h.t==='n'?n.push(h.i):h.t==='l'?l.push(h.i):p.push(h));if(!n.length&&!l.length){if(p.length){zoomTo(p.map(h=>h.x),p.map(h=>h.y));toast(`시설물 점 ${p.length}곳이 보이도록 옮겼습니다.`)}return}
+  if(window.__gw29)window.__gw29.goAll({n,l});else{S.hl={nodes:n,links:l,net:null};requestDraw()}}
+ function bind(){$('nsGo').onclick=run;$('nsQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing)run()});
+  let tm=0;$('nsQ').addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(run,250)});
+  document.querySelectorAll('[data-nsk]').forEach(b=>b.onclick=()=>{K=b.dataset.nsk;lsSet('gw-nsk',K);document.querySelectorAll('[data-nsk]').forEach(x=>x.classList.toggle('on',x===b));run()});
+  $('nsAll').onclick=all}
+ const st=document.createElement('style');st.textContent=`#gwAd .ns-ic{flex:none;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center}#gwAd .ns-n::before{content:'';width:8px;height:8px;border-radius:9999px;background:#2563eb;border:1px solid #fff;box-shadow:0 0 0 1px #2563eb}#gwAd .ns-l::before{content:'';width:14px;height:3px;border-radius:2px;background:#0f766e}#gwAd .ns-p::before{content:'';width:8px;height:8px;background:#7c3aed}#gwAd .ad-l button.on{background:var(--c-on);box-shadow:inset 3px 0 0 var(--c-ac)}`;document.head.appendChild(st);
+ return{find,exact,go,html,run,bind,all}})();
+
 /* ── 다음(카카오) 주소 검색 ── */
 const KK={key:lsGet('gw-kk')||'',kt:lsGet('gw-kkt')||'js',sdk:null,pc:null,hist:(()=>{try{return JSON.parse(lsGet('gw-kkh')||'[]')}catch(e){return[]}})()};
 const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>{s.remove();no(new Error('load'))};document.head.appendChild(s)});
@@ -3583,12 +3636,13 @@ const st=document.createElement('style');st.textContent=`#gpTitle .tt{min-width:
 #gwAd .ad-c{border:1px solid #93c5fd;background:var(--c-on);border-radius:4px;padding:8px;font-size:12px}#gwAd .ad-c table{width:100%;margin-top:4px}#gwAd .ad-c td{padding:1px 4px}#gwAd .ad-c td:first-child{color:var(--c-tx2);width:92px}
 #gwAd .ad-t{display:inline-flex;gap:2px;background:var(--c-ch);border:1px solid var(--c-bd);border-radius:3px;padding:2px}#gwAd .ad-t button{padding:2px 10px;border-radius:2px;font-size:12px;color:var(--c-tx)}#gwAd .ad-t button.on{background:var(--c-pn);box-shadow:0 0 0 1px var(--c-bd);font-weight:700}
 #gwAd details{border:1px dashed var(--c-bd);padding:4px 8px;border-radius:3px}#gwAd summary{cursor:pointer;font-weight:600}`;document.head.appendChild(st);
-function adEl(){let w=$('gwAd');if(w)return w;w=document.createElement('div');w.id='gwAd';w.className='gw hidden';w.setAttribute('role','dialog');w.setAttribute('aria-label','다음 주소 검색');
- w.innerHTML=`<div class="gw-h"><span class="gw-t">📍 다음(카카오) 주소 검색</span><button type="button" class="gw-x" aria-label="닫기">✕</button></div><div class="gw-b">
+function adEl(){let w=$('gwAd');if(w)return w;w=document.createElement('div');w.id='gwAd';w.className='gw hidden';w.setAttribute('role','dialog');w.setAttribute('aria-label','주소·관망 찾기');
+ w.innerHTML=`<div class="gw-h"><span class="gw-t">📍 주소·관망 찾기</span><button type="button" class="gw-x" aria-label="닫기">✕</button></div><div class="gw-b">
  <details id="adKeyBox"><summary>🔑 카카오 키 설정 <span id="adKeySt" class="ad-n"></span></summary>
   <div class="ad-r" style="margin-top:6px"><select id="adKt" aria-label="키 종류"><option value="js">JavaScript 키</option><option value="rest">REST API 키</option></select><input id="adKey" type="password" placeholder="카카오 앱 키 붙여넣기" autocomplete="off"><button type="button" class="ad-b ad-p" id="adKeySave">저장</button></div>
   <p class="ad-n" style="margin-top:4px">카카오 디벨로퍼스 → 내 애플리케이션 → 앱 키에서 복사합니다. 키는 이 PC 브라우저에만 저장되고 파일에는 들어가지 않습니다.<br>· <b>JavaScript 키</b>: [플랫폼 → Web]에 이 앱을 여는 주소(예: https://xhahr30-ops.github.io) 등록 필요<br>· <b>REST API 키</b>: 내 PC에서 HTML 파일로 바로 열어 쓸 때</p></details>
- <div class="ad-r"><span class="ad-t"><button type="button" data-adt="pc" class="on">우편번호 창</button><button type="button" data-adt="kw">직접 검색</button></span><span class="ad-n" style="margin-left:auto">결과를 고르면 지도가 그 위치로 이동합니다</span></div>
+ <div class="ad-r"><span class="ad-t"><button type="button" data-adt="net">관망 찾기</button><button type="button" data-adt="pc" class="on">우편번호 창</button><button type="button" data-adt="kw">직접 검색</button></span><span class="ad-n" style="margin-left:auto">결과를 고르면 지도가 그 위치로 이동합니다</span></div>
+ <div id="adNetW" class="hidden">${NS.html()}</div>
  <div id="adPcW"><div class="ad-pc" id="adPc"><p class="ad-n" style="padding:10px">다음 우편번호 창을 불러오는 중…</p></div></div>
  <div id="adKwW" class="hidden"><div class="ad-r"><input id="adQ" type="text" placeholder="도로명·지번 주소 또는 장소명 (예: 포항시 남구 대잠동 1000)" autocomplete="off"><button type="button" class="ad-b ad-p" id="adGo">검색</button></div><div id="adList" class="ad-l" style="margin-top:6px"></div></div>
  <div id="adRes"></div>
@@ -3599,10 +3653,10 @@ function adEl(){let w=$('gwAd');if(w)return w;w=document.createElement('div');w.
  w.querySelectorAll('[data-adt]').forEach(b=>b.onclick=()=>adTab(b.dataset.adt));
  $('adKt').value=KK.kt;$('adKey').value=KK.key;keySt();
  $('adKeySave').onclick=()=>{KK.key=$('adKey').value.trim();KK.kt=$('adKt').value;KK.sdk=null;lsSet('gw-kk',KK.key);lsSet('gw-kkt',KK.kt);keySt();toast(KK.key?'카카오 키를 저장했습니다.':'카카오 키를 지웠습니다.');if(KK.key)$('adKeyBox').open=false};
- $('adGo').onclick=()=>kwSearch($('adQ').value.trim());$('adQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing)kwSearch($('adQ').value.trim())});
+ NS.bind();$('adGo').onclick=()=>kwSearch($('adQ').value.trim());$('adQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing)kwSearch($('adQ').value.trim())});
  return w}
 function keySt(){const s=$('adKeySt');if(s)s.textContent=KK.key?`· ${KK.kt==='js'?'JavaScript':'REST API'} 키 저장됨`:'· 키 없음 (좌표 변환에 필요)';const b=$('adKeyBox');if(b&&!KK.key)b.open=true}
-function adTab(t){document.querySelectorAll('[data-adt]').forEach(b=>b.classList.toggle('on',b.dataset.adt===t));$('adPcW').classList.toggle('hidden',t!=='pc');$('adKwW').classList.toggle('hidden',t!=='kw');lsSet('gw-adt',t);if(t==='pc')pcEmbed();else setTimeout(()=>$('adQ').focus(),20)}
+function adTab(t){document.querySelectorAll('[data-adt]').forEach(b=>b.classList.toggle('on',b.dataset.adt===t));$('adPcW').classList.toggle('hidden',t!=='pc');$('adKwW').classList.toggle('hidden',t!=='kw');$('adNetW').classList.toggle('hidden',t!=='net');lsSet('gw-adt',t);{const kb=$('adKeyBox');if(kb)kb.open=t!=='net'&&!KK.key}if(t==='pc')pcEmbed();else if(t==='net'){NS.run();setTimeout(()=>$('nsQ').focus(),20)}else setTimeout(()=>$('adQ').focus(),20)}
 function pcEmbed(){const box=$('adPc');if(KK.pc==='ok'&&box.dataset.on)return;
  loadJs('https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js').then(()=>{if(!window.daum||!daum.Postcode)throw 0;KK.pc='ok';box.innerHTML='';box.dataset.on='1';
   new daum.Postcode({width:'100%',height:'100%',animation:false,oncomplete:d=>{const road=d.roadAddress||'',jib=d.jibunAddress||d.autoJibunAddress||'',a=d.userSelectedType==='J'?(jib||road):(road||jib||d.address);
@@ -3627,12 +3681,12 @@ async function kwSearch(q){if(!q)return;const L=$('adList');if(!KK.key){if($('vk
  if(!r.length){L.innerHTML='<p class="ad-n" style="padding:6px">검색 결과가 없습니다. 시·군·구부터 넣어 보세요.</p>';return}
  L.innerHTML=r.map((x,i)=>`<button type="button" data-adk="${i}"><b>${esc(x.name)}</b><br><small>${esc([x.road,x.jibun].filter((v,j,a)=>v&&a.indexOf(v)===j&&v!==x.name).join(' · ')||' ')}</small></button>`).join('');
  L.querySelectorAll('[data-adk]').forEach(b=>b.onclick=()=>pick(r[+b.dataset.adk]));if(r.length===1)pick(r[0])}
-function addrOpen(q){const w=adEl();w.classList.remove('hidden');w.style.zIndex=++WS.z+200;keySt();histUi();if(q){adTab('kw');$('adQ').value=q;kwSearch(q)}else adTab(lsGet('gw-adt')||'pc')}
-window.__gwAddr={open:addrOpen,geocode,goLL};
+function addrOpen(q,tab){const w=adEl();w.classList.remove('hidden');w.style.zIndex=++WS.z+200;keySt();histUi();if(tab==='net'||(q&&NS.find(q,'all').length)){$('nsQ').value=q||'';adTab('net')}else if(q){adTab('kw');$('adQ').value=q;kwSearch(q)}else adTab(lsGet('gw-adt')||'pc')}
+window.__gwAddr={open:addrOpen,geocode,goLL,NS};
 
 /* ── 검색창(절점·관로 ID 또는 주소): 카카오 키가 있으면 카카오로 ── */
-$('gpQ').placeholder='절점·관로 ID 또는 주소·장소 검색…';
-$('gpQ').onkeydown=e=>{if(e.key!=='Enter'||e.isComposing)return;const q=$('gpQ').value.trim();if(!q)return;if(S.net){let i=findNode(q);if(i>=0){focusEl('n',i);return}i=findLink(q);if(i>=0){focusEl('l',i);return}}
+$('gpQ').placeholder='주소·시설물·관로번호·절점번호 찾기…';
+$('gpQ').onkeydown=e=>{if(e.key!=='Enter'||e.isComposing)return;const q=$('gpQ').value.trim();if(!q)return;if(S.net){const one=NS.exact(q);if(one){NS.go(one);return}if(NS.find(q,'all').length){addrOpen(q,'net');return}}
  if(KK.key){addrOpen(q);return}if($('vkey').value.trim()&&S.net){addrSearch(q);return}addrOpen(q)};
 
 /* ── 리본·제목줄·보고서형 화면에 버튼 추가 ── */
@@ -3644,7 +3698,8 @@ RIB.file=()=>gg('파일',gb('newNet','fnew','새 관망',{big:1,tip:'빈 관망�
 const _rt=RIB.tool;
 RIB.tool=()=>_rt().replace(/(<button type="button" class="rb-b" data-rb="addr">)/,`<button type="button" class="rb-b" data-rb="daum" title="다음 우편번호 창·카카오로 주소를 찾아 지도 이동">${ico('daum',15)}<span>다음 주소 검색</span></button>$1`);
 const XA={newNet,saveAs:()=>saveAs(),saveInp:()=>saveNow(),newApp,lockNow:()=>window.gwLock&&window.gwLock(),daum:()=>addrOpen($('rbAddr')&&$('rbAddr').value.trim()||''),
- open:()=>{if(canFSA())pickOpen();else $('fInp').click()},addr:()=>{const q=$('rbAddr').value.trim();if(KK.key||!$('vkey').value.trim())addrOpen(q);else addrSearch(q)}};
+ open:()=>{if(canFSA())pickOpen();else $('fInp').click()},addr:()=>{const q=$('rbAddr').value.trim();if(S.net&&q){const one=NS.exact(q);if(one){NS.go(one);return}if(NS.find(q,'all').length){addrOpen(q,'net');return}}if(!q||KK.key||!$('vkey').value.trim())addrOpen(q);else addrSearch(q)}};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing&&e.target&&e.target.id==='rbAddr'){e.preventDefault();XA.addr()}});
 const _ra=rbAct;rbAct=function(a,btn){if(XA[a]){XA[a](btn);return}return _ra.apply(this,arguments)};
 const _gpRib=gpRib;gpRib=function(t){_gpRib.apply(this,arguments);const s=$('rbAutoLk');if(s){s.value=String(window.gwAutoLockGet?window.gwAutoLockGet():0);s.onchange=()=>{window.gwAutoLockSet&&window.gwAutoLockSet(+s.value);toast(+s.value?`${s.value}분 동안 손대지 않으면 자동으로 잠급니다.`:'자동 잠금을 껐습니다.')};s.onclick=e=>e.stopPropagation()}};
 try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
