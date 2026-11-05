@@ -9305,7 +9305,16 @@ function lqWtRender(){const el=$('lqWtBox');if(!el)return;const W=LQ.cfg.w,on=k=
 function lqWtApply(){LQ.cfg.wv=2;lqSaveCfg();LQ.rkKey='';try{lqCfgUi()}catch(_){}lqWtRender();try{if($('lqcBox')&&$('lqcBox').open)lqcRender()}catch(_){}lrRefresh()}
 /* ---- 📄 누수 예측 분석 보고서 (B안: A4 인쇄·PDF + 엑셀, 2026-11-05) ----
  고른 소블록 하나의 결과를 모음. 관리번호·소블록·절점 번호만 쓰고 고객 이름·주소·연락처는 넣지 않음 */
-async function lqRepMap(){try{if(!map||typeof mapShotBase!=='function')return'';const B=await mapShotBase([],k=>0,null,null,{dom:true}),secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));mapShotDeco(B,secret);return B.cv.toDataURL('image/jpeg',.85)}catch(e){console.warn('보고서 지도',e);return''}}
+/* 삽도: 해당 소블록만 보이게(2026-11-05) — 소블록 경계(②)로 맞춰 확대, 경계 밖은 흐리게, 경계선 진하게. 경계가 없으면 준비 파일 절점 범위 */
+function lqRepPoly(nm){try{if(typeof poly==='undefined'||!poly||!poly.features)return null;const fld=$('blkField').value;return poly.features.find(g=>String((g.properties||{})[fld]??'').trim()===String(nm).trim())||null}catch(_){return null}}
+async function lqRepMap(nm){try{if(!map||typeof mapShotBase!=='function')return'';const pg=lqRepPoly(nm),b=lqPB(nm),c0=map.getCenter(),z0=map.getZoom();
+  let bd=null;if(pg)bd=L.geoJSON(pg).getBounds();else if(b){bd=L.latLngBounds(b.ids.map((_,i)=>[b.lat[i],b.lng[i]]))}
+  if(bd&&bd.isValid()){map.fitBounds(bd.pad(.06),{animate:false});await new Promise(r=>setTimeout(r,1600))}
+  const B=await mapShotBase([],k=>0,null,null,{dom:true}),secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));
+  if(pg){const g=B.g,k=B.k,rings=[];const add=c=>rings.push(c.map(([x,y])=>{const p=map.latLngToContainerPoint([y,x]);return[p.x*k,p.y*k]}));const G=pg.geometry;(G.type==='Polygon'?[G.coordinates]:G.type==='MultiPolygon'?G.coordinates:[]).forEach(P=>P.forEach(add));
+   g.save();g.beginPath();g.rect(0,0,B.W,B.Hm);rings.forEach(r=>{r.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()});g.fillStyle='rgba(255,255,255,.78)';g.fill('evenodd');
+   g.beginPath();rings.forEach(r=>{r.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()});g.lineWidth=3*k;g.strokeStyle='#4338ca';g.stroke();g.restore()}
+  mapShotDeco(B,secret);const url=B.cv.toDataURL('image/jpeg',.85);try{map.setView(c0,z0,{animate:false})}catch(_){}return url}catch(e){console.warn('보고서 지도',e);return''}}
 function lqRepData(nm){const a=lqAnalyze(nm),b=lqPB(nm),D=LQ.data.get(nm),o={nm,at:fmtDT(Date.now()),a,b};
  o.from=a&&a.days.length?fmtD(a.days[0].ts):'';o.to=a&&a.days.length?fmtD(a.days[a.days.length-1].ts):'';o.np=D&&D.P?Object.keys(D.P).length:0;
  try{o.lv=lqLeakVol(nm)}catch(_){o.lv={err:'계산 못 함'}}try{o.df=b?lqDiffCalc(nm):{err:'준비 파일 없음'}}catch(_){o.df={err:'계산 못 함'}}try{o.bv=b?lqBvCalc(nm):{err:'준비 파일 없음'}}catch(_){o.bv={err:'계산 못 함'}}
@@ -9371,13 +9380,13 @@ function lqRpRender(){const el=$('lqRpBox');if(!el)return;const nm=LQ.sel||$('lq
 function lqRpSet(t){const nm=LQ.sel||$('lqBlk').value,C=LQ.cfg,k=t.dataset.k;if(!nm)return;C.rpS=C.rpS||{};const o=C.rpS[nm]=Object.assign({},lqRpCfg(nm).o);if(k==='b'||k==='a')o[k]=+t.value;else if(k==='d')o.d=t.value;else if(k==='G')C.rpG=+t.value;else if(k==='P')C.rpP=+t.value;lqSaveCfg();lqRpRender()}
 async function lqReport(){const nm=LQ.sel||$('lqBlk').value;if(!nm){alert('소블록을 먼저 고르세요.');return}
  const btn=$('lqRepBtn');if(btn){btn.disabled=true;btn.textContent='⏳ 보고서 만드는 중…'}
- try{lqShow(nm);await new Promise(r=>setTimeout(r,900));const img=await lqRepMap(),o=lqRepData(nm),f0=x=>isFinite(x)?Math.round(x).toLocaleString():'-',sg=v=>isFinite(v)?(v>=0?'+':'−')+Math.abs(v).toFixed(1):'-',e=esc;
+ try{lqShow(nm);await new Promise(r=>setTimeout(r,900));const img=await lqRepMap(nm),o=lqRepData(nm),f0=x=>isFinite(x)?Math.round(x).toLocaleString():'-',sg=v=>isFinite(v)?(v>=0?'+':'−')+Math.abs(v).toFixed(1):'-',e=esc;
   const lv=o.lv,df=o.df,bv=o.bv,mnf=o.a?lqMean(o.a.days.map(x=>x.mnf)):NaN,at=r=>attrOf(PIPE.feats[r.fi]);
   const kpi=(t,v,s,c)=>`<div class="k"><small>${t}</small><b${c?` class="${c}"`:''}>${v}</b>${s?`<i>${s}</i>`:''}</div>`;
   const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${h.length}">자료 없음</td></tr>`}</tbody></table>`;
   const sec=[];
   sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('측정 기간',o.from?`${o.from} ~ ${o.to}`:'확인 필요',`수압 지점 ${o.np}곳`)}${kpi('야간최소유량 평균',isFinite(mnf)?lqF(mnf)+' ㎥/h':'-',`${LQ.cfg.n0}~${LQ.cfg.n1}시`)}${kpi('추정 누수량',lv.err?'-':f0(lv.lk)+' ㎥/일',lv.err?esc(lv.err):`1년 ${f0(lv.lk*365)} ㎥`,'rd')}${kpi('누수율',lv.err?'-':lqF(lv.pct)+'%',lv.err?'':`공급 ${f0(lv.sup)} ㎥/일`,'rd')}${kpi('판정',o.a&&o.a.flag?'⚠ 누수 의심':'평상',o.a?`최근 ${LQ.cfg.rec}일 vs 평상`:'1분 자료 없음',o.a&&o.a.flag?'rd':'')}</div>`);
-  sec.push(`<h2>2. 지도</h2>${img?`<img class="map" src="${img}" alt="누수 예측 지도">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">빨간 원 = 누수 위치 가능성(클수록 큼) · 빨간 선·번호 = 점검 순위 관로 · 수압 지점 표시</p>`);
+  sec.push(`<h2>2. 지도</h2>${img?`<img class="map" src="${img}" alt="누수 예측 지도">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">소블록 ${e(nm)} 경계(파란 선) 안만 보이게 함 · 빨간 원 = 누수 위치 가능성(클수록 큼) · 빨간 선·번호 = 점검 순위 관로 · 수압 지점 표시</p>`);
   sec.push(`<h2>3. 추정 누수량 (야간최소유량 + 수압 보정)</h2>${lv.err?`<p class="n">${e(lv.err)}</p>`:T(['날짜','MNF ㎥/h','야간 수압 m','공급량 ㎥/일','추정 누수 ㎥/일','누수율'],lv.rows.map(r=>`<tr><td>${fmtD(r.ts)}</td><td>${lqF(r.mnf)}</td><td>${lqF(r.pn)}</td><td>${f0(r.sup)}</td><td><b>${f0(r.lk)}</b></td><td>${lqF(r.pct)}%</td></tr>`))+`<p class="n">야간 정상 사용 = 수용가 ${lv.cn.toLocaleString()}곳 × ${lv.nu} L/h · 수압 지수 N1 ${lv.N1} · 수압 기준 ${e(lv.pk||'모든 지점 평균')} · 야간 사용·N1은 확인 필요</p>`}`);
   sec.push(`<h2>4. 실측 − 해석 수압 차이</h2>${df.err?`<p class="n">${e(df.err)}</p>`:T(['지점','표고 차(대장−모델)',...df.hu.map(h=>h+'시 실측/해석'),'평균 차이 m','공통 뺀 차이'],df.rows.map(r=>`<tr><td>${e(lqSnm(r.s.k))}${r.s.inl?' (유입점)':''}</td><td>${sg(r.s.zd)}</td>${df.hu.map(h=>`<td>${lqF(r.h[h].m)} / ${lqF(r.h[h].md)}</td>`).join('')}<td>${sg(r.d)}</td><td class="${!r.s.inl&&r.rel<=-3?'rd':''}"><b>${r.s.inl?'-':sg(r.rel)}</b></td></tr>`))+`<p class="n">공통 차이 ${sg(df.cm)}m는 모든 지점이 함께 다른 몫(배수지 수위·표고 기준)으로 봄 · 공통 뺀 차이 −3m 이하 = 그 둘레 손실 의심</p>`}`);
   const loc=o.loc;sec.push(`<h2>5. 점검 순위 관로 (상위 ${Math.min(10,o.R.length)})</h2>${loc&&loc.flat?'<p class="n rd">⚠ 위치 근거 부족: 아래 순위는 사실상 파손 위험 점수 순입니다.</p>':''}${T(['순위','관리번호','재질·관경','연수','이력','위험 점수',...(loc&&loc.w?['위치']:[])],o.R.slice(0,10).map((r,j)=>{const x=at(r),f=PIPE.feats[r.fi];return`<tr><td>${j+1}</td><td>${e(r.id)}</td><td>${e(x.mat)}${x.dia!=null?' '+x.dia:''}</td><td>${x.age??'-'}</td><td>${f._rkn||0}${r.un?' 🔴'+r.un:''}</td><td><b>${r.rk}</b></td>${loc&&loc.w?`<td>${Math.round(r.lp*100)}</td>`:''}</tr>`}))}<p class="n">순위 = ${loc&&loc.w?`위치 가능성 ${o.wl}% + 파손 위험 ${100-o.wl}%`:'파손 위험 점수'} · 🔴 미수리 누수탐사 관로가 맨 위</p>`);
@@ -9389,7 +9398,7 @@ async function lqReport(){const nm=LQ.sel||$('lqBlk').value;if(!nm){alert('소�
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
 .pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 10mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:14px 18px}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.9;font-size:11.5px}
-main{padding:4px 16px}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}
+main{padding:4px 16px}section{break-inside:avoid;page-break-inside:avoid}section.long{break-inside:auto;page-break-inside:auto}thead{display:table-header-group}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}
 .kp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.k{border:1px solid #e2e8f0;border-radius:10px;padding:6px 8px}.k small{display:block;color:#64748b;font-size:10px}.k b{font-size:14px}.k i{display:block;font-style:normal;color:#64748b;font-size:9.5px}
 table{border-collapse:collapse;width:100%;font-size:10.5px;break-inside:auto}th{background:#eef2ff;color:#3730a3;text-align:left}th,td{border:1px solid #e2e8f0;padding:3px 5px;vertical-align:top}tr{break-inside:avoid}tr.off{opacity:.5}
 .rd{color:#b91c1c}.n{color:#64748b;font-size:10px;margin:3px 0}.map{width:100%;border:1px solid #e2e8f0;border-radius:8px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -9398,7 +9407,7 @@ footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#6474
 @media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:700px){.kp{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}</style></head><body>
 <div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button><button onclick="close()">닫기</button></div>
-<div class="pg"><header><h1>💧 누수 지점 예측 분석 보고서 · ${e(nm)}</h1><p>스마트 물길주소 ②-4 · 작성 ${o.at} · 만든이: 구병순</p></header><main>${sec.join('\n')}
+<div class="pg"><header><h1>💧 누수 지점 예측 분석 보고서 · ${e(nm)}</h1><p>스마트 물길주소 ②-4 · 작성 ${o.at} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section${(x.match(/<tr/g)||[]).length>22?' class="long"':''}>${x}</section>`).join('\n')}
 <p class="n" style="margin-top:12px">이 보고서는 관리번호·소블록·절점 번호만 씁니다(고객 정보 없음). 숫자는 넣은 1분 자료·준비 파일·관로 자료에서 계산했고, 판단 기준값은 확인이 필요합니다. 현장 탐사 순서를 정하는 참고 자료입니다.</p></main>
 <footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
   const w=window.open('','lqReport','width=900,height=1000');if(!w){alert('팝업이 막혀 보고서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}w.document.open();w.document.write(html);w.document.close();LQ.rep=o}
