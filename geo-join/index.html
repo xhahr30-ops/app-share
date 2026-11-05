@@ -2712,7 +2712,7 @@ function buildPoly(){
  if(!used){$('shpMsg').textContent='좌표계를 판별하지 못했습니다(첫 좌표 '+pr.slice(0,2).join(', ')+'). 원본 좌표계를 직접 선택하세요.';return}
  $('crs').value=used;
  poly={type:'FeatureCollection',features:feats.map(f=>{const g=JSON.parse(JSON.stringify(f));g.geometry.coordinates=tf(g.geometry.coordinates,g.geometry.type,used);g.properties=g.properties||{};g.properties._bbox=turf.bbox(g);return g})};
- if(map){shpL.clearLayers();const gl=L.geoJSON(poly,{style:blkBase(),onEachFeature:(ft,l)=>l.bindPopup(Object.entries(ft.properties).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>'))});polyL=gl;shpL.addLayer(gl);blkHidApply();blkHaloSync();if(!vHold())map.fitBounds(gl.getBounds())}
+ if(map){shpL.clearLayers();const gl=L.geoJSON(poly,{style:blkBase(),onEachFeature:(ft,l)=>l.bindPopup(Object.entries(ft.properties).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>'))});polyL=gl;shpL.addLayer(gl);blkHidApply();blkHaloSync();if(!vHold()&&!(typeof BE!=='undefined'&&BE.noFit))map.fitBounds(gl.getBounds())}
  const keys=Object.keys(poly.features[0].properties).filter(k=>k!=='_bbox');
  $('blkField').innerHTML=keys.map(k=>`<option>${esc(k)}</option>`).join('');
  $('blkField').value=keys.find(k=>/^BLK_NM$/i.test(k))||keys.find(k=>/소블록|블록|BLK|NM|NAME/i.test(k))||keys[0]||'';
@@ -2722,7 +2722,7 @@ function buildPoly(){
 }
 $('crs').onchange=()=>{if(rawFC)buildPoly()};
 $('f2').onchange=async e=>{const f=e.target.files[0];if(!f)return;
- if(rawFC&&!$('bSaveBtns').hidden&&!confirm('저장된 소블록 경계를 이 파일로 전체 교체할까요?\n(바뀐 블록만 반영하려면 취소 후 ➕ 변경분 반영을 쓰세요. 이전 버전은 되돌리기용으로 1개 보관됩니다)')){e.target.value='';return}
+ if(rawFC&&!$('bSaveBtns').hidden&&!confirm('저장된 소블록 경계를 이 파일로 전체 교체할까요?\n(바뀐 블록만 반영하려면 취소 후 ➕ 변경분 반영을 쓰세요. 이전 버전은 되돌리기용으로 1개 보관됩니다)'+(BLK_HIST.slice(BLK_HIST.map(h=>/전체/.test(h.kind)).lastIndexOf(true)+1).some(h=>h.kind==='앱에서 경계 수정')?'\n\n⚠ 앱에서 고친 경계가 있습니다. 전체 교체하면 앱에서 고친 내용은 사라집니다.':''))){e.target.value='';return}
  if(rawFC){const sn=await blkSnap();if(sn)try{await IDB.set('blocks_prev',sn)}catch(_){}}
  const hadOld=!!rawFC;blkFile=f.name;
  if(typeof shp==='undefined'){$('shpMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.';return}
@@ -4198,6 +4198,8 @@ function diffPane(){if(!map||!map.createPane)return 'overlayPane';if(!map.getPan
 function diffClear(){DIFF.layers.forEach(l=>{try{map.removeLayer(l)}catch(_){}});DIFF.layers=[];const p=$('diffP');if(p)p.hidden=true;DIFF.apply=null}
 function diffOpen(title,html,sets,apply){diffClear();let p=$('diffP');
  if(!p){p=document.createElement('div');p.id='diffP';p.className='dfp np';p.setAttribute('role','dialog');document.body.appendChild(p)}
+ /* 지도 전체화면(브라우저 전체화면·mapfs)일 때는 그 안에 띄워야 보임 */
+ {const fsE=document.fullscreenElement||document.webkitFullscreenElement,mb=$('mapBox'),host=fsE&&fsE!==document.documentElement?fsE:mb&&mb.classList.contains('mapfs')?mb:document.body;if(p.parentNode!==host)host.appendChild(p)}
  p.innerHTML=`<div class="dfh"><b>${title}</b><button type="button" class="hbtn" id="dfX" title="닫기">✕</button></div><div class="dfb">${html}</div><div class="sbtns" style="justify-content:flex-end;margin-top:10px"><button type="button" class="btn ol" id="dfC">취소</button><button type="button" class="btn" id="dfA">✅ 적용</button></div>`;
  p.hidden=false;DIFF.apply=apply;$('dfX').onclick=$('dfC').onclick=diffClear;$('dfA').onclick=async()=>{const f=DIFF.apply;$('dfA').disabled=true;$('dfA').textContent='적용 중…';try{await f()}finally{diffClear()}};
  if(!map)return;const pn=diffPane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined;let bounds=null;
@@ -7445,11 +7447,11 @@ function feSet(on){FE.on=!!on;if(!map)return;FE.sel=-1;FE.drag=null;
  if(FE.on){if(typeof PH!=='undefined'&&PH.ed&&PH.ed.on&&typeof phEdSet==='function')phEdSet(false);if(typeof MK!=='undefined'&&MK.on)mkSet(false);
   if(typeof SHUT!=='undefined'&&(SHUT.pick||SHUT.mode)){SHUT.pick=false;SHUT.mode='';try{shutRender()}catch(_){}}map.closePopup()}
  else{feShow(null)}
- if(!FE.on){PE.drag=null;PE.draw=[];PE.v=null}
- FE.bar.hidden=!FE.on;FE.a.classList.toggle('on',FE.on);FE.a.setAttribute('aria-pressed',String(FE.on));map.getContainer().classList.toggle('feon',FE.on);feCrossSync();feUi();facDraw();try{peMarks();peDraw()}catch(_){}}
+ if(!FE.on){PE.drag=null;PE.draw=[];PE.v=null;BE.drag=null;BE.v=null;BE.sel=-1;BE.draft.clear();BE.undo=[]}
+ FE.bar.hidden=!FE.on;FE.a.classList.toggle('on',FE.on);FE.a.setAttribute('aria-pressed',String(FE.on));map.getContainer().classList.toggle('feon',FE.on);feCrossSync();feUi();facDraw();try{peMarks();peDraw();beDraw()}catch(_){}}
 window.feOpen=i=>{if(!FE.on)feSet(true);FE.sel=i;FE.tool='sel';feUi();facDraw()};
 function feCrossSync(){const on=FE.on&&FE.cross;FE.cx.hidden=!on;if(on)feCrossUpd();else if(!FE.drag)feShow(null)}
-function feCrossUpd(){if(FE.raf)return;FE.raf=requestAnimationFrame(()=>{FE.raf=0;if(!FE.on||!FE.cross)return;if(FE.obj==='pipe'){peCrossUpd();return}const sz=map.getSize(),s=feSnapAt(L.point(sz.x/2,sz.y/2));FE.last=s;feShow(s);feMsg(feSnapTxt(s))})}
+function feCrossUpd(){if(FE.raf)return;FE.raf=requestAnimationFrame(()=>{FE.raf=0;if(!FE.on||!FE.cross)return;if(FE.obj==='pipe'){peCrossUpd();return}if(FE.obj==='blk'){beCrossUpd();return}const sz=map.getSize(),s=feSnapAt(L.point(sz.x/2,sz.y/2));FE.last=s;feShow(s);feMsg(feSnapTxt(s))})}
 /* 선택한 시설 고치기 칸 */
 function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKindInfo(f.k),has=k=>P[k]!=null;
  const dia=has('소화전구경')?'소화전구경':'구경',typ=['밸브류형식','소화전형식','유량계형식','가압형식','형식'].find(has)||(I.sym==='hyd'?'소화전형식':FROT.has(I.sym)||I.sym==='gate'?'밸브류형식':I.sym==='meter'?'유량계형식':'형식');
@@ -7461,17 +7463,20 @@ function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKi
   ${feRotKind(i)?`<label>회전</label><span class="ferot"><input data-k="rotation" value="${esc(P.rotation??'')}" inputmode="decimal" style="width:64px">° <button type="button" data-e="pdir" title="가까운 관로 방향으로 (접합점이면 누를 때마다 다른 관로)">🧭 관로 방향</button><button type="button" data-e="r90">↻ 90°</button></span>`:''}</div>
   <div class="r"><button type="button" data-e="save" class="on">💾 저장</button>${P._추가?`<button type="button" data-e="rm" class="del">🗑 추가 취소</button>`:`<button type="button" data-e="dl" class="${P._삭제?'':'del'}">${P._삭제?'♻ 되살리기':'🗑 삭제 표시'}</button>`}${P._현장수정&&!P._추가?`<button type="button" data-e="orig" title="SHP 원래 값·위치로">↩ 원래대로</button>`:''}<button type="button" data-e="desel">닫기</button></div></div>`}
 function feUi(){if(!FE.bar)return;const b=FE.bar,n=FAC.feats.filter(f=>f.p&&(f.p._현장수정||f.p._추가)).length,ks=feKinds();if(!FE.addK||!ks.includes(FE.addK))FE.addK=ks.includes('SA200')?'SA200':ks[0]||'';
- const tabs=`<div class="r"><b>🛠 편집</b><button type="button" data-o="fac" class="${FE.obj==='fac'?'on':''}" aria-pressed="${FE.obj==='fac'}">🔧 시설물</button><button type="button" data-o="pipe" class="${FE.obj==='pipe'?'on':''}" aria-pressed="${FE.obj==='pipe'}">🚰 관로</button><button type="button" data-e="end">✕ 끝내기</button></div>`;
+ const tabs=`<div class="r"><b>🛠 편집</b><button type="button" data-o="fac" class="${FE.obj==='fac'?'on':''}" aria-pressed="${FE.obj==='fac'}">🔧 시설물</button><button type="button" data-o="pipe" class="${FE.obj==='pipe'?'on':''}" aria-pressed="${FE.obj==='pipe'}">🚰 관로</button><button type="button" data-o="blk" class="${FE.obj==='blk'?'on':''}" aria-pressed="${FE.obj==='blk'}">🗺️ 소블록</button><button type="button" data-e="end">✕ 끝내기</button></div>`;
  if(FE.obj==='pipe'){b.innerHTML=tabs+peUiHtml();if(FE.cross)feCrossUpd();return}
+ if(FE.obj==='blk'){b.innerHTML=tabs+beUiHtml();if(FE.cross)feCrossUpd();return}
  b.innerHTML=tabs+`<div class="r"><button type="button" data-t="sel" class="${FE.tool==='sel'?'on':''}" title="시설을 눌러 고르고, 고른 시설을 끌어 옮깁니다">✋ 고르기·옮기기</button><button type="button" data-t="add" class="${FE.tool==='add'?'on':''}">➕ 추가</button>${FE.tool==='add'?`<select data-e="addk" aria-label="추가할 시설 종류">${ks.map(k=>`<option value="${esc(k)}"${k===FE.addK?' selected':''}>${esc(facKindInfo(k).name)}</option>`).join('')}</select>`:''}</div>
  <div class="r"><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="관로 선 위에 자동으로 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${FE.cross?'on':''}" aria-pressed="${FE.cross}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${FE.cross?`<button type="button" data-e="place" class="on">📍 여기에 놓기</button>`:''}<button type="button" data-e="xls" title="현장에서 고친 시설 목록 (GIS 담당자 전달용)">📋 수정 목록<i${n?'':' hidden'}>${n}</i></button><button type="button" data-e="fill" title="회전값이 없는 밸브를 가까운 관로 방향으로 채우기">🧭 회전 채우기</button></div>
  <div class="fem hint">${FE.sel>=0?'':FE.tool==='add'?(FE.cross?'지도를 움직여 십자선을 놓을 자리에 맞추고 📍 여기에 놓기를 누르세요.':'지도에서 놓을 자리를 누르세요. 관로 가까이 누르면 관로 위에 붙습니다.'):(FE.cross?'시설을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 여기에 놓기를 누르세요.':'시설을 눌러 고르세요. 고른 시설은 끌어서 옮길 수 있습니다.')}</div>${FE.sel>=0?feFormHtml(FE.sel):''}`;
  if(FE.cross)feCrossUpd()}
 async function feAct(e,btn){const E=btn.dataset.e,T=btn.dataset.t;
- if(btn.dataset.o){FE.obj=btn.dataset.o;FE.sel=-1;FE.last=null;PE.sel=-1;PE.v=null;PE.draw=[];feShow(null);feUi();facDraw();peMarks();peDraw();return}
+ if(btn.dataset.o){if(FE.obj==='blk'&&btn.dataset.o!=='blk'&&BE.draft.size&&!confirm(`반영하지 않은 소블록 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 넘어갈까요?`))return;if(btn.dataset.o!=='blk'){BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null}
+  FE.obj=btn.dataset.o;FE.sel=-1;FE.last=null;PE.sel=-1;PE.v=null;PE.draw=[];feShow(null);feUi();facDraw();peMarks();peDraw();beDraw();return}
  if(FE.obj==='pipe'&&(btn.dataset.pe||btn.dataset.pt))return peAct(btn);
+ if(FE.obj==='blk'&&btn.dataset.be)return beAct(btn);
  if(T){FE.tool=T;FE.sel=-1;feUi();facDraw();return}
- if(E==='end')return feSet(false);
+ if(E==='end'){if(BE.draft.size&&!confirm(`반영하지 않은 소블록 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 끝낼까요?`))return;BE.draft.clear();BE.undo=[];return feSet(false)}
  if(E==='snap'){FE.snap=!FE.snap;feUi();return}
  if(E==='cross'){FE.cross=!FE.cross;feCrossSync();feUi();return}
  if(E==='place'){const s=FE.last||feSnapAt(L.point(map.getSize().x/2,map.getSize().y/2));if(FE.tool==='add')return feAdd(s);if(FE.sel<0){feMsg('먼저 옮길 시설을 눌러 고르세요.');return}return feMove(FE.sel,s)}
@@ -7502,7 +7507,7 @@ const feCp=i=>map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]);
 function feInit(){if(!map)return;if(!map.getPane('fePane')){const p=map.createPane('fePane');p.style.zIndex=445;p.style.pointerEvents='none'}
  const C=map.getContainer();
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn febtn np'),a=L.DomUtil.create('a','',d);a.href='#';a.textContent='🛠';FE.a=a;
-  a.title='🛠 편집: 시설물(옮기기·추가·삭제 표시·속성) · 상수관로(꼭짓점·나누기·새 관로·폐관 표시·속성)';a.setAttribute('role','button');a.setAttribute('aria-label','시설물 편집 모드');a.setAttribute('aria-pressed','false');
+  a.title='🛠 편집: 시설물(옮기기·추가·삭제 표시·속성) · 상수관로(꼭짓점·나누기·새 관로·폐관 표시·속성) · 소블록 경계(꼭짓점·이웃 함께)';a.setAttribute('role','button');a.setAttribute('aria-label','시설물 편집 모드');a.setAttribute('aria-pressed','false');
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);feSet(!FE.on)});return d}});
  map.addControl(new Ctl());
  const bar=L.DomUtil.create('div','phed febar np',C);bar.hidden=true;bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','시설물 편집');FE.bar=bar;
@@ -7517,18 +7522,21 @@ function feInit(){if(!map)return;if(!map.getPane('fePane')){const p=map.createPa
  C.addEventListener('click',e=>{if(!FE.on||skip(e.target))return;e.stopPropagation();e.preventDefault();if(Date.now()-FE.justDrag<400)return;
   const cp=map.mouseEventToContainerPoint(e);
   if(FE.obj==='pipe'){peClick(cp);return}
+  if(FE.obj==='blk'){beClick(cp);return}
   if(FE.tool==='add'){if(FE.cross){feMsg('십자선 켜짐: 지도를 움직여 맞춘 뒤 📍 여기에 놓기를 누르세요.');return}feAdd(feSnapAt(cp)).catch(er=>feMsg('<span class="c-rd">추가 실패: '+esc(er.message||er)+'</span>'));return}
   const i=facHitAt(cp);FE.sel=i;feUi();facDraw()},true);
  /* 고른 시설 끌어 옮기기 (마우스·손가락 공통) */
  C.addEventListener('pointerdown',e=>{if(FE.on&&FE.obj==='pipe'){if(skip(e.target)||e.button>0)return;if(peDown(e,map.mouseEventToContainerPoint(e)))e.stopPropagation();return}
+  if(FE.on&&FE.obj==='blk'){if(skip(e.target)||e.button>0)return;if(beDown(e,map.mouseEventToContainerPoint(e)))e.stopPropagation();return}
   if(!FE.on||FE.tool!=='sel'||FE.sel<0||skip(e.target)||e.button>0)return;const cp=map.mouseEventToContainerPoint(e),q=feCp(FE.sel);if(Math.hypot(cp.x-q.x,cp.y-q.y)>26)return;
   e.stopPropagation();const de=map.dragging.enabled();if(de)map.dragging.disable();FE.drag={id:e.pointerId,de,s:null,moved:false};map.closePopup()},true);
- window.addEventListener('pointermove',e=>{if(PE.drag){peMove(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;D.moved=true;D.s=feSnapAt(map.mouseEventToContainerPoint(e));feShow(D.s);feMsg(feSnapTxt(D.s))});
- const up=e=>{if(PE.drag){peUp(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;FE.drag=null;if(D.de)map.dragging.enable();FE.justDrag=Date.now();
+ window.addEventListener('pointermove',e=>{if(PE.drag){peMove(e);return}if(BE.drag){beMove(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;D.moved=true;D.s=feSnapAt(map.mouseEventToContainerPoint(e));feShow(D.s);feMsg(feSnapTxt(D.s))});
+ const up=e=>{if(PE.drag){peUp(e);return}if(BE.drag){beUp(e);return}const D=FE.drag;if(!D||e.pointerId!==D.id)return;FE.drag=null;if(D.de)map.dragging.enable();FE.justDrag=Date.now();
   if(e.type==='pointerup'&&D.moved&&D.s)feMove(FE.sel,D.s).catch(er=>feMsg('<span class="c-rd">옮기기 실패: '+esc(er.message||er)+'</span>'));if(!FE.cross)feShow(null)};
  window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
  document.addEventListener('keydown',e=>{if(!FE.on||e.target.matches('input,select,textarea'))return;
   if(FE.obj==='pipe'){if(e.key==='Escape'&&(PE.sel>=0||PE.draw.length)){PE.sel=-1;PE.v=null;PE.draw=[];feUi();peDraw()}else if((e.key==='Delete'||e.key==='Backspace')&&PE.v){e.preventDefault();peVDel()}return}
+  if(FE.obj==='blk'){if(e.key==='Escape'&&BE.sel>=0){BE.sel=-1;BE.v=null;feUi();beDraw()}else if((e.key==='Delete'||e.key==='Backspace')&&BE.v){e.preventDefault();beVDel()}else if((e.ctrlKey||e.metaKey)&&e.key==='z'&&BE.undo.length){e.preventDefault();BE.draft=BE.undo.pop();BE.v=null;feUi();beDraw()}return}
   if(e.key==='Escape'&&FE.sel>=0){FE.sel=-1;feUi();facDraw()}})}
 /* 편집 중 표시: 고른 시설 테두리, 현장 수정 보라 점, 삭제 표시 빨간 ✕ */
 function feMarks(g,by){if(!FE.on)return;g.save();
@@ -7973,6 +7981,124 @@ function peUp(e){const D=PE.drag;if(!D||e.pointerId!==D.id)return;PE.drag=null;i
  if(e.type==='pointerup'&&D.moved){FE.justDrag=Date.now();const g=peSegValves(D.parts[D.pi],D.vi);D.parts[D.pi]=g.p;PE.v={pi:D.pi,vi:g.vi};pedSetGeom(PE.sel,D.parts,(D.ins?'꼭짓점 추가':'꼭짓점 옮김')+(g.n?` · 선이 밸브 ${g.n}개에 붙음`:'')).catch(er=>feMsg('<span class="c-rd">저장 실패: '+esc(er.message||er)+'</span>'))}
  else if(!D.ins){PE.v=PE.v&&PE.v.pi===D.pi&&PE.v.vi===D.vi?null:{pi:D.pi,vi:D.vi};PE.tapAt=Date.now();feUi();peDraw()}else{PE.tapAt=Date.now();peDraw()}}
 window.peOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='pipe';PE.tool='sel';PE.sel=fi;PE.v=null;PE.draw=[];feUi();peMarks();peDraw()};
+/* ===================== 🗺️ 소블록 경계 앱에서 고치기 (🛠 편집 모드의 🗺️ 소블록 탭, 2026-11-05 A안) =====================
+ 고치는 동안은 BE.draft(블록 번호 → 새 좌표, WGS84)에만 담아 두고, ✔ 반영을 누르면 미리보기(바뀐 블록·블록이 바뀔 수용가 수) → 적용.
+ 적용 = 기존 변경분 반영과 같은 길(blkApply: 이전 버전 1개 보관 → ↶ 되돌리기, 이력, 수용가 다시 결합, 블록 바뀐 수용가 엑셀).
+ 이웃 블록과 같은 자리(0.3m 안)의 꼭짓점은 함께 움직여 틈·겹침이 생기지 않게 함(🔗 이웃 함께). 공유 = 기준자료 'blocks' 통째(자동 동기화면 20초 뒤 자동 올리기). */
+var BE={sel:-1,v:null,drag:null,draft:new Map(),undo:[],link:true,hL:null,tapAt:0,tm:0,raf:0};
+const BE_VHIT=16,BE_MHIT=13,BE_LINK=.3;
+const beOk=()=>!!(poly&&poly.features&&poly.features.length);
+const beName=fi=>{const f=poly&&poly.features[fi];if(!f)return '';return String(f.properties[$('blkField').value]??'').trim()||('블록 '+(fi+1))};
+const beCo=fi=>BE.draft.get(fi)||poly.features[fi].geometry.coordinates;
+/* 블록의 고리(바깥·구멍) 목록: 닫힌 좌표 배열 그대로 (첫 점 = 끝 점) */
+function beRings(fi,co){const g=poly.features[fi].geometry,c=co||beCo(fi);return g.type==='Polygon'?c:g.type==='MultiPolygon'?c.flat():[]}
+const beClone=c=>JSON.parse(JSON.stringify(c));
+function beEdit(fi){if(!BE.draft.has(fi))BE.draft.set(fi,beClone(poly.features[fi].geometry.coordinates));return BE.draft.get(fi)}
+const beM=(a,b)=>{const c=Math.cos(a[1]*Math.PI/180);return Math.hypot((a[0]-b[0])*111320*c,(a[1]-b[1])*110574)};
+/* c 자리(0.3m 안)에 있는 모든 블록의 꼭짓점 [{fi,r,vi}] — 이웃 함께 꺼짐이면 고른 블록 것만 */
+function beLinks(c,only){const L2=[],fs=poly.features,dg=BE_LINK/100000;
+ for(let fi=0;fi<fs.length;fi++){if(only!=null&&fi!==only)continue;const b=fs[fi].properties._bbox;if(b&&(c[0]<b[0]-dg*2||c[0]>b[2]+dg*2||c[1]<b[1]-dg||c[1]>b[3]+dg)&&!BE.draft.has(fi))continue;
+  beRings(fi).forEach((ring,r)=>{for(let vi=0;vi<ring.length-1;vi++)if(Math.abs(ring[vi][0]-c[0])<dg*2&&Math.abs(ring[vi][1]-c[1])<dg&&beM(ring[vi],c)<=BE_LINK)L2.push({fi,r,vi})})}
+ return L2}
+function beSetV(l,c){const ring=beRings(l.fi,beEdit(l.fi))[l.r];ring[l.vi]=[c[0],c[1]];if(l.vi===0)ring[ring.length-1]=[c[0],c[1]]}
+function bePush(){BE.undo.push(new Map([...BE.draft].map(([k,v])=>[k,beClone(v)])));if(BE.undo.length>50)BE.undo.shift()}
+/* 누른 자리의 블록 (안쪽) */
+function beHit(cp){if(!beOk())return -1;const ll=map.containerPointToLatLng(cp),x=ll.lng,y=ll.lat,pt=turf.point([x,y]);let best=-1,ba=Infinity;
+ poly.features.forEach((f,fi)=>{const b=f.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3])&&!BE.draft.has(fi))return;
+  try{if(turf.booleanPointInPolygon(pt,{type:'Feature',geometry:{type:f.geometry.type,coordinates:beCo(fi)}})){const a=(b[2]-b[0])*(b[3]-b[1]);if(a<ba){ba=a;best=fi}}}catch(_){}});return best}
+/* 놓을 자리: 다른 블록 꼭짓점 > 다른 블록 경계선 > 시설물(밸브 등) > 관로 선 (자석 켜짐일 때) */
+function beSnapAt(cp,ex){const ll=map.containerPointToLatLng(cp),q=[ll.lng,ll.lat];if(!FE.snap)return{lat:ll.lat,lng:ll.lng,raw:1};const m=feMpp(),exs=new Set((ex||[]).map(l=>l.fi+'|'+l.r+'|'+l.vi));
+ let bv=12*m,bvc=null,bvn='',be=10*m,bec=null,ben='';const c=Math.cos(ll.lat*Math.PI/180),kx=111320*c,ky=110574;
+ poly.features.forEach((f,fi)=>{const b=f.properties._bbox,dg=bv/100000;if(b&&(q[0]<b[0]-dg*2||q[0]>b[2]+dg*2||q[1]<b[1]-dg||q[1]>b[3]+dg)&&!BE.draft.has(fi))return;
+  beRings(fi).forEach((ring,r)=>{for(let vi=0;vi<ring.length-1;vi++){if(exs.has(fi+'|'+r+'|'+vi))continue;const d=beM(ring[vi],q);if(d<bv){bv=d;bvc=ring[vi];bvn=beName(fi)}}
+   for(let vi=1;vi<ring.length;vi++){const A=ring[vi-1],B=ring[vi];if(exs.has(fi+'|'+r+'|'+(vi-1))||exs.has(fi+'|'+r+'|'+(vi%(ring.length-1))))continue;
+    const bx=(B[0]-A[0])*kx,by=(B[1]-A[1])*ky,L2=bx*bx+by*by;if(!L2)continue;let t=((q[0]-A[0])*kx*bx+(q[1]-A[1])*ky*by)/L2;t=t<0?0:t>1?1:t;const d=Math.hypot((q[0]-A[0])*kx-t*bx,(q[1]-A[1])*ky-t*by);if(d<be){be=d;bec=[A[0]+t*(B[0]-A[0]),A[1]+t*(B[1]-A[1])];ben=beName(fi)}}})});
+ if(bvc)return{lat:bvc[1],lng:bvc[0],bv:bvn};if(bec)return{lat:bec[1],lng:bec[0],be:ben};
+ const s=peSnapAt(cp,-1,false);if(!s.raw)return s;return{lat:ll.lat,lng:ll.lng,raw:1}}
+function beSnapTxt(s){if(!s)return '';if(s.bv)return `🧲 ${esc(s.bv)} 경계 꼭짓점에 붙음`;if(s.be)return `🧲 ${esc(s.be)} 경계선에 붙음`;if(s.raw)return FE.snap?'붙을 경계·시설물·관로가 가까이 없습니다':'🧲 자석 꺼짐';return peSnapTxt(s)}
+function beLayers(){if(!BE.hL)BE.hL=L.layerGroup().addTo(map)}
+/* 고친 블록(주황 실선)·고른 블록 꼭짓점(흰 점, 이웃과 같이 쓰는 점은 파란 점)·선 가운데 작은 점 */
+function beDraw(){if(!map)return;beLayers();BE.hL.clearLayers();if(!FE.on||FE.obj!=='blk'||!beOk())return;const o={pane:'fePane',interactive:false};
+ for(const [fi,co] of BE.draft){const ty=poly.features[fi].geometry.type;L.geoJSON({type:ty,coordinates:co},{...o,style:{color:'#ea580c',weight:3,opacity:.95,fill:true,fillColor:'#fb923c',fillOpacity:.07}}).addTo(BE.hL)}
+ if(BE.sel<0||!poly.features[BE.sel])return;const rings=beRings(BE.sel);
+ rings.forEach(ring=>{const ll=ring.map(c=>[c[1],c[0]]);L.polyline(ll,{...o,color:'#facc15',weight:9,opacity:.5}).addTo(BE.hL);L.polyline(ll,{...o,color:'#f97316',weight:2.5,opacity:.95,dashArray:'6 4'}).addTo(BE.hL)});
+ const z=map.getZoom(),many=rings.reduce((s,r)=>s+r.length,0)>400&&z<16;
+ rings.forEach((ring,r)=>{if(!many)for(let vi=1;vi<ring.length;vi++){const a=ring[vi-1],b=ring[vi];L.circleMarker([(a[1]+b[1])/2,(a[0]+b[0])/2],{...o,radius:3.5,color:'#f97316',weight:1.2,fillColor:'#fff',fillOpacity:.75,dashArray:'2 2'}).addTo(BE.hL)}
+  for(let vi=0;vi<ring.length-1;vi++){const c=ring[vi],on=BE.v&&BE.v.r===r&&BE.v.vi===vi,sh=BE.link&&beShared(c);
+   L.circleMarker([c[1],c[0]],{...o,radius:on?7:5.5,color:on?'#dc2626':sh?'#2563eb':'#f97316',weight:on?3.5:2.2,fillColor:on?'#fecaca':sh?'#bfdbfe':'#fff',fillOpacity:1}).addTo(BE.hL)}})}
+const beShared=c=>beLinks(c).some(l=>l.fi!==BE.sel);
+function beUiHtml(){const ok=beOk(),cx=FE.cross,n=BE.draft.size;
+ const msg=!ok?'소블록 경계 자료가 없습니다. ① 소블록 경계에서 SHP를 먼저 올리세요.':BE.sel<0?'고칠 블록 안쪽을 누르세요.'+(n?` 고친 블록 <b>${n}</b>개는 ✔ 반영을 눌러야 저장됩니다.`:'')
+  :(cx?'꼭짓점을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘어납니다. 파란 점은 이웃 블록과 같이 쓰는 점이라 '+(BE.link?'이웃 경계도 함께 움직입니다.':'(🔗 꺼짐: 이 블록만 움직임)')+' 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
+ return `<div class="r"><button type="button" data-be="link" class="${BE.link?'on':''}" aria-pressed="${BE.link}" title="이웃 블록과 같은 자리의 꼭짓점을 함께 움직이기 (틈·겹침 방지)">🔗 이웃 함께 ${BE.link?'켜짐':'꺼짐'}</button><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="다른 블록 꼭짓점·경계선, 시설물, 관로에 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${cx?'on':''}" aria-pressed="${cx}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${cx&&BE.v?'<button type="button" data-be="place" class="on">📍 꼭짓점 여기로</button>':''}${BE.v?'<button type="button" data-be="vdel" class="del">✖ 꼭짓점 지우기</button>':''}</div>
+ <div class="r"><button type="button" data-be="apply" class="on"${n?'':' disabled'} title="바뀐 블록과 블록이 바뀔 수용가를 미리 보고 저장">✔ 반영${n?` (${n})`:''}</button><button type="button" data-be="back"${BE.undo.length?'':' disabled'} title="반영 전 마지막 한 동작 취소">↶ 한 단계</button><button type="button" data-be="drop"${n?'':' disabled'}>✕ 고친 것 버리기</button><button type="button" data-be="prev" title="반영한 경계를 바로 이전 버전으로">⏪ 이전 버전으로</button></div>
+ <div class="fem hint">${msg}</div>${BE.sel>=0&&ok?`<div class="fef"><div class="r"><b>🗺️ ${esc(beName(BE.sel))}</b>${BE.draft.has(BE.sel)?'<span class="feb">✏️ 고침 (반영 전)</span>':''}</div><div class="hint">꼭짓점 ${beRings(BE.sel).reduce((s,r)=>s+r.length-1,0)}개${BE.v?` · <b>고른 꼭짓점 ${BE.v.vi+1}번</b>`:''}</div><div class="r"><button type="button" data-be="desel">닫기</button></div></div>`:''}`}
+function beCrossUpd(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2);const ex=BE.v?beLinks(beRings(BE.sel)[BE.v.r][BE.v.vi],BE.link?null:BE.sel):[];const s=beSnapAt(cp,ex);FE.last=s;feShow(s.raw?null:s);feMsg(beSnapTxt(s))}
+function beClick(cp){if(Date.now()-BE.tapAt<400)return;BE.sel=beHit(cp);BE.v=null;feUi();beDraw()}
+function beDown(e,cp){if(BE.sel<0||!beOk())return false;const rings=beRings(BE.sel);let best=null,bd=BE_VHIT;
+ rings.forEach((ring,r)=>{for(let vi=0;vi<ring.length-1;vi++){const q=map.latLngToContainerPoint([ring[vi][1],ring[vi][0]]),d=Math.hypot(q.x-cp.x,q.y-cp.y);if(d<bd){bd=d;best={r,vi,ins:false}}}});
+ if(!best){let md=BE_MHIT;rings.forEach((ring,r)=>{for(let vi=1;vi<ring.length;vi++){const a=ring[vi-1],b=ring[vi],q=map.latLngToContainerPoint([(a[1]+b[1])/2,(a[0]+b[0])/2]),d=Math.hypot(q.x-cp.x,q.y-cp.y);if(d<md){md=d;best={r,vi,ins:true}}}})}
+ if(!best)return false;const de=map.dragging.enabled();if(de)map.dragging.disable();map.closePopup();BE.drag={...best,id:e.pointerId,de,moved:false,s:null,links:null};return true}
+/* 선 가운데에 꼭짓점 넣기 — 이웃 블록이 같은 선(양 끝 꼭짓점이 같고 붙어 있음)을 쓰면 거기에도 넣음 → 넣은 점들 [{fi,r,vi}] */
+function beInsert(r,vi){const ring=beRings(BE.sel,beEdit(BE.sel))[r],a=ring[vi-1],b=ring[vi],m=[(a[0]+b[0])/2,(a[1]+b[1])/2],res=[];
+ if(BE.link){const la=beLinks(a),lb=beLinks(b);for(const x of la){if(x.fi===BE.sel)continue;const n=beRings(x.fi)[x.r].length-1;
+   const y=lb.find(y=>y.fi===x.fi&&y.r===x.r&&((y.vi-x.vi+n)%n===1||(x.vi-y.vi+n)%n===1));if(!y)continue;const rg=beRings(x.fi,beEdit(x.fi))[x.r];
+   const at=(y.vi-x.vi+n)%n===1?x.vi+1:y.vi+1;rg.splice(at,0,[m[0],m[1]]);res.push({fi:x.fi,r:x.r,vi:at})}}
+ ring.splice(vi,0,[m[0],m[1]]);res.push({fi:BE.sel,r,vi});return res}
+function beMove(e){const D=BE.drag;if(!D||e.pointerId!==D.id)return;const cp=map.mouseEventToContainerPoint(e);
+ if(!D.moved){const ring=beRings(BE.sel)[D.r],c=D.ins?[(ring[D.vi-1][0]+ring[D.vi][0])/2,(ring[D.vi-1][1]+ring[D.vi][1])/2]:ring[D.vi],v0=map.latLngToContainerPoint([c[1],c[0]]);if(Math.hypot(v0.x-cp.x,v0.y-cp.y)<4)return;
+  D.moved=true;bePush();if(D.ins){D.links=beInsert(D.r,D.vi)}else D.links=beLinks(ring[D.vi],BE.link?null:BE.sel)}
+ const s=beSnapAt(cp,D.links);D.s=s;D.links.forEach(l=>beSetV(l,[s.lng,s.lat]));
+ if(!BE.raf)BE.raf=requestAnimationFrame(()=>{BE.raf=0;if(!BE.drag)return;beDraw();feShow(s.raw?null:s);const nb=new Set(D.links.map(l=>l.fi));nb.delete(BE.sel);feMsg((s.raw?'꼭짓점 옮기는 중':beSnapTxt(s))+(nb.size?` · 🔗 이웃 ${[...nb].map(beName).map(esc).join(', ')} 함께`:''))})}
+function beUp(e){const D=BE.drag;if(!D||e.pointerId!==D.id)return;BE.drag=null;if(D.de)map.dragging.enable();feShow(null);
+ if(e.type==='pointerup'&&D.moved){FE.justDrag=Date.now();BE.v={r:D.r,vi:D.vi};const nb=new Set(D.links.map(l=>l.fi));nb.delete(BE.sel);feUi();beDraw();feMsg(`${D.ins?'꼭짓점 추가':'꼭짓점 옮김'}${nb.size?` · 🔗 이웃 ${[...nb].map(beName).map(esc).join(', ')}도 함께`:''} · ✔ 반영을 눌러야 저장됩니다.`)}
+ else if(e.type==='pointerup'&&!D.ins){BE.v=BE.v&&BE.v.r===D.r&&BE.v.vi===D.vi?null:{r:D.r,vi:D.vi};BE.tapAt=Date.now();feUi();beDraw()}
+ else if(D.moved&&BE.undo.length){BE.draft=BE.undo.pop();beDraw()}else BE.tapAt=Date.now()}
+function bePlace(){if(BE.sel<0||!BE.v){feMsg('먼저 블록을 고르고 옮길 꼭짓점을 누르세요.');return}const sz=map.getSize(),s=FE.last||beSnapAt(L.point(sz.x/2,sz.y/2));
+ const c=beRings(BE.sel)[BE.v.r][BE.v.vi],ls=beLinks(c,BE.link?null:BE.sel);bePush();ls.forEach(l=>beSetV(l,[s.lng,s.lat]));feUi();beDraw();feMsg('📍 꼭짓점을 옮겼습니다. ✔ 반영을 눌러야 저장됩니다.')}
+function beVDel(){if(BE.sel<0||!BE.v)return;const c=beRings(BE.sel)[BE.v.r][BE.v.vi],ls=beLinks(c,BE.link?null:BE.sel);
+ if(ls.some(l=>beRings(l.fi)[l.r].length<=4)){feMsg('꼭짓점이 3개뿐인 경계라 지울 수 없습니다.');return}bePush();
+ ls.sort((a,b)=>b.vi-a.vi).forEach(l=>{const rg=beRings(l.fi,beEdit(l.fi))[l.r];rg.splice(l.vi,1);if(l.vi===0)rg[rg.length-1]=[rg[0][0],rg[0][1]]});BE.v=null;feUi();beDraw();feMsg('✖ 꼭짓점을 지웠습니다. ✔ 반영을 눌러야 저장됩니다.')}
+/* ✔ 반영: 바뀐 블록·꼬인 경계·블록이 바뀔 수용가 수 미리보기 → 적용 */
+function beApply(){const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.draft.get(fi))!==JSON.stringify(poly.features[fi].geometry.coordinates));
+ if(!ch.length){BE.draft.clear();BE.undo=[];feUi();beDraw();feMsg('바뀐 경계가 없습니다.');return}
+ const nf=fi=>({type:'Feature',properties:{},geometry:{type:poly.features[fi].geometry.type,coordinates:BE.draft.get(fi)}}),of=fi=>({type:'Feature',properties:{},geometry:poly.features[fi].geometry});
+ const kc=f=>{try{return turf.kinks(f).features.length}catch(_){return 0}},kink=ch.filter(fi=>kc(nf(fi))>kc(of(fi)));
+ let moved=0,tot=0;if(out.length){const bb=ch.map(fi=>turf.bbox({type:'FeatureCollection',features:[nf(fi),of(fi)]}));
+  const inF=(x,y,g)=>{try{return turf.booleanPointInPolygon([x,y],g)}catch(_){return false}};
+  for(const o of out){if(o['_위도']==='')continue;const x=+o['_경도'],y=+o['_위도'];let hit=false;for(const b of bb)if(x>=b[0]&&x<=b[2]&&y>=b[1]&&y<=b[3]){hit=true;break}if(!hit)continue;tot++;
+   const a=ch.find(fi=>inF(x,y,of(fi))),b=ch.find(fi=>inF(x,y,nf(fi)));if(a!==b)moved++}}
+ const area=fi=>{try{return turf.area(nf(fi))-turf.area(of(fi))}catch(_){return 0}};
+ const html=`<p style="margin:0 0 6px">앱에서 고친 소블록 경계 <b>${ch.length}개</b>를 저장합니다.</p>
+  <table class="dft"><tr><th>블록</th><th class="r">꼭짓점</th><th class="r">넓이 변화</th></tr>${ch.slice(0,30).map(fi=>{const n0=beRings(fi,poly.features[fi].geometry.coordinates).reduce((s,r)=>s+r.length-1,0),n1=beRings(fi).reduce((s,r)=>s+r.length-1,0),d=Math.round(area(fi));return `<tr><td>${esc(beName(fi))}${kink.includes(fi)?' <span class="c-rd">⚠ 꼬임</span>':''}</td><td class="r">${n0}→${n1}</td><td class="r">${d>0?'+':''}${d.toLocaleString()}㎡</td></tr>`}).join('')}</table>
+  ${kink.length?`<p class="c-rd" style="margin:6px 0 0">⚠ 고치면서 경계선이 새로 꼬인 블록 ${kink.length}개(${kink.map(beName).map(esc).join(', ')}): 수용가 결합이 틀릴 수 있으니 취소하고 꼭짓점을 고쳐 주세요.</p>`:''}
+  ${out.length?`<p style="margin:6px 0 0">블록이 바뀔 수용가(위치 기준) <b>${moved.toLocaleString()}</b>명 <small class="mute">(고친 블록 주변 ${tot.toLocaleString()}명 중)</small><br><small class="mute">부과량 Y열 소블록은 바뀌지 않습니다. 적용한 뒤 바뀐 수용가 목록 엑셀을 받을 수 있습니다.</small></p>`:''}
+  <div class="dleg"><span style="--c:#f59e0b">고친 경계</span><span style="--c:#94a3b8">원래 경계</span></div>
+  <p class="hint" style="margin:6px 0 0">적용하면 이전 버전 1개를 보관합니다(⏪ 이전 버전으로). ${typeof SH!=='undefined'&&SH.on()&&SH.cfg.auto?'자동 동기화가 켜져 있어 20초 뒤 공유 서버에 올립니다.':'직원에게 퍼뜨리려면 ☁️ 직원 공유 › ⏫ 기준자료 올리기를 누르세요.'}</p>`;
+ diffOpen('🗺️ 소블록 경계 수정 반영 미리보기',html,[[ch.map(of),'#94a3b8','6 6'],[ch.map(nf),'#f59e0b']],async()=>{
+  const names=ch.map(beName),merged=blkCur().map((f,fi)=>BE.draft.has(fi)?{...f,geometry:{type:f.geometry.type,coordinates:BE.draft.get(fi)}}:f);
+  BE.draft.clear();BE.undo=[];BE.v=null;const sel=BE.sel;
+  BE.noFit=true;try{await blkApply(merged,'앱에서 경계 수정','',{upd:ch.length})}finally{BE.noFit=false}BE.sel=sel<poly.features.length?sel:-1;
+  try{const c=turf.center({type:'FeatureCollection',features:ch.map(fi=>poly.features[fi])}).geometry.coordinates;chgAdd({k:'ref',mine:1,by:chgMe(),n:ch.length,id:names.slice(0,3).join(', ')+(names.length>3?` 외 ${names.length-3}`:''),tx:`소블록 경계 수정 ${ch.length}개 (${names.slice(0,3).join(', ')}${names.length>3?' …':''})`,ll:[c[1],c[0]]})}catch(_){}
+  beShareSoon();feUi();beDraw();feMsg(`✅ 경계 ${ch.length}개를 저장했습니다.`+(moved?` 블록이 바뀐 수용가 목록은 ① 소블록 경계 카드에서 엑셀로 받을 수 있습니다.`:''))})}
+/* 자동 동기화 켜짐: 20초 뒤 소블록 경계만 공유 서버에 올림 (서버가 더 새것이면 덮지 않고 알림) */
+function beShareSoon(){clearTimeout(BE.tm);if(typeof SH==='undefined'||!SH.on()||!SH.cfg.auto)return;BE.tm=setTimeout(()=>beShare().catch(e=>console.warn('소블록 경계 올리기',e)),20000)}
+async function beShare(){if(REF.busy){beShareSoon();return}let v=null;try{v=await IDB.get('blocks')}catch(_){}if(!v||!v.fc||!v.at)return;REF.busy=true;try{
+  const info=(await shReq('refinfo')).ref||{},s=info.blocks;if(s&&s.v===v.at)return;
+  const base=+(localStorage.getItem('geo-blk-sv')||0);if(s&&s.v>v.at){feMsg('<span class="c-am">공유 서버에 더 새 소블록 경계가 있어 올리지 않았습니다. ⏬ 기준자료 받기 뒤 다시 고쳐 주세요.</span>');return}
+  if(s&&base&&s.v!==base&&s.by&&s.by!==chgMe())console.warn('소블록 경계: 다른 사람이 올린 판 위에 덮어씀',s);
+  const z=new JSZip();z.file('d.json',JSON.stringify(v));const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART),c=v.fc.features.length;
+  for(let p=0;p<parts;p++)await shReq('refput',{name:'blocks',v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
+  try{localStorage.setItem('geo-blk-sv',String(v.at))}catch(_){}if(typeof phToast==='function')phToast('🗺️ 고친 소블록 경계를 공유 서버에 올렸습니다.')}
+ catch(e){feMsg('<span class="c-rd">소블록 경계 자동 올리기 실패: '+esc((e&&e.message)||e)+' · ⏫ 기준자료 올리기로 다시 올려 주세요.</span>')}finally{REF.busy=false}}
+function beAct(btn){const E=btn.dataset.be;
+ if(E==='link'){BE.link=!BE.link;feUi();beDraw();return}if(E==='place')return bePlace();if(E==='vdel')return beVDel();
+ if(E==='desel'){BE.sel=-1;BE.v=null;feUi();beDraw();return}
+ if(E==='back'){if(!BE.undo.length)return;BE.draft=BE.undo.pop();BE.v=null;feUi();beDraw();return}
+ if(E==='drop'){if(BE.draft.size&&!confirm(`반영하지 않은 경계 수정 ${BE.draft.size}개를 버릴까요?`))return;BE.draft.clear();BE.undo=[];BE.v=null;feUi();beDraw();return}
+ if(E==='apply')return beApply();
+ if(E==='prev'){if(BE.draft.size){alert('반영하지 않은 수정이 있습니다. 먼저 ✔ 반영하거나 ✕ 버리세요.');return}return blkUndo().then(()=>{BE.sel=-1;BE.v=null;feUi();beDraw()})}}
+window.beOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='blk';BE.sel=fi;BE.v=null;feUi();beDraw()};
 try{feInit()}catch(e){console.warn('시설물 편집',e)}
 
 /* 휴대폰 상단 ☰ 메뉴: 열고 닫기 (바깥 누르기·Esc·항목 누르면 닫힘) */
