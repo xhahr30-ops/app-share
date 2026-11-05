@@ -334,6 +334,8 @@ html.chipOn .chipbar>.leaflet-control{flex:0 0 auto;float:none;clear:none;margin
 html.chipOn .chipbar .leaflet-bar a{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;width:auto!important;height:36px!important;line-height:36px!important;padding:0 13px!important;border:0!important;border-radius:18px!important;box-shadow:0 1px 4px rgba(0,0,0,.3);font:700 15px 'Noto Sans KR',sans-serif!important;color:#1e293b;white-space:nowrap}
 html.chipOn .chipbar .leaflet-bar a+a{margin-left:8px}
 html.chipOn .chipbar a[data-lb]::after{content:attr(data-lb);font-size:13.5px}
+/* 칩 아이콘 = 리본과 같은 색 선 아이콘(GICO) */
+.chipbar svg.ci{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}html.chipPc .chipbar svg.ci{width:18px;height:18px}
 html.chipOn .chipbar .chsrch a.on{background:#e0e7ff}
 html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
@@ -895,6 +897,7 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 .gw-col{display:flex;flex-direction:column}
 .gw-b{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:3px;white-space:nowrap;font-size:12px;line-height:16px;border:1px solid transparent!important;position:relative}
 .gw-b .gi{color:var(--gw-tx2)}
+#gw .gi.cc,#gw .gw-b.on .gi.cc,#gw .gw-b.run .gi.cc{color:var(--c)}html.dark #gw .gi.cc,html.dark #gw .gw-b.on .gi.cc,html.dark #gw .gw-b.run .gi.cc{color:var(--cd)}
 #gw .gw-b:hover:not(:disabled){background:var(--gw-hv);border-color:#c5d5f0!important}html.dark #gw .gw-b:hover:not(:disabled){border-color:#3b5378!important}
 #gw .gw-b.on{background:var(--gw-on);border-color:#9fbcea!important}.gw-b.on .gi{color:var(--gw-ac)}
 #gw .gw-b:disabled{opacity:.4;cursor:default}
@@ -1434,8 +1437,23 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',vid:'M3 6h13v12H3zM16 10l5-3v10l-5-3z',phone:'M8 2h8v20H8zM11 18h2',chart:'M4 20V10M10 20V4M16 20v-7M2 20h20',
  kpi:'M4 4h16v6H4zM4 14h7v6H4zM13 14h7v6h-7z',mon:'M3 4h18v12H3zM8 20h8M12 16v4',help:'M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7v.5M12 17h.01',
  play:'M6 4l14 8-14 8z',doc:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6',tbl:'M3 4h18v16H3zM3 9h18M9 9v11',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
- bill:'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',moon:'M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z',list:'M4 6h16M4 12h16M4 18h10'};
-const ic=k=>P+(I[k]||I.box)+'"/></svg>';
+ bill:'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',moon:'M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z',list:'M4 6h16M4 12h16M4 18h10',
+ /* 2026-11-05 메뉴·칩 아이콘 통일(C안): 그리기=붓+물결, 사진 편집=사진 틀+연필로 서로 다르게 */
+ draw:'M21 3l-8.6 8.6M12.4 11.6c1.6 1.4 1.2 4-.9 5.5-1.7 1.2-4.2 1.3-6.5.9 1.4-1.3 1.2-3.1 2.1-4.6 1.1-1.9 3.6-3.4 5.3-1.8zM13 21c1.3-1 2.7 1 4 0s2.7 1 4 0',
+ phed:'M13 4H3v15h7M3 15l4-4 3 3M7.5 7.3a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6zM12 21l.6-3 6.4-6.4 2.4 2.4-6.4 6.4z',
+ leak:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11zM12 10v4M12 17h.01',dl:'M12 3v12M7 10l5 5 5-5M4 20h16',
+ steps:'M8 3c1.6 0 2.4 2 2.4 4.3S9.4 11.5 8 11.5 5.6 9.6 5.6 7.3 6.4 3 8 3zM5.8 14h4.4v1.8a2.2 2.2 0 0 1-4.4 0zM16 7.5c1.6 0 2.4 2 2.4 4.3S17.4 16 16 16s-2.4-1.9-2.4-4.2.8-4.3 2.4-4.3zM13.8 18.5h4.4v.8a2.2 2.2 0 0 1-4.4 0z',
+ bell:'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20.5a2 2 0 0 0 4 0',unlock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 7.7-1.5',
+ eyeoff:'M2 12s4-7 10-7c1.9 0 3.6.7 5 1.6M22 12s-4 7-10 7c-1.9 0-3.6-.7-5-1.6M9.9 14.1a3 3 0 0 1 4.2-4.2M3 3l18 18',
+ mapoff:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM3 3l18 18',fullx:'M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6',
+ book:'M12 6c-2-2-5-2-8-1.5V19c3-.5 6-.5 8 1.5 2-2 5-2 8-1.5V4.5C17 4 14 4 12 6zM12 6v14.5'};
+/* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
+const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
+const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
+ save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate'};
+const icC=k=>HU[IC_H[k]]||HU.slate;
+const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
+window.GICO={I,col:icC};
 
 /* ── 리본: 탭 › 묶음 › 버튼 [동작, 아이콘, 글자, 크게?] ── */
 const TABS=[
@@ -1445,18 +1463,18 @@ const TABS=[
   {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
-  {n:'파일 넣기',b:[['uni','open','📥 파일 넣기',1]]},
-  {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1],['win:leak','drop','②-4 누수 예측',1]]},
+  {n:'파일 넣기',b:[['uni','open','파일 넣기',1]]},
+  {n:'자료 등록 (기준자료)',b:[['win:addr','user','① 주소',1],['win:blk','poly','② 소블록',1],['win:pipe','pipe','②-1 관로',1],['win:fac','valve','②-2 시설물',1],['win:elev','mnt','②-3 표고·수압',1],['win:leak','leak','②-4 누수 예측',1]]},
   {n:'누수 자료',b:[['lrIn','xls','누수·민원 대장',1]]},
   {n:'부과량',b:[['win:bill','bill','부과량 연동',1]]},
   {n:'변환 · 공간결합',b:[['af','srch','주소찾기 설정',1],['start','bolt','변환 시작',1,'run'],['stop','stop','변환 중지']]}]},
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
-  {n:'표시',b:[['allOff','eye','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','drop','누수 지점 예측',1],['mk','pen','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','지도 잠금']]},
+  {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'field',n:'현장',g:[
-  {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','pen','사진 편집 모드'],['gal','grid','사진 갤러리']]},
+  {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','phed','사진 편집 모드'],['gal','grid','사진 갤러리']]},
   {n:'동영상',b:[['win:vid','vid','동영상 연결',1]]},
   {n:'현장 모드',b:[['fm','phone','현장 모드',1]]}]},
  {k:'table',n:'표',g:[
@@ -1822,7 +1840,7 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
 
 - 종류마다 레이어 하나, 파일명에 지물부호: 예 `SA200_제수밸브.shp`. 단수구역에는 제수밸브(SA200) 필수.
 - 지물부호: SA113 정수장 · SA114 배수지 · SA206 가압장 · SA117 유량계 · SA119 소화전 · SA121 수압계 · SA122 급수전계량기 · SA200 제수밸브 · SA201 역지밸브 · SA202 이토밸브 · SA203 배기밸브 · SA204 감압밸브 · SA205 안전밸브
-- 칸: 관리번호(FTR_IDN·MNG_NO, 필수) · 개폐여부(제수밸브 필수, 폐·닫힘·close = 닫힘) · 밸브구분(경계밸브) · rotation(심볼 방향, 동쪽 기준 시계방향) · 소화전형식(지상/지하)
+- 칸: 관리번호(FTR_IDN·MNG_NO, 필수) · 개폐여부(제수밸브 필수, 폐·닫힘·close = 닫힘) · 밸브구분(경계밸브·공업밸브) · rotation(심볼 방향, 동쪽 기준 시계방향) · 소화전형식(지상/지하)
 
 ## 7. 관망해석 inp (선택)
 
@@ -2386,6 +2404,12 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
+ /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book'};
+ const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
+  for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
+   v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
+ icoFix();new MutationObserver(icoFix).observe(bar,{childList:true,subtree:true,characterData:true});
  if(ph||tb)shutDodgeInit(C);/* 태블릿도 📷·📍·🖼️가 오른쪽 아래에 있어 단수구역 창과 겹치지 않게 비킴 */
  if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
   bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}}
@@ -2610,12 +2634,12 @@ function initSearch(){
     그 종류를 지도 가운데에서 가까운 순으로 8개 */
  function inKinds(n,seen){if(!map)return [];const K=v=>nsp(v).toUpperCase(),ks=[];
   FAC.kinds.forEach((k,ki)=>{const nm=K(facKindInfo(k).name),cd=K(k);if(nm===n||cd===n||(nm.startsWith(n)&&n.length>=2))ks.push({ki,b:0})});
-  if('경계밸브'.startsWith(n)&&n.length>=2)FAC.kinds.forEach((k,ki)=>{if(facKindInfo(k).sym==='gate')ks.push({ki,b:1})});
+  if('경계밸브'.startsWith(n)&&n.length>=2)FAC.kinds.forEach((k,ki)=>{if(facKindInfo(k).sym==='gate')ks.push({ki,b:1})});   if('공업밸브'.startsWith(n)&&n.length>=2)FAC.kinds.forEach((k,ki)=>{if(facKindInfo(k).sym==='gate')ks.push({ki,b:2})});
   /* 땅이름+종류(예: 도구리가압장 → 이름에 '도구'나 '도구리', 또는 행정구역에 '도구리'가 든 가압장). 이름이 정확히 같으면 이 단계 없이 이름 찾기로 */
   let pl='',p2='';if(!ks.length&&!facIdx().some(x=>!x.id&&x.key===n))FAC.kinds.forEach((k,ki)=>{const nm=K(facKindInfo(k).name);if(nm.length>=2&&n.length>nm.length+1&&n.endsWith(nm)){pl=n.slice(0,-nm.length);p2=pl.replace(/(리|동|면|읍|지구|마을)$/,'');ks.push({ki,b:0})}});
   if(!ks.length)return [];const c=map.getCenter(),kx=111320*Math.cos(c.lat*Math.PI/180),ky=110540,out=[];
   const plOk=i=>{if(!pl)return true;const P=FAC.pt[i].p||{},nm=K(FAC_NM.map(f=>P[f]||'').join(' ')+' '+facLblText(i)),ad=K(P['행정구역']||'');return nm.includes(pl)||(p2.length>=2&&nm.includes(p2))||ad.includes(pl)};
-  ks.slice(0,4).forEach(({ki,b})=>{const near=[];for(let i=0;i<FAC.n;i++){if(FAC.k[i]!==ki||FAC.dl[i])continue;const bd=facBndI(i);if(b?!bd:false)continue;if(!plOk(i))continue;
+  ks.slice(0,4).forEach(({ki,b})=>{const near=[];for(let i=0;i<FAC.n;i++){if(FAC.k[i]!==ki||FAC.dl[i])continue;if(b===1?!facBndI(i):b===2?!facIndI(i):false)continue;if(!plOk(i))continue;
     const d=Math.hypot((FAC.x[i]-c.lng)*kx,(FAC.y[i]-c.lat)*ky);if(near.length<8||d<near[near.length-1].d){near.push({i,d});near.sort((p,q)=>p.d-q.d);if(near.length>8)near.pop()}}
    near.forEach(o=>{if(seen.has(o.i))return;seen.add(o.i);const kn=facDispName(o.i),lb=facLblText(o.i);
     out.push({k:'fac',i:o.i,t:kn+(lb?' '+lb:''),r:-1+o.d/1e7,dm:o.d})})});
@@ -4595,6 +4619,9 @@ const FSVG=(()=>{const W=(vb,b)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBo
   /* 경계밸브 = 제수밸브 나비 모양 + 빨간 테두리 원 (닫힘이면 검은 나비). 원이라 관로 방향으로 돌려도 모양 같음 */
   bnd:W('-5 -5 38 38','<circle cx="14" cy="14" r="17.6" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/><polygon points="27,1 27,27 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   bndC:W('-5 -5 38 38','<circle cx="14" cy="14" r="17.6" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/><polygon points="27,1 27,27 1,1 1,27" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  /* 공업밸브 = 제수밸브 나비 모양을 노랗게 (닫힘이면 진한 주황) — 2026-11-05 사용자 가안 */
+  ind:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#facc15" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
+  indC:W('0 0 28 28','<polygon points="27,1 27,27 1,1 1,27" fill="#b45309" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   check:W('0 0 28 28','<polygon points="27,6 27,22 1,1 1,27" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/>'),
   drain:W('-17 -17 20.5 20.5','<rect x="-17" y="-17" width="20.5" height="20.5" fill="#fff" fill-opacity=".75"/><line x1="-16.3" y1="-4" x2="2.8" y2="-4" stroke="#000" stroke-width="1.4"/><polyline fill="none" stroke="#000" stroke-width="1.4" points="-2.9,0.7 -6.7,0.7 -6.7,-6.7"/><polygon points="-3.5,-1.3 0,0.7 -3.5,2.7"/>'),
   air:W('0 0 26 26',`<circle cx="13" cy="13" r="12" fill="#fff" stroke="#000" stroke-width="1.6"/><text x="13" y="20.5" font-size="20" ${T}>A</text>`),
@@ -4631,12 +4658,12 @@ function facNameMap(){const m=new Map();String($('fNames').value||'').split(/\n/
 function facKindInfo(k){const d=FK[k],nm=facNameMap().get(k);if(d)return{name:nm||d[0],sym:d[1],col:d[2],z:d[3]};
  const i=FAC.kinds.indexOf(k),g=FK_GUESS.find(([re])=>re.test(nm||k));return{name:nm||k,sym:g?g[1]:'',col:FK_OTHER[(i<0?0:i)%FK_OTHER.length],z:15}}
 /* 시설마다 심볼: 닫힌 제수밸브는 검은 심볼, 소화전은 지상·지하 형식별 */
-function facSymOf(I,p){const s=I.sym;if(s==='gate'){if(facBnd(p))return facClosed(p)?'bndC':'bnd';if(facClosed(p))return 'gateC'}if(s==='hyd'){const t=String((p||{})['소화전형식']||'');return /지상/.test(t)?'hydG':/지하/.test(t)?'hydU':'hyd'}return s}
-const FROT=new Set(['gate','gateC','bnd','bndC','check','drain','prv']);
+function facSymOf(I,p){const s=I.sym;if(s==='gate'){if(facBnd(p))return facClosed(p)?'bndC':'bnd';if(facInd(p))return facClosed(p)?'indC':'ind';if(facClosed(p))return 'gateC'}if(s==='hyd'){const t=String((p||{})['소화전형식']||'');return /지상/.test(t)?'hydG':/지하/.test(t)?'hydU':'hyd'}return s}
+const FROT=new Set(['gate','gateC','bnd','bndC','ind','indC','check','drain','prv']);
 /* 경계밸브: 제수밸브(밸브류 gate)에 속성 '밸브구분=경계밸브'를 붙여 구분. 종류 코드(SA200)는 그대로라 단수구역·사진 연결·SHP 다시 올리기가 같게 동작 */
 const facBnd=p=>String((p||{})['밸브구분']??'').trim()==='경계밸브';
-const facBndI=i=>{const k=FAC.sk&&FAC.sk[i];return k==='bnd'||k==='bndC'};
-function facDispName(i){const f=FAC.pt[i],I=facKindInfo(f.k);return I.sym==='gate'&&facBnd(f.p)?'경계밸브':I.name}
+const facBndI=i=>{const k=FAC.sk&&FAC.sk[i];return k==='bnd'||k==='bndC'}; /* 공업밸브: 같은 방식으로 '밸브구분=공업밸브' (아이콘만 노랑, 개폐·단수 계산은 제수밸브와 같음) */ const facInd=p=>String((p||{})['밸브구분']??'').trim()==='공업밸브'; const facIndI=i=>{const k=FAC.sk&&FAC.sk[i];return k==='ind'||k==='indC'}; const facVKind=p=>facBnd(p)?'경계밸브':facInd(p)?'공업밸브':'제수밸브';
+function facDispName(i){const f=FAC.pt[i],I=facKindInfo(f.k);return I.sym==='gate'&&(facBnd(f.p)||facInd(f.p))?facVKind(f.p):I.name}
 function facRot(p){const v=+((p||{}).rotation??(p||{})['회전GIS']);return isFinite(v)&&v!==0?v:NaN}
 /* 레이어 종류: 파일명에 SA000 지물부호가 있으면 그것, 없으면 지물부호 속성의 대표값, 그래도 없으면 파일명 */
 function facKindOf(name,feats){const m=String(name).match(/SA\d{3}/i);if(m)return m[0].toUpperCase();
@@ -4700,20 +4727,20 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
  const g=FAC.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const z=map.getZoom();facAreaShow(z);facHintUpd(z);if(!FAC.n)return;
  const on=FAC.kinds.map(k=>facOn(k,z));if(!on.some(Boolean))return;
  const b=map.getBounds().pad(pad),sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,R=facR(z),by=FAC.kinds.map(()=>[]);
- const hb=FAC.hidden.has('#bnd');
- for(const i of facQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth())){const k=FAC.k[i];if(!on[k]||(FAC.dl[i]&&!(FE&&FE.on))||(hb&&facBndI(i))||facPhOff(i))continue;const x=FAC.px[i]*sc+ax,y=FAC.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;by[k].push(x,y,i)}
+ const hb=FAC.hidden.has('#bnd'),hi=FAC.hidden.has('#ind');
+ for(const i of facQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth())){const k=FAC.k[i];if(!on[k]||(FAC.dl[i]&&!(FE&&FE.on))||(hb&&facBndI(i))||(hi&&facIndI(i))||facPhOff(i))continue;const x=FAC.px[i]*sc+ax,y=FAC.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;by[k].push(x,y,i)}
  /* 심볼(사용자 제공 SVG)로 찍음. 밸브는 관로 방향(rotation 속성: 동쪽 기준 시계방향 각도, 관로 1,500개와 대조해 90%가 10° 이내로 맞음)으로 돌림. 심볼이 없는 종류는 색 점 */
  const KI=FAC.kinds.map(facKindInfo);g.lineJoin='round';
  /* 많은 종류(제수밸브)부터 그려서 적은 시설(소화전·정수장 등)이 위에 보이게 */
- by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s0=facSzK(z,I,FAC.kinds[k]),sb=facSzK(z,I,'#bnd'); /* 경계밸브는 크기 따로 (범례 경계밸브 줄 −/＋) */
-  for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],s=facBndI(i)?sb:s0,sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;g.globalAlpha=FAC.dl[i]?.35:1;
+ by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s0=facSzK(z,I,FAC.kinds[k]),sb=facSzK(z,I,'#bnd'),si=facSzK(z,I,'#ind'); /* 경계·공업밸브는 크기 따로 (범례 경계밸브 줄 −/＋) */
+  for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],s=facBndI(i)?sb:facIndI(i)?si:s0,sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;g.globalAlpha=FAC.dl[i]?.35:1;
    if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
    const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})
  g.globalAlpha=1;
  /* 📷 사진 있는 시설물: 아이콘 네 모서리에 파란 꺾쇠(┌┐└┘), 줌 13부터는 오른쪽 아래에 장수 배지.
     새로 받은 항목의 노란 원 링과 모양(네모 꺾쇠)·색(파랑)을 다르게 함. 범례 '📷 사진 있는 시설물 표시'로 끄고 켬 */
  if(FAC.phn&&FAC.phnPt===FAC.pt&&!FAC.hidden.has('#phm')){const bz=z>=13,bd=[];g.lineCap='round';g.lineJoin='round';
-  by.forEach((a,k)=>{const s0=facSzK(z,KI[k],FAC.kinds[k]),sb=facSzK(z,KI[k],'#bnd');for(let j=0;j<a.length;j+=3){const i=a[j+2],n=FAC.phn[i];if(!n||FAC.dl[i])continue;
+  by.forEach((a,k)=>{const s0=facSzK(z,KI[k],FAC.kinds[k]),sb=facSzK(z,KI[k],'#bnd'),si=facSzK(z,KI[k],'#ind');for(let j=0;j<a.length;j+=3){const i=a[j+2],n=FAC.phn[i];if(!n||FAC.dl[i])continue;
    const x=a[j],y=a[j+1],s=facBndI(i)?sb:s0,h=Math.max(6,s*.6)+2,c=Math.max(3,h*.5);g.beginPath();
    for(const[sx,sy]of[[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+sx*h,cy=y+sy*h;g.moveTo(cx-sx*c,cy);g.lineTo(cx,cy);g.lineTo(cx,cy-sy*c)}
    g.lineWidth=5;g.strokeStyle='#fff';g.stroke();g.lineWidth=2.6;g.strokeStyle='#2563eb';g.stroke();if(bz)bd.push(x+h,y+h,n)}});
@@ -4747,9 +4774,9 @@ function facAreas(){if(FAC.areaL&&map){map.removeLayer(FAC.areaL)}FAC.areaL=null
   style:f=>{const I=facKindInfo(f.properties.k);return{color:I.col,weight:2,dashArray:'6 4',opacity:.9,fillColor:I.col,fillOpacity:.05}},
   filter:f=>!FAC.hidden.has(f.properties.k)})}
 function facAreaShow(z){const l=FAC.areaL;if(!l||!map)return;const on=$('fShow').value!=='off'&&($('fShow').value==='on'||z>=12);if(on&&!map.hasLayer(l))l.addTo(map);else if(!on&&map.hasLayer(l))map.removeLayer(l)}
-function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),RK=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),k)/2,5)+3),RB=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),'#bnd')/2,5)+3),R=Math.max(5,...RK,...RB),ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
+function facHitAt(cp){if(!FAC.n||!map)return -1;const z=map.getZoom(),RK=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),k)/2,5)+3),RB=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),'#bnd')/2,5)+3),RN=FAC.kinds.map(k=>Math.max(facSzK(z,facKindInfo(k),'#ind')/2,5)+3),R=Math.max(5,...RK,...RB,...RN),ll=map.containerPointToLatLng(cp),ll2=map.containerPointToLatLng([cp.x+R,cp.y+R]);
  const dx=Math.abs(ll2.lng-ll.lng),dy=Math.abs(ll2.lat-ll.lat);let best=R*R,bi=-1;
- for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z)||(FAC.dl[i]&&!(FE&&FE.on))||(FAC.hidden.has('#bnd')&&facBndI(i))||facPhOff(i))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=(facBndI(i)?RB:RK)[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
+ for(const i of facQuery(ll.lng-dx,ll.lat-dy,ll.lng+dx,ll.lat+dy)){if(!facOn(FAC.kinds[FAC.k[i]],z)||(FAC.dl[i]&&!(FE&&FE.on))||(FAC.hidden.has('#bnd')&&facBndI(i))||(FAC.hidden.has('#ind')&&facIndI(i))||facPhOff(i))continue;const p=map.latLngToContainerPoint([FAC.y[i],FAC.x[i]]),d=(p.x-cp.x)**2+(p.y-cp.y)**2;if(d<=(facBndI(i)?RB:facIndI(i)?RN:RK)[FAC.k[i]]**2&&d<=best){best=d;bi=i}}return bi}
 const FAC_SHOW=[['관리번호','관리번호'],['구경','구경'],['소화전구경','구경'],['규격','규격'],['밸브류형식','형식'],['소화전형식','형식'],['유량계형식','형식'],['형식','형식'],['가압형식','형식'],['개폐여부','개폐'],['설치일자','설치일자'],['준공일자','준공일자'],['설치연도','설치연도'],['정수장명','이름'],['배수지명','이름'],['가압장명','이름'],['시설용량','시설용량'],['중블록명','중블록'],['소블록명','소블록(속성)'],['블록명','블록(속성)'],['비고','비고 (SHP)'],['현장메모','비고']];
 function facPopup(i){const f=FAC.pt[i],P=f.p||{},I0=facKindInfo(f.k),I={...I0,name:facDispName(i)},rows=[],seen=new Set();try{if(typeof hlSeenFac==='function')hlSeenFac(P._fid)}catch(_){}
  FAC_SHOW.forEach(([k,t])=>{if(P[k]!=null&&!seen.has(t)){seen.add(t);rows.push([t,P[k]])}});
@@ -4763,8 +4790,8 @@ function facPopup(i){const f=FAC.pt[i],P=f.p||{},I0=facKindInfo(f.k),I={...I0,na
    공유 서버가 켜져 있으면 20초 뒤 자동으로 받아 합친 뒤 올림(facSync). 시설물 SHP를 새로 올릴 때 현장 수정을 유지할지 고름(facReapply) */
 const facNow=()=>{const d=new Date();return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 const facOrigTxt=P=>Object.entries(P['_원본']||{}).map(([k,v])=>`${k}: ${v==null||v===''?'빈칸':v}`).join(', ');
-function facOpUi(i){const P=FAC.pt[i].p||{},cl=!!FAC.cl[i],ed=P['_현장수정'],bd=facBnd(P);
- return `<div class="acts" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center"><button type="button" class="kl" onclick="facOpSet(${i},'${cl?'open':'close'}')">${cl?'🔓 열림으로 바꾸기':'⛔ 닫힘으로 바꾸기'}</button><button type="button" class="kl" onclick="facBndSet(${i},${bd?0:1})" title="${bd?'일반 제수밸브로 되돌리기':'블록 경계에 있는 밸브로 표시 (빨간 원 아이콘)'}">${bd?'🔧 제수밸브로':'🔴 경계밸브로'}</button>${ed?`<button type="button" class="kl" onclick="facOpSet(${i},'orig')" title="SHP 원래 값으로 (${esc(facOrigTxt(P))})">↩ 원래대로</button><small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 ${esc(ed)}</small>`:''}</div>`}
+function facOpUi(i){const P=FAC.pt[i].p||{},cl=!!FAC.cl[i],ed=P['_현장수정'],bd=facBnd(P),nd=facInd(P);
+ return `<div class="acts" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center"><button type="button" class="kl" onclick="facOpSet(${i},'${cl?'open':'close'}')">${cl?'🔓 열림으로 바꾸기':'⛔ 닫힘으로 바꾸기'}</button>${bd||nd?`<button type="button" class="kl" onclick="facBndSet(${i},0)" title="일반 제수밸브로 되돌리기">🔧 제수밸브로</button>`:`<button type="button" class="kl" onclick="facBndSet(${i},1)" title="블록 경계에 있는 밸브로 표시 (빨간 원 아이콘)">🔴 경계밸브로</button><button type="button" class="kl" onclick="facIndSet(${i})" title="공업용수 쪽 밸브로 표시 (노란 아이콘, 개폐는 그대로)">🏭 공업밸브로</button>`}${ed?`<button type="button" class="kl" onclick="facOpSet(${i},'orig')" title="SHP 원래 값으로 (${esc(facOrigTxt(P))})">↩ 원래대로</button><small style="color:#7c3aed;font-weight:700">✏️ 현장 수정 ${esc(ed)}</small>`:''}</div>`}
 /* 속성 고치기: 처음 바뀌는 칸만 원래 값을 _원본에 보관, 원래 값으로 돌아오면 지움 */
 function facPatch(P,patch){const o={...(P['_원본']||{})};let n=0;
  for(const k in patch){const v=patch[k]==null?'':String(patch[k]).trim(),cur=P[k]==null?'':String(P[k]);if(v===cur)continue;n++;if(!(k in o))o[k]=P[k]==null?null:P[k];if(v==='')delete P[k];else P[k]=v;if((o[k]==null?'':String(o[k]))===v)delete o[k]}
@@ -4792,7 +4819,7 @@ function facInfoForm(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facK
  const inp=k=>`<label style="display:contents"><span style="color:#64748b;font-size:11.5px;align-self:center${k in o?';color:#7c3aed;font-weight:700':''}"${k in o?` title="원래 값: ${esc(o[k]==null||o[k]===''?'빈칸':o[k])}"`:''}>${esc(k)}</span><input data-k="${esc(k)}" value="${esc(P[k]??'')}" style="min-width:0;font-size:12.5px;padding:3px 5px;border:1px solid #cbd5e1;border-radius:5px"></label>`;
  let g=facInfoKeys(i).map(inp).join('');
  if(I.sym==='gate'){const op=String(P['개폐여부']??''),ops=[...new Set(['','개','폐',op])],sel=(k,t,a)=>`<label style="display:contents"><span style="color:#64748b;font-size:11.5px;align-self:center">${t}</span><select data-k="${k}" style="font-size:12.5px;padding:3px">${a}</select></label>`;
-  g+=sel('개폐여부','개폐',ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join(''))+sel('밸브구분','밸브 구분',`<option value=""${facBnd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option>`)}
+  g+=sel('개폐여부','개폐',ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join(''))+sel('밸브구분','밸브 구분',`<option value=""${facBnd(P)||facInd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option><option value="공업밸브"${facInd(P)?' selected':''}>공업밸브</option>`)}
  return `<details class="fied" style="margin-top:6px;font-size:12px"${FAC.infoOpen===i?' open':''} ontoggle="FAC.infoOpen=this.open?${i}:-1"><summary style="cursor:pointer;font-weight:700;color:#4338ca">✏️ 정보 고치기 · 비고</summary><div onkeydown="event.stopPropagation()" style="margin-top:4px">
   <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 6px">${g}</div>
   <label style="display:block;margin-top:5px;font-weight:700;color:#7c3aed">📝 ${P['비고']!=null?'현장 비고':'비고'} (현장 특이사항)<textarea data-k="현장메모" rows="2" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모, 차량 주차 잦음" style="display:block;width:100%;box-sizing:border-box;font-size:12.5px;padding:4px 5px;border:1px solid #c4b5fd;border-radius:5px;margin-top:2px;resize:vertical">${esc(P['현장메모']??'')}</textarea></label>
@@ -4800,13 +4827,13 @@ function facInfoForm(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facK
 window.facInfoSave=async(i,btn)=>{const box=btn.closest('.fied');if(!box)return;const pt={};box.querySelectorAll('[data-k]').forEach(el=>pt[el.dataset.k]=el.value);
  const P=FAC.pt[i]&&FAC.pt[i].p||{},ch=Object.keys(pt).filter(k=>String(pt[k]).trim()!==(P[k]==null?'':String(P[k])));
  if(!ch.length){phToast('바뀐 칸이 없습니다.',{ms:3000});return}FAC.infoOpen=-1;
- await facEdit(i,pt,ch.length===1&&ch[0]==='현장메모'?'비고 수정':ch.length===1&&ch[0]==='밸브구분'?(pt['밸브구분']?'경계밸브로':'제수밸브로'):'정보 수정 ('+ch.map(k=>k==='현장메모'?'비고':k).join(', ')+')');
+ await facEdit(i,pt,ch.length===1&&ch[0]==='현장메모'?'비고 수정':ch.length===1&&ch[0]==='밸브구분'?(pt['밸브구분']?pt['밸브구분']+'로':'제수밸브로'):'정보 수정 ('+ch.map(k=>k==='현장메모'?'비고':k).join(', ')+')');
  try{phToast('💾 저장했습니다: '+ch.map(k=>k==='현장메모'?'비고':k).join(', '))}catch(_){}};
 /* 경계밸브로 = 평소 닫힘이라 개폐도 '폐'로 같이 바꿈. 제수밸브로 되돌리면 개폐도 원래 값으로 */
 window.facBndSet=(i,on)=>{const P=FAC.pt[i]&&FAC.pt[i].p||{},o=P['_원본']||{},pt={'밸브구분':on?'경계밸브':''};
- if(on)pt['개폐여부']='폐';else if('개폐여부' in o)pt['개폐여부']=o['개폐여부']==null?'':o['개폐여부'];
+ if(on)pt['개폐여부']='폐';else if(facBnd(P)&&'개폐여부' in o)pt['개폐여부']=o['개폐여부']==null?'':o['개폐여부'];
  return facEdit(i,pt,on?'경계밸브로 (닫힘)':'제수밸브로')};
-function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
+/* 공업밸브로 = 아이콘만 노랑. 개폐는 그대로 둠 (2026-11-05 사용자: 아이콘 표시만 구분) */ window.facIndSet=i=>facEdit(i,{'밸브구분':'공업밸브'},'공업밸브로'); function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
 window.facOpSet=facOpSet;
 function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
  const cv=L.DomUtil.create('canvas','fac-canvas leaflet-zoom-hide',map.getPane('facPane'));cv.style.position='absolute';FAC.cv=cv;FAC.ctx=cv.getContext('2d');
@@ -4814,9 +4841,9 @@ function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=ma
  /* 클릭은 hitInit(수용가 점 · 시설물 · 관로 · 소블록 통합)에서 */}
 const facSym=(I,s=16)=>I.sym?`<img src="${facSymUrl(I.sym)}" width="${s}" height="${s}" alt="" style="flex:none;vertical-align:-3px">`:`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${I.col};border:1.5px solid #fff;box-shadow:0 0 0 1px #94a3b8"></span>`;
 function facKindsUi(bx){const box=bx||$('fKinds');if(!box)return;/* bx: 작업 화면 레이어 창에 같은 목록을 그릴 때 */const cnt=new Map(),clc=new Map();FAC.feats.forEach(f=>{cnt.set(f.k,(cnt.get(f.k)||0)+1);if(f.c&&facClosed(f.p))clc.set(f.k,(clc.get(f.k)||0)+1)});
- const bnc=new Map();FAC.feats.forEach(f=>{if(f.c&&facBnd(f.p)&&facKindInfo(f.k).sym==='gate')bnc.set(f.k,(bnc.get(f.k)||0)+1)});
+ const bnc=new Map(),inc=new Map();FAC.feats.forEach(f=>{if(f.c&&facKindInfo(f.k).sym==='gate'){if(facBnd(f.p))bnc.set(f.k,(bnc.get(f.k)||0)+1);else if(facInd(f.p))inc.set(f.k,(inc.get(f.k)||0)+1)}});
  const pc=FAC.phc||0,phm=`<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
- box.innerHTML=`<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="#phm"${FAC.hidden.has('#phm')?'':' checked'}> ${phm} <span class="fkn" title="사진이 붙은 시설물 아이콘 둘레에 파란 꺾쇠, 줌 13부터 📷 장수 표시 (새로 받은 항목은 노란 원 링)">📷 사진 있는 시설물 표시</span> <small class="mute">${pc.toLocaleString()}곳</small></label></div><div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" id="fPhOnly"${FAC.phOnly?' checked':''}> <span class="fkn" title="사진이 안 붙은 시설물은 지도에서 숨김">사진 있는 것만 보기</span>${FAC.phOnly?' <small class="c-am">켜짐</small>':''}</label></div>`+FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span class="fkn" title="${esc(I.name)}${I.name!==k?' ('+esc(k)+')':''}">${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`+(bnc.get(k)?`<div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" data-k="#bnd"${FAC.hidden.has('#bnd')?'':' checked'}> ${facSym({sym:'bnd'})} <span class="fkn" title="제수밸브 중 경계밸브로 표시한 것 (정보창 🔴 경계밸브로)">경계밸브</span> <small class="mute">${bnc.get(k).toLocaleString()}개 (${esc(I.name)} 중)</small></label>${(pb=>`<span class="fszc" title="경계밸브 아이콘 크기 (제수밸브와 따로)"><button type="button" data-sz="-1" data-k="#bnd" aria-label="경계밸브 작게">−</button><b class="${pb!==100?'c-am':''}">${pb}%</b><button type="button" data-sz="1" data-k="#bnd" aria-label="경계밸브 크게">＋</button></span>`)(Math.round(facKS('#bnd')*100))}</div>`:'')}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
+ box.innerHTML=`<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="#phm"${FAC.hidden.has('#phm')?'':' checked'}> ${phm} <span class="fkn" title="사진이 붙은 시설물 아이콘 둘레에 파란 꺾쇠, 줌 13부터 📷 장수 표시 (새로 받은 항목은 노란 원 링)">📷 사진 있는 시설물 표시</span> <small class="mute">${pc.toLocaleString()}곳</small></label></div><div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" id="fPhOnly"${FAC.phOnly?' checked':''}> <span class="fkn" title="사진이 안 붙은 시설물은 지도에서 숨김">사진 있는 것만 보기</span>${FAC.phOnly?' <small class="c-am">켜짐</small>':''}</label></div>`+FAC.kinds.map(k=>{const I=facKindInfo(k),area=FAC.feats.some(f=>f.k===k&&f.a),pc=Math.round(facKS(k)*100);return `<div class="fkr"><label class="ck fkl"><input type="checkbox" data-k="${esc(k)}"${FAC.hidden.has(k)?'':' checked'}> ${area?`<span style="display:inline-block;width:14px;height:10px;border:2px dashed ${I.col};border-radius:2px"></span>`:facSym(I)} <span class="fkn" title="${esc(I.name)}${I.name!==k?' ('+esc(k)+')':''}">${esc(I.name)}${I.name!==k?` <small class="mute">${esc(k)}</small>`:''}</span> <small class="mute">${(cnt.get(k)||0).toLocaleString()}개${clc.get(k)?` · ${I.sym==='gate'?facSym({sym:'gateC'},12)+' ':''}<span class="c-rd">닫힘 ${clc.get(k).toLocaleString()}</span>`:''}</small></label>${area?'':`<span class="fszc" title="${esc(I.name)} 아이콘 크기 (이 종류만)"><button type="button" data-sz="-1" data-k="${esc(k)}" aria-label="${esc(I.name)} 작게">−</button><b class="${pc!==100?'c-am':''}">${pc}%</b><button type="button" data-sz="1" data-k="${esc(k)}" aria-label="${esc(I.name)} 크게">＋</button></span>`}</div>`+(bnc.get(k)?`<div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" data-k="#bnd"${FAC.hidden.has('#bnd')?'':' checked'}> ${facSym({sym:'bnd'})} <span class="fkn" title="제수밸브 중 경계밸브로 표시한 것 (정보창 🔴 경계밸브로)">경계밸브</span> <small class="mute">${bnc.get(k).toLocaleString()}개 (${esc(I.name)} 중)</small></label>${(pb=>`<span class="fszc" title="경계밸브 아이콘 크기 (제수밸브와 따로)"><button type="button" data-sz="-1" data-k="#bnd" aria-label="경계밸브 작게">−</button><b class="${pb!==100?'c-am':''}">${pb}%</b><button type="button" data-sz="1" data-k="#bnd" aria-label="경계밸브 크게">＋</button></span>`)(Math.round(facKS('#bnd')*100))}</div>`:'')+(inc.get(k)?`<div class="fkr" style="padding-left:18px"><label class="ck fkl"><input type="checkbox" data-k="#ind"${FAC.hidden.has('#ind')?'':' checked'}> ${facSym({sym:'ind'})} <span class="fkn" title="제수밸브 중 공업밸브로 표시한 것 (정보창 🏭 공업밸브로, 닫힘은 진한 주황)">공업밸브</span> <small class="mute">${inc.get(k).toLocaleString()}개 (${esc(I.name)} 중)</small></label>${(pb=>`<span class="fszc" title="공업밸브 아이콘 크기 (제수밸브와 따로)"><button type="button" data-sz="-1" data-k="#ind" aria-label="공업밸브 작게">−</button><b class="${pb!==100?'c-am':''}">${pb}%</b><button type="button" data-sz="1" data-k="#ind" aria-label="공업밸브 크게">＋</button></span>`)(Math.round(facKS('#ind')*100))}</div>`:'')}).join('')+(Object.keys(FAC.ksz||{}).length?'<button type="button" class="btn ol" id="fSzReset" style="width:auto;padding:3px 10px;font-size:12px;margin-top:2px">↺ 종류별 크기 모두 100%로</button>':'');
  box.querySelectorAll('button[data-sz]').forEach(bt=>bt.onclick=()=>{const k=bt.dataset.k,cur=facKS(k);let i=FKS_STEPS.findIndex(v=>Math.abs(v-cur)<.01);if(i<0)i=2;i=Math.max(0,Math.min(FKS_STEPS.length-1,i+(+bt.dataset.sz)));
   FAC.ksz=FAC.ksz||{};if(FKS_STEPS[i]===1)delete FAC.ksz[k];else FAC.ksz[k]=FKS_STEPS[i];facCfgSave();facKindsUi();facDraw()});
  const rs=box.querySelector('#fSzReset');if(rs)rs.onclick=()=>{FAC.ksz={};facCfgSave();facKindsUi();facDraw()};
@@ -6838,7 +6865,7 @@ function shutDraw(){if(!map)return;shutLayer();shutLeg();
  if(SHUT.opt.cust!==false){const I=telRows();if(I.length&&I.length<=30000){shutRowStats();const src=shutSrc(),big=SHUT.bigSet||new Set(),ord=I.filter(i=>!big.has(i)).concat(I.filter(i=>big.has(i)));
   SHUT.cust=[];ord.forEach(i=>{const r=src[i],la=+r['_위도'],ln=+r['_경도'];if(!la||!ln)return;const b=big.has(i);SHUT.cust.push(i,la,ln);L.circleMarker([la,ln],{...o,radius:b?7:4.2,color:'#fff',weight:b?2:1.2,fillColor:b?'#f59e0b':'#0284c7',fillOpacity:1}).addTo(SHUT.L)})}}
  SHUT.res.V.slice(0,300).forEach(v=>{const cls=v.st===2?'br':v.st===1?'cl':'',m=L.marker([FAC.y[v.i],FAC.x[v.i]],{icon:L.divIcon({className:'shvi',html:`<span class="shv ${cls}">${v.no}</span>`,iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:900,keyboard:false,
-  title:`${v.no}번 ${facBndI(v.i)?'경계밸브':'제수밸브'} ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
+  title:`${v.no}번 ${facVKind(FAC.pt[v.i].p)} ${FAC.pt[v.i].p&&FAC.pt[v.i].p['관리번호']||''} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]} — 누르면 '못 닫음' 바꾸기`});
   m.on('click',()=>shutBroken(v.n));m.addTo(SHUT.L)});
  {const rl=shutRefLL();if(rl)L.marker(rl,{icon:L.divIcon({className:'shvi',html:'<span class="shv st">!</span>',iconSize:[22,22],iconAnchor:[11,11]}),interactive:false,zIndexOffset:950}).addTo(SHUT.L)}}
 /* 🔍 구역 보기·캡처 범위: 단수 관로 + 혼탁수 주의(하류 포함, 2026-11-02) */
@@ -6991,7 +7018,7 @@ async function shutShot(){if(!SHUT.on||!SHUT.res)return;const R0=SHUT.res,V=R0.V
  const F=(w,sz)=>Fq(w,sz,q);g.textBaseline='middle';
  /* 밸브 목록 (x0 = 칸 왼쪽, tw = 글자 칸 폭) */
  const drawValves=(x0,y,tw)=>{list.forEach(v=>{const P=FAC.pt[v.i].p||{};badge(x0+12*q,y+lh*q/2,String(v.no),col(v),v.st===2,q);g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(600,14);
-   g.fillText(`${facBnd(P)?'경계밸브':'제수밸브'} ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,x0+32*q,y+lh*q/2,tw);y+=lh*q});
+   g.fillText(`${facVKind(P)} ${shutVE(P,'관리번호')?'(관리번호 확인 필요)':P['관리번호']} · 구경 ${shutVE(P,'구경')?'확인 필요':P['구경']} · ${['닫을 밸브','이미 닫힘','못 닫음'][v.st]}${P['현장메모']?' · '+P['현장메모']:''}`,x0+32*q,y+lh*q/2,tw);y+=lh*q});
   if(more){g.fillStyle='#475569';g.font=F(600,14);g.fillText(`외 ${more}개 (지도에 번호로 표시)`,x0+32*q,y+lh*q/2);y+=lh*q}return y};
  /* 수용가 현황 칸 */
  const drawCust=(x0,cw,yy)=>{g.textAlign='left';g.textBaseline='middle';g.fillStyle='#111827';g.font=F(800,14);g.fillText('👥 단수구역 수용가 현황',x0,yy+11*q,cw);
@@ -7220,7 +7247,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   {const ne=V.filter(v=>{const P=FAC.pt[v.i].p||{};return shutVE(P,'관리번호')&&shutVE(P,'구경')&&shutVE(P,'개폐여부')}).length;
    if(ne)h+=`<p class="uin c-am" style="margin:2px 0 4px">⚠️ 시설물 SHP에 관리번호·구경·개폐가 모두 빈 밸브 ${ne}개 — 자료에 없는 값이라 "확인 필요"로 표시했습니다. 현장 값은 ✏️로 넣을 수 있습니다.</p>`}
   if(V.length)h+=`<table class="sht shvt"><tr><th>#</th><th>관리번호</th><th>구경</th><th>개폐</th><th></th><th></th></tr>${V.map(v=>{const P=FAC.pt[v.i].p||{},ed=P['_현장수정'],o=P['_원본']||{},mk=k=>k in o?' class="shmod" title="원래: '+esc(o[k]==null||o[k]===''?'빈칸':o[k])+'"':'';
-   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${facBnd(P)?' <small style="color:#dc2626;font-weight:700">🔴 경계</small>':''}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?`<br><small class="mute">${facBnd(P)?'경계밸브라 닫힘으로 봄':'열림으로 봄'}</small>`:''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
+   let r=`<tr class="${v.st===2?'brr':''}"><td><button type="button" class="shv ${v.st===2?'br':v.st===1?'cl':''}" data-a="v" data-i="${v.i}" title="지도에서 보기">${v.no}</button></td><td${mk('관리번호')}>${shutVF(P,'관리번호')}${facBnd(P)?' <small style="color:#dc2626;font-weight:700">🔴 경계</small>':facInd(P)?' <small style="color:#b45309;font-weight:700">🏭 공업</small>':''}${P['현장메모']?`<br><small class="c-ind">📝 ${esc(P['현장메모'])}</small>`:''}</td><td${mk('구경')}>${shutVF(P,'구경')}${shutVE(P,'구경')?(d=>d?`<br><small class="mute" title="밸브가 붙은 관로의 구경 (관로 SHP)">관로 ${esc(d)}</small>`:'')(shutVPipeD(v.n)):''}</td><td${mk('개폐여부')}>${shutVF(P,'개폐여부')}${shutVE(P,'개폐여부')?`<br><small class="mute">${facBnd(P)?'경계밸브라 닫힘으로 봄':'열림으로 봄'}</small>`:''}</td><td><button type="button" class="btn ol shbr" data-a="br" data-n="${v.n}" title="이번 단수에서만: 고장·찾지 못함이면 그 너머까지 구역을 넓힘">${v.st===2?'↩ 되돌림':v.st===1?'열려 있음':'못 닫음'}</button></td><td><button type="button" class="btn ol shbr${ed?' on':''}" data-a="ved" data-i="${v.i}" title="현장에 맞게 관리번호·구경·개폐·메모 고치기${ed?' (현장 수정 '+esc(ed)+')':''}">✏️</button><button type="button" class="btn ol shbr" data-a="vrv" data-i="${v.i}" title="이 밸브 자리 카카오 로드뷰">🚶</button></td></tr>`;
    if(SHUT.vEd===v.i){const cur=String(P['개폐여부']??''),ops=[...new Set(['개','폐','미분류',cur].filter(Boolean))];
     r+=`<tr class="shed"><td colspan="6"><div class="shedf" data-i="${v.i}"><label>관리번호<input data-k="관리번호" value="${esc(P['관리번호']??'')}"></label><label>구경<input data-k="구경" value="${esc(P['구경']??'')}" inputmode="numeric"></label><label>개폐<select data-k="개폐여부">${ops.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('')}${cur?'':'<option value="" selected>(빈칸)</option>'}</select></label><label class="w">비고 (현장 특이사항)<input data-k="현장메모" value="${esc(P['현장메모']??'')}" placeholder="예: 밸브실 맨홀 아래, 18회전, 스핀들 마모"></label>`+
      `<div class="shedb"><button type="button" class="btn" data-a="vsave">💾 저장</button>${ed?`<button type="button" class="btn ol" data-a="vorig" title="${esc(facOrigTxt(P))}">↩ SHP 원래대로</button>`:''}<button type="button" class="btn ol" data-a="vcan">취소</button></div>${ed?`<small class="mute">✏️ 현장 수정 ${esc(ed)} · 원래 ${esc(facOrigTxt(P))}</small>`:''}</div></td></tr>`}
@@ -7477,7 +7504,7 @@ function feFormHtml(i){const f=FAC.pt[i];if(!f)return '';const P=f.p||{},I=facKi
  const op=String(P['개폐여부']??''),ops=[...new Set(['','개','폐',op])];
  const badge=(P._추가?'<span class="feb add">🆕 현장 추가</span>':'')+(P._삭제?'<span class="feb del">🗑 삭제 표시</span>':'')+(P._원좌표?'<span class="feb">📍 위치 옮김</span>':'')+(P._원본&&Object.keys(P._원본).length?'<span class="feb">✏️ 속성 수정</span>':'');
  return `<div class="fef" data-i="${i}"><div class="r"><b>${I.sym?facSym({sym:FAC.sk[i]},16):'🔧'} ${esc(facDispName(i))}${P['관리번호']?' '+esc(P['관리번호']):''}</b>${badge}</div>
-  <div class="feg">${inp('관리번호','관리번호')}${inp(dia,'구경',' inputmode="numeric"')}${inp(typ,'형식')}${I.sym==='gate'?`<label>개폐</label><select data-k="개폐여부">${ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join('')}</select>`:''}${I.sym==='gate'?`<label>밸브 구분</label><select data-k="밸브구분"><option value=""${facBnd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option></select>`:''}${inp('설치일자','설치일자')}${inp('현장메모','비고')}
+  <div class="feg">${inp('관리번호','관리번호')}${inp(dia,'구경',' inputmode="numeric"')}${inp(typ,'형식')}${I.sym==='gate'?`<label>개폐</label><select data-k="개폐여부">${ops.map(x=>`<option value="${esc(x)}"${x===op?' selected':''}>${esc(x||'(빈칸)')}</option>`).join('')}</select>`:''}${I.sym==='gate'?`<label>밸브 구분</label><select data-k="밸브구분"><option value=""${facBnd(P)||facInd(P)?'':' selected'}>제수밸브</option><option value="경계밸브"${facBnd(P)?' selected':''}>경계밸브</option><option value="공업밸브"${facInd(P)?' selected':''}>공업밸브</option></select>`:''}${inp('설치일자','설치일자')}${inp('현장메모','비고')}
   ${feRotKind(i)?`<label>회전</label><span class="ferot"><input data-k="rotation" value="${esc(P.rotation??'')}" inputmode="decimal" style="width:64px">° <button type="button" data-e="pdir" title="가까운 관로 방향으로 (접합점이면 누를 때마다 다른 관로)">🧭 관로 방향</button><button type="button" data-e="r90">↻ 90°</button></span>`:''}</div>
   <div class="r"><button type="button" data-e="save" class="on">💾 저장</button>${P._추가?`<button type="button" data-e="rm" class="del">🗑 추가 취소</button>`:`<button type="button" data-e="dl" class="${P._삭제?'':'del'}">${P._삭제?'♻ 되살리기':'🗑 삭제 표시'}</button>`}${P._현장수정&&!P._추가?`<button type="button" data-e="orig" title="SHP 원래 값·위치로">↩ 원래대로</button>`:''}<button type="button" data-e="desel">닫기</button></div></div>`}
 function feUi(){if(!FE.bar)return;const b=FE.bar,n=FAC.feats.filter(f=>f.p&&(f.p._현장수정||f.p._추가)).length,ks=feKinds();if(!FE.addK||!ks.includes(FE.addK))FE.addK=ks.includes('SA200')?'SA200':ks[0]||'';
@@ -7567,7 +7594,7 @@ function feMarks(g,by){if(!FE.on)return;g.save();
 function facChgXlsx(){const rows=[];FAC.feats.forEach(f=>{const P=f.p||{};if(!P._현장수정&&!P._추가)return;const o=P._원본||{},ks=Object.keys(o),c=f.c||[],oc=P._원좌표;
   const kind=[P._추가?'추가':'',P._삭제?'삭제 표시':'',oc?'위치 이동':'',ks.length?'속성 수정':''].filter(Boolean).join(', ');
   const dm=oc&&c.length?Math.round(Math.hypot((c[0]-oc[0])*Math.cos(c[1]*Math.PI/180)*111320,(c[1]-oc[1])*110574)*100)/100:'';
-  rows.push({'구분':kind,'종류':facKindInfo(f.k).sym==='gate'&&facBnd(P)?'경계밸브':facKindInfo(f.k).name,'지물부호':f.k,'관리번호':P['관리번호']??'','바뀐 항목':ks.join(', '),'원래 값':ks.map(k=>`${k}: ${o[k]==null||o[k]===''?'빈칸':o[k]}`).join(' / '),'새 값':ks.map(k=>`${k}: ${P[k]==null||P[k]===''?'빈칸':P[k]}`).join(' / '),
+  rows.push({'구분':kind,'종류':facKindInfo(f.k).sym==='gate'?facVKind(P):facKindInfo(f.k).name,'지물부호':f.k,'관리번호':P['관리번호']??'','바뀐 항목':ks.join(', '),'원래 값':ks.map(k=>`${k}: ${o[k]==null||o[k]===''?'빈칸':o[k]}`).join(' / '),'새 값':ks.map(k=>`${k}: ${P[k]==null||P[k]===''?'빈칸':P[k]}`).join(' / '),
    '경도':c[0]??'','위도':c[1]??'','원래 경도':oc?oc[0]:'','원래 위도':oc?oc[1]:'','이동 거리(m)':dm,'회전(°)':P.rotation??'','비고 (현장 특이사항)':P['현장메모']??'','수정 시각':P._현장수정||P._추가||''})});
  if(!rows.length){alert('현장에서 고친 시설이 없습니다.');return}
  try{const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:16},{wch:12},{wch:9},{wch:14},{wch:18},{wch:30},{wch:30},{wch:12},{wch:12},{wch:12},{wch:12},{wch:10},{wch:8},{wch:20},{wch:14}];
