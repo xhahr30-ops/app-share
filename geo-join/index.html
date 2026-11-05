@@ -112,7 +112,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px var(--
 textarea{height:58px;resize:vertical}
 .drop{display:block;border:2px dashed var(--indb);border-radius:12px;padding:12px;text-align:center;background:color-mix(in srgb,var(--ind1) 50%,transparent);cursor:pointer}
 .drop:hover{background:var(--ind1)}.drop .ic{font-size:26px;line-height:1.2}.drop b{display:block;font-size:13px}.drop span{display:block;font-size:11px;color:var(--mute)}
-.drop input{display:none}.drop.am{border-color:var(--amb);background:color-mix(in srgb,var(--am1) 50%,transparent)}
+.drop input{display:none}.drop.am{border-color:var(--amb);background:color-mix(in srgb,var(--am1) 50%,transparent)}label.dz-on{outline:3px dashed var(--amb);outline-offset:2px}
 #uniDlg{position:fixed;inset:0;z-index:100003;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:12px}
 #uniDlg .ubox{background:var(--card);color:var(--ink);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);width:min(640px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:14px}
 #uniDlg h3{margin:0 0 4px;font-size:16px}#uniDlg .hint{margin:0 0 8px}
@@ -8960,6 +8960,31 @@ async function uniChip(a,inp){const fs=[...inp.files];if(!fs.length)return;let a
  for(const f of fs){const r=await uniSniff(f);if(!r.every(x=>x.k==='bk')){allBk=false;break}}
  if(allBk)return bkChipGo(a,inp);inp.value='';uniGo(fs)}
 try{uniInit()}catch(e){console.warn('파일 넣기',e)}
+/* ---------- 끌어다 놓기 (2026-11-05): 파일 칸·📂 버튼마다 PC에서 파일을 끌어다 놓아 넣기. 칸의 accept에 맞는 파일만 받음 ----------
+   📥 파일 넣기 칸·지도는 따로 처리(uniInit·지도 끌어놓기). 칸 밖에 놓으면 브라우저가 파일을 열어 앱이 닫히지 않도록 막음. */
+function dzInit(){const isF=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');let cur=null;
+ const zoneOf=t=>{const l=t&&t.closest?t.closest('label'):null;if(!l)return null;const inp=l.querySelector('input[type=file]');if(!inp||inp.id==='uniFile'||inp.disabled)return null;return {l,inp}};
+ const accOf=inp=>(inp.accept||'').split(',').map(a=>a.trim().toLowerCase()).filter(Boolean);
+ const fits=(f,acc)=>{if(!acc.length)return true;const n=(f.name||'').toLowerCase(),ty=(f.type||'').toLowerCase();
+  return acc.some(a=>a[0]==='.'?n.endsWith(a):a.endsWith('/*')?ty.startsWith(a.slice(0,-1)):ty===a)};
+ const accTxt=acc=>{const ex=acc.filter(a=>a[0]==='.');return ex.length?ex.join(' · '):'맞는 종류의'};
+ const clr=()=>{if(cur){cur.l.classList.remove('dz-on');cur=null}};
+ document.addEventListener('dragover',e=>{if(!isF(e))return;if(e.defaultPrevented){clr();return}
+  const z=zoneOf(e.target);e.preventDefault();
+  if(!z){clr();try{e.dataTransfer.dropEffect='none'}catch(_){}return}
+  if(!cur||cur.l!==z.l){clr();cur=z;z.l.classList.add('dz-on')}
+  try{e.dataTransfer.dropEffect='copy'}catch(_){}});
+ document.addEventListener('dragleave',e=>{if(cur&&!cur.l.contains(e.relatedTarget))clr()});
+ document.addEventListener('dragend',clr);
+ document.addEventListener('drop',e=>{if(!isF(e))return;if(e.defaultPrevented){clr();return}e.preventDefault();const z=zoneOf(e.target);clr();
+  if(!z){phToast('📥 파일은 점선 칸이나 📂 버튼, 또는 지도 위에 놓아 주세요.',{ms:5000});return}
+  const acc=accOf(z.inp),all=[...e.dataTransfer.files];let ok=all.filter(f=>fits(f,acc));const bad=all.length-ok.length;
+  if(!ok.length){phToast(`📥 이 칸에는 ${accTxt(acc)} 파일만 넣을 수 있습니다.`,{ms:6000});return}
+  if(!z.inp.multiple&&ok.length>1){ok=ok.slice(0,1);phToast(`📥 이 칸은 파일을 하나씩 받습니다. 첫 파일(${ok[0].name})만 넣습니다.`,{ms:6000})}
+  else if(bad)phToast(`📥 맞지 않는 파일 ${bad}개는 빼고 ${ok.length}개만 넣습니다 (${accTxt(acc)}).`,{ms:6000});
+  try{const dt=new DataTransfer();ok.forEach(f=>dt.items.add(f));z.inp.files=dt.files}catch(err){console.warn('끌어다 놓기',err);phToast('📥 이 브라우저에서는 끌어다 놓기가 안 됩니다. 칸을 눌러 파일을 골라 주세요.',{ms:6000});return}
+  z.inp.dispatchEvent(new Event('change',{bubbles:true}))})}
+try{dzInit()}catch(e){console.warn('끌어다 놓기',e)}
 /* ---------- 📑 FRD B안 (2026-11-03): 원본 살펴보기 → 자료요약.md(개인정보 가림) · AI 변환 규칙(JSON) 붙여 넣기 → 기기 안에서 변환 · 넣은 뒤 검수 보고서.md ----------
    원본은 기기 밖으로 나가지 않음. 요약에는 이름·상호·전화 열 값이 없고, 주소는 번지를 ○로, 전화 모양 숫자는 *로 가림.
    변환 규칙은 localStorage 'geo-frdrule'에 보관 → 📥 파일 넣기에서 파일 이름이 맞는 엑셀·SHP에 씀(열 대응 창은 그대로 떠서 사람이 확인) */
