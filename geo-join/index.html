@@ -6129,7 +6129,7 @@ function fmLocate(btn){if(!navigator.geolocation){alert('이 브라우저는 위
  if(typeof TRK!=='undefined'&&TRK.on){TRK.follow=true;if(TRK.last)map.setView([TRK.last[0],TRK.last[1]],Math.max(map.getZoom(),17));phToast('👣 다시 내 위치를 따라갑니다.',{ms:2500});return}/* 길 기록 중: 위치는 계속 받고 있으니 따라가기만 다시 켬 */
  btn.disabled=true;
  navigator.geolocation.getCurrentPosition(p=>{btn.disabled=false;const ll=[p.coords.latitude,p.coords.longitude],acc=p.coords.accuracy;
-  if(fmMe)fmMe.forEach(l=>map.removeLayer(l));fmMe=[L.circle(ll,{radius:acc,color:'#2563eb',weight:1,fillOpacity:.12,interactive:false}).addTo(map),L.marker(ll,{icon:L.divIcon({className:'fm-me',html:'<span></span>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:900,title:`내 위치 (오차 약 ${Math.round(acc)}m)`}).addTo(map)];
+  if(fmMe)fmMe.forEach(l=>map.removeLayer(l));fmMe=[L.circle(ll,{radius:acc,stroke:false,fill:false,interactive:false})/* 오차 원은 안 보이게(파란 점만) */.addTo(map),L.marker(ll,{icon:L.divIcon({className:'fm-me',html:'<span></span>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:900,title:`내 위치 (오차 약 ${Math.round(acc)}m)`}).addTo(map)];
   map.setView(ll,Math.max(map.getZoom(),18))},
   e=>{btn.disabled=false;alert(location.protocol==='file:'?'파일로 연 앱(file://)에서는 위치를 쓸 수 없습니다. 깃허브 페이지(https) 주소로 여세요.':e&&e.code===1?'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.':'현재 위치를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:10000})}
@@ -8597,7 +8597,7 @@ function trkMe(pt,c){if(!map)return;const ll=[pt[0],pt[1]],acc=pt[3]||0;let hd=c
  if(hd!=null)TRK.hd=hd;const h=TRK.hd;
  const html='<span></span>'+(h!=null?`<i class="hd" style="transform:rotate(${Math.round(h)}deg)"></i>`:'');
  if(fmMe&&fmMe.length===2&&map.hasLayer(fmMe[1])){fmMe[0].setLatLng(ll).setRadius(acc);fmMe[1].setLatLng(ll).setIcon(L.divIcon({className:'fm-me trkme',html,iconSize:[16,16],iconAnchor:[8,8]}))}
- else{if(fmMe)fmMe.forEach(l=>map.removeLayer(l));fmMe=[L.circle(ll,{radius:acc,color:'#2563eb',weight:1,fillOpacity:.12,interactive:false}).addTo(map),L.marker(ll,{icon:L.divIcon({className:'fm-me trkme',html,iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:900,interactive:false}).addTo(map)]}
+ else{if(fmMe)fmMe.forEach(l=>map.removeLayer(l));fmMe=[L.circle(ll,{radius:acc,stroke:false,fill:false,interactive:false})/* 오차 원은 안 보이게(파란 점만) */.addTo(map),L.marker(ll,{icon:L.divIcon({className:'fm-me trkme',html,iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:900,interactive:false}).addTo(map)]}
  if(TRK.on&&TRK.follow){if(!TRK.live){TRK.live=1;map.setView(ll,Math.max(map.getZoom(),17))}else if(!map.getBounds().pad(-.2).contains(ll))map.panTo(ll,{animate:true})}}
 function trkChip(){const a=document.getElementById('trkChip');if(!a)return;a.classList.toggle('rec',TRK.on);
  if(TRK.on&&TRK.D){const S=trkSum(TRK.D);a.dataset.lb=`기록 중 ${trkKm(S.w)} · ${trkDur(S.s)}`;a.title='👣 길 기록 중 — 누르면 끝내기, 길게 누르면 기록 목록'}
