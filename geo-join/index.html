@@ -1026,6 +1026,48 @@ html.gwOn .afp{top:150px}
 @media screen and (min-width:900px) and (max-width:1500px){#frdBtn .frdl{display:none}header .hlab{font-size:0;gap:0}header .hlab select{font-size:12px}header .hr{gap:5px}header .hbtn,header .hchip{padding-left:9px;padding-right:9px}}
 #dskHint{position:fixed;left:8px;right:8px;bottom:8px;z-index:30000;display:flex;align-items:center;gap:10px;background:#1e293b;color:#fff;border-radius:14px;padding:14px 16px;font-size:26px;line-height:1.45;box-shadow:0 8px 24px #0006}
 #dskHint b{color:#fcd34d}#dskHint button{flex:none;font:inherit;font-size:24px;border:0;border-radius:10px;padding:8px 14px;background:#ffffff26;color:#fff;cursor:pointer}
+/* 2026-11-06 보고서형 머리글 B안: 두 줄 정리 (위 얇은 제목줄 · 아래 묶음별 버튼 줄, 가로 스크롤 없음) — PC 배치(폭 900 이상)만 */
+@media screen and (min-width:900px){
+ header .hin{flex-wrap:wrap!important;justify-content:flex-start!important;column-gap:6px;row-gap:0;padding:3px 12px 5px!important}
+ header .hc,header .hr{display:contents}
+ header .hl{order:1;flex:0 1 auto!important;min-width:0!important;gap:8px}
+ header .hl .mascot,header .hr .mascot{display:block!important;height:30px;max-width:60px}
+ header .hl .mascot.empty,header .hr .mascot.empty{width:28px;height:28px}
+ header h1{font-size:16px}
+ header h1 .tag{display:inline-block!important;font-size:11px;padding:1px 7px}
+ header p{display:none!important}
+ header .hchip[title="자료 상태"]{order:2;margin-left:auto}
+ header .hchip.hide-s{order:3}
+ header #dm{order:4}
+ header #gwBtn{order:5}
+ header #mR{order:6}
+ header .hin::after{content:'';order:10;flex:0 0 calc(100% + 24px);height:1px;background:var(--gw-bd);margin:3px -12px 5px}
+ header #afBtn{order:11}header #exBtn{order:12}
+ header .dwBtn{order:21}header #sideBtn{order:22}header #fmBtn{order:23}
+ header #vdHelpBtn{order:31}header #frdBtn{order:32}
+ header .hlab{order:41;margin-left:auto}header #hpr{order:42}
+ header .dwBtn,header #vdHelpBtn{margin-left:13px;position:relative}
+ header .dwBtn::before,header #vdHelpBtn::before{content:'';position:absolute;left:-8px;top:5px;bottom:5px;width:1px;background:var(--gw-bd)}
+ header .hin>*,header .hc>*,header .hr>*{flex-shrink:0;white-space:nowrap}
+ header .afbtn,header .hr .hbtn,header .hr .dwBtn,header .hpdf{height:30px;box-sizing:border-box;padding:0 11px!important;font-size:13px!important;display:inline-flex;align-items:center;gap:5px;margin-top:0;margin-bottom:0}
+ header .afbtn .afcar{font-size:11px}
+ header .hchip:not(.dwBtn){padding:2px 9px!important;font-size:12px}
+ header .hchip[title="자료 상태"] .hlbl,header .hchip.hide-s .hlbl{display:inline!important}
+ header .hlab{font-size:12px!important;gap:4px!important}
+ header .hlab select{height:30px;box-sizing:border-box}
+ header #dm,header #gwBtn{height:26px;padding:0 10px!important;font-size:12px!important;display:inline-flex;align-items:center;gap:4px}
+ header #gwBtn .gwbl,header #frdBtn .frdl{display:inline!important}
+}
+@media screen and (min-width:900px) and (max-width:1250px){
+ header #frdBtn .frdl{display:none!important}
+ header .hchip.hide-s{display:none}
+ header .hpdf .hlong{display:none!important}header .hpdf .hshort{display:inline!important}
+}
+svg.ri{flex:none;display:inline-block;vertical-align:-.2em;width:1.15em;height:1.15em;fill:none;stroke:currentColor;color:var(--c)}
+html.dark svg.ri{color:var(--cd)!important}
+.kpi .ki svg.ri{width:24px;height:24px}
+#fmBtn.on svg.ri{color:#fff!important}
+.drop .ic svg.ri{width:30px;height:30px}
 </style></head><body>
 <header><div class="hin">
  <div class="hl">
@@ -1451,11 +1493,22 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  bell:'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20.5a2 2 0 0 0 4 0',unlock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 7.7-1.5',
  eyeoff:'M2 12s4-7 10-7c1.9 0 3.6.7 5 1.6M22 12s-4 7-10 7c-1.9 0-3.6-.7-5-1.6M9.9 14.1a3 3 0 0 1 4.2-4.2M3 3l18 18',
  mapoff:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM3 3l18 18',fullx:'M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6',
- book:'M12 6c-2-2-5-2-8-1.5V19c3-.5 6-.5 8 1.5 2-2 5-2 8-1.5V4.5C17 4 14 4 12 6zM12 6v14.5'};
+ book:'M12 6c-2-2-5-2-8-1.5V19c3-.5 6-.5 8 1.5 2-2 5-2 8-1.5V4.5C17 4 14 4 12 6zM12 6v14.5',
+ /* 2026-11-06 보고서형 화면 이모지도 같은 선 아이콘으로 (repIco) */
+ sun:'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4',
+ inb:'M3 13h5l2 3h4l2-3h5v7H3zM12 3v9M8 8l4 4 4-4',up:'M12 20V8M7 13l5-5 5 5M4 4h16',
+ palette:'M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.2-1.6-.4-1 .2-2.4 1.6-2.4H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10zM7.5 10.5h.01M10 7h.01M15 7h.01',
+ tag:'M3 3h8l10 10-8 8L3 11zM7.5 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z',trash:'M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6',
+ undo:'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',
+ compass:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM15.5 8.5l-2 5-5 2 2-5z',calc:'M5 3h14v18H5zM8 6h8v4H8zM8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01',
+ cloud:'M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5A3.8 3.8 0 0 1 17.5 18z',refresh:'M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4',
+ minus:'M5 12h14',side:'M3 4h18v16H3zM9 4v16M5.5 8h1.5M5.5 11h1.5',flag:'M5 21V4M5 4h11l-2 4 2 4H5',ruler:'M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2',
+ warn:'M12 3l10 18H2zM12 10v5M12 18h.01',sat:'M5 13l6 6M8 4l3 3-4 4-3-3zM16 12l3 3-4 4-3-3zM10 9l5 5M17 3a4 4 0 0 1 4 4',plug:'M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5'};
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
- save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate'};
+ save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
+ sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
 window.GICO={I,col:icC};
@@ -1718,6 +1771,45 @@ let prW=false;addEventListener('beforeprint',()=>{if(S.on){prW=true;set(false,tr
 const hb=$('gwBtn');if(hb)hb.onclick=()=>set(!S.on);
 /* 처음: 이 기기에서 마지막에 고른 화면 · 처음 쓰는 PC(마우스·폭 900px 이상)는 작업 화면, 폰·태블릿은 평소 화면 · 지도 준비를 기다렸다가 */
 const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coarse)').matches&&innerWidth>=900)){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
+})();
+</script>
+<script>
+/* ===== 2026-11-06 보고서형 화면 아이콘도 작업 화면(리본·칩)과 같은 색 선 아이콘으로 =====
+   머리글·카드 제목·버튼·자료 칩·요약 카드 앞의 이모지 글자를 window.GICO 선 아이콘(svg.ri)으로 바꾼다.
+   글자는 그대로 두고 맨 앞 이모지 한 개만 바꾸며, 버튼 글자가 다시 들어오면(🌙↔☀️ 등) 그때도 바꾼다.
+   지도 안(칩 줄은 따로 바꿈)·표 본문·안내 글·고르기 칸은 건드리지 않는다. */
+(function(){
+const GI=window.GICO;if(!GI)return;
+const EM={'🔎':'srch','🔍':'srch','📤':'exp','🖥':'mon','📱':'phone','📖':'book','📑':'doc','🌙':'moon','☀':'sun','📄':'page','📋':'list','📥':'inb','💾':'save','🚰':'pipe','🔧':'valve',
+ '📷':'cam','🎬':'vid','⏫':'up','📂':'open','⛰':'mnt','🔑':'key','🎨':'palette','🏷':'tag','🖍':'draw','👣':'steps','📍':'pin','💧':'drop','🗑':'trash','🗺':'map','⚙':'gear','🔗':'link',
+ '➕':'plus','↩':'undo','📜':'hist','🛠':'tool','🧭':'compass','🧮':'calc','⬇':'dl','📈':'chart','📒':'xls','🙈':'eyeoff','👁':'eye','☁':'cloud','🔌':'plug','🔄':'refresh','⏹':'stop',
+ '🖼':'img','🗜':'box','➖':'minus','📊':'xls','👥':'user','🎯':'tbl','🛰':'sat','🚶':'walk','⚡':'bolt','🖨':'prt','⛶':'full','✏':'pen','📌':'loc','🪧':'page','🚩':'flag','📏':'ruler',
+ '🗂':'box','⚠':'warn'};
+const RE=/^(\s*)(\p{Extended_Pictographic}|[⛶◀▶▫])️?/u;
+const OK='button,label.btn,summary,h2,h3,h4,.ic,.hico,.ki,span.ck,.afhd b,.secchip';
+const NO='.leaflet-container,tbody,#gw,select,option,textarea,.hint,small,script,style,.riE';
+const key=(e,t,el)=>{if(e==='◀'||e==='▶')return el.closest('#sideBtn,#sideTab')?'side':null;
+ if(e==='▫')return /②-3/.test(t)?'mnt':/②-4/.test(t)?'leak':null;
+ if(e==='📥'&&/부과량/.test(t))return 'bill';return EM[e]||null};
+const NS='http://www.w3.org/2000/svg';
+function fix(n){const v=n.nodeValue;if(!v)return;const m=v.match(RE);if(!m)return;const pe=n.parentElement;if(!pe)return;
+ const el=pe.closest(OK);if(!el||pe.closest(NO))return;const k=key(m[2],v,el);if(!k||!GI.I[k])return;
+ const c=GI.col(k),s=document.createElementNS(NS,'svg');s.setAttribute('class','ri');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('aria-hidden','true');
+ s.setAttribute('width','1.15em');s.setAttribute('height','1.15em');s.setAttribute('fill','none');s.setAttribute('stroke','currentColor');s.setAttribute('stroke-width','1.9');
+ s.setAttribute('stroke-linecap','round');s.setAttribute('stroke-linejoin','round');s.setAttribute('style','--c:'+c[0]+';--cd:'+c[1]+';color:var(--c)');
+ s.innerHTML='<path d="'+GI.I[k]+'"/>';
+ /* 이모지 글자는 숨긴 채 남겨 둠: 글자로 카드·버튼을 찾거나(DEF) 바쁨 표시 뒤 글자를 되돌리는 곳이 그대로 동작하도록 */
+ const h=document.createElement('span');h.className='riE';h.style.display='none';h.textContent=m[0].slice(m[1].length);
+ const rest=v.slice(m[0].length);pe.insertBefore(s,n);pe.insertBefore(h,n);
+ if(rest.trim()){n.nodeValue=(rest[0]===' '?'':' ')+rest}else n.remove()}
+function scan(r){if(!r)return;if(r.nodeType===3){fix(r);return}if(r.nodeType!==1||r.closest&&r.closest(NO))return;
+ const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT,{acceptNode:t=>RE.test(t.nodeValue||'')?1:3}),a=[];let t;while(t=w.nextNode())a.push(t);a.forEach(fix)}
+const roots=()=>[document.querySelector('header'),document.querySelector('main.dash'),document.getElementById('exPanel'),document.getElementById('afPanel')].filter(Boolean);
+let q=new Set(),raf=0;const flush=()=>{raf=0;const a=[...q];q.clear();a.forEach(n=>{if(n.isConnected)scan(n)})};
+const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')q.add(m.target);else m.addedNodes.forEach(n=>{if(n.nodeType===1&&n.namespaceURI===NS)return;q.add(n)})}
+ if(q.size&&!raf)raf=requestAnimationFrame(flush)});
+const go=()=>roots().forEach(r=>{scan(r);mo.observe(r,{childList:true,subtree:true,characterData:true})});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
 })();
 </script>
 <script>
