@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v38.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v39 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5869,6 +5869,48 @@ const _ra=rbAct;rbAct=function(a){if(a==='msAll'){dlAll();return}if(a==='msUp'){
 try{if($('gp'))gpRib(T.rib||'wds')}catch(e){}
 window.__gw38={K,MSQ,dl,dlAll,attach,readFile,detect,openTab};
 })()}catch(e){console.warn('v38',e)}
+
+/* ════ v39 색 선 아이콘: 스마트 물길주소와 같이 리본·제목줄·지도 도구 아이콘을 기능별 색 선 아이콘으로, 남은 이모지도 선 아이콘으로 ════ */
+try{(()=>{
+Object.assign(ICP,{sun:'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4',
+ unlock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 7.7-1.5'});
+// 색 [밝은 바탕, 어두운 바탕] — 스마트 물길주소 리본과 같은 팔레트
+const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
+const H={// 파일
+ fnew:'sky',open:'amber',save:'blue',saveas:'blue',flask:'teal',down:'cyan',up:'cyan',dn:'cyan',img:'sky',print:'slate',layers:'indigo',win:'slate',pop:'slate',lock:'red',unlock:'red',
+ // 모델 만들기
+ wiz:'violet',map:'green',blk:'green',mount:'brown',pin:'red',meter:'amber',target:'red',grid:'violet',drop:'blue',globe:'teal',tree:'green',swap:'cyan',ruler:'orange',
+ // 편집
+ cur:'slate',hand:'slate',box:'slate',node:'green',pipe:'blue',valve:'slate',pump:'orange',res:'blue',tank:'sky',move:'slate',vtx:'orange',trash:'red',copy:'slate',paste:'slate',cut:'orange',undo:'slate',redo:'slate',
+ // 해석
+ bolt:'yellow',wrench:'slate',clock:'indigo',plug:'orange',sliders:'slate',flag:'red',bars:'green',curve:'indigo',alert:'amber',shield:'green',fire:'red',wave:'sky',
+ // 분석·결과
+ sch:'teal',branch:'teal',dots4:'violet',route:'teal',wa:'indigo',more:'slate',chart:'green',pf:'green',spark:'yellow',table:'slate',list:'slate',info:'sky',ban:'red',frz:'sky',
+ // 보기·도움말
+ search:'indigo',zin:'slate',zout:'slate',ext:'slate',full:'teal',tag:'violet',palette:'pink',arrow:'cyan',gear:'slate',chat:'indigo',moon:'indigo',sun:'yellow',eye:'violet',help:'sky',cal:'indigo',
+ play:'red',stop:'red',first:'slate',prev:'slate',next:'slate',last:'slate'};
+const col=k=>HU[H[k]]||HU.slate;
+// path d → 아이콘 이름 (ico()가 path만 넣으므로 거꾸로 찾음)
+let RV=null;const rv=()=>{if(!RV||RV.__n!==Object.keys(ICP).length){RV=new Map(Object.entries(ICP).map(([k,d])=>[d,k]));RV.__n=Object.keys(ICP).length}return RV};
+const svg=k=>`<svg class="gi gc" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="--c:${col(k)[0]};--cd:${col(k)[1]}"><path d="${ICP[k]}"/></svg>`;
+const st=document.createElement('style');st.textContent=
+ '#gp svg.gi.gc{color:var(--c)!important}html.dark #gp svg.gi.gc{color:var(--cd)!important}'+
+ '#gp .rb-b:disabled svg.gi.gc{opacity:.55}'+
+ '#gp .v39e{display:inline-flex;align-items:center;gap:4px}#gp .v39e svg{flex:none;vertical-align:-2px}';
+document.head.appendChild(st);
+// 남은 이모지 → 같은 색 선 아이콘
+const EM={'🔒':'lock','🔓':'unlock','💬':'chat','🌙':'moon','☀':'sun','⚙':'gear','🗗':'win','⚡':'bolt','🔍':'search','📂':'open','💾':'save','🗺':'map','📍':'pin','📊':'chart','📋':'list','🗑':'trash','❓':'help','📘':'info','📄':'down'};
+const ER=new RegExp('^\\s*('+Object.keys(EM).join('|')+')\\uFE0F?\\s*');
+const SC=['gpTitle','gpLayW','gpTime','tbLock','msetBtn','qlOn','gpMapTb','gpRib'];
+function emo(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
+ for(const t of ns){const m=(t.nodeValue||'').match(ER);if(!m)continue;const p=t.parentElement;if(!p||p.closest('select,option,textarea,input'))continue;
+  const k=EM[m[1]];const sp=document.createElement('span');sp.className='v39e';sp.innerHTML=svg(k)+'<span></span>';sp.lastChild.textContent=t.nodeValue.slice(m[0].length);t.parentNode.replaceChild(sp,t)}}
+function paint(root){root.querySelectorAll('svg.gi:not(.gc)').forEach(s=>{const p=s.querySelector('path');const k=p&&rv().get(p.getAttribute('d'));if(!k)return;const c=col(k);s.classList.add('gc');s.style.setProperty('--c',c[0]);s.style.setProperty('--cd',c[1])})}
+let q=0;function run(){q=0;const gp=$('gp');if(!gp)return;paint(gp);SC.forEach(id=>{const e=$(id);if(e)emo(e)});const ms=$('msetBtn');if(ms)emo(ms)}
+const kick=()=>{if(!q)q=requestAnimationFrame(run)};
+run();try{new MutationObserver(kick).observe(document.body,{childList:true,subtree:true,characterData:true})}catch(e){}
+window.__gw39={HU,H,col,run};
+})()}catch(e){console.warn('v39',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
