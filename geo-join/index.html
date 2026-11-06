@@ -1549,6 +1549,9 @@ const LAY=[
  {k:'blk',n:'소블록 경계',s:'#ea580c',c:()=>{const p=G('poly');return p&&p.features?p.features.length:0},on:()=>{const m=G('map'),l=G('polyL');return !!(m&&l&&m.hasLayer(l))},set:o=>{const m=G('map'),l=G('polyL');if(!m||!l)return;o?l.addTo(m):m.removeLayer(l)}},
  {k:'pipe',n:'상수관로',s:'#2563eb',c:()=>{const p=G('PIPE');return p?p.feats.length:0},on:()=>selOn('pShow'),set:o=>selSet('pShow',o,'auto'),ok:()=>!$('pPanel').hidden},
  {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
+ /* 공업밸브·마을상수도 밸브는 따로 켜고 끔 (2026-11-06 사용자) — 시설물 목록의 같은 체크(#ind·#vil)와 함께 바뀜 */
+ {k:'ind',n:'공업밸브',s:'#facc15',c:()=>F('facVCount','ind')||0,on:()=>{const f=G('FAC');return !!f&&!f.hidden.has('#ind')&&selOn('fShow')},set:o=>{if(o&&!selOn('fShow'))selSet('fShow',1,'auto');F('facHidSet','#ind',!o)},ok:()=>!$('fPanel').hidden},
+ {k:'vlv',n:'마을상수도 밸브',s:'#84cc16',c:()=>F('facVCount','vlv')||0,on:()=>{const f=G('FAC');return !!f&&!f.hidden.has('#vil')&&selOn('fShow')},set:o=>{if(o&&!selOn('fShow'))selSet('fShow',1,'auto');F('facHidSet','#vil',!o)},ok:()=>!$('fPanel').hidden},
  {k:'elev',n:'표고·수압 (관망해석)',s:'#a16207',c:()=>{const e=G('ELEV');return e?e.n:0},on:()=>selOn('eShow'),set:o=>selSet('eShow',o,'auto'),ok:()=>!$('ePanel').hidden},
  {g:'현장 · 수용가'},
  {k:'pt',n:'수용가 점',s:'#0284c7',c:()=>{const p=G('PT');return p?p.n:0},on:()=>{const p=G('PT');return !!p&&!p.off},set:o=>{const p=G('PT');if(p&&!!p.off===o)F('ptToggle')}},
@@ -1567,6 +1570,8 @@ function laySym(k){try{switch(k){
  case 'blk':{const b=F('blkBase')||{},c=b.color||'#ea580c';return SV(20,14,`<path d="M2 5L8 1.5L17 3.5L16 12L6 12.8L2 9.5Z" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`)}
  case 'pipe':{const d=G('DIA_BANDS')||[];const c1=(d[0]||[])[2]||'#93c5fd',c2=(d[2]||[])[2]||'#1d4ed8';return SV(20,14,`<line x1="1" y1="4" x2="19" y2="4" stroke="${c1}" stroke-width="1.6" stroke-linecap="round"/><line x1="1" y1="10" x2="19" y2="10" stroke="${c2}" stroke-width="3.4" stroke-linecap="round"/>`)}
  case 'fac':{const f=G('FAC'),ks=f&&f.kinds||[],fk=x=>F('facKindInfo',x)||{};const k0=ks.find(x=>fk(x).sym==='gate')||ks[0];const h=F('facSym',k0?fk(k0):{sym:'gate'},16);if(h)return h;break}
+ case 'ind':return F('facSym',{sym:'ind'},16)||'';
+ case 'vlv':return F('facSym',{sym:'vlv'},16)||'';
  case 'elev':{const e=G('ELB')||[];const c=[0,Math.floor(e.length/2),e.length-1].map(i=>(e[i]||[])[2]||'#a16207');return SV(20,14,c.map((x,i)=>`<circle cx="${4+i*6}" cy="7" r="3.2" fill="${x}" stroke="#fff" stroke-width="1"/>`).join(''))}
  case 'pt':return SV(20,14,'<circle cx="6" cy="8" r="3.6" fill="#1f8a4c" stroke="#fff" stroke-width="1.2"/><circle cx="13.5" cy="5.5" r="3.6" fill="#1c5fa5" stroke="#fff" stroke-width="1.2"/>');
  case 'ph':return SV(20,14,'<rect x="3" y="1.5" width="14" height="11" rx="3" fill="#7c3aed" stroke="#fff" stroke-width="1"/><circle cx="10" cy="7.5" r="2.6" fill="none" stroke="#fff" stroke-width="1.4"/><rect x="7" y="2.6" width="3" height="1.6" fill="#fff"/>');
@@ -4913,7 +4918,10 @@ window.facInfoSave=async(i,btn)=>{const box=btn.closest('.fied');if(!box)return;
 window.facBndSet=(i,on)=>{const P=FAC.pt[i]&&FAC.pt[i].p||{},o=P['_원본']||{},pt={'밸브구분':on?'경계밸브':''};
  if(on)pt['개폐여부']='폐';else if(facBnd(P)&&'개폐여부' in o)pt['개폐여부']=o['개폐여부']==null?'':o['개폐여부'];
  return facEdit(i,pt,on?'경계밸브로 (닫힘)':'제수밸브로')};
-/* 공업밸브로 = 아이콘만 노랑. 개폐는 그대로 둠 (2026-11-05 사용자: 아이콘 표시만 구분) */ window.facIndSet=i=>facEdit(i,{'밸브구분':'공업밸브'},'공업밸브로'); window.facVlvSet=i=>facEdit(i,{'밸브구분':'마을상수도'},'마을상수도 밸브로'); function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
+/* 공업밸브로 = 아이콘만 노랑. 개폐는 그대로 둠 (2026-11-05 사용자: 아이콘 표시만 구분) */ /* 레이어 창에서 공업밸브(#ind)·마을상수도 밸브(#vil) 따로 켜고 끄기 */
+function facHidSet(k,h){if(h)FAC.hidden.add(k);else FAC.hidden.delete(k);facCfgSave();facDraw();facKindsUi()}
+function facVCount(t){let n=0;for(const f of FAC.feats){if(!f.c||facKindInfo(f.k).sym!=='gate')continue;if(t==='ind'?facInd(f.p):facVlv(f.p))n++}return n}
+window.facIndSet=i=>facEdit(i,{'밸브구분':'공업밸브'},'공업밸브로'); window.facVlvSet=i=>facEdit(i,{'밸브구분':'마을상수도'},'마을상수도 밸브로'); function facOpSet(i,to){return to==='orig'?facEdit(i,'orig','원래대로'):facEdit(i,{'개폐여부':to==='close'?'폐':'개'},to==='close'?'닫힘':'열림')}
 window.facOpSet=facOpSet;
 function facInit(){if(!map||FAC.cv)return;if(!map.getPane('facPane')){const p=map.createPane('facPane');p.style.zIndex=440;p.style.pointerEvents='none'}
  const cv=L.DomUtil.create('canvas','fac-canvas leaflet-zoom-hide',map.getPane('facPane'));cv.style.position='absolute';FAC.cv=cv;FAC.ctx=cv.getContext('2d');
