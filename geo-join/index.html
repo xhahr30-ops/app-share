@@ -3347,11 +3347,11 @@ $('blkParen').onchange=()=>{try{localStorage.setItem('geo-blkparen',$('blkParen'
 $('f3').onchange=e=>{const f=e.target.files[0];if(!f)return;if(typeof shp==='undefined'){$('pMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다.';return}
  if(!$('pSaveBox').hidden&&!confirm('저장된 상수관로 기준자료를 이 파일로 전체 교체할까요?\n(바뀐 부분만 반영하려면 취소 후 ➕ 변경분 반영을 쓰세요. 이전 버전은 되돌리기용으로 1개 보관됩니다)')){e.target.value='';return}
  const r=new FileReader();r.onload=ev=>loadPipes(ev.target.result,f.name).catch(err=>{$('pMsg').textContent='상수관로 SHP 로드 실패: '+((err&&err.message)||err)});r.readAsArrayBuffer(f)};
-['pDia','pMat','pYmd','pUse','pId'].forEach(id=>$(id).onchange=()=>{PIPE.ct=null;pipeRefresh(true)});
+['pDia','pMat','pYmd','pUse','pId'].forEach(id=>$(id).onchange=()=>{PSEL=null;PIPE.ct=null;pipeRefresh(true)});
 $('pBy').onchange=()=>pipeRefresh(false);$('pShow').onchange=()=>{pipeRefresh(false)};$('pFar').oninput=()=>pipeRefresh(false);$('pPrint').onchange=()=>pipeRefresh(false);
 $('pCodes').oninput=()=>{PIPE.ct=null;PIPE.stats=null;pipeRefresh(true)};
 {let v={};try{v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}}catch(_){}if(v.by)$('pBy').value=v.by;if(v.show)$('pShow').value=v.show;if(v.far)$('pFar').value=v.far;if(v.codes)$('pCodes').value=v.codes;if(v.print===false)$('pPrint').checked=false}
-if(map){map.on('zoomend',pipeShow);map.on('zoomend',()=>{const b=($('pBy')||{}).value,k=map.getZoom()>=FA_Z;if((b==='vel'||b==='flow')&&k!==PIPE.faZ){PIPE.faZ=k;renderLegend()}})}
+if(map){map.on('zoomend',pipeShow);map.on('moveend',pcCullAll);map.on('zoomend',()=>{const b=($('pBy')||{}).value,k=map.getZoom()>=FA_Z;if((b==='vel'||b==='flow')&&k!==PIPE.faZ){PIPE.faZ=k;renderLegend()}})}
 let pWas=[];window.addEventListener('beforeprint',()=>{pWas=[PIPE.layer,PIPE.layerS].filter(l=>l&&map&&map.hasLayer(l));if(!$('pPrint').checked)pWas.forEach(l=>map.removeLayer(l))});
 window.addEventListener('afterprint',()=>{pWas.forEach(l=>{if(!map.hasLayer(l))l.addTo(map)});pWas=[]});
 function locRun(i){if(i!=null)selectRow(i,'map');['locBtn','locBtn2'].forEach(id=>$(id).disabled=true);locTest().finally(()=>['locBtn','locBtn2'].forEach(id=>$(id).disabled=!out.length))}
@@ -3538,8 +3538,14 @@ async function loadPipes(buf,file){
  $('pPanel').hidden=false;pipeSave('전체',file);if(out.length)joinAll(true);else pipeBlockStats()}
 const PALIAS={dia:['구경','구경2','관경','PIP_DIP','STD_DIP'],mat:['관재질','MOP_CDE','PIP_MOP'],ymd:['설치일자','IST_YMD'],use:['상수관용도','SAA_CDE'],id:['관리번호','FTR_IDN']};
 const pv=(P,k,r)=>{if(k&&P[k]!=null&&P[k]!=='')return P[k];for(const a of PALIAS[r])if(P[a]!=null&&String(P[a]).trim()!=='')return P[a];return null};
-function attrOf(f){const P=f.properties,ct=PIPE.ct||(PIPE.ct=codeTable()),m=pv(P,$('pMat').value,'mat'),y=parseYear(pv(P,$('pYmd').value,'ymd'));
- return{dia:parseDia(pv(P,$('pDia').value,'dia')),mat:m!=null?normMat(m,ct):'미상',matRaw:m??'',year:y,age:ageOf(y),use:(u=>u!=null?normUse(u,ct):'미상')(pv(P,$('pUse').value,'use')),id:pv(P,$('pId').value,'id')??'',layer:P['_레이어']||'',rk:f._rk}}
+/* [속도] 관로 속성은 관로마다 기억(PA_C) — 고른 칸의 원래 값·코드표가 같으면 다시 계산하지 않음(관로 고치기로 값이 바뀌면 자동으로 다시 계산).
+   고른 칸 이름(선택 상자 5개)은 한 번 읽어 두고, 바뀔 때(onchange·pFillSelects)와 지금 일이 끝날 때 다시 읽음 */
+let PSEL=null;const PA_C=new WeakMap();
+function pSel(){if(!PSEL){PSEL={m:$('pMat').value,y:$('pYmd').value,d:$('pDia').value,u:$('pUse').value,i:$('pId').value};queueMicrotask(()=>{PSEL=null})}return PSEL}
+function attrOf(f){const P=f.properties,ct=PIPE.ct||(PIPE.ct=codeTable()),S=pSel(),m=pv(P,S.m,'mat'),yr=pv(P,S.y,'ymd'),dr=pv(P,S.d,'dia'),ur=pv(P,S.u,'use'),id=pv(P,S.i,'id')??'',ly=P['_레이어']||'';
+ const c=PA_C.get(f);if(c&&c.ct===ct&&c.m===m&&c.yr===yr&&c.dr===dr&&c.ur===ur&&c.P===P)return{...c.a,id,layer:ly,rk:f._rk};
+ const y=parseYear(yr),a={dia:parseDia(dr),mat:m!=null?normMat(m,ct):'미상',matRaw:m??'',year:y,age:ageOf(y),use:ur!=null?normUse(ur,ct):'미상',id,layer:ly,rk:f._rk};
+ PA_C.set(f,{ct,m,yr,dr,ur,P,a});return{...a}}
 function buildPipeIndex(){const fs=PIPE.feats;let sx=0,sy=0,n=0;
  fs.forEach(f=>lineParts(f.geometry).forEach(p=>p.forEach(c=>{sx+=c[0];sy+=c[1];n++})));LX0=sx/n;LY0=sy/n;LCOS=Math.cos(LY0*Math.PI/180);
  const segs=[],grid=new Map(),C=100;let tot=0;
@@ -3605,9 +3611,47 @@ function pipePopFull(f,ll){const e={latlng:ll};return pipePopup(f)+pipeInfoForm(
 function renderPipes(){if(!map||!PIPE.fc)return;if($('pBy').value==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();catMap.clear();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});PIPE.layer=PIPE.layerS=null;
  /* 관로는 전용 층(블록·수용가 점 아래)에 그리고 클릭을 가로채지 않게 함 → 수용가 점·블록 팝업이 그대로 동작. 관로 정보는 선 근처 클릭 시 따로 표시 */
  const pn=pipePane(),rd=L.canvas?L.canvas({padding:.3,pane:pn}):undefined,opt={pane:pn,renderer:rd,interactive:false,style:pipeStyle,onEachFeature:hopEach},main=[],svc=[];PIPE.rd=rd;
- pipeHidMask();const hm=PIPE.hm;PIPE.feats.forEach((f,i)=>{if(f.properties&&f.properties._빈||hm&&hm[i])return;(attrOf(f).use==='급수관'?svc:main).push(f)});PIPE.nMain=main.length;PIPE.nS=svc.length;
- PIPE.layer=L.geoJSON({type:'FeatureCollection',features:main},opt);PIPE.layerS=svc.length?L.geoJSON({type:'FeatureCollection',features:svc},opt):null;
- renderLegend();pipeShow();pipeUnknown();hopStart()}
+ pipeHidMask();let nM=0,nS=0;PIPE.feats.forEach(f=>{if(f.properties&&f.properties._빈)return;const v=attrOf(f).use==='급수관';(v?svc:main).push(f);if(!pcHid(f))v?nS++:nM++});PIPE.nMain=nM;PIPE.nS=nS;
+ PIPE.layer=pcMake(main,opt);PIPE.layerS=svc.length?pcMake(svc,opt):null;
+ /* 인식 못한 값 찾기·교차 반원은 한 박자 뒤에 → 화면이 한 번에 오래 멈추지 않게 */
+ renderLegend();pipeShow();clearTimeout(PIPE.unkT);PIPE.unkT=setTimeout(()=>{pipeUnknown();hopStart()},0)}
+/* 지금 그리는(끄지 않은) 관로 개수 — 줌 안내 글에 씀 */
+function pipeCount(){let a=0,b=0;for(const f of PIPE.feats){if(f.properties&&f.properties._빈||pcHid(f))continue;attrOf(f).use==='급수관'?b++:a++}PIPE.nMain=a;PIPE.nS=b}
+/* [속도] 색 기준·표시 항목만 바뀔 때: 관로 층을 새로 만들지 않고 올라가 있는 관로의 색만 바꾸고, 끈 항목은 내리고 켠 항목은 올림 */
+function pipeRecolor(){if(!map||!PIPE.fc)return;if(!PIPE.layer)return renderPipes();if($('pBy').value==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();catMap.clear();
+ pipeHidMask();pipeCount();[PIPE.layer,PIPE.layerS].forEach(l=>{if(l&&l.setStyle)l.setStyle(pipeStyle)});pcCullAll();renderLegend();pipeShow();hopStart()}
+/* ===== [속도] 관로는 지금 화면 둘레만 지도에 올림 — 9.5만 개를 전부 올리면 시작·확대·축소 때마다 전부 다시 계산하고 메모리도 큼
+   관로마다 범위(bbox)를 격자(약 500m)에 넣어 두고, 지도를 옮기면 화면 둘레(여유 50%)에 든 것은 올리고 많이 멀어진 것(여유 100% 밖)·끈 항목은 내림 */
+const PC_C=.005,PC_N=1500;
+function pcHid(f){return !!(PIPE.hidS&&PIPE.hidS.has(pipeCat(attrOf(f),PIPE.hidBy)))}
+function pcBox(f){let w=1e9,s=1e9,e=-1e9,n=-1e9;lineParts(f.geometry).forEach(p=>p.forEach(c=>{const x=c[0],y=c[1];if(x<w)w=x;if(x>e)e=x;if(y<s)s=y;if(y>n)n=y}));return[w,s,e,n]}
+function pcPut(pc,i){const b=pc.bb[i];if(!b||b[0]>b[2])return;for(let gx=Math.floor(b[0]/PC_C);gx<=Math.floor(b[2]/PC_C);gx++)for(let gy=Math.floor(b[1]/PC_C);gy<=Math.floor(b[3]/PC_C);gy++){const k=gx+','+gy;let a=pc.grid.get(k);if(!a)pc.grid.set(k,a=[]);a.push(i)}}
+function pcMake(list,opt){const g=L.geoJSON(null,opt),pc={list:list.slice(),bb:[],grid:new Map(),on:new Map(),all:list.length<=3000,raf:0};g._pc=pc;
+ pc.list.forEach((f,i)=>{pc.bb[i]=pcBox(f);pcPut(pc,i)});
+ g.on('add',()=>pcCull(g));return g}
+function pcOut(g,i){const pc=g._pc,ly=pc.on.get(i);if(!ly)return;g.removeLayer(ly);pc.on.delete(i);if(ly.feature&&HOP.L.get(ly.feature)===ly)HOP.L.delete(ly.feature)}
+function pcCull(g){if(!g||!g._pc||!map||!map.hasLayer(g))return;const pc=g._pc;cancelAnimationFrame(pc.raf);pc.raf=0;
+ const del=[],add=[];for(const [i] of pc.on){if(!pc.list[i]||pcHid(pc.list[i]))del.push(i)}
+ if(pc.all){for(let i=0;i<pc.list.length;i++)if(!pc.on.has(i)&&pc.list[i]&&!pcHid(pc.list[i]))add.push(i)}
+ else{const B=map.getBounds();if(!B.isValid())return;const W=B.pad(.5),K=B.pad(1),w=W.getWest(),s=W.getSouth(),e=W.getEast(),n=W.getNorth(),kw=K.getWest(),ks=K.getSouth(),ke=K.getEast(),kn=K.getNorth();
+  for(const [i] of pc.on){const b=pc.bb[i];if(pc.list[i]&&(b[2]<kw||b[0]>ke||b[3]<ks||b[1]>kn))del.push(i)}
+  const seen=new Set();for(let gx=Math.floor(w/PC_C);gx<=Math.floor(e/PC_C);gx++)for(let gy=Math.floor(s/PC_C);gy<=Math.floor(n/PC_C);gy++){const a=pc.grid.get(gx+','+gy);if(!a)continue;
+   for(const i of a){if(pc.on.has(i)||seen.has(i))continue;seen.add(i);const b=pc.bb[i];if(!pc.list[i]||b[2]<w||b[0]>e||b[3]<s||b[1]>n||pcHid(pc.list[i]))continue;add.push(i)}}
+  /* 많이 올려야 할 때(멀리 보기)는 화면 가운데에 가까운 것부터 나눠 올림 → 한 번에 오래 멈추지 않음 */
+  if(add.length>PC_N){const c=B.getCenter(),cx=c.lng,cy=c.lat,d=i=>{const b=pc.bb[i];return Math.abs((b[0]+b[2])/2-cx)+Math.abs((b[1]+b[3])/2-cy)};add.sort((a,b)=>d(a)-d(b))}}
+ if(!add.length&&!del.length)return;
+ let k=0,r=0,fresh=false;const step=()=>{pc.raf=0;if(!map.hasLayer(g))return;let n=PC_N;
+  for(;k<add.length&&n>0;k++,n--){const i=add[k];if(!pc.on.has(i)&&pc.list[i]){pcAddRaw(g,i);fresh=true}}
+  for(n*=2;r<del.length&&n>0;r++,n--)pcOut(g,del[r]);
+  if(k<add.length||r<del.length)pc.raf=requestAnimationFrame(step);else if(fresh){fresh=false;pcFresh()}};step()}
+/* 새로 올린 관로 위에 수용가 점·교차 반원이 그대로 보이게 */
+let pcFT=0;function pcFresh(){clearTimeout(pcFT);pcFT=setTimeout(()=>{try{if(mkL&&mkL.bringToFront)mkL.bringToFront();hopFront()}catch(_){}},60)}
+/* L.GeoJSON.addData와 같은 일(스타일·onEachFeature)을 하면서 만든 레이어를 바로 받아 둠 */
+function pcAddRaw(g,i){const pc=g._pc,f=pc.list[i],o=g.options;const ly=L.GeoJSON.geometryToLayer(f,o);if(!ly)return;ly.feature=f;ly.defaultOptions=ly.options;g.resetStyle(ly);if(o.onEachFeature)o.onEachFeature(f,ly);g.addLayer(ly);pc.on.set(i,ly)}
+function pcCullAll(){[PIPE.layer,PIPE.layerS].forEach(pcCull)}
+/* 한 관로만 바꾸기(관로 편집): 격자에서 빼고 새 관로를 넣은 뒤 화면 둘레면 바로 올림 */
+function pcDrop(g,f){const pc=g&&g._pc;if(!pc)return false;const i=pc.list.indexOf(f);if(i<0)return false;pcOut(g,i);pc.list[i]=null;return true}
+function pcPush(g,f){const pc=g._pc,i=pc.list.push(f)-1;pc.bb[i]=pcBox(f);pcPut(pc,i);if(map&&map.hasLayer(g)&&!pcHid(f)){if(pc.all)pcAddRaw(g,i);else{const B=map.getBounds().pad(.5),b=pc.bb[i];if(!(b[2]<B.getWest()||b[0]>B.getEast()||b[3]<B.getSouth()||b[1]>B.getNorth()))pcAddRaw(g,i)}}}
 function pipeUnknown(){const um=new Map(),uu=new Map(),mk=$('pMat').value,uk=$('pUse').value;
  PIPE.feats.forEach(f=>{const a=attrOf(f);if(mk&&a.mat!=='미상'&&!MAT_COL[a.mat]&&!Object.values(PIPE.ct||{}).includes(a.mat))um.set(a.mat,(um.get(a.mat)||0)+1);
   if(uk&&a.use!=='미상'&&!USE_COL[a.use]&&!Object.values(PIPE.ct||{}).includes(a.use))uu.set(a.use,(uu.get(a.use)||0)+1)});
@@ -3627,8 +3671,8 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
 function pipeCat(a,by){return by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
 /* 관로 항목별 켜고 끄기: 색 기준마다 따로 기억 (UI.pHid[색 기준] = 끈 항목). 끈 관로는 그리지 않고 누르기·라벨에서도 뺌 */
 function pipeHidList(){return ((UI.pHid||{})[$('pBy').value])||[]}
-function pipeHidMask(){const by=$('pBy').value,s=new Set(pipeHidList());if(!s.size){PIPE.hm=null;return}const m=new Uint8Array(PIPE.feats.length);PIPE.feats.forEach((f,i)=>{if(s.has(pipeCat(attrOf(f),by)))m[i]=1});PIPE.hm=m}
-function pipeHidSet(n,hide){const by=$('pBy').value;UI.pHid=UI.pHid||{};const s=new Set(UI.pHid[by]||[]);hide?s.add(n):s.delete(n);if(s.size)UI.pHid[by]=[...s];else delete UI.pHid[by];uiSave();if(map)map.closePopup();if(PIPE.fc)renderPipes();PLB.key='';plblSoon()}
+function pipeHidMask(){const by=$('pBy').value,s=new Set(pipeHidList());PIPE.hidS=s.size?s:null;PIPE.hidBy=by;if(!s.size){PIPE.hm=null;return}const m=new Uint8Array(PIPE.feats.length);PIPE.feats.forEach((f,i)=>{if(s.has(pipeCat(attrOf(f),by)))m[i]=1});PIPE.hm=m}
+function pipeHidSet(n,hide){const by=$('pBy').value;UI.pHid=UI.pHid||{};const s=new Set(UI.pHid[by]||[]);hide?s.add(n):s.delete(n);if(s.size)UI.pHid[by]=[...s];else delete UI.pHid[by];uiSave();if(map)map.closePopup();if(PIPE.fc)pipeRecolor();PLB.key='';plblSoon()}
 function pipeLegData(){
  const by=$('pBy').value,cnt=new Map();if(by==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();PIPE.feats.forEach(f=>{const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
  let items;if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
@@ -3651,7 +3695,7 @@ async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;re
   if(++i%3000===0){msg.textContent=`블록별 관로 집계 중... ${i.toLocaleString()}/${PIPE.feats.length.toLocaleString()}`;await sleep(0)}}
  PIPE.stats=st;msg.textContent=`로드 완료: 관로 ${PIPE.feats.length.toLocaleString()}개, 총 ${(PIPE.totalM/1000).toFixed(1)}km · 블록별 집계 완료`;renderBlk()}
 let pT=null;function pipeRefresh(full){clearTimeout(pT);pT=setTimeout(()=>{try{localStorage.setItem('geo-pipe',JSON.stringify({by:$('pBy').value,show:$('pShow').value,far:$('pFar').value,codes:$('pCodes').value,print:$('pPrint').checked,fields:PIPE.feats.length?pFields():((JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}).fields||{})}))}catch(_){}
- if(!PIPE.fc)return;renderPipes();if(full){if(out.length)joinAll(true);else pipeBlockStats()}else{renderTable();analyze()}},150)}
+ if(!PIPE.fc)return;if(full)renderPipes();else pipeRecolor();if(full){if(out.length)joinAll(true);else pipeBlockStats()}else{renderTable();analyze()}},150)}
 
 /* ===================== 위성 위치 상세도 (1단계: 시험) ===================== */
 const LOC_SRC={
@@ -4458,7 +4502,7 @@ const idList=(keys,max=12)=>keys.length?`<small class="mute">${keys.slice(0,max)
 function pFillSelects(keys,ks,saved){
  const sets=[['pDia',[/^(STD_DIP|PIP_DIP|DIP|DIA)$/i,/(관경|구경|DIP$|DIA)/i]],['pMat',[/^(MOP_CDE|PIP_MOP|MOP)$/i,/(MOP|재질|관종|MAT)/i]],['pYmd',[/^(IST_YMD)$/i,/(IST|설치|YMD|년도|연도|YEAR)/i]],['pUse',[/^(SAA_CDE|PIP_SAA)$/i,/(SAA|용도|USE)/i]],['pId',[/^(FTR_IDN)$/i,/(IDN|관리번호|^ID$)/i]]];
  sets.forEach(([id,res])=>{const s=$(id),cur=(saved&&saved[id]&&keys.includes(saved[id]))?saved[id]:(keys.filter(k=>res.some(re=>re.test(k))).sort((a,b)=>(ks.get(b)||0)-(ks.get(a)||0))[0]||'');
-  s.innerHTML='<option value="">(없음)</option>'+keys.map(k=>`<option>${esc(k)}</option>`).join('');s.value=cur;s.disabled=false})}
+  s.innerHTML='<option value="">(없음)</option>'+keys.map(k=>`<option>${esc(k)}</option>`).join('');s.value=cur;s.disabled=false});PSEL=null}
 function pFieldsKeep(){try{const v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{};v.fields=pFields();localStorage.setItem('geo-pipe',JSON.stringify(v))}catch(_){}}
 async function pipeSave(kind,file,cnt){const msg=$('pSaved');let prev=null;try{prev=await IDB.get('pipes')}catch(_){}
  if(kind==='전체')kind=prev?'전체 교체':'전체 등록';
@@ -7896,8 +7940,8 @@ function pedSegsOff(fi,old){const S=PIPE.segs,G=PIPE.grid,C=100;lineParts(old.ge
 function pedSegsOn(fi,f){const S=PIPE.segs,G=PIPE.grid,C=100;let len=0;lineParts(f.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]),si=S.push([a[0],a[1],b[0],b[1],fi])-1;len+=Math.hypot(b[0]-a[0],b[1]-a[1]);
   for(let gx=Math.floor(Math.min(a[0],b[0])/C);gx<=Math.floor(Math.max(a[0],b[0])/C);gx++)for(let gy=Math.floor(Math.min(a[1],b[1])/C);gy<=Math.floor(Math.max(a[1],b[1])/C);gy++){const key=gx+','+gy;let arr=G.get(key);if(!arr)G.set(key,arr=[]);arr.push(si)}}});f._len=len;return len}
 function pedLayerSwap(old,nf){if(!map||!PIPE.layer)return;
- if(old)for(const g of [PIPE.layer,PIPE.layerS]){if(!g)continue;let hit=null;g.eachLayer(l=>{if(l.feature===old)hit=l});if(hit){g.removeLayer(hit);break}}
- if(nf&&!nf.properties._빈){const g=attrOf(nf).use==='급수관'?PIPE.layerS:PIPE.layer;if(!g){renderPipes();return}g.addData(nf)}}
+ if(old)for(const g of [PIPE.layer,PIPE.layerS]){if(pcDrop(g,old))break}
+ if(nf&&!nf.properties._빈){const g=attrOf(nf).use==='급수관'?PIPE.layerS:PIPE.layer;if(!g){renderPipes();return}pcPush(g,nf)}}
 function pedSwap(fi,old,nf){if(!nf)nf=pedEmpty();const feats=PIPE.feats.slice();feats[fi]=nf;PIPE.feats=feats;PIPE.fc={type:'FeatureCollection',features:feats};
  if(PIPE.segs){if(old){pedSegsOff(fi,old);PIPE.totalM-=old._len||0}PIPE.totalM+=pedSegsOn(fi,nf)}
  pedLayerSwap(old,nf);if(typeof PLB!=='undefined'&&PLB.cache)PLB.cache.delete(fi);plblSoon();try{hopLocal(fi)}catch(e){console.warn('관로 교차',e)}}
