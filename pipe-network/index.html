@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v37 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v38 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5697,6 +5697,156 @@ html.dark .am-doc{color:inherit}html.dark .am-t th{background:#1e293b}html.dark 
 try{if($('gp'))gpRib(T.rib||'wds')}catch(e){}
 window.__gw36={AIMD,summary,bundle,parseMap,applyMap,PM};
 })()}catch(e){console.warn('v36',e)}
+
+/* ════ v38 실측 자료 양식: 파일을 불러오는 도구마다 [📄 양식] 내려받기 · 모델 만들기에 양식 모음(일괄) 내려받기·일괄 첨부 ════ */
+try{(()=>{
+const G23=window.__gw23,G20=window.__gw20,IW=G23&&G23.IW;if(!G23||!WR.iw)throw new Error('v23 INP 만들기 창이 없습니다');
+const XM=G23.xlsxMake;
+const MSQ={last:[],att:{}};
+const base=()=>(S.name||'관망').replace(/\.(inp|txt)$/i,'');
+const coll=new Intl.Collator('ko',{numeric:true});
+const nodes=()=>S.net?S.net.nodes:[],links=()=>S.net?S.net.links:[];
+const nid=i=>{const n=nodes()[i];return n?n.id:''},lid=i=>{const l=links()[i];return l?l.id:''};
+
+/* ── 양식 종류 ── */
+const K={
+ use:{t:'사용량(수요 할당)',sheet:'사용량',file:'사용량_양식',where:'분석 도구 › 💧 수요 할당 ② 사용량 자료',cols:'수용가번호 · 사용량',w:[18,14,18,30,24],
+  rows:()=>{const r=[['수용가번호','사용량','수용가명(선택)','주소(선택)','비고']];const M=T.mtr;
+   if(M&&M.pts&&M.key){const seen=new Set();for(const p of M.pts){const k=String((p.attr||{})[M.key]??'').trim();if(!k||seen.has(k))continue;seen.add(k);r.push([k,'','','',''])}}return r},
+  guide:['한 줄에 수용가 하나씩 적습니다.','수용가번호: 수도계량기 SHP의 수용가번호와 같은 값(계량기 SHP를 먼저 넣고 받으면 번호가 채워져 있습니다).','사용량: 숫자만. 단위(㎥/월·㎥/일·㎥/년)는 수요 할당 창의 [사용량 단위]에서 고릅니다.','수용가명·주소·비고 열은 읽지 않습니다(확인용).']},
+ lk:{t:'블록 유수율(블록 누수)',sheet:'블록유수율',file:'블록유수율_양식',where:'모델 만들기 › 수요 › 블록 누수',cols:'소블록 · 유수율(%) · 물리적 누수 비율(%)',w:[18,12,20,30],
+  rows:()=>{const r=[['소블록','유수율(%)','물리적 누수 비율(%)','비고']];[...new Set(nodes().filter(n=>n.type===0&&n.blk).map(n=>n.blk))].sort(coll.compare).forEach(b=>r.push([b,'','','']));return r},
+  guide:['한 줄에 소블록 하나씩 적습니다(관망을 열고 받으면 소블록 이름이 채워져 있습니다).','유수율(%): 예 85.2 (0~1 사이 값만 넣으면 비율로 보고 ×100 합니다).','물리적 누수 비율(%): 무수량 가운데 누수로 볼 비율. 비우면 블록 누수 창의 기본값을 씁니다.','유수율을 비운 블록은 건드리지 않습니다.']},
+ cal:{t:'실측값(실측 비교·보정)',sheet:'실측',file:'실측비교_양식',where:'분석 도구 › 🎯 실측 비교 · 최적화(보정)',cols:'종류 · ID · 시각 · 값',w:[10,18,9,10,30],
+  rows:()=>{const r=[['종류','ID','시각','값','비고']];const seen=new Set(),add=(k,id,m)=>{const q=k+'|'+id;if(!id||seen.has(q))return;seen.add(q);r.push([k,id,'','',m])};
+   (S.fac||[]).forEach(f=>{const nm=(typeof SYML!=='undefined'&&SYML[f.s])||f.s;if(/수압계/.test(f.s))add('수압',f.t==='n'?nid(f.i):'',nm);else if(/유량계/.test(f.s)&&f.t==='l')add('유량',lid(f.i),nm)});
+   nodes().forEach(n=>{if(n.type===2)add('수위',n.id,'탱크(배수지) 수심')});links().forEach(l=>{if(l.type===2)add('유량',l.id,'가압장 유량')});return r.slice(0,5001)},
+  guide:['종류: 수압(m) · 수두(m) · 유량(앱 유량 단위) · 수위(탱크 수심 m) · 수질(잔류염소 mg/L) 중 하나.','ID: 수압·수두·수위·수질은 절점 ID, 유량은 관로·가압장·밸브 ID.','시각: 07:00처럼 적으면 그 시각 계산값과, 비우면 하루 평균과 비교합니다.','값: 실측값(숫자). 값이 빈 줄은 읽지 않으니 채운 줄만 남기지 않아도 됩니다.','관망을 열고 받으면 수압계·유량계 시설물, 탱크, 가압장 ID가 채워져 있습니다.','예) 수압, J12, 07:00, 28.5 / 유량, P3, (비움), 45.2 / 수위, T1, 12:00, 3.1']},
+ sys:{t:'정수계통(계통도)',sheet:'정수계통',file:'정수계통_양식',where:'분석 › 계통도 › 정수계통 묶기',cols:'수원 · 정수계통',w:[18,14,12,18],
+  rows:()=>{const r=[['수원','유형','유출(참고)','정수계통']],SY=G20&&G20.SYS;nodes().forEach(n=>{if(n.type===1||n.type===2){const g=SY&&SY.map[n.id];r.push([n.id,n.type===1?'배수지(고정수위)':'탱크','',g&&g!=='미지정'?g:''])}});return r},
+  guide:['수원: 모델의 배수지·탱크 ID(관망을 열고 받으면 채워져 있습니다).','정수계통: 그 수원에 물을 보내는 정수장 이름. 비우면 미지정으로 둡니다.','유형·유출 열은 읽지 않습니다(확인용).']}};
+const ORD=['use','lk','cal','sys'];
+
+/* ── 내려받기 ── */
+const guideSheet=(ks,title)=>{const r=[[title],['관망',S.name||'(열린 관망 없음)'],['만든 날',new Date().toISOString().slice(0,10)],[]];
+ ks.forEach(k=>{const d=K[k];r.push(['['+d.sheet+'] 시트',d.t]);r.push(['쓰는 곳',d.where]);r.push(['읽는 열',d.cols]);d.guide.forEach(g=>r.push(['',g]));r.push([])});
+ r.push(['첨부','채운 파일을 각 도구의 불러오기 단추나, 모델 만들기 › INP 만들기 › 📋 실측 양식 탭의 [일괄 첨부]로 넣으세요. 시트 이름이나 제목 줄로 종류를 알아봅니다.']);
+ r.push(['','시트 이름과 첫 줄(제목 줄)은 바꾸지 마세요. 줄은 얼마든지 늘려도 됩니다. CSV로 저장해도 읽습니다.']);return{name:'안내',title:1,w:[16,90],rows:r}};
+const sheetOf=k=>{const d=K[k];return{name:d.sheet,hdr:0,w:d.w,rows:d.rows()}};
+async function dl(k){try{await offerBlob(XM([sheetOf(k),guideSheet([k],K[k].t+' 양식 — 웹 관망해석기')]),base()+'_'+K[k].file+'.xlsx')}catch(e){console.error(e);toast('양식을 만들지 못했습니다: '+(e.message||e))}}
+async function dlAll(){try{await offerBlob(XM([guideSheet(ORD,'실측 자료 양식 모음 — 웹 관망해석기'),...ORD.map(sheetOf)]),base()+'_실측양식_모음.xlsx')}catch(e){console.error(e);toast('양식 모음을 만들지 못했습니다: '+(e.message||e))}}
+async function dlBook(){if(!S.net){toast('시설 입력표는 관망을 연 뒤 받을 수 있습니다.');return}try{await offerBlob(XM(G23.tplBook()),base()+'_입력표.xlsx')}catch(e){toast('입력표를 만들지 못했습니다: '+(e.message||e))}}
+
+/* ── 종류 알아보기 ── */
+const HR={cal:r=>r.some(v=>/^종류$/.test(v))&&r.some(v=>/^값|실측/.test(v)),lk:r=>r.some(v=>/유수율/.test(v)),sys:r=>r.some(v=>/정수계통/.test(v)),use:r=>r.some(v=>/수용가|고객|사용량/.test(v))};
+const byName=n=>/안내|설명/.test(n)?'skip':/실측|관측|측정|보정/.test(n)?'cal':/유수율|누수/.test(n)?'lk':/정수계통/.test(n)?'sys':/사용량|부과|수용가|요금/.test(n)?'use':null;
+function detect(name,rows,want){const top=rows.slice(0,15).map(r=>(r||[]).map(v=>String(v??'').trim()));let k=want||byName(name||'');if(k==='skip')return null;
+ let h=-1;if(k){h=top.findIndex(HR[k]);}else{for(const kk of ['cal','lk','sys','use']){const i=top.findIndex(HR[kk]);if(i>=0){k=kk;h=i;break}}}
+ if(!k)return null;return{k,rows:rows.slice(Math.max(h,0)).map(r=>(r||[]).map(v=>v==null?'':v))}}
+const txtOf=async f=>{const ab=await f.arrayBuffer();let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(ab)}catch(_){t=new TextDecoder('euc-kr').decode(ab)}return t.replace(/^﻿/,'')};
+const isX=f=>/\.xls[xm]$/i.test(f.name);
+// 한 파일 → [{k,rows,src}] (want가 있으면 그 종류 하나). 앱 양식(안내 시트가 있는 엑셀)은 시트마다, 다른 엑셀은 예전처럼 한 시트(readTable)
+const clean=rows=>rows.map(r=>(r||[]).map(v=>v==null?'':v));
+async function readFile(f,want){if(/\.xls$/i.test(f.name))throw new Error('예전 엑셀(.xls)은 .xlsx나 CSV로 저장해 주세요');
+ if(!isX(f)){const d=detect(f.name,parseCsv(await txtOf(f)),want);return d?[{...d,src:f.name}]:[]}
+ const X=await xlsxSheets(await f.arrayBuffer());
+ if(!want&&X.names.some(n=>/^(배수지|가압장|밸브|패턴|운전규칙|수정대장)/.test(n)))return[{k:'book',src:f.name}];
+ if(!X.names.includes('안내')){const rows=await readTable(f),d=detect(rows.sheet||'',rows,want);return d?[{...d,src:f.name+(rows.sheet?' › '+rows.sheet:'')}]:[]}
+ const out=[];for(const n of X.names){const bn=byName(n);if(bn==='skip'||(want&&bn&&bn!==want))continue;
+  const top=clean(await X.rows(n,15)),tt=top.map(r=>r.map(v=>String(v).trim()));const k=want||bn||['cal','lk','sys','use'].find(kk=>tt.some(HR[kk]));if(!k||out.some(o=>o.k===k))continue;
+  const h=tt.findIndex(HR[k]);if(h<0&&bn!==k)continue;out.push({k,rows:clean(await X.rows(n)).slice(Math.max(h,0)),src:f.name+' › '+n});if(want)break}
+ return out}
+const isTpl=async f=>{try{const X=await xlsxSheets(await f.arrayBuffer());return X.names.includes('안내')}catch(e){return false}};
+
+/* ── 종류별 넣기 ── */
+const num=v=>{const x=parseFloat(String(v??'').replace(/,/g,''));return isFinite(x)?x:NaN};
+const AP={
+ use:(rows,src)=>{const M=T.mtr||(T.mtr={unit:'month',days:30,factor:1,mode:'replace',pat:'',maxM:200,show:true});const h=rows[0].map(String);
+  M.uk=Math.max(0,h.findIndex(x=>/수용가|고객|번호|CUST|NO/i.test(x)));const v=h.findIndex(x=>/사용량|사용|USE|량/i.test(x));M.uv=v>=0?v:Math.min(1,h.length-1);
+  const n=rows.slice(1).filter(r=>String(r[M.uk]??'').trim()&&isFinite(num(r[M.uv]))).length;if(!n)return{n:0,msg:'사용량이 채워진 줄이 없습니다'};
+  M.utab=rows;M.uname=src;M.res=null;return{n,msg:`수용가 ${n.toLocaleString()}곳 → 수요 할당 창에 넣었습니다${M.pts?'':' (계량기 SHP를 넣은 뒤 할당하세요)'}`}},
+ lk:(rows,src)=>{const h=rows[0].map(String),ri=h.findIndex(x=>/유수율/.test(x)&&!/내재|현재/.test(x));const n=rows.slice(1).filter(r=>String(r[0]??'').trim()&&isFinite(num(r[ri>=0?ri:1]))).length;
+  if(!n)return{n:0,msg:'유수율이 채워진 줄이 없습니다'};IW.lkTxt=rows.map(r=>r.map(v=>String(v??'').replace(/,/g,'')).join(',')).join('\n');return{n,msg:`소블록 ${n}곳 유수율 → 블록 누수 창 [열기]에서 확인 후 배분 적용`}},
+ cal:(rows,src)=>{const body=rows.slice(1).filter(r=>String(r[1]??'').trim()&&isFinite(num(r[3])));if(!body.length)return{n:0,msg:'값이 채워진 줄이 없습니다'};
+  const rr=[rows[0].slice(0,4),...body.map(r=>[String(r[0]).trim(),String(r[1]).trim(),String(r[2]??'').trim(),num(r[3])])];T.calTxt=rr.map(r=>r.join(',')).join('\n');
+  let ex='';if(S.res){try{calRun(rr);const ok=(T.cal||[]).filter(c=>c.sim!=null).length;ex=` · 계산값과 비교 ${ok}곳${ok<body.length?` (못 찾은 ID ${body.length-ok}곳)`:''}`}catch(e){ex=' · 비교 실패: '+(e.message||e)}}else ex=' · 해석 후 실측 비교 창에서 [계산값과 비교]';
+  return{n:body.length,msg:`실측값 ${body.length}개 → 실측 비교 창${ex}`}},
+ sys:(rows,src)=>{const SY=G20&&G20.SYS;if(!SY)return{n:0,msg:'계통도 기능이 없습니다'};const h=rows[0].map(String);let gi=h.findIndex(x=>/정수계통/.test(x));if(gi<0)gi=3;let n=0;
+  rows.slice(1).forEach(r=>{const id=String(r[0]??'').trim(),g=String(r[gi]??'').trim();if(!id)return;if(g){SY.map[id]=g;n++}});
+  if(!n)return{n:0,msg:'정수계통이 채워진 줄이 없습니다'};try{lsSet('gw-sys',JSON.stringify({map:SY.map,view:SY.view,dir:SY.dir,grp:SY.grp,qu:SY.qu}))}catch(e){}try{const SC=window.__gw18&&window.__gw18.SC;if(SC)SC.vb=null}catch(e){}
+  return{n,msg:`수원 ${n}곳 정수계통 → 계통도에 넣었습니다`}}};
+function put(d){const r=AP[d.k](d.rows,d.src);if(r.n)MSQ.att[d.k]={n:r.n,src:d.src,at:new Date().toTimeString().slice(0,5)};return{k:d.k,src:d.src,ok:r.n>0,msg:r.msg}}
+const refresh=()=>{try{if(WS.open.has('iw'))winRender('iw',true)}catch(e){}try{toolsRender()}catch(e){}try{if(WS.open.has('sch'))winRender('sch',true)}catch(e){}};
+
+/* ── 일괄 첨부 ── */
+async function attach(files){const res=[];for(const f of files){try{const ds=await readFile(f);
+   if(!ds.length){res.push({k:null,src:f.name,ok:false,msg:'알아볼 수 있는 양식 시트가 없습니다(시트 이름·제목 줄 확인)'});continue}
+   for(const d of ds){if(d.k==='book'){res.push({k:'book',src:f.name,ok:true,msg:'시설 입력표 → 📗 입력표 탭에서 미리보기 후 적용'});MSQ.book=f;continue}res.push(put(d))}}
+  catch(e){res.push({k:null,src:f.name,ok:false,msg:e.message||String(e)})}}
+ MSQ.last=res;const ok=res.filter(r=>r.ok).length;refresh();
+ if(MSQ.book){const bf=MSQ.book;MSQ.book=null;setTimeout(()=>{IW.tab='t';winRender('iw',true);setTimeout(()=>{const el=$('iwF');if(!el)return;try{const dt=new DataTransfer();dt.items.add(bf);el.files=dt.files;el.dispatchEvent(new Event('change',{bubbles:false}))}catch(e){toast('입력표는 📗 입력표 탭의 [입력표 불러오기]로 넣어 주세요.')}},60)},400)}
+ toast(`양식 ${res.length}개 중 ${ok}개를 넣었습니다.`+(res.length-ok?` 확인할 것 ${res.length-ok}개 — 📋 실측 양식 탭을 보세요.`:''),6000);return res}
+const FG=document.createElement('input');FG.type='file';FG.multiple=true;FG.accept='.xlsx,.xlsm,.csv,.txt,.tsv';FG.id='msFG';FG.style.display='none';document.body.appendChild(FG);
+FG.onchange=async()=>{const fs=[...FG.files];FG.value='';if(fs.length){await attach(fs);openTab()}};
+const pick=()=>FG.click();
+const openTab=()=>{IW.tab='m';if(WS.open.has('iw'))winRender('iw',true);else winOpen('iw')};
+
+/* ── 창 열기 ── */
+const OPEN={use:()=>toolsTab('dem'),cal:()=>toolsTab('cal'),
+ lk:()=>{if(!S.net){toast('관망을 먼저 여세요.');return}toolsTab('lkb');if(IW.lkTxt)setTimeout(()=>{const t=$('lkT'),b=$('lkRead');if(t&&b){t.value=IW.lkTxt;b.click()}},80)},
+ sys:()=>{if(!S.net){toast('관망을 먼저 여세요.');return}winOpen('sch');toast('계통도 위 [정수계통 묶기]에서 넣은 계통을 확인하세요.',5000)},
+ book:()=>{IW.tab='t';winRender('iw',true)}};
+
+/* ── INP 만들기 창: 📋 실측 양식 탭 ── */
+const curN=k=>k==='use'?(T.mtr&&T.mtr.utab?T.mtr.utab.length-1:0):k==='lk'?(IW.lkTxt?IW.lkTxt.split('\n').length-1:0):k==='cal'?(T.calTxt?T.calTxt.split('\n').filter(s=>s.trim()).length-1:0):k==='sys'?Object.keys((G20&&G20.SYS.map)||{}).length:0;
+const bulkBox=(pre)=>tbox('📦 실측 자료 양식 한 번에',`<p class="text-[11px] text-slate-600 leading-relaxed">사용량 · 블록 유수율 · 실측값(수압·유량·수위·수질) · 정수계통 양식을 시트 하나씩 담은 엑셀 한 개로 받습니다. 관망을 열고 받으면 수용가번호·소블록·시설물 ID가 미리 채워집니다. 채운 뒤 [일괄 첨부]로 넣으면 시트마다 알맞은 도구에 들어갑니다.</p>
+ <div class="flex flex-wrap gap-2">${(tbtnP(pre+'All','📥 양식 모음 받기')+tbtn(pre+'Up','📂 채운 양식 일괄 첨부')).replace(/<button /g,'<button style="flex:none;white-space:nowrap" ')}</div>`,'border-sky-200 bg-sky-50/60');
+function uiMs(){const st=k=>{const a=MSQ.att[k],n=curN(k);return a?`<span style="color:#059669;font-weight:700">✓ ${a.n.toLocaleString()}행</span><br><span class="text-[10px] text-slate-500">${esc(a.src)} · ${a.at}</span>`:n>0?`<span style="color:#0369a1">들어 있음 ${n.toLocaleString()}</span>`:'<span class="text-slate-400">비어 있음</span>'};
+ const rows=ORD.map(k=>{const d=K[k];return`<tr class="border-t"><td class="text-left"><b>${esc(d.t)}</b><br><span class="text-[10px] text-slate-500">시트 ${esc(d.sheet)} · ${esc(d.cols)}</span><div style="margin-top:3px;display:flex;gap:4px"><button type="button" class="jx-b" data-msd="${k}">📄 양식 받기</button><button type="button" class="jx-b" data-mso="${k}">창 열기</button></div></td><td class="text-left text-[11px]">${esc(d.where)}</td><td class="text-left text-[11px]">${st(k)}</td></tr>`});
+ rows.push(`<tr class="border-t"><td class="text-left"><b>시설 입력표(배수지·가압장·밸브·패턴·운전규칙)</b><br><span class="text-[10px] text-slate-500">지금 관망 값으로 채운 엑셀</span><div style="margin-top:3px;display:flex;gap:4px"><button type="button" class="jx-b" data-msd="book">📄 양식 받기</button><button type="button" class="jx-b" data-mso="book">창 열기</button></div></td><td class="text-left text-[11px]">INP 만들기 › 📗 입력표</td><td class="text-left text-[11px]">${S.net?'관망 값으로 채움':'<span class="text-slate-400">관망을 연 뒤</span>'}</td></tr>`);
+ const L=MSQ.last.length?tbox('🔎 최근 첨부 결과',tbl(['','파일 › 시트','결과'],MSQ.last.map(r=>`<tr class="border-t"><td style="color:${r.ok?'#059669':'#d97706'};font-weight:800">${r.ok?'✓':'!'}</td><td class="text-left">${esc(r.src)}</td><td class="text-left">${esc(r.msg)}${r.ok&&r.k?` <button type="button" class="jx-b" data-mso="${r.k}">열기</button>`:''}</td></tr>`),{h:200,left:1})):'';
+ return bulkBox('ms')+`<div id="msDrop" class="jx-drop">📂 채운 양식(엑셀·CSV)을 여기에 끌어다 놓아도 됩니다 — 여러 개 한꺼번에</div>`+L
+  +tbox('📋 양식별',tbl(['양식','쓰는 곳','지금 상태'],rows,{left:1,h:420})+tnote('각 도구 창의 불러오기 단추 옆 [📄 양식]으로도 같은 양식을 받을 수 있습니다. 일괄 첨부는 시트 이름(사용량·블록유수율·실측·정수계통)이나 첫 줄 제목으로 종류를 알아보므로, 예전에 쓰던 엑셀·CSV도 그대로 넣을 수 있습니다. 첨부한 자료는 각 도구에서 확인한 뒤 적용(할당·배분·비교)하세요.'))}
+function bindMs(b){const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('msAll',dlAll);on('msUp',pick);
+ b.querySelectorAll('[data-msd]').forEach(x=>x.onclick=()=>x.dataset.msd==='book'?dlBook():dl(x.dataset.msd));
+ b.querySelectorAll('[data-mso]').forEach(x=>x.onclick=()=>OPEN[x.dataset.mso]&&OPEN[x.dataset.mso]());
+ const dz=b.querySelector('#msDrop');if(dz){dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
+  dz.ondrop=async e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('on');const fs=[...(e.dataTransfer.files||[])];if(fs.length)await attach(fs)}}}
+const TB=[['d','📎 자료함'],['s','🧭 단계 안내'],['t','📗 입력표'],['l','📒 수정 대장'],['m','📋 실측 양식']];
+const ui2=WR.iw.ui,bind2=WR.iw.bind;
+WR.iw.ui=()=>{if(IW.tab==='m')return`<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5 mb-2">${TB.map(([k,t])=>`<button type="button" data-iwt="${k}" class="tab ${IW.tab===k?'on':''}">${t}</button>`).join('')}</div><div class="flex flex-col gap-2 text-xs">${uiMs()}</div>`;
+ let h=ui2().replace(/(<button type="button" data-iwt="l"[^>]*>📒 수정 대장<\/button>)/,'$1<button type="button" data-iwt="m" class="tab">📋 실측 양식</button>');
+ if(IW.tab==='d')h+=`<div class="flex flex-col gap-2 text-xs mt-2">${bulkBox('jm')}</div>`;return h};
+WR.iw.bind=b=>{bind2(b);if(IW.tab==='m')bindMs(b);if(IW.tab==='d'){const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('jmAll',dlAll);on('jmUp',pick)}};
+
+/* ── 도구마다 [📄 양식] + 엑셀 첨부 ── */
+const tb=(id,t)=>`<button id="${id}" type="button" class="px-2 py-1.5 rounded-lg text-xs font-bold border border-sky-300 bg-white text-sky-700 hover:bg-sky-50" title="${esc(t)}">📄 양식</button>`;
+const wrapT=(key,after,id,k,fix)=>{const D=TT[key];if(!D)return;const u=D.ui,bd=D.bind;
+ D.ui=function(){let h=u.apply(this,arguments);if(fix)h=fix(h);return h.replace(after,m=>m+tb(id,K[k].t+' 양식(엑셀) 내려받기'))};
+ D.bind=function(){const r=bd&&bd.apply(this,arguments);const e=$(id);if(e)e.onclick=()=>dl(k);return r}};
+wrapT('dem','📂 사용량 파일(.xlsx·.csv)</label>','dUseTpl','use');
+wrapT('cal','📂 실측 파일(.csv·.xlsx)</label>','kTpl','cal');
+wrapT('lkb','📂 CSV·엑셀 불러오기</label>','lkTpl','lk',h=>h.replace('data-accept=".csv,.txt,.tsv"','data-accept=".csv,.txt,.tsv,.xlsx"').replace('📂 CSV 불러오기</label>','📂 CSV·엑셀 불러오기</label>'));
+if(WR.sch){const u=WR.sch.ui,bd=WR.sch.bind;
+ WR.sch.ui=function(){const h=u.apply(this,arguments);return typeof h==='string'?h.replace('<input type="file" id="sysIn" accept=".csv,text/csv" hidden></label>','<input type="file" id="sysIn" accept=".csv,.xlsx,text/csv" hidden></label><button type="button" class="bl-b" id="sysTpl" title="정수계통 양식(엑셀) 내려받기">📄 양식</button>').replace('⬆ CSV 불러오기<input','⬆ CSV·엑셀 불러오기<input'):h};
+ WR.sch.bind=function(b){const r=bd&&bd.apply(this,arguments);const e=(b&&b.querySelector?b:document).querySelector('#sysTpl')||$('sysTpl');if(e)e.onclick=()=>dl('sys');return r}}
+// 도구의 불러오기 단추에 엑셀(양식 모음 포함)을 주면 맞는 시트를 골라 넣음 — 원래 처리보다 먼저(capture)
+const IN={dUse:'use',kFile:'cal',lkF:'lk',sysIn:'sys'};
+document.addEventListener('change',async e=>{const el=e.target;if(!el||el.type!=='file'||!IN[el.id]||!el.files||!el.files.length)return;const f=el.files[0];if(!isX(f))return;
+ e.stopPropagation();e.stopImmediatePropagation();const k=IN[el.id];
+ if((k==='use'||k==='cal')&&!(await isTpl(f))){const h=el.onchange;if(h){h.call(el,{target:{files:[f],get value(){return''},set value(v){el.value=''}}})}return}
+ el.value='';try{const ds=await readFile(f,k);if(!ds.length){toast(`이 엑셀에서 ${K[k].t} 시트를 찾지 못했습니다. 첫 줄 제목(${K[k].cols})을 확인하세요.`,7000);return}
+  const r=put(ds[0]);if(!r.ok){toast(r.msg,6000);return}
+  if(k==='cal'){const t=$('kTxt');if(t)t.value=T.calTxt;try{toolsOut()}catch(_){}}
+  if(k==='lk'){const t=$('lkT'),b=$('lkRead');if(t&&b){t.value=IW.lkTxt;b.click()}}else refresh();
+  toast(r.msg,6000)}catch(err){toast(err.message||String(err),6000)}},true);
+
+/* ── 리본: 모델 만들기 › 실측 양식 ── */
+const m1=RIB.mdl;RIB.mdl=()=>m1()+gg('실측 양식',col(gb('msAll','down','양식 모음 받기',{tip:'사용량·블록 유수율·실측값·정수계통 양식을 엑셀 하나로 내려받기'})+gb('msUp','open','양식 일괄 첨부',{tip:'채운 양식(엑셀·CSV 여러 개)을 한 번에 넣기'})+gb('msTab','list','양식 목록',{tip:'INP 만들기 › 📋 실측 양식 탭'})));
+const _ra=rbAct;rbAct=function(a){if(a==='msAll'){dlAll();return}if(a==='msUp'){pick();return}if(a==='msTab'){openTab();return}return _ra.apply(this,arguments)};
+try{if($('gp'))gpRib(T.rib||'wds')}catch(e){}
+window.__gw38={K,MSQ,dl,dlAll,attach,readFile,detect,openTab};
+})()}catch(e){console.warn('v38',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
