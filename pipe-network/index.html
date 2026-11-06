@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v40 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v41 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5962,6 +5962,125 @@ const _cq40=cxChips;cxChips=function(){const base=CXQ.slice();try{if(S.res){CXQ.
 const _run40=run;run=async function(){const r=await _run40.apply(this,arguments);try{cxChips()}catch(e){}return r};
 window.__gw40={Q40,ask};
 })()}catch(e){console.warn('v40',e)}
+
+/* ════ v41 지도 클릭 주소: 지도 도구 막대 📍주소 모드·오른쪽 클릭·길게 누르기 → 그 지점 지번·도로명, 소블록, 좌표, 표고(절점 보간), 가장 가까운 절점 수압(스마트 물길주소와 같은 말풍선) ════ */
+// 주소는 카카오 키(📍 주소·관망 찾기 창 🔑)가 있으면 카카오, 없으면 브이월드 키로 찾는다. 주소는 화면에만 보이고 저장하지 않는다.
+try{(()=>{
+const CA={xy:null,ll:null,r:null,err:'',open:true,net:null,cache:new Map(),btn:0,fired:0,tm:0,seq:0,pin:null,card:null};
+const r1=v=>Math.round(v*10)/10,f1=v=>isFinite(v)?(Math.round(v*10)/10).toFixed(1):'-';
+const cp=v=>` <a href="#" class="ca-cp" data-v="${encodeURIComponent(v)}">복사</a>`;
+// ── 주변 절점: 가장 가까운 접합점, 표고 보간용 3개
+function near(mx,my){const N=S.net&&S.net.nodes;if(!N)return null;const gk=geoK(),k=[];let jn=-1,jd=1e99;
+ for(let i=0;i<N.length;i++){const n=N[i];if(n._h||n.type!==0||!isFinite(n.x)||!isFinite(n.y))continue;const d=Math.hypot(n.x-mx,n.y-my)*gk;if(d<jd){jd=d;jn=i}
+  if(n.elev!==-1&&isFinite(n.elev)&&(k.length<3||d<k[k.length-1][0])){k.push([d,i]);k.sort((a,b)=>a[0]-b[0]);if(k.length>3)k.pop()}}
+ let z=null;if(k.length&&k[0][0]<=1000){if(k[0][0]<0.5)z={z:N[k[0][1]].elev,n:1,d:k[0][0]};else{let sw=0,sz=0;k.forEach(([d,i])=>{const w=1/(d*d);sw+=w;sz+=w*N[i].elev});z={z:sz/sw,n:k.length,d:k[0][0]}}}
+ return{jn,jd,z}}
+// ── 소블록: 블록 경계 SHP가 있으면 그 면, 없으면 가장 가까운 절점의 블록
+function blkAt(mx,my,nr){const B=T.bpoly;if(B&&B.polys&&B.polys.length){for(const pg of B.polys){const b=pg.bb;if(b&&(mx<b[0]||mx>b[2]||my<b[1]||my>b[3]))continue;if(pip(mx,my,pg.rings))return{b:String(pg.attr[B.field]??pg.attr.__i).trim(),s:'shp'}}return{b:'',s:'out'}}
+ const n=nr&&nr.jn>=0?S.net.nodes[nr.jn]:null;return n&&n.blk?{b:n.blk,s:'node'}:{b:'',s:'none'}}
+// ── 좌표 → 주소
+const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=()=>ok();s.onerror=()=>{s.remove();no(new Error('load'))};document.head.appendChild(s)});
+let sdkP=null;function kkSdk(key){if(window.kakao&&kakao.maps&&kakao.maps.services)return Promise.resolve(kakao.maps.services);
+ if(!sdkP)sdkP=(window.kakao&&kakao.maps&&kakao.maps.load?Promise.resolve():loadJs(`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&libraries=services&autoload=false`))
+  .then(()=>new Promise((ok,no)=>{if(!window.kakao||!kakao.maps){no(new Error('sdk'));return}kakao.maps.load(()=>kakao.maps.services?ok(kakao.maps.services):no(new Error('sdk')))})).catch(e=>{sdkP=null;throw e});return sdkP}
+const kkPick=d=>{const x=d&&d[0];return x?{j:x.address&&x.address.address_name||'',d:x.road_address&&x.road_address.address_name||'',src:'카카오'}:{j:'',d:'',src:'카카오'}};
+async function kkRev(lon,lat,key,kt){
+ if(kt==='rest'){let res;try{res=await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lon}&y=${lat}`,{headers:{Authorization:'KakaoAK '+key}})}catch(e){throw new Error('카카오 서버에 닿지 못했습니다(인터넷·보안 프로그램 확인).')}
+  if(res.status===401||res.status===403)throw new Error('카카오 REST API 키가 맞지 않거나 [카카오맵] 사용 설정이 꺼져 있습니다.');if(!res.ok)throw new Error('카카오 좌표→주소 오류('+res.status+')');return kkPick((await res.json()).documents)}
+ let sv;try{sv=await kkSdk(key)}catch(e){throw new Error('카카오 지도 SDK를 불러오지 못했습니다. JavaScript 키와 [플랫폼 → Web] 도메인 등록을 확인하세요. (PC에서 파일로 열면 REST API 키)')}
+ const g=new sv.Geocoder();const [d,st]=await new Promise(z=>g.coord2Address(lon,lat,(d,st)=>z([d,st])));
+ if(st===sv.Status.OK)return kkPick(d);if(st===sv.Status.ZERO_RESULT)return{j:'',d:'',src:'카카오'};throw new Error('카카오 좌표→주소 오류')}
+function vwRev(lon,lat,key){return new Promise((ok,no)=>{const cb='__vwr'+Date.now()+Math.floor(Math.random()*1e4),s=document.createElement('script');let done=false;
+ const end=()=>{delete window[cb];s.remove()};
+ window[cb]=j=>{done=true;end();try{const R=j.response;if(R.status==='NOT_FOUND'){ok({j:'',d:'',src:'브이월드'});return}if(R.status!=='OK')throw new Error((R.error&&R.error.text)||'브이월드 오류');
+  const a=[].concat(R.result||[]),pc=a.find(x=>x.type==='parcel'),rd=a.find(x=>x.type==='road');ok({j:pc&&pc.text||'',d:rd&&rd.text||'',zip:(rd&&rd.zipcode)||(pc&&pc.zipcode)||'',src:'브이월드'})}catch(e){no(e)}};
+ s.onerror=()=>{end();no(new Error('브이월드 주소 서버에 닿지 못했습니다. 키와 등록 도메인을 확인하세요.'))};
+ s.src=`https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lon},${lat}&format=json&type=both&zipcode=true&simple=false&errorformat=json&key=${encodeURIComponent(key)}&callback=${cb}`;
+ document.head.appendChild(s);setTimeout(()=>{if(!done&&window[cb]){end();no(new Error('브이월드 주소 응답이 없습니다.'))}},8000)})}
+async function rgeo(lon,lat){const ck=lat.toFixed(5)+','+lon.toFixed(5);if(CA.cache.has(ck))return CA.cache.get(ck);
+ const key=(lsGet('gw-kk')||'').trim(),kt=lsGet('gw-kkt')||'js',vk=($('vkey')&&$('vkey').value.trim())||'';
+ if(!key&&!vk){const e=new Error('nokey');e.code='nokey';throw e}
+ let r=null,er=null;if(key){try{r=await kkRev(lon,lat,key,kt)}catch(e){er=e}}
+ if(!r&&vk){try{r=await vwRev(lon,lat,vk)}catch(e){er=er||e}}
+ if(!r)throw er||new Error('주소를 찾지 못했습니다.');if(CA.cache.size>300)CA.cache.clear();CA.cache.set(ck,r);return r}
+// ── 말풍선
+function body(){const [mx,my]=CA.xy,ll=CA.ll,nr=near(mx,my),bk=blkAt(mx,my,nr),ep=crsCode();let h='<div class="ca-h"><b>📍 이 지점 주소</b><button type="button" class="ca-x" aria-label="닫기">✕</button></div>';
+ if(!ll)h+='<div class="ca-m">좌표계(EPSG)를 몰라 주소를 찾을 수 없습니다. 레이어 창에서 좌표계를 고르세요.</div>';
+ else if(CA.err==='nokey')h+='<div class="ca-m">주소를 보려면 카카오 키나 브이월드 키가 필요합니다. <a href="#" class="ca-key">🔑 키 넣기</a></div>';
+ else if(CA.err)h+=`<div class="ca-m ca-rd">${esc(CA.err)}</div>`;
+ else if(!CA.r)h+='<div class="ca-m">주소 찾는 중…</div>';
+ else if(!CA.r.j&&!CA.r.d)h+='<div class="ca-m">주소 없음(산·하천·도로 위 등)</div>';
+ else{if(CA.r.j)h+=`<div>지번: <b>${esc(CA.r.j)}</b>${cp(CA.r.j)}</div>`;if(CA.r.d)h+=`<div>도로명: <b>${esc(CA.r.d)}</b>${cp(CA.r.d)}</div>`}
+ h+=`<div>소블록: <b>${bk.b?esc(bk.b):bk.s==='out'?'블록 밖':'(블록 미지정)'}</b>${bk.s==='node'?' <small>(가까운 절점 기준)</small>':''}</div>`;
+ if(ll){const t=ll[1].toFixed(6)+', '+ll[0].toFixed(6);h+=`<div>좌표: ${t}${cp(t)}</div>`}
+ if(ep&&ep!=='4326')h+=`<div class="ca-s">EPSG:${esc(ep)} X ${mx.toFixed(2)} · Y ${my.toFixed(2)}${cp(mx.toFixed(2)+'\t'+my.toFixed(2))}</div>`;
+ if(nr&&nr.z)h+=`<div class="ca-r">${ico('mount',14)} 표고 약 <b>${f1(nr.z.z)}m</b> <small>(관망해석 절점 ${nr.z.n}개 보간 · 가장 가까운 절점 ${Math.round(nr.z.d)}m)</small></div>`;
+ else if(nr)h+='<div class="ca-r ca-s">표고: 1 km 안에 표고 있는 절점이 없습니다</div>';
+ const R=S.res;if(nr&&nr.jn>=0){const n=S.net.nodes[nr.jn];
+  if(R&&R.P&&R.t&&R.t.length&&R.P[0]&&R.P[0].length>nr.jn){let mn=1e99,mxp=-1e99,s=0;const nt=R.t.length;for(let k=0;k<nt;k++){const p=R.P[k][nr.jn];if(p<mn)mn=p;if(p>mxp)mxp=p;s+=p}
+   const c=crit(),lo=mn<0?'부압':mn<c.pmin?'저압':'',now=R.P[Math.min(S.k||0,nt-1)]?R.P[Math.min(S.k||0,nt-1)][nr.jn]:null;
+   h+=`<div class="ca-r">${ico('drop',14)} 모델 수압 최저 <b class="${lo?'ca-rd':''}">${f1(mn)}m</b> · 평균 ${f1(s/nt)}m · 최고 ${f1(mxp)}m${lo?` <b class="ca-rd">${lo}</b>`:''}</div>`
+    +`<div class="ca-s">(가장 가까운 절점 <a href="#" class="ca-nd">${esc(n.id)}</a> ${Math.round(nr.jd)}m${nt>1&&now!=null?` · ${hhmm(R.t[Math.min(S.k||0,nt-1)])} ${f1(now)}m`:''} · 기준 ${c.pmin}m · 관망해석 계산 참고값)</div>`}
+  else h+=`<div class="ca-r ca-s">${ico('drop',14)} 수압: 해석 결과 없음 — 해석실행 후 나옵니다 (가장 가까운 절점 <a href="#" class="ca-nd">${esc(n.id)}</a> ${Math.round(nr.jd)}m)</div>`}
+ if(ll){const nm=CA.r&&(CA.r.d||CA.r.j)||'선택 지점',la=ll[1].toFixed(6),lo=ll[0].toFixed(6);
+  h+=`<div class="ca-b"><a class="ca-bt" target="_blank" rel="noopener" href="https://map.kakao.com/link/roadview/${la},${lo}">🚶 로드뷰</a><a class="ca-bt" target="_blank" rel="noopener" href="https://map.kakao.com/link/to/${encodeURIComponent(nm)},${la},${lo}">🚗 길찾기</a><a class="ca-bt" target="_blank" rel="noopener" href="https://map.kakao.com/link/map/${encodeURIComponent(nm)},${la},${lo}">🗺️ 카카오맵</a></div>`}
+ h+=`<div class="ca-f"><a href="#" class="ca-clr">핀 지우기</a>${CA.r&&CA.r.src?`<span class="ca-s">주소: ${CA.r.src}</span>`:''}</div>`;return h}
+function els(){const c=MAP.cv,host=c&&c.parentNode;if(!host)return null;if(getComputedStyle(host).position==='static')host.style.position='relative';
+ if(!CA.pin){CA.pin=document.createElement('div');CA.pin.id='caPin';CA.pin.title='주소 말풍선 열기/닫기';CA.pin.innerHTML='<svg width="26" height="34" viewBox="0 0 30 38" aria-hidden="true"><path d="M15 37s12-12.3 12-22A12 12 0 0 0 3 15c0 9.7 12 22 12 22z" fill="#dc2626" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="4.5" fill="#fff"/></svg>';
+  CA.pin.onclick=e=>{e.stopPropagation();CA.open=!CA.open;place()}}
+ if(!CA.card){CA.card=document.createElement('div');CA.card.id='caPop';CA.card.setAttribute('role','dialog');CA.card.setAttribute('aria-label','이 지점 주소');
+  ['pointerdown','wheel','dblclick'].forEach(ev=>CA.card.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));
+  CA.card.addEventListener('click',e=>{const a=e.target.closest('a,button');if(!a)return;
+   if(a.classList.contains('ca-cp')){e.preventDefault();const v=decodeURIComponent(a.dataset.v);const ok=()=>{a.textContent='복사됨'};try{navigator.clipboard.writeText(v).then(ok,()=>prompt('복사하세요',v))}catch(_){prompt('복사하세요',v)}}
+   else if(a.classList.contains('ca-x')){CA.open=false;place()}
+   else if(a.classList.contains('ca-clr')){e.preventDefault();clear()}
+   else if(a.classList.contains('ca-key')){e.preventDefault();try{window.__gwAddr.open('')}catch(_){}setTimeout(()=>{const b=$('adKeyBox');if(b)b.open=true},60)}
+   else if(a.classList.contains('ca-nd')){e.preventDefault();const nr=near(...CA.xy);if(nr&&nr.jn>=0){const n=S.net.nodes[nr.jn];S.sel={t:'n',i:nr.jn};S.pop={t:'n',i:nr.jn,x:n.x,y:n.y};CA.open=false;place();renderPop();refreshSel();requestDraw()}}})}
+ if(CA.pin.parentNode!==host){host.appendChild(CA.pin);host.appendChild(CA.card)}return host}
+function render(){if(!CA.xy||!els())return;CA.card.innerHTML=body();place()}
+function place(){if(!CA.pin)return;const c=MAP.cv;if(!CA.xy||!S.view||!c||CA.net!==S.net){CA.pin.style.display='none';CA.card.style.display='none';return}
+ const x=SX(CA.xy[0])+c.offsetLeft,y=SY(CA.xy[1])+c.offsetTop,W=c.offsetWidth,H=c.offsetHeight,inV=x>=c.offsetLeft-20&&x<=c.offsetLeft+W+20&&y>=c.offsetTop-20&&y<=c.offsetTop+H+40;
+ CA.pin.style.display=inV?'':'none';CA.pin.style.transform=`translate(${Math.round(x-13)}px,${Math.round(y-33)}px)`;
+ if(!CA.open||!inV){CA.card.style.display='none';return}CA.card.style.display='';const w=CA.card.offsetWidth,h=CA.card.offsetHeight;
+ const T0=c.offsetTop+4,B0=c.offsetTop+H-4;let l=x-w/2,t=y-40-h;if(t<T0){if(y+8+h<=B0)t=y+8;else{t=y-h/2;l=x+18+w<=c.offsetLeft+W-4?x+18:x-18-w}}l=Math.max(c.offsetLeft+4,Math.min(c.offsetLeft+W-w-4,l));t=Math.max(c.offsetTop+4,Math.min(c.offsetTop+H-h-4,t));
+ CA.card.style.transform=`translate(${Math.round(l)}px,${Math.round(t)}px)`}
+function clear(){CA.xy=null;CA.ll=null;CA.r=null;CA.seq++;if(CA.pin){CA.pin.style.display='none';CA.card.style.display='none'}}
+async function show(mx,my){if(!S.view||!S.net)return;CA.xy=[mx,my];CA.net=S.net;CA.r=null;CA.err='';CA.open=true;const P=crs();let ll=null;
+ if(P){try{const q=P.toLL(mx,my);if(q&&isFinite(q[0])&&isFinite(q[1])&&q[0]>=-180&&q[0]<=180&&q[1]>=-90&&q[1]<=90)ll=q}catch(e){}}
+ CA.ll=ll;const my0=++CA.seq;render();if(!ll)return;
+ try{const r=await rgeo(ll[0],ll[1]);if(my0!==CA.seq)return;CA.r=r}catch(e){if(my0!==CA.seq)return;CA.err=e.code==='nokey'?'nokey':(EMB?'Claude 화면 안에서는 외부 주소 서버가 막혀 있습니다. HTML 파일을 브라우저로 직접 열어 쓰세요.':(e.message||String(e)))}
+ render()}
+// ── 지도 연결: 📍주소 모드에서 클릭, 아무 모드에서나 오른쪽 클릭·길게 누르기
+const _tc=toolClick;toolClick=function(m,mx,my,e){if(m==='addr'){show(mx,my);return true}return _tc.apply(this,arguments)};
+const skip=()=>CA.btn===2||Date.now()-CA.fired<1200;
+const _pk=pick;pick=function(){if(skip())return;return _pk.apply(this,arguments)};
+const _ec=edClick;edClick=function(){if(skip())return;return _ec.apply(this,arguments)};
+const _pp=placePop;placePop=function(){const r=_pp.apply(this,arguments);try{place()}catch(e){}return r};
+const _rn=run;run=async function(){const r=await _rn.apply(this,arguments);try{if(CA.xy&&CA.net===S.net)render()}catch(e){}return r};
+const _gs=gpSync;gpSync=function(){const r=_gs.apply(this,arguments);try{if(ED.m==='addr'){const w=$('gpSt_mode');if(w)w.textContent='작업모드 : 클릭 주소'}}catch(e){}return r};
+{const c=MAP.cv,toM=(cx,cy)=>{const r=c.getBoundingClientRect();return[WX(cx-r.left),WY(cy-r.top)]};let lp=0,sx=0,sy=0,np=0;const stop=()=>{clearTimeout(lp);lp=0};
+ c.addEventListener('pointerdown',e=>{CA.btn=e.button;np++;stop();if(e.pointerType!=='touch'||np>1||!S.view||!['sel','pan','addr'].includes(ED.m))return;sx=e.clientX;sy=e.clientY;
+  lp=setTimeout(()=>{lp=0;if(np!==1)return;CA.fired=Date.now();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}show(...toM(sx,sy))},600)},true);
+ c.addEventListener('pointermove',e=>{if(lp&&Math.hypot(e.clientX-sx,e.clientY-sy)>10)stop()},true);
+ const up=()=>{np=Math.max(0,np-1);stop()};c.addEventListener('pointerup',up,true);c.addEventListener('pointercancel',up,true);
+ c.addEventListener('contextmenu',e=>{if(!S.view||!S.net)return;e.preventDefault();if(e.pointerType==='touch'||Date.now()-CA.fired<1200)return;show(...toM(e.clientX,e.clientY))})}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CA.xy&&CA.open&&!e.defaultPrevented){CA.open=false;place()}});
+// ── 버튼: 지도 도구 막대(위치 검색 옆)·보기 탭 검색 묶음
+{const loc=document.querySelector('#gpMT [title="위치 검색"]');if(loc)loc.insertAdjacentHTML('afterend',`<button type="button" class="rb-b" data-m="addr" data-rb="x" title="클릭 주소 — 지도를 누르면 그 지점 주소·소블록·표고·수압 (오른쪽 클릭·길게 누르기는 어느 모드에서나)">${ico('pin',16)}<span>주소</span></button>`)}
+const _rt=RIB.tool;RIB.tool=()=>{let h=_rt();const i=h.indexOf('data-rb="kakao"'),j=i<0?-1:h.lastIndexOf('<button',i);const b=gb('m_addr','pin','클릭 주소',{m:'addr',tip:'지도를 누르면 그 지점 주소·소블록·표고·가까운 절점 수압을 보여 줍니다 (오른쪽 클릭·길게 누르기는 어느 모드에서나)'});return j<0?h+gg('주소',b):h.slice(0,j)+b+h.slice(j)};
+try{if($('gp')&&T.rib==='tool')gpRib('tool')}catch(e){}
+const st=document.createElement('style');st.textContent=`#map.m-addr{cursor:crosshair}
+#caPin{position:absolute;left:0;top:0;z-index:40;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+#caPop{position:absolute;left:0;top:0;z-index:41;width:min(330px,calc(100% - 8px));background:var(--c-pn,#fff);color:var(--c-tx,#111827);border:1px solid var(--c-bd,#cbd5e1);border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:8px 10px;font-size:12px;line-height:1.6}
+#caPop .ca-h{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--c-bd,#e2e8f0);padding-bottom:3px;margin-bottom:3px}
+#caPop .ca-x{width:20px;height:20px;border-radius:3px;color:var(--c-tx2,#64748b)}#caPop .ca-x:hover{background:var(--c-hv,#f1f5f9)}
+#caPop a{color:var(--c-ac,#2563eb);text-decoration:underline}#caPop small,#caPop .ca-s{color:var(--c-tx2,#64748b);font-size:11px}#caPop .ca-m{color:var(--c-tx2,#64748b)}
+#caPop .ca-rd{color:#dc2626}#caPop .ca-r{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:3px}#caPop .ca-r .gi{flex:none}
+#caPop .ca-b{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}#caPop .ca-bt{display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--c-bd,#cbd5e1);border-radius:3px;background:var(--c-ch,#f8fafc);color:var(--c-tx,#111827);text-decoration:none;font-weight:600;white-space:nowrap}#caPop .ca-bt:hover{background:var(--c-hv,#eef2f7)}
+#caPop .ca-f{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+#gpMT [data-m="addr"] span{margin-left:2px;font-size:12px}`;document.head.appendChild(st);
+window.__gw41={CA,show,clear,rgeo,near,blkAt};
+})()}catch(e){console.warn('v41',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
