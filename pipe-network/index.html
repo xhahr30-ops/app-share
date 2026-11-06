@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v41 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v42 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -6081,6 +6081,63 @@ const st=document.createElement('style');st.textContent=`#map.m-addr{cursor:cros
 #gpMT [data-m="addr"] span{margin-left:2px;font-size:12px}`;document.head.appendChild(st);
 window.__gw41={CA,show,clear,rgeo,near,blkAt};
 })()}catch(e){console.warn('v41',e)}
+
+/* ════ v42 상류·하류 추적 범위 일괄입력: 결과표 조건 검색에 '범위'(전체/추적 범위/지도 선택) · 추적 창에서 바로 일괄입력 ════ */
+try{(()=>{
+const TR=TT.trc;
+// 일괄입력 버튼(청록) 색: 미리 만든 CSS에 cyan이 없어 글자만 흐리게 보였음
+try{const st=document.createElement('style');st.textContent='.bg-cyan-600{background:#0891b2!important;color:#fff!important}.hover\\:bg-cyan-700:hover{background:#0e7490!important}.text-cyan-700{color:#0e7490}.border-cyan-200{border-color:#a5f3fc}';document.head.appendChild(st)}catch(e){}
+const live=()=>{const r=T.trc;return r&&S.net&&r.ni&&r.ni.length===S.net.nodes.length&&r.li.length===S.net.links.length?r:null};
+const MODE={up:'상류',down:'하류',conn:'연결'};
+const btOf=t=>t==='n'||t==='r'?'n':['l','v','pu'].includes(t)?'l':null;
+const cnt=(a,f)=>{let c=0;a.forEach((v,i)=>{if(v&&f(i))c++});return c};
+// 추적 범위의 접합점·관로 수(관로는 펌프·밸브 제외)
+const trcCnt=r=>({n:cnt(r.ni,i=>S.net.nodes[i].type===0),l:cnt(r.li,i=>S.net.links[i].type<=1)});
+const trcLab=r=>`${MODE[r.mode]||r.mode} 추적 ${r.start}`;
+const tblOpen=()=>typeof WS!=='undefined'&&WS.open&&WS.open.has('table');
+
+// ── 1. 결과표 행을 범위로 거르기(조건보다 먼저)
+const af0=advFilter;advFilter=function(rs){const sc=T.afS,bt=btOf(S.tab);
+ if(sc&&bt){if(sc==='trc'){const r=live();rs=r?rs.filter(x=>x.i>=0&&(bt==='n'?r.ni:r.li)[x.i]):[]}
+  else if(sc==='sel'){const m=bt==='n'?T.multi.n:T.multi.l;rs=rs.filter(x=>x.i>=0&&m.has(x.i))}}
+ return af0.call(this,rs)};
+
+// ── 2. 조건 줄 앞에 '범위' 고르기 · 일괄입력 확인 문구에 범위 표시
+const ar0=advRender;advRender=function(){const x=ar0.apply(this,arguments);try{const box=$('advF'),bt=btOf(S.tab);if(!box||!bt||box.classList.contains('hidden'))return x;
+ const r=live(),nm=bt==='n'?T.multi.n.size:T.multi.l.size,sc=T.afS||'';
+ const tl=r?`🧭 ${trcLab(r)} (${bt==='n'?'절점 '+r.ni.reduce((a,v)=>a+v,0):'관로 '+r.li.reduce((a,v)=>a+v,0)})`:'🧭 상류·하류 추적 범위 (추적 없음)';
+ const opts=[['','전체 행'],['trc',tl],['sel',`⬚ 지도 선택 (${bt==='n'?'절점':'관로'} ${nm.toLocaleString()})`]];
+ const warn=sc==='trc'&&!r?'<span id="afSW" class="text-red-600 font-bold">먼저 지도에서 절점·관로를 고르고 말풍선의 ⬆ 상류·⬇ 하류 추적을 누르세요.</span>':sc==='sel'&&!nm?'<span id="afSW" class="text-red-600 font-bold">지도에서 고른 것이 없습니다.</span>':'';
+ box.insertAdjacentHTML('afterbegin',`<span id="afSB" class="inline-flex items-center gap-1 ${sc?'bg-pink-50 border border-pink-300':'bg-white border border-slate-200'} rounded-lg px-1.5 py-0.5"><span class="font-bold text-pink-700">범위</span><select id="afS" class="px-1.5 py-1 border border-slate-300 rounded bg-white text-xs" title="일괄입력·조건 검색을 이 범위 안에서만 합니다">${opts.map(([v,t])=>`<option value="${v}" ${v===sc?'selected':''}>${esc(t)}</option>`).join('')}</select></span>${warn}<span class="text-slate-300">|</span>`);
+ $('afS').onchange=e=>{T.afS=e.target.value;table()};
+ const bg=$('biGo');if(bg&&sc){bg.textContent=sc==='trc'?'추적 범위에 적용':'선택 범위에 적용';
+  bg.onclick=()=>{T.biK=$('biK').value;const v=$('biV').value.trim();if(v===''){toast('값을 넣어 주세요.');return}const rs=(S.lastRows||[]).filter(r=>r.i>=0);if(!rs.length){toast('범위 안에 맞는 행이 없습니다.');return}
+   const what=sc==='trc'&&r?trcLab(r)+' 범위':'지도 선택 범위',cond=T.af&&T.af.on&&T.af.v!==''?' 중 조건에 맞는':'';
+   if(!confirm(`${what}${cond} ${rs.length.toLocaleString()}행에 적용할까요?`))return;batchApply(bt,rs.map(r=>r.i),T.biK,$('biOp').value,v)}}}catch(e){console.warn('v42 advRender',e)}return x};
+
+// 추적을 새로 하면 범위 표를 다시 그림
+const tr0=traceRun;traceRun=function(){const r=tr0.apply(this,arguments);try{if(r&&tblOpen()&&T.afS)table()}catch(e){}return r};
+// 지도 선택이 바뀌면 '지도 선택' 범위 표를 다시 그림
+const rm0=renderMulti;renderMulti=function(){const x=rm0.apply(this,arguments);try{if(T.afS==='sel'&&tblOpen()&&!T.v42busy){T.v42busy=1;try{table()}finally{T.v42busy=0}}}catch(e){}return x};
+
+// ── 3. 추적 결과 창에서 바로 일괄입력
+function openTable(t){const r=live();if(!r){toast('먼저 상류·하류 추적을 실행하세요.');return}T.afS='trc';winOpen('table');setTab(t==='n'?'n':'l');
+ toast(`결과표를 ${trcLab(r)} 범위로 걸렀습니다. 조건을 더 걸고 '추적 범위에 적용'을 누르세요.`,5000)}
+function quick(){const r=live();if(!r){toast('먼저 상류·하류 추적을 실행하세요.');return}const t=$('v42T').value,k=$('v42K').value,op=$('v42Op').value,v=$('v42V').value.trim();T.v42={t,k};
+ if(v===''){toast('값을 넣어 주세요.');return}const idx=[];(t==='n'?r.ni:r.li).forEach((a,i)=>{if(a)idx.push(i)});
+ const lab=(BFN[t].find(x=>x[0]===k)||[,k])[1];if(!confirm(`${trcLab(r)} 범위의 ${t==='n'?'절점':'관로'} ${idx.length.toLocaleString()}개에 ${lab} ${op==='='?'= ':op==='*'?'× ':'+ '}${v} 을(를) 적용할까요?`))return;
+ batchApply(t,idx,k,op,v)}
+const out0=TR.out,ob0=TR.outBind;
+TR.out=function(){let h=out0.apply(this,arguments);const r=live();if(!r||r.mode==='path')return h;const c=trcCnt(r),Q=T.v42||{},t=Q.t==='n'?'n':'l';
+ return h+tbox(`✏️ ${MODE[r.mode]||''} 추적 범위 일괄입력`,`<div class="flex flex-wrap items-center gap-2">${tsel('v42T','대상',[['l',`관로 ${c.l.toLocaleString()}개`],['n',`절점 ${c.n.toLocaleString()}개`]],t)}${tsel('v42K','항목',BFN[t],Q.k&&BFN[t].some(x=>x[0]===Q.k)?Q.k:BFN[t][0][0])}${tsel('v42Op','',[['=','= 값으로'],['*','× 곱하기'],['+','+ 더하기']],'=')}<input id="v42V" class="px-1.5 py-1 border border-slate-300 rounded bg-white text-xs w-20" placeholder="값">${tbtn('v42Go','✔ 추적 범위에 적용','bg-cyan-600 hover:bg-cyan-700 text-white')}</div>
+  <div class="flex flex-wrap gap-2">${tbtn('v42Tl','🔎 관로 표에서 조건 걸어 입력')}${tbtn('v42Tn','🔎 절점 표에서 조건 걸어 입력')}</div>`+
+  tnote(`분홍색으로 표시된 ${MODE[r.mode]||''} 추적 범위 전체에 바로 넣습니다. 관경 100 mm 이하만처럼 조건을 걸려면 표에서 입력하세요(결과표 조건 줄의 <b>범위</b>가 '추적 범위'로 잡힙니다). 되돌리기로 취소할 수 있습니다.`),'border-cyan-200')};
+TR.outBind=function(){if(ob0)ob0.apply(this,arguments);const on=(id,f,ev)=>{const e=$(id);if(e)e[ev||'onclick']=f};
+ on('v42T',e=>{T.v42={t:e.target.value};toolsOut()},'onchange');on('v42K',e=>{T.v42=Object.assign(T.v42||{t:$('v42T').value},{k:e.target.value})},'onchange');
+ on('v42Go',quick);on('v42Tl',()=>openTable('l'));on('v42Tn',()=>openTable('n'))};
+
+window.__gw42={live,openTable,quick};
+})()}catch(e){console.warn('v42',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
