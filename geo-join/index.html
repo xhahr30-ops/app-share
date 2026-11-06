@@ -606,6 +606,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phv .nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:52px;border:0;border-radius:8px;background:rgba(0,0,0,.45);color:#fff;font-size:24px;line-height:1;cursor:pointer;z-index:2}
 .phv .nav:hover{background:rgba(0,0,0,.7)}.phv .nav.p{left:4px}.phv .nav.n{right:4px}.phv .nav:disabled{opacity:.2;cursor:default}
 .phv .cnt{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11.5px;border-radius:999px;padding:1px 9px;font-weight:800;z-index:2}
+.phv .ld{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:rgba(0,0,0,.65);color:#fff;font-size:11.5px;border-radius:999px;padding:2px 10px;font-weight:700;z-index:2;pointer-events:none;white-space:nowrap}.phv .ld:empty{display:none}
 .phv .tg{position:absolute;right:6px;top:6px;background:#f59e0b;color:#111;font-size:10.5px;border-radius:999px;padding:1px 8px;font-weight:800;z-index:2}.phv .tg:empty{display:none}
 .phv .strip{position:relative;display:flex;gap:4px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
 .phv .strip:empty{display:none}
@@ -5281,7 +5282,14 @@ async function phThumbFlush(){TC.t=0;const q=[...TC.q];TC.q.clear();let v=[];try
   else{const m=PH.byId.get(id);if(m&&m.shUp&&typeof shThumbGet==='function'){miss.push([id,o]);return}}o.r(u)});
  if(miss.length)shThumbGet(miss);
  while(TC.m.size>900){const [k,u]=TC.m.entries().next().value;TC.m.delete(k);URL.revokeObjectURL(u)}}
-async function phBig(id){let u=BC.get(id);if(u){BC.delete(id);BC.set(id,u);return u}let b=null;try{b=await IDB.get('ph:'+id)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(id);if(!b)return '';
+/* 같은 큰 사진을 받는 중이면 새로 요청하지 않고 그 결과를 같이 기다림 (자동 동기화로 화면을 다시 그려도 서버에 두 번 묻지 않음) */
+const BP=new Map();
+function phBig(id){let u=BC.get(id);if(u){BC.delete(id);BC.set(id,u);return Promise.resolve(u)}let p=BP.get(id);if(!p){p=phBig0(id).finally(()=>BP.delete(id));BP.set(id,p)}return p}
+/* 큰 사진 미리 받기 — 이 기기에 없는 것만 모아 서버에 한 번에 요청 (지금 보는 사진을 받은 뒤에 부름) */
+async function phBigPre(ids){ids=[...new Set(ids.filter(id=>id&&!BC.has(id)&&!BP.has(id)))];if(!ids.length||typeof shFetchMany!=='function'||!SH.on())return;
+ let v=[];try{v=await idbMany(ids.map(id=>'ph:'+id))}catch(_){}const need=ids.filter((id,i)=>!v[i]&&!BP.has(id)&&(PH.byId.get(id)||{}).shUp).slice(0,4);if(!need.length)return;
+ const p=shFetchMany(need,'big');need.forEach(id=>BP.set(id,p.then(o=>{const b=o[id];if(!b)return '';let u=BC.get(id);if(!u){u=URL.createObjectURL(b);BC.set(id,u);while(BC.size>12){const [k,x]=BC.entries().next().value;BC.delete(k);URL.revokeObjectURL(x)}}return u}).finally(()=>BP.delete(id))))}
+async function phBig0(id){let u;let b=null;try{b=await IDB.get('ph:'+id)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(id);if(!b)return '';
  u=BC.get(id);if(u)return u;u=URL.createObjectURL(b);BC.set(id,u);while(BC.size>12){const [k,x]=BC.entries().next().value;BC.delete(k);URL.revokeObjectURL(x)}return u}
 function phForget(id){const a=TC.m.get(id);if(a){URL.revokeObjectURL(a);TC.m.delete(id)}const b=BC.get(id);if(b){URL.revokeObjectURL(b);BC.delete(id)}}
 /* 사진 줄이기 — createImageBitmap(빠름) 우선, 안 되면 Image */
@@ -5344,6 +5352,7 @@ function facPhSync(){const old=FAC.phn,oc=FAC.phc||0;FAC.phn=null;FAC.phc=0;if(F
 function phFacHid(g,z){if(!g.fac||!FAC.n)return false;const i=facKeyI().get(g.fac);return i!=null&&facOn(FAC.kinds[FAC.k[i]],z)&&!FAC.dl[i]}
 /* 시설물 정보창 — 붙은 사진 줄 + 사진 넣기 */
 function phFacHtml(i){if(typeof PH==='undefined')return '';const key=facKey(i),g=PH.gById&&PH.gById.get('f:'+key),ids=g?g.ids.slice().sort((a,b)=>(PH.byId.get(b).ts||0)-(PH.byId.get(a).ts||0)):[];
+ if(ids.length)setTimeout(()=>phBigPre(ids.slice(0,2)),300); /* 정보창을 읽는 동안 최근 사진 원본을 받아 둠 → 사진을 누르면 바로 뜸 */
  const th=ids.slice(0,8).map(id=>`<img data-fph="${esc(id)}" src="${phThumbNow(id)||''}" alt="" title="${esc(PH.byId.get(id).dt||'촬영시각 없음')}" onclick="phFacOpen(this)">`).join('');
  setTimeout(()=>document.querySelectorAll('img[data-fph]').forEach(im=>{if(!im.getAttribute('src'))phThumb(im.dataset.fph).then(u=>{if(u)im.src=u})}),0);
  return `<div class="fph">${ids.length?`<b>📷 사진 ${ids.length.toLocaleString()}장</b>`:''}${ids.length>8?` <small>(최근 8장)</small>`:''}${th?`<div class="th">${th}</div>`:''}<div class="bt"><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'cam')">📸 찍어 넣기</button><button type="button" class="kl" data-fi="${i}" onclick="phFacAdd(this,'alb')">🖼️ 앨범에서</button></div></div>`}
@@ -5655,7 +5664,7 @@ function phGoMap(pid){const g=PH.V.mOf.get(pid);if(!g||!map||g.lat==null)return;
  map.setView([g.lat,g.lng],Math.max(map.getZoom(),18));setTimeout(()=>phPopOpen(g.id,pid),300);if(innerWidth<1024)$('mapBox').scrollIntoView({behavior:'smooth',block:'center'})}
 /* ---------- 넘겨보기 (지도 팝업·갤러리 공용, 새 창에서도 동작) ---------- */
 function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i:0,tok:0,opts};
- box.innerHTML=`<div class="phv"><div class="stage"><img alt=""><span class="cnt"></span><span class="tg"></span><button type="button" class="nav p" title="이전 사진 (←)">‹</button><button type="button" class="nav n" title="다음 사진 (→)">›</button></div><div class="strip"></div><div class="inf"></div><textarea placeholder="📝 메모 (예: 누수 흔적, 맨홀 위치) — 입력 후 칸 밖을 누르면 저장"></textarea><div class="acts"></div></div>`;
+ box.innerHTML=`<div class="phv"><div class="stage"><img alt=""><span class="cnt"></span><span class="tg"></span><span class="ld"></span><button type="button" class="nav p" title="이전 사진 (←)">‹</button><button type="button" class="nav n" title="다음 사진 (→)">›</button></div><div class="strip"></div><div class="inf"></div><textarea placeholder="📝 메모 (예: 누수 흔적, 맨홀 위치) — 입력 후 칸 밖을 누르면 저장"></textarea><div class="acts"></div></div>`;
  const q=s=>box.querySelector(s),img=q('.stage img'),strip=q('.strip'),inf=q('.inf'),ta=q('textarea'),acts=q('.acts'),W=doc.defaultView||window;
  const OF=()=>opts.scope==='map'?PH.V.mOf:PH.V.gOf;
  v.ids_=()=>{const g=OF().get(v.pid);return g?g.ids:PH.V.nog.includes(v.pid)?PH.V.nog:[v.pid]};
@@ -5668,7 +5677,8 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   q('.cnt').textContent=`${v.i+1} / ${ids.length}`;q('.nav.p').disabled=v.i<=0;q('.nav.n').disabled=v.i>=ids.length-1;
   const cd=PH.code.get(m.id);q('.tg').textContent=m.map?'🎯 위치도':how?'위치 추정':m.src==='수동'?'직접 찍음':!g||g.lat==null?'위치 없음':'';
   const t=phThumbNow(m.id);if(t)img.src=t;else{img.removeAttribute('src');phThumb(m.id).then(u=>{if(v.tok===tok&&u&&!img.dataset.big)img.src=u})}img.dataset.big='';
-  phBig(m.id).then(u=>{if(v.tok===tok&&u){img.src=u;img.dataset.big='1'}});for(const x of [ids[v.i+1],ids[v.i-1]])if(x)phBig(x);
+  const ld=q('.ld');ld.textContent='';const ldT=m.shUp&&!BC.has(m.id)?setTimeout(()=>{if(v.tok===tok&&!img.dataset.big)ld.textContent='⏳ 원본 받는 중…'},400):0;
+  phBig(m.id).then(u=>{clearTimeout(ldT);if(v.tok!==tok)return;ld.textContent='';if(u){img.src=u;img.dataset.big='1'}}).then(()=>{if(v.tok===tok)phBigPre([ids[v.i+1],ids[v.i-1],ids[v.i+2]])});
   const a=Math.max(0,v.i-40),b=Math.min(ids.length,v.i+41);let h='';for(let k=a;k<b;k++){const id=ids[k];h+=`<img data-k="${k}" data-pid="${id}" class="${k===v.i?'on':''}" src="${phThumbNow(id)}" alt="" title="${k+1}. ${esc(PH.byId.get(id).name)}">`}
   strip.innerHTML=ids.length>1?h:'';strip.querySelectorAll('img').forEach(im=>{if(!im.getAttribute('src'))phThumb(im.dataset.pid).then(u=>{if(u)im.src=u})});
   const on=strip.querySelector('img.on');if(on)strip.scrollLeft=on.offsetLeft-strip.clientWidth/2+27;
@@ -5690,7 +5700,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
  inf.onchange=async e=>{const sl=e.target.closest('select.kdS');if(!sl)return;const m=PH.byId.get(v.pid);if(!m)return;const g=OF().get(m.id),kd=sl.value;
   const all=g&&g.n>1&&W.confirm(`이 묶음 사진 ${g.n}장을 모두 ${PH_KD[kd].n}(으)로 바꿀까요?\n\n[취소]를 누르면 이 사진 1장만 바꿉니다.`);
   await phSetKd(all?g.ids.slice():[m.id],kd)};
- img.onclick=async()=>{if(!v.pid)return;let b=null;try{b=await IDB.get('ph:'+v.pid)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(v.pid);if(!b)return;const u=URL.createObjectURL(b);W.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),120000)};
+ img.onclick=async()=>{if(!v.pid)return;let b=null;try{if(BP.has(v.pid))await BP.get(v.pid);b=await IDB.get('ph:'+v.pid)}catch(_){}if(!b&&typeof shFetchBig==='function')b=await shFetchBig(v.pid);if(!b)return;const u=URL.createObjectURL(b);W.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),120000)};
  let sx=null;const st=q('.stage');st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});st.addEventListener('touchend',e=>{if(sx==null)return;const d=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(d)>40)v.go(v.i+(d<0?1:-1))});
  ta.onchange=()=>{const m=PH.byId.get(v.pid);if(!m)return;m.memo=ta.value.trim();delete m.memoSrc;const g=PH.gOf.get(m.id);if(g)g.memo=g.ids.some(id=>PH.byId.get(id).memo);phSaveMeta();phView();phViewsRefresh(v)};
  ta.onkeydown=e=>e.stopPropagation();
@@ -6272,22 +6282,25 @@ function shStatus(){const chip=$('shChip'),msg=$('shMsg');if(!chip)return;
  if(!SH.on()){chip.textContent='';chip.style.color='';return}
  const wait=PH.list.filter(m=>!m.shUp).length+PH.list.filter(m=>m.shUp&&m.shSig!==shSig(m)).length+SH.del.size,t=SH.last?new Date(SH.last).toTimeString().slice(0,8):'-';
  chip.textContent=SH.err?'⚠️ 오류':SH.busy?'🔄 동기화 중':wait?`⏫ ${wait}건 대기`:'✅ 연결됨';chip.style.color=SH.err?'#dc2626':'#0f766e';
- if(!SH.busy)msg.innerHTML=SH.err?`<span class="c-rd">⚠️ ${esc(SH.err)}</span>`:`공유 사진 <b>${SH.n.toLocaleString()}</b>장 · 이 기기 사진 ${PH.list.length.toLocaleString()}장 · 올릴 것 ${wait.toLocaleString()}건 · 마지막 동기화 ${t}`}
+ if(!SH.busy)msg.innerHTML=SH.err?`<span class="c-rd">⚠️ ${esc(SH.err)}</span>`:`공유 사진 <b>${SH.n.toLocaleString()}</b>장 · 이 기기 사진 ${PH.list.length.toLocaleString()}장 · 올릴 것 ${wait.toLocaleString()}건 · 마지막 동기화 ${t}`+((a,b)=>a||b?` · 사진 받기 평균 원본 ${a||'-'} · 작은 사진 ${b||'-'}`:'')(shImgAvg('big'),shImgAvg('th'))}
 function shKick(act){if(!SH.on()||!SH.cfg.auto)return;if(act){SH.act=Date.now();shTimer()}clearTimeout(SH.kickT);SH.kickT=setTimeout(()=>shSync(),1500)}
+/* 사진 받기 걸린 시간 — 최근 10번 평균을 공유 설정 글에 보여 줌 (서버가 느린지 확인용) */
+function shImgMs(kind,ms){const a=SH.imgMs||(SH.imgMs={big:[],th:[]}),x=a[kind==='big'?'big':'th'];x.push(ms);if(x.length>10)x.shift();if(!SH.busy)try{shStatus()}catch(_){}}
+const shImgAvg=k=>{const x=SH.imgMs&&SH.imgMs[k];return x&&x.length?(x.reduce((a,b)=>a+b,0)/x.length/1000).toFixed(1)+'초':''};
 async function shFetchBig(id){const m=PH.byId.get(id);if(!SH.on()||!m||!m.shUp)return null;
- try{const r=await shReq('img',{kind:'big',ids:[id]}),b=r.imgs&&r.imgs[id]?shBlob(r.imgs[id]):null;if(b)await idbPut([['ph:'+id,b]]);return b}catch(_){return null}}
+ try{const t0=performance.now(),r=await shReq('img',{kind:'big',ids:[id]});shImgMs('big',performance.now()-t0);const b=r.imgs&&r.imgs[id]?shBlob(r.imgs[id]):null;if(b)await idbPut([['ph:'+id,b]]);return b}catch(_){return null}}
 // 공유 서버에서 사진 여러 장 받기 (kind: th=작은 사진, big=원본) → 이 기기에 저장
 async function shFetchMany(ids,kind){const out={};if(!SH.on()||!ids.length)return out;
- try{const r=await shReq('img',{kind,ids}),puts=[];ids.forEach(id=>{const s=r.imgs&&r.imgs[id];if(s){const b=shBlob(s);out[id]=b;puts.push([(kind==='big'?'ph:':'pt:')+id,b])}});if(puts.length)await idbPut(puts)}catch(_){}
+ try{const t0=performance.now(),r=await shReq('img',{kind,ids}),puts=[];shImgMs(kind,performance.now()-t0);ids.forEach(id=>{const s=r.imgs&&r.imgs[id];if(s){const b=shBlob(s);out[id]=b;puts.push([(kind==='big'?'ph:':'pt:')+id,b])}});if(puts.length)await idbPut(puts)}catch(_){}
  return out}
 // 화면에 보이는 작은 사진만 서버에서 받음: 40장씩 묶어 동시에 2건까지, 실패한 사진은 1분 뒤에 다시 시도
-const SHT={q:new Map(),run:0,fail:new Map(),t:0};
+const SHT={q:new Map(),run:0,fail:new Map(),t:0,fly:new Map()};
 function shThumbGet(list){const now=Date.now();
- list.forEach(([id,o])=>{const f=SHT.fail.get(id);if(f&&now-f<60000){o.r('');return}const w=SHT.q.get(id);if(w)w.push(o);else SHT.q.set(id,[o])});
+ list.forEach(([id,o])=>{const f=SHT.fail.get(id);if(f&&now-f<60000){o.r('');return}const y=SHT.fly.get(id);if(y){y.push(o);return}const w=SHT.q.get(id);if(w)w.push(o);else SHT.q.set(id,[o])});
  if(!SHT.t)SHT.t=setTimeout(shThumbPump,30)}
 async function shThumbPump(){SHT.t=0;
- while(SHT.run<2&&SHT.q.size){const ids=[...SHT.q.keys()].slice(-40),ws=ids.map(id=>{const w=SHT.q.get(id);SHT.q.delete(id);return w});SHT.run++;
-  shFetchMany(ids,'th').then(got=>{ids.forEach((id,k)=>{const b=got[id];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}else SHT.fail.set(id,Date.now());ws[k].forEach(o=>o.r(u))});
+ while(SHT.run<2&&SHT.q.size){const ids=[...SHT.q.keys()].slice(-40),ws=ids.map(id=>{const w=SHT.q.get(id);SHT.q.delete(id);SHT.fly.set(id,w);return w});SHT.run++;
+  shFetchMany(ids,'th').then(got=>{ids.forEach((id,k)=>{SHT.fly.delete(id);const b=got[id];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}else SHT.fail.set(id,Date.now());ws[k].forEach(o=>o.r(u))});
    while(TC.m.size>900){const [k,u]=TC.m.entries().next().value;TC.m.delete(k);URL.revokeObjectURL(u)}})
   .finally(()=>{SHT.run--;if(SHT.q.size&&!SHT.t)SHT.t=setTimeout(shThumbPump,0)})}}
 async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();return}
