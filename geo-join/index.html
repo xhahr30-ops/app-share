@@ -255,7 +255,11 @@ html.dark .gsrch .gsi:hover,html.dark .gsrch .gsi.on{background:#312e81}
 .gsrch .gsi small{display:block;color:var(--mute);font-size:11.5px}
 .gsrch .gsi .tg{display:inline-block;font-size:10.5px;font-weight:700;border-radius:4px;padding:0 5px;margin-right:5px;color:#fff;vertical-align:1px}
 .gsrch .gsm{padding:8px 10px;color:var(--mute);font-size:12px}
-.gsrch.min{width:auto}.gsrch.min .gsw,.gsrch.min .gsl{display:none}
+.gsrch.min{width:auto}.gsrch.min .gsw,.gsrch.min .gsl,.gsrch.min .gsv{display:none}
+.gsrch .gsv{border:0;background:none;font-size:15px;cursor:pointer;padding:3px 4px;border-radius:7px;line-height:1;flex:none}
+.gsrch .gsv:hover{background:var(--sub)}.gsrch .gsv.on{background:#fecaca;animation:gsvp 1s ease-in-out infinite}
+@keyframes gsvp{50%{box-shadow:0 0 0 5px rgba(239,68,68,.25)}}
+.gsrch .gsm .gsvok{margin-top:6px;border:0;border-radius:6px;background:#4f46e5;color:#fff;font-weight:700;font-size:12px;padding:6px 10px;cursor:pointer;font-family:inherit}
 .gsrch .gst{border:0;background:none;font-size:15px;cursor:pointer;padding:3px 5px;color:var(--ink)}
 .gs-pin{background:none;border:0}
 .gs-pin span{display:block;width:22px;height:22px;border-radius:50% 50% 50% 0;background:#dc2626;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
@@ -2575,15 +2579,48 @@ function initFs(){
    ① 불러온 자료(관리번호·수용가번호·주소)에서 먼저 찾고
    ② 없으면 ①주소찾기 설정의 변환 방식(서버 경유·카카오·OSM)으로 주소·장소 검색
    ③ "36.02, 129.34"처럼 좌표를 넣으면 바로 이동 */
+/* ===== 말 맞춤(말로 찾기): 소리로 읽은 영문·숫자를 블록명 글자로 (비브이 공일 → BV01, 와이디 삼십이 다시 일 → YD32-1)
+   한 낱말이 모두 영문 이름·숫자 말로만 되어 있을 때만 바꿈(보통 낱말은 그대로). 끝의 '찾아줘·검색·어디야' 등은 뗌 ===== */
+const V_AB=[['에이치','H'],['더블유','W'],['에이','A'],['브이','V'],['뷔','V'],['에스','S'],['에프','F'],['엑스','X'],['와이','Y'],['제이','J'],['제트','Z'],['케이','K'],['아이','I'],['비','B'],['피','P'],['씨','C'],['디','D'],['쥐','G'],['지','G'],['엠','M'],['엔','N'],['엘','L'],['알','R'],['티','T'],['큐','Q'],['유','U']];
+const V_NUM={'공':0,'영':0,'일':1,'이':2,'삼':3,'사':4,'오':5,'육':6,'륙':6,'칠':7,'팔':8,'구':9};
+function vTok(w){/* 낱말 하나를 [{t:'a'|'d'|'h'|'x',v}]로. 못 읽으면 null */const out=[];let i=0;
+ while(i<w.length){const r=w.slice(i);let m;
+  if((m=r.match(/^[A-Za-z]+/))){out.push({t:'a',v:m[0].toUpperCase()});i+=m[0].length;continue}
+  if((m=r.match(/^[0-9]+/))){out.push({t:'d',v:m[0]});i+=m[0].length;continue}
+  if((m=r.match(/^(다시|대시|하이픈|-)/))){out.push({t:'h',v:'-'});i+=m[0].length;continue}
+  if(r[0]==='십'){out.push({t:'x',v:10});i++;continue}
+  if(V_NUM[r[0]]!=null){out.push({t:'n',v:V_NUM[r[0]]});i++;continue}
+  const ab=V_AB.find(a=>r.startsWith(a[0]));if(ab){out.push({t:'a',v:ab[1],k:ab[0].length});i+=ab[0].length;continue}
+  return null}
+ return out}
+function vJoin(ts){/* 숫자 말: 십 있으면 값(삼십이=32), 없으면 이어 붙임(공일=01) */let s='',run=[];
+ const flush=()=>{if(!run.length)return;if(run.some(o=>o.t==='x')){let v=0,cur=null;run.forEach(o=>{if(o.t==='x'){v+=(cur==null?1:cur)*10;cur=null}else cur=o.v});s+=String(v+(cur||0))}else s+=run.map(o=>o.v).join('');run=[]};
+ ts.forEach(o=>{if(o.t==='n'||o.t==='x')run.push(o);else{flush();s+=o.v}});flush();return s}
+function vNorm(q){let s=String(q||'').trim().replace(/[.,?!。]+$/,'').trim();
+ s=s.replace(/\s*(?:을|를|으로|로|에서|에)?\s*(?:찾아\s*(?:줘|주세요|봐|줄래)|찾기|검색(?:해\s*(?:줘|주세요))?|가\s*(?:줘|주세요|자)|보여\s*(?:줘|주세요)|어디(?:야|예요|에요|있어|에\s*있어)?|위치)\s*$/,'').trim();
+ const ws=s.split(/\s+/),out=[];let grp=[];
+ const flush=()=>{if(!grp.length)return;const ts=grp.flatMap(g=>g.ts),hasA=ts.some(o=>o.t==='a'&&(o.k==null||o.k>=2||ts.filter(x=>x.t==='a').length>=2)),nd=ts.filter(o=>o.t==='n'||o.t==='d'||o.t==='x').length;
+  if(hasA||nd>=2&&ts.some(o=>o.t==='a'))out.push(vJoin(ts));else out.push(...grp.map(g=>g.w));grp=[]};
+ const isN=o=>o.t==='n'||o.t==='d'||o.t==='x';
+ ws.forEach(w=>{const ts=vTok(w);
+  if(ts&&ts.length&&grp.length&&ts.every(isN)&&isN(grp[grp.length-1].ts.slice(-1)[0])){flush();out.push(vJoin(ts));return} /* YD32 1 → 띄움 유지(뒤에서 YD32-1 후보) */
+  if(ts&&ts.length&&!/^[0-9]+$/.test(w)||ts&&grp.length&&/^[0-9-]+$/.test(w))grp.push({w,ts});else{flush();out.push(w)}});flush();
+ return out.filter(Boolean).join(' ')}
+function vCands(alts){/* 인식 후보마다: 원문 뗀 것, 말 맞춤, 한 자리 숫자 0 붙이기(YD1→YD01), 띄운 숫자에 - (YD32 1→YD32-1) */const seen=new Set(),cs=[];
+ const add=v=>{v=String(v||'').trim();if(v&&!seen.has(v)){seen.add(v);cs.push(v)}};
+ (alts||[]).forEach(a=>{const n=vNorm(a),c=n.replace(/\s+/g,'');add(n);
+  if(/^[A-Z]+[0-9]/.test(c)){add(c.replace(/^([A-Z]+)([0-9])(?![0-9])/,'$10$2'));const m=n.match(/^([A-Z]+[0-9]+)\s+([0-9])$/);if(m){add(m[1]+'-'+m[2]);add(m[1].replace(/^([A-Z]+)([0-9])$/,'$10$2')+'-'+m[2])}}
+  add(String(a||'').trim().replace(/[.,?!。]+$/,''))});
+ return cs}
 function initSearch(){
  let pin=null,list=[],sel=-1,busy=false;
  const Ctl=L.Control.extend({options:{position:'topright'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-control gsrch');
-  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
+  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="button" class="gsv" title="말로 찾기 (🎤 누르고 블록·시설물·주소 말하기)" aria-label="말로 찾기" hidden>🎤</button><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
   L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});
  const ctl=new Ctl();map.addControl(ctl);
  const box=ctl.getContainer(),corner=box.parentNode;corner.insertBefore(box,corner.firstChild); // 레이어 아이콘보다 위
- const f=box.querySelector('form'),inp=box.querySelector('input'),btn=box.querySelector('.gsb'),lst=box.querySelector('.gsl'),clr=box.querySelector('.gsx'),tog=box.querySelector('.gst');
+ const f=box.querySelector('form'),inp=box.querySelector('input'),btn=box.querySelector('.gsb'),lst=box.querySelector('.gsl'),clr=box.querySelector('.gsx'),tog=box.querySelector('.gst'),mic=box.querySelector('.gsv');
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
  tog.onclick=()=>{const m=!box.classList.contains('min');setMin(m);if(!m)inp.focus()};
@@ -2607,6 +2644,39 @@ function initSearch(){
   pin=L.marker([r.lat,r.lng],{icon:L.divIcon({className:'gs-pin',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,26],popupAnchor:[0,-24]}),zIndexOffset:1000}).addTo(map);
   pin.bindPopup(`<div style="font-size:12.5px;line-height:1.5"><b>📍 ${esc(r.t)}</b>${r.s?`<br><span style="color:#64748b">${esc(r.s)}</span>`:''}<br>소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy} <a href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${xy}');this.textContent='복사됨';return false">복사</a><div class="acts" style="margin-top:6px">${navBtn(r.lat,r.lng,r.t)}</div><a href="#" onclick="window.__gsClear&&window.__gsClear();return false">핀 지우기</a></div>`,{maxWidth:300}).openPopup();
   map.setView([r.lat,r.lng],Math.max(map.getZoom(),17))}
+
+ /* 말로 찾기(2026-11-06, A안): 브라우저 음성 인식(크롬·엣지 = 말소리를 구글·MS로 보내 글자로 바꿈, 인터넷 필요).
+    앱은 소리를 저장·전송하지 않고, 바뀐 글자만 검색칸에 넣는다. 인식 후보 5개를 말 맞춤(vNorm)해서
+    블록·시설물 찾기에 넣고 정확히 맞으면 바로 이동, 일부만 맞으면 목록, 하나도 없으면 주소 찾기(카카오) */
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,recOn=false,recT=null;
+ if(SR&&mic){mic.hidden=false;
+  const stopUi=()=>{recOn=false;mic.classList.remove('on');mic.title='말로 찾기 (🎤 누르고 블록·시설물·주소 말하기)';clearTimeout(recT)};
+  const ERR={'not-allowed':'🎤 마이크 사용이 막혀 있습니다. 주소창 왼쪽 자물쇠(사이트 설정) → <b>마이크 허용</b> 뒤 다시 눌러 주세요.<br><small>Apps Script 웹앱 주소에서는 막힐 수 있습니다. 공유 주소(github.io)로 열어 보세요.</small>',
+   'service-not-allowed':'🎤 이 브라우저에서는 말로 찾기를 쓸 수 없습니다. 크롬으로 열어 보세요.',
+   'network':'🎤 말소리를 글자로 바꾸려면 <b>인터넷</b>이 필요합니다. 연결을 확인해 주세요.<br><small>키보드의 🎤(Gboard 등)로 말해도 됩니다.</small>',
+   'no-speech':'🎤 말소리를 듣지 못했습니다. 🎤를 다시 누르고 말해 주세요.','audio-capture':'🎤 마이크를 찾지 못했습니다. 마이크 연결을 확인해 주세요.',
+   'language-not-supported':'🎤 한국어 음성 인식을 지원하지 않는 브라우저입니다.'};
+  const listen=()=>{try{rec=new SR()}catch(e){msg('🎤 음성 인식을 시작하지 못했습니다.');return}
+   rec.lang='ko-KR';rec.interimResults=true;rec.maxAlternatives=5;rec.continuous=false;let done=false;
+   rec.onstart=()=>{recOn=true;mic.classList.add('on');mic.title='듣는 중 — 다시 누르면 멈춤';msg('🎤 <b>말씀하세요…</b><br><small>예: 와이디 공일 · 도구가압장 · 소화전 · 포항시 남구 오천읍 문덕리 123</small>');recT=setTimeout(()=>{try{rec.stop()}catch(_){}},12000)};
+   rec.onresult=e=>{let fin=null,tmp='';for(let k=e.resultIndex;k<e.results.length;k++){const r=e.results[k];if(r.isFinal)fin=r;else tmp+=r[0].transcript}
+    if(!fin){inp.value=tmp;clr.hidden=!tmp;return}
+    done=true;const alts=[];for(let k=0;k<fin.length;k++)if(fin[k]&&fin[k].transcript)alts.push(fin[k].transcript);vPick(alts)};
+   rec.onerror=e=>{done=true;stopUi();if(e.error==='aborted')return;msg(ERR[e.error]||('🎤 음성 인식 오류: '+esc(e.error||'')))};
+   rec.onend=()=>{stopUi();if(!done&&!inp.value.trim())msg(ERR['no-speech'])};
+   try{rec.start()}catch(e){stopUi();msg('🎤 음성 인식을 시작하지 못했습니다: '+esc(e.message||String(e)))}};
+  mic.onclick=()=>{if(recOn){try{rec.stop()}catch(_){}return}
+   let ok=false;try{ok=localStorage.getItem('geo-voice-ok')==='1'}catch(_){}
+   if(ok)return listen();
+   lst.innerHTML='<div class="gsm" style="color:var(--ink)"><b>🎤 말로 찾기 안내</b><br>말소리는 브라우저(크롬은 구글)로 보내져 글자로 바뀝니다. 인터넷이 필요합니다.<br>앱은 소리를 저장하지 않습니다. <b>고객 이름·연락처는 말하지 마세요.</b><br>블록명·시설물명·주소를 말하면 됩니다.<br><button type="button" class="gsvok">확인하고 말하기</button></div>';list=[];
+   const b=lst.querySelector('.gsvok');b.onclick=ev=>{ev.stopPropagation();try{localStorage.setItem('geo-voice-ok','1')}catch(_){}listen()}};
+  tog.addEventListener('click',()=>{if(recOn&&box.classList.contains('min'))try{rec.abort()}catch(_){}})}
+ function vPick(alts){const cs=vCands(alts);let pick=null,part=null;
+  for(const c of cs){const bl=inBlocks(c),fc=inFacs(c);if(bl.length&&bl[0].ex){pick={c,l:bl.concat(fc),g:bl[0]};break}if(fc.length&&fc[0].ex){pick={c,l:fc.concat(bl),g:fc[0]};break}if(!part&&(bl.length||fc.length))part={c,l:bl.concat(fc)}}
+  if(pick){inp.value=pick.c;inp.dataset.q=pick.c;clr.hidden=false;list=pick.l;sel=-1;show();go(pick.g);return}
+  if(part){inp.value=part.c;inp.dataset.q=part.c;clr.hidden=false;list=part.l;sel=-1;show();return}
+  const q=cs[0]||'';inp.value=q;clr.hidden=!q;if(!q){msg('🎤 알아듣지 못했습니다. 다시 말해 주세요.');return}inp.dataset.q=q;run()}
+ window.__vNorm=vNorm;window.__vCands=vCands;
  window.__gsClear=()=>{if(pin){map.removeLayer(pin);pin=null}};
  /* 블록명 찾기: 소블록 SHP 이름 + 별칭표(BV01,BV02=블루밸리) + 중블록·대블록 이름. 띄어쓰기·대소문자 무시, 같음 > 앞부분 > 포함 */
  function inBlocks(q){const n=nsp(q).toUpperCase();if(!n||!poly)return [];const fld=$('blkField').value,K=v=>nsp(v).toUpperCase();
@@ -4384,7 +4454,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|bkat|bkrem|stowarn|rcv-off)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
