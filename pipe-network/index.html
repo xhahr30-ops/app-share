@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v39.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v40 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5920,6 +5920,48 @@ const _ms39=msRender;msRender=function(){_ms39.apply(this,arguments);const box=$
  const sl=$('icoVer');if(sl)sl.onchange=()=>{setMode(sl.value);toast(sl.value==='v38'?'아이콘: v38 이전 방식(회색)':'아이콘: v39 색 선 아이콘')}};
 window.__gw39={HU,H,col,run,setMode,get mode(){return MODE}};
 })()}catch(e){console.warn('v39',e)}
+
+/* ════ v40 해석 탭 AI: 리본 '해석' 탭에 AI 묶음(해석 도우미 ▾ · 대화창) — 해석 결과 풀이·문제 원인·검증·보정을 한 번에 묻기 ════ */
+try{(()=>{
+// 해석 탭 메뉴에서 보낼 질문(대화창에 사용자 질문으로 보임)
+const Q40={
+ aiSum:'지금 해석 결과를 요약해줘. 판정 기준을 벗어난 곳(부압·수압 부족·수압 과다·유속 초과)을 개수와 대표 지점으로 정리하고, 가장 먼저 볼 곳 3곳을 지도에 보여줘.',
+ aiLow:'수압이 부족하거나 부압인 절점을 찾아서 원인을 따져줘(표고·급수원에서 거리·관경·손실수두 큰 관로·최저 시각). 원인별로 묶어서 표로 보여 주고, 개선안 후보(관경 확대·밸브 조정·가압 등)를 제안해줘. 모델은 바꾸지 마.',
+ aiFast:'유속이 기준을 넘거나 단위 손실수두가 큰 관로를 찾아서, 관경·유량·시각과 함께 표로 보여줘. 병목인지, 관경이 작은지, 연결 문제인지 나눠서 설명해줘. 모델은 바꾸지 마.',
+ aiChk:'모델 연결 상태를 점검하고(고립 절점·급수원 없는 그룹 등) 해석에 영향이 큰 순서로 무엇을 먼저 고쳐야 하는지 알려줘.',
+ aiCal:'실측 보정 결과(get_calibration)를 보고 RMSE·상관계수를 평가해줘. 오차가 큰 지점이 어느 블록·관로 쪽에 몰려 있는지 보고, 조도계수·수요·표고 중 무엇을 먼저 조정해 볼지 제안해줘. 모델은 바꾸지 마.',
+ aiSel:'지금 선택한 요소를 설명해줘. 판정 결과와 그렇게 나온 이유, 상류·하류에서 영향 주는 관로를 같이 알려줘.',
+ aiIf:'수요가 20% 늘면 어떻게 되는지 시나리오로 해석해서 전후를 비교해줘. 끝나면 바꾼 것은 되돌려줘.'
+};
+DDM.aiAna=[['aiSum','📊 해석 결과 요약·우선 점검'],['aiLow','📉 수압 부족·부압 원인'],['aiFast','⚡ 유속 초과·손실 큰 관로'],['aiChk','🛡️ 모델 검증 풀이'],['aiCal','🎯 실측 보정 도움 (RMSE)'],['aiSel','📌 선택한 요소 설명'],['aiIf','🔁 수요 20% 증가 시나리오']];
+const ask=k=>{if(!needNet())return;if(AI.busy){toast('AI가 답하는 중입니다. 끝난 뒤 다시 눌러 주세요.');return}
+ if(k!=='aiChk'&&!S.res){toast('먼저 해석을 실행하세요.');return}
+ if(k==='aiSel'&&!S.sel){toast('지도에서 절점이나 관로를 먼저 고르세요.');return}
+ if(k==='aiCal'&&!(T.cal&&T.cal.length)){toast('먼저 결과·레포트 › 보정에서 실측 파일을 넣으세요.',5000);return}
+ if(!document.documentElement.classList.contains('chat'))cxOpen(true);setTimeout(()=>cxSend(Q40[k]),80)};
+const XB40={};Object.keys(Q40).forEach(k=>XB40[k]=()=>ask(k));XB40.aiOpen=()=>{if(!document.documentElement.classList.contains('chat'))cxOpen(true)};
+const _ra40=rbAct;rbAct=function(a,b){if(XB40[a]){ddClose&&ddClose();XB40[a](b);return}return _ra40.apply(this,arguments)};
+// 리본: 해석 탭 끝에 AI 묶음
+const _w40=RIB.wds;RIB.wds=()=>_w40()+gg('AI',gb('aiAna','chat','AI 해석',{big:1,dd:1,tip:'해석 결과 풀이·문제 원인·검증·보정을 AI에게 묻기'})+col(gb('aiOpen','chat','대화창 열기')+gb('aiSel','target','선택 요소 설명')));
+try{if($('gp')&&(T.rib||'wds')==='wds')gpRib('wds')}catch(e){}
+// AI 도구: 실측 보정 결과
+AITOOLS.push({name:'get_calibration',description:'결과·레포트 › 보정에 넣은 실측값과 계산값 비교 결과를 돌려준다. 종류별(수압·수두·유량·수위·수질) 개수, 평균 절대오차, RMSE, 상관계수 r, 오차가 큰 지점 상위 목록(ID·시각·실측·계산·오차·블록). 유량 값은 화면 단위(유량 단위 필드 참고).',
+ inputSchema:{type:'object',properties:{top:{type:'integer',description:'오차 큰 지점 몇 개(기본 10)'}}},
+ run:async(inp)=>{const C=T.cal;if(!C||!C.length)return{calibration:null,note:'보정 자료 없음 — 사용자가 결과·레포트 › 보정에서 실측 파일(종류,ID,시각,값)을 넣어야 한다.'};
+  const top=Math.max(1,Math.min(50,+(inp&&inp.top)||10)),o={flow_unit:flU(),kinds:{}};
+  ['p','h','q','lv','c'].forEach(K=>{const a=C.filter(c=>c.K===K&&c.sim!=null);if(!a.length)return;const n=a.length,mo=a.reduce((s,c)=>s+c.obs,0)/n,ms=a.reduce((s,c)=>s+c.sim,0)/n;
+   let sxy=0,sxx=0,syy=0;a.forEach(c=>{sxy+=(c.obs-mo)*(c.sim-ms);sxx+=(c.obs-mo)**2;syy+=(c.sim-ms)**2});
+   const blk=c=>{try{return c.t==='n'?S.net.nodes[c.i].blk||null:S.net.links[c.i].blk||null}catch(e){return null}};
+   o.kinds[{p:'pressure',h:'head',q:'flow',lv:'level',c:'quality'}[K]]={count:n,mean_obs:r2(mo),mean_sim:r2(ms),mae:r2(a.reduce((s,c)=>s+Math.abs(c.sim-c.obs),0)/n),rmse:r2(Math.sqrt(a.reduce((s,c)=>s+(c.sim-c.obs)**2,0)/n)),r:sxx&&syy?r2(sxy/Math.sqrt(sxx*syy),3):null,
+    worst:a.slice().sort((x,y)=>Math.abs(y.sim-y.obs)-Math.abs(x.sim-x.obs)).slice(0,top).map(c=>({id:c.id,time:c.tm,obs:r2(c.obs),sim:r2(c.sim),err:r2(c.sim-c.obs),block:blk(c)}))}});
+  const miss=C.filter(c=>c.sim==null).map(c=>c.id);if(miss.length)o.ids_not_found=miss.slice(0,20);return o}});
+TOOLLAB.get_calibration='🎯 보정 결과 확인';
+// 대화창 추천 질문: 해석 결과가 있으면 해석 풀이 위주로
+const _cq40=cxChips;cxChips=function(){const base=CXQ.slice();try{if(S.res){CXQ.splice(0,CXQ.length,'해석 결과 요약해줘','수압 부족 원인은?','유속 초과 관로 점검',...(T.cal&&T.cal.length?['보정 오차 큰 곳은?']:[]),'지금 선택한 요소 설명해줘')}}catch(e){}
+ const r=_cq40.apply(this,arguments);CXQ.splice(0,CXQ.length,...base);return r};
+const _run40=run;run=async function(){const r=await _run40.apply(this,arguments);try{cxChips()}catch(e){}return r};
+window.__gw40={Q40,ask};
+})()}catch(e){console.warn('v40',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
