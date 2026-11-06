@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v39 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v39.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5894,8 +5894,8 @@ const col=k=>HU[H[k]]||HU.slate;
 let RV=null;const rv=()=>{if(!RV||RV.__n!==Object.keys(ICP).length){RV=new Map(Object.entries(ICP).map(([k,d])=>[d,k]));RV.__n=Object.keys(ICP).length}return RV};
 const svg=k=>`<svg class="gi gc" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="--c:${col(k)[0]};--cd:${col(k)[1]}"><path d="${ICP[k]}"/></svg>`;
 const st=document.createElement('style');st.textContent=
- '#gp svg.gi.gc{color:var(--c)!important}html.dark #gp svg.gi.gc{color:var(--cd)!important}'+
- '#gp .rb-b:disabled svg.gi.gc{opacity:.55}'+
+ 'html:not(.icoV38) #gp svg.gi.gc{color:var(--c)!important}html.dark:not(.icoV38) #gp svg.gi.gc{color:var(--cd)!important}'+
+ 'html:not(.icoV38) #gp .rb-b:disabled svg.gi.gc{opacity:.55}'+
  '#gp .v39e{display:inline-flex;align-items:center;gap:4px}#gp .v39e svg{flex:none;vertical-align:-2px}';
 document.head.appendChild(st);
 // 남은 이모지 → 같은 색 선 아이콘
@@ -5904,12 +5904,21 @@ const ER=new RegExp('^\\s*('+Object.keys(EM).join('|')+')\\uFE0F?\\s*');
 const SC=['gpTitle','gpLayW','gpTime','tbLock','msetBtn','qlOn','gpMapTb','gpRib'];
 function emo(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
  for(const t of ns){const m=(t.nodeValue||'').match(ER);if(!m)continue;const p=t.parentElement;if(!p||p.closest('select,option,textarea,input'))continue;
-  const k=EM[m[1]];const sp=document.createElement('span');sp.className='v39e';sp.innerHTML=svg(k)+'<span></span>';sp.lastChild.textContent=t.nodeValue.slice(m[0].length);t.parentNode.replaceChild(sp,t)}}
+  const k=EM[m[1]];const sp=document.createElement('span');sp.className='v39e';sp.dataset.o=t.nodeValue;sp.innerHTML=svg(k)+'<span></span>';sp.lastChild.textContent=t.nodeValue.slice(m[0].length);t.parentNode.replaceChild(sp,t)}}
 function paint(root){root.querySelectorAll('svg.gi:not(.gc)').forEach(s=>{const p=s.querySelector('path');const k=p&&rv().get(p.getAttribute('d'));if(!k)return;const c=col(k);s.classList.add('gc');s.style.setProperty('--c',c[0]);s.style.setProperty('--cd',c[1])})}
-let q=0;function run(){q=0;const gp=$('gp');if(!gp)return;paint(gp);SC.forEach(id=>{const e=$(id);if(e)emo(e)});const ms=$('msetBtn');if(ms)emo(ms)}
+// 아이콘 방식: 'v39'(색 선 아이콘, 기본) · 'v38'(이전 회색 아이콘 + 이모지) — 지도 설정에서 고름, 이 기기에 기억
+const MK='gw-ico';let MODE='v39';try{MODE=localStorage.getItem(MK)==='v38'?'v38':'v39'}catch(e){}
+const R=document.documentElement;
+function back(){document.querySelectorAll('#gp .v39e,#msetBtn .v39e').forEach(sp=>{sp.replaceWith(document.createTextNode(sp.dataset.o||sp.textContent))})}
+function setMode(m){MODE=m==='v38'?'v38':'v39';try{localStorage.setItem(MK,MODE)}catch(e){}R.classList.toggle('icoV38',MODE==='v38');if(MODE==='v38')back();else run()}
+R.classList.toggle('icoV38',MODE==='v38');
+let q=0;function run(){q=0;const gp=$('gp');if(!gp)return;paint(gp);if(MODE==='v38')return;SC.forEach(id=>{const e=$(id);if(e)emo(e)});const ms=$('msetBtn');if(ms)emo(ms)}
 const kick=()=>{if(!q)q=requestAnimationFrame(run)};
 run();try{new MutationObserver(kick).observe(document.body,{childList:true,subtree:true,characterData:true})}catch(e){}
-window.__gw39={HU,H,col,run};
+const _ms39=msRender;msRender=function(){_ms39.apply(this,arguments);const box=$('mset');if(!box)return;const hd=box.firstElementChild;if(!hd)return;
+ hd.insertAdjacentHTML('afterend',`<p class="font-bold text-slate-600 mt-1">화면 아이콘 버전</p><select id="icoVer" class="qe-i w-full" style="width:100%"><option value="v39" ${MODE==='v39'?'selected':''}>v39 · 색 선 아이콘 (스마트 물길주소식)</option><option value="v38" ${MODE==='v38'?'selected':''}>v38 · 회색 선 아이콘 + 이모지 (이전)</option></select>`);
+ const sl=$('icoVer');if(sl)sl.onchange=()=>{setMode(sl.value);toast(sl.value==='v38'?'아이콘: v38 이전 방식(회색)':'아이콘: v39 색 선 아이콘')}};
+window.__gw39={HU,H,col,run,setMode,get mode(){return MODE}};
 })()}catch(e){console.warn('v39',e)}
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
