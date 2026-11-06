@@ -2374,9 +2374,15 @@
         }
 
         // 아직 드라이브에 없는 영수증 사진을 업로드 (사진 1장 = 요청 1회)
+        // 사진 동기화는 이 날짜 뒤에 새로 등록한 내역만 (기존 내역 사진은 각 기기에 있는 그대로 사용, 올리거나 내려받지 않음)
+        // 내역 id = 등록 시각(ms) 이라 id 로 신규 여부를 판단
+        const PHOTO_SYNC_FROM = Date.parse('2026-11-06T00:00:00+09:00');
+        function isNewPhotoItem(item) { return Number(item.id) >= PHOTO_SYNC_FROM; }
+
         async function uploadPendingReceipts(setStatus) {
             const targets = [];
             getVisibleExpenses().forEach(item => {
+                if (!isNewPhotoItem(item)) return;
                 (item.receipts || []).forEach((src, i) => {
                     if (src && !cleanIds(item.receiptIds)[i]) targets.push({ item, i, src });
                 });
@@ -2405,7 +2411,7 @@
             const jobs = [];
             getVisibleExpenses().forEach(item => {
                 const ids = cleanIds(item.receiptIds);
-                if (!ids.length) return;
+                if (!ids.length || !isNewPhotoItem(item)) return;
                 const oldIds = item._localIds !== undefined ? cleanIds(item._localIds) : ids;
                 const oldRecs = item.receipts || [];
                 const next = ids.map((fid, i) => {
