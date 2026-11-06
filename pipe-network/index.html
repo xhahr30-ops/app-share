@@ -2725,7 +2725,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v38 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v38.1 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -5731,15 +5731,36 @@ const ORD=['use','lk','cal','sys'];
 const guideSheet=(ks,title)=>{const r=[[title],['관망',S.name||'(열린 관망 없음)'],['만든 날',new Date().toISOString().slice(0,10)],[]];
  ks.forEach(k=>{const d=K[k];r.push(['['+d.sheet+'] 시트',d.t]);r.push(['쓰는 곳',d.where]);r.push(['읽는 열',d.cols]);d.guide.forEach(g=>r.push(['',g]));r.push([])});
  r.push(['첨부','채운 파일을 각 도구의 불러오기 단추나, 모델 만들기 › INP 만들기 › 📋 실측 양식 탭의 [일괄 첨부]로 넣으세요. 시트 이름이나 제목 줄로 종류를 알아봅니다.']);
+ r.push(['AI로 채우기','마지막 「AI요청」 시트의 요청문을 복사해 AI에 붙여 넣고 원자료(요금 엑셀·계측 기록 등)를 함께 주면, 이 양식 그대로 채운 표를 받을 수 있습니다.']);
  r.push(['','시트 이름과 첫 줄(제목 줄)은 바꾸지 마세요. 줄은 얼마든지 늘려도 됩니다. CSV로 저장해도 읽습니다.']);return{name:'안내',title:1,w:[16,90],rows:r}};
 const sheetOf=k=>{const d=K[k];return{name:d.sheet,hdr:0,w:d.w,rows:d.rows()}};
-async function dl(k){try{await offerBlob(XM([sheetOf(k),guideSheet([k],K[k].t+' 양식 — 웹 관망해석기')]),base()+'_'+K[k].file+'.xlsx')}catch(e){console.error(e);toast('양식을 만들지 못했습니다: '+(e.message||e))}}
-async function dlAll(){try{await offerBlob(XM([guideSheet(ORD,'실측 자료 양식 모음 — 웹 관망해석기'),...ORD.map(sheetOf)]),base()+'_실측양식_모음.xlsx')}catch(e){console.error(e);toast('양식 모음을 만들지 못했습니다: '+(e.message||e))}}
+/* ── AI 작성 요청문(엑셀 마지막 시트 'AI요청' · 탭의 복사 단추) ── */
+const AIK={
+ use:['원자료: 요금 부과 자료(수용가별 사용량 엑셀·CSV).','- 수용가번호와 사용량만 뽑습니다. 여러 달이 있으면 가장 최근 달(내가 달을 말하면 그 달) 값을 씁니다.','- 같은 수용가번호가 여러 줄이면 사용량을 합칩니다.','- 사용량은 ㎥(톤) 숫자 그대로. 월 사용량인지 일·연 사용량인지 표 아래에 한 줄로 적어 주세요.','- 수용가명(선택)·주소(선택) 열은 비워 둡니다.'],
+ lk:['원자료: 소블록별 유수율 표·보고서·관리 대장.','- 소블록 이름은 아래 모델 소블록 이름과 글자까지 똑같이 씁니다.','- 유수율(%)은 퍼센트 숫자(예: 85.2). 0.852 같은 비율이면 ×100 해서 적습니다.','- 물리적 누수 비율(%)은 자료에 있을 때만 적고, 없으면 비웁니다.'],
+ cal:['원자료: 수압계·유량계·배수지 수위 기록(시간별 로그, 현장 측정표, 잔류염소 측정).','- 종류는 수압 · 수두 · 유량 · 수위 · 수질 중 하나로 씁니다.','- ID: 수압·수두·수위·수질은 절점 ID, 유량은 관로·가압장·밸브 ID. 아래 모델 ID 목록에 있는 ID만 씁니다.','- 시각은 07:00처럼 24시간 HH:MM. 하루 평균값이면 비웁니다. 시간별 기록이면 정시 값을 한 줄씩 적습니다.',()=>'- 수압은 m(kgf/cm²는 ×10, MPa는 ×102). 유량은 '+(typeof flU==='function'?flU():'㎥/h')+'(앱 화면 유량 단위. L/s 자료는 ×3.6 하면 ㎥/h=톤/h). 수위는 탱크 바닥 기준 수심 m. 수질은 잔류염소 mg/L.'],
+ sys:['원자료: 급수 계통도, 정수장·배수지 운영 자료.','- 수원(배수지·탱크 ID)마다 물을 보내는 정수장 이름을 정수계통 열에 적습니다.','- 수원 ID는 아래 목록과 똑같이 쓰고, 정수장을 모르면 비웁니다.','- 유형·유출(참고) 열은 비워 둡니다.']};
+const aiIds=k=>{const d=K[k],rows=d.rows().slice(1).map(r=>String(r[1]&&k==='cal'?r[0]+' '+r[1]:r[0]??'').trim()).filter(Boolean);if(!rows.length)return[];
+ const lab=k==='use'?'수용가번호':k==='lk'?'모델 소블록':k==='cal'?'모델에 있는 계측 지점(종류 ID)':'모델 수원 ID',max=k==='use'?60:400,o=[`[${lab} — ${rows.length.toLocaleString()}개${rows.length>max?`, 앞 ${max}개만`:''}]`];
+ for(let i=0;i<Math.min(rows.length,max);i+=20)o.push(rows.slice(i,i+20).join(', '));return o};
+function aiLines(ks){const one=ks.length===1,o=['너는 상수도 관망해석 자료 정리 담당이야. 내가 함께 첨부하는 원자료를 아래 양식에 맞춰 정리해 줘.',''];
+ ks.forEach(k=>{const d=K[k],h=d.rows()[0];o.push(`■ 양식: 시트 「${d.sheet}」 (${d.t})`);o.push('제목 줄(이 순서·이 이름 그대로): '+h.join(', '));AIK[k].forEach(x=>o.push(typeof x==='function'?x():x));const ids=aiIds(k);if(ids.length){if(k==='use')o.push('- 아래 번호는 계량기 자료에 있는 수용가번호 예시입니다.');o.push(...ids)}o.push('')});
+ o.push('■ 공통 규칙');
+ o.push('- 숫자는 원자료에 있는 값만 씁니다. 없거나 불확실하면 비우고 「확인 필요」에 적습니다. 값을 지어내지 마세요.');
+ o.push('- 고객 이름·주소·전화번호는 넣지 않습니다(수용가번호 같은 식별 번호만).');
+ o.push('- 숫자에는 단위·기호·천 단위 쉼표를 붙이지 않습니다(예: 28.5).');
+ o.push('- 원자료 이름과 모델 ID가 다르면 비슷하다고 짐작해 맞추지 말고 「확인 필요」에 대응 후보를 적습니다.');
+ o.push(one?'- 결과는 위 제목 줄로 시작하는 CSV(쉼표 구분) 표 하나를 코드 블록에 담아 주세요. 시트 A1에 붙이거나 .csv로 저장해 앱에 첨부합니다.':'- 결과는 시트마다 CSV(쉼표 구분) 표 하나씩, 시트 이름을 제목으로 달아 코드 블록에 담아 주세요. 자료가 없는 시트는 건너뜁니다. 각 표를 해당 시트 A1에 붙이거나 시트 이름을 파일 이름에 넣어 .csv로 저장해 앱에 일괄 첨부합니다.');
+ o.push('- 표 뒤에 「확인 필요」 목록(어느 줄, 무엇을, 왜)을 짧게 붙여 주세요.');return o}
+const aiSheet=ks=>({name:'AI요청',title:1,w:[130],rows:[['AI 작성 요청문 — A3부터 끝까지 복사해 AI(Claude·제미나이·ChatGPT 등)에 붙여 넣고, 원자료 파일을 함께 첨부하세요. 이 시트는 앱이 읽지 않습니다.'],[],...aiLines(ks).map(x=>[x])]});
+async function cpAi(ks){const t=aiLines(ks).join('\n');try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}toast(`AI 작성 요청문을 복사했습니다(${t.length.toLocaleString()}자). AI에 붙여 넣고 원자료를 함께 첨부하세요.`,5000)}
+async function dl(k){try{await offerBlob(XM([sheetOf(k),guideSheet([k],K[k].t+' 양식 — 웹 관망해석기'),aiSheet([k])]),base()+'_'+K[k].file+'.xlsx')}catch(e){console.error(e);toast('양식을 만들지 못했습니다: '+(e.message||e))}}
+async function dlAll(){try{await offerBlob(XM([guideSheet(ORD,'실측 자료 양식 모음 — 웹 관망해석기'),...ORD.map(sheetOf),aiSheet(ORD)]),base()+'_실측양식_모음.xlsx')}catch(e){console.error(e);toast('양식 모음을 만들지 못했습니다: '+(e.message||e))}}
 async function dlBook(){if(!S.net){toast('시설 입력표는 관망을 연 뒤 받을 수 있습니다.');return}try{await offerBlob(XM(G23.tplBook()),base()+'_입력표.xlsx')}catch(e){toast('입력표를 만들지 못했습니다: '+(e.message||e))}}
 
 /* ── 종류 알아보기 ── */
 const HR={cal:r=>r.some(v=>/^종류$/.test(v))&&r.some(v=>/^값|실측/.test(v)),lk:r=>r.some(v=>/유수율/.test(v)),sys:r=>r.some(v=>/정수계통/.test(v)),use:r=>r.some(v=>/수용가|고객|사용량/.test(v))};
-const byName=n=>/안내|설명/.test(n)?'skip':/실측|관측|측정|보정/.test(n)?'cal':/유수율|누수/.test(n)?'lk':/정수계통/.test(n)?'sys':/사용량|부과|수용가|요금/.test(n)?'use':null;
+const byName=n=>/안내|설명|AI|요청/i.test(n)?'skip':/실측|관측|측정|보정/.test(n)?'cal':/유수율|누수/.test(n)?'lk':/정수계통/.test(n)?'sys':/사용량|부과|수용가|요금/.test(n)?'use':null;
 function detect(name,rows,want){const top=rows.slice(0,15).map(r=>(r||[]).map(v=>String(v??'').trim()));let k=want||byName(name||'');if(k==='skip')return null;
  let h=-1;if(k){h=top.findIndex(HR[k]);}else{for(const kk of ['cal','lk','sys','use']){const i=top.findIndex(HR[kk]);if(i>=0){k=kk;h=i;break}}}
  if(!k)return null;return{k,rows:rows.slice(Math.max(h,0)).map(r=>(r||[]).map(v=>v==null?'':v))}}
@@ -5799,16 +5820,17 @@ const OPEN={use:()=>toolsTab('dem'),cal:()=>toolsTab('cal'),
 
 /* ── INP 만들기 창: 📋 실측 양식 탭 ── */
 const curN=k=>k==='use'?(T.mtr&&T.mtr.utab?T.mtr.utab.length-1:0):k==='lk'?(IW.lkTxt?IW.lkTxt.split('\n').length-1:0):k==='cal'?(T.calTxt?T.calTxt.split('\n').filter(s=>s.trim()).length-1:0):k==='sys'?Object.keys((G20&&G20.SYS.map)||{}).length:0;
-const bulkBox=(pre)=>tbox('📦 실측 자료 양식 한 번에',`<p class="text-[11px] text-slate-600 leading-relaxed">사용량 · 블록 유수율 · 실측값(수압·유량·수위·수질) · 정수계통 양식을 시트 하나씩 담은 엑셀 한 개로 받습니다. 관망을 열고 받으면 수용가번호·소블록·시설물 ID가 미리 채워집니다. 채운 뒤 [일괄 첨부]로 넣으면 시트마다 알맞은 도구에 들어갑니다.</p>
- <div class="flex flex-wrap gap-2">${(tbtnP(pre+'All','📥 양식 모음 받기')+tbtn(pre+'Up','📂 채운 양식 일괄 첨부')).replace(/<button /g,'<button style="flex:none;white-space:nowrap" ')}</div>`,'border-sky-200 bg-sky-50/60');
+const bulkBox=(pre)=>tbox('📦 실측 자료 양식 한 번에',`<p class="text-[11px] text-slate-600 leading-relaxed">사용량 · 블록 유수율 · 실측값(수압·유량·수위·수질) · 정수계통 양식을 시트 하나씩 담은 엑셀 한 개로 받습니다. 관망을 열고 받으면 수용가번호·소블록·시설물 ID가 미리 채워집니다. 엑셀 마지막 「AI요청」 시트(또는 🤖 AI 요청문 복사)를 원자료와 함께 AI에 주면 양식대로 채운 표를 받을 수 있습니다. 채운 뒤 [일괄 첨부]로 넣으면 시트마다 알맞은 도구에 들어갑니다.</p>
+ <div class="flex flex-wrap gap-2">${(tbtnP(pre+'All','📥 양식 모음 받기')+tbtn(pre+'Ai','🤖 AI 요청문 복사')+tbtn(pre+'Up','📂 채운 양식 일괄 첨부')).replace(/<button /g,'<button style="flex:none;white-space:nowrap" ')}</div>`,'border-sky-200 bg-sky-50/60');
 function uiMs(){const st=k=>{const a=MSQ.att[k],n=curN(k);return a?`<span style="color:#059669;font-weight:700">✓ ${a.n.toLocaleString()}행</span><br><span class="text-[10px] text-slate-500">${esc(a.src)} · ${a.at}</span>`:n>0?`<span style="color:#0369a1">들어 있음 ${n.toLocaleString()}</span>`:'<span class="text-slate-400">비어 있음</span>'};
- const rows=ORD.map(k=>{const d=K[k];return`<tr class="border-t"><td class="text-left"><b>${esc(d.t)}</b><br><span class="text-[10px] text-slate-500">시트 ${esc(d.sheet)} · ${esc(d.cols)}</span><div style="margin-top:3px;display:flex;gap:4px"><button type="button" class="jx-b" data-msd="${k}">📄 양식 받기</button><button type="button" class="jx-b" data-mso="${k}">창 열기</button></div></td><td class="text-left text-[11px]">${esc(d.where)}</td><td class="text-left text-[11px]">${st(k)}</td></tr>`});
+ const rows=ORD.map(k=>{const d=K[k];return`<tr class="border-t"><td class="text-left"><b>${esc(d.t)}</b><br><span class="text-[10px] text-slate-500">시트 ${esc(d.sheet)} · ${esc(d.cols)}</span><div style="margin-top:3px;display:flex;gap:4px"><button type="button" class="jx-b" data-msd="${k}">📄 양식 받기</button><button type="button" class="jx-b" data-msa="${k}" title="원자료와 함께 AI에 붙여 넣으면 이 양식대로 채워 줍니다">🤖 AI 요청문 복사</button><button type="button" class="jx-b" data-mso="${k}">창 열기</button></div></td><td class="text-left text-[11px]">${esc(d.where)}</td><td class="text-left text-[11px]">${st(k)}</td></tr>`});
  rows.push(`<tr class="border-t"><td class="text-left"><b>시설 입력표(배수지·가압장·밸브·패턴·운전규칙)</b><br><span class="text-[10px] text-slate-500">지금 관망 값으로 채운 엑셀</span><div style="margin-top:3px;display:flex;gap:4px"><button type="button" class="jx-b" data-msd="book">📄 양식 받기</button><button type="button" class="jx-b" data-mso="book">창 열기</button></div></td><td class="text-left text-[11px]">INP 만들기 › 📗 입력표</td><td class="text-left text-[11px]">${S.net?'관망 값으로 채움':'<span class="text-slate-400">관망을 연 뒤</span>'}</td></tr>`);
  const L=MSQ.last.length?tbox('🔎 최근 첨부 결과',tbl(['','파일 › 시트','결과'],MSQ.last.map(r=>`<tr class="border-t"><td style="color:${r.ok?'#059669':'#d97706'};font-weight:800">${r.ok?'✓':'!'}</td><td class="text-left">${esc(r.src)}</td><td class="text-left">${esc(r.msg)}${r.ok&&r.k?` <button type="button" class="jx-b" data-mso="${r.k}">열기</button>`:''}</td></tr>`),{h:200,left:1})):'';
  return bulkBox('ms')+`<div id="msDrop" class="jx-drop">📂 채운 양식(엑셀·CSV)을 여기에 끌어다 놓아도 됩니다 — 여러 개 한꺼번에</div>`+L
   +tbox('📋 양식별',tbl(['양식','쓰는 곳','지금 상태'],rows,{left:1,h:420})+tnote('각 도구 창의 불러오기 단추 옆 [📄 양식]으로도 같은 양식을 받을 수 있습니다. 일괄 첨부는 시트 이름(사용량·블록유수율·실측·정수계통)이나 첫 줄 제목으로 종류를 알아보므로, 예전에 쓰던 엑셀·CSV도 그대로 넣을 수 있습니다. 첨부한 자료는 각 도구에서 확인한 뒤 적용(할당·배분·비교)하세요.'))}
 function bindMs(b){const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('msAll',dlAll);on('msUp',pick);
  b.querySelectorAll('[data-msd]').forEach(x=>x.onclick=()=>x.dataset.msd==='book'?dlBook():dl(x.dataset.msd));
+ b.querySelectorAll('[data-msa]').forEach(x=>x.onclick=()=>cpAi([x.dataset.msa]));on('msAi',()=>cpAi(ORD));
  b.querySelectorAll('[data-mso]').forEach(x=>x.onclick=()=>OPEN[x.dataset.mso]&&OPEN[x.dataset.mso]());
  const dz=b.querySelector('#msDrop');if(dz){dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
   dz.ondrop=async e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('on');const fs=[...(e.dataTransfer.files||[])];if(fs.length)await attach(fs)}}}
@@ -5817,7 +5839,7 @@ const ui2=WR.iw.ui,bind2=WR.iw.bind;
 WR.iw.ui=()=>{if(IW.tab==='m')return`<div class="flex flex-wrap gap-1 bg-slate-100 rounded-lg p-0.5 mb-2">${TB.map(([k,t])=>`<button type="button" data-iwt="${k}" class="tab ${IW.tab===k?'on':''}">${t}</button>`).join('')}</div><div class="flex flex-col gap-2 text-xs">${uiMs()}</div>`;
  let h=ui2().replace(/(<button type="button" data-iwt="l"[^>]*>📒 수정 대장<\/button>)/,'$1<button type="button" data-iwt="m" class="tab">📋 실측 양식</button>');
  if(IW.tab==='d')h+=`<div class="flex flex-col gap-2 text-xs mt-2">${bulkBox('jm')}</div>`;return h};
-WR.iw.bind=b=>{bind2(b);if(IW.tab==='m')bindMs(b);if(IW.tab==='d'){const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('jmAll',dlAll);on('jmUp',pick)}};
+WR.iw.bind=b=>{bind2(b);if(IW.tab==='m')bindMs(b);if(IW.tab==='d'){const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};on('jmAll',dlAll);on('jmUp',pick);on('jmAi',()=>cpAi(ORD))}};
 
 /* ── 도구마다 [📄 양식] + 엑셀 첨부 ── */
 const tb=(id,t)=>`<button id="${id}" type="button" class="px-2 py-1.5 rounded-lg text-xs font-bold border border-sky-300 bg-white text-sky-700 hover:bg-sky-50" title="${esc(t)}">📄 양식</button>`;
