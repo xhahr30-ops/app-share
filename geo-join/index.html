@@ -132,6 +132,7 @@ textarea{height:58px;resize:vertical}
 html.dark .btn:not(.ol):not(.em):not(.am):not(.sl){background:#6366f1}
 .btn:hover{filter:brightness(.94)}.btn:disabled{background:var(--line2)!important;color:var(--mute)!important;border-color:transparent!important;cursor:not-allowed;filter:none}
 .btn.ol{background:var(--card);color:var(--ind6);border-color:var(--indb)}.btn.ol:hover{background:var(--ind1)}
+.btn.jstale{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.45)}/* 기준자료가 바뀌어 🔗 다시 결합이 필요할 때 */
 .btn.em{background:#059669}.btn.am{background:#d97706}.btn.sl{background:#334155}
 .hint{font-size:11.5px;color:var(--mute);margin:0}
 .ck{display:inline-flex;gap:4px;align-items:center;margin:2px 10px 2px 0;font-size:12px;font-weight:600}
@@ -1224,7 +1225,7 @@ html.dark svg.ri{color:var(--cd)!important}
   <label class="f">블록 명칭 대응 (기존 블록=SHP 블록, 한 줄에 하나)<textarea id="blkAlias" rows="3" spellcheck="false" placeholder="BV01,BV02,BV02-1=블루밸리" style="font-family:inherit;font-size:12px;resize:vertical">BV01,BV02,BV02-1=블루밸리</textarea></label>
   <label style="font-size:12px;display:flex;gap:6px;align-items:center;margin:2px 0 6px"><input type="checkbox" id="blkParen" checked> 괄호 표기 무시 — GD4(생활)·GD4(공업) = GD4</label>
   <div class="g2"><label class="f">지도에 블록명<select id="lblMode"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label><label class="f">글자 크기<select id="lblSize"><option value="10">작게</option><option value="12" selected>보통</option><option value="15">크게</option></select></label></div>
-  <button id="rejoin" type="button" class="btn ol" disabled>🔗 블록 다시 결합</button>
+  <button id="rejoin" type="button" class="btn ol" disabled title="앱을 열 때는 저장된 결합 결과를 그대로 씁니다. 소블록 경계·관로를 바꾼 뒤 새로 맞출 때 누르세요.">🔗 블록 다시 결합</button>
   <details class="x"><summary>🗺️ 브이월드 배경지도 · 지적도</summary>
    <label class="f" style="margin-top:6px">브이월드 인증키<input id="vwKey" type="password" autocomplete="off" placeholder="vworld.kr 오픈API 인증키"></label>
    <label class="f">등록 도메인<input id="vwDom" autocomplete="off"></label>
@@ -2922,7 +2923,7 @@ function buildPoly(){
  $('blkField').value=keys.find(k=>/^BLK_NM$/i.test(k))||keys.find(k=>/소블록|블록|BLK|NM|NAME/i.test(k))||keys[0]||'';
  drawLabels();if(!out.length&&PIPE.feats.length)pipeBlockStats();blkPersist();billCodes();blkColorApply();
  $('shpMsg').textContent=`로드 완료: 폴리곤 ${poly.features.length}개, 좌표계 ${used}`+(used!==sel?` (선택한 ${sel}은 범위가 맞지 않아 자동 보정)`:'');
- if(out.length)joinAll();
+ if(out.length){if(blkRestoring)joinCheck();else joinAll()}
 }
 $('crs').onchange=()=>{if(rawFC)buildPoly()};
 $('f2').onchange=async e=>{const f=e.target.files[0];if(!f)return;
@@ -3267,7 +3268,44 @@ function pidxFind(x,y,tol){const G=PIDX.geo;
   if(bf>=0)return{fi:bf,how:'근접'}}
  return null}
 let JOIN_RUN=0;const tick=()=>new Promise(r=>setTimeout(r,0));
-async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now();hayReset();
+/* ===== 2026-11-06 앱을 열 때 블록 결합·관로 매칭을 다시 하지 않음
+   결합 결과(어느 소블록·근처 관로)를 수용가 결과와 함께 이 기기에 저장 → 다시 열면 그대로 씀.
+   소블록 경계·관로 기준자료가 저장 때와 다르면 알림만 하고, 🔗 블록 다시 결합을 눌러야 새로 맞춤 */
+const JOIN={fi:null,props:null,sig:'',from:''};
+const jHash=t=>{let h=0;t=String(t||'');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return h};
+function joinSig(){const b=poly?poly.features.length+'~'+poly.features.reduce((a,f)=>{const x=f.properties._bbox||[0,0,0,0];return a+x[0]+x[1]+x[2]+x[3]},0).toFixed(6)+'~'+$('blkField').value+'~'+(+$('tol').value||0):'';
+ let q='';const R=PIPE.raw;if(PIPE.segs&&R&&R.length){let a=0;for(const f of R){const l=lineParts(f.geometry)[0];if(l&&l[0])a+=l[0][0]+l[0][1]}q=R.length+'~'+a.toFixed(6)+'~'+jHash(['pDia','pMat','pYmd','pUse','pId','pCodes'].map(id=>$(id).value).join('|'))}
+ return b+'|'+q}
+function joinPack(){const N=out.length;if(!JOIN.sig||!JOIN.fi||JOIN.fi.length!==N)return null;
+ const props=JOIN.props||[],how=new Uint8Array(N),pk={};let anyP=false;
+ for(let i=0;i<N;i++){const m=out[i]['_결합방식'];how[i]=m==='내부'?1:m==='근접'?2:0}
+ for(const k of PKEYS){const a=new Array(N);for(let i=0;i<N;i++){const x=out[i][k];a[i]=x==null?null:x;if(x!=null&&x!=='')anyP=true}pk[k]=a}
+ return{v:1,sig:JOIN.sig,fld:JOIN.fld||$('blkField').value,props,fi:JOIN.fi,how,pk:anyP?pk:null}}
+/* 저장된 결합 결과를 그대로 다시 붙임(위치 찾기·관로 찾기 없음) */
+async function joinRestore(j,keep){const RUN=++JOIN_RUN,T0=Date.now(),N=out.length;hayReset();if(!j||!j.fi||j.fi.length!==N)return false;
+ const P=j.props||[],fld=j.fld;let hit=0,near=0;
+ for(let i=0;i<N;i++){const o=out[i];(pks[i]||[]).forEach(k=>delete o[k]);pks[i]=[];o['_결합블록']='';o['_결합방식']='';
+  const f=j.fi[i];if(f>=0&&P[f]){const p=P[f],name=String(p[fld]??'').trim();o['_결합블록']=name||'(이름없음)';o['_결합방식']=j.how[i]===2?'근접':'내부';j.how[i]===2?near++:hit++;
+   for(const k in p){const kk=k in o?'SHP_'+k:k;o[kk]=p[k];pks[i].push(kk)}}
+  if(j.pk)for(const k of PKEYS){const x=j.pk[k]&&j.pk[k][i];o[k]=x==null?'':x}else PKEYS.forEach(k=>delete o[k])}
+ JOIN.fi=j.fi instanceof Int32Array?j.fi:Int32Array.from(j.fi);JOIN.props=P;JOIN.fld=fld;JOIN.sig=j.sig||'';JOIN.from='saved';RES.js=JOIN.sig;
+ out.forEach(billPostJoin);ubSync();
+ const pts=out.filter(o=>o['_위도']!=='').length;
+ const msg=`💾 저장된 결합 결과를 그대로 불러왔습니다(주소·블록을 다시 찾지 않음): ${(hit+near).toLocaleString()}/${pts.toLocaleString()}건 결합 (내부 ${hit.toLocaleString()}, 근접 ${near.toLocaleString()}). 기준자료가 바뀌었을 때만 🔗 블록 다시 결합을 누르세요.`;
+ joinDraw(keep);elevAttach();joinDone(msg,'ok',hit+near);if(RUN===JOIN_RUN)joinCheck();return true}
+function joinStaleOff(){const el=document.getElementById('phToast');if(el&&!el.hidden&&el.dataset.jst)el.hidden=true;$('rejoin').classList.remove('jstale')}
+/* 기준자료가 저장 때와 같은지 확인(지금 불러와 있는 것만). 다르면 알림 + 🔗 버튼 강조, 자동으로 다시 하지 않음 */
+function joinCheck(){if(!out.length)return;if(!JOIN.sig){joinAll(true);return}
+ const [ob,op]=JOIN.sig.split('|'),[nb,np]=joinSig().split('|'),bad=[];
+ /* 이번에 계산할 때 아직 안 불러와 있던 자료가 지금 들어온 것이면(예전 판 저장본 첫 시작) 한 번 채움 */
+ if(JOIN.from==='calc'&&((poly&&!ob)||(PIPE.segs&&!op))){joinAll(true);return}
+ if(poly&&ob!==nb)bad.push('소블록 경계');if(PIPE.segs&&op!==np)bad.push('상수관로');
+ if(!bad.length){joinStaleOff();return}
+ $('rejoin').classList.add('jstale');
+ const t=`⚠️ ${bad.join('·')} 기준자료가 저장된 결합 결과와 다릅니다. 수용가의 소블록·관로 결과는 예전 기준입니다.`;
+ $('diag').className='diag warn';$('diag').textContent=t+' 새 기준으로 맞추려면 🔗 블록 다시 결합을 누르세요.';
+ if(typeof phToast==='function'){phToast(t,{ms:20000,btn:'🔗 다시 결합',fn:()=>joinAll()});const el=document.getElementById('phToast');if(el)el.dataset.jst='1'}}
+async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now();hayReset();joinStaleOff();const FI=new Int32Array(out.length).fill(-1);
  const tol=+$('tol').value||0,fld=$('blkField').value;let hit=0,near=0,empty=0,inBox=0;
  const pts=out.filter(o=>o['_위도']!=='').length,pb=poly?turf.bbox({type:'FeatureCollection',features:poly.features}):null;
  if(poly)pidxBuild();const N=out.length,CH=4000,big=N>CH,prog=t=>{if(big){hStat(t,'run');$('diag').className='diag';$('diag').textContent='⏳ '+t+' (자료가 많아 나눠서 처리 중 — 화면은 계속 쓸 수 있습니다)'}};
@@ -3277,7 +3315,7 @@ async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now()
    if(!poly||o['_위도']==='')continue;
    const x=+o['_경도'],y=+o['_위도'];
    if(x>=pb[0]&&x<=pb[2]&&y>=pb[1]&&y<=pb[3])inBox++;
-   const r=pidxFind(x,y,tol);if(!r)continue;const f=poly.features[r.fi],how=r.how;
+   const r=pidxFind(x,y,tol);if(!r)continue;const f=poly.features[r.fi],how=r.how;FI[i]=r.fi;
    const p={...f.properties};delete p._bbox;const name=String(p[fld]??'').trim();if(!name)empty++;
    o['_결합블록']=name||'(이름없음)';o['_결합방식']=how;how==='내부'?hit++:near++;
    Object.keys(p).forEach(k=>{const kk=k in o?'SHP_'+k:k;o[kk]=p[k];pks[i].push(kk)})}
@@ -3290,15 +3328,18 @@ async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now()
  else if(!(hit+near))msg=`범위 안 ${inBox}건이나 속한 블록이 없습니다. 근접 허용(m)을 늘리거나 소블록 면 데이터인지 확인하세요.`;
  else{cls='ok';msg=`${hit+near}/${pts}건 결합 (내부 ${hit}, 근접 ${near}). 미결합 ${pts-hit-near}건은 지오코딩 오차이거나 블록 밖 주소입니다.`+(empty?` 블록명 필드가 비어 있는 ${empty}건은 블록명 필드를 바꿔 보세요.`:'')}
  $('diag').className='diag '+cls;$('diag').textContent=msg;
- if(map){ptReset(N);let w=180,s=90,e=-180,n=-90,cnt=0;
-  for(let i=0;i<N;i++){const o=out[i];if(o['_위도']==='')continue;const la=+o['_위도'],ln=+o['_경도'];if(!isFinite(la)||!isFinite(ln))continue;
-   ptAdd(i,la,ln,{color:mBad(o)?'#c0392b':'#fff',weight:mBad(o)?2:1,fillColor:mFill(o)});cnt++;if(ln<w)w=ln;if(ln>e)e=ln;if(la<s)s=la;if(la>n)n=la}
-  applyMapFilter();if(cnt&&!keep&&!vHold())map.fitBounds([[s,w],[n,e]],{padding:[40,40]});ptDraw();mLegend();if(selI!=null)markSel(selI)}
+ joinDraw(keep);
  if(big){await tick();if(RUN!==JOIN_RUN)return}
  if(PIPE.segs&&big){for(let i0=0;i0<N;i0+=CH){pipeAttachRange(i0,Math.min(N,i0+CH));prog(`관로 매칭 ${Math.min(N,i0+CH).toLocaleString()}/${N.toLocaleString()}`);await tick();if(RUN!==JOIN_RUN)return}}else pipeAttach();
  elevAttach();
- $('diag').className='diag '+cls;$('diag').textContent=msg+(big?` · 처리 ${((Date.now()-T0)/1000).toFixed(1)}초`:'');hStat(`${hit+near}건 결합`,'ok');renderTable();analyze();resSoon();if(PIPE.feats.length)pipeBlockStats();$('rejoin').disabled=!out.length;$('xl').disabled=!out.length;$('shpBtn').disabled=!out.length;$('pr').disabled=!out.length;$('hpr').disabled=!out.length;$('locBtn').disabled=!out.length;$('locBtn2').disabled=!out.length;$('rptBtn').disabled=!out.length;$('rptBtn2').disabled=!out.length;RPT.imgs=[];RPT.det=[]}
-$('rejoin').onclick=joinAll;
+ JOIN.fi=FI;JOIN.props=poly?poly.features.map(f=>{const x={...f.properties};delete x._bbox;return x}):[];JOIN.fld=fld;JOIN.sig=joinSig();JOIN.from='calc';
+ joinDone(msg+(big?` · 처리 ${((Date.now()-T0)/1000).toFixed(1)}초`:''),cls,hit+near)}
+function joinDraw(keep){if(!map)return;const N=out.length;ptReset(N);let w=180,s=90,e=-180,n=-90,cnt=0;
+  for(let i=0;i<N;i++){const o=out[i];if(o['_위도']==='')continue;const la=+o['_위도'],ln=+o['_경도'];if(!isFinite(la)||!isFinite(ln))continue;
+   ptAdd(i,la,ln,{color:mBad(o)?'#c0392b':'#fff',weight:mBad(o)?2:1,fillColor:mFill(o)});cnt++;if(ln<w)w=ln;if(ln>e)e=ln;if(la<s)s=la;if(la>n)n=la}
+  applyMapFilter();if(cnt&&!keep&&!vHold())map.fitBounds([[s,w],[n,e]],{padding:[40,40]});ptDraw();mLegend();if(selI!=null)markSel(selI)}
+function joinDone(msg,cls,nj){$('diag').className='diag '+cls;$('diag').textContent=msg;hStat(`${nj}건 결합`,'ok');renderTable();analyze();resSoon();if(PIPE.feats.length)pipeBlockStats();$('rejoin').disabled=!out.length;$('xl').disabled=!out.length;$('shpBtn').disabled=!out.length;$('pr').disabled=!out.length;$('hpr').disabled=!out.length;$('locBtn').disabled=!out.length;$('locBtn2').disabled=!out.length;$('rptBtn').disabled=!out.length;$('rptBtn2').disabled=!out.length;RPT.imgs=[];RPT.det=[]}
+$('rejoin').onclick=()=>joinAll();
 $('colBlk').onchange=()=>{CMPK=$('colBlk').value;billModeUi();if(out.length)joinAll(true)};
 {try{const v=localStorage.getItem('geo-blkalias');if(v!=null)$('blkAlias').value=v;if(localStorage.getItem('geo-blkparen')==='0')$('blkParen').checked=false}catch(_){}}
 $('blkAlias').onchange=()=>{try{localStorage.setItem('geo-blkalias',$('blkAlias').value)}catch(_){}if(out.length&&cmpOn())joinAll(true)};
@@ -4440,7 +4481,7 @@ async function pipeRestore(force){if(PIPE.feats.length&&!force)return;let v=null
  let sf={};try{sf=(JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}).fields||{}}catch(_){}
  pFillSelects([...ks.keys()],ks,sf);buildPipeIndex();renderPipes();$('pPanel').hidden=false;
  msg.innerHTML=`💾 저장된 기준자료로 지도에 표시했습니다: 관로 ${v.feats.length.toLocaleString()}개 · 총 ${(PIPE.totalM/1000).toFixed(1)}km${v.feats.length>3000?'<br>관로가 많아 지도를 확대하면(배수관 줌 13, 급수관 줌 16 이상) 그려집니다.':''}`;
- pipeSavedShow(v);pedInfo();if(out.length)joinAll(true);else pipeBlockStats()}
+ pipeSavedShow(v);pedInfo();if(out.length){joinCheck();pipeBlockStats()}else pipeBlockStats()}
 
 /* ---------- 상수관로: 변경분 반영 ---------- */
 async function pipeUpdate(buf,file){const msg=$('pMsg');if(!PIPE.raw.length){msg.textContent='먼저 기준자료(전체 SHP)를 올리세요.';return}
@@ -4641,16 +4682,16 @@ async function bkResLoad(res){const cols=res.cols||[],base=cols.filter(k=>!/^_/.
  await joinAll()}
 /* ===== 수용가 변환 결과 자동 저장 (이 기기 브라우저 IDB 'res') → 다시 열면 지도 점·표·블록별 현황·엑셀 내보내기 그대로
    이 기기 안에만 남음: 백업·직원 공유·내보내기 파일에는 넣지 않음(백업은 관리번호·소블록·좌표·사용량 정보만) */
-const RES={t:0,busy:false,sig:''},RES_GEO=['_비고','_검색주소','_방식','_위도','_경도','_수정주소'];
+const RES={t:0,busy:false,sig:'',js:''},RES_GEO=['_비고','_검색주소','_방식','_위도','_경도','_수정주소'];
 function resSoon(){if(RES.busy)return;clearTimeout(RES.t);RES.t=setTimeout(resSave,1200)}
 function resInfo(v){const el=$('resSaved');el.classList.remove('c-sl');resUndoSync();if(!v){el.hidden=true;$('resForget').hidden=true;return}
  el.hidden=false;$('resForget').hidden=false;el.textContent=`💾 이 기기에 저장됨: ${v.name||'수용가 결과'} · ${v.rows.length.toLocaleString()}건 · ${new Date(v.at).toLocaleString('ko-KR')} (다시 열면 그대로 불러옴)`}
 const resSig=(name,cols,nr,data)=>name+'|'+cols.join(',')+'|'+data.length+'|'+data.map(a=>a.slice(nr).join('~')).join('|');
 async function resSave(){if(RES.busy||!out.length||rows.length!==out.length)return;
  const rk=Object.keys(rows[0]).filter(k=>!RES_GEO.includes(k)),cols=rk.concat(RES_GEO),data=out.map(o=>cols.map(k=>o[k]??''));
- const sig=resSig(fname,cols,rk.length,data);if(sig===RES.sig)return;
- const v={v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,nr:rk.length,sel:{old:$('colOld').value,neu:$('colNew').value,blk:$('colBlk').value},rows:data};
- try{if(RES.old){try{await IDB.set('res_prev',RES.old)}catch(_){}RES.old=null}await IDB.set('res',v);RES.sig=sig;$('resDiff').hidden=true;stoKeep();resInfo(v)}catch(e){const el=$('resSaved');el.hidden=false;el.textContent='⚠ 이 기기에 수용가 결과를 저장하지 못했습니다(저장 공간 부족일 수 있음). 📊 결과 엑셀이나 💾 백업으로 보관하세요.'}}
+ const sig=resSig(fname,cols,rk.length,data);if(sig===RES.sig&&JOIN.sig===RES.js)return;
+ const v={v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,nr:rk.length,sel:{old:$('colOld').value,neu:$('colNew').value,blk:$('colBlk').value},rows:data,j:joinPack()};
+ try{if(RES.old){try{await IDB.set('res_prev',RES.old)}catch(_){}RES.old=null}await IDB.set('res',v);RES.sig=sig;RES.js=JOIN.sig;$('resDiff').hidden=true;stoKeep();resInfo(v)}catch(e){const el=$('resSaved');el.hidden=false;el.textContent='⚠ 이 기기에 수용가 결과를 저장하지 못했습니다(저장 공간 부족일 수 있음). 📊 결과 엑셀이나 💾 백업으로 보관하세요.'}}
 async function resRestore(){if(out.length||rows.length)return false;let v=null;try{v=await IDB.get('res')}catch(_){return false}
  if(!v||!Array.isArray(v.rows)||!v.rows.length||!Array.isArray(v.cols)||out.length||rows.length)return false;
  RES.busy=true;try{const C=v.cols,nr=v.nr|0;
@@ -4661,7 +4702,9 @@ async function resRestore(){if(out.length||rows.length)return false;let v=null;t
    const la=+o['_위도'],ln=+o['_경도'];if(o['_위도']!==''&&isFinite(la)&&isFinite(ln)&&o['_방식']!=='실패')PREV.set(R[i],{lat:la,lng:ln,how:o['_방식'],addr:String(o['_수정주소']||o['_검색주소']||''),note:String(o['_비고']||'')});return o});
   TB_LIM=300;pks.length=0;for(const k in drafts)delete drafts[k];$('tb').innerHTML='';
   $('progMsg').textContent=`💾 이 기기에 저장된 수용가 결과 ${out.length.toLocaleString()}건을 불러왔습니다. 새 주소 엑셀을 올려 ⚡ 변환을 누르면 바뀝니다.`;
-  RES.sig=resSig(fname,C,nr,out.map(o=>C.map(k=>o[k]??'')));await joinAll();resInfo(v);stoKeep()}finally{RES.busy=false}return true}
+  RES.sig=resSig(fname,C,nr,out.map(o=>C.map(k=>o[k]??'')));
+  /* 저장된 결합 결과가 있으면 그대로(다시 찾지 않음). 예전 판으로 저장돼 없을 때만 한 번 결합 → 그 결과도 저장됨 */
+  if(!(await joinRestore(v.j)))await joinAll();resInfo(v);stoKeep()}finally{RES.busy=false}return true}
 /* ===== 새 수용가 엑셀 = 변경분 반영 (기준자료처럼: 미리보기 → ⚡ 변환으로 반영 → ↩️ 되돌리기)
    관리번호(U열) 기준으로 저장된 결과와 대조. 주소가 같은 행은 저장된 위치(직접 고친 위치 포함)를 그대로 쓰고, 새 행·주소 바뀐 행만 새로 검색 */
 const resKeyCol=ks=>{const nk=k=>String(k).replace(/\s/g,'');return ks.find(k=>nk(k)==='관리번호')||ks.find(k=>nk(k)==='수용가번호')||''};
@@ -4687,7 +4730,7 @@ async function resUndoSync(){let p=null;try{p=await IDB.get('res_prev')}catch(_)
 $('resUndo').onclick=async()=>{let p=null,c=null;try{p=await IDB.get('res_prev');c=await IDB.get('res')}catch(_){}if(!p)return;
  if(!confirm(`이전 수용가 자료(${p.name||''} · ${p.rows.length.toLocaleString()}건 · ${new Date(p.at).toLocaleString('ko-KR')})로 되돌릴까요? 지금 자료는 다시 되돌릴 수 있게 보관합니다.`))return;
  try{await IDB.set('res',p);if(c)await IDB.set('res_prev',c);else await IDB.del('res_prev')}catch(e){alert('되돌리지 못했습니다: '+((e&&e.message)||e));return}
- JOIN_RUN++;rows=[];out=[];RES.sig='';RES.old=null;$('resDiff').hidden=true;await resRestore();$('src').textContent=`${fname}: ${rows.length.toLocaleString()}행 (이전 자료로 되돌림)`};
+ JOIN_RUN++;rows=[];out=[];RES.sig='';RES.js='';JOIN.sig='';RES.old=null;$('resDiff').hidden=true;await resRestore();$('src').textContent=`${fname}: ${rows.length.toLocaleString()}행 (이전 자료로 되돌림)`};
 $('resForget').onclick=async()=>{if(!confirm('이 기기에 저장된 수용가 결과(이전 판 포함)를 지울까요? 지금 화면의 자료는 그대로 남고, 다음에 열 때부터 불러오지 않습니다.'))return;try{await IDB.del('res');await IDB.del('res_prev')}catch(_){}RES.sig='';RES.old=null;resInfo(null)};
 /* 이 주소(브라우저)에 저장된 자료가 하나도 없으면 한 번 안내: 공유 주소·Apps Script 웹앱·다른 브라우저는 저장 공간이 따로임 */
 setTimeout(async()=>{stoKeep();let ok=await resRestore().catch(()=>false);
