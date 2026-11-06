@@ -376,6 +376,43 @@ html body .leaflet-container .fmctl button.loc{color:#2563eb}html body .leaflet-
 }
 /* PC(마우스): 같은 칩 줄을 쓰되 칩은 조금 작게, 줄은 칩 길이만큼만(오른쪽 빈 곳은 지도 끌기 가능), 단수구역 창은 원래 PC 자리(오른쪽 아래) 그대로 */
 html.chipPc .chipbar{right:auto;max-width:100%;box-sizing:border-box;touch-action:auto}
+/* 전체화면 + 아이콘 줄 왼쪽 세로(geo-chipv=l): 아이콘만 세로 한 줄, 이름은 말풍선. --chw = 세로 줄 폭(JS가 넣음) */
+html.chipOn.chipV .chipbar{flex-direction:column;right:auto!important;top:0;bottom:0;max-width:none;width:auto;overflow-x:hidden;overflow-y:auto;padding:8px 8px 10px!important;gap:8px;touch-action:pan-y!important;box-sizing:border-box}
+html.chipOn.chipV .chipbar>.leaflet-control{display:flex;flex-direction:column;gap:8px}
+html.chipOn.chipV .chipbar .leaflet-bar a{width:44px!important;height:44px!important;line-height:44px!important;padding:0!important;border-radius:13px!important;gap:0}
+html.chipOn.chipV.chipPc .chipbar .leaflet-bar a{width:38px!important;height:38px!important;line-height:38px!important;border-radius:11px!important}
+html.chipOn.chipV .chipbar .leaflet-bar a+a{margin-left:0}
+html.chipOn.chipV .chipbar a[data-lb]::after{display:none}
+html.chipOn.chipV .chipbar svg.ci{width:22px;height:22px}html.chipOn.chipV.chipPc .chipbar svg.ci{width:20px;height:20px}
+html.chipOn.chipV .leaflet-top{top:0}
+html.chipOn.chipV .leaflet-left{left:var(--chw,0px)}
+html.chipOn.chipV .uiset:not(.shutp){top:10px;left:calc(var(--chw,0px) + 8px);max-height:calc(100% - 20px);max-width:calc(100% - var(--chw,0px) - 16px)}
+@media (max-width:640px){html.chipOn.chipV .uiset:not(.shutp){top:auto;left:var(--chw,0px);right:0;max-width:none;max-height:72%}}
+html.chipOn.chipV .shdraw .shdt{top:10px}
+.chtip{position:fixed;z-index:3000;background:#1e293b;color:#fff;font:700 13px 'Noto Sans KR',sans-serif;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.chtip::before{content:'';position:absolute;left:-5px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:0;border-right-color:#1e293b}
+html.chipOn .chipbar .chord a{background:#f1f5f9}
+/* 아이콘 정리 창(순서 바꾸기·줄 위치) */
+#chOrdBox{position:fixed;inset:0;z-index:4000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:12px}
+#chOrdBox .cob{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);width:min(360px,100%);max-height:calc(100% - 24px);display:flex;flex-direction:column;font:13px 'Noto Sans KR',sans-serif}
+#chOrdBox .coh{display:flex;align-items:center;gap:8px;padding:12px 14px 6px;font-weight:900;font-size:15px}#chOrdBox .coh span{flex:1}
+#chOrdBox .cox{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer}
+#chOrdBox .cop{display:flex;gap:6px;padding:4px 14px 8px;align-items:center;flex-wrap:wrap}#chOrdBox .cop b{font-size:12px;margin-right:2px}
+#chOrdBox .cop button{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:999px;padding:5px 12px;font:700 12.5px 'Noto Sans KR',sans-serif;cursor:pointer}
+#chOrdBox .cop button.on{background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
+#chOrdBox .con{padding:0 14px 6px;color:var(--mute,#64748b);font-size:11.5px;line-height:1.5}
+#chOrdBox ul{list-style:none;margin:0;padding:2px 10px;overflow:auto;flex:1;min-height:0}
+#chOrdBox li{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:9px;background:var(--sub,#f8fafc);margin:4px 0;touch-action:none;user-select:none}
+#chOrdBox li.drag{box-shadow:0 4px 14px rgba(0,0,0,.25);background:#e0e7ff;position:relative;z-index:2}
+#chOrdBox li .cog{cursor:grab;color:var(--mute,#64748b);font-size:18px;padding:0 4px;touch-action:none}
+#chOrdBox li svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#chOrdBox li .cnm{flex:1;font-weight:700}
+#chOrdBox li button{border:1px solid var(--line2,#cbd5e1);background:var(--card,#fff);color:inherit;border-radius:7px;width:34px;height:30px;cursor:pointer;font-size:13px}
+#chOrdBox li button:disabled{opacity:.35;cursor:default}
+#chOrdBox .cof{display:flex;gap:8px;padding:8px 14px 12px;justify-content:space-between}
+#chOrdBox .cof button{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:9px;padding:7px 12px;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}
+#chOrdBox .cof .ok{background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
+
 html.chipPc .chipbar .leaflet-bar a{height:32px!important;line-height:32px!important;padding:0 11px!important;font-size:14px!important;cursor:pointer}
 html.chipPc .chipbar .leaflet-bar a:hover{filter:brightness(.94)}
 html.chipPc .chipbar a[data-lb]::after{font-size:12.5px}
@@ -2439,6 +2476,9 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">앱을 열 때<select id="uiFsStart" class="msel">${opt([['auto','자동 (휴대폰은 전체 지도)'],['on','항상 전체 지도'],['off','평소 화면']])}</select></label>
 <label class="uif">주소창 숨기기 (브라우저 전체화면)<select id="uiFsNat" class="msel">${opt([['on','씀 — 들어갈 때 크롬 안내 문구가 뜸'],['off','쓰지 않음 — 문구 없음, 주소창은 보임']])}</select></label>
 <p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.<br>📲 크롬 메뉴 ⋮ › <b>홈 화면에 추가</b>(앱 설치)로 만든 아이콘으로 열면 안내 문구 없이 처음부터 꽉 찬 화면이 됩니다.</p>
+<div class="uig">⇅ 아이콘 줄</div>
+<div class="uib"><button type="button" id="uiChOrd" class="btn ol">⇅ 아이콘 순서 · 줄 위치(위/왼쪽)</button></div>
+<p class="uin">지도 위 아이콘 줄의 순서를 바꾸고, 전체화면에서 줄을 위 가로 또는 왼쪽 세로로 놓습니다. 아이콘 줄 맨 끝 <b>⇅ 아이콘 정리</b>를 눌러도 됩니다.</p>
 <div class="uig">➕ 확대·축소 버튼 자리</div>
 <div class="uib"><button type="button" id="uiZpos" class="btn ol">↩ 처음 자리로</button></div>
 <p class="uin">지도 ＋/− 버튼 위 <b>⠿ 손잡이</b>를 끌어 원하는 곳에 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙고, 이 기기에 세로·가로 화면 따로 기억합니다. 손잡이를 두 번 눌러도 처음 자리로 돌아갑니다.</p>
@@ -2470,7 +2510,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
- q('uiAll').onclick=uiAllToggle;q('uiZpos').onclick=()=>zpReset(true);
+ q('uiAll').onclick=uiAllToggle;q('uiZpos').onclick=()=>zpReset(true);q('uiChOrd').onclick=()=>chipOrdOpen();
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -2485,6 +2525,11 @@ function uiInit(){if(!map)return;plblInit();
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
 const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs','help'];
+/* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
+function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
+ for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
+function chipIx(k){if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
+function chipVWant(){try{return localStorage.getItem('geo-chipv')==='l'}catch(_){return false}}
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
  if(el.querySelector('#uiAllBtn'))return 'ui';if(c.contains('bgbtn'))return 'bg';if(c.contains('fsbtn')&&c.length===3&&c.contains('leaflet-bar'))return 'fs';return null}
@@ -2502,7 +2547,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
-  const i=CHIP_ORD.indexOf(k),nx=[...bar.children].find(x=>CHIP_ORD.indexOf(x.dataset.ck)>i);bar.insertBefore(el,nx||null)};
+  const i=chipIx(k),nx=[...bar.children].find(x=>chipIx(x.dataset.ck)>i);bar.insertBefore(el,nx||null)};
  const scan=()=>{for(const el of [...C.topleft.children]){
   if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
   place(el)}};
@@ -2515,25 +2560,94 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  icoFix();new MutationObserver(icoFix).observe(bar,{childList:true,subtree:true,characterData:true});
  if(ph||tb)shutDodgeInit(C);/* 태블릿도 📷·📍·🖼️가 오른쪽 아래에 있어 단수구역 창과 겹치지 않게 비킴 */
  if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
-  bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}}
+  bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}
+ chipOrdChip(bar);chipVInit(bar)}
+
+/* ⇅ 아이콘 정리 칩: 칩 줄 맨 끝에 붙고, 누르면 순서·줄 위치 창 */
+const CHV_SVG='M7 20V4M3 8l4-4 4 4M17 4v16M13 16l4 4 4-4';
+function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUtil.create('div','leaflet-bar leaflet-control chord np',bar),a=L.DomUtil.create('a','',d);d.dataset.ck='ord';
+ a.href='#';a.dataset.lb='아이콘 정리';a.title='아이콘 순서 바꾸기 · 줄 위치(위/왼쪽)';a.setAttribute('role','button');a.setAttribute('aria-label',a.title);
+ a.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#475569"><path d="'+CHV_SVG+'"/></svg>';
+ L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chipOrdOpen()})}
+function chipBar(){return map&&map._controlContainer&&map._controlContainer.querySelector('.chipbar')}
+function chipResort(){const bar=chipBar();if(!bar)return;const ks=chipOrd();ks.push('ord');
+ const now=[...bar.children].map(x=>x.dataset.ck),want=ks.filter(k=>now.includes(k)).concat(now.filter(k=>!ks.includes(k)));
+ if(now.join()===want.join())return;for(const k of want){const el=[...bar.children].find(x=>x.dataset.ck===k);if(el)bar.appendChild(el)}}
+/* 전체화면이고 '왼쪽 세로'를 골랐으면 html.chipV. 세로 줄 폭은 --chw로 넣어 ＋/−·범례·설정 창을 그만큼 오른쪽으로 비킴 */
+function chipVApply(){const H=document.documentElement;if(!H.classList.contains('chipOn'))return;const on=document.body.classList.contains('fsOn')&&chipVWant();
+ const was=H.classList.contains('chipV');H.classList.toggle('chipV',on);const bar=chipBar();
+ const w=on&&bar?bar.offsetWidth+'px':'0px';if(H.style.getPropertyValue('--chw')!==w)H.style.setProperty('--chw',w);
+ if(was!==on){if(bar){bar.scrollLeft=0;bar.scrollTop=0}chipTipHide();setTimeout(()=>{try{mapCornerFix()}catch(_){}try{zpApply()}catch(_){}},60)}}
+let CHTIP=null,CHTIPT=0;
+function chipTipHide(){clearTimeout(CHTIPT);if(CHTIP){CHTIP.remove();CHTIP=null}}
+function chipTipShow(a,ms){const t=a.dataset.lb||a.title;if(!t)return;chipTipHide();const r=a.getBoundingClientRect();CHTIP=document.createElement('div');CHTIP.className='chtip';CHTIP.textContent=t;document.body.appendChild(CHTIP);
+ CHTIP.style.left=Math.round(r.right+9)+'px';CHTIP.style.top=Math.round(r.top+r.height/2-CHTIP.offsetHeight/2)+'px';if(ms)CHTIPT=setTimeout(chipTipHide,ms)}
+function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.documentElement.classList.contains('chipV');
+ new MutationObserver(chipVApply).observe(document.body,{attributes:true,attributeFilter:['class']});
+ try{new ResizeObserver(()=>{if(isV())chipVApply()}).observe(bar)}catch(_){}window.addEventListener('resize',()=>{if(isV())chipVApply()});
+ /* 이름 말풍선: 마우스는 올리면, 손가락은 길게(0.5초) 누르면. 길게 누른 뒤 손을 떼도 그 기능은 실행하지 않음 */
+ bar.addEventListener('pointerover',e=>{if(!isV()||e.pointerType!=='mouse')return;const a=e.target.closest('a');if(a&&bar.contains(a))chipTipShow(a)});
+ bar.addEventListener('pointerout',e=>{if(e.pointerType==='mouse')chipTipHide()});
+ let lp=null,ate=false;
+ bar.addEventListener('pointerdown',e=>{if(!isV()||e.pointerType==='mouse')return;const a=e.target.closest('a');if(!a)return;ate=false;clearTimeout(lp);
+  const x=e.clientX,y=e.clientY;lp=setTimeout(()=>{ate=true;chipTipShow(a,1600)},500);
+  const mv=ev=>{if(Math.hypot(ev.clientX-x,ev.clientY-y)>8){clearTimeout(lp);rm()}},rm=()=>{bar.removeEventListener('pointermove',mv);clearTimeout(lp)};
+  bar.addEventListener('pointermove',mv);bar.addEventListener('pointerup',rm,{once:true});bar.addEventListener('pointercancel',rm,{once:true})});
+ bar.addEventListener('click',e=>{if(ate){ate=false;e.preventDefault();e.stopPropagation()}},true);
+ bar.addEventListener('contextmenu',e=>{if(isV())e.preventDefault()});
+ bar.addEventListener('scroll',chipTipHide,{passive:true});
+ chipVApply()}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
+ const w=document.createElement('div');w.id='chOrdBox';w.className='np';
+ w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
+  '<div class="cop"><b>전체화면 줄 위치</b><button type="button" data-v="t">위 가로</button><button type="button" data-v="l">왼쪽 세로</button></div>'+
+  '<p class="con">왼쪽 세로는 전체화면일 때만 쓰이고, 이름은 마우스를 올리거나 길게 누르면 보입니다. 순서는 ≡를 끌거나 ▲▼로 바꿉니다. 위·왼쪽 모두 같은 순서이고 이 기기에만 기억합니다.</p>'+
+  '<ul></ul><div class="cof"><button type="button" class="rs">↺ 처음 순서</button><button type="button" class="ok">닫기</button></div></div>';
+ document.body.appendChild(w);const ul=w.querySelector('ul');
+ const ico=k=>{const el=bar&&[...bar.children].find(x=>x.dataset.ck===k),s=el&&el.querySelector('svg.ci');if(s){const c=s.cloneNode(true);c.removeAttribute('class');return c.outerHTML}
+  const a=el&&el.querySelector('a');return '<span style="width:20px;text-align:center">'+(a?(a.textContent||'').trim().slice(0,2):'')+'</span>'};
+ const have=k=>!bar||[...bar.children].some(x=>x.dataset.ck===k);
+ const save=ks=>{try{localStorage.setItem('geo-chipord',JSON.stringify(ks))}catch(_){}chipResort()};
+ const draw=()=>{const ks=chipOrd().filter(have);ul.innerHTML=ks.map((k,i)=>'<li data-k="'+k+'"><span class="cog" title="끌어서 옮기기">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<ks.length-1?'':' disabled')+'>▼</button></li>').join('');
+  const v=chipVWant()?'l':'t';w.querySelectorAll('.cop button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))};
+ /* 전체 순서(지금 안 보이는 칩 포함)에서 보이는 칩끼리만 자리를 바꿈 */
+ const commit=vis=>{const all=chipOrd(),slots=all.map((k,i)=>have(k)?i:-1).filter(i=>i>=0);slots.forEach((s,j)=>{all[s]=vis[j]});save(all);draw()};
+ const cur=()=>[...ul.children].map(li=>li.dataset.k);
+ ul.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const li=b.closest('li'),ks=cur(),i=ks.indexOf(li.dataset.k),j=b.classList.contains('up')?i-1:i+1;if(j<0||j>=ks.length)return;[ks[i],ks[j]]=[ks[j],ks[i]];commit(ks);
+  const n=ul.querySelector('li[data-k="'+ks[j]+'"] .'+(b.classList.contains('up')?'up':'dn'));if(n&&!n.disabled)n.focus()});
+ let dg=null;
+ ul.addEventListener('pointerdown',e=>{const g=e.target.closest('.cog');if(!g)return;e.preventDefault();const li=g.closest('li');dg={li,id:e.pointerId,y:e.clientY};li.classList.add('drag');try{g.setPointerCapture(e.pointerId)}catch(_){}});
+ ul.addEventListener('pointermove',e=>{if(!dg||e.pointerId!==dg.id)return;e.preventDefault();const li=dg.li;
+  const sib=[...ul.children].filter(x=>x!==li),y=e.clientY;let bf=null;for(const x of sib){const r=x.getBoundingClientRect();if(y<r.top+r.height/2){bf=x;break}}
+  if((bf||null)!==li.nextElementSibling||(bf===null&&ul.lastElementChild!==li))ul.insertBefore(li,bf);
+  const R=ul.getBoundingClientRect();if(y<R.top+24)ul.scrollTop-=8;else if(y>R.bottom-24)ul.scrollTop+=8});
+ const end=e=>{if(!dg||e.pointerId!==dg.id)return;dg.li.classList.remove('drag');dg=null;commit(cur())};
+ ul.addEventListener('pointerup',end);ul.addEventListener('pointercancel',end);
+ w.querySelectorAll('.cop button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('geo-chipv',b.dataset.v)}catch(_){}chipVApply();draw();
+  if(b.dataset.v==='l'&&!document.body.classList.contains('fsOn')&&typeof phToast==='function')phToast('⇅ 왼쪽 세로 줄은 전체화면에서 보입니다',2500)});
+ w.querySelector('.rs').onclick=()=>{try{localStorage.removeItem('geo-chipord')}catch(_){}chipResort();draw()};
+ const close=()=>{w.remove();document.removeEventListener('keydown',kd)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
+ w.querySelector('.cox').onclick=close;w.querySelector('.ok').onclick=close;w.addEventListener('click',e=>{if(e.target===w)close()});document.addEventListener('keydown',kd);
+ draw()}
 /* ＋/− 확대·축소 버튼 옮기기: 위 ⠿ 손잡이를 끌어 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙음. 세로·가로 화면 따로 이 기기에 기억(geo-zpos, 백업 제외) */
 const ZP={el:null,g:null};
 function zpLoad(){try{return JSON.parse(localStorage.getItem('geo-zpos')||'{}')||{}}catch(_){return {}}}
 function zpKey(){const s=map.getSize();return s.x>s.y?'l':'p'}
 function zpRange(side){const mc=map.getContainer(),M=mc.getBoundingClientRect(),z=ZP.el,h=z.offsetHeight,w=z.offsetWidth,C=map._controlCorners;
- const bar=map._controlContainer.querySelector('.chipbar');let t=10;if(bar&&bar.offsetHeight)t=Math.round(bar.getBoundingClientRect().bottom-M.top)+8;
+ const bar=map._controlContainer.querySelector('.chipbar'),cv=document.documentElement.classList.contains('chipV'),cw=cv&&bar?bar.offsetWidth:0;let t=10;if(bar&&bar.offsetHeight&&!cv)t=Math.round(bar.getBoundingClientRect().bottom-M.top)+8;
  let b=M.height-h-10;
- if(side){const x0=side==='r'?M.width-w-10:10,x1=x0+w,box=e=>{if(!e||!e.offsetHeight||e.hidden)return null;const q=e.getBoundingClientRect();return q.right-M.left>x0-4&&q.left-M.left<x1+4?q:null};
+ if(side){const x0=side==='r'?M.width-w-10:10+cw,x1=x0+w,box=e=>{if(!e||!e.offsetHeight||e.hidden)return null;const q=e.getBoundingClientRect();return q.right-M.left>x0-4&&q.left-M.left<x1+4?q:null};
   /* 위: 오른쪽 위 주소찾기·레이어 버튼 아래부터 */
   for(const e of C[side==='r'?'topright':'topleft'].children){if(e===z)continue;const q=box(e);if(q&&q.bottom-M.top<M.height*.5)t=Math.max(t,Math.round(q.bottom-M.top)+8)}
   /* 아래: 📷·📍·🖼️ 버튼, 범례 상자, 💧 단수구역 창 위에서 멈춤 */
   const ob=[...C[side==='r'?'bottomright':'bottomleft'].children].filter(e=>!e.classList.contains('leaflet-control-attribution')&&!e.classList.contains('legbox'));ob.push(document.getElementById('shutBox'));
   for(const e of ob){const q=box(e);if(q&&q.top-M.top>M.height*.4)b=Math.min(b,Math.round(q.top-M.top)-h-8)}}
- return {W:M.width,H:M.height,t,b,w,h,M,ok:b>=t}}
+ return {W:M.width,H:M.height,t,b,w,h,M,cw,ok:b>=t}}
 function zpApply(){const z=ZP.el;if(!z||!map)return;const o=zpLoad()[zpKey()],TL=map._controlCorners.topleft;
  if(!o){if(z.parentNode!==TL){z.classList.remove('zfree');z.style.left=z.style.top='';TL.insertBefore(z,TL.firstChild)}return}
  if(z.parentNode!==map._controlContainer)map._controlContainer.appendChild(z);z.classList.add('zfree');
- const R=zpRange(o.s);R.b=Math.max(R.t,R.b);const y=Math.min(1,Math.max(0,+o.y||0));z.style.top=Math.round(R.t+(R.b-R.t)*y)+'px';z.style.left=(o.s==='r'?Math.max(0,Math.round(R.W-R.w-10)):10)+'px'}
+ const R=zpRange(o.s);R.b=Math.max(R.t,R.b);const y=Math.min(1,Math.max(0,+o.y||0));z.style.top=Math.round(R.t+(R.b-R.t)*y)+'px';z.style.left=(o.s==='r'?Math.max(0,Math.round(R.W-R.w-10)):10+R.cw)+'px'}
 function zpReset(msg){try{localStorage.removeItem('geo-zpos')}catch(_){}zpApply();if(msg&&typeof phToast==='function')phToast('➕ 확대·축소 버튼을 처음 자리(왼쪽 위)로 돌렸습니다',2500)}
 function zoomMoveInit(){const zc=map&&map.zoomControl&&map.zoomControl.getContainer();if(!zc||ZP.el)return;ZP.el=zc;
  const g=L.DomUtil.create('div','zgrip');zc.insertBefore(g,zc.firstChild);ZP.g=g;g.textContent='⠿';g.setAttribute('role','button');
@@ -2544,7 +2658,7 @@ function zoomMoveInit(){const zc=map&&map.zoomControl&&map.zoomControl.getContai
  /* 끄는 동안 버튼을 다른 부모로 옮기면 포인터 잡기(capture)가 풀리므로 창 전체에서 받음 */
  window.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;e.preventDefault();
   if(!st.mv){if(Math.hypot(e.clientX-st.x,e.clientY-st.y)<6)return;st.mv=true;if(zc.parentNode!==map._controlContainer)map._controlContainer.appendChild(zc);zc.classList.add('zfree','zdrag')}
-  const R=zpRange();zc.style.left=Math.round(Math.max(0,Math.min(R.W-R.w,e.clientX-R.M.left-st.dx)))+'px';zc.style.top=Math.round(Math.max(R.t,Math.min(R.H-R.h,e.clientY-R.M.top-st.dy)))+'px'});
+  const R=zpRange();zc.style.left=Math.round(Math.max(R.cw,Math.min(R.W-R.w,e.clientX-R.M.left-st.dx)))+'px';zc.style.top=Math.round(Math.max(R.t,Math.min(R.H-R.h,e.clientY-R.M.top-st.dy)))+'px'});
  const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;zc.classList.remove('zdrag');if(!s.mv)return;
   const R0=zpRange(),x=parseFloat(zc.style.left)||0,s0=x+R0.w/2>R0.W/2?'r':'l',side=zpRange(s0).ok?s0:(s0==='r'?'l':'r'),R=zpRange(side),y=parseFloat(zc.style.top)||0;
   const all=zpLoad();all[zpKey()]={s:side,y:R.b>R.t?Math.min(1,Math.max(0,(y-R.t)/(R.b-R.t))):0};try{localStorage.setItem('geo-zpos',JSON.stringify(all))}catch(_){}zpApply()};
@@ -2564,7 +2678,7 @@ function shutDodgeInit(C){const mc=map.getContainer();let p=null;
    if(p.style.top!=='auto')p.style.top='auto';const mh=Math.max(120,Math.round(M.height-tt-fh-16))+'px';if(p.style.maxHeight!==mh)p.style.maxHeight=mh;
    rb=Math.round(M.bottom-p.getBoundingClientRect().top+4)+'px'}}
   else if(p){if(p.style.top)p.style.top='';if(p.style.maxHeight)p.style.maxHeight=''}
-  C.bottomright.classList.toggle('fabrow',row);const bv=b?b+'px':'';if(C.bottomleft.style.bottom!==bv)C.bottomleft.style.bottom=bv;const brv=row?rb:bv;if(C.bottomright.style.bottom!==brv)C.bottomright.style.bottom=brv;if(C.bottomright.style.right)C.bottomright.style.right=''};
+  C.bottomright.classList.toggle('fabrow',row);const bv=b?b+'px':'';{const cb=map._controlContainer.querySelector('.chipbar'),cv=cb&&document.documentElement.classList.contains('chipV')&&b?b+'px':'';if(cb&&cb.style.bottom!==cv)cb.style.bottom=cv}if(C.bottomleft.style.bottom!==bv)C.bottomleft.style.bottom=bv;const brv=row?rb:bv;if(C.bottomright.style.bottom!==brv)C.bottomright.style.bottom=brv;if(C.bottomright.style.right)C.bottomright.style.right=''};
  const hook=()=>{const q=document.getElementById('shutBox');if(!q||q===p)return;p=q;try{new ResizeObserver(fix).observe(p)}catch(_){}new MutationObserver(fix).observe(p,{attributes:true,attributeFilter:['hidden','class']});fix()};
  hook();new MutationObserver(hook).observe(mc,{childList:true});map.on('resize',fix);try{const ro=new ResizeObserver(fix);ro.observe(C.topright);ro.observe(C.bottomright)}catch(_){}}
 /* 폰: 왼쪽·오른쪽 아래 범례(.pleg)를 왼쪽 아래 한 상자로 옮기고 위쪽 탭으로 하나씩 보여 줌. 범례 내용은 각자 원래 함수가 그대로 그림 */
@@ -4637,7 +4751,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
