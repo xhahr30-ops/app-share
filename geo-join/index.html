@@ -392,6 +392,7 @@ html.chipOn.chipV .shdraw .shdt{top:10px}
 .chtip{position:fixed;z-index:3000;background:#1e293b;color:#fff;font:700 13px 'Noto Sans KR',sans-serif;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .chtip::before{content:'';position:absolute;left:-5px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:0;border-right-color:#1e293b}
 html.chipOn .chipbar .chord a{background:#f1f5f9}
+html.chipOn .chipbar a{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 /* 아이콘 정리 창(순서 바꾸기·줄 위치) */
 #chOrdBox{position:fixed;inset:0;z-index:4000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:12px}
 #chOrdBox .cob{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);width:min(360px,100%);max-height:calc(100% - 24px);display:flex;flex-direction:column;font:13px 'Noto Sans KR',sans-serif}
@@ -2594,7 +2595,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
   const mv=ev=>{if(Math.hypot(ev.clientX-x,ev.clientY-y)>8){clearTimeout(lp);rm()}},rm=()=>{bar.removeEventListener('pointermove',mv);clearTimeout(lp)};
   bar.addEventListener('pointermove',mv);bar.addEventListener('pointerup',rm,{once:true});bar.addEventListener('pointercancel',rm,{once:true})});
  bar.addEventListener('click',e=>{if(ate){ate=false;e.preventDefault();e.stopPropagation()}},true);
- bar.addEventListener('contextmenu',e=>{if(isV())e.preventDefault()});
+ bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
 function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
