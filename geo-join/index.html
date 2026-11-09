@@ -1385,6 +1385,23 @@ html.dark svg.ri{color:var(--cd)!important}
   <p class="hint">L1: 1분 유량으로 누수 의심 소블록(야간최소유량 증가·급증)을 찾고, 그 안 관로를 <b>파손 위험 점수</b>(경과연수·재질·누수 이력·최고 수압·관경)로 줄 세웁니다. L2: 수압계 3개 이상 자료와 준비 파일이 있으면 평상 날과 최근 날의 같은 시간대 수압 차이를 관망해석 가상 누수와 비교해 위치 가능성을 빨간 원으로 보여 줍니다. 모두 참고값이며 현장 탐사로 확인하세요. 관로 색 기준 '파손 위험 점수'는 ⚙️ 관로 보기 설정에서 고릅니다.</p>
  </div>
 
+ <div class="sec" id="cwSec">
+  <h4>🏗 공사 추천 <small style="font-weight:400;color:var(--mute)">유수율 낮고 PVC관 많은 소블록 · 구역당 예산만큼 PVC 관로 표시</small></h4>
+  <label class="drop"><input type="file" id="cwWyF" accept=".xlsx,.xls,.xlsm"><div class="ic">📊</div><b>소블록별 유수율 엑셀 (선택)</b><span>'유수율(소블록별)'·'유수율분석'처럼 블록 이름 칸과 '유수율' 줄이 있는 시트 · 연·월 머리글 · 안 넣으면 부과량 연동의 유수율 시트를 씁니다 · 한 번 넣으면 이 PC에 저장</span></label>
+  <p class="hint" id="cwWyMsg"></p>
+  <div class="g2"><label class="f">대상 수계 <small style="font-weight:400">(블록 이름 앞글자, 쉼표)</small><input id="cwPre" style="width:100%"></label><label class="f">추천 수<input id="cwN" type="number" min="1" max="20" style="width:100%"></label>
+  <label class="f">구역당 예산 (억 원)<input id="cwBud" type="number" min="0" step="0.1" style="width:100%"></label><label class="f">관경 모를 때 단가 (원/m) <small style="font-weight:400">비우면 빼고 셈</small><input id="cwUnit" type="number" min="0" step="1000" placeholder="확인 필요" style="width:100%"></label>
+  <label class="f">관로 용도<select id="cwUse"><option value="dist">배수관만</option><option value="ds">배수관+급수관</option><option value="all">전체</option></select></label><label class="f">유수율 평균 기간<select id="cwMon"><option value="3">최근 3개월</option><option value="6">최근 6개월</option><option value="12">최근 12개월</option></select></label>
+  <label class="f">먼저 고르는 관경<select id="cwPri"><option value="100">100mm 이하 먼저</option><option value="150">150mm 이하 먼저</option><option value="0">구분 없음 (오래된 순만)</option></select></label><label class="f">&nbsp;</label>
+  <label class="f">점수 비중 · 유수율<input id="cwWr" type="number" min="0" max="100" style="width:100%"></label><label class="f">점수 비중 · PVC 비율<input id="cwWp" type="number" min="0" max="100" style="width:100%"></label></div>
+  <label class="f">관경별 단가표 (원/m) <small style="font-weight:400">한 줄에 "관경=단가" · 표보다 가는 관은 가장 가는 관경 값, 그 사이는 바로 위 관경 값 · 단가 없는 관은 빼고 셈</small><textarea id="cwPrice" rows="4" style="width:100%;font:12px monospace"></textarea></label>
+  <div class="sbtns"><button id="cwRun" type="button" class="btn">🏗 추천 계산·지도 표시</button><button id="cwXl" type="button" class="btn ol">⬇ 추천 엑셀</button><button id="cwOff" type="button" class="btn ol">🙈 지도 표시 지우기</button></div>
+  <details style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">🏗 현장 표기 관로 (불용관·노후관 등)</summary><div id="cwMkBox" style="margin-top:4px"></div></details>
+  <p class="hint" id="cwMsg"></p>
+  <div id="cwTbl"></div>
+  <p class="hint">점수 = (100 − 유수율) × 유수율 비중 + PVC 비율 × PVC 비중 (÷100). PVC = PVC·HI-VP·HI-3P (관로 재질 기준). 블록마다 PVC 관로를 <b>고른 관경 이하(기본 100mm)를 먼저, 그 안에서 오래된 것부터</b> 관경별 단가로 공사비를 더해 예산에 닿을 때까지 골라 굵게 칠합니다. 단가표가 비면 블록 안 PVC 관로 전부를 칠합니다. 표의 <b>제외</b>를 누르면 다음 순위가 올라오고, 유수율 칸에 직접 숫자를 넣을 수도 있습니다. 현장에서 관로 정보창의 🏗 칸으로 표기한 관로는 재질과 상관없이 그 블록 공사에 <b>맨 먼저</b> 들어갑니다. 관리번호·소블록만 쓰며 수용가 정보는 쓰지 않습니다.</p>
+ </div>
+
  <div class="sec ph">
   <h4>📷 현장 사진 <small style="font-weight:400;color:var(--mute)">사진 속 GPS 좌표 기준</small></h4>
   <label class="drop"><input type="file" id="phFile" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.pgw,.pngw,.jgw,.wld" multiple><div class="ic">📷</div><b>현장 사진 첨부 (여러 장)</b><span>JPG 원본 · 촬영 위치·시각·방향을 자동으로 읽음 · 위치도(빨간 점) PNG는 월드 파일(.pgw)과 함께 · 지도 위로 끌어다 놓아도 됨</span></label>
@@ -1589,7 +1606,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'field',n:'현장',g:[
   {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','phed','사진 편집 모드'],['gal','grid','사진 갤러리']]},
@@ -1602,8 +1619,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -10667,6 +10684,125 @@ async function lqInit(){if(!$('lqSec'))return;lqCfgUi();try{await lrInit()}catch
  $('lqSec').addEventListener('change',e=>{const x=e.target.closest('.lqLv');if(x)lqLvSet(x)});$('lqSec').addEventListener('click',e=>{if(e.target.closest('.lqLvXl')){lqLvXl();return}const b=e.target.closest('.lqGo');if(b){lqShow(b.dataset.b);return}const f=e.target.closest('.lqFly');if(f&&map){const ft=PIPE.feats[+f.dataset.fi],m=lqMid(ft);if(m)map.setView([m[1],m[0]],Math.max(map.getZoom(),18));return}if(e.target.id==='lqXl')lqXl()});
  $('lqBlk').onchange=()=>{const nm=$('lqBlk').value;if(nm&&LQ.data.has(nm))lqShow(nm);else if(nm&&lqPB(nm))lqShowRec()}}
 try{lqInit()}catch(e){console.warn('누수 지점 예측',e)}
+/* ===== 🏗 공사 추천: 유수율 낮고 PVC 많은 소블록 → 구역당 예산 분량 PVC 관로 (2026-11-06) ===== */
+const CW={k:'geo-cw',c:{pri:100,pre:'YD,YG',n:8,bud:4,unit:'',price:'80=45000\n100=70000\n150=80000\n200=107000\n250=144000\n300=218000\n400=278000\n500=',use:'dist',mon:'12',wr:60,wp:40},ex:{},man:{},WY:null,wyName:'',st:null,stKey:'',rows:[],pick:[],L:null,cv:null};
+try{const v=JSON.parse(localStorage.getItem('geo-cw')||'null');if(v){Object.assign(CW.c,v.c||{});CW.ex=v.ex||{};CW.man=v.man||{}}}catch(_){}
+function cwSave(){try{localStorage.setItem(CW.k,JSON.stringify({c:CW.c,ex:CW.ex,man:CW.man}))}catch(_){}}
+const CW_COL=['#dc2626','#ea580c','#7c3aed','#0891b2','#be185d','#4d7c0f','#1d4ed8','#a16207'];
+/* 관경별 단가표 → 관경 오름차순 [[관경,원/m]] (값 없는 줄은 '확인 필요'로 null) */
+function cwPT(){return String(CW.c.price||'').split(/\n/).map(l=>l.split(/[=:\t,\s]+/)).filter(a=>a[0]&&isFinite(parseFloat(a[0]))).map(a=>[parseFloat(a[0]),a[1]!==undefined&&a[1]!==''&&isFinite(parseFloat(String(a[1]).replace(/,/g,'')))?parseFloat(String(a[1]).replace(/,/g,'')):null]).sort((x,y)=>x[0]-y[0])}
+/* 관 하나 m당 단가: 표 가장 가는 관경 이하 → 그 값, 사이 → 바로 위 관경 값, 표보다 굵거나 값 없음 → null */
+function cwUnitOf(d,T){if(!T.length)return null;if(d==null)return +CW.c.unit>0?+CW.c.unit:null;const r=T.find(t=>d<=t[0]);return r?r[1]:null}
+const cwIsPvc=a=>/PVC/.test(a.mat||'')||/HI.?3P|HI.?VP|PVC|^VP|염화비닐/i.test(String(a.matRaw||'').replace(/\s/g,''));
+/* 유수율 시트(여러 모양) → {블록:{'YYYY-MM':%}} : 연 머리글(2022 또는 '2022년') + 아래 줄 월(1~12), 블록 이름 칸 + '유수율' 줄 */
+function cwWyParse(A){const W={};if(!A||!A.length)return W;
+ const yOf=v=>{if(typeof v==='number'&&v>=2000&&v<=2040&&Number.isInteger(v))return v;const m=/^\s*(20\d\d)\s*년?\s*$/.exec(String(v??''));return m?+m[1]:null};
+ const mOf=v=>{if(typeof v==='number'&&Number.isInteger(v)&&v>=1&&v<=12)return v;const m=/^\s*(\d{1,2})\s*월\s*$/.exec(String(v??''));return m&&+m[1]>=1&&+m[1]<=12?+m[1]:null};
+ let yr=-1;for(let i=0;i<Math.min(20,A.length-1);i++){if((A[i]||[]).some(v=>yOf(v))&&(A[i+1]||[]).filter(v=>mOf(v)).length>=3){yr=i;break}}if(yr<0)return W;
+ const YR=A[yr]||[],MR=A[yr+1]||[],cols=[];let y=null,lm=0;for(let c=0;c<Math.max(YR.length,MR.length);c++){const yy=yOf(YR[c]);if(yy){y=yy;lm=0}const m=mOf(MR[c]);if(y&&m){if(m<=lm)y++;lm=m;cols.push([c,y+'-'+String(m).padStart(2,'0')])}}
+ if(!cols.length)return W;const c0=cols[0][0],isB=v=>/^[A-Z]{1,4}\d{1,3}(-\d{1,2})?$/.test(bNorm(v));let cur='';
+ for(let i=yr+2;i<A.length;i++){const r=A[i];if(!r)continue;for(let c=0;c<c0;c++){if(isB(r[c])){cur=bNorm(r[c]);break}}
+  let lab=false;for(let c=0;c<c0;c++){if(/유수율/.test(String(r[c]??''))){lab=true;break}}if(!cur||!lab)continue;
+  const o=W[cur]||(W[cur]={});cols.forEach(([c,ym])=>{const v=r[c];if(typeof v==='number'&&isFinite(v)&&v>0)o[ym]=v<=3?v*100:v})}
+ return W}
+async function cwWyLoad(f){const m=$('cwWyMsg');m.textContent=f.name+' 읽는 중…';await sleep(20);
+ try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});let W={},sn='';
+  const ord=[...wb.SheetNames].sort((a,b)=>(/유수율/.test(b)?1:0)-(/유수율/.test(a)?1:0));
+  for(const n of ord){const w=cwWyParse(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}));if(Object.keys(w).length>Object.keys(W).length){W=w;sn=n}}
+  if(!Object.keys(W).length){m.textContent='⚠ 유수율 줄을 찾지 못했습니다. 연·월 머리글, 블록 이름 칸, "유수율" 줄이 있는 시트인지 확인하세요.';return}
+  CW.WY=W;CW.wyName=f.name+' · '+sn;try{await IDB.set('cw_wy',{W,name:CW.wyName,at:Date.now()})}catch(_){}
+  cwWyShow();if(CW.rows.length)cwRun()}catch(e){m.textContent='⚠ 읽기 실패: '+e.message}}
+function cwWyShow(){const m=$('cwWyMsg');if(!m)return;const W=CW.WY;if(W&&Object.keys(W).length){const ks=[...new Set(Object.values(W).flatMap(o=>Object.keys(o)))].sort();m.textContent=`📊 ${CW.wyName} · ${Object.keys(W).length}개 블록 · ${ks[0]}~${ks[ks.length-1]}`}
+ else m.textContent=(BILL.WY&&Object.keys(BILL.WY).length)?`📥 부과량 연동의 유수율 시트 사용 (${Object.keys(BILL.WY).length}개 블록)`:'유수율 자료 없음 — 엑셀을 넣거나 아래 표에 직접 입력하세요.'}
+/* 블록 유수율 평균 {v,from,to,n,src} */
+function cwWyOf(b){const mv=CW.man[b];if(mv!=null&&mv!=='')return{v:+mv,src:'직접 입력',from:'',to:'',n:0};
+ const src=CW.WY&&CW.WY[b]?[CW.WY[b],'엑셀']:BILL.WY&&BILL.WY[b]&&BILL.WY[b].r?[BILL.WY[b].r,'부과량 연동']:null;if(!src)return null;
+ const ks=Object.keys(src[0]).sort().slice(-(+CW.c.mon||12));if(!ks.length)return null;const v=ks.reduce((s,k)=>s+src[0][k],0)/ks.length;return{v,src:src[1],from:ks[0],to:ks[ks.length-1],n:ks.length}}
+/* 블록별 관로 길이·PVC 관로 목록 (관로 가운데 점이 속한 블록) */
+async function cwStats(){if(!PIPE.feats.length||!poly)return null;if(!poly._v)poly._v=Math.random();
+ const pre=String(CW.c.pre||'').toUpperCase().split(/[,\s]+/).filter(Boolean),key=[poly._v,PIPE.feats.length,$('pMat').value,$('pYmd').value,$('pUse').value,CW.c.use,pre.join(),(typeof PED!=='undefined'&&PED.at)||0].join('|');
+ if(CW.st&&CW.stKey===key)return CW.st;const fs=poly.features.filter(g=>{const n=bNorm(blkNm(g));return n&&(!pre.length||pre.some(p=>n.startsWith(p)))});
+ const st=new Map(),msg=$('cwMsg');let i=0;fs.forEach(g=>{if(!g.properties._bbox)g.properties._bbox=turf.bbox(g)});
+ for(const f of PIPE.feats){if(++i%4000===0){msg.textContent=`블록별 PVC 관로 세는 중… ${i.toLocaleString()}/${PIPE.feats.length.toLocaleString()}`;await sleep(0)}
+  const p=lineParts(f.geometry)[0]||[],c=p[Math.floor(p.length/2)]||p[0];if(!c)continue;let nm=null;
+  for(const g of fs){const b=g.properties._bbox;if(c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3]&&turf.booleanPointInPolygon(turf.point(c),g)){nm=bNorm(blkNm(g));break}}if(!nm)continue;
+  const a=attrOf(f),s=st.get(nm)||{tot:0,pvc:0,P:[],M:[]},L=f._len||0;st.set(nm,s);const FP=f.properties||{};
+  if(FP['공사추천'])s.M.push({f,L,y:a.year,d:a.dia,id:a.id,u:a.use,m:a.matRaw||a.mat,mk:FP['공사추천'],mm:FP['공사추천메모']||'',md:FP['공사추천일']||'',mb:FP['공사추천자']||''});
+  if(CW.c.use==='dist'&&a.use!=='배수관')continue;if(CW.c.use==='ds'&&a.use!=='배수관'&&a.use!=='급수관')continue;
+  s.tot+=L;if(cwIsPvc(a)){s.pvc+=L;s.P.push({f,L,y:a.year,d:a.dia,id:a.id,u:a.use,m:a.matRaw||a.mat})}st.set(nm,s)}
+ CW.st=st;CW.stKey=key;return st}
+async function cwRun(){const msg=$('cwMsg');cwReadUi();if(!PIPE.feats.length||!poly){msg.textContent='⚠ ② 소블록 경계와 ②-1 상수관로를 먼저 불러오세요.';return}
+ const st=await cwStats();if(!st)return;const wr=(+CW.c.wr||0)/100,wp=(+CW.c.wp||0)/100,T=cwPT(),bud=(+CW.c.bud||0)*1e8,useB=T.some(t=>t[1]>0)&&bud>0;
+ CW.rows=[...st.entries()].map(([b,s])=>{const w=cwWyOf(b),pp=s.tot?s.pvc/s.tot*100:0;return{b,tot:s.tot,pvc:s.pvc,pp,w,sc:w?wr*(100-Math.min(w.v,100))+wp*pp:null,P:s.P,M:s.M||[],ex:!!CW.ex[b]}});
+ CW.rows.sort((a,b)=>(b.sc??-1)-(a.sc??-1)||b.pp-a.pp);CW.pick=CW.rows.filter(r=>r.sc!=null&&!r.ex&&r.pvc>0).slice(0,Math.max(1,+CW.c.n||8));
+ CW.pick.forEach((r,i)=>{r.rk=i+1;const pri=+CW.c.pri||0,g=p=>!pri?0:p.d==null?2:p.d<=pri?0:1,P=[...r.P].sort((a,b)=>g(a)-g(b)||(a.y??9999)-(b.y??9999)||(a.d??0)-(b.d??0));let acc=0,cost=0;r.sel=[];r.noP=0;r.noPL=0;r.full=true;const mf=new Set(r.M.map(m=>m.f));
+  /* 현장 표기 관로는 재질·예산과 상관없이 맨 먼저 */for(const m of r.M){const u=cwUnitOf(m.d,T);m.u0=u;m.c=u!=null?u*m.L:null;r.sel.push(m);acc+=m.L;if(m.c!=null)cost+=m.c}r.mkN=r.M.length;r.mkOver=useB&&cost>bud;
+  for(const p of P){if(mf.has(p.f))continue;if(!useB){r.sel.push(p);acc+=p.L;continue}const u=cwUnitOf(p.d,T);p.u0=u;if(u==null){r.noP++;r.noPL+=p.L;continue}const c=u*p.L;if(cost+c>bud){r.full=false;if(g(p)===0)continue;break}r.sel.push(p);acc+=p.L;cost+=c;p.c=c}
+  r.selL=acc;r.cost=useB?cost:null});
+ const noW=CW.rows.filter(r=>!r.w).length,noP=CW.pick.reduce((s,r)=>s+r.noP,0),mkAll=CW.rows.reduce((s,r)=>s+r.M.length,0),mkIn=CW.pick.reduce((s,r)=>s+r.M.length,0);
+ msg.textContent=`${CW.rows.length}개 블록 중 추천 ${CW.pick.length}곳`+(useB?` · 구역당 ${CW.c.bud}억까지 관경별 단가로 ${+CW.c.pri?CW.c.pri+'mm 이하 먼저, ':''}오래된 PVC부터`:' · 단가표가 비어 블록 안 PVC 전부 표시')+(noP?` · 단가 없는 관경(표 밖·관경 모름) ${noP}개는 뺌`:'')+(noW?` · 유수율 없는 블록 ${noW}개는 순위에서 빠짐`:'')+(mkAll?` · 🏗 현장 표기 ${mkAll}개 중 추천 블록 안 ${mkIn}개 맨 먼저 넣음`+(mkAll>mkIn?` (나머지 ${mkAll-mkIn}개는 표의 '현장 표기' 칸 참고)`:''):'');
+ cwTable();cwDraw()}
+function cwReadUi(){const g=id=>$(id).value;Object.assign(CW.c,{pri:+g('cwPri')||0,price:g('cwPrice'),pre:g('cwPre'),n:+g('cwN')||4,bud:+g('cwBud')||0,unit:g('cwUnit'),use:g('cwUse'),mon:g('cwMon'),wr:+g('cwWr'),wp:+g('cwWp')});cwSave()}
+function cwUi(){const c=CW.c;$('cwPre').value=c.pre;$('cwN').value=c.n;$('cwBud').value=c.bud;$('cwUnit').value=c.unit;$('cwUse').value=c.use;$('cwMon').value=c.mon;$('cwWr').value=c.wr;$('cwWp').value=c.wp;$('cwPrice').value=c.price;$('cwPri').value=String(c.pri)}
+const cwKm=m=>(m/1000).toFixed(2);
+function cwTable(){const el=$('cwTbl');if(!CW.rows.length){el.innerHTML='';return}const pk=new Map(CW.pick.map(r=>[r.b,r]));
+ const tr=r=>{const p=pk.get(r.b),col=p?CW_COL[(p.rk-1)%CW_COL.length]:'';return`<tr data-b="${esc(r.b)}"${p?` style="background:${col}14"`:''}><td>${p?`<b style="color:${col}">${p.rk}</b>`:''}</td><td class="nm"><a href="#" class="cwGo" data-b="${esc(r.b)}">${esc(r.b)}</a></td>
+  <td class="r"><input class="cwMan" data-b="${esc(r.b)}" value="${CW.man[r.b]!=null?esc(CW.man[r.b]):''}" placeholder="${r.w&&r.w.src!=='직접 입력'?r.w.v.toFixed(1):'없음'}" title="${r.w?esc(r.w.src+(r.w.from?' '+r.w.from+'~'+r.w.to+' '+r.w.n+'개월 평균':'')):'유수율 자료 없음 — 직접 입력'}" style="width:54px;text-align:right"></td>
+  <td class="r">${r.pp.toFixed(0)}%</td><td class="r">${cwKm(r.pvc)}</td><td class="r">${cwKm(r.tot)}</td><td class="r">${r.sc!=null?r.sc.toFixed(1):'-'}</td><td class="r">${r.M.length?`<b style="color:#dc2626">${r.M.length}</b>`+(p&&p.mkOver?' <small title="표기 관로만으로 예산 넘음">(예산 넘음)</small>':''):''}</td>
+  <td class="r">${p?cwKm(p.selL)+(+CW.c.pri?` <small title="${CW.c.pri}mm 이하">(≤${CW.c.pri} ${cwKm(p.sel.filter(q=>q.d!=null&&q.d<=CW.c.pri).reduce((s,q)=>s+q.L,0))})</small>`:'')+(p.cost!=null&&p.full?' <small title="블록 안 단가 있는 PVC 관로를 다 넣어도 예산보다 적음">(PVC 전부)</small>':''):''}</td><td class="r">${p&&p.cost!=null?(p.cost/1e8).toFixed(2)+'억':''}</td>
+  <td><label style="font-size:11px"><input type="checkbox" class="cwEx" data-b="${esc(r.b)}"${r.ex?' checked':''}> 제외</label></td></tr>`};
+ el.innerHTML=`<div style="overflow:auto;max-height:420px"><table class="bt"><thead><tr><th>순위</th><th>소블록</th><th class="r" title="평균 유수율(%) · 칸에 숫자를 넣으면 그 값으로 계산">유수율%</th><th class="r">PVC 비율</th><th class="r">PVC km</th><th class="r">관로 km</th><th class="r">점수</th><th class="r" title="현장에서 공사 추천 관로로 표기한 관 수">현장 표기</th><th class="r">공사 km</th><th class="r">공사비</th><th></th></tr></thead><tbody>${CW.rows.map(tr).join('')}</tbody></table></div>`}
+function cwLayer(){if(!map)return null;if(!CW.L){cwPane();CW.L=L.layerGroup().addTo(map)}else if(!map.hasLayer(CW.L))CW.L.addTo(map);return CW.L}
+function cwDraw(){const G=cwLayer();if(!G)return;G.clearLayers();const B=[];
+ CW.pick.forEach(r=>{const col=CW_COL[(r.rk-1)%CW_COL.length],g=poly.features.find(f=>bNorm(blkNm(f))===r.b);
+  if(g){const gl=L.geoJSON(g,{pane:'cwPane',style:{color:col,weight:3,opacity:.95,fillColor:col,fillOpacity:.07,dashArray:'8 5'},interactive:false}).addTo(G);B.push(gl.getBounds());
+   const c=turf.pointOnFeature(g).geometry.coordinates;L.marker([c[1],c[0]],{pane:'cwPane',interactive:false,icon:L.divIcon({className:'',iconSize:null,html:`<div style="transform:translate(-50%,-50%);white-space:nowrap;background:${col};color:#fff;font:700 12px/1.3 sans-serif;padding:3px 8px;border-radius:12px;border:2px solid #fff;box-shadow:0 1px 4px #0006">${r.rk}. ${esc(r.b)} · 공사 ${cwKm(r.selL)}km</div>`})}).addTo(G)}
+  const lines=r.sel.flatMap(p=>lineParts(p.f.geometry).map(q=>q.map(c=>[c[1],c[0]])));if(!lines.length)return;
+  L.polyline(lines,{renderer:CW.cv,color:'#fff',weight:9,opacity:.9,interactive:false}).addTo(G);
+  L.polyline(lines,{renderer:CW.cv,color:col,weight:5,opacity:1}).bindPopup(`<b>${r.rk}. ${esc(r.b)} 공사 추천</b><br>PVC 관로 ${r.sel.length.toLocaleString()}개 · ${cwKm(r.selL)}km${r.cost!=null?' · 약 '+(r.cost/1e8).toFixed(2)+'억':''}<br>유수율 ${r.w.v.toFixed(1)}% (${esc(r.w.src)}) · PVC ${r.pp.toFixed(0)}%`).addTo(G)});
+ if(B.length){let bb=B[0];B.slice(1).forEach(x=>bb.extend(x));try{map.fitBounds(bb,{padding:[30,30]})}catch(_){}}}
+function cwXl(){if(!CW.rows.length){alert('먼저 🏗 추천 계산을 누르세요.');return}const pk=new Map(CW.pick.map(r=>[r.b,r]));
+ const r1=CW.rows.map(r=>{const p=pk.get(r.b);return{'순위':p?p.rk:'','소블록':r.b,'유수율(%)':r.w?+r.w.v.toFixed(1):'확인 필요','유수율 출처':r.w?r.w.src+(r.w.from?` ${r.w.from}~${r.w.to}`:''):'','PVC 비율(%)':+r.pp.toFixed(1),'PVC 연장(km)':+cwKm(r.pvc),'관로 연장(km)':+cwKm(r.tot),'점수':r.sc!=null?+r.sc.toFixed(1):'','현장 표기(개)':r.M.length||'','공사 연장(km)':p?+cwKm(p.selL):'','단가 없어 뺀 PVC(km)':p&&p.noPL?+cwKm(p.noPL):'','추정 공사비(억)':p&&p.cost!=null?+(p.cost/1e8).toFixed(2):'','제외':r.ex?'제외':''}});
+ const r2=CW.pick.flatMap(r=>r.sel.map(p=>({'순위':r.rk,'소블록':r.b,'고른 까닭':p.mk?'현장 표기: '+p.mk:'PVC','관리번호':p.id,'용도':p.u,'재질':p.m,'관경(mm)':p.d??'','설치년도':p.y??'','연장(m)':+p.L.toFixed(1),'단가(원/m)':p.u0??'','공사비(원)':p.c!=null?Math.round(p.c):''})));
+ const r3=[{'항목':'대상 수계','값':CW.c.pre},{'항목':'구역당 예산(억)','값':CW.c.bud},{'항목':'먼저 고르는 관경','값':+CW.c.pri?CW.c.pri+'mm 이하':'구분 없음'},{'항목':'관경별 단가표(원/m)','값':cwPT().map(t=>t[0]+'mm='+(t[1]??'확인 필요')).join(', ')},{'항목':'관경 모를 때 단가(원/m)','값':CW.c.unit||'빼고 셈'},{'항목':'관로 용도','값':{dist:'배수관만',ds:'배수관+급수관',all:'전체'}[CW.c.use]},{'항목':'유수율 평균 기간(개월)','값':CW.c.mon},{'항목':'점수','값':`(100-유수율)×${CW.c.wr}% + PVC비율×${CW.c.wp}%`},{'항목':'유수율 자료','값':CW.wyName||'부과량 연동/직접 입력'},{'항목':'만든 날','값':fmtD(Date.now())}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r1),'추천 순위');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r2),'공사 대상 관로');const r4=CW.rows.flatMap(r=>r.M.map(m=>({'소블록':r.b,'추천 순위':r.rk&&CW.pick.includes(r)?r.rk:'','관리번호':m.id,'사유':m.mk,'메모':m.mm,'표기일':m.md,'표기한 사람':m.mb,'용도':m.u,'재질':m.m,'관경(mm)':m.d??'','설치년도':m.y??'','연장(m)':+m.L.toFixed(1)})));if(r4.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r4),'현장 표기 관로');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r3),'기준');
+ XLSX.writeFile(wb,`공사추천_PVC_${fmtD(Date.now())}.xlsx`,{compression:true})}
+async function cwInit(){if(!$('cwSec'))return;cwUi();try{const v=await IDB.get('cw_wy');if(v&&v.W){CW.WY=v.W;CW.wyName=v.name||''}}catch(_){}cwWyShow();
+ $('cwWyF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)cwWyLoad(f)};$('cwRun').onclick=()=>cwRun().catch(e=>{$('cwMsg').textContent='⚠ '+e.message});$('cwXl').onclick=cwXl;
+ $('cwMkBox')&&($('cwMkBox').closest('details').ontoggle=e=>{if(e.target.open)cwMarkList()});$('cwMkBox')&&$('cwMkBox').addEventListener('click',e=>{const a=e.target.closest('.cwMkGo');if(!a)return;e.preventDefault();const f=PIPE.feats[+a.dataset.i];if(f&&map)try{map.fitBounds(L.polyline(lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]))).getBounds(),{maxZoom:18,padding:[40,40]})}catch(_){}});setTimeout(()=>{try{cwMarkDraw(true)}catch(_){}},1500);
+ $('cwOff').onclick=()=>{if(CW.L)CW.L.clearLayers();$('cwMsg').textContent='지도 표시를 지웠습니다.'};
+ ['cwPri','cwPrice','cwPre','cwN','cwBud','cwUnit','cwUse','cwMon','cwWr','cwWp'].forEach(id=>$(id).addEventListener('change',()=>{cwReadUi();if(CW.rows.length)cwRun()}));
+ $('cwTbl').addEventListener('change',e=>{const x=e.target.closest('.cwEx'),m=e.target.closest('.cwMan');if(x){if(x.checked)CW.ex[x.dataset.b]=1;else delete CW.ex[x.dataset.b];cwSave();cwRun()}
+  if(m){const v=m.value.trim();if(v===''||!isFinite(+v))delete CW.man[m.dataset.b];else CW.man[m.dataset.b]=+v;cwSave();cwRun()}});
+ $('cwTbl').addEventListener('click',e=>{const a=e.target.closest('.cwGo');if(!a)return;e.preventDefault();const g=poly&&poly.features.find(f=>bNorm(blkNm(f))===a.dataset.b);if(g&&map)try{map.fitBounds(L.geoJSON(g).getBounds(),{padding:[30,30]})}catch(_){}})}
+/* 🏗 현장 공사 추천 관로 표기 (2026-11-09 A안): 관로 속성 공사추천(사유)·공사추천메모·공사추천일·공사추천자 → pedSetProps(현장 수정 기록: 직원 공유·↶ 되돌리기·수정 목록 엑셀 그대로) */
+const CWM_WHY=['노후관','불용관','누수 잦음','관경 부족','기타'];const CWM={on:true,L:null,key:''};try{CWM.on=localStorage.getItem('geo-cwm')!=='0'}catch(_){}
+function cwPane(){if(!map.getPane('cwPane')){const p=map.createPane('cwPane');p.style.zIndex=635}if(!CW.cv)CW.cv=L.canvas({pane:'cwPane',padding:.3});return CW.cv}
+function cwMarkForm(f){const fi=PIPE.feats.indexOf(f);if(fi<0||!f.properties||f.properties._빈)return '';const P=f.properties,w=P['공사추천']||'';
+ return `<details class="cwmk" style="margin-top:6px;font-size:12px"${w?' open':''}><summary style="cursor:pointer;font-weight:700;color:#b45309">🏗 공사 추천 관로${w?` <span style="background:#dc2626;color:#fff;border-radius:8px;padding:0 6px;font-weight:600">${esc(w)}</span>`:' 표기'}</summary><div onkeydown="event.stopPropagation()" style="margin-top:4px">
+  <div style="display:flex;flex-wrap:wrap;gap:4px">${CWM_WHY.map(x=>`<label style="border:1px solid #fcd34d;border-radius:12px;padding:3px 9px;cursor:pointer;background:${x===w?'#fef3c7':'#fff'};font-size:12.5px"><input type="radio" name="cwmw${fi}" value="${x}"${x===w?' checked':''} style="margin:0 3px 0 0;vertical-align:-1px">${x}</label>`).join('')}</div>
+  <textarea class="cwmm" rows="2" placeholder="예: 굴착 확인 PVC 75 갈라짐 / 불용관 연결 남아 있음" style="display:block;width:100%;box-sizing:border-box;font-size:13px;padding:4px 5px;border:1px solid #fcd34d;border-radius:5px;margin-top:4px;resize:vertical">${esc(P['공사추천메모']??'')}</textarea>
+  ${w?`<small style="display:block;color:#64748b;margin-top:2px">표기 ${esc(P['공사추천일']||'')} ${esc(P['공사추천자']||'')}</small>`:''}
+  <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap"><button type="button" class="kl" onclick="cwMarkSave(${fi},this)">🏗 ${w?'표기 고치기':'표기 저장'}</button>${w?`<button type="button" class="kl" onclick="cwMarkSave(${fi},this,1)">표기 지우기</button>`:''}<small style="color:#64748b;align-self:center">직원에게 공유 · 고객 이름·연락처는 적지 마세요</small></div></div></details>`}
+window.cwMarkSave=async(fi,btn,del)=>{const box=btn.closest('.cwmk'),old=PIPE.feats[fi];if(!box||!old)return;
+ const w=del?'':((box.querySelector('input[type=radio]:checked')||{}).value||'');if(!del&&!w){alert('사유(노후관·불용관 등)를 고르세요.');return}
+ if(del&&!confirm('이 관로의 공사 추천 표기를 지울까요?'))return;
+ const vals={'공사추천':w,'공사추천메모':del?'':box.querySelector('.cwmm').value.trim(),'공사추천일':del?'':fmtD(Date.now()),'공사추천자':del?'':(typeof chgMe==='function'?(chgMe()||''):'')};
+ PIPE.infoOpen=-1;try{await pedSetProps(fi,vals)}catch(e){alert('저장하지 못했습니다: '+(e&&e.message||e));return}
+ try{pipeInfoRefresh(fi,old)}catch(_){}cwMarkDraw(true);if(CW.rows.length)cwRun().catch(()=>{});try{cwMarkList()}catch(_){}
+ try{phToast(del?'🏗 공사 추천 표기를 지웠습니다':'🏗 공사 추천 관로로 표기했습니다: '+w)}catch(_){}};
+function cwMarks(){return PIPE.feats.filter(f=>f.properties&&f.properties['공사추천'])}
+/* 지도: 흰 바탕 + 빨간 끊은 선(빗금처럼) */
+function cwMarkDraw(force){if(!map||!PIPE.feats)return;const key=PIPE.feats.length+'|'+((typeof PED!=='undefined'&&PED.at)||0)+'|'+CWM.on;if(!force&&key===CWM.key)return;CWM.key=key;
+ const cv=cwPane();if(!CWM.L)CWM.L=L.layerGroup().addTo(map);CWM.L.clearLayers();if(!CWM.on)return;
+ cwMarks().forEach(f=>{const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));if(!ls.length)return;
+  L.polyline(ls,{renderer:cv,color:'#fff',weight:11,opacity:.95,interactive:false}).addTo(CWM.L);L.polyline(ls,{renderer:cv,color:'#dc2626',weight:7,opacity:1,dashArray:'3 6',lineCap:'butt',interactive:false}).addTo(CWM.L)})}
+function cwMarkList(){const el=$('cwMkBox');if(!el)return;const ms=cwMarks();
+ el.innerHTML=`<label style="font-size:12px"><input type="checkbox" id="cwMkOn"${CWM.on?' checked':''}> 지도에 보이기</label> · 표기 <b>${ms.length}</b>개`+(ms.length?`<div style="max-height:180px;overflow:auto;margin-top:4px"><table class="bt"><thead><tr><th>관리번호</th><th>사유</th><th>메모</th><th>표기</th></tr></thead><tbody>${ms.map(f=>{const P=f.properties,a=attrOf(f);return`<tr><td class="nm"><a href="#" class="cwMkGo" data-i="${PIPE.feats.indexOf(f)}">${esc(a.id||'-')}</a></td><td>${esc(P['공사추천'])}</td><td>${esc(P['공사추천메모']||'')}</td><td>${esc(P['공사추천일']||'')} ${esc(P['공사추천자']||'')}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="hint" style="margin:2px 0">관로를 눌러 정보창의 🏗 공사 추천 관로 칸에서 표기합니다.</p>');
+ $('cwMkOn').onchange=e=>{CWM.on=e.target.checked;try{localStorage.setItem('geo-cwm',CWM.on?'1':'0')}catch(_){}cwMarkDraw(true)}}
+{const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{cwMarkDraw()}catch(_){}return r}}
+{const o=pipePopFull;pipePopFull=function(f,ll){const h=o.apply(this,arguments);try{const m=cwMarkForm(f);if(m){const k=h.indexOf('<div class="acts"');return k>=0?h.slice(0,k)+m+h.slice(k):h+m}}catch(_){}return h}}
+try{cwInit()}catch(e){console.warn('공사 추천',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
