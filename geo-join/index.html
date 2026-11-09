@@ -396,12 +396,21 @@ html.chipOn.chipV .leaflet-left{left:var(--chw,0px)}
 html.chipOn.chipV .uiset:not(.shutp){top:10px;left:calc(var(--chw,0px) + 8px);max-height:calc(100% - 20px);max-width:calc(100% - var(--chw,0px) - 16px)}
 @media (max-width:640px){html.chipOn.chipV .uiset:not(.shutp){top:auto;left:var(--chw,0px);right:0;max-width:none;max-height:72%}}
 html.chipOn.chipV .shdraw .shdt{top:10px}
-.chtip{position:fixed;z-index:3000;background:#1e293b;color:#fff;font:700 13px 'Noto Sans KR',sans-serif;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.chtip{position:fixed;z-index:100004;background:#1e293b;color:#fff;font:700 13px 'Noto Sans KR',sans-serif;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .chtip::before{content:'';position:absolute;left:-5px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:0;border-right-color:#1e293b}
 html.chipOn .chipbar .chord a{background:#f1f5f9}
+/* 아이콘 끄기(아이콘 정리 창) · 왼쪽 세로 줄 옆으로 숨기기 */
+html.chipOn .chipbar>.chOff{display:none!important}
+html.chipOn:not(.chipV) .chipbar>.chhide{display:none!important}
+html.chipOn.chipV .chipbar{transition:transform .22s ease}
+html.chipOn.chipV.chipHid .chipbar{transform:translateX(calc(-100% - 4px));pointer-events:none}
+.chhd{display:none}
+html.chipOn.chipV.chipHid .chhd{display:flex;position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:1001;width:22px;height:84px;align-items:center;justify-content:center;background:rgba(30,41,59,.72);color:#fff;border:0;border-radius:0 12px 12px 0;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;padding:0;touch-action:none;-webkit-tap-highlight-color:transparent}
+html.chipOn.chipV.chipHid .chhd svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+html.chipOn.chipV.chipHid.chipPh .chhd{width:26px;height:96px}
 html.chipOn .chipbar a{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 /* 아이콘 정리 창(순서 바꾸기·줄 위치) */
-#chOrdBox{position:fixed;inset:0;z-index:4000;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:12px}
+#chOrdBox{position:fixed;inset:0;z-index:100002;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;padding:12px}
 #chOrdBox .cob{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);width:min(360px,100%);max-height:calc(100% - 24px);display:flex;flex-direction:column;font:13px 'Noto Sans KR',sans-serif}
 #chOrdBox .coh{display:flex;align-items:center;gap:8px;padding:12px 14px 6px;font-weight:900;font-size:15px}#chOrdBox .coh span{flex:1}
 #chOrdBox .cox{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer}
@@ -417,6 +426,9 @@ html.chipOn .chipbar a{-webkit-touch-callout:none;-webkit-user-select:none;user-
 #chOrdBox li .cnm{flex:1;font-weight:700}
 #chOrdBox li button{border:1px solid var(--line2,#cbd5e1);background:var(--card,#fff);color:inherit;border-radius:7px;width:34px;height:30px;cursor:pointer;font-size:13px}
 #chOrdBox li button:disabled{opacity:.35;cursor:default}
+#chOrdBox li button.sw{width:52px;font:700 11.5px 'Noto Sans KR',sans-serif;border-radius:999px;background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
+#chOrdBox li.off button.sw{background:none;border-color:var(--line2,#cbd5e1);color:var(--mute,#64748b)}
+#chOrdBox li.off svg,#chOrdBox li.off .cnm{opacity:.4}#chOrdBox li.off .cnm{text-decoration:line-through}
 #chOrdBox .cof{display:flex;gap:8px;padding:8px 14px 12px;justify-content:space-between}
 #chOrdBox .cof button{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:9px;padding:7px 12px;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}
 #chOrdBox .cof .ok{background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
@@ -2538,7 +2550,11 @@ const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','phed','fe','lock','ui
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
-function chipIx(k){if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
+function chipOff(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipoff')||'[]')}catch(_){}return Array.isArray(u)?u.filter(k=>CHIP_ORD.includes(k)):[]}
+function chipOffApply(){const bar=chipBar();if(!bar)return;const off=chipOff();for(const x of bar.children)x.classList.toggle('chOff',off.includes(x.dataset.ck))}
+function chipHidWant(){try{return localStorage.getItem('geo-chiphid')==='1'}catch(_){return false}}
+function chipHidSet(v){try{localStorage.setItem('geo-chiphid',v?'1':'0')}catch(_){}chipTipHide();chipVApply()}
+function chipIx(k){if(k==='hide')return 10000;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
 function chipVWant(){try{return localStorage.getItem('geo-chipv')==='l'}catch(_){return false}}
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
@@ -2557,7 +2573,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
-  const i=chipIx(k),nx=[...bar.children].find(x=>chipIx(x.dataset.ck)>i);bar.insertBefore(el,nx||null)};
+  el.classList.toggle('chOff',chipOff().includes(k));const i=chipIx(k),nx=[...bar.children].find(x=>chipIx(x.dataset.ck)>i);bar.insertBefore(el,nx||null)};
  const scan=()=>{for(const el of [...C.topleft.children]){
   if(el.classList.contains('fmctl')){const br=C.bottomright;br.insertBefore(el,br.querySelector('.leaflet-control-attribution'));continue}
   place(el)}};
@@ -2578,16 +2594,26 @@ const CHV_SVG='M7 20V4M3 8l4-4 4 4M17 4v16M13 16l4 4 4-4';
 function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUtil.create('div','leaflet-bar leaflet-control chord np',bar),a=L.DomUtil.create('a','',d);d.dataset.ck='ord';
  a.href='#';a.dataset.lb='아이콘 정리';a.title='아이콘 순서 바꾸기 · 줄 위치(위/왼쪽)';a.setAttribute('role','button');a.setAttribute('aria-label',a.title);
  a.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#475569"><path d="'+CHV_SVG+'"/></svg>';
- L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chipOrdOpen()})}
+ L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chipOrdOpen()});
+ /* ◀ 옆으로 숨기기(왼쪽 세로 줄일 때만 보임) → 줄이 화면 왼쪽 밖으로 들어가고 가장자리 손잡이만 남음. 손잡이를 누르거나 오른쪽으로 밀면 다시 나옴 */
+ const hd=L.DomUtil.create('div','leaflet-bar leaflet-control chhide np',bar),ha=L.DomUtil.create('a','',hd);hd.dataset.ck='hide';
+ ha.href='#';ha.dataset.lb='옆으로 숨기기';ha.title='아이콘 줄을 화면 옆으로 숨기기';ha.setAttribute('role','button');ha.setAttribute('aria-label',ha.title);
+ ha.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#475569"><path d="M15 5l-7 7 7 7M20 5v14"/></svg>';
+ L.DomEvent.on(ha,'click',e=>{L.DomEvent.preventDefault(e);chipHidSet(true)});
+ const h=L.DomUtil.create('button','chhd np',map._controlContainer);h.type='button';h.title='아이콘 줄 꺼내기';h.setAttribute('aria-label',h.title);
+ h.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';L.DomEvent.disableClickPropagation(h);
+ let sx=null;h.addEventListener('pointerdown',e=>{sx=e.clientX;try{h.setPointerCapture(e.pointerId)}catch(_){}});
+ h.addEventListener('pointerup',e=>{if(sx!=null&&e.clientX-sx>-10)chipHidSet(false);sx=null});h.addEventListener('pointercancel',()=>{sx=null});
+ h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chipHidSet(false)}})}
 function chipBar(){return map&&map._controlContainer&&map._controlContainer.querySelector('.chipbar')}
-function chipResort(){const bar=chipBar();if(!bar)return;const ks=chipOrd();ks.push('ord');
+function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks=chipOrd();ks.push('ord','hide');
  const now=[...bar.children].map(x=>x.dataset.ck),want=ks.filter(k=>now.includes(k)).concat(now.filter(k=>!ks.includes(k)));
  if(now.join()===want.join())return;for(const k of want){const el=[...bar.children].find(x=>x.dataset.ck===k);if(el)bar.appendChild(el)}}
 /* 전체화면이고 '왼쪽 세로'를 골랐으면 html.chipV. 세로 줄 폭은 --chw로 넣어 ＋/−·범례·설정 창을 그만큼 오른쪽으로 비킴 */
-function chipVApply(){const H=document.documentElement;if(!H.classList.contains('chipOn'))return;const on=document.body.classList.contains('fsOn')&&chipVWant();
- const was=H.classList.contains('chipV');H.classList.toggle('chipV',on);const bar=chipBar();
- const w=on&&bar?bar.offsetWidth+'px':'0px';if(H.style.getPropertyValue('--chw')!==w)H.style.setProperty('--chw',w);
- if(was!==on){if(bar){bar.scrollLeft=0;bar.scrollTop=0}chipTipHide();setTimeout(()=>{try{mapCornerFix()}catch(_){}try{zpApply()}catch(_){}},60)}}
+function chipVApply(){const H=document.documentElement;if(!H.classList.contains('chipOn'))return;const on=document.body.classList.contains('fsOn')&&chipVWant(),hid=on&&chipHidWant();
+ const was=H.classList.contains('chipV'),wasH=H.classList.contains('chipHid');H.classList.toggle('chipV',on);H.classList.toggle('chipHid',hid);const bar=chipBar();
+ const w=on&&!hid&&bar?bar.offsetWidth+'px':'0px';if(H.style.getPropertyValue('--chw')!==w)H.style.setProperty('--chw',w);
+ if(was!==on||wasH!==hid){if(bar){bar.scrollLeft=0;bar.scrollTop=0}chipTipHide();setTimeout(()=>{try{mapCornerFix()}catch(_){}try{zpApply()}catch(_){}},60)}}
 let CHTIP=null,CHTIPT=0;
 function chipTipHide(){clearTimeout(CHTIPT);if(CHTIP){CHTIP.remove();CHTIP=null}}
 function chipTipShow(a,ms){const t=a.dataset.lb||a.title;if(!t)return;chipTipHide();const r=a.getBoundingClientRect();CHTIP=document.createElement('div');CHTIP.className='chtip';CHTIP.textContent=t;document.body.appendChild(CHTIP);
@@ -2612,19 +2638,22 @@ function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
   '<div class="cop"><b>전체화면 줄 위치</b><button type="button" data-v="t">위 가로</button><button type="button" data-v="l">왼쪽 세로</button></div>'+
-  '<p class="con">왼쪽 세로는 전체화면일 때만 쓰이고, 이름은 마우스를 올리거나 길게 누르면 보입니다. 순서는 ≡를 끌거나 ▲▼로 바꿉니다. 위·왼쪽 모두 같은 순서이고 이 기기에만 기억합니다.</p>'+
+  '<p class="con">왼쪽 세로는 전체화면일 때만 쓰이고, 이름은 마우스를 올리거나 길게 누르면 보입니다. 세로 줄 맨 아래 ◀를 누르면 줄이 옆으로 숨고, 왼쪽 가장자리 손잡이를 누르면 다시 나옵니다. 순서는 ≡를 끌거나 ▲▼로 바꾸고, 켜짐·꺼짐으로 아이콘을 보이거나 숨깁니다. 이 기기에만 기억합니다.</p>'+
   '<ul></ul><div class="cof"><button type="button" class="rs">↺ 처음 순서</button><button type="button" class="ok">닫기</button></div></div>';
  document.body.appendChild(w);const ul=w.querySelector('ul');
  const ico=k=>{const el=bar&&[...bar.children].find(x=>x.dataset.ck===k),s=el&&el.querySelector('svg.ci');if(s){const c=s.cloneNode(true);c.removeAttribute('class');return c.outerHTML}
   const a=el&&el.querySelector('a');return '<span style="width:20px;text-align:center">'+(a?(a.textContent||'').trim().slice(0,2):'')+'</span>'};
  const have=k=>!bar||[...bar.children].some(x=>x.dataset.ck===k);
  const save=ks=>{try{localStorage.setItem('geo-chipord',JSON.stringify(ks))}catch(_){}chipResort()};
- const draw=()=>{const ks=chipOrd().filter(have);ul.innerHTML=ks.map((k,i)=>'<li data-k="'+k+'"><span class="cog" title="끌어서 옮기기">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<ks.length-1?'':' disabled')+'>▼</button></li>').join('');
+ const draw=()=>{const ks=chipOrd().filter(have),off=chipOff();ul.innerHTML=ks.map((k,i)=>'<li data-k="'+k+'"'+(off.includes(k)?' class="off"':'')+'><span class="cog" title="끌어서 옮기기">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="sw" aria-pressed="'+(!off.includes(k))+'" title="지도 아이콘 줄에 보이기·숨기기">'+(off.includes(k)?'꺼짐':'켜짐')+'</button><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<ks.length-1?'':' disabled')+'>▼</button></li>').join('');
   const v=chipVWant()?'l':'t';w.querySelectorAll('.cop button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))};
  /* 전체 순서(지금 안 보이는 칩 포함)에서 보이는 칩끼리만 자리를 바꿈 */
  const commit=vis=>{const all=chipOrd(),slots=all.map((k,i)=>have(k)?i:-1).filter(i=>i>=0);slots.forEach((s,j)=>{all[s]=vis[j]});save(all);draw()};
  const cur=()=>[...ul.children].map(li=>li.dataset.k);
- ul.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const li=b.closest('li'),ks=cur(),i=ks.indexOf(li.dataset.k),j=b.classList.contains('up')?i-1:i+1;if(j<0||j>=ks.length)return;[ks[i],ks[j]]=[ks[j],ks[i]];commit(ks);
+ ul.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const li=b.closest('li');
+  if(b.classList.contains('sw')){const k=li.dataset.k,o=chipOff(),i=o.indexOf(k);if(i>=0)o.splice(i,1);else o.push(k);try{localStorage.setItem('geo-chipoff',JSON.stringify(o))}catch(_){}chipOffApply();chipVApply();draw();
+   const n=ul.querySelector('li[data-k="'+k+'"] .sw');if(n)n.focus();return}
+  const ks=cur(),i=ks.indexOf(li.dataset.k),j=b.classList.contains('up')?i-1:i+1;if(j<0||j>=ks.length)return;[ks[i],ks[j]]=[ks[j],ks[i]];commit(ks);
   const n=ul.querySelector('li[data-k="'+ks[j]+'"] .'+(b.classList.contains('up')?'up':'dn'));if(n&&!n.disabled)n.focus()});
  let dg=null;
  ul.addEventListener('pointerdown',e=>{const g=e.target.closest('.cog');if(!g)return;e.preventDefault();const li=g.closest('li');dg={li,id:e.pointerId,y:e.clientY};li.classList.add('drag');try{g.setPointerCapture(e.pointerId)}catch(_){}});
@@ -2636,7 +2665,7 @@ function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide
  ul.addEventListener('pointerup',end);ul.addEventListener('pointercancel',end);
  w.querySelectorAll('.cop button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('geo-chipv',b.dataset.v)}catch(_){}chipVApply();draw();
   if(b.dataset.v==='l'&&!document.body.classList.contains('fsOn')&&typeof phToast==='function')phToast('⇅ 왼쪽 세로 줄은 전체화면에서 보입니다',2500)});
- w.querySelector('.rs').onclick=()=>{try{localStorage.removeItem('geo-chipord')}catch(_){}chipResort();draw()};
+ w.querySelector('.rs').onclick=()=>{try{localStorage.removeItem('geo-chipord');localStorage.removeItem('geo-chipoff')}catch(_){}chipResort();chipVApply();draw()};
  const close=()=>{w.remove();document.removeEventListener('keydown',kd)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
  w.querySelector('.cox').onclick=close;w.querySelector('.ok').onclick=close;w.addEventListener('click',e=>{if(e.target===w)close()});document.addEventListener('keydown',kd);
  draw()}
@@ -4761,7 +4790,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
+const BK_SKIP=/^geo-(cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
