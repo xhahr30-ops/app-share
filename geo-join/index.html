@@ -6673,7 +6673,7 @@ const SH={cfg:{url:'',key:'',by:'',auto:true,iv:'auto'},since:0,busy:false,timer
  on(){return !!(this.cfg.url&&this.cfg.key)}};
 try{Object.assign(SH.cfg,JSON.parse(localStorage.getItem('geo-share')||'{}'))}catch(_){}
 /* 회사 공유 서버 주소를 기본값으로 넣음 (직원은 공유 키만 입력). 공유 키는 앱에 넣지 않음. 직원이 따로 넣은 주소가 있으면 그것을 우선 */
-const SH_URL0=SITE.id==='uis'?'':'https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec';
+const SH_URL0=SITE.id==='uis'?'https://script.google.com/macros/s/AKfycbxNJqm6z9eGflo86sVdHB6qxrPoRmBnwZTeJsIejIJ5teMjMVXY3YW9JAHWUOUpzIg-vA/exec':'https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec';
 /* 주소 정리: 앞뒤 글자·/u/0/·/dev·?뒤 글자를 정리하고, 비었거나 틀린 주소면 회사 기본 주소로 되돌림 */
 function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);if(m)return `https://script.google.com/macros/s/${m[1]}/exec`;
  const c=u.match(/^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\/[^\s?#]*)?/);return c&&!/^https:\/\/script\.google\.com/i.test(c[0])?c[0].replace(/\/+$/,''):SH_URL0}
