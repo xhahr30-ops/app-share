@@ -211,6 +211,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .uiset .uib{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.uiset .uib .btn{flex:1 1 auto;width:auto;padding:6px 10px;font-size:12px}
 .uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
 .uiset .uidis{opacity:.5}
+.lblset .uif select{max-width:62%}.lblset .lbw{margin:2px 0 4px;color:#b45309;font-weight:600}
 .uiset .uitop{position:sticky;top:-10px;z-index:2;background:var(--card);margin:-10px -12px 4px;padding:10px 12px 6px;border-bottom:1px solid var(--line2)}
 .uiset .uitabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.uiset .uitabs button{flex:1 1 auto;border:1px solid var(--line2);background:var(--sub);color:var(--ink2);border-radius:999px;padding:5px 8px;font:700 11.5px 'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}
 .uiset .uitabs button.on{background:var(--ind);border-color:var(--ind);color:#fff}
@@ -976,6 +977,10 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 .gw-gi{display:flex;align-items:flex-start;gap:2px;flex:1}
 .gw-gl{text-align:center;color:var(--gw-tx2);font-size:11px;padding:2px 0 3px;white-space:nowrap}
 .gw-col{display:flex;flex-direction:column}
+/* 🏷️ 라벨 탭: 리본 안에 바로 고르는 칸 */
+.gw-lf{display:grid;grid-template-columns:auto auto;gap:3px 6px;align-items:center;padding:3px 4px 0;font-size:11.5px;color:var(--gw-tx);white-space:nowrap}
+.gw-lf select{font:inherit;height:23px;max-width:150px;border:1px solid var(--gw-bd);border-radius:4px;background:var(--gw-pn);color:inherit;padding:0 2px}
+.gw-lf select:disabled{opacity:.5}
 .gw-b{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:3px;white-space:nowrap;font-size:12px;line-height:16px;border:1px solid transparent!important;position:relative}
 .gw-b .gi{color:var(--gw-tx2)}
 #gw .gi.cc,#gw .gw-b.on .gi.cc,#gw .gw-b.run .gi.cc{color:var(--c)}html.dark #gw .gi.cc,html.dark #gw .gw-b.on .gi.cc,html.dark #gw .gw-b.run .gi.cc{color:var(--cd)}
@@ -1663,10 +1668,16 @@ const TABS=[
   {n:'부과량',b:[['win:bill','bill','부과량 연동',1]]},
   {n:'변환 · 공간결합',b:[['af','srch','주소찾기 설정',1],['start','bolt','변환 시작',1,'run'],['stop','stop','변환 중지']]}]},
  {k:'map',n:'지도',g:[
-  {n:'보기 설정',b:[['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
+  {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
   {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
+ {k:'lbl',n:'라벨',g:[
+  {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
+  {n:'관로 라벨',x:[['uiLbl','관종·구경'],['uiLblZ','보이기']]},
+  {n:'시설물 · 소블록 이름',x:[['fLbl','시설물 이름'],['lblMode','소블록 이름'],['lblSize','소블록 글자']]},
+  {n:'글자 크기',x:[['uiLblPx','라벨 글자']]},
+  {n:'라벨',b:[['lblOff','eyeoff','라벨 모두 끄기',1],['lblW','tag','라벨 창',1]]}]},
  {k:'field',n:'현장',g:[
   {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['phEd','phed','사진 편집 모드'],['gal','grid','사진 갤러리']]},
   {n:'동영상',b:[['win:vid','vid','동영상 연결',1]]},
@@ -1692,6 +1703,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
   /* 2026-11-05 '자료 탭에 누수탐사·민원 대장 넣기 없음' → ②-4 창 열고 📒 칸 펼침 */lrIn:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const d=$('lqLrSec');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},80)},frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
+  lblW:()=>{if(window.LBLM)LBLM.open()},lblOff:()=>{if(window.LBLM)LBLM.off()},
   stop:()=>{const b=$('stopBtn');if(b&&!b.hidden)b.click()},allOff:()=>F('uiAllToggle'),bg:()=>F('bgToggle'),pt:()=>F('ptToggle'),
   fe:()=>{const fe=G('FE');if(fe&&fe.a)fe.a.click()},
   shot:()=>F('mapShot',document.querySelector('.fmctl .shot')||$('gwRib')),loc:()=>F('fmLocate',document.querySelector('.fmctl .loc')||document.createElement('button'))}[h];
@@ -1712,9 +1724,10 @@ function ribBuild(){
  const t=TABS.find(x=>x.k===S.tab)||TABS[0];S.tab=t.k;
  $('gwTabs').querySelectorAll('button').forEach(b=>{const on=b.dataset.t===t.k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
  const btn=([k,i,n,big,cls])=>`<button type="button" class="gw-b${big?' big':''}${cls?' '+cls:''}" data-a="${k}" title="${n}">${ic(i)}<span>${n}</span></button>`;
- $('gwRib').innerHTML=t.g.map(g=>{const bigs=g.b.filter(b=>b[3]),sm=g.b.filter(b=>!b[3]),cols=[];for(let i=0;i<sm.length;i+=3)cols.push(sm.slice(i,i+3));
-  return `<div class="gw-g"><div class="gw-gi">${bigs.map(btn).join('')}${cols.map(c=>`<div class="gw-col">${c.map(btn).join('')}</div>`).join('')}</div><div class="gw-gl">${g.n}</div></div>`}).join('');
- sync()}
+ $('gwRib').innerHTML=t.g.map(g=>{const gb=g.b||[],bigs=gb.filter(b=>b[3]),sm=gb.filter(b=>!b[3]),cols=[];for(let i=0;i<sm.length;i+=3)cols.push(sm.slice(i,i+3));
+  const lf=g.x?`<div class="gw-lf">${g.x.map(([id,n])=>`<span>${n}</span><select data-lm="${id}" aria-label="${g.n} ${n}"></select>`).join('')}</div>`:'';
+  return `<div class="gw-g"><div class="gw-gi">${lf}${(g.b||[]).filter(b=>b[3]).map(btn).join('')}${cols.map(c=>`<div class="gw-col">${c.map(btn).join('')}</div>`).join('')}</div><div class="gw-gl">${g.n}</div></div>`}).join('');
+ sync();if(window.LBLM)LBLM.sync()}
 const HAS={'win:addr':()=>(G('out')||[]).length,'win:blk':()=>{const p=G('poly');return p&&p.features?p.features.length:0},'win:pipe':()=>{const p=G('PIPE');return p?p.feats.length:0},
  'win:fac':()=>{const f=G('FAC');return f?f.feats.length:0},'win:elev':()=>{const e=G('ELEV');return e?e.n:0},'win:bill':()=>{const b=G('BILL');return b&&b.R?b.R.length:0},'win:ph':()=>{const p=G('PH');return p?p.list.length:0}};
 function sync(){if(!S.on)return;
@@ -2492,7 +2505,7 @@ function uiAllToggle(){
 /* ---------- 설정 패널 ---------- */
 let uiTab='map';
 function uiTabSet(t){const p=document.getElementById('uiSet');if(!p)return;uiTab=t||uiTab;p.querySelectorAll('.uitabs button').forEach(b=>{const on=b.dataset.t===uiTab;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});p.querySelectorAll('.uit').forEach(s=>s.hidden=s.dataset.t!==uiTab);p.scrollTop=0}
-function uiPanel(show,tab){const p=document.getElementById('uiSet');if(!p)return;p.hidden=show==null?!p.hidden:!show;if(tab)uiTabSet(tab);if(!p.hidden)uiPanelSync()}
+function uiPanel(show,tab){const p=document.getElementById('uiSet');if(!p)return;p.hidden=show==null?!p.hidden:!show;if(tab)uiTabSet(tab);if(!p.hidden){uiPanelSync();const l=document.getElementById('lblSet');if(l&&!l.hidden)lblOpen(false)}}
 function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textContent=UI.allOff?'👁️':'🙈';a.title=UI.allOff?'표시 다시 켜기 (Alt+H) · 끄기 직전 상태로':'표시 모두 끄기 (Alt+H) · 배경 지도와 소블록 경계만 남김';a.setAttribute('aria-label',a.title);a.classList.toggle('on',UI.allOff)}
  const p=document.getElementById('uiSet');if(!p||p.hidden)return;const q=id=>document.getElementById(id);
  q('uiPt').checked=!PT.off;const hasPh=typeof PH!=='undefined'&&PH.list&&PH.list.length>0;q('uiPh').checked=$('phShow').value!=='off';q('uiPh').disabled=!hasPh;q('uiPh').closest('label').classList.toggle('uidis',!hasPh);
@@ -2639,7 +2652,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','phed','fe','lock','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -2662,7 +2675,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -2672,7 +2685,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -2726,7 +2739,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -9619,6 +9632,54 @@ function hlpChipInit(){if(!map||document.getElementById('hlpChip'))return;
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);hlpOpen()});return d}});
  map.addControl(new Ctl())}
 try{hlpChipInit()}catch(e){console.warn('사용법 칩',e)}
+/* ---------- 🏷️ 라벨 설정 (2026-11-11 C안): 위쪽 칩 '라벨'·작업 화면 리본 '라벨' 탭·지도 탭 버튼에서 한 곳에 모아 바꿈.
+   새 저장값은 없음: 원래 칸(⚙ 설정 창·②-2 시설물 칸·② 블록명 칸)의 값을 보여 주고, 바꾸면 원래 칸 값을 바꾸고 change를 보내
+   그 칸의 처리(저장·다시 그리기)를 그대로 탐 → ⚙ 설정 창·레이어 창과 언제나 같은 값. 원래 칸 id만 보므로 칸이 다른 창으로 옮겨져도 됨 */
+const LBLM_UI={uiCl:()=>UI.cl||'off',uiClR:()=>UI.clR||'all',uiClZ:()=>String(UI.clZ||18),uiLbl:()=>UI.lbl||'off',uiLblZ:()=>String(UI.lblZ||17),
+ uiLblPx:()=>{const e=$('uiLblPx'),v=+UI.lblPx||11;if(!e||!e.options.length)return String(v);return [...e.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b).value}};
+const LBLM_G=[{n:'👥 수용가 라벨',s:'이름·주소·연락처는 넣지 않음',f:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기 시작']],h:'uiClHint'},
+ {n:'🚰 관로 라벨',f:[['uiLbl','관종 / 구경'],['uiLblZ','보이기 시작']],h:'uiLblHint'},
+ {n:'🔧 시설물 이름',s:'유량계·가압장·배수지·정수장',f:[['fLbl','이름 라벨']]},
+ {n:'🟩 소블록 이름',f:[['lblMode','표시'],['lblSize','글자 크기']]},
+ {n:'🔤 라벨 글자 크기',s:'관로·시설물·수용가 라벨 같이',f:[['uiLblPx','글자']]}];
+const LBLM_IDS=new Set(LBLM_G.flatMap(g=>g.f.map(f=>f[0])));
+function lmVal(id){const f=LBLM_UI[id];if(f)return f();const e=$(id);return e?e.value:''}
+function lmSync(){const els=document.querySelectorAll('select[data-lm]');if(!els.length)return;
+ for(const m of els){const id=m.dataset.lm,src=$(id);
+  if(src&&m.options.length!==src.options.length)m.innerHTML=[...src.options].map(o=>`<option value="${esc(o.value)}">${esc(o.textContent)}</option>`).join('');
+  m.disabled=!src||!src.options.length||src.disabled;if(src){const v=lmVal(id);if(m.value!==v)m.value=v}}
+ const p=$('lblSet');if(!p||p.hidden)return;
+ try{uiClHint()}catch(_){}try{uiLblHint()}catch(_){}
+ p.querySelectorAll('[data-lmh]').forEach(x=>{const h=$(x.dataset.lmh);x.textContent=h?h.textContent:'';x.hidden=!h||h.hidden||!x.textContent});
+ const w=p.querySelector('.lbw');if(w)w.hidden=!UI.allOff}
+function lmSet(id,v){const src=$(id);if(!src)return;src.value=v;src.dispatchEvent(new Event('change',{bubbles:true}));setTimeout(lmSync,0)}
+function lmOff(){for(const [id,v] of [['uiCl','off'],['uiLbl','off'],['fLbl','off'],['lblMode','off']]){const e=$(id);if(e&&lmVal(id)!==v){e.value=v;e.dispatchEvent(new Event('change',{bubbles:true}))}}
+ setTimeout(lmSync,0);if(typeof phToast==='function')phToast('🏷️ 라벨을 모두 껐습니다. 다시 켜려면 🏷️ 라벨 창에서 고르세요.',{ms:4000})}
+function lblOpen(show){if(!map)return;let p=$('lblSet');
+ if(!p){p=L.DomUtil.create('div','uiset np lblset',map.getContainer());p.id='lblSet';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','라벨 설정');
+  L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p);
+  p.innerHTML=`<div class="uih"><b>🏷️ 라벨 설정</b><button type="button" class="uix" data-x aria-label="닫기">✕</button></div>
+<p class="uin lbw" hidden>🙈 지금 '표시 모두 끄기' 중이라 라벨이 안 보입니다. 표시를 다시 켜면 보입니다.</p>`+
+  LBLM_G.map((g,i)=>`<div class="uig"${i?'':' style="border:0;margin-top:2px"'}>${g.n}${g.s?` <small>(${g.s})</small>`:''}</div>`+
+   g.f.map(([id,n])=>`<label class="uif">${n}<select data-lm="${id}" class="msel"></select></label>`).join('')+(g.h?`<p class="uin" data-lmh="${g.h}" hidden></p>`:'')).join('')+
+  `<div class="uib"><button type="button" class="btn ol" data-off>🙈 라벨 모두 끄기</button><button type="button" class="btn ol" data-ui>⚙️ 설정 창</button></div>
+<p class="uin">⚙️ 설정 창의 같은 칸과 값이 이어져 있어, 어느 쪽에서 바꿔도 같이 바뀝니다.</p>`;
+  p.querySelector('[data-x]').onclick=()=>lblOpen(false);p.querySelector('[data-off]').onclick=lmOff;
+  p.querySelector('[data-ui]').onclick=()=>{lblOpen(false);uiPanel(true,'map')}}
+ p.hidden=show==null?!p.hidden:!show;
+ if(!p.hidden){const u=$('uiSet');if(u&&!u.hidden)uiPanel(false);lmSync()}
+ const a=$('lblChip');if(a)a.classList.toggle('on',!p.hidden)}
+document.addEventListener('change',e=>{const t=e.target;if(!t||!t.id&&!(t.dataset&&t.dataset.lm))return;
+ if(t.dataset&&t.dataset.lm){lmSet(t.dataset.lm,t.value);return}
+ if(LBLM_IDS.has(t.id))setTimeout(lmSync,0)},true);/* 원래 칸들은 bubbles 없이 change를 보내므로 잡기 단계에서 받음 */
+document.addEventListener('keydown',e=>{const p=$('lblSet');if(e.key==='Escape'&&p&&!p.hidden){lblOpen(false);e.stopPropagation()}},true);
+function lblChipInit(){if(!map||document.getElementById('lblChip'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control lblb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='lbl';
+  a.href='#';a.id='lblChip';a.setAttribute('role','button');a.setAttribute('aria-label','라벨 설정');a.title='라벨 설정: 수용가·관로·시설물·소블록 이름 라벨 켜고 끄기·내용·글자 크기';a.textContent='🏷️';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);lblOpen()});return d}});
+ map.addControl(new Ctl());map.on('zoomend',()=>{const p=$('lblSet');if(p&&!p.hidden)lmSync()})}
+try{lblChipInit()}catch(e){console.warn('라벨 칩',e)}
+window.LBLM={open:()=>lblOpen(true),off:lmOff,sync:lmSync};
 /* 📂 백업 불러오기 칩: 전체화면 지도에서도 백업 파일(zip·json, 분할 여러 개)을 바로 불러옴. 백업 영역의 📂 버튼과 같은 처리(항목 체크 상태 그대로), 진행·결과는 화면 아래 알림으로 */
 function bkChipInit(){if(!map||document.getElementById('bkChip'))return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb bkb np'),a=L.DomUtil.create('a','',d),inp=L.DomUtil.create('input','',d);d.dataset.ck='bk';
