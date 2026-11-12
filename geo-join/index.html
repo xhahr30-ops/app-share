@@ -493,6 +493,12 @@ td .rt{width:auto;padding:5px 10px;font-size:12px}
 .pied-go{border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;padding:0 6px;margin-left:4px;font-size:12px;line-height:1.6;cursor:pointer;min-height:24px;vertical-align:middle}
 .kl:hover{background:#fee500;color:#191919;border-color:#e6cf00}
 .bkpk{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:auto;flex:1;min-height:0}.bkpk li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.bkpk li:last-child{border-bottom:0}.bkpk li.no{opacity:.45}.bkpk li b{font-weight:700}.bkpk li small{margin-left:auto;color:var(--mute);font-size:11.5px;text-align:right;white-space:nowrap}.bkpk input{width:16px;height:16px;flex:none}.bkqk{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.bkqk button{border:1px solid var(--line2);background:var(--sub2);color:var(--ink);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;min-height:30px}
+.axrb{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}.axrb button{border:1px solid var(--line2);background:var(--sub2);color:var(--ink);border-radius:10px;padding:8px 4px;font:700 12.5px/1.25 'Noto Sans KR',sans-serif;cursor:pointer;min-height:40px}
+.axrb button.on{border-color:#6366f1;background:#eef2ff;color:#4338ca}html.dark .axrb button.on{background:rgba(99,102,241,.25);color:#c7d2fe}
+.axkh{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;font-size:13px}.axkh .bkqk{margin-left:auto}.axk{max-height:min(34vh,260px);flex:none}.axk li{cursor:default}.axk label{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;min-height:24px}
+.axk .sw{width:18px;height:18px;flex:none;object-fit:contain}
+.shdraw .shdt.axdt{pointer-events:auto}.axdt button{margin:6px 3px 0;border:0;border-radius:8px;padding:6px 10px;font:700 12.5px 'Noto Sans KR',sans-serif;cursor:pointer;background:#fff;color:#1e293b;min-height:32px}.axdt button.ok{background:#4f46e5;color:#fff}
+@media (max-width:420px){.axrb{grid-template-columns:repeat(2,1fr)}}
 .pcm{position:fixed;inset:0;z-index:20000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}.pcm[hidden]{display:none}
 .pcbox{background:var(--card);border-radius:16px;box-shadow:0 20px 50px #0006;width:min(560px,100%);height:min(620px,92vh);display:flex;flex-direction:column;padding:12px}
 .pchd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}.pchd small{display:block;color:var(--mute);font-size:11.5px;margin-top:2px}
@@ -1648,13 +1654,13 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  undo:'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',
  compass:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM15.5 8.5l-2 5-5 2 2-5z',calc:'M5 3h14v18H5zM8 6h8v4H8zM8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01',
  cloud:'M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5A3.8 3.8 0 0 1 17.5 18z',refresh:'M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4',
- minus:'M5 12h14',side:'M3 4h18v16H3zM9 4v16M5.5 8h1.5M5.5 11h1.5',flag:'M5 21V4M5 4h11l-2 4 2 4H5',ruler:'M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2',
+ crop:'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M12 8v7M9 12l3 3 3-3',minus:'M5 12h14',side:'M3 4h18v16H3zM9 4v16M5.5 8h1.5M5.5 11h1.5',flag:'M5 21V4M5 4h11l-2 4 2 4H5',ruler:'M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2',
  warn:'M12 3l10 18H2zM12 10v5M12 18h.01',sat:'M5 13l6 6M8 4l3 3-4 4-3-3zM16 12l3 3-4 4-3-3zM10 9l5 5M17 3a4 4 0 0 1 4 4',plug:'M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5'};
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
  save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
- sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
+ sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
 window.GICO={I,col:icC};
@@ -1663,7 +1669,7 @@ window.GICO={I,col:icC};
 const TABS=[
  {k:'file',n:'파일',g:[
   {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 창']]},
-  {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기']]},
+  {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기'],['ax','crop','범위 내보내기']]},
   {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
@@ -1693,7 +1699,7 @@ const TABS=[
  {k:'help',n:'도움말',g:[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
-const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
+const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
 const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
 const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
@@ -1957,7 +1963,7 @@ const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coars
 (function(){
 const GI=window.GICO;if(!GI)return;
 const EM={'🔎':'srch','🔍':'srch','📤':'exp','🖥':'mon','📱':'phone','📖':'book','📑':'doc','🌙':'moon','☀':'sun','📄':'page','📋':'list','📥':'inb','💾':'save','🚰':'pipe','🔧':'valve',
- '📷':'cam','🎬':'vid','⏫':'up','📂':'open','⛰':'mnt','🔑':'key','🎨':'palette','🏷':'tag','🖍':'draw','👣':'steps','📍':'pin','💧':'drop','🗑':'trash','🗺':'map','⚙':'gear','🔗':'link',
+ '📷':'cam','🎬':'vid','⏫':'up','📂':'open','⛰':'mnt','🔑':'key','🎨':'palette','🏷':'tag','🖍':'draw','⬚':'crop','👣':'steps','📍':'pin','💧':'drop','🗑':'trash','🗺':'map','⚙':'gear','🔗':'link',
  '➕':'plus','↩':'undo','📜':'hist','🛠':'tool','🧭':'compass','🧮':'calc','⬇':'dl','📈':'chart','📒':'xls','🙈':'eyeoff','👁':'eye','☁':'cloud','🔌':'plug','🔄':'refresh','⏹':'stop',
  '🖼':'img','🗜':'box','➖':'minus','📊':'xls','👥':'user','🎯':'tbl','🛰':'sat','🚶':'walk','⚡':'bolt','🖨':'prt','⛶':'full','✏':'pen','📌':'loc','🪧':'page','🚩':'flag','📏':'ruler',
  '🗂':'box','⚠':'warn'};
@@ -2044,6 +2050,22 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  <p class="hint" id="sxInfo" style="margin:8px 2px 0"></p>
  <p class="hint" id="sxMsg" style="margin:6px 2px 0"></p>
  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="sxN" type="button" class="btn ol" style="width:auto">닫기</button><button id="sxGo" type="button" class="btn" style="width:auto">💾 SHP 저장</button></div></div></div>
+<div id="axDlg" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="axT"><div class="pcbox" style="width:min(520px,100%);height:auto;max-height:92vh;overflow:auto">
+ <div class="pchd"><div><b id="axT">⬚ 범위 내보내기</b><small>지도에 범위를 그리면 그 안의 시설물(고르면 상수관로도)을 SHP·CSV로 저장합니다. 고객 정보 칸은 넣지 않습니다.</small></div><button id="axX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
+ <div class="axrb" role="group" aria-label="범위 그리는 방법"><button type="button" data-m="rect">⬚ 네모</button><button type="button" data-m="poly">⬠ 다각형</button><button type="button" data-m="free">✍ 손 그리기</button><button type="button" data-m="view">▭ 지금 화면</button></div>
+ <p class="hint" id="axRng" style="margin:6px 2px 8px"></p>
+ <div class="axkh"><b>담을 시설물</b><span class="bkqk" style="margin:0"><button type="button" data-q="all">모두</button><button type="button" data-q="none">모두 해제</button></span></div>
+ <ul class="bkpk axk" id="axK"></ul>
+ <span class="ck" style="margin-top:8px"><input type="checkbox" id="axPipe"> 상수관로도 넣기 <small id="axPipeN" style="color:var(--mute)"></small></span>
+ <span class="ck"><input type="checkbox" id="axDel"> 폐관·삭제 표시한 것도 넣기 (EDIT 칸에 표시)</span>
+ <div class="g2" style="margin-top:6px">
+  <label class="f">형식<select id="axFmt"><option value="both">SHP + CSV</option><option value="shp">SHP만</option><option value="csv">CSV만 (엑셀에서 열기)</option></select></label>
+  <label class="f">좌표계<select id="axCrs"></select></label>
+  <label class="f">SHP 한글 인코딩<select id="axEnc"><option value="cp949">CP949 (국내 GIS 권장)</option><option value="utf8">UTF-8</option></select></label>
+ </div>
+ <p class="hint" id="axInfo" style="margin:8px 2px 0"></p>
+ <p class="hint" id="axMsg" style="margin:6px 2px 0"></p>
+ <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="axN" type="button" class="btn ol" style="width:auto">닫기</button><button id="axGo" type="button" class="btn" style="width:auto">💾 내보내기</button></div></div></div>
 <div id="bkPick" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="bkPickT"><div class="pcbox" style="width:min(520px,100%);height:auto;max-height:92vh">
  <div class="pchd"><div><b id="bkPickT">💾 저장(백업)할 항목 고르기</b><small>체크한 항목만 백업 파일에 담습니다. 고른 항목은 이 기기에 기억해 두고 다음에도 그대로 보여 줍니다.</small></div><button id="bkPickX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
  <div class="bkqk"><button type="button" data-q="all">모두 고르기</button><button type="button" data-q="nophoto">사진·동영상 빼고</button><button type="button" data-q="base">기준자료만</button><button type="button" data-q="none">모두 해제</button></div>
@@ -2690,7 +2712,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','ax','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -2713,7 +2735,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -2723,7 +2745,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -2777,7 +2799,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -8407,11 +8429,11 @@ function sxWhen(P,fac){if(!P||!sxMark(P,fac))return '';const t=P._현장수정;r
 function sxRange(){const r=$('sxRng').value;if(r==='view'&&map){const b=map.getBounds();return{t:'view',w:b.getWest(),s:b.getSouth(),e:b.getEast(),n:b.getNorth()}}
  if(r==='blk'){const want=new Set(String($('sxBlk').value||'').split(/[,，\s]+/).map(s=>s.trim()).filter(Boolean));const gs=poly?poly.features.filter(g=>want.has(blkNm(g))):[];return{t:'blk',gs,want,hit:new Set(gs.map(blkNm))}}
  return{t:'all'}}
-function sxInR(R,x,y){if(R.t==='all')return true;if(R.t==='view')return x>=R.w&&x<=R.e&&y>=R.s&&y<=R.n;
+function sxInR(R,x,y){if(R.t==='all')return true;if(R.t==='poly')return x>=R.bb[0]&&x<=R.bb[2]&&y>=R.bb[1]&&y<=R.bb[3]&&axPip(R.ring,x,y);if(R.t==='view')return x>=R.w&&x<=R.e&&y>=R.s&&y<=R.n;
  for(const g of R.gs){const b=g.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3]))continue;try{if(turf.booleanPointInPolygon([x,y],g))return true}catch(_){}}return false}
 /* 관로 대표점 = 가운데 선분의 가운데(경계에 걸친 관로는 한 소블록에만 들어가게) */
 function sxMid(g){const ps=lineParts(g).filter(p=>p.length);if(!ps.length)return null;const p=ps[Math.floor((ps.length-1)/2)];if(p.length<2)return p[0];const k=Math.floor((p.length-2)/2);return[(p[k][0]+p[k+1][0])/2,(p[k][1]+p[k+1][1])/2]}
-function sxPipeHit(f,R){if(R.t==='view'){for(const p of lineParts(f.geometry))for(const c of p)if(sxInR(R,c[0],c[1]))return true;return false}const m=sxMid(f.geometry);return!!m&&sxInR(R,m[0],m[1])}
+function sxPipeHit(f,R){if(R.t==='poly')return axPipeHit(f.geometry,R);if(R.t==='view'){for(const p of lineParts(f.geometry))for(const c of p)if(sxInR(R,c[0],c[1]))return true;return false}const m=sxMid(f.geometry);return!!m&&sxInR(R,m[0],m[1])}
 function sxAreaPt(a){const r=a.type==='Polygon'?a.coordinates[0]:a.type==='MultiPolygon'?a.coordinates[0][0]:null;if(!r||!r.length)return null;let x=0,y=0;r.forEach(c=>{x+=c[0];y+=c[1]});return[x/r.length,y/r.length]}
 /* 고른 조건에 맞는 관로·시설물 */
 function sxPick(){const mode=$('sxMode').value,del=$('sxDel').checked,w=$('sxWhat').value,R=sxRange(),pipes=[],facs=[];
@@ -8432,12 +8454,9 @@ function sxOpen(w){let m={};try{m=JSON.parse(localStorage.getItem('geo-shpx')||'
  if(poly&&!$('sxBlkL').children.length)$('sxBlkL').innerHTML=[...new Set(poly.features.map(blkNm).filter(Boolean))].sort().map(s=>`<option value="${esc(s)}">`).join('');
  $('sxBlkBox').hidden=$('sxRng').value!=='blk';$('sxMsg').textContent='';$('sxDlg').hidden=false;sxInfo()}
 function sxClose(){$('sxDlg').hidden=true}
-async function sxGo(){if(typeof JSZip==='undefined'){$('sxMsg').textContent='JSZip 라이브러리를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.';return}
- const bt=$('sxGo'),bt0=bt.textContent,msg=$('sxMsg');bt.disabled=true;
- const S={sxMode:$('sxMode').value,sxRng:$('sxRng').value,sxCrs:$('sxCrs').value,sxEnc:$('sxEnc').value,sxDel:$('sxDel').checked};try{localStorage.setItem('geo-shpx',JSON.stringify(S))}catch(_){}
- try{msg.textContent='⏳ 고르는 중…';await sleep(20);const{pipes,facs,R}=sxPick();if(!pipes.length&&!facs.length){msg.textContent='조건에 맞는 자료가 없습니다.';return}
-  const cp=S.sxEnc==='cp949'?sxCp():null;if(cp&&!cp.size){msg.textContent='이 브라우저는 CP949를 지원하지 않습니다. UTF-8로 바꿔 저장하세요.';return}
-  const z=new JSZip(),rep=[],ren=new Map(),defC=$('pCrs')&&$('pCrs').value||'EPSG:5187',PJ=new Map();
+/* SHP 묶음 만들기(💾 SHP 내보내기·⬚ 범위 내보내기 공용): o.cp=CP949 표, o.shp=false면 SHP 파일은 안 넣음, o.csv=[]면 CSV용 줄을 모음 */
+async function sxZip(pipes,facs,S,msg,o){o=o||{};
+  const cp=o.cp,z=o.z||new JSZip(),rep=[],ren=new Map(),defC=$('pCrs')&&$('pCrs').value||'EPSG:5187',PJ=new Map();
   const pj=c=>{if(c==='EPSG:4326')return null;let f=PJ.get(c);if(!f){const t=proj4('EPSG:4326',c);f=t.forward.bind(t);PJ.set(c,f)}return f};
   const crsOf=(lc,nm)=>S.sxCrs!=='orig'?S.sxCrs:(lc.get(nm)||defC);/* 기록 없는 레이어(위경도 원본이거나 옛 판에서 올린 것)는 상수관로 원본 좌표계 칸 값(기본 5187) */
   async function put(dir,name,ty,list,geo,props,crs,fac){const f=pj(crs),gs=[],recs=[];let k=0;
@@ -8445,9 +8464,10 @@ async function sxGo(){if(typeof JSZip==='undefined'){$('sxMsg').textContent='JSZ
     const P=props(it)||{},o={};for(const key in P){if(key[0]==='_'||SX_PII.test(key))continue;o[key]=P[key]}o.EDIT=sxMark(P,fac);o.EDIT_DT=sxWhen(P,fac);recs.push(o);if(++k%4000===0){msg.textContent=`⏳ ${name} ${k.toLocaleString()}/${list.length.toLocaleString()}…`;await sleep(0)}}
    const keys=[];const seen=new Set();for(const o of recs)for(const key in o)if(!seen.has(key)){seen.add(key);if(key!=='EDIT'&&key!=='EDIT_DT'&&recs.some(r=>sxVal(r[key])===null))continue;keys.push(key)}
    const ks=keys.filter(x=>x!=='EDIT'&&x!=='EDIT_DT').concat(['EDIT','EDIT_DT']);const rn=new Map();
-   const sh=sxShp(ty,gs),nm=dir+'/'+sxSafe(name);z.file(nm+'.shp',sh.shp);z.file(nm+'.shx',sh.shx);z.file(nm+'.dbf',sxDbf(ks,recs,cp,rn));z.file(nm+'.prj',sxPrj(crs));z.file(nm+'.cpg',cp?'CP949':'UTF-8');
+   if(o.csv)o.csv.push({name,fac,list,gs,recs,crs,f});const nm=dir+'/'+sxSafe(name);
+   if(o.shp!==false){const sh=sxShp(ty,gs);z.file(nm+'.shp',sh.shp);z.file(nm+'.shx',sh.shx);z.file(nm+'.dbf',sxDbf(ks,recs,cp,rn));z.file(nm+'.prj',sxPrj(crs));z.file(nm+'.cpg',cp?'CP949':'UTF-8')}
    rn.forEach((v,k2)=>ren.set(k2,v));const e={};recs.forEach(r=>{if(r.EDIT)e[r.EDIT]=(e[r.EDIT]||0)+1});
-   rep.push(`${nm}.shp  ${list.length.toLocaleString()}개  ${crs}${Object.keys(e).length?'  (현장 '+Object.entries(e).map(([a,b])=>a+' '+b).join(', ')+')':''}`)}
+   rep.push(`${o.shp===false?name:nm+'.shp'}  ${list.length.toLocaleString()}개  ${crs}${Object.keys(e).length?'  (현장 '+Object.entries(e).map(([a,b])=>a+' '+b).join(', ')+')':''}`)}
   if(pipes.length){const lc=sxLayerCrs(PIPE.layers),grp=new Map();pipes.forEach(f=>{const P=f.properties||{},k=P._레이어||P['레이어']||'현장추가_관로';let a=grp.get(k);if(!a)grp.set(k,a=[]);a.push(f)});
    for(const [k,list] of grp)await put('상수관로',k,3,list,f=>lineParts(f.geometry).filter(p=>p.length>1),f=>f.properties,crsOf(lc,k),0)}
   if(facs.length){const lc=sxLayerCrs(FAC.layers),byK=new Map();[...lc.keys()].forEach(nm=>{const m=nm.match(/SA\d{3}/i);if(m){const k=m[0].toUpperCase();byK.set(k,byK.has(k)?null:nm)}});
@@ -8455,6 +8475,13 @@ async function sxGo(){if(typeof JSZip==='undefined'){$('sxMsg').textContent='JSZ
    for(const [gk,list] of grp){const [k,face]=gk.split('|'),ln=byK.get(k),name=(ln||`${k}_${facKindInfo(k).name}`)+(face?'_면':'');
     const ring=(r,cw)=>{let s=0;for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];s+=(b[0]-a[0])*(b[1]+a[1])}return(s>0)===cw?r:r.slice().reverse()};/* SHP: 바깥 고리 시계방향, 구멍 반시계 */
     await put('시설물',name,face?5:1,list,face?(f=>{const a=f.a;if(!a)return null;const P=a.type==='Polygon'?[a.coordinates]:a.type==='MultiPolygon'?a.coordinates:[];const o=[];P.forEach(pg=>pg.forEach((r,i)=>{if(r.length>2)o.push(ring(r,i===0))}));return o.length?o:null}):(f=>f.c),f=>f.p,ln?crsOf(lc,ln):(S.sxCrs!=='orig'?S.sxCrs:defC),1)}}
+  return{z,rep,ren,defC,pj}}
+async function sxGo(){if(typeof JSZip==='undefined'){$('sxMsg').textContent='JSZip 라이브러리를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.';return}
+ const bt=$('sxGo'),bt0=bt.textContent,msg=$('sxMsg');bt.disabled=true;
+ const S={sxMode:$('sxMode').value,sxRng:$('sxRng').value,sxCrs:$('sxCrs').value,sxEnc:$('sxEnc').value,sxDel:$('sxDel').checked};try{localStorage.setItem('geo-shpx',JSON.stringify(S))}catch(_){}
+ try{msg.textContent='⏳ 고르는 중…';await sleep(20);const{pipes,facs,R}=sxPick();if(!pipes.length&&!facs.length){msg.textContent='조건에 맞는 자료가 없습니다.';return}
+  const cp=S.sxEnc==='cp949'?sxCp():null;if(cp&&!cp.size){msg.textContent='이 브라우저는 CP949를 지원하지 않습니다. UTF-8로 바꿔 저장하세요.';return}
+  const{z,rep,ren,defC}=await sxZip(pipes,facs,S,msg,{cp});
   msg.textContent='⏳ 압축 중…';await sleep(10);
   const rng=R.t==='all'?'전체지역':R.t==='view'?'지금화면':'소블록_'+[...R.hit].slice(0,3).join('_')+(R.hit.size>3?'_외':''),tag=(S.sxMode==='edit'?'수정분':'전체')+'_'+rng,day=fmtD(Date.now()).replace(/-/g,'');
   const txt=[`스마트 물길주소 · 상수관로·시설물 SHP 내보내기 (만든이: 구병순)`,`저장: ${fmtDT(Date.now())}`,`대상: ${S.sxMode==='edit'?'현장 수정분만':'전체'} · 범위: ${R.t==='all'?'전체 지역':R.t==='view'?'지금 지도 화면':'소블록 '+[...R.hit].join(', ')} · 폐관·삭제 표시 ${S.sxDel?'포함':'제외'}`,
@@ -8473,6 +8500,140 @@ $('sxBlkHere').onclick=()=>{if(!map||!poly){alert('소블록 경계 자료가 �
  const cur=String($('sxBlk').value||'').split(/[,，]+/).map(s=>s.trim()).filter(Boolean);if(!cur.includes(b))cur.push(b);$('sxBlk').value=cur.join(', ');sxInfo()};
 $('sxX').onclick=$('sxN').onclick=sxClose;$('sxGo').onclick=sxGo;
 $('sxDlg').addEventListener('click',e=>{if(e.target.id==='sxDlg')sxClose()});
+/* ── ⬚ 범위 내보내기 (2026-11-12 B안): 지도에 네모·다각형·손으로 범위를 그리면 그 안의 시설물(고르면 관로도)을 SHP·CSV zip으로 ──
+   거르기·SHP 만들기는 💾 SHP 내보내기(sxZip·sxInR·sxPipeHit)를 그대로 씀. 관로는 범위에 걸치면 자르지 않고 통째로 넣음.
+   설정(형식·좌표계·인코딩·관로·뺀 종류)은 이 기기에만 기억(geo-axx). 그린 범위는 저장하지 않음. */
+const AX={ring:null,how:'',lay:null,drawing:false,cache:null,off:new Set()};
+/* 점이 다각형 안인지(광선 교차) — ring=[[경도,위도],...] */
+function axPip(r,x,y){let in_=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])in_=!in_}return in_}
+function axSegX(p,q,r,s){const d=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const d1=d(r,s,p),d2=d(r,s,q),d3=d(p,q,r),d4=d(p,q,s);return((d1>0)!==(d2>0))&&((d3>0)!==(d4>0))}
+/* 관로가 범위에 조금이라도 걸치면 true(꼭짓점이 안에 있거나 선분이 경계와 엇갈림) */
+function axPipeHit(g,R){const ps=lineParts(g),bb=R.bb;let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+ for(const p of ps)for(const c of p){if(c[0]<x0)x0=c[0];if(c[0]>x1)x1=c[0];if(c[1]<y0)y0=c[1];if(c[1]>y1)y1=c[1]}
+ if(x1<bb[0]||x0>bb[2]||y1<bb[1]||y0>bb[3])return false;
+ for(const p of ps)for(const c of p)if(c[0]>=bb[0]&&c[0]<=bb[2]&&c[1]>=bb[1]&&c[1]<=bb[3]&&axPip(R.ring,c[0],c[1]))return true;
+ const r=R.ring;for(const p of ps)for(let i=1;i<p.length;i++)for(let j=0;j<r.length;j++)if(axSegX(p[i-1],p[i],r[j],r[(j+1)%r.length]))return true;return false}
+function axR(){if(!AX.ring)return null;const r=AX.ring;let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;r.forEach(c=>{if(c[0]<x0)x0=c[0];if(c[0]>x1)x1=c[0];if(c[1]<y0)y0=c[1];if(c[1]>y1)y1=c[1]});return{t:'poly',ring:r,bb:[x0,y0,x1,y1]}}
+function axArea(r){let s=0;const m=r.map(c=>toM(c[0],c[1]));for(let i=0,j=m.length-1;i<m.length;j=i++)s+=(m[j][0]+m[i][0])*(m[j][1]-m[i][1]);return Math.abs(s/2)}
+function axAreaTx(a){return a>=1e6?(a/1e6).toFixed(2)+'㎢':Math.round(a).toLocaleString()+'㎡'}
+function axCfg(){let m={};try{m=JSON.parse(localStorage.getItem('geo-axx')||'{}')||{}}catch(_){}return m}
+function axCfgSave(){try{localStorage.setItem('geo-axx',JSON.stringify({fmt:$('axFmt').value,crs:$('axCrs').value,enc:$('axEnc').value,pipe:$('axPipe').checked,del:$('axDel').checked,off:[...AX.off]}))}catch(_){}}
+/* 범위 안 시설물·관로 찾기 (범위·폐관 포함 여부가 바뀔 때만 다시) */
+function axScan(){const R=axR();if(!R){AX.cache=null;return null}const del=$('axDel').checked,key=AX.ring.length+'|'+AX.ring[0]+'|'+R.bb+'|'+del;
+ if(AX.cache&&AX.cache.key===key)return AX.cache;const facs=[],pipes=[],byK=new Map();
+ for(const f of FAC.feats||[]){const mk=sxMark(f.p,1);if(!del&&mk==='삭제')continue;const c=f.c||(f.a&&sxAreaPt(f.a));if(!c||!sxInR(R,c[0],c[1]))continue;facs.push(f);byK.set(f.k,(byK.get(f.k)||0)+1)}
+ for(const f of PIPE.feats||[]){const P=f.properties||{};if(P._빈||!f.geometry)continue;const mk=sxMark(P,0);if(!del&&mk==='폐관')continue;if(!lineParts(f.geometry).some(p=>p.length>1))continue;if(axPipeHit(f.geometry,R))pipes.push(f)}
+ return AX.cache={key,R,facs,pipes,byK}}
+function axList(){const C=axScan(),ul=$('axK');if(!C){ul.innerHTML='<li class="no">먼저 위에서 범위를 그려 주세요.</li>';return}
+ const ks=[...C.byK.keys()].sort((a,b)=>C.byK.get(b)-C.byK.get(a)||String(a).localeCompare(String(b)));
+ if(!ks.length){ul.innerHTML=`<li class="no">${(FAC.feats||[]).length?'이 범위 안에 시설물이 없습니다.':'시설물 자료가 없습니다(②-2 시설물 SHP를 먼저 올리세요).'}</li>`;return}
+ ul.innerHTML=ks.map(k=>{const I=facKindInfo(k);return`<li><label><input type="checkbox" data-k="${esc(k)}"${AX.off.has(k)?'':' checked'}><span class="sw" style="border-radius:50%;width:12px;height:12px;background:${esc(I.col||'#64748b')}"></span><b>${esc(I.name||k)}</b><small>${esc(k)} · ${C.byK.get(k).toLocaleString()}개</small></label></li>`}).join('')}
+function axInfo(){const C=axScan(),n=x=>x.toLocaleString(),hasP=(PIPE.feats||[]).length>0;
+ $('axRng').innerHTML=C?`범위: <b>${esc(AX.how)}</b> · 면적 ${axAreaTx(axArea(AX.ring))} <button type="button" class="btn ol" id="axClr" style="width:auto;min-height:28px;padding:2px 10px;font-size:12px;margin-left:6px">지우기</button>`:'<span class="c-am">위 단추로 지도에 범위를 그리세요.</span> 네모는 끌기, 다각형은 꼭짓점을 차례로 누르고 ✓ 완성, 손 그리기는 둘러 그리고 손을 떼면 됩니다.';
+ const c=$('axClr');if(c)c.onclick=()=>{axSet(null,'');axInfo()};
+ $('axPipeN').textContent=!hasP?'(상수관로 자료 없음)':C?`(범위에 걸친 관로 ${n(C.pipes.length)}개, 자르지 않고 통째로)`:'';$('axPipe').disabled=!hasP;
+ $('axEnc').closest('label').style.display=$('axFmt').value==='csv'?'none':'';
+ let t='';if(C){const nf=C.facs.filter(f=>!AX.off.has(f.k)).length,np=$('axPipe').checked&&hasP?C.pipes.length:0;
+  t=`담길 자료: 시설물 <b>${n(nf)}</b>개${np?` · 상수관로 <b>${n(np)}</b>개`:''}`;
+  t+=`<br><small>${$('axFmt').value!=='shp'?'CSV: 종류·관리번호·속성·소블록·X·Y·위도·경도·EDIT 칸, 엑셀에서 한글이 안 깨지게 저장합니다. ':''}${$('axFmt').value!=='csv'?'SHP: 종류(레이어)별 파일 + 그린 범위(범위/그린범위.shp).':''}</small>`;
+  $('axGo').disabled=!(nf+np)}else $('axGo').disabled=true;
+ $('axInfo').innerHTML=t}
+function axSet(lls,how){if(AX.lay){AX.lay.remove();AX.lay=null}AX.cache=null;
+ if(!lls){AX.ring=null;AX.how='';return}AX.ring=lls.map(p=>[+p.lng,+p.lat]);AX.how=how;
+ if(map)AX.lay=L.polygon(lls,{color:'#4338ca',weight:2.5,dashArray:'7 5',fillColor:'#6366f1',fillOpacity:.08,interactive:false}).addTo(map)}
+function axOpen(){if(!map)return;if(!(FAC.feats||[]).length&&!(PIPE.feats||[]).length){alert('내보낼 시설물·상수관로 자료가 없습니다. 먼저 SHP를 올리거나 백업을 불러오세요.');return}
+ const m=axCfg(),cs=$('axCrs');if(!cs.options.length)cs.innerHTML=$('sxCrs').innerHTML;
+ [['axFmt',m.fmt],['axCrs',m.crs],['axEnc',m.enc]].forEach(([id,v])=>{if(v&&[...$(id).options].some(o=>o.value===v))$(id).value=v});
+ if(typeof m.pipe==='boolean')$('axPipe').checked=m.pipe;if(typeof m.del==='boolean')$('axDel').checked=m.del;AX.off=new Set(Array.isArray(m.off)?m.off:[]);
+ $('axMsg').textContent='';$('axDlg').hidden=false;axList();axInfo();axChip()}
+function axClose(){$('axDlg').hidden=true;axSet(null,'');axChip()}
+function axChip(){const a=$('axA');if(a)a.classList.toggle('on',!$('axDlg').hidden||AX.drawing)}
+/* 범위 그리기: 지도 위 덮개가 손가락·마우스를 받음(그리는 동안 지도는 고정). Esc·취소 = 그리기 전 범위 그대로 */
+function axDraw(mode){if(!map||AX.drawing)return;if(mode==='view'){const b=map.getBounds();axSet([b.getNorthWest(),b.getNorthEast(),b.getSouthEast(),b.getSouthWest()],'지금 화면');axList();axInfo();return}
+ if(typeof MK!=='undefined'&&MK.on)mkSet(false);if(typeof SHUT!=='undefined'&&SHUT.drawing)return;
+ $('axDlg').hidden=true;map.closePopup();
+ const mc=map.getContainer(),ov=L.DomUtil.create('div','shdraw',mc),HOW={rect:'네모',poly:'다각형',free:'손 그리기'};
+ const tip={rect:'⬚ 내보낼 곳을 대각선으로 끌어 네모를 그리세요',poly:'⬠ 꼭짓점을 차례로 누르세요 · 첫 점을 다시 누르거나 ✓ 완성',free:'✍ 내보낼 곳을 둘러 그리세요 · 손을 떼면 완성'}[mode];
+ ov.innerHTML=`<div class="shdt axdt">${tip}<br>${mode==='poly'?'<button type="button" class="ok" data-a="ok">✓ 완성</button><button type="button" data-a="back">↶ 점 빼기</button>':''}<button type="button" data-a="x">✕ 취소</button></div>`;
+ L.DomEvent.disableClickPropagation(ov);L.DomEvent.disableScrollPropagation(ov);
+ AX.drawing=true;MLOCK.auto=true;mapLockSync();axChip();
+ let pts=[],shp=null,pid=null,last=null,p0=null;
+ const sty={color:'#4338ca',weight:3,dashArray:'7 5',fillColor:'#6366f1',fillOpacity:.1,interactive:false};
+ const cp=e=>{const r=mc.getBoundingClientRect();return L.point(e.clientX-r.left,e.clientY-r.top)};
+ const show=lls=>{if(!shp)shp=(mode==='free'?L.polyline(lls,sty):L.polygon(lls,sty)).addTo(map);else shp.setLatLngs(lls)};
+ const end=lls=>{ov.remove();if(shp)shp.remove();AX.drawing=false;MLOCK.auto=false;mapLockSync();document.removeEventListener('keydown',kd);
+  $('axDlg').hidden=false;$('axMsg').textContent='';
+  if(lls){const b=lls.length>=3?L.latLngBounds(lls):null,m0=b&&toM(b.getWest(),b.getSouth()),m1=b&&toM(b.getEast(),b.getNorth());
+   if(!b||Math.abs(m1[0]-m0[0])<3||Math.abs(m1[1]-m0[1])<3)$('axMsg').innerHTML='<span class="c-am">범위가 너무 작습니다. 조금 크게 그려 주세요.</span>';else axSet(lls,HOW[mode])}
+  axList();axInfo();axChip()};
+ const kd=e=>{if(e.key==='Escape')end(null);else if(e.key==='Enter'&&mode==='poly')end(pts.length>=3?pts:[])};document.addEventListener('keydown',kd);
+ ov.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-a]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.a;
+  if(a==='x')end(null);else if(a==='ok')end(pts.length>=3?pts:[]);else if(a==='back'){pts.pop();if(pts.length)show(pts);else if(shp){shp.remove();shp=null}}});
+ ov.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button'))return;if(pid!=null)return;e.preventDefault();
+  const p=cp(e),ll=map.containerPointToLatLng(p);
+  if(mode==='poly'){if(pts.length>=3&&map.latLngToContainerPoint(pts[0]).distanceTo(p)<16){end(pts);return}pts.push(ll);show(pts);return}
+  pid=e.pointerId;try{ov.setPointerCapture(pid)}catch(_){}last=p;p0=ll;pts=[ll];if(mode==='free')show(pts)});
+ ov.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;e.preventDefault();const p=cp(e);if(p.distanceTo(last)<4)return;last=p;const ll=map.containerPointToLatLng(p);
+  if(mode==='rect'){pts=[p0,L.latLng(p0.lat,ll.lng),ll,L.latLng(ll.lat,p0.lng)];show(pts)}else{pts.push(ll);show(pts)}});
+ const up=e=>{if(e.pointerId!==pid)return;pid=null;end(pts.length>=3?pts:[])};ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up)}
+/* CSV: 한 파일에 모든 종류(칸은 합집합). UTF-8+BOM이라 엑셀에서 바로 열림 */
+function axCsv(items,fac){const q=v=>{v=sxVal(v);if(v==null)return '';v=String(v);return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const head=fac?['레이어','종류코드','종류']:['레이어'],seen=new Set(head),mid=[];
+ items.forEach(it=>it.recs.forEach(r=>{for(const k in r)if(k!=='EDIT'&&k!=='EDIT_DT'&&!seen.has(k)){seen.add(k);mid.push(k)}}));
+ const tail=fac?['소블록(경계)','X','Y','좌표계','위도','경도','EDIT','EDIT_DT']:['소블록(경계)','길이_m','가운데X','가운데Y','좌표계','EDIT','EDIT_DT'];
+ const cols=head.concat(mid,tail),out=[cols.map(q).join(',')];
+ for(const it of items){const dg=it.crs==='EPSG:4326'?7:3;
+  it.list.forEach((f,i)=>{const r=it.recs[i],o={레이어:it.name,EDIT:r.EDIT,EDIT_DT:r.EDIT_DT,좌표계:it.crs};mid.forEach(k=>{if(k in r)o[k]=r[k]});
+   if(fac){const c=f.c||(f.a&&sxAreaPt(f.a));o.종류코드=f.k;o.종류=facKindInfo(f.k).name||'';
+    if(c){const P=it.f?it.f(c):c;o.X=(+P[0]).toFixed(dg);o.Y=(+P[1]).toFixed(dg);o.위도=(+c[1]).toFixed(7);o.경도=(+c[0]).toFixed(7);o['소블록(경계)']=blkAt(c[0],c[1])||''}}
+   else{const g=f.geometry,m=sxMid(g);let len=0;for(const p of lineParts(g))for(let j=1;j<p.length;j++){const a=toM(p[j-1][0],p[j-1][1]),b=toM(p[j][0],p[j][1]);len+=Math.hypot(b[0]-a[0],b[1]-a[1])}
+    o.길이_m=len.toFixed(2);if(m){const P=it.f?it.f(m):m;o.가운데X=(+P[0]).toFixed(dg);o.가운데Y=(+P[1]).toFixed(dg);o['소블록(경계)']=blkAt(m[0],m[1])||''}}
+   out.push(cols.map(k=>q(o[k])).join(','))})}
+ return '﻿'+out.join('\r\n')}
+async function axGo(){if(typeof JSZip==='undefined'){$('axMsg').textContent='JSZip 라이브러리를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.';return}
+ const C=axScan();if(!C)return;axCfgSave();const bt=$('axGo'),msg=$('axMsg'),fmt=$('axFmt').value;bt.disabled=true;
+ try{msg.textContent='⏳ 고르는 중…';await sleep(20);
+  const facs=C.facs.filter(f=>!AX.off.has(f.k)),pipes=$('axPipe').checked?C.pipes:[];if(!facs.length&&!pipes.length){msg.textContent='담을 자료가 없습니다.';return}
+  const S={sxMode:'all',sxCrs:$('axCrs').value,sxEnc:$('axEnc').value,sxDel:$('axDel').checked},cp=fmt!=='csv'&&S.sxEnc==='cp949'?sxCp():null;
+  if(cp&&!cp.size){msg.textContent='이 브라우저는 CP949를 지원하지 않습니다. UTF-8로 바꿔 저장하세요.';return}
+  const csv=fmt!=='shp'?[]:null,{z,rep,ren,defC,pj}=await sxZip(pipes,facs,S,msg,{cp,csv,shp:fmt!=='csv'});
+  const day=fmtD(Date.now()).replace(/-/g,''),area=axArea(AX.ring);
+  if(csv){const cf=csv.filter(x=>x.fac),cpp=csv.filter(x=>!x.fac);if(cf.length)z.file('시설물_'+day+'.csv',axCsv(cf,1));if(cpp.length)z.file('상수관로_'+day+'.csv',axCsv(cpp,0))}
+  const rc=S.sxCrs==='orig'?defC:S.sxCrs;
+  if(fmt!=='csv'){const f=pj(rc);let r=AX.ring.map(c=>f?f(c):[c[0],c[1]]);if(r.length&&(r[0][0]!==r[r.length-1][0]||r[0][1]!==r[r.length-1][1]))r=r.concat([r[0]]);
+   let s2=0;for(let i=0;i+1<r.length;i++)s2+=(r[i+1][0]-r[i][0])*(r[i+1][1]+r[i][1]);if(s2<0)r=r.slice().reverse();/* 바깥 고리 시계방향 */
+   const sh=sxShp(5,[[r]]);z.file('범위/그린범위.shp',sh.shp);z.file('범위/그린범위.shx',sh.shx);
+   z.file('범위/그린범위.dbf',sxDbf(['이름','방법','면적_m2','시설물수','관로수','저장일'],[{이름:'그린범위',방법:AX.how,면적_m2:Math.round(area),시설물수:facs.length,관로수:pipes.length,저장일:day}],cp,null));
+   z.file('범위/그린범위.prj',sxPrj(rc));z.file('범위/그린범위.cpg',cp?'CP949':'UTF-8')}
+  msg.textContent='⏳ 압축 중…';await sleep(10);
+  const kinds=[...new Set(facs.map(f=>facKindInfo(f.k).name||f.k))];
+  const txt=['스마트 물길주소 · 범위 내보내기 (만든이: 구병순)',`현장: ${(window.SITE&&SITE.name)||''} · 저장: ${fmtDT(Date.now())}`,
+   `범위: ${AX.how} · 면적 ${axAreaTx(area)} · 꼭짓점 ${AX.ring.length}개 (경위도 범위 ${C.R.bb.map(v=>v.toFixed(6)).join(', ')})`,
+   `담은 것: 시설물 ${facs.length.toLocaleString()}개 (${kinds.join(', ')||'없음'})${pipes.length?` · 상수관로 ${pipes.length.toLocaleString()}개 (범위에 걸친 관로를 자르지 않고 통째로)`:''} · 폐관·삭제 표시 ${S.sxDel?'포함':'제외'}`,
+   `형식: ${fmt==='both'?'SHP + CSV':fmt==='shp'?'SHP':'CSV'} · 좌표계: ${S.sxCrs==='orig'?'원래 좌표계(레이어별, 모르면 '+defC+')':S.sxCrs}${fmt!=='csv'?' · SHP 한글: '+(cp?'CP949':'UTF-8'):''}`,'',...rep,
+   ...(fmt!=='csv'?['범위/그린범위.shp  그린 범위 1개 ('+rc+')']:[]),...(csv?['시설물·상수관로 CSV: UTF-8(BOM), 엑셀에서 바로 열림. X·Y는 좌표계 칸의 값, 위도·경도는 WGS84. 소블록(경계)은 앱의 소블록 경계 면으로 판정.']:[]),'',
+   'EDIT 칸: 수정 / 추가 / 폐관(관로) / 삭제(시설물), 빈칸 = 원본 그대로. EDIT_DT = 현장 수정 시각.',
+   '고객 정보 칸(수용가·성명·전화 등)과 앱 내부 칸(_로 시작)은 넣지 않습니다. 빈칸·0 값은 앱이 저장하지 않으므로 빈 값입니다.',
+   ...(ren.size?['','SHP 칸 이름 바뀜 (10바이트 제한):',...[...ren].map(([a,b])=>`  ${a} → ${b}`)]:[])].join('\r\n');
+  z.file('읽어주세요.txt','﻿'+txt);
+  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}}),
+   what=(facs.length?'시설물':'')+(pipes.length?(facs.length?'관로':'상수관로'):''),fn=`범위내보내기_${what}_${fmt==='both'?'SHP_CSV':fmt.toUpperCase()}_${AX.how.replace(/\s/g,'')}_${day}.zip`;
+  dlBlob(blob,fn);msg.innerHTML=`💾 저장했습니다: ${esc(fn)} (${(blob.size/1048576).toFixed(2)}MB)<br><small>${rep.map(esc).join('<br>')}</small>`}
+ catch(e){msg.textContent='내보내기 실패: '+((e&&e.message)||e)}finally{bt.disabled=false;axInfo()}}
+$('axX').onclick=$('axN').onclick=axClose;$('axGo').onclick=axGo;
+$('axDlg').addEventListener('click',e=>{if(e.target.id==='axDlg')axClose()});
+document.querySelectorAll('#axDlg .axrb button').forEach(b=>b.onclick=()=>axDraw(b.dataset.m));
+$('axK').addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k==null)return;if(e.target.checked)AX.off.delete(k);else AX.off.add(k);axInfo()});
+document.querySelectorAll('#axDlg .axkh button').forEach(b=>b.onclick=()=>{const C=axScan();if(!C)return;C.byK.forEach((_,k)=>{if(b.dataset.q==='all')AX.off.delete(k);else AX.off.add(k)});axList();axInfo()});
+['axFmt','axCrs','axEnc','axPipe'].forEach(id=>$(id).addEventListener('change',axInfo));$('axDel').addEventListener('change',()=>{axList();axInfo()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('axDlg').hidden&&!AX.drawing)axClose()});
+function axInit(){if(!map||$('axA'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn axbtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='ax';
+  a.href='#';a.id='axA';a.textContent='⬚';a.title='⬚ 범위 내보내기 — 지도에 범위를 그려 그 안의 시설물(관로)을 SHP·CSV로 저장';a.setAttribute('role','button');a.setAttribute('aria-label','범위 내보내기');
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(AX.drawing)return;$('axDlg').hidden?axOpen():axClose()});return d}});
+ map.addControl(new Ctl())}
+try{axInit()}catch(e){console.warn('범위 내보내기',e)}
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('sxDlg').hidden)sxClose()});
 /* 🧭 회전값 없는 밸브를 가까운 관로(3m 안) 방향으로 채우기 → 미리보기(지도 색) → 적용. 접합점·관로 없음은 "확인 필요"로 남김 */
 function facRotFill(){if(!FAC.n){alert('시설물 자료가 없습니다.');return}if(!PIPE.segs||!PIPE.segs.length){alert('상수관로 SHP가 있어야 관로 방향을 계산할 수 있습니다.');return}
