@@ -806,7 +806,7 @@ html.chipOn.chipV .chipbar .upb .upn,.leaflet-top .upb .upn{position:absolute;to
 .trkme{position:relative}.trkse span{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:2px solid #fff;color:#fff;font-size:9px;line-height:1;box-shadow:0 1px 3px #0006}
 .trkw .trko{align-items:center}.trkw .trko label{display:flex;gap:4px;align-items:center;font-weight:700}.trkw .trko select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}
 .trkw .btn.rd{background:#dc2626;border-color:#dc2626;color:#fff}
-.trkw .tpbox{padding:6px 14px;border-bottom:1px solid var(--line2)}.trkw .tpd>summary{font-size:12.5px}.trkw .tpo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px}.trkw .tpo .ck{display:flex;gap:4px;align-items:center;font-weight:700;cursor:pointer}.trkw .tpo select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.trkw .tpo .btn{width:auto!important;padding:4px 8px;font-size:12px}.trkw .tpt{max-height:220px;overflow:auto;margin-top:4px}.trkw .tpt tr.no td{color:#b91c1c}.trkw .tpt tr[data-t]{cursor:pointer}.trkw .tpt tr[data-t]:hover td{background:rgba(6,182,212,.08)}.tpsw{display:inline-block;width:14px;height:6px;border-radius:3px;margin:0 3px 1px 4px;vertical-align:middle}.trkw .tplg{font-size:11px;color:var(--mut,#64748b);margin:6px 0 0;line-height:1.7}
+.trkw .tpbox{padding:6px 14px;border-bottom:1px solid var(--line2)}.trkw .tpd>summary{font-size:12.5px}.trkw .tpo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px}.trkw .tpo .ck{display:flex;gap:4px;align-items:center;font-weight:700;cursor:pointer}.trkw .tpo select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.trkw .tpo .btn{width:auto!important;padding:4px 8px;font-size:12px}.trkw .tpt{max-height:220px;overflow:auto;margin-top:4px}.trkw .tpt tr.no td{color:#b91c1c}.trkw .tpt tr[data-t]{cursor:pointer}.trkw .tpt tr[data-t]:hover td{background:rgba(6,182,212,.08)}.tpoff{font:700 13px 'Noto Sans KR',sans-serif;padding:7px 12px;border:0;border-radius:999px;background:#0e7490;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;margin-bottom:6px!important}.tpoff b{margin-left:4px}.tpsw{display:inline-block;width:14px;height:6px;border-radius:3px;margin:0 3px 1px 4px;vertical-align:middle}.trkw .tplg{font-size:11px;color:var(--mut,#64748b);margin:6px 0 0;line-height:1.7}
 .trkw .trki{display:flex;gap:8px;align-items:flex-start;padding:8px 6px;border-bottom:1px solid var(--line2)}.trkw .trki>input{margin-top:3px;width:18px;height:18px;flex:none}
 .trkw .trki .sw{flex:none;width:14px;height:14px;border-radius:4px;margin-top:3px}.trkw .trki .t{flex:1;min-width:0}.trkw .trki .t b{font-size:13px}.trkw .trki .t small{display:block;overflow-wrap:anywhere}
 .trkw .trki .tbt{display:flex;gap:4px;flex-wrap:nowrap;justify-content:flex-end;flex:0 0 auto}.trkw .trki .tbt .btn{flex:none;width:auto!important;padding:4px 8px;font-size:12px}.trkw .trki .t{flex:1 1 200px}.trkw .trki .t small.pm b{display:inline;white-space:normal}
@@ -9994,12 +9994,13 @@ async function trkStart(){if(TRK.on)return;if(!navigator.geolocation){phToast('�
  try{localStorage.setItem('geo-trk-on',d)}catch(_){}
  TRK.wid=navigator.geolocation.watchPosition(trkPos,e=>{if(e&&e.code===1){phToast('위치 권한이 거부되어 탐사기록을 멈췄습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.',{ms:9000});trkStop(true)}},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
  trkWake(true);trkChip();trkDrawSoon(0);
- phToast(first?'👣 탐사기록을 시작합니다. 이 기기에만 저장되고, 화면이 켜져 있는 동안만 기록됩니다 (주머니에 넣을 때는 🔒 화면 고정). 칩을 길게 누르면 기록 목록이 열립니다.':'👣 탐사기록을 시작합니다.',{ms:first?12000:4000})}
+ phToast(first?'👣 탐사기록을 시작합니다. 이 기기에만 저장되고, 화면이 켜져 있는 동안만 기록됩니다 (주머니에 넣을 때는 🔒 화면 고정). 👣 칩을 누르면 기록 창이 열립니다.':'👣 탐사기록을 시작합니다.',{ms:first?12000:4000})}
 async function trkStop(quiet){if(!TRK.on)return;TRK.on=false;if(TRK.wid!=null)try{navigator.geolocation.clearWatch(TRK.wid)}catch(_){}TRK.wid=null;trkWake(false);
  try{localStorage.removeItem('geo-trk-on')}catch(_){}
  const D=TRK.D;if(D){D.segs=D.segs.filter(g=>g.length);try{D.pm=trkPipeCalc(D)}catch(e){console.warn('탐사 관로',e)}await trkSave();try{await tpAddDay(D)}catch(e){console.warn('팀 점검',e)}}
+ if(TP.on){TP.on=false;tpCfgSave();tpDraw()}/* 2026-11-12 B안: 탐사 끝나면 팀 탐사 색도 끔 */
  {const g=TRK.dlg.get(TRK.day);if(g&&TRK.lg){TRK.lg.removeLayer(g);TRK.dlg.delete(TRK.day)}}trkChip();trkDrawSoon(0);if(quiet||!D)return;const S=trkSum(D);
- phToast(`👣 기록 끝 · 오늘 탐사 거리 ${trkKm(S.w)} · ${trkDur(S.s)}${D.pm?` · 탐사 관로 ${trkKm(D.pm.tot)}`:''}`,{ms:10000,btn:'기록 목록',fn:()=>trkOpen()})}
+ phToast(`👣 기록 끝 (팀 탐사 색도 껐습니다) · 오늘 탐사 거리 ${trkKm(S.w)} · ${trkDur(S.s)}${D.pm?` · 탐사 관로 ${trkKm(D.pm.tot)}`:''}`,{ms:10000,btn:'기록 목록',fn:()=>trkOpen()})}
 function trkToggle(){TRK.on?(confirm('👣 탐사기록을 끝낼까요?')&&trkStop()):trkStart()}
 function trkPos(p){const c=p.coords,t=p.timestamp||Date.now(),pt=[+c.latitude.toFixed(7),+c.longitude.toFixed(7),t,Math.round(c.accuracy||0)];
  trkMe(pt,c);if(!TRK.on||!TRK.D)return;if(c.accuracy>TRK_ACC)return;
@@ -10019,8 +10020,8 @@ function trkMe(pt,c){if(!map)return;const ll=[pt[0],pt[1]],acc=pt[3]||0;let hd=c
  else{if(fmMe)fmMe.forEach(l=>map.removeLayer(l));fmMe=[L.circle(ll,{radius:acc,stroke:false,fill:false,interactive:false})/* 오차 원은 안 보이게(파란 점만) */.addTo(map),L.marker(ll,{icon:L.divIcon({className:'fm-me trkme',html,iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:900,interactive:false}).addTo(map)]}
  if(TRK.on&&TRK.follow){if(!TRK.live){TRK.live=1;map.setView(ll,Math.max(map.getZoom(),17))}else if(!map.getBounds().pad(-.2).contains(ll))map.panTo(ll,{animate:true})}}
 function trkChip(){const a=document.getElementById('trkChip');if(!a)return;a.classList.toggle('rec',TRK.on);
- if(TRK.on&&TRK.D){const S=trkSum(TRK.D);a.dataset.lb=`기록 중 ${trkKm(S.w)} · ${trkDur(S.s)}`;a.title='👣 탐사기록 중 — 누르면 끝내기, 길게 누르면 기록 목록'}
- else{a.dataset.lb='탐사기록';a.title='👣 탐사기록 — 누르면 시작, 길게 누르면(PC: 오른쪽 클릭) 기록 목록'}}
+ if(TRK.on&&TRK.D){const S=trkSum(TRK.D);a.dataset.lb=`기록 중 ${trkKm(S.w)} · ${trkDur(S.s)}`;a.title='👣 탐사기록 중 — 누르면 기록 창(■ 기록 끝내기)'}
+ else{a.dataset.lb='탐사기록';a.title='👣 탐사기록 — 누르면 기록 창(▶ 기록 시작·기록 목록·팀 탐사)'}}
 function trkChipInit(){if(!map||document.getElementById('trkChip'))return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control trkb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='trk';
   a.href='#';a.id='trkChip';a.setAttribute('role','button');a.setAttribute('aria-label','탐사기록');a.innerHTML='<span class="rd" aria-hidden="true"></span>👣';
@@ -10029,7 +10030,7 @@ function trkChipInit(){if(!map||document.getElementById('trkChip'))return;
   a.addEventListener('pointerdown',e=>{if(e.button)return;lp=false;clr();lt=setTimeout(()=>{lp=true;lt=0;try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}trkOpen()},600)});
   ['pointerup','pointercancel','pointerleave'].forEach(k=>a.addEventListener(k,clr));
   a.addEventListener('contextmenu',e=>{e.preventDefault();clr();if(!lp)trkOpen();lp=true});
-  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(lp){lp=false;return}trkToggle()});return d}});
+  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(lp){lp=false;return}trkOpen()});return d}});/* 2026-11-12: 칩을 누르면 바로 기록하지 않고 탐사기록 창을 염 → ▶ 기록 시작으로 시작 */
  map.addControl(new Ctl());trkChip()}
 /* ---- 지도 선 ---- */
 function trkDrawSoon(ms){clearTimeout(TRK.dT);TRK.dT=setTimeout(trkDraw,ms)}
@@ -10115,7 +10116,7 @@ async function trkRender(){const w=$('trkW');if(!w||w.hidden)return;const go=w.q
  if(TRK.on&&TRK.D)await trkIdxPut(TRK.D);
  const pOk=typeof PIPE!=='undefined'&&PIPE.segs;
  w.querySelector('[data-t="inf"]').innerHTML=`이 기기에만 저장됩니다(공유 서버로 안 보냄) · ${TRK.cfg.keep}일 지나면 저절로 지움 · 회색 선 = 차량 이동(시속 7km 넘음, 거리·탐사 관로에서 뺌) · 점선 = 기록이 끊긴 곳`+(pOk?'':' · <span class="c-am">상수관로가 없어 탐사 관로 m는 계산하지 않습니다</span>');
- tpBox();const L2=w.querySelector('.tl');if(!TRK.idx.length){L2.innerHTML='<p class="hint" style="margin:14px">아직 기록이 없습니다. ▶ 기록 시작을 누르거나 위쪽 칩 줄의 👣를 누르세요.</p>';return}
+ tpBox();const L2=w.querySelector('.tl');if(!TRK.idx.length){L2.innerHTML='<p class="hint" style="margin:14px">아직 기록이 없습니다. 위의 ▶ 기록 시작을 누르세요.</p>';return}
  L2.innerHTML=TRK.idx.map(x=>{const rec=TRK.on&&x.d===TRK.day;return `<div class="it trki" data-day="${x.d}"><input type="checkbox" data-t="sh" data-d="${x.d}" aria-label="${x.d} 지도에 보이기"${TRK.shown.has(x.d)?' checked':''}><span class="sw" style="background:${trkColor(x.d)}"></span>
   <div class="t"><b>${x.d}${rec?' <span class="c-rd">● 기록 중</span>':''}</b><small>탐사 거리 ${trkKm(x.w)} · ${trkDur(x.s)}${x.c>=50?` · 차량 ${trkKm(x.c)}`:''}${x.gap?` · 끊김 ${x.gap}번`:''}</small><small class="pm" data-pm="${x.d}">${pOk?'탐사 관로 계산 중…':''}</small></div>
   <div class="tbt"><button type="button" class="btn ol" data-t="fit" data-d="${x.d}" title="지도에서 이 날 길로 이동">이동</button><button type="button" class="btn ol" data-t="gpx" data-d="${x.d}" title="GPX 파일(구글 어스·QGIS)">GPX</button><button type="button" class="btn ol" data-t="del" data-d="${x.d}" title="이 날 기록 지우기" aria-label="${x.d} 기록 지우기">🗑</button></div></div>`}).join('');
@@ -10143,10 +10144,10 @@ async function trkMerge(o){if(!o||!o.days)return 0;await trkIdxLoad();let n=0;
 /* ---------- 👥 팀 탐사 관로 (2026-11-05, C안): 탐사기록(GPS 점·시각)은 올리지 않고 "탐사 선 r m 안 관로 조각"만 공유 서버 'trkp'로 모음.
    한 관로에 하나: {k:관리번호@가운데 좌표, d:날짜, m:덮인 m, bk:소블록, sv:급수관 1, by:이름(고른 때만), u:고친 시각}. 같은 관로는 최근 날짜가 남음.
    IDB 'trkp' = {at, base, list}. 공유는 그림(marks)과 같은 방식: 먼저 받기 → 나중에 올리기 ---------- */
-const TP={at:0,base:0,list:[],busy:false,tm:0,on:false,days:30,share:true,nm:false,lg:null,kx:null,kxKey:'',col:'age',who:'',miss:true,rate:false};
+const TP={at:0,base:0,list:[],busy:false,tm:0,on:false,days:30,share:true,nm:false,lg:null,kx:null,kxKey:'',col:'age',who:'',miss:false,rate:false};
 function tpKey(f){const P=f.properties||{},a=attrOf(f),p=(lineParts(f.geometry)[0]||[]),c=p[Math.floor(p.length/2)]||p[0];return c?String(a.id||'')+'@'+(+c[1]).toFixed(5)+','+(+c[0]).toFixed(5):''}
-function tpCfgLoad(){try{const c=JSON.parse(localStorage.getItem('geo-tp')||'{}')||{};if(typeof c.on==='boolean')TP.on=c.on;if(c.days>=0)TP.days=+c.days;if(typeof c.share==='boolean')TP.share=c.share;if(typeof c.nm==='boolean')TP.nm=c.nm;if(c.col==='who'||c.col==='age')TP.col=c.col;if(typeof c.who==='string')TP.who=c.who;if(typeof c.miss==='boolean')TP.miss=c.miss;if(typeof c.rate==='boolean')TP.rate=c.rate}catch(_){}}
-function tpCfgSave(){try{localStorage.setItem('geo-tp',JSON.stringify({on:TP.on,days:TP.days,share:TP.share,nm:TP.nm,col:TP.col,who:TP.who,miss:TP.miss,rate:TP.rate}))}catch(_){}}
+function tpCfgLoad(){try{const c=JSON.parse(localStorage.getItem('geo-tp')||'{}')||{};if(typeof c.on==='boolean')TP.on=c.on;if(c.days>=0)TP.days=+c.days;if(typeof c.share==='boolean')TP.share=c.share;if(typeof c.nm==='boolean')TP.nm=c.nm;if(c.col==='who'||c.col==='age')TP.col=c.col;if(typeof c.who==='string')TP.who=c.who;if(c.v===2&&typeof c.miss==='boolean')TP.miss=c.miss;if(typeof c.rate==='boolean')TP.rate=c.rate}catch(_){}}
+function tpCfgSave(){try{localStorage.setItem('geo-tp',JSON.stringify({v:2,on:TP.on,days:TP.days,share:TP.share,nm:TP.nm,col:TP.col,who:TP.who,miss:TP.miss,rate:TP.rate}))}catch(_){}}
 async function tpLoad(){try{const v=await IDB.get('trkp');if(v&&Array.isArray(v.list)){TP.at=v.at||0;TP.base=v.base||0;TP.list=v.list}}catch(_){}}
 async function tpStore(){try{await IDB.set('trkp',{at:TP.at,base:TP.base,list:TP.list})}catch(e){console.warn('팀 점검 저장',e)}}
 /* 새것이 이기는 기준: 날짜가 늦은 것 → 같은 날이면 덮인 m가 큰 것 → 같으면 나중에 고친 것 */
@@ -10197,14 +10198,14 @@ const TP_MZ=15;/* 안 간 관로 빨간 띠는 이 확대부터 화면 근처만
 function tpIndex(){if(typeof PIPE==='undefined'||!PIPE.feats||!PIPE.feats.length)return null;const key=PIPE.feats.length+'|'+PIPE.totalM;if(TP.kx&&TP.kxKey===key)return TP.kx;
  const M=new Map();PIPE.feats.forEach((f,fi)=>{if(!f||!f.geometry||f.properties._빈)return;const k=tpKey(f);if(k&&!M.has(k))M.set(k,fi)});TP.kx=M;TP.kxKey=key;return M}
 function tpDrawSoon(){clearTimeout(TP.dT);TP.dT=setTimeout(tpDraw,300)}
-function tpDraw(){if(!map||typeof L==='undefined')return;if(TP.lg){map.removeLayer(TP.lg);TP.lg=null}tpMissOff();if(!TP.on)return;const X=tpIndex();if(!X){TP.rt=(TP.rt||0)+1;if(TP.rt<40)setTimeout(tpDraw,3000);return}TP.rt=0;
+function tpDraw(){if(!map||typeof L==='undefined')return;if(TP.lg){map.removeLayer(TP.lg);TP.lg=null}tpMissOff();tpOffBtn();if(!TP.on)return;const X=tpIndex();if(!X){TP.rt=(TP.rt||0)+1;if(TP.rt<40)setTimeout(tpDraw,3000);return}TP.rt=0;
  if(!map.getPane('tpPane')){const p=map.createPane('tpPane');p.style.zIndex=385;p.style.pointerEvents='none'}if(!TP.rd)TP.rd=L.canvas({pane:'tpPane',padding:.3});
  const g=L.layerGroup(),grp=new Map(),ppl=tpPeople();TP.vis=new Set();
  for(const e of tpLive()){const fi=X.get(e.k);if(fi==null)continue;TP.vis.add(fi);const f=PIPE.feats[fi],c=TP.col==='who'?tpPplCol(e.by,ppl):tpAge(e.d)[1],part=(f._len||0)>4&&(e.m||0)<f._len*.5,key=c+(part?'|d':'');
   let a=grp.get(key);if(!a)grp.set(key,a=[]);lineParts(f.geometry).forEach(p=>a.push(p.map(q=>[q[1],q[0]])))}
  /* 점선 = 관로 길이의 절반도 못 지남 */
  for(const [key,ls] of grp){const [c,d]=key.split('|');L.polyline(ls,{pane:'tpPane',renderer:TP.rd,color:c,weight:d?9:11,opacity:.6,lineCap:d?'butt':'round',dashArray:d?'8 7':null,interactive:false}).addTo(g)}
- if(TP.rate)tpRateLayer(g);g.addTo(map);TP.lg=g;if(TP.miss)tpMissOn()}
+ if(TP.rate)tpRateLayer(g);g.addTo(map);TP.lg=g;if(TP.miss)tpMissOn();tpOffBtn()}
 /* 소블록 탐사율 색칠 (소블록 관로 길이 집계가 있어야 함) */
 function tpRateLayer(g){if(typeof poly==='undefined'||!poly||!poly.features)return;
  if(typeof PIPE!=='undefined'&&!PIPE.stats&&!TP.stq&&typeof pipeBlockStats==='function'){TP.stq=1;Promise.resolve(pipeBlockStats()).then(()=>{TP.stq=0;if(PIPE.stats){tpDraw();tpBox()}}).catch(()=>{TP.stq=0});return}
@@ -10213,13 +10214,21 @@ function tpRateLayer(g){if(typeof poly==='undefined'||!poly||!poly.features)retu
 /* 안 간 관로: 기간·사람 안에 탐사 안 한 관로를 빨간 띠로 (화면 근처만, 지도 옮기면 다시) */
 function tpMissOn(){if(!TP.mh){TP.mh=()=>{clearTimeout(TP.mT);TP.mT=setTimeout(tpMissDraw,250)};map.on('moveend',TP.mh)}tpMissDraw()}
 function tpMissOff(){if(TP.mh&&map){map.off('moveend',TP.mh);TP.mh=null}if(TP.ml&&map){map.removeLayer(TP.ml);TP.ml=null}}
+/* 2026-11-12 B안: 팀이 기간 안에 탐사한 소블록 안의 관로만 (자료가 적을 때 화면 전체가 빨개지던 것 막음) */
+function tpBkOf(f){let nm=f._trkBk;if(nm==null){const p=(lineParts(f.geometry)[0]||[]),c=p[Math.floor(p.length/2)]||p[0];nm=f._trkBk=c&&typeof blkAt==='function'?(blkAt(c[0],c[1])||'(블록 밖)'):'(블록 밖)'}return nm}
 function tpMissDraw(){if(TP.ml){map.removeLayer(TP.ml);TP.ml=null}if(!TP.on||!TP.miss||typeof PIPE==='undefined'||!PIPE.grid||!TP.vis)return;const z=map.getZoom();if(z<TP_MZ)return;
+ if(typeof poly==='undefined'||!poly)return;const BK=new Set(tpLive().map(e=>e.bk).filter(b=>b&&b!=='(블록 밖)'));if(!BK.size)return;
  const b=map.getBounds().pad(.2),sw=toM(b.getWest(),b.getSouth()),ne=toM(b.getEast(),b.getNorth()),C=100,seen=new Set(),ls=[];
  for(let gx=Math.floor(Math.min(sw[0],ne[0])/C);gx<=Math.floor(Math.max(sw[0],ne[0])/C);gx++)for(let gy=Math.floor(Math.min(sw[1],ne[1])/C);gy<=Math.floor(Math.max(sw[1],ne[1])/C);gy++){const a=PIPE.grid.get(gx+','+gy);if(!a)continue;
   for(const si of a){const fi=PIPE.segs[si][4];if(fi<0||seen.has(fi))continue;seen.add(fi);if(TP.vis.has(fi))continue;const f=PIPE.feats[fi];if(!f||!f.geometry)continue;const P=f.properties||{};if(P._빈||P._폐관)continue;
-   if(z<PZ_SVC&&attrOf(f).use==='급수관')continue;lineParts(f.geometry).forEach(p=>ls.push(p.map(q=>[q[1],q[0]])))}}
+   if(z<PZ_SVC&&attrOf(f).use==='급수관')continue;if(!BK.has(tpBkOf(f)))continue;lineParts(f.geometry).forEach(p=>ls.push(p.map(q=>[q[1],q[0]])))}}
  if(ls.length)TP.ml=L.polyline(ls,{pane:'tpPane',renderer:TP.rd,color:'#ef4444',weight:7,opacity:.45,lineCap:'round',interactive:false}).addTo(map)}
 function tpSetOn(o){TP.on=!!o;tpCfgSave();tpDraw();tpBox()}
+/* 지도 위 '👥 팀 탐사 ✕' — 팀 탐사 색이 보이는 동안만, 한 번 누르면 끔 */
+function tpOffBtn(){if(!map||typeof L==='undefined')return;if(!TP.on){if(TP.ob){TP.ob.remove();TP.ob=null}return}if(TP.ob)return;
+ const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const b=L.DomUtil.create('button','tpoff');b.type='button';b.innerHTML='👥 팀 탐사 <b>✕</b>';b.title='팀 탐사 색(청록·빨간 띠·소블록 색) 끄기';b.setAttribute('aria-label','팀 탐사 색 끄기');
+  L.DomEvent.disableClickPropagation(b);L.DomEvent.on(b,'click',e=>{L.DomEvent.stop(e);tpSetOn(false);phToast('👥 팀 탐사 색을 껐습니다.',{ms:5000,btn:'다시 켜기',fn:()=>tpSetOn(true)})});return b}});
+ TP.ob=new C();TP.ob.addTo(map)}
 /* 관로 정보창에 팀 탐사 (최근 3회) */
 function tpPop(f){try{if(!TP.list.length)return '';const e=tpByK().get(tpKey(f));if(!e)return TP.on?'<div style="margin-top:4px;font-size:12px;color:#b91c1c">👥 팀 탐사: 기록 없음</div>':'';const L0=f._len||0;
  const v=tpVis(e).map(([d,m,by],i)=>`${i?'':'<b>'}${esc(String(d).slice(2).replace(/-/g,'.'))}${i?'':'</b>'} ${Math.round(m)}m${L0>1?` (${Math.min(100,Math.round(m/L0*100))}%)`:''}${by?' · '+esc(by):''}`);
@@ -10235,7 +10244,7 @@ function tpStats(){const L2=tpLive(),bk=new Map();for(const e of L2){const k=e.b
 function tpHtml(){const S=tpStats(),km=x=>x==null?'확인 필요':(x).toFixed(1)+'km',pct=x=>x==null?'—':x.toFixed(x<10?1:0)+'%',ppl=tpPeople(),sw=c=>`<i class="tpsw" style="background:${c}"></i>`;
  if(TP.who&&!ppl.includes(TP.who))ppl.push(TP.who);const done=S.rows.filter(r=>r.m>0).length;
  const lg=(TP.col==='who'?(ppl.length?ppl.map(n=>sw(tpPplCol(n,ppl))+esc(n)).join(' ')+' ':'')+sw('#22d3ee')+'이름 없음':TP_AGE.map(a=>sw(a[1])+a[2]).join(' '))
-  +` · ${sw('repeating-linear-gradient(90deg,#06b6d4 0 5px,transparent 5px 9px)')}점선 = 관로 절반도 못 지남`+(TP.miss?` · ${sw('#fca5a5')}빨간 띠 = 기간 안 안 간 관로(지도 확대 ${TP_MZ} 이상, 화면 근처)`:'')
+  +` · ${sw('repeating-linear-gradient(90deg,#06b6d4 0 5px,transparent 5px 9px)')}점선 = 관로 절반도 못 지남`+(TP.miss?` · ${sw('#fca5a5')}빨간 띠 = 팀이 탐사한 소블록 안에서 기간 안 안 간 관로(지도 확대 ${TP_MZ} 이상)`:'')
   +(TP.rate?` · 소블록 색 ${sw('#ef4444')}0% ${sw('#f97316')}30% 미만 ${sw('#facc15')}70% 미만 ${sw('#22c55e')}70% 이상`:'');
  return `<details class="tpd"${TP.open?' open':''}><summary>👥 팀 탐사 관로 — ${TP.days?`최근 ${TP.days}일`:'전체 기간'}${TP.who?' · '+esc(TP.who):''} ${trkKm(S.tot)} · 관로 ${S.n.toLocaleString()}개 · 소블록 ${done}곳</summary>
   <div class="tpo"><label class="ck"><input type="checkbox" data-t="tpon"${TP.on?' checked':''}> 지도에 보기</label><select data-t="tpdays" aria-label="기간">${[[7,'최근 7일'],[30,'최근 30일'],[90,'최근 90일'],[0,'전체']].map(([v,t])=>`<option value="${v}"${TP.days===v?' selected':''}>${t}</option>`).join('')}</select>
@@ -10275,7 +10284,7 @@ function hlpOpen(){let w=$('hlpW');
   w.innerHTML=`<div class="hh"><b>📖 사용법</b><button type="button" class="hlpx" id="hlpX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
 <a class="hman" href="${hlpUrl()}" target="_blank" rel="noopener">📘 사용 매뉴얼 열기 (새 탭)</a>
 <div class="hrow"><button type="button" class="btn ol" id="hlpVd">🎬 사용법 영상</button> <button type="button" class="btn ol" id="hlpFrd" title="다듬지 않은 기초자료를 클로드로 정리해 넣기">📑 자료 양식(FRD)</button></div>
-<div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 👣 탐사기록(누르면 켜기·끄기, 길게 누르면 기록 목록) · 📂 파일 넣기 · 🔔 변경 기록 · 💧 단수구역 · 🖍 그리기 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: <span class="hfb hfb-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></span> 화면 캡처 · <span class="hfb hfb-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span> 내 위치 · <span class="hfb hfb-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></span> 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li>PC는 <b>작업 화면</b>: 위 리본 탭(파일·자료·지도…) · 왼쪽 <b>레이어/속성 창</b>(▸ 펼쳐 항목별 켜고 끄기·심볼 크기, 가장자리 끌어 폭 조절) · 아래 상태줄. 📋 보고서형 화면으로 바꿀 수 있습니다.</li></ol></div>
+<div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 👣 탐사기록(누르면 기록 창: ▶ 시작·■ 끝내기·기록 목록·팀 탐사) · 📂 파일 넣기 · 🔔 변경 기록 · 💧 단수구역 · 🖍 그리기 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: <span class="hfb hfb-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></span> 화면 캡처 · <span class="hfb hfb-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span> 내 위치 · <span class="hfb hfb-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></span> 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li>PC는 <b>작업 화면</b>: 위 리본 탭(파일·자료·지도…) · 왼쪽 <b>레이어/속성 창</b>(▸ 펼쳐 항목별 켜고 끄기·심볼 크기, 가장자리 끌어 폭 조절) · 아래 상태줄. 📋 보고서형 화면으로 바꿀 수 있습니다.</li></ol></div>
 <div class="hbx"><h4>자주 하는 일 <small>(누르면 매뉴얼의 그 장으로)</small></h4><ul class="hq">${Q.map(([k,t])=>`<li><a href="${hlpUrl(k)}" target="_blank" rel="noopener">${t}</a></li>`).join('')}</ul></div>
 <p style="margin:8px 0 0"><small>매뉴얼은 인쇄(PDF 저장)도 됩니다. 그림 속 주소·사진은 예시입니다. · 만든이: 구병순</small></p>`;
   w.querySelector('#hlpX').onclick=()=>{w.hidden=true};
