@@ -2227,6 +2227,20 @@ function bpPipeStats(){const P=G('PIPE'),poly=G('poly');if(!P||!P.feats||!P.feat
   if(a.use==='급수관'){s.svc+=km;continue}s.km+=km;s.mat[a.mat]=(s.mat[a.mat]||0)+km;if(a.age!=null){s.known+=km;if(a.age>30)s.old+=km}if(a.dia!=null){const i=DB.findIndex(b=>a.dia<=b[0]);if(i>=0)s.band[i]+=km}}
  BP.ps={key,m};return m}
 /* ---- 누수·민원 대장(②-4 📒)에서 소블록 안 누수 ---- */
+/* 수용가 현황(2026-11-12 C안): 부과량 엑셀(BILL, Y열 소블록) → 수전·가구·월평균·업종·구경·대수용가·업종별 월 사용량. 이름·주소·연락처는 쓰지 않음(관리번호만) */
+function bpCust(n){const B=G('BILL');if(!B||!B.R||!B.R.length)return null;const k=F('bNorm',n),M=B.M,L=M.length,R=B.R.filter(r=>r.b===k);if(!R.length)return{n:0,M};
+ let li=L-1;while(li>0&&!R.some(r=>r.q[li]!=null))li--;const w0=Math.max(0,li-11);
+ const avg=r=>{let t=0,c=0;for(let i=w0;i<=li;i++){const v=r.q[i];if(v!=null){t+=v;c++}}return c?t/c:null};
+ let hh=0,qs=0;const ind=new Map(),dia=new Map(),uS=new Map(),qm=new Map(),A=[];
+ R.forEach(r=>{hh+=r.h||1;const a=avg(r),u=r.u||'(빈칸)';if(a!=null)qs+=a;ind.set(u,(ind.get(u)||0)+1);const d=r.d?r.d+'mm':'미상';dia.set(d,(dia.get(d)||0)+1);
+  let t=0;for(let i=w0;i<=li;i++)t+=r.q[i]||0;uS.set(u,(uS.get(u)||0)+t);if(r.mg&&a!=null)qm.set(String(r.mg),a);A.push({mg:r.mg||'',u:r.u||'',d:r.d||0,a})});
+ const bq=(()=>{try{return F('clBigQ')||500}catch(_){return 500}})(),big=A.filter(x=>x.a!=null&&x.a>=bq).sort((p,q)=>q.a-p.a);
+ const top=[...uS].sort((a,b)=>b[1]-a[1]).filter(x=>x[1]>0).slice(0,4).map(x=>x[0]),keys=top.concat(['기타']);
+ const tot=new Map(),mi=[];for(let i=Math.max(0,li-23);i<=li;i++)mi.push(i);
+ const ser=mi.map(i=>{const o={};R.forEach(r=>{const v=r.q[i];if(v==null)return;const u=top.includes(r.u||'(빈칸)')?(r.u||'(빈칸)'):'기타';o[u]=(o[u]||0)+v});return o});
+ for(let i=0;i<=li;i++){let t=0,any=false;R.forEach(r=>{const v=r.q[i];if(v!=null){t+=v;any=true}});const m=/^(\d{4})-(\d\d)$/.exec(M[i]||'');if(m&&any)tot.set(m[1]+'-'+(+m[2]),t)}
+ const dn=v=>{const x=parseFloat(v);return isNaN(x)?1e9:x};
+ return{n:R.length,hh,qs,avg:R.length?qs/R.length:null,ind:[...ind].sort((a,b)=>b[1]-a[1]),dia:[...dia].sort((a,b)=>dn(a[0])-dn(b[0])),big,bq,keys,mi,ser,tot,M,li,w0,qm}}
 function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return null;const K=bpK(b.n),bx=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),pts=[],mo=new Map();let tam=0,civ=0;LR.recs.forEach(o=>{const y=/^(\d{4})-/.exec(o.d||'');if(y)mo.set('y'+y[1],true)});
  for(const o of LR.recs){if(!o.ok)continue;let inn=false;
   if(o.ll){const x=o.ll[1],y=o.ll[0];for(let i=0;i<b.fs.length&&!inn;i++){const q=bx[i];if(x>=q[0]&&x<=q[2]&&y>=q[1]&&y<=q[3]&&turf.booleanPointInPolygon(turf.point([x,y]),b.fs[i]))inn=true}if(inn)pts.push({ll:o.ll,src:o.src})}
@@ -2236,10 +2250,10 @@ function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return nu
 /* ---- 📊 유수율(소블록별) 시트 읽기 ---- */
 const BP_NRW_W=`onmessage=function(e){try{var buf=new Uint8Array(e.data.buf),wb=XLSX.read(buf,{type:'array',bookSheets:true}),N=wb.SheetNames||[],sn=null;
 for(var i=0;i<N.length;i++){if(/유수율/.test(N[i])&&/소블록/.test(N[i])){sn=N[i];break}}if(!sn){postMessage({err:'NOSHEET',names:N});return}
-postMessage({p:sn+' 읽는 중…'});var w=XLSX.read(buf,{type:'array',sheets:[sn]});postMessage({sn:sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null})})}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
+var s2=null;for(var i2=0;i2<N.length;i2++){if(/유수율/.test(N[i2])&&/계통/.test(N[i2])){s2=N[i2];break}}postMessage({p:sn+' 읽는 중…'});var w=XLSX.read(buf,{type:'array',sheets:s2?[sn,s2]:[sn]});postMessage({sn:sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null}),A2:s2&&w.Sheets[s2]?XLSX.utils.sheet_to_json(w.Sheets[s2],{header:1,raw:true,defval:null}):null})}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
 let BP_NRW_URL=null;
 function bpNrwRead(buf,onMsg){const main=()=>{const wb=XLSX.read(new Uint8Array(buf),{type:'array',bookSheets:true}),sn=(wb.SheetNames||[]).find(n=>/유수율/.test(n)&&/소블록/.test(n));if(!sn)return{err:'NOSHEET',names:wb.SheetNames};
-  const w=XLSX.read(new Uint8Array(buf),{type:'array',sheets:[sn]});return{sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null})}};
+  const s2=(wb.SheetNames||[]).find(n=>/유수율/.test(n)&&/계통/.test(n)),w=XLSX.read(new Uint8Array(buf),{type:'array',sheets:s2?[sn,s2]:[sn]});return{sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null}),A2:s2&&w.Sheets[s2]?XLSX.utils.sheet_to_json(w.Sheets[s2],{header:1,raw:true,defval:null}):null}};
  if(typeof Worker==='undefined'||typeof Blob==='undefined')return Promise.resolve(main());
  if(!BP_NRW_URL)BP_NRW_URL=URL.createObjectURL(new Blob([`var ok=0,U=${JSON.stringify(G('XLSX_URLS')||[])};for(var i=0;i<U.length&&!ok;i++){try{importScripts(U[i]);ok=1}catch(e){}}\n`+BP_NRW_W.replace('onmessage=function(e){try{',"onmessage=function(e){try{if(!ok)throw new Error('NOLIB');")],{type:'text/javascript'}));
  const cp=buf.slice(0);
@@ -2261,10 +2275,29 @@ async function bpNrwLoad(file){const st=BP.el.querySelector('[data-bp-nrw]');if(
  st.textContent='⏳ '+file.name+' 여는 중… (파일이 크면 몇십 초 걸립니다)';try{const buf=await file.arrayBuffer(),d=await bpNrwRead(buf,p=>{st.textContent='⏳ '+p});
   if(d.err){st.textContent=d.err==='NOSHEET'?`⚠ '유수율(소블록별)' 시트를 찾지 못했습니다. 시트: ${(d.names||[]).slice(0,8).join(', ')}`:'⚠ 읽지 못했습니다: '+d.err;return}
   const R=bpNrwParse(d.A);if(!R){st.textContent='⚠ 시트에서 연도 머리글(2025 등)이나 소블록 줄을 찾지 못했습니다.';return}
-  R.f=file.name;R.sn=d.sn;R.at=Date.now();BP.nrw=R;try{await G('IDB').set('nrw_blk',R)}catch(_){}bpNrwInfo();bpList()}
+  R.f=file.name;R.sn=d.sn;R.at=Date.now();R.sys=bpSysParse(d.A2);BP.nrw=R;try{await G('IDB').set('nrw_blk',R)}catch(_){}bpNrwInfo();bpList()}
  catch(e){st.textContent='⚠ 읽지 못했습니다: '+(e&&e.message||e)}}
 function bpNrwOf(n){const R=BP.nrw;if(!R)return null;if(R.B[n])return R.B[n];const k=bpK(n);for(const x in R.B)if(bpK(x)===k)return R.B[x];
  const al=F('aliasMap');if(al){const to=al.get(bpK(n));if(to&&R.B[to])return R.B[to]}return null}
+/* ---- 급수계통(2026-11-12 A안): '유수율(계통별)' 시트 대블록→유입 유량계(중블록)→소블록 + 정수장·배수지·가압장 대응표(이 기기 geo-bps) ---- */
+function bpSysParse(A){if(!A)return null;const M={};let big='';const cl=v=>String(v??'').replace(/\s+/g,'').trim();
+ for(const r of A){if(!r)continue;const a=r[0]!=null?String(r[0]):'',b=r[1]!=null?String(r[1]):'',c=r[2]!=null?String(r[2]):'';
+  if(a&&!/\n/.test(a)&&!/구분|계통|유수율/.test(a))big=cl(a);if(!c||/\n/.test(c)||!/^[A-Za-z가-힣]/.test(c.trim())||/소블록|합계|^계$/.test(c))continue;const k=c.trim();if(!M[k])M[k]={big,mid:cl(b)}}
+ return Object.keys(M).length?M:null}
+const BP_SYSM=(()=>{try{return JSON.parse(LS.get('geo-bps')||'{}')}catch(_){return{}}})();
+function bpFacNames(code){const FA=G('FAC');if(!FA||!FA.n)return[];const out=new Set();for(let i=0;i<FA.n;i++){if(FA.kinds[FA.k[i]]!==code||FA.dl&&FA.dl[i])continue;const P=(FA.pt[i]||{}).p||{};const nm=String(P['정수장명']||P['배수지명']||P['가압장명']||P['시설명']||P['명칭']||'').trim();if(nm)out.add(nm)}return[...out].sort((a,b)=>a.localeCompare(b,'ko'))}
+function bpSysOf(b){const S=BP.nrw&&BP.nrw.sys||null;let x=S?S[b.n]:null;if(!x&&S){const k=bpK(b.n);for(const n in S)if(bpK(n)===k){x=S[n];break}}
+ const big=(x&&x.big)||b.big||'',mid=(x&&x.mid)||(b.mid&&b.mid!==b.big?b.mid:''),key=mid||big,M=(key&&BP_SYSM[key])||{};
+ const auto=(code,v)=>{if(v)return{v,auto:0};if(!big)return{v:'',auto:0};const L=bpFacNames(code).filter(n=>!/폐쇄/.test(n)),h=L.find(n=>n.replace(/\s/g,'').startsWith(big));return{v:h||'',auto:h?1:0}};
+ const w=auto('SA113',M.w),r=auto('SA114',M.r),sib=S&&mid?Object.keys(S).filter(n=>S[n].mid===mid).length:0;
+ return{big,mid,key,w:w.v,wA:w.auto,r:r.v,rA:r.auto,pu:M.p||'',sib,src:x?'sheet':(b.big||b.mid)?'poly':''}}
+function bpSysUI(){if(!BP.el)return;const box=BP.el.querySelector('[data-bp-sys]');if(!box)return;const b=BP.cur&&bpBlocks().find(x=>x.n===BP.cur);
+ if(!b){box.innerHTML='<span class="mute">소블록 이름을 누르면 계통(정수장·배수지)을 고를 수 있습니다.</span>';return}const y=bpSysOf(b);
+ if(!y.key){box.innerHTML=`${bpE(b.n)}: 대블록·유량계 정보가 없습니다 (유수율 엑셀 '유수율(계통별)' 시트 또는 블록 경계 속성) — 확인 필요`;return}
+ const sel=(k,code,v,lab)=>`<label class="uif">${lab}<select data-bs="${k}"><option value="">(${k==='p'?'없음':'확인 필요'})</option>${bpFacNames(code).map(n=>`<option${n===v?' selected':''}>${bpE(n)}</option>`).join('')}</select></label>`;
+ box.innerHTML=`<div class="uin" style="margin:0 0 2px">${bpE(b.n)} ← 유입 유량계 <b>${bpE(y.mid||'-')}</b> ← 대블록 <b>${bpE(y.big||'-')}</b>${y.sib?` · 같은 유량계 소블록 ${y.sib}개`:''} <small>(${y.src==='sheet'?'계통별 시트':'블록 경계 속성'})</small><br>아래 고른 값은 '${bpE(y.key)}' 계통 전체에 같이 씁니다.${y.wA||y.rA?' <small>이름이 대블록과 같은 시설을 미리 넣었습니다 — 맞는지 확인하세요.</small>':''}</div>`+
+  sel('w','SA113',y.w,'정수장')+sel('r','SA114',y.r,'배수지')+sel('p','SA206',y.pu,'경유 가압장');
+ box.dataset.key=y.key}
 function bpNrwInfo(){const st=BP.el&&BP.el.querySelector('[data-bp-nrw]');if(!st)return;const R=BP.nrw;
  if(!R){st.textContent='유수율 엑셀을 넣으면 쪽마다 월별 표가 들어갑니다 (시트 이름에 유수율·소블록이 든 시트).';return}
  const nb=bpBlocks(),hit=nb.filter(b=>bpNrwOf(b.n)).length;st.textContent=`📊 ${R.f||''} · ${R.sn||''} · 소블록 ${Object.keys(R.B).length}개 · ${R.years.join('·')}년`+(nb.length?` · 지도 소블록 ${nb.length}개 중 ${hit}개 맞음`:'')}
@@ -2282,16 +2315,20 @@ function bpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않
 <div class="uig">📊 월별 유수율 (유수율 분석 엑셀의 '유수율(소블록별)' 시트)</div>
 <div class="uib" style="margin-top:2px"><button type="button" class="btn ol" data-bp="nrw">📂 유수율 엑셀 넣기</button><input type="file" data-bp-nf accept=".xlsx,.xlsm,.xls" hidden></div>
 <p class="uin" data-bp-nrw></p>
+<div class="uig">🚰 급수계통 (현황도 오른쪽 위 계통도)</div>
+<div data-bp-sys class="uin" style="margin:2px 0 4px"></div>
 <div class="uig">✏ 비고 (유수율 제고계획) · <span data-bp-mn>소블록 이름을 누르세요</span></div>
 <textarea data-bp-memo rows="2" maxlength="200" placeholder="시트 비고가 기본값입니다. 고치면 이 기기에 저장됩니다." style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);font:inherit" disabled></textarea>
 <div class="uig">용지·표시</div>
 <label class="uif">용지<select data-bo="p">${op(['A3','A4'],BP.o.p)}</select></label>
 <label class="uif">방향<select data-bo="ori"><option value="l"${BP.o.ori!=='p'?' selected':''}>가로</option><option value="p"${BP.o.ori==='p'?' selected':''}>세로</option></select></label>
+<label class="uif">스타일<select data-bo="th"><option value=""${BP.o.th!=='gis'?' selected':''}>기본 (보고서형)</option><option value="gis"${BP.o.th==='gis'?' selected':''}>BsstGis (회색 제목줄)</option></select></label>
 <label class="uif">밖 흐림<select data-bo="fade">${op([1,2,3],BP.o.fade,x=>['','약하게','보통','진하게'][x])}</select></label>
 <label class="uif">화질<select data-bo="hq"><option value="0"${BP.o.hq?'':' selected'}>보통 (빠름)</option><option value="1"${BP.o.hq?' selected':''}>선명 (지도를 2배로 다시 그림)</option></select></label>
 <label class="uif">유수율 기준 (양호·주의 %)<span><input data-bo="g1" type="number" min="1" max="100" value="${+BP.o.g1||85}" style="width:54px"> <input data-bo="g2" type="number" min="1" max="100" value="${+BP.o.g2||70}" style="width:54px"></span></label>
 <label class="uif">쪽 번호 시작<input data-bo="no" type="number" min="1" max="999" value="${+BP.o.no||1}" style="width:70px"></label>
-<label class="uir"><input type="checkbox" data-bo="pk"${BP.o.pk!==0?' checked':''}> 관로 검정 선 통일 (배수관 = 급수관 × 1.5, 블록 안만)</label><label class="uir"><input type="checkbox" data-bo="cl"${BP.o.cl!==0?' checked':''}> 블록 밖은 배경만 (밖 시설물·수용가 점·글자 빼기)</label><label class="uir"><input type="checkbox" data-bo="bgl"${BP.o.bgl!==0?' checked':''}> 배경지도 연하게 (흑백·옅게, 출력용)</label>
+<label class="uir"><input type="checkbox" data-bo="pk"${BP.o.pk!==0?' checked':''}> 관로 검정 선 통일 (배수관 = 급수관 × 1.5, 블록 안만)</label><label class="uir"><input type="checkbox" data-bo="cu"${BP.o.cu!==0?' checked':''}> 수용가 현황 (부과량 엑셀 · 관리번호만)</label><label class="uir"><input type="checkbox" data-bo="cl"${BP.o.cl!==0?' checked':''}> 블록 밖은 배경만 (밖 시설물·수용가 점·글자 빼기)</label><label class="uir"><input type="checkbox" data-bo="bgl"${BP.o.bgl!==0?' checked':''}> 배경지도 연하게 (흑백·옅게, 출력용)</label>
+<label class="uir"><input type="checkbox" data-bo="sys"${BP.o.sys!==0?' checked':''}> 급수계통도 (지도 오른쪽 위)</label>
 <label class="uir"><input type="checkbox" data-bo="leg"${BP.o.leg?' checked':''}> 범례 (켜진 레이어 · 소블록 안 시설물 개수)</label>
 <label class="uir"><input type="checkbox" data-bo="leak"${BP.o.leak?' checked':''}> 누수·민원 지점 별표 (②-4 📒 대장)</label>
 <label class="uir"><input type="checkbox" data-bo="nrw"${BP.o.nrw?' checked':''}> 월별 유수율 표 넣기</label>
@@ -2299,7 +2336,8 @@ function bpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않
 <p class="uin" data-bp-st></p>
 <p class="uin">지도는 지금 켜 둔 레이어·배경 그대로 찍힙니다. 관로가 보이면 '대외비'가 붙습니다. 고객 이름·주소·연락처는 넣지 않습니다. 만든이: 구병순</p>`;
   mc.appendChild(p);BP.el=p;try{L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p)}catch(_){}
-  p.addEventListener('change',e=>{const s=e.target.closest('[data-bo]');if(s){const k=s.dataset.bo;BP.o[k]=s.type==='checkbox'?(s.checked?1:0):(k==='p'||k==='ori')?s.value:Math.max(0,+s.value||0);if(k==='no'&&!BP.o.no)BP.o.no=1;bpSave();if(k==='fade'&&BP.cur)bpPrev((bpBlocks().find(x=>x.n===BP.cur)||{}).fs);return}
+  p.addEventListener('change',e=>{const bs=e.target.closest('[data-bs]');if(bs){const key=p.querySelector('[data-bp-sys]').dataset.key;if(key){const o=BP_SYSM[key]||(BP_SYSM[key]={});if(bs.value)o[bs.dataset.bs]=bs.value;else delete o[bs.dataset.bs];LS.set('geo-bps',JSON.stringify(BP_SYSM))}return}
+   const s=e.target.closest('[data-bo]');if(s){const k=s.dataset.bo;BP.o[k]=s.type==='checkbox'?(s.checked?1:0):(k==='p'||k==='ori'||k==='th')?s.value:Math.max(0,+s.value||0);if(k==='no'&&!BP.o.no)BP.o.no=1;bpSave();if(k==='fade'&&BP.cur)bpPrev((bpBlocks().find(x=>x.n===BP.cur)||{}).fs);return}
    const c=e.target.closest('[data-bp-ck]');if(c){if(c.checked)BP.sel.add(c.dataset.bpCk);else BP.sel.delete(c.dataset.bpCk);bpCnt();return}
    const g=e.target.closest('[data-bp-gk]');if(g){bpBlocks().filter(b=>bpGrp(b)===g.dataset.bpGk&&bpHit(b)).forEach(b=>g.checked?BP.sel.add(b.n):BP.sel.delete(b.n));bpList();return}
 });
@@ -2322,9 +2360,9 @@ function bpList(){if(!BP.el)return;const box=BP.el.querySelector('[data-bp-list]
   bs.map(b=>{const N=bpNrwOf(b.n),y=N&&N.r.length?N.r[N.r.length-1][0]:null;return `<span class="bpi${BP.cur===b.n?' on':''}"><input type="checkbox" data-bp-ck="${bpE(b.n)}"${BP.sel.has(b.n)?' checked':''} aria-label="${bpE(b.n)} 고르기"><button type="button" data-bp-n="${bpE(b.n)}" title="지도에서 미리 보기">${bpE(b.n)}${y!=null?` <small>${(y<=1.5?y*100:y).toFixed(1)}%</small>`:''}</button></span>`}).join('')+'</div></div>'}).join('')||'<p class="uin">찾는 소블록이 없습니다.</p>';
  bpCnt()}
 function bpMemoOf(n){return BP.memo[n]!=null?BP.memo[n]:((bpNrwOf(n)||{}).memo||'')}
-function bpMemoUI(){if(!BP.el)return;const t=BP.el.querySelector('[data-bp-memo]'),l=BP.el.querySelector('[data-bp-mn]');if(!BP.cur){t.disabled=true;t.value='';l.textContent='소블록 이름을 누르세요';return}t.disabled=false;t.value=bpMemoOf(BP.cur);l.textContent=BP.cur}
+function bpMemoUI(){if(!BP.el)return;bpSysUI();const t=BP.el.querySelector('[data-bp-memo]'),l=BP.el.querySelector('[data-bp-mn]');if(!BP.cur){t.disabled=true;t.value='';l.textContent='소블록 이름을 누르세요';return}t.disabled=false;t.value=bpMemoOf(BP.cur);l.textContent=BP.cur}
 /* ---- 한 소블록 지도 찍기 → {B,src,rings,lk,scale,secret,leg} ---- */
-const BP_BND='#ea580c',BP_RC='#2563eb',BP_RY0=()=>new Date().getFullYear()-9;/* 소블록 경계 = 주황 점선(2026-11-12 사용자) */
+const BP_BND='#ea580c',BP_RC='#2563eb',BP_OC='#dc2626',BP_RY0=()=>new Date().getFullYear()-9;/* 소블록 경계 = 주황 점선(2026-11-12 사용자) */
 async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContainer(),st0=mc.getAttribute('style');let big=false;
  /* 관로 검정 통일(2026-11-12): 화면 관로 레이어는 빼고 찍은 뒤, 블록 안 관로만 검정 선으로 직접 그림(배수관 = 급수관 × 1.5) */
  const PP=G('PIPE'),pOn=!!PP&&[PP.layer,PP.layerS].some(l=>l&&m.hasLayer(l)),pk=BP.o.pk!==0&&pOn,pRm=[];let tmp=null;
@@ -2333,6 +2371,11 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  const bxs=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),E=.0002,lns=[];b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>{if(r.length>1)lns.push(turf.lineString(r))}))});
  const inF=(x,y)=>{const pt=turf.point([x,y]);if(b.fs.some((f,i)=>{const z=bxs[i];return x>=z[0]&&x<=z[2]&&y>=z[1]&&y<=z[3]&&turf.booleanPointInPolygon(pt,f)}))return true;
   if(!bxs.some(z=>x>=z[0]-E&&x<=z[2]+E&&y>=z[1]-E&&y<=z[3]+E))return false;return lns.some(l=>{try{return turf.pointToLineDistance(pt,l,{units:'meters'})<=15}catch(_){return false}})};
+ /* 수용가 점: 월평균 사용량 3단계 초록(옅음→진함), 끝나면 되돌림 */
+ const PT=G('PT'),cs=info&&info.cs,ptOld=[];
+ if(cs&&cs.qm&&cs.qm.size&&PT&&PT.n){const o=G('out')||[],[q1,q2]=(()=>{try{const a=F('ptQB');return[a[0]||20,a[1]||100]}catch(_){return[20,100]}})();
+  for(let i=0;i<PT.n;i++){const r=o[i];if(!r)continue;const a=cs.qm.get(String(r['관리번호']??''));if(a==null)continue;ptOld.push([i,PT.fill[i]]);PT.fill[i]=a<=q1?'#bbf7d0':a<=q2?'#4ade80':'#15803d'}
+  if(ptOld.length)try{F('ptDraw')}catch(_){}}
  const FA=G('FAC'),cl=BP.o.cl!==0;if(FA){FA.bndAll=true;FA.bpLbl=1.35;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
  try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
   const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(14,fw*.05);
@@ -2349,10 +2392,10 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
    const lp=G('lineParts'),ao=G('attrOf'),q=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),bx=[Math.min(...q.map(z=>z[0])),Math.min(...q.map(z=>z[1])),Math.max(...q.map(z=>z[2])),Math.max(...q.map(z=>z[3]))],pl=[];
    for(const f of PP.feats){if(f.properties&&f.properties._빈)continue;const parts=lp(f.geometry);let hit=false;
     for(const p of parts){for(const c of p)if(c[0]>=bx[0]&&c[0]<=bx[2]&&c[1]>=bx[1]&&c[1]<=bx[3]){hit=true;break}if(hit)break}if(!hit)continue;
-    const a=ao(f),svc=a.use==='급수관',nw=!!a.year&&a.year>=BP_RY0();parts.forEach(p=>pl.push({svc,nw,pts:p.map(c=>C(c[1],c[0]))}))}
+    const a=ao(f),svc=a.use==='급수관',nw=a.year&&a.year>=BP_RY0()?1:a.year&&new Date().getFullYear()-a.year>30?2:0;parts.forEach(p=>pl.push({svc,nw,pts:p.map(c=>C(c[1],c[0]))}))}
    g.save();ring();g.clip('evenodd');g.strokeStyle='#111827';g.lineCap='round';g.lineJoin='round';
    /* 최근 10년 교체·신설(설치연도 기준) = 초록, 그 밖 검정. 배수관 = 급수관 × 1.5 */
-   [[false,true],[false,false],[true,true],[true,false]].forEach(([nw,sv])=>{g.strokeStyle=nw?BP_RC:'#111827';g.lineWidth=(sv?.28:.42)*Q;g.beginPath();pl.forEach(o=>{if(o.svc!==sv||o.nw!==nw)return;o.pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y))});g.stroke()});g.restore();
+   [[0,true],[0,false],[2,true],[2,false],[1,true],[1,false]].forEach(([nw,sv])=>{g.strokeStyle=nw===1?BP_RC:nw===2?BP_OC:'#111827';g.lineWidth=(sv?.28:.42)*Q;g.beginPath();pl.forEach(o=>{if(o.svc!==sv||o.nw!==nw)return;o.pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y))});g.stroke()});g.restore();
    ring();g.lineJoin='round';g.lineCap='butt';g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.1*Q;g.stroke();g.setLineDash([2.4*Q,1.4*Q]);g.strokeStyle=BP_BND;g.lineWidth=.6*Q;g.stroke();g.setLineDash([])}
   /* 출력용 연한 배경: 채도 빼고 흰 막 */
   const bgHook=BP.o.bgl!==0?(g,W,H)=>{g.save();g.globalCompositeOperation='saturation';g.globalAlpha=.85;g.fillStyle='hsl(0,0%,50%)';g.fillRect(0,0,W,H);g.restore();g.save();g.fillStyle='rgba(255,255,255,.38)';g.fillRect(0,0,W,H);g.restore()}:null;
@@ -2362,18 +2405,24 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
   const T=(lat,lng)=>{const p=m.latLngToContainerPoint([lat,lng]);return[(p.x-px)*B.k,(p.y-py)*B.k]},rings=[];
   b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>rings.push(r.map(c=>T(c[1],c[0])))))});
   const lk=BP.o.leak&&info.lk?info.lk.pts.map(o=>({src:o.src,p:T(o.ll[0],o.ll[1])})):[];
+  const bigP=[];if(cs&&cs.big&&cs.big.length){const o=G('out')||[],ix=new Map();o.forEach((r,i)=>{const k2=String(r['관리번호']??'');if(k2&&!ix.has(k2))ix.set(k2,i)});
+   cs.big.slice(0,5).forEach((x,j)=>{const i=ix.get(String(x.mg));if(i==null)return;const r=o[i],la=+r['_위도'],ln=+r['_경도'];if(!isFinite(la)||!isFinite(ln)||(!la&&!ln))return;bigP.push({no:j+1,p:T(la,ln)})})}
   const c=m.containerPointToLatLng([px+fw/2,py+fh/2]),scale=fw*vpMpp(m.getZoom(),c.lat)/(mm.w/1000);
   const P=G('PIPE'),secret=pOn||(!!P&&[P.layer,P.layerS].some(l=>l&&m.hasLayer(l)));
   let leg=[];if(BP.o.leg){const q=bb;
    leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}
-  return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk}}
- finally{if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+  return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,ptC:ptOld.length>0}}
+ finally{if(ptOld.length){ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
-function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,tH=BP.o.nrw?(l?40:46)*s:0;
- const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}};
+function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,nr=!!BP.o.nrw,cu=BP.o.cu!==0,tH=nr?(l?(cu?50:40)*s:(cu?46*s+gap+44*s:46*s)):cu?(l?44:50)*s:0;
+ const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}},sy=BP.o.sys!==0?11*s:0;L0.syH=sy;
  if(l){const sw=Math.round(112*s),mw=pw-2*m-sw-gap,mh=ph-2*m-fh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},side:{x:m+mw+gap,y:m,w:sw,h:mh}})}
- else{const bh=80*s,mw=pw-2*m,mh=ph-2*m-fh-gap-bh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},low:{x:m,y:m+mh+gap,w:mw,h:bh}})}
- if(tH){const y=L0.map.y+L0.map.h+gap+(l?0:80*s+gap),w=pw-2*m,tw=w*.57;L0.tbl={x:m,y,w:tw,h:tH};L0.chart={x:m+tw+gap,y,w:w-tw-gap,h:tH}}
+ else{const bh=80*s,mw=pw-2*m,mh=ph-2*m-fh-gap-bh-gap-(tH?tH+gap:0)-(sy?sy+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh}});if(sy)L0.sys={x:m,y:m+mh+gap,w:mw,h:sy};L0.low={x:m,y:m+mh+gap+(sy?sy+gap:0),w:mw,h:bh}}
+ if(tH){const y=l?L0.map.y+L0.map.h+gap:L0.low.y+L0.low.h+gap,w=pw-2*m;
+  if(nr&&cu&&!l){const h1=46*s,tw=w*.57;L0.tbl={x:m,y,w:tw,h:h1};L0.chart={x:m+tw+gap,y,w:w-tw-gap,h:h1};L0.cu={x:m,y:y+h1+gap,w,h:tH-h1-gap}}
+  else if(nr&&cu){const tw=w*.44,cw=w*.27;L0.tbl={x:m,y,w:tw,h:tH};L0.chart={x:m+tw+gap,y,w:cw,h:tH};L0.cu={x:m+tw+cw+2*gap,y,w:w-tw-cw-2*gap,h:tH}}
+  else if(nr){const tw=w*.57;L0.tbl={x:m,y,w:tw,h:tH};L0.chart={x:m+tw+gap,y,w:w-tw-gap,h:tH}}
+  else L0.cu={x:m,y,w,h:tH}}
  return L0}
 const BP_G=()=>[+BP.o.g1||85,+BP.o.g2||70];
 const bpGrade=v=>{if(v==null)return null;const [a,b]=BP_G();return v>=a?{t:'양호',c:'#15803d',bg:'#dcfce7'}:v>=b?{t:'주의',c:'#b45309',bg:'#fef3c7'}:{t:'심각',c:'#b91c1c',bg:'#fee2e2'}};
@@ -2382,16 +2431,17 @@ const bpPct=v=>v==null?null:v<=1.5?v*100:v;
 function bpSeries(N){const Y=BP.nrw?BP.nrw.years:[],yi=Math.max(0,Y.length-2),Yr=Y.slice(yi),f=(k,j)=>((N&&N[k]||[])[yi+j]||[]);return{Yr,yi,f}}
 /* ---- 한 쪽 그리기 ---- */
 function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X(M.ph),cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d'),s=M.s;
- const FT=(w,pt)=>`${w} ${Math.max(6,Math.round(pt*.3528*dpm*s))}px "Noto Sans KR","Malgun Gothic",sans-serif`,ink='#0f172a',mute='#64748b',ac='#3730a3',line='#cbd5e1',hd='#eef2ff';
+ const FT=(w,pt)=>`${w} ${Math.max(6,Math.round(pt*.3528*dpm*s))}px "Noto Sans KR","Malgun Gothic",sans-serif`,GS=BP.o.th==='gis',ink=GS?'#2b2b2b':'#0f172a',mute=GS?'#6b6b6b':'#64748b',ac=GS?'#2563eb':'#3730a3',line=GS?'#d6d6d6':'#cbd5e1',hd=GS?'#f3f3f3':'#eef2ff';
  const R=r=>({x:X(r.x),y:X(r.y),w:X(r.w),h:X(r.h)});
  const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
- const card=(r,fill)=>{rr(r.x,r.y,r.w,r.h,X(1.6*s));g.fillStyle=fill||'#fff';g.fill();g.strokeStyle=line;g.lineWidth=X(.3);g.stroke()};
+ const card=(r,fill)=>{rr(r.x,r.y,r.w,r.h,X((GS?.5:1.6)*s));g.fillStyle=fill||'#fff';g.fill();g.strokeStyle=line;g.lineWidth=X(.3);g.stroke()};
  const txt=(t,x,y,w,o)=>{o=o||{};g.font=FT(o.w||500,o.pt||7);g.fillStyle=o.c||ink;g.textAlign=o.a||'left';g.textBaseline='middle';g.fillText(String(t),x,y,Math.max(1,w))};
- const head=(r,t,sub)=>{g.fillStyle=ac;g.fillRect(r.x+X(2.5*s),r.y+X(2.4*s),X(.9*s),X(3.2*s));txt(t,r.x+X(4.6*s),r.y+X(4*s),r.w*.6,{w:800,pt:7.6,c:ink});if(sub)txt(sub,r.x+r.w-X(2.5*s),r.y+X(4*s),r.w*.5,{pt:6,c:mute,a:'right'})};
+ const head=(r,t,sub)=>{if(GS){/* BsstGis: 회색 창 제목줄 */const h=X(6.8*s),q=X(.5*s);g.save();rr(r.x,r.y,r.w,h+q,q);g.clip();g.fillStyle=hd;g.fillRect(r.x,r.y,r.w,h);g.restore();g.fillStyle=line;g.fillRect(r.x,r.y+h,r.w,X(.3));g.fillStyle=ac;g.fillRect(r.x+X(2.4*s),r.y+X(2.3*s),X(.6*s),h-X(4.6*s));txt(t,r.x+X(4.2*s),r.y+h/2,r.w*.6,{w:700,pt:6.8,c:ink});if(sub)txt(sub,r.x+r.w-X(2.5*s),r.y+h/2,r.w*.5,{pt:5.8,c:mute,a:'right'});return}g.fillStyle=ac;g.fillRect(r.x+X(2.5*s),r.y+X(2.4*s),X(.9*s),X(3.2*s));txt(t,r.x+X(4.6*s),r.y+X(4*s),r.w*.6,{w:800,pt:7.6,c:ink});if(sub)txt(sub,r.x+r.w-X(2.5*s),r.y+X(4*s),r.w*.5,{pt:6,c:mute,a:'right'})};
  const f1=v=>v.toFixed(1),f2=v=>v.toFixed(2),need='확인 필요';
  g.fillStyle='#fff';g.fillRect(0,0,W,H);
  /* 머리 띠(인디고→블루) */
- {const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#4338ca');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;g.fillRect(0,0,W,X(2.2*s))}
+ if(GS){/* BsstGis 머리: 회색 제목줄 + 파란 밑줄 */const h=X(6*s);g.fillStyle=hd;g.fillRect(0,0,W,h);g.fillStyle=ac;g.fillRect(0,h-X(.5*s),W,X(.5*s));txt('물길주소 · 소블록 현황도',X(M.m),h/2-X(.2*s),W*.5,{w:700,pt:6.4,c:ink});txt(`${b.n} · ${fmtDTv(Date.now()).slice(0,10)}`,W-X(M.m),h/2-X(.2*s),W*.4,{pt:5.8,c:mute,a:'right'})}
+ else{const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#4338ca');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;g.fillRect(0,0,W,X(2.2*s))}
  /* 지도 + 밖 흐림 + 경계 + 누수 별 */
  const mp=R(M.map),k=mp.w/S.src.w,P=([x,y])=>[mp.x+x*k,mp.y+y*k];
  if(S.B0){/* 블록 밖 = 배경만, 블록 안(+경계 둘레 띠) = 전체 */
@@ -2409,7 +2459,10 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
   S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?q.lineTo(x,y):q.moveTo(x,y)});q.closePath()});q.fillStyle=`rgba(${BP_FC},${BP_FADE[BP.o.fade]||.6})`;q.fill('evenodd');
   q.globalCompositeOperation='destination-out';q.beginPath();S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?q.lineTo(x,y):q.moveTo(x,y)});q.closePath()});q.lineJoin='round';q.lineWidth=X(3.2*s);q.stroke();g.drawImage(o,0,0)}
  const star=(x,y,r,c)=>{g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;g.lineTo(x+q*Math.cos(a),y+q*Math.sin(a))}g.closePath();g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=X(.2);g.stroke()};
- S.lk.forEach(o=>{const [x,y]=P(o.p);star(x,y,X(1.7*s),o.src==='민원'?'#16a34a':'#dc2626')});g.restore();
+ S.lk.forEach(o=>{const [x,y]=P(o.p);star(x,y,X(1.7*s),o.src==='민원'?'#16a34a':'#dc2626')});
+ (S.bigP||[]).forEach(o=>{const [x0,y0]=P(o.p),r=X(1.9*s),x=x0+r*1.3,y=y0-r*1.3;g.strokeStyle='#c2410c';g.lineWidth=X(.2*s);g.beginPath();g.moveTo(x0,y0);g.lineTo(x,y);g.stroke();
+  g.beginPath();g.arc(x,y,r,0,7);g.fillStyle='#c2410c';g.fill();g.strokeStyle='#fff';g.lineWidth=X(.3*s);g.stroke();txt(String(o.no),x,y+X(.1*s),r*2,{w:800,pt:6.2,c:'#fff',a:'center'})});
+ g.restore();
  g.strokeStyle='#334155';g.lineWidth=X(.3);g.strokeRect(mp.x,mp.y,mp.w,mp.h);
  {const cx=mp.x+mp.w-X(9*s),cy=mp.y+X(10*s),r=X(6*s);g.save();g.fillStyle='rgba(255,255,255,.92)';g.beginPath();g.arc(cx,cy,r,0,7);g.fill();g.strokeStyle='#334155';g.lineWidth=X(.25);g.stroke();
   g.fillStyle=ink;g.beginPath();g.moveTo(cx,cy-r*.8);g.lineTo(cx+r*.38,cy+r*.45);g.lineTo(cx,cy+r*.18);g.lineTo(cx-r*.38,cy+r*.45);g.closePath();g.fill();txt('N',cx,cy-r-X(2.2*s),r*2,{w:800,pt:7,a:'center'});g.restore()}
@@ -2423,12 +2476,12 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  const gr=bpGrade(lastR);
  /* 칸 나누기 */
  let tb,kb,ib,lb,sb;const G2=M.gap;
- if(M.l){const sd=M.side,th=19*s,kh=15*s,sh=50*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};kb={x:sd.x,y:sd.y+th+G2,w:sd.w,h:kh};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};
-  const my=kb.y+kh+G2,mh2=sb.y-G2-my,iw=sd.w*.38;ib={x:sd.x,y:my,w:iw,h:mh2};lb={x:sd.x+iw+G2,y:my,w:sd.w-iw-G2,h:mh2}}
+ if(M.l){const sd=M.side,th=19*s,kh=15*s,sh=(M.cu?44:50)*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};kb={x:sd.x,y:sd.y+th+G2,w:sd.w,h:kh};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};
+  let my=kb.y+kh+G2;if(M.syH){M.sys={x:sd.x,y:my,w:sd.w,h:M.syH};my+=M.syH+G2}const mh2=sb.y-G2-my,iw=sd.w*.38;ib={x:sd.x,y:my,w:iw,h:mh2};lb={x:sd.x+iw+G2,y:my,w:sd.w-iw-G2,h:mh2}}
  else{const lo=M.low,w1=lo.w*.36,w3=lo.w*.33,w2=lo.w-w1-w3-2*G2,th=17*s,kh=14*s;tb={x:lo.x,y:lo.y,w:w1,h:th};kb={x:lo.x,y:lo.y+th+G2,w:w1,h:kh};ib={x:lo.x,y:kb.y+kh+G2,w:w1,h:lo.h-th-kh-2*G2};
   lb={x:lo.x+w1+G2,y:lo.y,w:w2,h:lo.h};sb={x:lb.x+w2+G2,y:lo.y,w:w3,h:lo.h}}
  /* 제목 + 상태 배지 */
- {const r=R(tb);card(r,'#fff');g.fillStyle=ac;rr(r.x,r.y,X(1.6*s),r.h,X(.8*s));g.fill();let bw0=0;if(gr){g.font=FT(800,7.4);bw0=g.measureText(`유수율 ${f1(lastR)}% ${gr.t}`).width+X(5*s)+X(5*s)}
+ {const r=R(tb);card(r,'#fff');g.fillStyle=ac;rr(r.x,r.y,X((GS?.7:1.6)*s),r.h,X((GS?.3:.8)*s));g.fill();let bw0=0;if(gr){g.font=FT(800,7.4);bw0=g.measureText(`유수율 ${f1(lastR)}% ${gr.t}`).width+X(5*s)+X(5*s)}
   g.font=FT(900,15);const tt=`${b.n} 블록 현황도`,room=r.w-X(7*s)-bw0,tpt=g.measureText(tt).width>room?Math.max(9,15*room/g.measureText(tt).width):15;txt(tt,r.x+X(4.5*s),r.y+r.h*.42,room,{w:900,pt:tpt});
   txt([b.big&&b.big!==b.mid?'대블록 '+b.big:'',b.mid?'중블록 '+b.mid:'',`출력 ${fmtDTv(Date.now()).slice(0,10)}`].filter(Boolean).join(' · '),r.x+X(4.5*s),r.y+r.h*.8,r.w*.62,{pt:6.6,c:mute});
   if(gr){const t=`유수율 ${f1(lastR)}% ${gr.t}`;g.font=FT(800,7.4);const bw=g.measureText(t).width+X(5*s),bh=X(5.6*s),bx=r.x+r.w-bw-X(3*s),by=r.y+r.h*.42-bh/2;rr(bx,by,bw,bh,bh/2);g.fillStyle=gr.bg;g.fill();g.strokeStyle=gr.c;g.lineWidth=X(.3);g.stroke();txt(t,bx+bw/2,by+bh/2,bw,{w:800,pt:7.4,c:gr.c,a:'center'});
@@ -2437,6 +2490,16 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  {const r=R(kb),n=5,gp=X(1.4*s),cw=(r.w-gp*(n-1))/n,oldP=ps&&ps.known?ps.old/ps.known*100:null,lkm=lk&&ps&&ps.km>0?(lk.tam+lk.civ)/ps.km:null;
   const K=[['유수율',lastR!=null?f1(lastR)+'%':need,gr?gr.c:'#b45309',gr?gr.bg:'#fff'],['평균 공급량',avgS!=null?Math.round(avgS).toLocaleString()+' ㎥/일':need,ink],['관로 연장',ps?f2(ps.km)+' km':need,ink],['노후관 비율',oldP!=null?Math.round(oldP)+'%':need,oldP!=null&&oldP>=30?'#b91c1c':ink],['누수 건/km',lkm!=null?f2(lkm):need,ink]];
   K.forEach(([l,v,c,bg],i)=>{const x=r.x+i*(cw+gp);card({x,y:r.y,w:cw,h:r.h},bg&&bg!=='#fff'?bg:'#f8fafc');txt(l,x+cw/2,r.y+r.h*.3,cw-X(2*s),{w:600,pt:5.8,c:mute,a:'center'});txt(v,x+cw/2,r.y+r.h*.68,cw-X(2*s),{w:800,pt:/확인/.test(v)?6.2:8.2,c:/확인/.test(v)?'#b45309':c,a:'center'})})}
+ /* 급수계통도 (지도 밖 가로 한 줄) */
+ if(M.sys){const r=R(M.sys),y=info.sy;card(r);g.fillStyle=ac;g.fillRect(r.x+X(2.2*s),r.y+X(2.2*s),X(.8*s),r.h-X(4.4*s));
+  txt('급수계통',r.x+X(3.6*s),r.y+r.h*.38,X(14*s),{w:800,pt:6.6});txt(y&&y.src==='sheet'?'계통별 시트':y&&y.src?'경계 속성':'',r.x+X(3.6*s),r.y+r.h*.72,X(14*s),{pt:4.8,c:mute});
+  const rows=!y||!y.key?null:[['정수장',y.w,y.wA],['배수지',y.r,y.rA]].concat(y.pu?[['가압장',y.pu,0]]:[]).concat([['대블록',y.big,0],['유입 유량계',y.mid,0],['소블록',b.n,0]]);
+  if(!rows)txt('대블록·유량계 정보 없음 — 확인 필요 (유수율 엑셀 계통별 시트)',r.x+X(19*s),r.y+r.h/2,r.w-X(21*s),{w:600,pt:6,c:'#b45309'});
+  else{const x0=r.x+X(18*s),ag=X(3.2*s),n=rows.length,bw=(r.x+r.w-X(2*s)-x0-ag*(n-1))/n,bh=r.h-X(3.4*s),by=r.y+X(1.7*s);
+   rows.forEach(([k2,v,au],i)=>{const bx=x0+i*(bw+ag),me=k2==='소블록',miss=!v;rr(bx,by,bw,bh,X(1*s));g.fillStyle=me?ac:miss?'#fffbeb':'#f8fafc';g.fill();if(miss){g.setLineDash([X(.8),X(.6)]);g.strokeStyle='#f59e0b'}else g.strokeStyle=me?ac:'#cbd5e1';g.lineWidth=X(.25);g.stroke();g.setLineDash([]);
+    txt(k2+(au?' · 이름 맞춤':'')+(k2==='유입 유량계'&&y.sib>1?` · ${y.sib}개 블록`:''),bx+bw/2,by+bh*.3,bw-X(1.4*s),{w:600,pt:4.8,c:me?'#c7d2fe':mute,a:'center'});
+    txt(miss?need:v,bx+bw/2,by+bh*.68,bw-X(1.4*s),{w:me?900:700,pt:me?7:6,c:me?'#fff':miss?'#b45309':ink,a:'center'});
+    if(i<n-1){const ax=bx+bw+X(.5*s),ay=by+bh/2,a2=bx+bw+ag-X(.5*s);g.strokeStyle='#475569';g.lineWidth=X(.3*s);g.beginPath();g.moveTo(ax,ay);g.lineTo(a2-X(.9*s),ay);g.stroke();g.fillStyle='#475569';g.beginPath();g.moveTo(a2-X(1.1*s),ay-X(.9*s));g.lineTo(a2,ay);g.lineTo(a2-X(1.1*s),ay+X(.9*s));g.closePath();g.fill()}})}}
  /* INDEX 위치도 */
  {const r=R(ib);card(r);head(r,'INDEX','위치');const all=(G('poly')||{}).features||[];
   let x0=180,y0=90,x1=-180,y1=-90;all.forEach(f=>{const q=f.properties._bbox||turf.bbox(f);x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[2]);y1=Math.max(y1,q[3])});
@@ -2451,16 +2514,20 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
   const it=[{ln:BP_BND,t:'대상 소블록 경계',w:3,dash:1},{col:`rgba(${BP_FC},.95)`,t:'대상 소블록 밖 (흐리게)'}];
   if(S.lk.length){const nt=S.lk.filter(o=>o.src!=='민원').length,nc=S.lk.length-nt;if(nt)it.push({star:'#dc2626',t:'누수지점 (탐사)',n:nt});if(nc)it.push({star:'#16a34a',t:'민원 누수지점',n:nc})}
   let L0=(BP.o.leg?S.leg:[]).map(x=>x.h&&/틀 안/.test(x.h)?{...x,h:'상수도 시설물 (소블록 안)'}:x);
-  if(S.pk){const o2=[];let skip=false;L0.forEach(x=>{if(x.h){skip=/^상수관로/.test(x.h);if(skip){o2.push({h:'상수관로 (블록 안)'},{ln:'#111827',w:2.4,t:'배수관 등'},{ln:'#111827',w:1.6,t:'급수관'},{ln:BP_RC,w:2.4,t:`최근 10년 교체·신설 (${BP_RY0()}년~)`});return}}if(!skip)o2.push(x)});L0=o2}
+  if(S.pk){const o2=[];let skip=false;L0.forEach(x=>{if(x.h){skip=/^상수관로/.test(x.h);if(skip){o2.push({h:'상수관로 (블록 안)'},{ln:'#111827',w:2.4,t:'배수관 등'},{ln:'#111827',w:1.6,t:'급수관'},{ln:BP_RC,w:2.4,t:`최근 10년 교체·신설 (${BP_RY0()}년~)`},{ln:BP_OC,w:2.4,t:`노후관 30년 초과 (${new Date().getFullYear()-31}년 이전)`});return}}if(!skip)o2.push(x)});L0=o2}
+  if(S.ptC){const [q1,q2]=(()=>{try{const a=F('ptQB');return[a[0]||20,a[1]||100]}catch(_){return[20,100]}})();L0=L0.concat([{h:'수용가 (월평균 사용량)'},{col:'#bbf7d0',t:`${q1}㎥ 이하`},{col:'#4ade80',t:`${q1}~${q2}㎥`},{col:'#15803d',t:`${q2}㎥ 초과`}])}
+  if(S.bigP&&S.bigP.length)L0.push({num:1,t:'대수용가 순위 (수용가 현황 표)'});
+  L0=L0.filter(x=>x.t!=='소블록 경계'&&!(S.ptC&&x.t==='수용가 점'));
   const items=it.concat(L0);
-  const rh=X(3.7*s),top=r.y+X(7.5*s),rows=Math.max(1,Math.floor((r.h-X(9*s))/rh)),cols=Math.max(1,Math.min(2,Math.ceil(items.length/rows))),cw=(r.w-X(4*s))/cols,cap=rows*cols,show=items.length>cap?items.slice(0,cap-1):items;
+  const rh=X(3.7*s),top=r.y+X(7.5*s),rows=Math.max(1,Math.floor((r.h-X(9*s))/rh)),cols=Math.max(1,Math.min(3,Math.ceil(items.length/rows))),cw=(r.w-X(4*s))/cols,cap=rows*cols,show=items.length>cap?items.slice(0,cap-1):items;
   show.forEach((o,i)=>{const c=Math.floor(i/rows),q=i%rows,x=r.x+X(2.5*s)+c*cw,y=top+q*rh+rh/2,sw=X(5.5*s),sh=X(2.8*s);
    if(o.h){txt(o.h,x,y,cw-X(2),{w:800,pt:6.2,c:ac});return}
    if(o.ln){g.strokeStyle=o.ln;g.lineWidth=X((o.w||2.4)*.25*s*1.6);g.lineCap=o.dash?'butt':'round';if(o.dash)g.setLineDash([X(1.6*s),X(1*s)]);g.beginPath();g.moveTo(x,y);g.lineTo(x+sw,y);g.stroke();g.setLineDash([])}
    else if(o.star)star(x+sw/2,y,X(1.6*s),o.star);
+   else if(o.num){g.beginPath();g.arc(x+sw/2,y,X(1.5*s),0,7);g.fillStyle='#c2410c';g.fill();txt('1',x+sw/2,y,X(3*s),{w:800,pt:5.4,c:'#fff',a:'center'})}
    else if(o.img){const ih=X(3.2*s),iw2=ih*(o.img.naturalWidth&&o.img.naturalHeight?o.img.naturalWidth/o.img.naturalHeight:1);try{g.drawImage(o.img,x+(sw-Math.min(sw,iw2))/2,y-ih/2,Math.min(sw,iw2),ih)}catch(_){}}
    else{g.fillStyle=o.col||'#94a3b8';g.fillRect(x+X(.5),y-sh/2,sw-X(1),sh);g.strokeStyle='#94a3b8';g.lineWidth=X(.15);g.strokeRect(x+X(.5),y-sh/2,sw-X(1),sh)}
-   txt(o.t+(o.n?` (${o.n.toLocaleString()})`:''),x+sw+X(1.3*s),y,cw-sw-X(3*s),{pt:6})});
+   txt(o.t+(o.n?` (${o.n.toLocaleString()})`:''),x+sw+X(1.3*s),y,cw-sw-X(3*s),{pt:cols>2?5.4:6})});
   if(items.length>cap){const i=cap-1,c=Math.floor(i/rows),q=i%rows;txt(`… 외 ${items.length-cap+1}개`,r.x+X(2.5*s)+c*cw,top+q*rh+rh/2,cw,{pt:6,c:mute})}}
  /* 현황표 + 관경·재질 100% 막대 */
  {const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
@@ -2477,17 +2544,19 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  /* 아래 띠: 월별 표(최근 해 + 전년 평균) + 그래프(2개년) */
  if(M.tbl){const r=R(M.tbl),Yr=SE.Yr,J=Yr.length-1,mo=info.mo||null;card(r);
   if(!N){txt(BP.nrw?`'${BP.nrw.sn}' 시트에 ${b.n} 소블록이 없습니다 — 확인 필요`:'월별 유수율: 창에서 유수율 분석 엑셀(유수율(소블록별) 시트)을 넣으면 들어갑니다 — 확인 필요',r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:7,c:'#b45309'})}
-  else{const y0=Yr[J],LB=[['공급량(㎥/일)','s',0],['부과량(㎥/일)','b',0],['야간최소(㎥/h)','n',1],['유수율(%)','r',1],['누수탐사(건)','lt',2],['누수민원(건)','lc',2]],lw=X(19*s),nc=14,cw=(r.w-lw)/nc,rh=r.h/8,pt=M.l?6:5.6;
+  else{const y0=Yr[J],cs=info.cs&&info.cs.n?info.cs:null,LB=[['공급량(㎥/일)','s',0],['부과량(㎥/일)','b',0],['야간최소(㎥/h)','n',1],['유수율(%)','r',1],['누수탐사(건)','lt',2],['누수민원(건)','lc',2]].concat(cs?[['사용량(㎥/월)','u',0],['전년 동월(%)','y',4]]:[]),NR=LB.length+2,lw=X(19*s),nc=14,cw=(r.w-lw)/nc,rh=r.h/NR,pt=M.l?6:5.6;
    rr(r.x,r.y,r.w,rh*2,X(1.6*s));g.fillStyle=hd;g.fill();g.fillRect(r.x,r.y+rh,r.w,rh);txt('구분',r.x+lw/2,r.y+rh,lw,{w:800,pt:6.6,a:'center',c:ac});
    txt(`${y0}년`,r.x+lw+cw*6.5,r.y+rh/2,cw*13,{w:800,pt:6.8,a:'center',c:ac});txt(Yr.length>1?`${Yr[0]}년`:'전년',r.x+lw+cw*13.5,r.y+rh/2,cw,{w:800,pt:6,a:'center',c:ac});
    for(let c=0;c<14;c++)txt(c===13?'평균':c?c+'월':'평균',r.x+lw+(c+.5)*cw,r.y+rh*1.5,cw,{w:700,pt:pt,a:'center',c:ac});
    const lkM=(key,j,m)=>{if(!mo)return null;const y=Yr[j];if(m===0){let t=0,any=false;for(let q=1;q<=12;q++){const o=mo.get(y+'-'+q);if(o){t+=o[key];any=true}}return any||mo.has('y'+y)?t:null}const o=mo.get(y+'-'+m);return o?o[key]:(mo.has('y'+y)?0:null)};
    LB.forEach(([t,key,dg],i)=>{const yy=r.y+rh*(2+i),yc=yy+rh/2;if(i%2){g.fillStyle='#f8fafc';g.fillRect(r.x+X(.3),yy,r.w-X(.6),rh)}txt(t,r.x+X(2*s),yc,lw-X(2.5*s),{w:700,pt:6});
-    const val=(j,m)=>key==='lt'?lkM('tam',j,m):key==='lc'?lkM('civ',j,m):(SE.f(key,j)[m]??null);
+    const uT=(y,m)=>cs?cs.tot.get(y+'-'+m)??null:null,uAvg=y=>{let t=0,c=0;for(let q=1;q<=12;q++){const v=uT(y,q);if(v!=null){t+=v;c++}}return c?t/c:null};
+    const yoy=(y,m)=>{if(m){const a=uT(y,m),b0=uT(y-1,m);return a!=null&&b0?(a/b0-1)*100:null}let a=0,b0=0,c=0;for(let q=1;q<=12;q++){const v=uT(y,q),w=uT(y-1,q);if(v!=null&&w){a+=v;b0+=w;c++}}return c?(a/b0-1)*100:null};
+    const val=(j,m)=>key==='lt'?lkM('tam',j,m):key==='lc'?lkM('civ',j,m):key==='u'?(m?uT(+Yr[j],m):uAvg(+Yr[j])):key==='y'?(j===J?yoy(+Yr[j],m):null):(SE.f(key,j)[m]??null);
     for(let c=0;c<14;c++){const j=c===13?J-1:J,m=c===13?0:c;if(j<0)continue;let v=val(j,m);if(v==null)continue;if(key==='r')v=bpPct(v);const x=r.x+lw+c*cw;
      if(key==='r'){const q=bpGrade(v);if(q){g.fillStyle=q.bg;g.fillRect(x+X(.3),yy+X(.3),cw-X(.6),rh-X(.6))}}
-     txt(dg===2?String(v):dg?v.toFixed(1):Math.round(v).toLocaleString(),x+cw/2,yc,cw-X(.6),{w:m===0?800:500,pt:pt,a:'center',c:key==='r'?(bpGrade(v)||{}).c||ink:(dg===2&&v>0?'#b91c1c':ink)})}});
-   g.strokeStyle=line;g.lineWidth=X(.12);for(let i=2;i<8;i++){g.beginPath();g.moveTo(r.x,r.y+rh*i);g.lineTo(r.x+r.w,r.y+rh*i);g.stroke()}
+     txt(dg===4?(v>0?'+':'')+v.toFixed(1):dg===2?String(v):dg?v.toFixed(1):Math.round(v).toLocaleString(),x+cw/2,yc,cw-X(.6),{w:m===0?800:500,pt:pt,a:'center',c:key==='r'?(bpGrade(v)||{}).c||ink:dg===4?(v>=0?'#15803d':'#b91c1c'):(dg===2&&v>0?'#b91c1c':ink)})}});
+   g.strokeStyle=line;g.lineWidth=X(.12);for(let i=2;i<NR;i++){g.beginPath();g.moveTo(r.x,r.y+rh*i);g.lineTo(r.x+r.w,r.y+rh*i);g.stroke()}
    [0,1,13,14].forEach(c=>{const x=r.x+lw+c*cw;g.strokeStyle=c===13||c===0?'#94a3b8':line;g.lineWidth=X(c===13||c===0?.25:.12);g.beginPath();g.moveTo(x,r.y+(c===1?rh:0));g.lineTo(x,r.y+r.h);g.stroke()});
    if(!mo){txt('누수 건수: ②-4 📒 대장을 넣으면 채워집니다',r.x+lw+X(2*s),r.y+rh*7.5,r.w-lw,{pt:5.8,c:'#b45309'})}}}
  if(M.chart){const r=R(M.chart);card(r);
@@ -2517,8 +2586,40 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    /* 범례 줄 */
    const LG=[['#bfdbfe','공급량','b'],['#6366f1','부과량','b'],['#dc2626','유수율','l'],...(tv.some(v=>v!=null)?[['#64748b','포항 전체','d']]:[]),['#0d9488','야간최소','l'],['rgba(220,38,38,.55)','누수','b']];
    g.font=FT(500,5.4);let lx=r.x+r.w-X(2.5*s);const ly=top+h1+X(2.4*s);[...LG].reverse().forEach(([c,t,k2])=>{const tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5.4,c:mute});lx-=X(3.4*s);if(k2==='b'){g.fillStyle=c;g.fillRect(lx,ly-X(.9*s),X(2.6*s),X(1.8*s))}else{g.save();g.strokeStyle=c;g.lineWidth=X(.4*s);if(k2==='d')g.setLineDash([X(1),X(.8)]);g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+X(2.8*s),ly);g.stroke();g.restore()}lx-=X(1.6*s)})}}
+ /* 수용가 현황 카드(C안) */
+ if(M.cu){const r=R(M.cu),cs=info.cs;card(r);head(r,'수용가 현황',cs&&cs.n?`부과량 ${cs.M[cs.li]} 기준 · 관리번호만`:'');
+  if(!cs||!cs.n){txt(!cs?'부과량 엑셀(③ 부과량)을 넣으면 채워집니다 — 확인 필요':`부과량 자료 Y열에 ${b.n} 소블록 수용가가 없습니다 — 확인 필요`,r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:6.4,c:'#b45309'})}
+  else{const pad=X(2.5*s),cx=r.x+pad,cw=r.w-2*pad,top=r.y+X(7.5*s),hTop=(r.h-X(7.5*s))*.62,lw=cw*.5,UC=['#6366f1','#22c55e','#f59e0b','#06b6d4','#cbd5e1'],lh=X(3*s);
+   /* 왼쪽: 요약 줄 + 업종·구경 막대 */
+   const N0=info.nrw,SE2=bpSeries(N0),ym=/^(\d{4})-(\d\d)$/.exec(cs.M[cs.li]||''),nb=(()=>{if(!N0||!ym)return null;const j=SE2.Yr.indexOf(+ym[1]);return j>=0?SE2.f('b',j)[+ym[2]]:null})();
+   const lastM=ym?cs.tot.get(ym[1]+'-'+(+ym[2])):null,days=ym?new Date(+ym[1],+ym[2],0).getDate():30;
+   const L1=[[`수전 ${cs.n.toLocaleString()}전 · 가구 ${cs.hh.toLocaleString()}`,ink,700],[`월평균 ${Math.round(cs.qs).toLocaleString()}㎥ (1전당 ${cs.avg!=null?cs.avg.toFixed(1):'-'}㎥)`,ink,500],
+    [lastM!=null?`부과 ${Math.round(lastM/days).toLocaleString()}㎥/일 · 유수율 시트 ${nb!=null?Math.round(nb).toLocaleString()+'㎥/일':need}`:'',nb!=null&&lastM!=null&&Math.abs(lastM/days/nb-1)>.1?'#b45309':mute,500]];
+   L1.forEach(([t,c,w],i)=>{if(t)txt(t,cx,top+lh*(i+.5),lw-X(2*s),{w,pt:6,c})});
+   const bar=(lab,parts,y)=>{const tot=parts.reduce((t,p)=>t+p[1],0);if(!tot)return;txt(lab,cx,y,X(9*s),{w:600,pt:5.6,c:mute});const x0=cx+X(7*s),ww=lw-X(8*s),bh=X(2*s);let x=x0;
+    parts.forEach(([n2,v,c])=>{const w2=ww*v/tot;g.fillStyle=c;g.fillRect(x,y-bh/2,Math.max(1,w2-X(.2)),bh);x+=w2});g.font=FT(500,4.6);let lx=x0;const ly=y+bh/2+X(1.8*s);
+    let ly2=ly,ln=0;parts.forEach(([n2,v,c])=>{if(v/tot<.04)return;const t=`${n2} ${v.toLocaleString()}`,tw=g.measureText(t).width+X(2.6*s);if(lx+tw>x0+ww&&lx>x0){if(ln)return;ln=1;lx=x0;ly2+=X(2.1*s)}g.fillStyle=c;g.fillRect(lx,ly2-X(.7*s),X(1.4*s),X(1.4*s));txt(t,lx+X(1.8*s),ly2,tw,{pt:4.6,c:ink});lx+=tw+X(.6*s)})};
+   const ip=cs.ind.slice(0,4).map(([n2,v],i)=>[n2,v,UC[i]]),irest=cs.ind.slice(4).reduce((t,x)=>t+x[1],0);if(irest)ip.push(['기타',irest,UC[4]]);
+   const DC2=['#e0f2fe','#bae6fd','#7dd3fc','#38bdf8','#0284c7','#075985'],dp=cs.dia.slice(0,5).map(([n2,v],i)=>[n2,v,DC2[i]]),drest=cs.dia.slice(5).reduce((t,x)=>t+x[1],0);if(drest)dp.push(['기타',drest,DC2[5]]);
+   const by=top+lh*3+X(1*s),bstep=(hTop-lh*3-X(1*s))/2;bar('업종',ip,by+X(1.2*s));bar('구경',dp,by+bstep+X(1.2*s));
+   /* 오른쪽: 대수용가 상위 5 */
+   const tx=cx+lw+X(1*s),tw2=cw-lw-X(1*s),cols=[[.1,''],[.36,'관리번호'],[.26,'업종'],[.12,'구경'],[.16,'월평균']],rh2=Math.min(lh,hTop/6.4);
+   txt(`대수용가 (월 ${cs.bq.toLocaleString()}㎥ 이상 ${cs.big.length}곳)`,tx,top+rh2*.5,tw2,{w:700,pt:5.8,c:'#c2410c'});
+   let xx=tx;g.fillStyle=hd;g.fillRect(tx,top+rh2,tw2,rh2);cols.forEach(([f,t])=>{txt(t,xx+tw2*f/2,top+rh2*1.5,tw2*f,{w:700,pt:5.2,c:ac,a:'center'});xx+=tw2*f});
+   if(!cs.big.length)txt('해당 없음',tx+tw2/2,top+rh2*2.6,tw2,{pt:5.6,c:mute,a:'center'});
+   cs.big.slice(0,5).forEach((x,i)=>{const y=top+rh2*(2.5+i);let x1=tx;[[String(i+1)],[String(x.mg||'-')],[String(x.u||'-')],[x.d?x.d+'':'-'],[Math.round(x.a).toLocaleString()]].forEach(([t],c)=>{const f=cols[c][0];
+     if(c===0){g.beginPath();g.arc(x1+tw2*f/2,y,X(1.3*s),0,7);g.fillStyle='#c2410c';g.fill();txt(t,x1+tw2*f/2,y,X(3*s),{w:800,pt:5,c:'#fff',a:'center'})}else txt(t,x1+tw2*f/2,y,tw2*f-X(.6*s),{pt:5.4,c:ink,a:'center',w:c===4?700:500});x1+=tw2*f});
+    g.strokeStyle='#eef2f7';g.lineWidth=X(.1);g.beginPath();g.moveTo(tx,y+rh2/2);g.lineTo(tx+tw2,y+rh2/2);g.stroke()});
+   /* 아래: 업종별 월 사용량 쌓은 막대 */
+   const c0=r.y+X(7.5*s)+hTop+X(1*s),ch=r.y+r.h-c0-X(5*s),n=cs.mi.length,px0=cx+X(8*s),px1=cx+cw-X(1*s),bw=(px1-px0)/Math.max(1,n);
+   txt('업종별 월 사용량(㎥)',cx,c0+X(1*s),X(40*s),{w:700,pt:5.6,c:ink});
+   const tots=cs.ser.map(o=>Object.values(o).reduce((t,v)=>t+v,0)),mx=Math.max(1,...tots)*1.08,ct=c0+X(3*s),chh=ch-X(3*s);
+   g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(px0,ct+chh);g.lineTo(px1,ct+chh);g.stroke();txt(Math.round(mx/1.08).toLocaleString(),px0-X(.8*s),ct+chh-chh/1.08,X(8*s),{pt:4.8,c:mute,a:'right'});
+   cs.ser.forEach((o,i)=>{let y=ct+chh;cs.keys.forEach((k2,q)=>{const v=o[k2]||0;if(!v)return;const hh2=v/mx*chh;g.fillStyle=UC[Math.min(q,4)];g.fillRect(px0+i*bw+bw*.15,y-hh2,bw*.7,hh2);y-=hh2})});
+   cs.mi.forEach((mi2,i)=>{const m=/^(\d{4})-(\d\d)$/.exec(cs.M[mi2]||'');if(!m)return;const mm=+m[2];if(mm%3===1||i===0)txt(mm===1||i===0?`${m[1].slice(2)}.${mm}`:String(mm),px0+(i+.5)*bw,ct+chh+X(1.8*s),bw*3,{pt:4.6,c:mute,a:'center'})});
+   g.font=FT(500,5);let lx=px1;const ly=c0+X(1*s);[...cs.keys].reverse().forEach((k2)=>{const q=cs.keys.indexOf(k2),t=k2,tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5,c:mute});lx-=X(2.4*s);g.fillStyle=UC[Math.min(q,4)];g.fillRect(lx,ly-X(.8*s),X(1.8*s),X(1.6*s));lx-=X(1.2*s)})}}
  /* 아래 줄 */
- {const r=R(M.foot);const gr2=g.createLinearGradient(r.x,0,r.x+r.w,0);gr2.addColorStop(0,'#4338ca');gr2.addColorStop(1,'#2563eb');g.fillStyle=gr2;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
+ {const r=R(M.foot);const gr2=g.createLinearGradient(r.x,0,r.x+r.w,0);gr2.addColorStop(0,GS?ac:'#4338ca');gr2.addColorStop(1,'#2563eb');g.fillStyle=gr2;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
   const [ga,gb]=BP_G();txt(`스마트 물길주소 · ${site} · 만든이: 구병순 · 축척 1:${vpFmt(S.scale)} · ${BP.o.p} ${M.l?'가로':'세로'} · 배경: ${S.B.attr||'없음'} · 유수율 ${ga}%↑ 양호 · ${gb}~${ga}% 주의 · ${gb}% 미만 심각`+(S.secret?' · 대외비(외부 반출 금지)':''),r.x,r.y+r.h*.6,r.w*.85,{pt:6.2,c:S.secret?'#991b1b':mute});
   txt(`No. ${no}`,r.x+r.w,r.y+r.h*.6,r.w*.12,{w:800,pt:9,a:'right'})}
  return cv}
@@ -2536,7 +2637,7 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
  const pages=[],zip=kind==='png'?new JSZip():null,D=kind==='hwpx'?F('hwpxNew','소블록 현황도'):null;let done=0,masked=0,note='';
  try{for(const b of list){if(BP.stop)break;cover.firstChild.textContent=`🗺 ${b.n} 현황도 만드는 중… (${done+1}/${list.length})`;st(`${b.n} (${done+1}/${list.length}) 지도 다시 그리는 중…`);
    const info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0)}:null,lk:bpLeaks(b),cu:hasOut?cnt.get(b.n)||0:null,nrw:bpNrwOf(b.n)};
-   info.mo=info.lk?info.lk.mo:null;const S=await bpShot(b,M.map,dpm,info,M.s);masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
+   info.mo=info.lk?info.lk.mo:null;info.cs=BP.o.cu!==0?bpCust(b.n):null;info.sy=BP.o.sys!==0?bpSysOf(b):null;const S=await bpShot(b,M.map,dpm,info,M.s);masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
    if(kind==='pdf'){const bl=await new Promise(r=>cv.toBlob(r,'image/jpeg',.9));pages.push(URL.createObjectURL(bl))}
    else if(kind==='png'){const bl=await new Promise(r=>cv.toBlob(r,'image/png'));zip.file(`${String(no).padStart(3,'0')}_${b.n.replace(/[\\/:*?"<>|]/g,'_')}_현황도.png`,bl)}
    else if(kind==='hwpx'){const u=cv.toDataURL('image/jpeg',.9),bb=F('hwpxB64',u);if(!bb)throw new Error('그림 변환 실패');if(done){D.xs.push(`<hp:p id="${D.id++}" paraPrIDRef="20" styleIDRef="0" pageBreak="1" columnBreak="0" merged="0"><hp:run charPrIDRef="7"><hp:t></hp:t></hp:run></hp:p>`)}
@@ -2552,7 +2653,7 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
  catch(e){console.warn('bp',e);st('출력하지 못했습니다: '+(e&&e.message||e));if(w&&!w.closed&&!pages.length)w.close()}
  finally{m.setView(c0,z0,{animate:false});cover.remove();BP.el.style.visibility='';if(hl)try{hl.addTo(m)}catch(_){}if(pv&&BP.cur)bpPrev((bpBlocks().find(x=>x.n===BP.cur)||{}).fs);BP.busy=false;stopB.hidden=true;
   if(kind==='pdf')setTimeout(()=>pages.forEach(u=>{try{URL.revokeObjectURL(u)}catch(_){}}),600000)}}
-window.bpOpen=bpOpen;window.BPR=BP;
+window.bpOpen=bpOpen;window.BPR=BP;window.bpCust=bpCust;
 })();
 </script>
 <script>
