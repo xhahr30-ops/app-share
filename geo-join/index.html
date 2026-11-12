@@ -2291,7 +2291,7 @@ function bpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않
 <label class="uif">화질<select data-bo="hq"><option value="0"${BP.o.hq?'':' selected'}>보통 (빠름)</option><option value="1"${BP.o.hq?' selected':''}>선명 (지도를 2배로 다시 그림)</option></select></label>
 <label class="uif">유수율 기준 (양호·주의 %)<span><input data-bo="g1" type="number" min="1" max="100" value="${+BP.o.g1||85}" style="width:54px"> <input data-bo="g2" type="number" min="1" max="100" value="${+BP.o.g2||70}" style="width:54px"></span></label>
 <label class="uif">쪽 번호 시작<input data-bo="no" type="number" min="1" max="999" value="${+BP.o.no||1}" style="width:70px"></label>
-<label class="uir"><input type="checkbox" data-bo="pk"${BP.o.pk!==0?' checked':''}> 관로 검정 선 통일 (배수관 = 급수관 × 1.5, 블록 안만)</label>
+<label class="uir"><input type="checkbox" data-bo="pk"${BP.o.pk!==0?' checked':''}> 관로 검정 선 통일 (배수관 = 급수관 × 1.5, 블록 안만)</label><label class="uir"><input type="checkbox" data-bo="cl"${BP.o.cl!==0?' checked':''}> 블록 밖은 배경만 (밖 시설물·수용가 점·글자 빼기)</label><label class="uir"><input type="checkbox" data-bo="bgl"${BP.o.bgl!==0?' checked':''}> 배경지도 연하게 (흑백·옅게, 출력용)</label>
 <label class="uir"><input type="checkbox" data-bo="leg"${BP.o.leg?' checked':''}> 범례 (켜진 레이어 · 소블록 안 시설물 개수)</label>
 <label class="uir"><input type="checkbox" data-bo="leak"${BP.o.leak?' checked':''}> 누수·민원 지점 별표 (②-4 📒 대장)</label>
 <label class="uir"><input type="checkbox" data-bo="nrw"${BP.o.nrw?' checked':''}> 월별 유수율 표 넣기</label>
@@ -2329,7 +2329,11 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  /* 관로 검정 통일(2026-11-12): 화면 관로 레이어는 빼고 찍은 뒤, 블록 안 관로만 검정 선으로 직접 그림(배수관 = 급수관 × 1.5) */
  const PP=G('PIPE'),pOn=!!PP&&[PP.layer,PP.layerS].some(l=>l&&m.hasLayer(l)),pk=BP.o.pk!==0&&pOn,pRm=[];let tmp=null;
  if(pk)[PP.layer,PP.layerS].forEach(l=>{if(l&&m.hasLayer(l)){m.removeLayer(l);pRm.push(l)}});
- const FA=G('FAC');if(FA)FA.bndAll=true; /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
+ /* 블록 안 + 경계선 15m 안(경계밸브는 경계 위·바로 밖에 있어 안쪽 판정만 하면 빠짐) */
+ const bxs=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),E=.0002,lns=[];b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>{if(r.length>1)lns.push(turf.lineString(r))}))});
+ const inF=(x,y)=>{const pt=turf.point([x,y]);if(b.fs.some((f,i)=>{const z=bxs[i];return x>=z[0]&&x<=z[2]&&y>=z[1]&&y<=z[3]&&turf.booleanPointInPolygon(pt,f)}))return true;
+  if(!bxs.some(z=>x>=z[0]-E&&x<=z[2]+E&&y>=z[1]-E&&y<=z[3]+E))return false;return lns.some(l=>{try{return turf.pointToLineDistance(pt,l,{units:'meters'})<=15}catch(_){return false}})};
+ const FA=G('FAC'),cl=BP.o.cl!==0;if(FA){FA.bndAll=true;FA.bpLbl=1.35;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
  try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
   const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(14,fw*.05);
   const bb=L.geoJSON({type:'FeatureCollection',features:b.fs}).getBounds();m.fitBounds(bb,{paddingTopLeft:[px+pad,py+pad],paddingBottomRight:[px+pad,py+pad],animate:false,maxZoom:18});
@@ -2350,20 +2354,20 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
    /* 최근 10년 교체·신설(설치연도 기준) = 초록, 그 밖 검정. 배수관 = 급수관 × 1.5 */
    [[false,true],[false,false],[true,true],[true,false]].forEach(([nw,sv])=>{g.strokeStyle=nw?BP_RC:'#111827';g.lineWidth=(sv?.28:.42)*Q;g.beginPath();pl.forEach(o=>{if(o.svc!==sv||o.nw!==nw)return;o.pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y))});g.stroke()});g.restore();
    ring();g.lineJoin='round';g.lineCap='butt';g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.1*Q;g.stroke();g.setLineDash([2.4*Q,1.4*Q]);g.strokeStyle=BP_BND;g.lineWidth=.6*Q;g.stroke();g.setLineDash([])}
-  const B=await F('mapShotBase',pk?['pipes']:[],0,null,kk,{dom:true});if(!B)throw new Error('지도 캡처 함수를 찾지 못했습니다');
+  /* 출력용 연한 배경: 채도 빼고 흰 막 */
+  const bgHook=BP.o.bgl!==0?(g,W,H)=>{g.save();g.globalCompositeOperation='saturation';g.globalAlpha=.85;g.fillStyle='hsl(0,0%,50%)';g.fillRect(0,0,W,H);g.restore();g.save();g.fillStyle='rgba(255,255,255,.38)';g.fillRect(0,0,W,H);g.restore()}:null;
+  const B=await F('mapShotBase',pk?['pipes']:[],0,null,kk,{dom:true,bgHook});
+  /* 블록 밖은 배경만: 배경만 한 번 더 찍어 바깥에 씀 */
+  const B0=cl&&B?await F('mapShotBase',[],0,null,kk,{bgOnly:true,bgHook}):null;if(!B)throw new Error('지도 캡처 함수를 찾지 못했습니다');
   const T=(lat,lng)=>{const p=m.latLngToContainerPoint([lat,lng]);return[(p.x-px)*B.k,(p.y-py)*B.k]},rings=[];
   b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>rings.push(r.map(c=>T(c[1],c[0])))))});
   const lk=BP.o.leak&&info.lk?info.lk.pts.map(o=>({src:o.src,p:T(o.ll[0],o.ll[1])})):[];
   const c=m.containerPointToLatLng([px+fw/2,py+fh/2]),scale=fw*vpMpp(m.getZoom(),c.lat)/(mm.w/1000);
   const P=G('PIPE'),secret=pOn||(!!P&&[P.layer,P.layerS].some(l=>l&&m.hasLayer(l)));
-  let leg=[];if(BP.o.leg){const q=bb,bxs=b.fs.map(f=>f.properties._bbox||turf.bbox(f));
-   /* 블록 안 + 경계선 15m 안(경계밸브는 경계 위·바로 밖에 있어 안쪽 판정만 하면 범례에서 빠짐) */
-   const E=.0002,lns=[];b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>{if(r.length>1)lns.push(turf.lineString(r))}))});
-   const inF=(x,y)=>{const pt=turf.point([x,y]);if(b.fs.some((f,i)=>{const z=bxs[i];return x>=z[0]&&x<=z[2]&&y>=z[1]&&y<=z[3]&&turf.booleanPointInPolygon(pt,f)}))return true;
-    if(!bxs.some(z=>x>=z[0]-E&&x<=z[2]+E&&y>=z[1]-E&&y<=z[3]+E))return false;return lns.some(l=>{try{return turf.pointToLineDistance(pt,l,{units:'meters'})<=15}catch(_){return false}})};
+  let leg=[];if(BP.o.leg){const q=bb;
    leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}
-  return{B,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk}}
- finally{if(FA){FA.bndAll=false;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+  return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk}}
+ finally{if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
 function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,tH=BP.o.nrw?(l?40:46)*s:0;
  const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}};
@@ -2390,7 +2394,12 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  {const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#4338ca');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;g.fillRect(0,0,W,X(2.2*s))}
  /* 지도 + 밖 흐림 + 경계 + 누수 별 */
  const mp=R(M.map),k=mp.w/S.src.w,P=([x,y])=>[mp.x+x*k,mp.y+y*k];
- g.drawImage(S.B.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
+ if(S.B0){/* 블록 밖 = 배경만, 블록 안(+경계 둘레 띠) = 전체 */
+  g.drawImage(S.B0.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
+  const o=document.createElement('canvas');o.width=W;o.height=H;const q=o.getContext('2d');q.drawImage(S.B.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
+  const mk=document.createElement('canvas');mk.width=W;mk.height=H;const u=mk.getContext('2d');u.beginPath();S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?u.lineTo(x,y):u.moveTo(x,y)});u.closePath()});u.fillStyle='#000';u.fill('evenodd');u.lineJoin='round';u.lineWidth=X(3.2*s);u.strokeStyle='#000';u.stroke();
+  q.globalCompositeOperation='destination-in';q.drawImage(mk,0,0);g.drawImage(o,0,0)}
+ else g.drawImage(S.B.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
  g.save();g.beginPath();g.rect(mp.x,mp.y,mp.w,mp.h);g.clip();g.beginPath();g.rect(mp.x,mp.y,mp.w,mp.h);
  S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()});
  if(!S.pk){g.fillStyle=`rgba(${BP_FC},${BP_FADE[BP.o.fade]||.6})`;g.fill('evenodd');
@@ -5997,9 +6006,9 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
 const FLBL={wtp:[11,0],res:[11,1],pump:[12,2],meter:[14,3]},FLBL_F=['정수장명','배수지명','가압장명','소블록명','블록명','중블록명','관리번호'];
 function facLblText(i){let t=FAC.lt.get(i);if(t!==undefined)return t;const P=FAC.pt[i].p||{};t='';
  for(const k of FLBL_F){const v=P[k];if(v!=null&&String(v).trim()&&String(v).trim()!=='-'){t=String(v).trim().slice(0,20);break}}FAC.lt.set(i,t);return t}
-function facLabels(g,z,by,KI,W,H){if($('fLbl').value==='off'||!FAC.lt)return;const fp=+UI.lblPx||11,cand=[];
+function facLabels(g,z,by,KI,W,H){if($('fLbl').value==='off'||!FAC.lt)return;const fp=Math.round((+UI.lblPx||11)*(FAC.bpLbl||1)),cand=[]; /* bpLbl·bpIn: 소블록 현황도 출력 때 글자 크게·블록 안 시설만 */
  by.forEach((a,k)=>{const L0=FLBL[KI[k].sym];if(!L0||z<L0[0]||!a.length)return;const s=facSzK(z,KI[k],FAC.kinds[k]);
-  for(let j=0;j<a.length;j+=3){const t=facLblText(a[j+2]);if(t)cand.push({x:a[j],y:a[j+1],t,s,o:L0[1]})}});
+  for(let j=0;j<a.length;j+=3){if(FAC.bpIn&&!FAC.bpIn(a[j+2]))continue;const t=facLblText(a[j+2]);if(t)cand.push({x:a[j],y:a[j+1],t,s,o:L0[1]})}});
  if(!cand.length)return;cand.sort((p,q)=>p.o-q.o);
  g.save();g.font=`700 ${fp}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3.2*Math.max(1,fp/11*.9);
  const box=[],hit=(r)=>box.some(b=>r[0]<b[2]&&r[2]>b[0]&&r[1]<b[3]&&r[3]>b[1]);let n=0;
@@ -8207,6 +8216,8 @@ async function mapShotBase(skip,bandH,ext,kk,opt){opt=opt||{};
   used=used||src;attr=[LOC_SRC[src].attr,attr].filter(Boolean).join(' · ');note=(lys.length?`화면 배경(${miss[0]||LYR_NM(lys[0])})을 이미지로 받지 못해 위성 사진으로 대신했습니다.`:'')+(ok<tiles.length?' 배경지도 일부 조각을 받지 못했습니다.':'');break}}
  if(!used&&!BG.off)note='배경지도를 이미지로 받지 못해 회색 바탕으로 만들었습니다 (관로·밸브는 그대로).';
  else if(miss.length&&baseOk)note=(note?note+' ':'')+`${miss.join('·')}을(를) 이미지로 받지 못해 빠졌습니다.`;
+ if(opt.bgHook)try{opt.bgHook(g,W,Hm)}catch(_){}
+ if(opt.bgOnly)return{cv,g,k,W,Hm,R,used,note,attr,masked:0,dom:false};
  /* 3) 지도 위 캔버스(관로·경계·시설물·수용가 점·단수구역·그리기)를 칸 순서대로. dom이면 HTML 표시(핀·사진·정보창)를 칸 높이에 맞춰 끼워 넣음 */
  const mp=map.getPane('mapPane'),sk=(skip||[]).map(n=>map.getPane(n)).filter(Boolean),zOf=c=>{let e=c;while(e&&e.parentElement!==mp)e=e.parentElement;return e?+getComputedStyle(e).zIndex||0:0};
  const cvs=[...mp.querySelectorAll('canvas')].filter(c=>c.width&&c.height&&!sk.some(p=>p.contains(c))&&getComputedStyle(c).visibility!=='hidden'&&getComputedStyle(c).display!=='none')
