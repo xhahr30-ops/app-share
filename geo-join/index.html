@@ -1475,7 +1475,24 @@ html.dark svg.ri{color:var(--cd)!important}
   <details style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">🏗 현장 표기 관로 (불용관·노후관 등)</summary><div id="cwMkBox" style="margin-top:4px"></div></details>
   <p class="hint" id="cwMsg"></p>
   <div id="cwTbl"></div>
-  <p class="hint">점수 = (100 − 유수율) × 유수율 비중 + PVC 비율 × PVC 비중 (÷100). PVC = PVC·HI-VP·HI-3P (관로 재질 기준). 블록마다 PVC 관로를 <b>고른 관경 이하(기본 100mm)를 먼저, 그 안에서 오래된 것부터</b> 관경별 단가로 공사비를 더해 예산에 닿을 때까지 골라 굵게 칠합니다. 단가표가 비면 블록 안 PVC 관로 전부를 칠합니다. 표의 <b>제외</b>를 누르면 다음 순위가 올라오고, 유수율 칸에 직접 숫자를 넣을 수도 있습니다. 현장에서 관로 정보창의 🏗 칸으로 표기한 관로는 재질과 상관없이 그 블록 공사에 <b>맨 먼저</b> 들어갑니다. 관리번호·소블록만 쓰며 수용가 정보는 쓰지 않습니다.</p>
+  <p class="hint">점수 = (100 − 유수율) × 유수율 비중 + PVC 비율 × PVC 비중 (÷100). 공사 추천 엑셀의 '공사 대상 관로'에는 📐 적정 관경 판정·제안 관경도 함께 들어갑니다. PVC = PVC·HI-VP·HI-3P (관로 재질 기준). 블록마다 PVC 관로를 <b>고른 관경 이하(기본 100mm)를 먼저, 그 안에서 오래된 것부터</b> 관경별 단가로 공사비를 더해 예산에 닿을 때까지 골라 굵게 칠합니다. 단가표가 비면 블록 안 PVC 관로 전부를 칠합니다. 표의 <b>제외</b>를 누르면 다음 순위가 올라오고, 유수율 칸에 직접 숫자를 넣을 수도 있습니다. 현장에서 관로 정보창의 🏗 칸으로 표기한 관로는 재질과 상관없이 그 블록 공사에 <b>맨 먼저</b> 들어갑니다. 관리번호·소블록만 쓰며 수용가 정보는 쓰지 않습니다.</p>
+ </div>
+
+ <div class="sec" id="rsSec">
+  <h4>📐 적정 관경 검토 <small style="font-weight:400;color:var(--mute)">관망해석 유속으로 관경 과대·과소 판정 · 제안 관경 · 공사비 차이</small></h4>
+  <p class="hint" id="rsHyd" style="margin:0 0 4px"></p>
+  <div class="g2"><label class="f">적정 유속 아래 <small style="font-weight:400">(m/s, 이보다 느리면 과대)</small><input id="rsLo" type="number" min="0" step="0.05" style="width:100%"></label><label class="f">적정 유속 위 <small style="font-weight:400">(m/s, 이보다 빠르면 과소)</small><input id="rsHi" type="number" min="0" step="0.1" style="width:100%"></label>
+  <label class="f">정체 <small style="font-weight:400">(m/s 미만 · 판정 안 함)</small><input id="rsSt" type="number" min="0" step="0.005" style="width:100%"></label><label class="f">첨두 계수 <small style="font-weight:400">(시간 최대 ÷ 평균, 비우면 1)</small><input id="rsPk" type="number" min="1" step="0.1" placeholder="확인 필요" style="width:100%"></label>
+  <label class="f">최소 관경 (mm) <small style="font-weight:400">비우면 단가표 가장 가는 관경</small><input id="rsMin" type="number" min="0" step="5" placeholder="확인 필요" style="width:100%"></label><label class="f">관로 용도<select id="rsUse"><option value="dist">배수관만</option><option value="ds">배수관+송수관</option><option value="all">관망해석 결과 있는 관 전부</option></select></label>
+  <label class="f">범위<select id="rsScope"><option value="all">전체</option><option value="blk">소블록 고르기</option><option value="view">지금 지도 화면</option></select></label><label class="f" id="rsBlkL" hidden>소블록 <small style="font-weight:400">(쉼표로 여러 개, 앞글자만 써도 됨)</small><input id="rsBlk" placeholder="예: YD02, HN2" style="width:100%"></label>
+  <label class="f">소화전 붙은 관로<select id="rsHy"><option value="1">줄이지 않음 (소방 유량)</option><option value="0">따지지 않음</option></select></label><label class="f">소화전 거리 (m 안)<input id="rsHyR" type="number" min="1" max="30" step="1" style="width:100%"></label></div>
+  <p class="hint" style="margin:2px 0 4px">관경 규격·단가는 🏗 공사 추천의 <b>관경별 단가표</b>를 그대로 씁니다 (고치면 함께 바뀜).</p>
+  <div class="sbtns"><button id="rsRun" type="button" class="btn">📐 판정·지도 표시</button><button id="rsXl" type="button" class="btn ol">⬇ 엑셀</button><button id="rsHw" type="button" class="btn ol">📝 한글(HWPX)</button><button id="rsOff" type="button" class="btn ol">🙈 지도 표시 지우기</button></div>
+  <p class="hint" id="rsMsg"></p>
+  <div id="rsSum"></div>
+  <div class="g2" id="rsFilt" hidden><label class="f">목록<select id="rsK"><option value="ch">과대·과소 (관경 바꿀 곳)</option><option value="over">과대만</option><option value="small">과소만</option><option value="stag">정체 (거의 안 흐름)</option><option value="keep">줄이지 않는 관 (소화전·최소 관경)</option><option value="cw">🏗 공사 추천 관로만</option><option value="all">전체</option></select></label><label class="f">정렬<select id="rsSort"><option value="L">긴 것부터</option><option value="v">유속 차이 큰 것부터</option><option value="c">공사비 차이 큰 것부터</option><option value="b">소블록 순</option></select></label></div>
+  <div id="rsTbl"></div>
+  <p class="hint">판정 = 관망해석 결과(②-3)의 관로 유속 × 첨두 계수가 적정 유속 아래면 <b>과대</b>, 위면 <b>과소</b>. 제안 관경 = 지금 관경 × √(유속 ÷ 적정 유속)을 단가표 규격에 맞춘 것으로, 바꾼 뒤 유속이 적정 범위에 들도록 고릅니다. 정체(거의 안 흐름)는 관말·닫힌 밸브일 수 있어 관경을 제안하지 않습니다. 공사비 차이 = 제안 관경 단가 − 지금 관경 단가 (교체할 때 같은 관경 대비). <b>기준 유속·첨두 계수·최소 관경은 확인 필요</b> — 처음 값은 앱 관로 색 구분 값(정체 0.01 · 0.3~1.0 m/s)입니다. 관경을 바꾸면 수압이 달라지므로 실제 공사 전 관망해석으로 다시 확인하세요. 관리번호·소블록만 씁니다.</p>
  </div>
 
  <div class="sec ph">
@@ -1629,7 +1646,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  exp:'M12 3v12M7 10l5 5 5-5M4 19h16',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',link:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 7M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5',
  cam:'M4 8h4l2-3h4l2 3h4v11H4zM12 10a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z',prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',page:'M6 3h9l4 4v14H6zM14 3v5h5',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',poly:'M4 7l6-4 9 3 1 9-7 6-9-3z',
- pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
+ pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',dia:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM6.5 17.5l11-11M13.5 6.5h4v4M10.5 17.5h-4v-4',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
  drop:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z',srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',bolt:'M13 2L4 14h7l-1 8 9-12h-7z',stop:'M6 6h12v12H6z',
  gear:'M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2',key:'M8 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM11 10h10M18 10v4M15 10v3',
  eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',
@@ -1661,7 +1678,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
- save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
+ save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
  sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
@@ -1683,7 +1700,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'lbl',n:'라벨',g:[
   {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
@@ -1702,8 +1719,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -1768,6 +1785,7 @@ const LAY=[
  {k:'hop',n:'관로 교차 반원',s:'#2563eb',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.hop!=='off'},set:o=>mir('uiHop',o?'on':'off',()=>{const u=G('UI');u.hop=o?'on':'off';F('uiSave');F('hopRedraw')}),ok:()=>!$('pPanel').hidden},
  {k:'tb',n:'혼탁수 주의 (평소 표시)',s:'#92400e',c:()=>null,on:()=>{const t=G('SHUT');return !!t&&!!t.opt.tbAll},set:o=>{const t=G('SHUT');if(!t)return;t.opt.tbAll=!!o;F('shutSave');F('tbAllRedraw');const e=$('shTbAll');if(e)e.value=o?'1':'0'},ok:()=>!$('pPanel').hidden},
  {k:'cw',n:'공사 추천 표기',s:'#dc2626',c:()=>{const m=F('cwMarks');return m?m.length:0},on:()=>{const c=G('CWM');return !!c&&!!c.on},set:o=>{const c=G('CWM');if(!c)return;c.on=!!o;LS.set('geo-cwm',o?'1':'0');F('cwMarkDraw',true);const e=$('cwMkOn');if(e)e.checked=!!o}},
+ {k:'rs',n:'적정 관경 (과대·과소)',s:'#22d3ee',c:()=>{const r=G('RS');return r&&r.res?r.res.filter(x=>x.k==='over'||x.k==='small').length:null},on:()=>{const r=G('RS');return !!r&&!!r.on},set:o=>F('rsShow',!!o)},
  {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
  /* 공업밸브·마을상수도 밸브는 따로 켜고 끔 (2026-11-06 사용자) — 시설물 목록의 같은 체크(#ind·#vil)와 함께 바뀜 */
  {k:'ind',n:'공업밸브',s:'#facc15',c:()=>F('facVCount','ind')||0,on:()=>{const f=G('FAC');return !!f&&!f.hidden.has('#ind')&&selOn('fShow')},set:o=>{if(o&&!selOn('fShow'))selSet('fShow',1,'auto');F('facHidSet','#ind',!o)},ok:()=>!$('fPanel').hidden},
@@ -1804,6 +1822,7 @@ function laySym(k){try{switch(k){
  case 'vid':return SV(20,14,'<circle cx="10" cy="7" r="6" fill="#dc2626" stroke="#fff" stroke-width="1"/><path d="M8.3 4.4L13 7L8.3 9.6Z" fill="#fff"/>');
  case 'hop':return SV(20,14,'<path d="M1 10H7A3 3 0 0 1 13 10H19" fill="none" stroke="#2563eb" stroke-width="1.8"/><path d="M10 1V13" stroke="#64748b" stroke-width="1.6"/>');
  case 'tb':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>');
+ case 'rs':return SV(20,14,'<line x1="1" y1="4" x2="19" y2="4" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="4" x2="19" y2="4" stroke="#22d3ee" stroke-width="3"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#f43f5e" stroke-width="3"/>');
  case 'cw':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#fff" stroke-width="7"/><line x1="1" y1="7" x2="19" y2="7" stroke="#dc2626" stroke-width="4.5" stroke-dasharray="2 3"/><line x1="1" y1="7" x2="19" y2="7" stroke="#cbd5e1" stroke-width=".6"/>');
  case 'big':return SV(20,14,'<path d="M10 1.5L15.5 7L10 12.5L4.5 7Z" fill="#7c2d12" stroke="#fff" stroke-width="1.2"/>');
  case 'cl':return SV(20,14,'<circle cx="4" cy="9" r="2.6" fill="#1f8a4c" stroke="#fff"/><text x="13" y="8" text-anchor="middle" font-size="7.5" font-weight="800" fill="#334155" stroke="#fff" stroke-width="2" paint-order="stroke">123</text>');
@@ -11544,9 +11563,11 @@ function cwDraw(){const G=cwLayer();if(!G)return;G.clearLayers();const B=[];
   L.polyline(lines,{renderer:CW.cv,color:'#fff',weight:9,opacity:.9,interactive:false}).addTo(G);
   L.polyline(lines,{renderer:CW.cv,color:col,weight:5,opacity:1,interactive:false}).addTo(G)});
  if(B.length){let bb=B[0];B.slice(1).forEach(x=>bb.extend(x));try{map.fitBounds(bb,{padding:[30,30]})}catch(_){}}}
+/* 공사 대상 관로에 📐 적정 관경 판정·제안 관경 함께 (2026-11-12) */
+function cwRsCols(f){try{if(typeof rsJudge!=='function'||!hydLk())return{};const r=rsJudge(f,rsOpt());if(!r)return{'적정 관경 판정':'관망해석 결과 없음'};return{'적정 관경 판정':RS_K[r.k][0],'제안 관경(mm)':r.Dn??''}}catch(_){return{}}}
 function cwXl(){if(!CW.rows.length){alert('먼저 🏗 추천 계산을 누르세요.');return}const pk=new Map(CW.pick.map(r=>[r.b,r]));
  const r1=CW.rows.map(r=>{const p=pk.get(r.b);return{'순위':p?p.rk:'','소블록':r.b,'유수율(%)':r.w?+r.w.v.toFixed(1):'확인 필요','유수율 출처':r.w?r.w.src+(r.w.from?` ${r.w.from}~${r.w.to}`:''):'','PVC 비율(%)':+r.pp.toFixed(1),'PVC 연장(km)':+cwKm(r.pvc),'관로 연장(km)':+cwKm(r.tot),'점수':r.sc!=null?+r.sc.toFixed(1):'','현장 표기(개)':r.M.length||'','공사 연장(km)':p?+cwKm(p.selL):'','단가 없어 뺀 PVC(km)':p&&p.noPL?+cwKm(p.noPL):'','추정 공사비(억)':p&&p.cost!=null?+(p.cost/1e8).toFixed(2):'','제외':r.ex?'제외':''}});
- const r2=CW.pick.flatMap(r=>r.sel.map(p=>({'순위':r.rk,'소블록':r.b,'고른 까닭':p.mk?'현장 표기: '+p.mk:'PVC','관리번호':p.id,'용도':p.u,'재질':p.m,'관경(mm)':p.d??'','설치년도':p.y??'','연장(m)':+p.L.toFixed(1),'단가(원/m)':p.u0??'','공사비(원)':p.c!=null?Math.round(p.c):''})));
+ const r2=CW.pick.flatMap(r=>r.sel.map(p=>({'순위':r.rk,'소블록':r.b,'고른 까닭':p.mk?'현장 표기: '+p.mk:'PVC','관리번호':p.id,'용도':p.u,'재질':p.m,'관경(mm)':p.d??'','설치년도':p.y??'','연장(m)':+p.L.toFixed(1),'단가(원/m)':p.u0??'','공사비(원)':p.c!=null?Math.round(p.c):'',...cwRsCols(p.f)})));
  const r3=[{'항목':'대상 수계','값':CW.c.pre},{'항목':'구역당 예산(억)','값':CW.c.bud},{'항목':'먼저 고르는 관경','값':+CW.c.pri?CW.c.pri+'mm 이하':'구분 없음'},{'항목':'관경별 단가표(원/m)','값':cwPT().map(t=>t[0]+'mm='+(t[1]??'확인 필요')).join(', ')},{'항목':'관경 모를 때 단가(원/m)','값':CW.c.unit||'빼고 셈'},{'항목':'관로 용도','값':{dist:'배수관만',ds:'배수관+급수관',all:'전체'}[CW.c.use]},{'항목':'유수율 평균 기간(개월)','값':CW.c.mon},{'항목':'점수','값':`(100-유수율)×${CW.c.wr}% + PVC비율×${CW.c.wp}%`},{'항목':'유수율 자료','값':CW.wyName||'부과량 연동/직접 입력'},{'항목':'만든 날','값':fmtD(Date.now())}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r1),'추천 순위');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r2),'공사 대상 관로');const r4=CW.rows.flatMap(r=>r.M.map(m=>({'소블록':r.b,'추천 순위':r.rk&&CW.pick.includes(r)?r.rk:'','관리번호':m.id,'사유':m.mk,'메모':m.mm,'표기일':m.md,'표기한 사람':m.mb,'용도':m.u,'재질':m.m,'관경(mm)':m.d??'','설치년도':m.y??'','연장(m)':+m.L.toFixed(1)})));if(r4.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r4),'현장 표기 관로');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r3),'기준');
  XLSX.writeFile(wb,`공사추천_PVC_${fmtD(Date.now())}.xlsx`,{compression:true})}
@@ -11587,6 +11608,118 @@ function cwMarkList(){const el=$('cwMkBox');if(!el)return;const ms=cwMarks();
 {const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{cwMarkDraw()}catch(_){}return r}}
 {const o=pipePopFull;pipePopFull=function(f,ll){const h=o.apply(this,arguments);try{const m=cwMarkForm(f);if(m){const k=h.indexOf('<div class="acts"');return k>=0?h.slice(0,k)+m+h.slice(k):h+m}}catch(_){}return h}}
 try{cwInit()}catch(e){console.warn('공사 추천',e)}
+/* ===== 📐 적정 관경 검토 (2026-11-12 B안): 관망해석 유속 → 관경 과대·과소 판정 · 제안 관경 · 공사비 차이(공사 추천 단가표) =====
+   기준 유속·첨두 계수·최소 관경은 확인 필요 — 처음 값은 앱 관로 색 구분(VEL_BANDS 정체 0.01 · 0.3~1.0 m/s) */
+const RS={k:'geo-rs',c:{lo:VEL_BANDS[1][0],hi:VEL_BANDS[2][0],st:VEL_BANDS[0][0],pk:'',min:'',use:'dist',scope:'all',blk:'',hy:1,hyR:5,K:'ch',sort:'L'},on:true,res:null,O:null,L:null,cv:null,hl:null,hyG:null,hyKey:'',lim:200};
+try{const v=JSON.parse(localStorage.getItem(RS.k)||'null');if(v){Object.assign(RS.c,v.c||{});if(v.on===false)RS.on=false}}catch(_){}
+function rsSave(){try{localStorage.setItem(RS.k,JSON.stringify({c:RS.c,on:RS.on}))}catch(_){}}
+/* 바탕 관로 재질 색(덕타일 파랑 등)과 섞이지 않게 밝은 색 + 진한 테두리 */
+const RS_K={over:['과대','#22d3ee','#0e7490'],small:['과소','#f43f5e','#be123c'],stag:['정체','#a855f7'],hyd:['소화전 유지','#0f766e'],min:['최소 관경','#64748b'],ok:['적정','#16a34a']};
+/* 판정 기준 한 묶음: 관경 규격 = 공사 추천 단가표 관경(없으면 자료에 있는 관경) */
+function rsOpt(){const c=RS.c,T=cwPT();let S=T.map(t=>t[0]).filter(d=>d>0);
+ if(!S.length){const u=new Set();for(const f of PIPE.feats){const d=attrOf(f).dia;if(d>0)u.add(d)}S=[...u].sort((a,b)=>a-b)}
+ const lo=+c.lo>0?+c.lo:VEL_BANDS[1][0],hi=Math.max(+c.hi>0?+c.hi:VEL_BANDS[2][0],lo),mn=+c.min>0?+c.min:(S[0]||0);
+ return{lo,hi,st:+c.st>=0&&c.st!==''?+c.st:VEL_BANDS[0][0],pk:+c.pk>=1?+c.pk:1,pkSet:+c.pk>=1,min:mn,minSet:+c.min>0,S,T,hy:+c.hy===1,hyR:Math.min(Math.max(+c.hyR||5,1),30)}}
+/* 소화전(시설물 sym 'hyd') 격자 — 관로에서 hyR m 안에 있으면 소방 유량 때문에 줄이지 않음 */
+const RS_MX=88800,RS_MY=111000,RS_CS=.0005;
+function rsHyGrid(){if(typeof FAC==='undefined'||!FAC.n)return null;const key=FAC.n+'|'+(FAC.kinds||[]).join();if(RS.hyG&&RS.hyKey===key)return RS.hyG;
+ const KI=FAC.kinds.map(k=>facKindInfo(k).sym==='hyd'),g=new Map();let n=0;
+ for(let h=0;h<FAC.n;h++){if(!KI[FAC.k[h]]||FAC.dl&&FAC.dl[h])continue;const x=FAC.x[h],y=FAC.y[h];if(!isFinite(x)||!isFinite(y))continue;const k=Math.floor(x/RS_CS)+','+Math.floor(y/RS_CS);let a=g.get(k);if(!a)g.set(k,a=[]);a.push(h);n++}
+ RS.hyG={g,n};RS.hyKey=key;return RS.hyG}
+function rsHyNear(f,R){const G0=rsHyGrid();if(!G0||!G0.n)return -1;const dx=R/RS_MX,dy=R/RS_MY;
+ for(const p of lineParts(f.geometry))for(let i=0;i<p.length;i++){const a=p[i],b=p[i+1]||p[i];
+  const x0=Math.floor((Math.min(a[0],b[0])-dx)/RS_CS),x1=Math.floor((Math.max(a[0],b[0])+dx)/RS_CS),y0=Math.floor((Math.min(a[1],b[1])-dy)/RS_CS),y1=Math.floor((Math.max(a[1],b[1])+dy)/RS_CS);
+  if((x1-x0+1)*(y1-y0+1)>400)continue;
+  for(let gx=x0;gx<=x1;gx++)for(let gy=y0;gy<=y1;gy++){const c=G0.g.get(gx+','+gy);if(!c)continue;
+   for(const h of c){const px=(FAC.x[h]-a[0])*RS_MX,py=(FAC.y[h]-a[1])*RS_MY,vx=(b[0]-a[0])*RS_MX,vy=(b[1]-a[1])*RS_MY,l2=vx*vx+vy*vy,t=l2?Math.max(0,Math.min(1,(px*vx+py*vy)/l2)):0;
+    if(Math.hypot(px-t*vx,py-t*vy)<=R)return h}}}
+ return -1}
+function rsUseOk(a,use){return use==='all'?true:use==='ds'?(a.use==='배수관'||a.use==='송수관'):a.use==='배수관'}
+/* 관로 하나 판정 → {k,D,Dn,v,vp,v2,L,c0,c1,dc,note,hy} (관경 모름·관망해석 결과 없음 = null) */
+function rsJudge(f,O){const a=attrOf(f),D=a.dia;if(!(D>0))return null;const h=pipeHyd(a);if(!h)return null;
+ const v=Math.abs(+h.v||0),vp=v*O.pk,L=f._len||0,r={k:'ok',a,D,Dn:null,v,vp,v2:null,L,c0:null,c1:null,dc:null,note:'',hy:-1};
+ if(v<O.st){r.k='stag';r.note='거의 안 흐름 — 관말·닫힌 밸브인지 현장 확인';return r}
+ if(vp>O.hi){const up=O.S.filter(s=>s>D);let s=up.find(s=>vp*(D/s)**2<=O.hi);if(s==null&&up.length){s=up[up.length-1];r.note='단가표 가장 굵은 관경으로도 적정 유속 넘음'}
+  r.k='small';r.Dn=s??null;if(s==null)r.note='단가표에 더 굵은 관경 없음'}
+ else if(vp<O.lo){const dn=O.S.filter(s=>s<D&&s>=O.min);
+  if(!dn.length){r.k='min';r.note=`최소 관경(${O.min}mm) 이하라 줄이지 않음`;return r}
+  if(O.hy){const hh=rsHyNear(f,O.hyR);if(hh>=0){r.k='hyd';r.hy=hh;r.note=`소화전 ${O.hyR}m 안 — 소방 유량 때문에 줄이지 않음`;return r}}
+  const top=D*Math.sqrt(vp/O.lo),bot=D*Math.sqrt(vp/O.hi);let ok=dn.filter(s=>s<=top&&s>=bot);let s=ok.length?ok[ok.length-1]:null;
+  if(s==null){const big=dn.filter(s=>s>top);s=big.length?big[0]:dn[0];r.note=s===dn[0]&&dn[0]>top?`최소 관경(${O.min}mm)까지만 줄임`:'규격 사이 — 적정 유속에 가장 가까운 한 단계'}
+  r.k='over';r.Dn=s}
+ if(r.Dn){r.v2=vp*(D/r.Dn)**2;const u0=cwUnitOf(D,O.T),u1=cwUnitOf(r.Dn,O.T);if(u0!=null)r.c0=u0*L;if(u1!=null)r.c1=u1*L;if(r.c0!=null&&r.c1!=null)r.dc=r.c1-r.c0}
+ return r}
+/* 관로 가운데 점이 든 소블록 (경계가 바뀌면 다시) */
+async function rsBlkAll(fs,msg){if(!poly)return;if(!poly._v)poly._v=Math.random();const G=poly.features;G.forEach(g=>{if(!g.properties._bbox)g.properties._bbox=turf.bbox(g)});let i=0;
+ for(const f of fs){if(f._rsbV===poly._v)continue;if(++i%3000===0){msg&&(msg.textContent=`소블록 찾는 중… ${i.toLocaleString()}`);await sleep(0)}
+  const p=lineParts(f.geometry)[0]||[],c=p[Math.floor(p.length/2)]||p[0];let nm='';
+  if(c)for(const g of G){const b=g.properties._bbox;if(c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3]&&turf.booleanPointInPolygon(turf.point(c),g)){nm=bNorm(blkNm(g));break}}
+  f._rsb=nm;f._rsbV=poly._v}}
+function rsCwSet(){const s=new Set();try{(CW.pick||[]).forEach(r=>(r.sel||[]).forEach(p=>s.add(p.f)))}catch(_){}return s}
+function rsTb(a,v){try{return tbMatOk(a,'di')&&v<tbOpt().v2}catch(_){return false}}
+function rsReadUi(){const g=id=>$(id).value;Object.assign(RS.c,{lo:g('rsLo'),hi:g('rsHi'),st:g('rsSt'),pk:g('rsPk'),min:g('rsMin'),use:g('rsUse'),scope:g('rsScope'),blk:g('rsBlk'),hy:+g('rsHy'),hyR:g('rsHyR'),K:g('rsK'),sort:g('rsSort')});$('rsBlkL').hidden=RS.c.scope!=='blk';rsSave()}
+function rsUi(){const c=RS.c;[['rsLo','lo'],['rsHi','hi'],['rsSt','st'],['rsPk','pk'],['rsMin','min'],['rsUse','use'],['rsScope','scope'],['rsBlk','blk'],['rsHy','hy'],['rsHyR','hyR'],['rsK','K'],['rsSort','sort']].forEach(([id,k])=>{const e=$(id);if(e)e.value=String(c[k]??'')});$('rsBlkL').hidden=c.scope!=='blk';rsHydMsg()}
+function rsHydMsg(){const e=$('rsHyd');if(!e)return;const H=typeof ELEV!=='undefined'&&ELEV.hyd;e.innerHTML=H?`🌊 관망해석 결과: ${esc(H.name||'')} <small>(${esc(H.calc||'')})</small>`:'⚠ ②-3 표고·수압에 <b>관망해석 결과 파일</b>을 먼저 올리세요 (관로 유속이 있어야 판정합니다).'}
+async function rsRun(){const msg=$('rsMsg');rsReadUi();rsHydMsg();if(!PIPE.feats.length){msg.textContent='⚠ ②-1 상수관로를 먼저 불러오세요.';return}if(!hydLk()){msg.textContent='⚠ 관망해석 결과(②-3)가 없어 판정할 수 없습니다.';return}
+ const O=rsOpt(),c=RS.c;if(!O.S.length){msg.textContent='⚠ 관경 규격이 없습니다. 🏗 공사 추천의 관경별 단가표를 넣으세요.';return}
+ let fs=PIPE.feats.filter(f=>{if(!f.geometry||(f.properties||{})._빈)return false;const a=attrOf(f);return a.dia>0&&rsUseOk(a,c.use)&&pipeHyd(a)});
+ if(c.scope==='view'&&map){const B=map.getBounds();fs=fs.filter(f=>{const p=lineParts(f.geometry)[0]||[],m=p[Math.floor(p.length/2)];return m&&B.contains([m[1],m[0]])})}
+ await rsBlkAll(fs,msg);let pre=[];if(c.scope==='blk'){pre=String(c.blk||'').toUpperCase().split(/[,\s]+/).filter(Boolean);if(!pre.length){msg.textContent='⚠ 소블록 이름을 넣으세요.';return}fs=fs.filter(f=>pre.some(p=>(f._rsb||'').startsWith(p)))}
+ msg.textContent=`${fs.length.toLocaleString()}개 관로 판정 중…`;await sleep(10);const cws=rsCwSet(),res=[];let i=0;
+ for(const f of fs){if(++i%3000===0)await sleep(0);const r=rsJudge(f,O);if(!r)continue;r.f=f;r.b=f._rsb||'';r.cw=cws.has(f)||!!(f.properties||{})['공사추천'];r.tb=rsTb(r.a,r.v);res.push(r)}
+ RS.res=res;RS.O=O;RS.at=Date.now();RS.how=c.scope==='blk'?'소블록 '+pre.join(', '):c.scope==='view'?'지금 지도 화면':'전체';
+ msg.textContent=`${res.length.toLocaleString()}개 관로 판정 (${RS.how} · ${{dist:'배수관',ds:'배수관+송수관',all:'결과 있는 관 전부'}[c.use]}) · 첨두 계수 ${O.pkSet?O.pk:'1 (확인 필요)'} · 적정 ${O.lo}~${O.hi} m/s`+(O.hy?` · 소화전 ${rsHyGrid()?rsHyGrid().n.toLocaleString():0}개 반영`:'');
+ RS.on=true;rsSave();rsSumHtml();rsTable();rsDraw(true)}
+function rsAgg(){const A={};Object.keys(RS_K).forEach(k=>A[k]={n:0,L:0,dc:0,dcN:0});for(const r of RS.res||[]){const o=A[r.k];o.n++;o.L+=r.L;if(r.dc!=null){o.dc+=r.dc;o.dcN++}}return A}
+const rsKm=m=>(m/1000).toFixed(2),rsWon=w=>w==null?'-':(w<0?'−':'+')+(Math.abs(w)/1e8>=0.01?(Math.abs(w)/1e8).toFixed(2)+'억':Math.round(Math.abs(w)/1e4).toLocaleString()+'만');
+function rsSumHtml(){const el=$('rsSum');if(!RS.res){el.innerHTML='';$('rsFilt').hidden=true;return}const A=rsAgg();$('rsFilt').hidden=false;
+ const card=(k,sub)=>`<div style="flex:1 1 30%;min-width:96px;border:1px solid var(--line);border-left:4px solid ${RS_K[k][1]};border-radius:8px;padding:5px 7px"><small style="color:var(--mute)">${RS_K[k][0]}</small><br><b style="font-size:15px">${A[k].n.toLocaleString()}</b> <small>개 · ${rsKm(A[k].L)}km</small>${sub?`<br><small>${sub}</small>`:''}</div>`;
+ el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin:4px 0">${card('over',A.over.dcN?'공사비 '+rsWon(A.over.dc):'')}${card('small',A.small.dcN?'공사비 '+rsWon(A.small.dc):'')}${card('stag')}${card('hyd')}${card('min')}${card('ok')}</div><p class="hint" style="margin:0 0 4px">지도: <span style="display:inline-block;width:22px;height:5px;background:${RS_K.over[1]};outline:2px solid #0f172a;vertical-align:middle"></span> 과대 · <span style="display:inline-block;width:22px;height:5px;background:${RS_K.small[1]};outline:2px solid #0f172a;vertical-align:middle"></span> 과소 · <span style="display:inline-block;width:22px;border-top:3px dashed ${RS_K.stag[1]};vertical-align:middle"></span> 정체 · 관리번호를 누르면 그 관로로 갑니다</p>`}
+function rsList(){const K=RS.c.K,s=RS.c.sort;let L=(RS.res||[]).filter(r=>K==='all'?true:K==='ch'?(r.k==='over'||r.k==='small'):K==='keep'?(r.k==='hyd'||r.k==='min'):K==='cw'?r.cw:r.k===K);
+ const dv=r=>r.v2!=null?Math.abs(r.v2-r.vp):0;L.sort(s==='v'?(a,b)=>dv(b)-dv(a):s==='c'?(a,b)=>Math.abs(b.dc||0)-Math.abs(a.dc||0):s==='b'?(a,b)=>a.b.localeCompare(b.b)||b.L-a.L:(a,b)=>b.L-a.L);return L}
+function rsTable(){const el=$('rsTbl');if(!RS.res){el.innerHTML='';return}const L=rsList(),n=Math.min(L.length,RS.lim),fx=v=>v==null?'-':v.toFixed(2);
+ el.innerHTML=L.length?`<div style="overflow:auto;max-height:420px"><table class="bt" style="white-space:nowrap"><thead><tr><th>판정</th><th>관리번호</th><th>소블록</th><th class="r">지금</th><th class="r">제안</th><th class="r" title="관망해석 유속 × 첨두 계수">유속</th><th class="r" title="제안 관경으로 바꾼 뒤 유속">바꾼 뒤</th><th class="r">연장 m</th><th class="r" title="제안 관경 단가 − 지금 관경 단가 (교체할 때)">공사비 차이</th><th>연계</th></tr></thead><tbody>${L.slice(0,n).map(r=>{const i=PIPE.feats.indexOf(r.f);return `<tr><td><b style="color:${RS_K[r.k][2]||RS_K[r.k][1]}">${RS_K[r.k][0]}</b></td><td><a href="#" class="rsGo" data-i="${i}">${esc(r.a.id||'-')}</a></td><td>${esc(r.b||'')}</td><td class="r">${r.D}</td><td class="r">${r.Dn?`<b>${r.Dn}</b>`:'-'}</td><td class="r">${fx(r.vp)}</td><td class="r">${fx(r.v2)}</td><td class="r">${Math.round(r.L).toLocaleString()}</td><td class="r">${r.dc!=null?rsWon(r.dc):''}</td><td>${r.cw?'<span title="🏗 공사 추천 관로">🏗</span>':''}${r.tb?'<span title="혼탁수 주의 (덕타일 저유속)" style="color:#92400e">🟤</span>':''}${r.note?` <small style="color:var(--mute)">${esc(r.note)}</small>`:''}</td></tr>`}).join('')}</tbody></table></div>${L.length>n?`<div class="sbtns"><button type="button" class="btn ol" id="rsMore">더 보기 (${n.toLocaleString()}/${L.length.toLocaleString()})</button></div>`:''}`:'<p class="hint">해당하는 관로가 없습니다.</p>'}
+function rsLayer(){if(!map)return null;if(!map.getPane('rsPane')){const p=map.createPane('rsPane');p.style.zIndex=632;p.style.pointerEvents='none'}if(!RS.cv)RS.cv=L.canvas({pane:'rsPane',padding:.3});if(!RS.L)RS.L=L.layerGroup();if(!map.hasLayer(RS.L))RS.L.addTo(map);return RS.L}
+/* 정체는 밑에 가늘게(흰 테두리 없음), 과대·과소는 위에 굵게 */
+const RS_DRAW={stag:{w:2.5,d:'3 5',h:0},over:{w:5,d:null,h:4},small:{w:5,d:null,h:4}};
+function rsDraw(fit){if(!map)return;const G=rsLayer();G.clearLayers();RS.hl=null;if(!RS.on||!RS.res)return;const B=[];
+ Object.entries(RS_DRAW).forEach(([k,st])=>{const ls=RS.res.filter(r=>r.k===k).flatMap(r=>lineParts(r.f.geometry).map(q=>q.map(c=>[c[1],c[0]])));if(!ls.length)return;
+  if(st.h)L.polyline(ls,{renderer:RS.cv,color:'#0f172a',weight:st.w+st.h,opacity:.85,interactive:false}).addTo(G);const pl=L.polyline(ls,{renderer:RS.cv,color:RS_K[k][1],weight:st.w,opacity:st.h?1:.8,dashArray:st.d,interactive:false}).addTo(G);if(k!=='stag')B.push(pl.getBounds())});
+ if(fit&&B.length&&RS.c.scope!=='view'){let bb=B[0];B.slice(1).forEach(x=>bb.extend(x));try{map.fitBounds(bb,{padding:[30,30]})}catch(_){}}}
+function rsShow(on){RS.on=!!on;rsSave();if(on&&!RS.res){if(hydLk()&&PIPE.feats.length)rsRun().catch(e=>{$('rsMsg').textContent='⚠ '+e.message});return}rsDraw(false)}
+function rsGo(i){const f=PIPE.feats[i];if(!f||!map)return;const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));const G=rsLayer();if(RS.hl)G.removeLayer(RS.hl);
+ RS.hl=L.polyline(ls,{renderer:RS.cv,color:'#facc15',weight:12,opacity:.75,interactive:false}).addTo(G);try{map.fitBounds(RS.hl.getBounds(),{maxZoom:18,padding:[40,40]})}catch(_){}}
+/* 관로 정보창 한 줄 (판정을 돌리지 않아도 그 관로만 바로 계산) */
+function rsPopLine(f){if(!hydLk()||!f||!PIPE.feats.length)return '';let r=null;try{const a=attrOf(f);if(!(a.dia>0)||!pipeHyd(a))return '';r=rsJudge(f,rsOpt())}catch(_){return ''}if(!r)return '';
+ const K=RS_K[r.k],c=RS.c;return `<div style="margin-top:3px;font-size:12px">📐 적정 관경 <b style="color:${K[2]||K[1]}">${K[0]}</b>${r.Dn?` · 제안 <b>${r.D}→${r.Dn}mm</b> <small>(유속 ${r.vp.toFixed(2)}→${r.v2.toFixed(2)} m/s${r.dc!=null?' · 교체 공사비 '+rsWon(r.dc):''})</small>`:''}${r.note?` <small style="color:#64748b">${esc(r.note)}</small>`:''} <small style="color:#64748b">(적정 ${rsOpt().lo}~${rsOpt().hi} m/s${+c.pk>=1?' · 첨두 '+c.pk:''} · 기준 확인 필요)</small></div>`}
+function rsXlRows(){return (RS.res||[]).slice().sort((a,b)=>(a.b||'').localeCompare(b.b||'')||b.L-a.L).map((r,k)=>({'순번':k+1,'판정':RS_K[r.k][0],'관리번호':r.a.id||'','소블록':r.b||'','용도':r.a.use,'재질':r.a.matRaw||r.a.mat,'설치연도':r.a.year??'','연장(m)':+r.L.toFixed(1),'지금 관경(mm)':r.D,'제안 관경(mm)':r.Dn??'','평균 유속(m/s)':+r.v.toFixed(3),'판정 유속(m/s, ×첨두)':+r.vp.toFixed(3),'바꾼 뒤 유속(m/s)':r.v2!=null?+r.v2.toFixed(3):'','지금 관경 교체비(원)':r.c0!=null?Math.round(r.c0):'','제안 관경 교체비(원)':r.c1!=null?Math.round(r.c1):'','공사비 차이(원)':r.dc!=null?Math.round(r.dc):'','🏗 공사 추천':r.cw?'예':'','혼탁수 주의(덕타일 저유속)':r.tb?'예':'','비고':r.note}))}
+function rsBlkRows(){const M=new Map();for(const r of RS.res||[]){const b=r.b||'(소블록 밖)';let o=M.get(b);if(!o)M.set(b,o={b,n:0,L:0,oN:0,oL:0,sN:0,sL:0,tL:0,hL:0,dc:0});o.n++;o.L+=r.L;if(r.k==='over'){o.oN++;o.oL+=r.L}if(r.k==='small'){o.sN++;o.sL+=r.L}if(r.k==='stag')o.tL+=r.L;if(r.k==='hyd')o.hL+=r.L;if(r.dc!=null&&(r.k==='over'||r.k==='small'))o.dc+=r.dc}
+ return [...M.values()].sort((a,b)=>(b.oL+b.sL)-(a.oL+a.sL))}
+function rsChgRows(){const M=new Map();for(const r of RS.res||[]){if(!r.Dn)continue;const k=r.D+'→'+r.Dn;let o=M.get(k);if(!o)M.set(k,o={k,kk:r.k,D:r.D,Dn:r.Dn,n:0,L:0,dc:0,dcN:0});o.n++;o.L+=r.L;if(r.dc!=null){o.dc+=r.dc;o.dcN++}}return [...M.values()].sort((a,b)=>b.L-a.L)}
+function rsInfo(){const O=RS.O,H=ELEV.hyd||{};return[['범위',RS.how+' · '+{dist:'배수관만',ds:'배수관+송수관',all:'관망해석 결과 있는 관 전부'}[RS.c.use]],['적정 유속',`${O.lo} ~ ${O.hi} m/s (확인 필요 · 처음 값은 앱 관로 색 구분 값)`],['정체',`${O.st} m/s 미만은 판정 안 함`],['첨두 계수',O.pkSet?String(O.pk):'1 — 평균 유속 그대로 (확인 필요)'],['최소 관경',O.min+'mm'+(O.minSet?'':' (단가표 가장 가는 관경, 확인 필요)')],['관경 규격·단가',O.T.map(t=>t[0]+'mm='+(t[1]!=null?t[1].toLocaleString():'확인 필요')).join(', ')||'자료에 있는 관경'],['소화전',O.hy?`관로 ${O.hyR}m 안에 소화전이 있으면 줄이지 않음`:'따지지 않음'],['유속 자료',(H.name||'관망해석 결과')+' · '+(H.calc||'')],['만든 날',fmtD(RS.at||Date.now())],['주의','관망해석 계산 참고값 — 관경을 바꾸면 수압이 달라지므로 공사 전 관망해석으로 다시 확인. 만든이: 구병순']]}
+function rsXl(){if(!RS.res){alert('먼저 📐 판정을 누르세요.');return}const wb=XLSX.utils.book_new(),A=(r,n)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r),n);
+ A(rsXlRows(),'판정 관로');A(rsBlkRows().map(o=>({'소블록':o.b,'관로 수':o.n,'연장(km)':+rsKm(o.L),'과대(개)':o.oN,'과대(km)':+rsKm(o.oL),'과소(개)':o.sN,'과소(km)':+rsKm(o.sL),'정체(km)':+rsKm(o.tL),'소화전 유지(km)':+rsKm(o.hL),'공사비 차이(억)':+(o.dc/1e8).toFixed(3)})),'소블록 요약');
+ A(rsChgRows().map(o=>({'판정':RS_K[o.kk][0],'관경 변경(mm)':o.k,'관로 수':o.n,'연장(km)':+rsKm(o.L),'공사비 차이(억)':o.dcN?+(o.dc/1e8).toFixed(3):'확인 필요'})),'관경 변경 요약');A(rsInfo().map(([a,b])=>({'항목':a,'값':b})),'기준');
+ XLSX.writeFile(wb,`적정관경검토_${fmtD(Date.now())}.xlsx`,{compression:true})}
+async function rsHw(){if(!RS.res){alert('먼저 📐 판정을 누르세요.');return}const D=hwpxNew('적정 관경 검토'),A=rsAgg(),SITEN=(typeof SITE!=='undefined'&&SITE.name)||'';
+ hwpxTitle(D,`${SITEN} 상수관로 적정 관경 검토`);hwpxP(D,`관망해석 유속 기준 관경 과대·과소 판정 · ${fmtD(Date.now())} · 만든이: 구병순`,{c:11,pp:21});
+ hwpxH2(D,'1. 검토 기준');hwpxTable(D,[['항목','값'],...rsInfo()],{head:1,w:[1,4]});
+ hwpxH2(D,'2. 판정 결과');hwpxTable(D,[['판정','관로 수','연장(km)','공사비 차이'],...Object.keys(RS_K).map(k=>[RS_K[k][0],A[k].n.toLocaleString(),rsKm(A[k].L),A[k].dcN?rsWon(A[k].dc):'-'])],{head:1});
+ hwpxP(D,'과대 = 판정 유속이 적정 범위보다 느림(관경을 줄이면 유속이 올라 체류·혼탁수가 줄어듦) · 과소 = 적정 범위보다 빠름(수두 손실·수압 저하) · 공사비 차이 = 교체할 때 제안 관경 단가 − 지금 관경 단가',{c:11,pp:20});
+ const C=rsChgRows();if(C.length){hwpxH2(D,'3. 관경 변경 제안');hwpxTable(D,[['판정','관경 변경(mm)','관로 수','연장(km)','공사비 차이'],...C.slice(0,25).map(o=>[RS_K[o.kk][0],o.k,o.n.toLocaleString(),rsKm(o.L),o.dcN?rsWon(o.dc):'확인 필요'])],{head:1})}
+ const B=rsBlkRows().filter(o=>o.oN+o.sN).slice(0,30);if(B.length){hwpxH2(D,(C.length?'4':'3')+'. 소블록별 (과대·과소 연장 순, 최대 30곳)');hwpxTable(D,[['소블록','과대(km)','과소(km)','정체(km)','공사비 차이'],...B.map(o=>[o.b,rsKm(o.oL),rsKm(o.sL),rsKm(o.tL),rsWon(o.dc)])],{head:1})}
+ hwpxP(D,'※ 관망해석 계산 참고값입니다. 기준 유속·첨두 계수·최소 관경은 확인이 필요하며, 관경을 바꾸면 수압이 달라지므로 실제 공사 전 관망해석으로 다시 확인하세요. 관로 목록은 함께 내려받는 엑셀을 참고하세요.',{c:11,pp:20});
+ await hwpxSave(D,`적정관경검토_${fmtD(Date.now())}.hwpx`)}
+function rsInit(){if(!$('rsSec'))return;rsUi();
+ $('rsRun').onclick=()=>rsRun().catch(e=>{$('rsMsg').textContent='⚠ '+e.message});$('rsXl').onclick=rsXl;$('rsHw').onclick=()=>rsHw().catch(e=>alert('한글 파일 만들기 실패: '+e.message));
+ $('rsOff').onclick=()=>{RS.on=false;rsSave();if(RS.L)RS.L.clearLayers();$('rsMsg').textContent='지도 표시를 지웠습니다. (레이어 창 "적정 관경"으로 다시 켭니다)'};
+ ['rsLo','rsHi','rsSt','rsPk','rsMin','rsUse','rsScope','rsBlk','rsHy','rsHyR'].forEach(id=>$(id).addEventListener('change',()=>{rsReadUi();if(RS.res)rsRun().catch(e=>{$('rsMsg').textContent='⚠ '+e.message})}));
+ ['rsK','rsSort'].forEach(id=>$(id).addEventListener('change',()=>{rsReadUi();RS.lim=200;rsTable()}));
+ $('rsTbl').addEventListener('click',e=>{const a=e.target.closest('.rsGo');if(a){e.preventDefault();rsGo(+a.dataset.i);return}if(e.target.id==='rsMore'){RS.lim+=500;rsTable()}});
+ $('cwPrice')&&$('cwPrice').addEventListener('change',()=>{if(RS.res)setTimeout(()=>rsRun().catch(()=>{}),50)});
+ $('rsSec').addEventListener('focusin',rsHydMsg,{once:true})}
+{const o=hydPipePop;hydPipePop=function(f){const h=o.apply(this,arguments);try{return h?h+rsPopLine(f):h}catch(_){return h}}}
+try{rsInit()}catch(e){console.warn('적정 관경',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
