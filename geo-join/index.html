@@ -1504,6 +1504,24 @@ html.dark svg.ri{color:var(--cd)!important}
   <p class="hint">판정 = 관망해석 결과(②-3)의 관로 유속 × 첨두 계수가 적정 유속 아래면 <b>과대</b>, 위면 <b>과소</b>. 제안 관경 = 지금 관경 × √(유속 ÷ 적정 유속)을 단가표 규격에 맞춘 것으로, 바꾼 뒤 유속이 적정 범위에 들도록 고릅니다. 정체(거의 안 흐름)는 관말·닫힌 밸브일 수 있어 관경을 제안하지 않습니다. 공사비 차이 = 제안 관경 단가 − 지금 관경 단가 (교체할 때 같은 관경 대비). <b>기준 유속·첨두 계수·최소 관경은 확인 필요</b> — 처음 값은 앱 관로 색 구분 값(정체 0.01 · 0.3~1.0 m/s)입니다. 관경을 바꾸면 수압이 달라지므로 실제 공사 전 관망해석으로 다시 확인하세요. 관리번호·소블록만 씁니다.</p>
  </div>
 
+ <div class="sec" id="rpSec">
+  <h4>✅ 노후관 교체 완료 관로 <small style="font-weight:400;color:var(--mute)">교체 공사가 끝난 관로를 지도에 초록 테두리로 구분 · 🏗 공사 추천에서 뺌</small></h4>
+  <p style="margin:0 0 4px;font-size:12.5px"><label><input type="checkbox" id="rpOn"> 지도에 보이기</label> · <span id="rpCnt"></span></p>
+  <div class="g2"><label class="f">설치연도 기준 <small style="font-weight:400">(이 해 이후 설치 관로도 교체로 봄 · 비우면 안 씀)</small><input id="rpYr" type="number" min="1940" max="2100" step="1" placeholder="예: 2020" style="width:100%"></label>
+  <label class="f">설치연도 기준 용도<select id="rpYrUse"><option value="dist">배수관만</option><option value="ds">배수관+급수관</option><option value="all">전체</option></select></label></div>
+  <details open style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">여러 관로 한꺼번에 교체 완료로 지정</summary>
+  <div class="g2" style="margin-top:4px"><label class="f">완료일 (준공일)<input id="rpDate" type="date" style="width:100%"></label><label class="f">공사명<input id="rpWork" placeholder="예: 2026년 노후관 교체공사" style="width:100%"></label>
+  <label class="f">교체 후 재질 <small style="font-weight:400">비우면 그대로</small><input id="rpMat" placeholder="예: DCIP" style="width:100%"></label><label class="f">교체 후 관경 (mm) <small style="font-weight:400">비우면 그대로</small><input id="rpDia" inputmode="numeric" placeholder="예: 100" style="width:100%"></label></div>
+  <div class="sbtns"><button id="rpAx" type="button" class="btn ol">⬚ 지도에 범위 그려 고르기</button><button id="rpCw" type="button" class="btn ol">🏗 공사 추천 대상 관로</button><label class="btn ol" title="관리번호(필수)·완료일·공사명 머리글이 있는 엑셀">📊 관리번호 엑셀<input type="file" id="rpXlF" accept=".xlsx,.xls,.xlsm,.csv" hidden></label></div>
+  <div id="rpCwBox"></div>
+  <label style="font-size:12px"><input type="checkbox" id="rpNoSvc"> 후보에서 급수관 빼기</label>
+  <div id="rpCand"></div></details>
+  <div class="sbtns"><button id="rpRef" type="button" class="btn ol">📋 목록 새로 고침</button><button id="rpXl" type="button" class="btn ol">⬇ 교체 완료 엑셀</button><button id="rpUndo" type="button" class="btn ol">↶ 방금 지정 되돌리기</button></div>
+  <p class="hint" id="rpMsg"></p>
+  <div id="rpTbl"></div>
+  <p class="hint">한 관로씩은 관로를 눌러 정보창의 <b>✅ 노후관 교체 완료</b> 칸에서 저장합니다. 저장하면 설치연도가 완료일로 바뀌어 경과연수·노후 색이 다시 계산되고, 교체 전 재질·관경·설치일자는 따로 남습니다. 저장은 🛠 관로 편집과 같은 현장 수정이라 직원 공유·수정 목록 엑셀·↶ 되돌리기가 그대로 됩니다. 지금 들어 있는 상수관로 SHP에는 교체 여부 칸이 없고 2020년 이후 설치 관로가 거의 없어, <b>설치연도 기준</b>은 GIS가 새로 고쳐진 뒤에 쓰는 것을 권합니다. 지도: <b style="color:#16a34a">진한 초록 테두리</b> = 지정, <b style="color:#4ade80">연한 초록</b> = 설치연도 기준, <b style="color:#d97706">노란 끊은 테두리</b> = 한꺼번에 지정 후보.</p>
+ </div>
+
  <div class="sec ph">
   <h4>📷 현장 사진 <small style="font-weight:400;color:var(--mute)">사진 속 GPS 좌표 기준</small></h4>
   <label class="drop"><input type="file" id="phFile" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.pgw,.pngw,.jgw,.wld" multiple><div class="ic">📷</div><b>현장 사진 첨부 (여러 장)</b><span>JPG 원본 · 촬영 위치·시각·방향을 자동으로 읽음 · 위치도(빨간 점) PNG는 월드 파일(.pgw)과 함께 · 지도 위로 끌어다 놓아도 됨</span></label>
@@ -1655,7 +1673,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  exp:'M12 3v12M7 10l5 5 5-5M4 19h16',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',link:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 7M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5',
  cam:'M4 8h4l2-3h4l2 3h4v11H4zM12 10a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z',prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',page:'M6 3h9l4 4v14H6zM14 3v5h5',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',poly:'M4 7l6-4 9 3 1 9-7 6-9-3z',
- pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',dia:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM6.5 17.5l11-11M13.5 6.5h4v4M10.5 17.5h-4v-4',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
+ pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',rep:'M2 9h20M2 15h7M10 15l3 3 8-8',dia:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM6.5 17.5l11-11M13.5 6.5h4v4M10.5 17.5h-4v-4',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
  drop:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z',srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',bolt:'M13 2L4 14h7l-1 8 9-12h-7z',stop:'M6 6h12v12H6z',
  gear:'M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2',key:'M8 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM11 10h10M18 10v4M15 10v3',
  eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',
@@ -1687,7 +1705,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
- save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
+ save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',rep:'green',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
  sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
@@ -1709,7 +1727,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'lbl',n:'라벨',g:[
   {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
@@ -1728,8 +1746,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -1795,6 +1813,7 @@ const LAY=[
  {k:'tb',n:'혼탁수 주의 (평소 표시)',s:'#92400e',c:()=>null,on:()=>{const t=G('SHUT');return !!t&&!!t.opt.tbAll},set:o=>{const t=G('SHUT');if(!t)return;t.opt.tbAll=!!o;F('shutSave');F('tbAllRedraw');const e=$('shTbAll');if(e)e.value=o?'1':'0'},ok:()=>!$('pPanel').hidden},
  {k:'cw',n:'공사 추천 표기',s:'#dc2626',c:()=>{const m=F('cwMarks');return m?m.length:0},on:()=>{const c=G('CWM');return !!c&&!!c.on},set:o=>{const c=G('CWM');if(!c)return;c.on=!!o;LS.set('geo-cwm',o?'1':'0');F('cwMarkDraw',true);const e=$('cwMkOn');if(e)e.checked=!!o}},
  {k:'rs',n:'적정 관경 (과대·과소)',s:'#22d3ee',c:()=>{const r=G('RS');return r&&r.res?r.res.filter(x=>x.k==='over'||x.k==='small').length:null},on:()=>{const r=G('RS');return !!r&&!!r.on},set:o=>F('rsShow',!!o)},
+ {k:'rp',n:'교체 완료 관로',s:'#16a34a',c:()=>F('rpCount')||0,on:()=>{const r=G('RP');return !!r&&!!r.on},set:o=>F('rpSetOn',!!o)},
  {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
  /* 공업밸브·마을상수도 밸브는 따로 켜고 끔 (2026-11-06 사용자) — 시설물 목록의 같은 체크(#ind·#vil)와 함께 바뀜 */
  {k:'ind',n:'공업밸브',s:'#facc15',c:()=>F('facVCount','ind')||0,on:()=>{const f=G('FAC');return !!f&&!f.hidden.has('#ind')&&selOn('fShow')},set:o=>{if(o&&!selOn('fShow'))selSet('fShow',1,'auto');F('facHidSet','#ind',!o)},ok:()=>!$('fPanel').hidden},
@@ -1834,6 +1853,7 @@ function laySym(k){try{switch(k){
  case 'tb':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>');
  case 'rs':return SV(20,14,'<line x1="1" y1="4" x2="19" y2="4" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="4" x2="19" y2="4" stroke="#22d3ee" stroke-width="3"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#f43f5e" stroke-width="3"/>');
  case 'cw':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#fff" stroke-width="7"/><line x1="1" y1="7" x2="19" y2="7" stroke="#dc2626" stroke-width="4.5" stroke-dasharray="2 3"/><line x1="1" y1="7" x2="19" y2="7" stroke="#cbd5e1" stroke-width=".6"/>');
+ case 'rp':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#16a34a" stroke-width="8" stroke-linecap="round"/><line x1="1" y1="7" x2="19" y2="7" stroke="#2563eb" stroke-width="3"/>');
  case 'tp':return SV(20,14,'<line x1="1" y1="4" x2="19" y2="4" stroke="#06b6d4" stroke-width="5" stroke-opacity=".7" stroke-linecap="round"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#ef4444" stroke-width="4" stroke-opacity=".5" stroke-linecap="round"/>');
  case 'big':return SV(20,14,'<path d="M10 1.5L15.5 7L10 12.5L4.5 7Z" fill="#7c2d12" stroke="#fff" stroke-width="1.2"/>');
  case 'cl':return SV(20,14,'<circle cx="4" cy="9" r="2.6" fill="#1f8a4c" stroke="#fff"/><text x="13" y="8" text-anchor="middle" font-size="7.5" font-weight="800" fill="#334155" stroke="#fff" stroke-width="2" paint-order="stroke">123</text>');
@@ -1967,7 +1987,7 @@ function set(on,quiet){on=!!on;if(on===S.on)return;
   R.classList.remove('gwOn');gw.classList.remove('lshow');S.on=false;clearInterval(S.tm);
   setTimeout(()=>{const m=G('map');if(m)m.invalidateSize({pan:false})},60)}
  if(!quiet)LS.set('geo-gw',on?'1':'0');const hb=$('gwBtn');if(hb)hb.innerHTML=on?'📋<span class="gwbl"> 보고서형 화면</span>':'🖥️<span class="gwbl"> 작업 화면</span>'}
-window.gwSet=set;
+window.gwSet=set;window.gwWinOpen=k=>{if(!(S.win===k&&!$('gwWin').hidden))winOpen(k)};
 
 /* 리본·제목줄 버튼 (원래 버튼을 대신 누름 · 바깥 클릭으로 닫히는 창이 있어 클릭 처리가 끝난 뒤 실행) */
 gw.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const k=b.dataset.a;setTimeout(()=>{A(k);setTimeout(sync,80)},0)});
@@ -2113,7 +2133,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  </details>
  <p class="hint" id="axInfo" style="margin:8px 2px 0"></p>
  <p class="hint" id="axMsg" style="margin:6px 2px 0"></p>
- <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="axN" type="button" class="btn ol" style="width:auto">닫기</button><button id="axGo" type="button" class="btn" style="width:auto">💾 내보내기</button></div></div></div>
+ <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="axRp" type="button" class="btn ol" style="width:auto" hidden title="범위에 걸친 관로를 ✅ 교체 완료 후보로 가져갑니다">✅ 교체 완료 후보로</button><button id="axN" type="button" class="btn ol" style="width:auto">닫기</button><button id="axGo" type="button" class="btn" style="width:auto">💾 내보내기</button></div></div></div>
 <div id="bkPick" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="bkPickT"><div class="pcbox" style="width:min(520px,100%);height:auto;max-height:92vh">
  <div class="pchd"><div><b id="bkPickT">💾 저장(백업)할 항목 고르기</b><small>체크한 항목만 백업 파일에 담습니다. 고른 항목은 이 기기에 기억해 두고 다음에도 그대로 보여 줍니다.</small></div><button id="bkPickX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
  <div class="bkqk"><button type="button" data-q="all">모두 고르기</button><button type="button" data-q="nophoto">사진·동영상 빼고</button><button type="button" data-q="base">기준자료만</button><button type="button" data-q="none">모두 해제</button></div>
@@ -11740,7 +11760,7 @@ function cwWyOf(b){const mv=CW.man[b];if(mv!=null&&mv!=='')return{v:+mv,src:'직
  const ks=Object.keys(src[0]).sort().slice(-(+CW.c.mon||12));if(!ks.length)return null;const v=ks.reduce((s,k)=>s+src[0][k],0)/ks.length;return{v,src:src[1],from:ks[0],to:ks[ks.length-1],n:ks.length}}
 /* 블록별 관로 길이·PVC 관로 목록 (관로 가운데 점이 속한 블록) */
 async function cwStats(){if(!PIPE.feats.length||!poly)return null;if(!poly._v)poly._v=Math.random();
- const pre=String(CW.c.pre||'').toUpperCase().split(/[,\s]+/).filter(Boolean),key=[poly._v,PIPE.feats.length,$('pMat').value,$('pYmd').value,$('pUse').value,CW.c.use,pre.join(),(typeof PED!=='undefined'&&PED.at)||0].join('|');
+ const pre=String(CW.c.pre||'').toUpperCase().split(/[,\s]+/).filter(Boolean),key=[poly._v,PIPE.feats.length,$('pMat').value,$('pYmd').value,$('pUse').value,CW.c.use,pre.join(),(typeof PED!=='undefined'&&PED.at)||0,typeof RP!=='undefined'?RP.yr+RP.yrUse:''].join('|');
  if(CW.st&&CW.stKey===key)return CW.st;const fs=poly.features.filter(g=>{const n=bNorm(blkNm(g));return n&&(!pre.length||pre.some(p=>n.startsWith(p)))});
  const st=new Map(),msg=$('cwMsg');let i=0;fs.forEach(g=>{if(!g.properties._bbox)g.properties._bbox=turf.bbox(g)});
  for(const f of PIPE.feats){if(++i%4000===0){msg.textContent=`블록별 PVC 관로 세는 중… ${i.toLocaleString()}/${PIPE.feats.length.toLocaleString()}`;await sleep(0)}
@@ -11749,7 +11769,7 @@ async function cwStats(){if(!PIPE.feats.length||!poly)return null;if(!poly._v)po
   const a=attrOf(f),s=st.get(nm)||{tot:0,pvc:0,P:[],M:[]},L=f._len||0;st.set(nm,s);const FP=f.properties||{};
   if(FP['공사추천'])s.M.push({f,L,y:a.year,d:a.dia,id:a.id,u:a.use,m:a.matRaw||a.mat,mk:FP['공사추천'],mm:FP['공사추천메모']||'',md:FP['공사추천일']||'',mb:FP['공사추천자']||''});
   if(CW.c.use==='dist'&&a.use!=='배수관')continue;if(CW.c.use==='ds'&&a.use!=='배수관'&&a.use!=='급수관')continue;
-  s.tot+=L;if(cwIsPvc(a)){s.pvc+=L;s.P.push({f,L,y:a.year,d:a.dia,id:a.id,u:a.use,m:a.matRaw||a.mat})}st.set(nm,s)}
+  s.tot+=L;if(cwIsPvc(a)&&!(typeof rpIs==='function'&&rpIs(f))){s.pvc+=L;s.P.push({f,L,y:a.year,d:a.dia,id:a.id,u:a.use,m:a.matRaw||a.mat})}st.set(nm,s)}
  CW.st=st;CW.stKey=key;return st}
 async function cwRun(){const msg=$('cwMsg');cwReadUi();if(!PIPE.feats.length||!poly){msg.textContent='⚠ ② 소블록 경계와 ②-1 상수관로를 먼저 불러오세요.';return}
  const st=await cwStats();if(!st)return;const wr=(+CW.c.wr||0)/100,wp=(+CW.c.wp||0)/100,T=cwPT(),bud=(+CW.c.bud||0)*1e8,useB=T.some(t=>t[1]>0)&&bud>0;
@@ -11938,6 +11958,177 @@ function rsInit(){if(!$('rsSec'))return;rsUi();
  $('rsSec').addEventListener('focusin',rsHydMsg,{once:true})}
 {const o=hydPipePop;hydPipePop=function(f){const h=o.apply(this,arguments);try{return h?h+rsPopLine(f):h}catch(_){return h}}}
 try{rsInit()}catch(e){console.warn('적정 관경',e)}
+/* ===== ✅ 노후관 교체 완료 관로 (2026-11-12 B안) =====
+   관로 속성 교체완료(완료일)·교체공사명·교체전재질·교체전관경·교체전설치일자·교체입력·교체입력자 → pedSetProps (현장 수정 기록: 직원 공유·↶ 되돌리기·수정 목록 엑셀 그대로)
+   저장하면 설치일자 = 완료일 → 경과연수 다시 계산. 설치연도 기준(예: 2020년 이후 설치)은 표시 규칙일 뿐 기록하지 않음.
+   지도: 관로 아래 초록 테두리(재질 색은 그대로 보임), 지정 = 진한 초록, 설치연도 기준 = 연한 초록. 🏗 공사 추천 계산에서 뺌 */
+const RP={k:'geo-rp',on:true,yr:'',yrUse:'dist',L:null,cv:null,key:'',ev:0,cand:null,bb:new WeakMap(),bk:new WeakMap(),idx:null,idxKey:''};
+try{const v=JSON.parse(localStorage.getItem(RP.k)||'null');if(v){if(v.on===false)RP.on=false;if(v.yr)RP.yr=v.yr;if(v.yrUse)RP.yrUse=v.yrUse}}catch(_){}
+function rpSaveCfg(){try{localStorage.setItem(RP.k,JSON.stringify({on:RP.on,yr:RP.yr,yrUse:RP.yrUse}))}catch(_){}}
+const RP_HOW={pop:'정보창',ax:'범위 그리기',cw:'공사 추천 대상',xl:'엑셀 목록'};
+/* 'mk' = 교체 완료로 지정 · 'yr' = 설치연도 기준으로 교체 관로로 봄 · null */
+function rpKind(f){const P=f&&f.properties;if(!P||P._빈||P._폐관)return null;if(P['교체완료'])return 'mk';const y=+RP.yr;if(!(y>0))return null;
+ const a=attrOf(f);if(a.year==null||a.year<y)return null;if(RP.yrUse==='dist'&&a.use!=='배수관')return null;if(RP.yrUse==='ds'&&a.use!=='배수관'&&a.use!=='급수관')return null;return 'yr'}
+const rpIs=f=>!!rpKind(f);
+function rpAll(){if(!PIPE.feats)return[];const key=[PIPE.feats.length,(typeof PED!=='undefined'&&PED.at)||0,RP.yr,RP.yrUse,$('pYmd')&&$('pYmd').value,$('pUse')&&$('pUse').value].join('|');if(RP.all&&RP.allKey===key&&RP.allF===PIPE.feats)return RP.all;
+ const o=[];PIPE.feats.forEach((f,fi)=>{const k=rpKind(f);if(k)o.push({f,fi,k})});RP.all=o;RP.allKey=key;RP.allF=PIPE.feats;return o}
+function rpCount(){return rpAll().length}
+const rpYmd=d=>String(d||'').replace(/[^0-9]/g,'').slice(0,8);
+function rpToday(){return fmtD(Date.now())}
+/* 엑셀 날짜(일련번호·문자) → YYYY-MM-DD */
+function rpDate(v){if(v==null||v==='')return '';if(v instanceof Date&&!isNaN(v))return fmtD(v.getTime());
+ if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return d.toISOString().slice(0,10)}
+ const s=String(v).trim(),m=/^(\d{4})\D?(\d{1,2})\D?(\d{1,2})/.exec(s);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+ const y=/^(\d{4})/.exec(s);return y?`${y[1]}-12-31`:''}
+/* 저장할 값: 교체 전 값은 처음 지정할 때만 남김(다시 고쳐도 원래 값 유지) */
+function rpVals(f,o){const P=f.properties,yk=pedKey(P,'ymd'),mk=pedKey(P,'mat'),dk=pedKey(P,'dia'),was=!!P['교체완료'],S=x=>x==null?'':String(x);
+ const v={'교체완료':o.date,'교체공사명':o.work||'','교체입력':RP_HOW[o.how]||o.how||'','교체입력자':typeof chgMe==='function'?(chgMe()||''):'',
+  '교체전설치일자':was?S(P['교체전설치일자']):S(P[yk]),'교체전재질':was?S(P['교체전재질']):S(P[mk]),'교체전관경':was?S(P['교체전관경']):S(P[dk])};
+ v[yk]=rpYmd(o.date);if(o.mat)v[mk]=String(o.mat).trim();if(o.dia)v[dk]=String(o.dia).replace(/mm$/i,'').replace(/^[Φφø]/,'').trim();
+ if(P['공사추천']){v['공사추천']='';v['공사추천메모']='';v['공사추천일']='';v['공사추천자']=''}return v}
+/* 교체 완료 지우기: 설치일자·재질·관경을 교체 전 값으로 */
+function rpUnVals(f){const P=f.properties,v={};['교체완료','교체공사명','교체입력','교체입력자','교체전설치일자','교체전재질','교체전관경'].forEach(k=>v[k]='');
+ v[pedKey(P,'ymd')]=String(P['교체전설치일자']??'');v[pedKey(P,'mat')]=String(P['교체전재질']??'');v[pedKey(P,'dia')]=String(P['교체전관경']??'');return v}
+/* 여러 관로를 한 번에: ↶ 되돌리기 한 번에 모두 돌아감 */
+async function pedSetPropsMany(items,label){const e=[],rs=[];
+ for(const [fi,vals] of items){let r=pedRecOf(fi);const b=r?JSON.stringify(r):null;
+  if(!r){const rf=PIPE.raw[fi];if(!rf)continue;r={id:pedId(),t:Date.now(),o:{i:fi,gs:pedGs(rf),k:pKeyOf(rf)},p:{},op:{}};PED.recs.push(r)}
+  const base=pedBase(r);let n=0;
+  for(const [k,v] of Object.entries(vals)){const o=base[k]==null?'':String(base[k]);if(v===o){if(k in r.p){delete r.p[k];delete r.op[k];n++}}else if(String(r.p[k]??'\u0000')!==v){r.p[k]=v;r.op[k]=o;n++}}
+  if(!n){if(b==null){const j=PED.recs.indexOf(r);if(j>=0)PED.recs.splice(j,1)}continue}e.push({id:r.id,b});rs.push(r)}
+ if(!rs.length)return 0;PED.undo.push(e);if(PED.undo.length>30)PED.undo.shift();
+ /* 관로 교차 반원: 관로마다 다시 찾으면(관로 하나 약 20ms) 수백 개에서 몇 초 걸림 → 모아서 한 번에 */
+ RP.hopQ=new Set();try{await pedCommit(rs,label)}finally{const q=RP.hopQ;RP.hopQ=null;try{if(q&&q.size)hopLocalMany(q)}catch(err){console.warn('관로 교차',err)}}return rs.length}
+{const o=hopLocal;hopLocal=function(fi){if(RP.hopQ){RP.hopQ.add(fi);return}return o.apply(this,arguments)}}
+/* ↶ 되돌리기도 여러 관로면 한 번에 */
+{const o=pedUndo;pedUndo=async function(){if(RP.hopQ)return o.apply(this,arguments);RP.hopQ=new Set();try{return await o.apply(this,arguments)}finally{const q=RP.hopQ;RP.hopQ=null;try{if(q&&q.size)hopLocalMany(q)}catch(err){console.warn('관로 교차',err)}}}}
+function hopLocalMany(set){if(!HOP.done||HOP.segs!==PIPE.segs)return;const old=HOP.list.filter(it=>set.has(it.a)||set.has(it.b));
+ HOP.list=HOP.list.filter(it=>!set.has(it.a)&&!set.has(it.b));const C=HOP_C,cells=new Set();
+ for(const fi of set){const f=PIPE.feats[fi];if(!f||!f.geometry||f.properties._빈||f.properties._폐관)continue;
+  lineParts(f.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=toM(p[k-1][0],p[k-1][1]),b=toM(p[k][0],p[k][1]);
+   for(let gx=Math.floor(Math.min(a[0],b[0])/C);gx<=Math.floor(Math.max(a[0],b[0])/C);gx++)for(let gy=Math.floor(Math.min(a[1],b[1])/C);gy<=Math.floor(Math.max(a[1],b[1])/C);gy++)cells.add(gx+','+gy)}})}
+ let raw=[];if(cells.size){const D=hopData();D.grid=PIPE.grid;D.cells=[...cells];raw=hopRows(hopScan(D)).filter(c=>set.has(c[0])||set.has(c[1]))}
+ const add=hopDedupe(raw).map(hopItem);HOP.list.push(...add);const touched=new Set(set);old.concat(add).forEach(it=>{touched.add(it.a);touched.add(it.b)});
+ hopIndex();hopRedrawF([...touched].map(i=>PIPE.feats[i]).filter(Boolean))}
+
+/* ── 관로 정보창 칸 ── */
+function rpForm(f){const fi=PIPE.feats.indexOf(f);if(fi<0||!f.properties||f.properties._빈||f.properties._폐관)return '';const P=f.properties,k=rpKind(f),a=attrOf(f);
+ const st='min-width:0;font-size:13px;padding:4px 6px;border:1px solid #86efac;border-radius:5px';
+ const was=k==='mk'?`<small style="display:block;color:#166534;margin:2px 0">교체 전: ${esc(P['교체전재질']||'재질 미상')} · ${esc(P['교체전관경']?P['교체전관경']+'mm':'관경 미상')} · 설치 ${esc(String(P['교체전설치일자']||'').slice(0,4)||'미상')}${P['교체입력']?' · '+esc(P['교체입력']):''}${P['교체입력자']?' · '+esc(P['교체입력자']):''}</small>`:
+  k==='yr'?`<small style="display:block;color:#166534;margin:2px 0">설치연도 ${a.year}년 → <b>설치연도 기준(${esc(RP.yr)}년 이후)</b>으로 교체 관로로 봅니다. 공사명을 남기려면 아래에서 저장하세요.</small>`:'';
+ return `<details class="rpmk" style="margin-top:6px;font-size:12px"${k?' open':''}><summary style="cursor:pointer;font-weight:700;color:#15803d">✅ 노후관 교체 완료${k==='mk'?` <span style="background:#16a34a;color:#fff;border-radius:8px;padding:0 6px;font-weight:600">${esc(P['교체완료'])}</span>${P['교체공사명']?' <small style="font-weight:600">'+esc(P['교체공사명'])+'</small>':''}`:k==='yr'?' <span style="background:#bbf7d0;color:#166534;border-radius:8px;padding:0 6px;font-weight:600">설치연도 기준</span>':' 표시'}</summary><div onkeydown="event.stopPropagation()" style="margin-top:4px">${was}
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 6px"><span style="color:#64748b;align-self:center">완료일</span><input type="date" class="rpd" value="${esc(P['교체완료']||rpToday())}" style="${st}">
+  <span style="color:#64748b;align-self:center">공사명</span><input class="rpw" value="${esc(P['교체공사명']||'')}" placeholder="예: 2026년 노후관 교체공사" style="${st}">
+  <span style="color:#64748b;align-self:center">교체 후 재질</span><input class="rpm" list="rpMatL" placeholder="비우면 그대로 (${esc(a.mat)})" style="${st}">
+  <span style="color:#64748b;align-self:center">교체 후 관경</span><input class="rpdi" inputmode="numeric" list="rpDiaL" placeholder="비우면 그대로 (${a.dia!=null?a.dia+'mm':'미상'})" style="${st}"></div>
+  <datalist id="rpMatL">${Object.keys(MAT_COL).map(x=>`<option value="${esc(x)}">`).join('')}</datalist><datalist id="rpDiaL">${PIPE_DIAS.map(d=>`<option value="${d}">`).join('')}</datalist>
+  <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap"><button type="button" class="kl" onclick="rpSave(${fi},this)">✅ ${k==='mk'?'고치기':'교체 완료로 저장'}</button>${k==='mk'?`<button type="button" class="kl" onclick="rpSave(${fi},this,1)">교체 완료 지우기</button>`:''}<small style="color:#64748b;align-self:center">설치연도가 완료일로 바뀜 · 🏗 공사 추천에서 빠짐 · 직원에게 공유</small></div></div></details>`}
+window.rpSave=async(fi,btn,del)=>{const box=btn.closest('.rpmk'),old=PIPE.feats[fi];if(!box||!old)return;let vals;
+ if(del){if(!confirm('이 관로의 교체 완료 표시를 지우고 설치연도·재질·관경을 교체 전 값으로 돌릴까요?'))return;vals=rpUnVals(old)}
+ else{const date=box.querySelector('.rpd').value,dia=box.querySelector('.rpdi').value.trim();if(!/^\d{4}-\d\d-\d\d$/.test(date)){alert('완료일을 넣으세요.');return}
+  if(dia&&!/^\d+(\.\d+)?$/.test(dia.replace(/mm$/i,'').replace(/^[Φφø]/,'').trim())){alert('관경은 숫자(mm)로 넣으세요. 예: 100');return}
+  vals=rpVals(old,{date,work:box.querySelector('.rpw').value.trim(),mat:box.querySelector('.rpm').value.trim(),dia,how:'pop'})}
+ const cw=!!(old.properties['공사추천']&&!del);PIPE.infoOpen=-1;try{await pedSetProps(fi,vals)}catch(e){alert('저장하지 못했습니다: '+(e&&e.message||e));return}
+ try{pipeInfoRefresh(fi,old)}catch(_){}rpAfter();try{phToast(del?'✅ 교체 완료 표시를 지웠습니다':'✅ 교체 완료로 저장했습니다'+(cw?' (🏗 공사 추천 표기는 지움)':''))}catch(_){}};
+function rpAfter(){rpDraw(true);try{cwMarkDraw(true);cwMarkList()}catch(_){}try{if(CW.rows.length)cwRun().catch(()=>{})}catch(_){}rpUiCnt();rpListShow()}
+
+/* ── 지도: 관로 층(390) 바로 아래 캔버스에 초록 테두리 — 지금 화면 둘레만 그림(관로 층과 같은 방식) ── */
+function rpPane(){if(!map.getPane('rpPane')){const p=map.createPane('rpPane');p.style.zIndex=389;p.style.pointerEvents='none'}if(!RP.cv)RP.cv=L.canvas({pane:'rpPane',padding:.3});return RP.cv}
+function rpBox(f){let b=RP.bb.get(f);if(!b){b=pcBox(f);RP.bb.set(f,b)}return b}
+function rpDraw(force){if(!map||!PIPE.feats)return;if(!RP.ev){RP.ev=1;map.on('moveend zoomend',()=>{try{rpDraw()}catch(_){}})}
+ const onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS)),z=map.getZoom(),B=map.getBounds().pad(.5);
+ const key=[PIPE.feats.length,(typeof PED!=='undefined'&&PED.at)||0,RP.on,RP.yr,RP.yrUse,onM,onS,z,B.toBBoxString(),RP.cand?RP.cand.at:0,PIPE.hidS?PIPE.hidS.size+'/'+PIPE.hidBy:''].join('|');if(!force&&key===RP.key)return;RP.key=key;
+ const cv=rpPane();if(!RP.L)RP.L=L.layerGroup().addTo(map);RP.L.clearLayers();
+ const w=B.getWest(),e=B.getEast(),s=B.getSouth(),n=B.getNorth(),inV=f=>{const b=rpBox(f);return !(b[2]<w||b[0]>e||b[3]<s||b[1]>n)};
+ const wt=Math.max(4,Math.min(12,z-6)),draw=(f,col,wg,op,dash)=>{const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));if(ls.length)L.polyline(ls,{renderer:cv,color:col,weight:wg,opacity:op,dashArray:dash,lineCap:dash?'butt':'round',interactive:false}).addTo(RP.L)};
+ if(RP.on&&(onM||onS))rpAll().forEach(({f,k})=>{if(pcHid(f))return;const svc=attrOf(f).use==='급수관';if(svc?!onS:!onM)return;if(!inV(f))return;
+  k==='mk'?draw(f,'#16a34a',wt+5,.9):draw(f,'#4ade80',wt+3,.6)});
+ /* 한꺼번에 지정 후보 미리보기: 노란 끊은 테두리 */
+ if(RP.cand)RP.cand.items.forEach(it=>{const f=PIPE.feats[it.fi];if(f&&inV(f))draw(f,'#f59e0b',wt+6,.85,'6 5')})}
+function rpSetOn(o){RP.on=!!o;rpSaveCfg();const e=$('rpOn');if(e)e.checked=RP.on;rpDraw(true)}
+{const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
+{const o=pipeRecolor;pipeRecolor=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
+{const o=pipeShow;pipeShow=function(){const r=o.apply(this,arguments);try{rpDraw()}catch(_){}return r}}
+/* 정보창: 🏗 공사 추천 칸 앞(아래 단추 줄 앞)에 */
+{const o=pipePopFull;pipePopFull=function(f,ll){const h=o.apply(this,arguments);try{const m=rpForm(f);if(m){const k=h.indexOf('<details class="cwmk"'),j=k>=0?k:h.indexOf('<div class="acts"');return j>=0?h.slice(0,j)+m+h.slice(j):h+m}}catch(_){}return h}}
+/* 📐 적정 관경: 관경을 바꿔 교체한 관로는 관망해석 유속이 옛 관경 기준이라 비고에 남김 */
+{const o=rsJudge;rsJudge=function(f,O){const r=o.apply(this,arguments);try{if(r&&rpKind(f)){const P=f.properties,d0=parseDia(P['교체전관경']);r.rp=1;const t=P['교체완료']?(d0&&d0!==r.D?`교체 완료(${P['교체완료']}) — 관망해석은 옛 관경 ${d0}mm 기준, 다시 해석 필요`:`교체 완료(${P['교체완료']})`):'설치연도 기준 교체 관로';r.note=r.note?r.note+' · '+t:t}}catch(_){}return r}}
+
+/* ── 소블록 (관로 가운데 점) ── */
+function rpBlk(f){if(RP.bk.has(f))return RP.bk.get(f);let nm='';const p=lineParts(f.geometry)[0]||[],c=p[Math.floor(p.length/2)]||p[0];
+ if(c&&poly&&poly.features){for(const g of poly.features){if(!g.properties._bbox)g.properties._bbox=turf.bbox(g);const b=g.properties._bbox;if(c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3]&&turf.booleanPointInPolygon(turf.point(c),g)){nm=bNorm(blkNm(g));break}}}
+ if(!nm)nm=bNorm((f.properties||{})['소블록명']||'');RP.bk.set(f,nm);return nm}
+
+/* ── 한꺼번에 지정: 후보 만들기 ── */
+function rpIdx(){const key=PIPE.feats.length+'|'+((typeof PED!=='undefined'&&PED.at)||0);if(RP.idx&&RP.idxKey===key)return RP.idx;const m=new Map();
+ PIPE.feats.forEach((f,fi)=>{const P=f.properties;if(!P||P._빈||P._폐관)return;const id=String(attrOf(f).id||'').trim();if(id&&!m.has(id))m.set(id,fi)});RP.idx=m;RP.idxKey=key;return m}
+function rpCandSet(how,label,items,miss){if(!items.length&&!(miss&&miss.length)){RP.cand=null;rpCandShow();alert('고른 범위·목록에 상수관로가 없습니다.');return}
+ RP.cand={how,label,items,miss:miss||[],at:Date.now()};rpCandShow();rpDraw(true);try{const el=$('rpCand');el&&el.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}}
+function rpCandItems(){const C=RP.cand;if(!C)return[];const noS=$('rpNoSvc')&&$('rpNoSvc').checked;return C.items.filter(it=>{const f=PIPE.feats[it.fi];return f&&!f.properties._빈&&!f.properties._폐관&&(!noS||attrOf(f).use!=='급수관')})}
+function rpCandShow(){const el=$('rpCand');if(!el)return;const C=RP.cand;if(!C){el.innerHTML='';return}const its=rpCandItems(),n=x=>x.toLocaleString();
+ let L0=0,nM=0,nS=0,done=0;its.forEach(it=>{const f=PIPE.feats[it.fi];L0+=f._len||0;attrOf(f).use==='급수관'?nS++:nM++;if(f.properties['교체완료'])done++});
+ el.innerHTML=`<div style="border:1px solid #fcd34d;background:#fffbeb;border-radius:8px;padding:6px 8px;margin:4px 0;font-size:12.5px;color:#0f172a"><b>후보 (${esc(C.label)})</b>: 관로 <b>${n(its.length)}</b>개 · ${(L0/1000).toFixed(2)}km <small>(배수관 등 ${n(nM)} · 급수관 ${n(nS)})</small>${done?` · 이미 교체 지정 ${n(done)}개(완료일·공사명만 고침)`:''}${C.miss.length?`<br><span class="c-am">⚠ 못 찾은 관리번호 ${n(C.miss.length)}개: ${esc(C.miss.slice(0,12).join(', '))}${C.miss.length>12?' …':''}</span>`:''}
+  <br><small>지도에 <b style="color:#b45309">노란 끊은 테두리</b>로 보입니다. 엑셀에 완료일·공사명 칸이 있으면 그 값을, 없으면 위 칸 값을 씁니다.</small>
+  <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap"><button type="button" class="btn" id="rpCandGo" style="width:auto"${its.length?'':' disabled'}>✅ ${n(its.length)}개 교체 완료로 저장</button><button type="button" class="btn ol" id="rpCandX" style="width:auto">✕ 후보 지우기</button></div></div>`;
+ $('rpCandX').onclick=()=>{RP.cand=null;rpCandShow();rpDraw(true)};$('rpCandGo').onclick=rpCandSave}
+async function rpCandSave(){const its=rpCandItems(),msg=$('rpMsg');if(!its.length)return;const base=rpReadBulk();if(!base)return;
+ if(its.length>3000&&!confirm(`관로 ${its.length.toLocaleString()}개를 한 번에 저장합니다. 시간이 조금 걸릴 수 있습니다. 계속할까요?`))return;
+ if(!confirm(`관로 ${its.length.toLocaleString()}개를 교체 완료로 저장할까요?\n완료일 ${base.date}${base.work?' · '+base.work:''}${base.mat?' · 재질 '+base.mat:''}${base.dia?' · 관경 '+base.dia+'mm':''}\n(🛠 편집 ↶ 되돌리기 또는 아래 '↶ 방금 지정 되돌리기'로 한 번에 돌릴 수 있습니다)`))return;
+ msg.textContent='저장하는 중…';await sleep(20);const t0=performance.now();let n=0;
+ try{const items=its.map(it=>{const f=PIPE.feats[it.fi];return[it.fi,rpVals(f,{date:it.date||base.date,work:it.work||base.work,mat:base.mat,dia:base.dia,how:RP.cand.how})]});
+  n=await pedSetPropsMany(items,`교체 완료 ${its.length}개 (${RP_HOW[RP.cand.how]||''})`)}catch(e){msg.textContent='⚠ 저장하지 못했습니다: '+(e&&e.message||e);return}
+ RP.cand=null;rpCandShow();RP.lastN=n;rpAfter();msg.textContent=`✅ 관로 ${n.toLocaleString()}개를 교체 완료로 저장했습니다 (${((performance.now()-t0)/1000).toFixed(1)}초). 바뀐 칸이 없는 관로는 건너뜀.`;try{phToast('✅ 교체 완료 '+n+'개 저장')}catch(_){}}
+function rpReadBulk(){const date=$('rpDate').value,dia=$('rpDia').value.trim(),mat=$('rpMat').value.trim(),work=$('rpWork').value.trim();
+ if(dia&&!/^\d+(\.\d+)?$/.test(dia)){alert('교체 후 관경은 숫자(mm)로 넣으세요.');return null}
+ if(!/^\d{4}-\d\d-\d\d$/.test(date)&&!(RP.cand&&RP.cand.items.every(it=>it.date))){alert('완료일을 넣으세요.');return null}return{date,work,mat,dia}}
+/* ⬚ 범위 그리기: 범위 내보내기 창(그리기 도구)을 열고, 그 창의 '✅ 교체 완료 후보로' 단추로 가져옴 */
+function rpAxTake(){const C=typeof axScan==='function'?axScan():null;if(!C){alert('먼저 범위를 그려 주세요.');return}
+ const items=C.pipes.map(f=>({fi:PIPE.feats.indexOf(f)})).filter(x=>x.fi>=0);axClose();rpCandSet('ax','범위 '+(AX.how||''),items);rpGo()}
+function rpGo(){if(document.documentElement.classList.contains('gwOn')&&window.gwWinOpen)window.gwWinOpen('rp');else{const s=$('rpSec');if(s){s.classList.remove('col');try{s.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}}}
+function rpCwShow(){const el=$('rpCwBox');if(!el)return;if(!CW.pick||!CW.pick.length){el.innerHTML='<p class="hint" style="margin:2px 0">🏗 공사 추천에서 먼저 <b>추천 계산</b>을 누르세요. 추천 블록의 공사 대상 관로(지도에 굵게 칠한 관로)를 가져옵니다.</p>';return}
+ el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin:3px 0">${CW.pick.map(r=>`<label style="border:1px solid #cbd5e1;border-radius:12px;padding:2px 8px;font-size:12px;cursor:pointer"><input type="checkbox" class="rpCwC" value="${esc(r.b)}"> ${r.rk}. ${esc(r.b)} <small>${(r.selL/1000).toFixed(2)}km</small></label>`).join('')}</div><button type="button" class="btn ol" id="rpCwGo" style="width:auto">고른 블록 공사 대상 → 후보</button>`;
+ $('rpCwGo').onclick=()=>{const bs=new Set([...el.querySelectorAll('.rpCwC:checked')].map(x=>x.value));if(!bs.size){alert('블록을 고르세요.');return}const s=new Set();
+  CW.pick.filter(r=>bs.has(r.b)).forEach(r=>r.sel.forEach(p=>{const fi=PIPE.feats.indexOf(p.f);if(fi>=0)s.add(fi)}));rpCandSet('cw','공사 추천 '+[...bs].join(', '),[...s].map(fi=>({fi})))}}
+/* 📊 관리번호 엑셀: 관리번호(필수)·완료일(준공일)·공사명 칸 */
+async function rpXlLoad(file){const msg=$('rpMsg');msg.textContent=file.name+' 읽는 중…';await sleep(20);
+ try{const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});const idx=rpIdx(),items=[],miss=[],seen=new Set();let found=false;
+  for(const sn of wb.SheetNames){const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});let h=-1,ci=-1,cd=-1,cw=-1;
+   for(let i=0;i<Math.min(15,A.length);i++){const r=(A[i]||[]).map(v=>String(v??'').replace(/\s/g,''));const j=r.findIndex(v=>/^(관리번호|관로관리번호|FTR_IDN|관로ID)$/i.test(v));if(j>=0){h=i;ci=j;cd=r.findIndex(v=>/완료|준공|교체일|공사일/.test(v));cw=r.findIndex(v=>/공사명|사업명/.test(v));break}}
+   if(h<0)continue;found=true;for(let i=h+1;i<A.length;i++){const r=A[i]||[];const id=String(r[ci]??'').trim();if(!id||seen.has(id))continue;seen.add(id);const fi=idx.get(id);if(fi==null){miss.push(id);continue}
+    items.push({fi,date:cd>=0?rpDate(r[cd]):'',work:cw>=0?String(r[cw]??'').trim():''})}}
+  if(!found){msg.textContent='⚠ "관리번호" 머리글 칸을 찾지 못했습니다. 첫 줄 근처에 관리번호(필수)·완료일·공사명 머리글을 넣어 주세요.';return}
+  msg.textContent='';rpCandSet('xl',file.name,items,miss)}catch(e){msg.textContent='⚠ 읽기 실패: '+e.message}}
+async function rpUndo(){if(!PED.undo.length){alert('되돌릴 수정이 없습니다.');return}if(!confirm('방금 한 관로 수정(교체 완료 지정 포함)을 한 번 되돌릴까요?'))return;await pedUndo();rpAfter();$('rpMsg').textContent='↶ 되돌렸습니다.'}
+
+/* ── 목록·엑셀 ── */
+function rpRows(){return rpAll().map(({f,fi,k})=>{const a=attrOf(f),P=f.properties;return{f,fi,k,a,P,b:rpBlk(f),L:f._len||0}})}
+function rpUiCnt(){const el=$('rpCnt');if(!el)return;let m=0,mL=0,y=0,yL=0;rpAll().forEach(({f,k})=>{if(k==='mk'){m++;mL+=f._len||0}else{y++;yL+=f._len||0}});
+ el.innerHTML=`지정 <b>${m.toLocaleString()}</b>개 ${(mL/1000).toFixed(2)}km`+(+RP.yr>0?` · 설치연도 ${esc(RP.yr)}년 이후 <b>${y.toLocaleString()}</b>개 ${(yL/1000).toFixed(2)}km`:'')}
+function rpListShow(){const el=$('rpTbl');if(!el)return;if(!PIPE.feats||!PIPE.feats.length){el.innerHTML='<p class="hint">②-1 상수관로를 먼저 불러오세요.</p>';return}const R=rpRows();
+ if(!R.length){el.innerHTML='<p class="hint" style="margin:2px 0">아직 교체 완료 관로가 없습니다. 관로를 눌러 정보창의 ✅ 칸에서 저장하거나 위에서 한꺼번에 지정하세요.</p>';return}
+ const M=new Map();R.forEach(r=>{const b=r.b||'(소블록 밖)';let o=M.get(b);if(!o)M.set(b,o={b,m:0,mL:0,y:0,yL:0});if(r.k==='mk'){o.m++;o.mL+=r.L}else{o.y++;o.yL+=r.L}});
+ const B=[...M.values()].sort((a,b)=>(b.mL+b.yL)-(a.mL+a.yL)),mk=R.filter(r=>r.k==='mk').sort((a,b)=>String(b.P['교체완료']).localeCompare(String(a.P['교체완료']))||a.b.localeCompare(b.b)),lim=300;
+ el.innerHTML=`<div style="max-height:200px;overflow:auto;margin-top:4px"><table class="bt"><thead><tr><th>소블록</th><th class="r">지정</th><th class="r">km</th>${+RP.yr>0?'<th class="r">설치연도 기준</th><th class="r">km</th>':''}</tr></thead><tbody>${B.map(o=>`<tr><td class="nm"><a href="#" class="rpBGo" data-b="${esc(o.b)}">${esc(o.b)}</a></td><td class="r">${o.m||''}</td><td class="r">${o.m?(o.mL/1000).toFixed(2):''}</td>${+RP.yr>0?`<td class="r">${o.y||''}</td><td class="r">${o.y?(o.yL/1000).toFixed(2):''}</td>`:''}</tr>`).join('')}</tbody></table></div>`+
+  (mk.length?`<div style="max-height:220px;overflow:auto;margin-top:6px"><table class="bt"><thead><tr><th>관리번호</th><th>소블록</th><th>완료일</th><th>공사명</th><th>교체 전→후</th></tr></thead><tbody>${mk.slice(0,lim).map(r=>`<tr><td class="nm"><a href="#" class="rpGo" data-i="${r.fi}">${esc(r.a.id||'-')}</a></td><td>${esc(r.b)}</td><td>${esc(r.P['교체완료'])}</td><td>${esc(r.P['교체공사명']||'')}</td><td><small>${esc(r.P['교체전재질']||'?')} ${esc(r.P['교체전관경']||'?')} → ${esc(r.a.matRaw||r.a.mat)} ${r.a.dia??'?'}</small></td></tr>`).join('')}</tbody></table>${mk.length>lim?`<p class="hint">앞 ${lim}개만 보입니다 · 전체는 ⬇ 엑셀</p>`:''}</div>`:'')}
+function rpFit(fs){if(!map||!fs.length)return;try{let b=null;fs.forEach(f=>{const x=rpBox(f),bb=L.latLngBounds([x[1],x[0]],[x[3],x[2]]);b=b?b.extend(bb):bb});map.fitBounds(b,{padding:[30,30],maxZoom:18})}catch(_){}}
+function rpXl(){const R=rpRows();if(!R.length){alert('교체 완료 관로가 없습니다.');return}
+ const M=new Map();R.forEach(r=>{const b=r.b||'(소블록 밖)';let o=M.get(b);if(!o)M.set(b,o={'소블록':b,'지정 개수':0,'지정 연장(km)':0,'설치연도 기준 개수':0,'설치연도 기준 연장(km)':0});if(r.k==='mk'){o['지정 개수']++;o['지정 연장(km)']+=r.L/1000}else{o['설치연도 기준 개수']++;o['설치연도 기준 연장(km)']+=r.L/1000}});
+ const B=[...M.values()].sort((a,b)=>String(a['소블록']).localeCompare(String(b['소블록']))).map(o=>({...o,'지정 연장(km)':+o['지정 연장(km)'].toFixed(3),'설치연도 기준 연장(km)':+o['설치연도 기준 연장(km)'].toFixed(3)}));
+ const D=R.sort((a,b)=>a.b.localeCompare(b.b)||String(a.a.id).localeCompare(String(b.a.id))).map((r,i)=>({'순번':i+1,'구분':r.k==='mk'?'교체 완료 지정':`설치연도 기준(${RP.yr}년 이후)`,'관리번호':r.a.id||'','소블록':r.b,'용도':r.a.use,'완료일':r.P['교체완료']||'','공사명':r.P['교체공사명']||'','교체 전 재질':r.P['교체전재질']||'','교체 전 관경(mm)':r.P['교체전관경']||'','교체 전 설치일자':r.P['교체전설치일자']||'','지금 재질':r.a.matRaw||r.a.mat,'지금 관경(mm)':r.a.dia??'','설치연도':r.a.year??'','연장(m)':+r.L.toFixed(1),'입력 방법':r.P['교체입력']||'','입력':r.P['교체입력자']||''}));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(B),'소블록별');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(D),'교체 완료 관로');
+ XLSX.writeFile(wb,`노후관교체완료_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
+function rpInit(){if(!$('rpSec'))return;$('rpOn').checked=RP.on;$('rpYr').value=RP.yr;$('rpYrUse').value=RP.yrUse;$('rpDate').value=rpToday();
+ $('rpOn').onchange=e=>rpSetOn(e.target.checked);
+ const yr=()=>{const v=$('rpYr').value.trim();RP.yr=+v>=1940&&+v<=2100?String(+v):'';RP.yrUse=$('rpYrUse').value;rpSaveCfg();RP.bk=new WeakMap();rpDraw(true);rpUiCnt();rpListShow();try{if(CW.rows.length)cwRun().catch(()=>{})}catch(_){}};
+ $('rpYr').onchange=yr;$('rpYrUse').onchange=yr;
+ $('rpAx').onclick=()=>{if(typeof axOpen!=='function'){alert('범위 그리기 도구가 없습니다.');return}axOpen();const b=$('axRp');if(b)b.hidden=false};
+ $('rpCw').onclick=rpCwShow;$('rpXlF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)rpXlLoad(f)};
+ $('rpXl').onclick=rpXl;$('rpUndo').onclick=rpUndo;$('rpRef').onclick=()=>{rpUiCnt();rpListShow()};$('rpNoSvc').onchange=()=>{rpCandShow();rpDraw(true)};
+ const ax=$('axRp');if(ax)ax.onclick=rpAxTake;
+ $('rpTbl').addEventListener('click',e=>{const a=e.target.closest('.rpGo,.rpBGo');if(!a)return;e.preventDefault();
+  if(a.classList.contains('rpGo')){const f=PIPE.feats[+a.dataset.i];if(f)rpFit([f])}else rpFit(rpRows().filter(r=>(r.b||'(소블록 밖)')===a.dataset.b).map(r=>r.f))});
+ $('rpSec').addEventListener('focusin',()=>{rpUiCnt();rpListShow()},{once:true});rpUiCnt()}
+try{rpInit()}catch(e){console.warn('교체 완료',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
