@@ -1521,6 +1521,7 @@ html.dark svg.ri{color:var(--cd)!important}
  <div class="sec" id="rpSec">
   <h4>✅ 노후관 교체 완료 관로 <small style="font-weight:400;color:var(--mute)">교체 공사가 끝난 관로를 지도에 초록 테두리로 구분 · 🏗 공사 추천에서 뺌</small></h4>
   <p style="margin:0 0 4px;font-size:12.5px"><label><input type="checkbox" id="rpOn"> 지도에 보이기</label> · <span id="rpCnt"></span></p>
+  <label class="f" style="display:flex;align-items:center;gap:6px;margin:0 0 4px">초록 테두리 두께 <input id="rpW" type="range" min="30" max="250" step="10" style="flex:1"> <b id="rpWv" style="min-width:42px;text-align:right">100%</b> <button type="button" id="rpW0" class="btn ol" style="width:auto;min-height:26px;padding:1px 8px;font-size:12px" title="처음 두께(100%)로">↺</button></label>
   <div class="g2"><label class="f">설치연도 기준 <small style="font-weight:400">(이 해 이후 설치 관로도 교체로 봄 · 비우면 안 씀)</small><input id="rpYr" type="number" min="1940" max="2100" step="1" placeholder="예: 2020" style="width:100%"></label>
   <label class="f">설치연도 기준 용도<select id="rpYrUse"><option value="dist">배수관만</option><option value="ds">배수관+급수관</option><option value="all">전체</option></select></label></div>
   <details open style="margin:4px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">여러 관로 한꺼번에 교체 완료로 지정</summary>
@@ -1890,6 +1891,7 @@ function laySub(k){try{
   if(!LXC.pipe||LXC.pipe.k!==ck){const d=F('pipeLegData');if(!d)return'';LXC.pipe={k:ck,d}}const {cnt,items}=LXC.pipe.d,DB=G('DIA_BANDS')||[],H=new Set(F('pipeHidList')||[]);
   const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[by]||'';
   return `<div class="tip">색 기준: ${T} · 체크 = 지도에 보이기 (⚙️ 관로 탭에서 색 기준 바꿈)</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3,h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-phd="${escH(n)}"${h?'':' checked'}><span class="ln" style="height:${w}px;background:${c}"></span><span class="nm" title="${escH(n)}">${escH(n)}</span><small>${((cnt.get(n)||0)/1000).toFixed(1)}km</small></label>`}).join('')}
+ if(k==='rp'){const r=G('RP');if(!r)return'';const pc=Math.round((+r.w||1)*100)+'%';return lxRow('<span class="ln" style="height:6px;background:#16a34a;flex:none;width:18px;border-radius:3px"></span>','교체 완료로 지정','')+lxRow('<span class="ln" style="height:5px;background:#4ade80;flex:none;width:18px;border-radius:3px"></span>','설치연도 기준'+(r.yr?' ('+r.yr+'년 이후)':' (꺼짐)'),'')+`<div class="gwl-psz"><span class="nm">초록 테두리 두께</span><button type="button" data-rpw="-1" title="가늘게" aria-label="교체 완료 테두리 가늘게">−</button><small>${pc}</small><button type="button" data-rpw="1" title="굵게" aria-label="교체 완료 테두리 굵게">＋</button></div><div class="gwl-bb"><button type="button" data-rpw="0">↺ 두께 처음대로</button></div><div class="tip">✅ 교체 완료 창의 두께 막대와 같이 바뀜</div>`}
  if(k==='fac'){const f=G('FAC');if(!f||!f.kinds||!f.kinds.length)return'';/* ⚙️ 시설물 탭과 같은 목록(켜고 끄기·크기·사진 있는 것만)을 그대로 그림 → layFill */
   return `<div class="gwl-fk" data-v="${escH(JSON.stringify([f.feats.length,f.kinds,[...(f.hidden||[])],f.ksz||{},!!f.phOnly,f.phc||0]))}"></div><div class="tip">체크 = 지도에 보이기 · −/＋ = 아이콘 크기 (⚙️ 시설물 탭과 같이 바뀜)</div>`}
  if(k==='pt'){if(!G('PT')||!G('PT').n)return'';const h=F('mLegendHtml');if(!h)return'';const d=document.createElement('div');d.innerHTML=h;
@@ -1914,7 +1916,7 @@ function laySub(k){try{
   const sp=[...d.querySelectorAll('span')];if(!sp.length)return'';
   return sp.map(x=>{const i=x.querySelector('i'),st=i?i.getAttribute('style')||'':'';if(i)i.remove();const sm=x.querySelector('small'),n=sm?sm.textContent:'';if(sm)sm.remove();return `<div><i style="${escH(st)}"></i><span class="nm">${escH(x.textContent.trim())}</span>${n?`<small>${escH(n)}</small>`:''}</div>`}).join('')}
 }catch(e){console.warn('gw laySub',k,e)}return''}
-const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl']);
+const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl','rp']);
 function layRender(){const tb=$('gwLayB');if(!tb||gw.querySelector('#gwLay').hidden)return;
  const rows=LAY.map(r=>{if(r.g)return{g:r.g};let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}
   const can=LX_K.has(r.k)&&ok,sub=can&&LX.has(r.k)?laySub(r.k):'';return{r,c,on,ok,can,sub,sym:laySym(r.k)}});
@@ -1929,6 +1931,7 @@ $('gwLayB').addEventListener('change',e=>{if(e.target.closest('.gwl-fk'))laySync
 $('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.mir==null)return;e.stopPropagation();mir(t.dataset.mir,t.value);layKey='';setTimeout(layRender,60)},true);
 $('gwLayB').addEventListener('click',e=>{if(!e.target.closest('button[data-lblm]'))return;e.preventDefault();e.stopPropagation();const m=G('LBLM');if(m&&m.open)m.open()},true);
+$('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-rpw]');if(!b)return;e.preventDefault();e.stopPropagation();F('rpWStep',+b.dataset.rpw);layKey='';setTimeout(layRender,40)},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-psz]');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.psz;if(k==='0'){const u=G('UI');if(u){u.phKs=undefined}F('phSzSet','L',1);F('phSzSet','*',1)}else F('phSzStep',k,+b.dataset.d);layKey='';setTimeout(layRender,40)},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('.gwl-bb button[data-ba]');if(!b)return;F('blkHidSet',F('blkNames')||[],b.dataset.ba==='1');layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('click',e=>{if(e.target.closest('.gwl-fk button'))return laySync();const pk=e.target.closest('.gwl-pk');if(pk){const P=G('PH');if(pk.dataset.gkd!=null)F('phSetKf',P&&P.kf===pk.dataset.gkd?'*':pk.dataset.gkd);else{const y=pk.dataset.gy,kk=y==='0'?'none':'Y'+y;F('phSetPer','year',(F('sel0')||'')===kk?'*':kk)}layKey='';setTimeout(layRender,50);return}});
@@ -12684,9 +12687,9 @@ try{rsInit()}catch(e){console.warn('적정 관경',e)}
    관로 속성 교체완료(완료일)·교체공사명·교체전재질·교체전관경·교체전설치일자·교체입력·교체입력자 → pedSetProps (현장 수정 기록: 직원 공유·↶ 되돌리기·수정 목록 엑셀 그대로)
    저장하면 설치일자 = 완료일 → 경과연수 다시 계산. 설치연도 기준(예: 2020년 이후 설치)은 표시 규칙일 뿐 기록하지 않음.
    지도: 관로 아래 초록 테두리(재질 색은 그대로 보임), 지정 = 진한 초록, 설치연도 기준 = 연한 초록. 🏗 공사 추천 계산에서 뺌 */
-const RP={k:'geo-rp',on:true,yr:'',yrUse:'dist',L:null,cv:null,key:'',ev:0,cand:null,bb:new WeakMap(),bk:new WeakMap(),idx:null,idxKey:''};
-try{const v=JSON.parse(localStorage.getItem(RP.k)||'null');if(v){if(v.on===false)RP.on=false;if(v.yr)RP.yr=v.yr;if(v.yrUse)RP.yrUse=v.yrUse}}catch(_){}
-function rpSaveCfg(){try{localStorage.setItem(RP.k,JSON.stringify({on:RP.on,yr:RP.yr,yrUse:RP.yrUse}))}catch(_){}}
+const RP={k:'geo-rp',on:true,w:1,yr:'',yrUse:'dist',L:null,cv:null,key:'',ev:0,cand:null,bb:new WeakMap(),bk:new WeakMap(),idx:null,idxKey:''};
+try{const v=JSON.parse(localStorage.getItem(RP.k)||'null');if(v){if(v.on===false)RP.on=false;if(+v.w>0)RP.w=+v.w;if(v.yr)RP.yr=v.yr;if(v.yrUse)RP.yrUse=v.yrUse}}catch(_){}
+function rpSaveCfg(){try{localStorage.setItem(RP.k,JSON.stringify({on:RP.on,w:RP.w,yr:RP.yr,yrUse:RP.yrUse}))}catch(_){}}
 const RP_HOW={pop:'정보창',ax:'범위 그리기',cw:'공사 추천 대상',xl:'엑셀 목록'};
 /* 'mk' = 교체 완료로 지정 · 'yr' = 설치연도 기준으로 교체 관로로 봄 · null */
 function rpKind(f){const P=f&&f.properties;if(!P||P._빈||P._폐관)return null;if(P['교체완료'])return 'mk';const y=+RP.yr;if(!(y>0))return null;
@@ -12759,14 +12762,18 @@ function rpPane(){if(!map.getPane('rpPane')){const p=map.createPane('rpPane');p.
 function rpBox(f){let b=RP.bb.get(f);if(!b){b=pcBox(f);RP.bb.set(f,b)}return b}
 function rpDraw(force){if(!map||!PIPE.feats)return;if(!RP.ev){RP.ev=1;map.on('moveend zoomend',()=>{try{rpDraw()}catch(_){}})}
  const onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS)),z=map.getZoom(),B=map.getBounds().pad(.5);
- const key=[PIPE.feats.length,(typeof PED!=='undefined'&&PED.at)||0,RP.on,RP.yr,RP.yrUse,onM,onS,z,B.toBBoxString(),RP.cand?RP.cand.at:0,PIPE.hidS?PIPE.hidS.size+'/'+PIPE.hidBy:''].join('|');if(!force&&key===RP.key)return;RP.key=key;
+ const key=[PIPE.feats.length,(typeof PED!=='undefined'&&PED.at)||0,RP.on,RP.w,RP.yr,RP.yrUse,onM,onS,z,B.toBBoxString(),RP.cand?RP.cand.at:0,PIPE.hidS?PIPE.hidS.size+'/'+PIPE.hidBy:''].join('|');if(!force&&key===RP.key)return;RP.key=key;
  const cv=rpPane();if(!RP.L)RP.L=L.layerGroup().addTo(map);RP.L.clearLayers();
  const w=B.getWest(),e=B.getEast(),s=B.getSouth(),n=B.getNorth(),inV=f=>{const b=rpBox(f);return !(b[2]<w||b[0]>e||b[3]<s||b[1]>n)};
- const wt=Math.max(4,Math.min(12,z-6)),draw=(f,col,wg,op,dash)=>{const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));if(ls.length)L.polyline(ls,{renderer:cv,color:col,weight:wg,opacity:op,dashArray:dash,lineCap:dash?'butt':'round',interactive:false}).addTo(RP.L)};
+ /* 테두리 두께: 줌에 따라 기본(줌 18 = 9px) × 사용자 배율 RP.w (2026-11-12 사용자 '초록색 두께 조절') */
+ const wt=(3+Math.max(2,Math.min(6,z-12)))*(+RP.w||1),draw=(f,col,wg,op,dash)=>{const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));if(ls.length)L.polyline(ls,{renderer:cv,color:col,weight:wg,opacity:op,dashArray:dash,lineCap:dash?'butt':'round',interactive:false}).addTo(RP.L)};
  if(RP.on&&(onM||onS))rpAll().forEach(({f,k})=>{if(pcHid(f))return;const svc=attrOf(f).use==='급수관';if(svc?!onS:!onM)return;if(!inV(f))return;
-  k==='mk'?draw(f,'#16a34a',wt+5,.9):draw(f,'#4ade80',wt+3,.6)});
+  k==='mk'?draw(f,'#16a34a',wt,.9):draw(f,'#4ade80',Math.max(2,wt*.8),.6)});
  /* 한꺼번에 지정 후보 미리보기: 노란 끊은 테두리 */
- if(RP.cand)RP.cand.items.forEach(it=>{const f=PIPE.feats[it.fi];if(f&&inV(f))draw(f,'#f59e0b',wt+6,.85,'6 5')})}
+ if(RP.cand)RP.cand.items.forEach(it=>{const f=PIPE.feats[it.fi];if(f&&inV(f))draw(f,'#f59e0b',Math.max(wt,8)+2,.85,'6 5')})}
+const RP_WS=[.3,.5,.7,1,1.3,1.6,2,2.5];
+function rpWSet(v){RP.w=Math.max(.2,Math.min(3,+v||1));rpSaveCfg();const e=$('rpW');if(e)e.value=Math.round(RP.w*100);const t=$('rpWv');if(t)t.textContent=Math.round(RP.w*100)+'%';rpDraw(true)}
+function rpWStep(d){if(!d)return rpWSet(1);let i=RP_WS.findIndex(v=>v>=RP.w-.001);if(i<0)i=RP_WS.length-1;if(d>0&&RP_WS[i]<=RP.w+.001)i++;else if(d<0)i--;rpWSet(RP_WS[Math.max(0,Math.min(RP_WS.length-1,i))])}
 function rpSetOn(o){RP.on=!!o;rpSaveCfg();const e=$('rpOn');if(e)e.checked=RP.on;rpDraw(true)}
 {const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
 {const o=pipeRecolor;pipeRecolor=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
@@ -12839,7 +12846,7 @@ function rpXl(){const R=rpRows();if(!R.length){alert('교체 완료 관로가 �
  const D=R.sort((a,b)=>a.b.localeCompare(b.b)||String(a.a.id).localeCompare(String(b.a.id))).map((r,i)=>({'순번':i+1,'구분':r.k==='mk'?'교체 완료 지정':`설치연도 기준(${RP.yr}년 이후)`,'관리번호':r.a.id||'','소블록':r.b,'용도':r.a.use,'완료일':r.P['교체완료']||'','공사명':r.P['교체공사명']||'','교체 전 재질':r.P['교체전재질']||'','교체 전 관경(mm)':r.P['교체전관경']||'','교체 전 설치일자':r.P['교체전설치일자']||'','지금 재질':r.a.matRaw||r.a.mat,'지금 관경(mm)':r.a.dia??'','설치연도':r.a.year??'','연장(m)':+r.L.toFixed(1),'입력 방법':r.P['교체입력']||'','입력':r.P['교체입력자']||''}));
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(B),'소블록별');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(D),'교체 완료 관로');
  XLSX.writeFile(wb,`노후관교체완료_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
-function rpInit(){if(!$('rpSec'))return;$('rpOn').checked=RP.on;$('rpYr').value=RP.yr;$('rpYrUse').value=RP.yrUse;$('rpDate').value=rpToday();
+function rpInit(){if(!$('rpSec'))return;$('rpOn').checked=RP.on;$('rpW').value=Math.round(RP.w*100);$('rpWv').textContent=Math.round(RP.w*100)+'%';$('rpW').oninput=e=>rpWSet(+e.target.value/100);$('rpW0').onclick=()=>rpWSet(1);$('rpYr').value=RP.yr;$('rpYrUse').value=RP.yrUse;$('rpDate').value=rpToday();
  $('rpOn').onchange=e=>rpSetOn(e.target.checked);
  const yr=()=>{const v=$('rpYr').value.trim();RP.yr=+v>=1940&&+v<=2100?String(+v):'';RP.yrUse=$('rpYrUse').value;rpSaveCfg();RP.bk=new WeakMap();rpDraw(true);rpUiCnt();rpListShow();try{if(CW.rows.length)cwRun().catch(()=>{})}catch(_){}};
  $('rpYr').onchange=yr;$('rpYrUse').onchange=yr;
