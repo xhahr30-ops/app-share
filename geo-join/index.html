@@ -1506,6 +1506,18 @@ html.dark svg.ri{color:var(--cd)!important}
   <p class="hint">판정 = 관망해석 결과(②-3)의 관로 유속 × 첨두 계수가 적정 유속 아래면 <b>과대</b>, 위면 <b>과소</b>. 제안 관경 = 지금 관경 × √(유속 ÷ 적정 유속)을 단가표 규격에 맞춘 것으로, 바꾼 뒤 유속이 적정 범위에 들도록 고릅니다. 정체(거의 안 흐름)는 관말·닫힌 밸브일 수 있어 관경을 제안하지 않습니다. 공사비 차이 = 제안 관경 단가 − 지금 관경 단가 (교체할 때 같은 관경 대비). <b>기준 유속·첨두 계수·최소 관경은 확인 필요</b> — 처음 값은 앱 관로 색 구분 값(정체 0.01 · 0.3~1.0 m/s)입니다. 관경을 바꾸면 수압이 달라지므로 실제 공사 전 관망해석으로 다시 확인하세요. 관리번호·소블록만 씁니다.</p>
  </div>
 
+<div class="sec" id="sbSec">
+  <h4>🔀 급수관 묶음 → 메인관 검토 <small style="font-weight:400;color:var(--mute)">한 골목에 급수관 여러 개가 나란히 들어간 곳을 찾아 메인관 부설과 공사비 비교</small></h4>
+  <div class="g2"><label class="f">범위<select id="sbScope"><option value="view">지금 지도 화면</option><option value="blk">소블록 고르기</option><option value="all">전체</option></select></label><label class="f" id="sbBlkL" hidden>소블록 <small style="font-weight:400">(쉼표로 여러 개, 앞글자만 써도 됨)</small><input id="sbBlk" placeholder="예: YD06, YG08" style="width:100%"></label>
+  <label class="f">나란한 간격 (m 안)<input id="sbR" type="number" min="1" max="20" step="1" style="width:100%"></label><label class="f">최소 급수관 수 (개)<input id="sbN" type="number" min="2" max="20" step="1" style="width:100%"></label>
+  <label class="f">최소 골목 길이 (m)<input id="sbL" type="number" min="5" step="5" style="width:100%"></label><label class="f">살펴볼 급수관 길이 (m 이상)<input id="sbS" type="number" min="1" step="1" style="width:100%"></label>
+  <label class="f">공사비 기준<select id="sbBase"><option value="YG08">YG08 설계내역서식</option><option value="YD06">YD06 설계내역서식</option></select></label></div>
+  <div class="sbtns"><button id="sbRun" type="button" class="btn">🔀 찾기·지도 표시</button><button id="sbXl" type="button" class="btn ol">⬇ 엑셀</button><button id="sbHw" type="button" class="btn ol">📝 한글(HWPX)</button><button id="sbOff" type="button" class="btn ol">🙈 지도 표시 지우기</button></div>
+  <p class="hint" id="sbMsg"></p>
+  <div id="sbTbl"></div>
+  <p class="hint">지도: <b style="color:#16a34a">초록</b> = 묶이는 급수관, <b style="color:#ea580c">주황 점선</b> = 메인관 제안 노선(골목 가운데 선). 공사비는 💰 개략공사비의 설계내역서 m당 값·원가계산서 요율로 셈. 메인관 관경은 묶인 급수관 단면적 합 기준이며 실제 기준은 확인이 필요합니다. 관리번호·소블록만 쓰고 고객 정보는 넣지 않습니다.</p>
+ </div>
+
  <div class="sec" id="rpSec">
   <h4>✅ 노후관 교체 완료 관로 <small style="font-weight:400;color:var(--mute)">교체 공사가 끝난 관로를 지도에 초록 테두리로 구분 · 🏗 공사 추천에서 뺌</small></h4>
   <p style="margin:0 0 4px;font-size:12.5px"><label><input type="checkbox" id="rpOn"> 지도에 보이기</label> · <span id="rpCnt"></span></p>
@@ -1675,7 +1687,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  exp:'M12 3v12M7 10l5 5 5-5M4 19h16',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',link:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 7M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5',
  cam:'M4 8h4l2-3h4l2 3h4v11H4zM12 10a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z',prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',page:'M6 3h9l4 4v14H6zM14 3v5h5',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',poly:'M4 7l6-4 9 3 1 9-7 6-9-3z',
- pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',rep:'M2 9h20M2 15h7M10 15l3 3 8-8',dia:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM6.5 17.5l11-11M13.5 6.5h4v4M10.5 17.5h-4v-4',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
+ pipe:'M3 7h7a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3h5M3 11h5M16 13h5',rep:'M2 9h20M2 15h7M10 15l3 3 8-8',svm:'M3 5h7l4 7h7M3 12h11M3 19h7l4-7',dia:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM6.5 17.5l11-11M13.5 6.5h4v4M10.5 17.5h-4v-4',valve:'M3 8v8l9-4zM21 8v8l-9-4zM12 12V5M9 5h6',mnt:'M2 20l7-12 4 6 3-4 6 10z',
  drop:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z',srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',bolt:'M13 2L4 14h7l-1 8 9-12h-7z',stop:'M6 6h12v12H6z',
  gear:'M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2',key:'M8 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM11 10h10M18 10v4M15 10v3',
  eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',
@@ -1707,7 +1719,7 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
- save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',rep:'green',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
+ save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',svm:'green',rep:'green',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
  sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
@@ -1729,7 +1741,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'lbl',n:'라벨',g:[
   {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
@@ -1748,8 +1760,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),sb:()=>$('sbRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',sb:'🔀 급수관 묶음 → 메인관 검토',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -1815,6 +1827,7 @@ const LAY=[
  {k:'hop',n:'관로 교차 반원',s:'#2563eb',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.hop!=='off'},set:o=>mir('uiHop',o?'on':'off',()=>{const u=G('UI');u.hop=o?'on':'off';F('uiSave');F('hopRedraw')}),ok:()=>!$('pPanel').hidden},
  {k:'tb',n:'혼탁수 주의 (평소 표시)',s:'#92400e',c:()=>null,on:()=>{const t=G('SHUT');return !!t&&!!t.opt.tbAll},set:o=>{const t=G('SHUT');if(!t)return;t.opt.tbAll=!!o;F('shutSave');F('tbAllRedraw');const e=$('shTbAll');if(e)e.value=o?'1':'0'},ok:()=>!$('pPanel').hidden},
  {k:'cw',n:'공사 추천 표기',s:'#dc2626',c:()=>{const m=F('cwMarks');return m?m.length:0},on:()=>{const c=G('CWM');return !!c&&!!c.on},set:o=>{const c=G('CWM');if(!c)return;c.on=!!o;LS.set('geo-cwm',o?'1':'0');F('cwMarkDraw',true);const e=$('cwMkOn');if(e)e.checked=!!o}},
+ {k:'sb',n:'급수관 묶음 → 메인관',s:'#ea580c',c:()=>{const r=G('SB');return r&&r.res?r.res.length:null},on:()=>{const r=G('SB');return !!r&&!!r.on&&!!r.res},set:o=>F('sbShow',!!o)},
  {k:'rs',n:'적정 관경 (과대·과소)',s:'#22d3ee',c:()=>{const r=G('RS');return r&&r.res?r.res.filter(x=>x.k==='over'||x.k==='small').length:null},on:()=>{const r=G('RS');return !!r&&!!r.on},set:o=>F('rsShow',!!o)},
  {k:'rp',n:'교체 완료 관로',s:'#16a34a',c:()=>F('rpCount')||0,on:()=>{const r=G('RP');return !!r&&!!r.on},set:o=>F('rpSetOn',!!o)},
  {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
@@ -1854,6 +1867,7 @@ function laySym(k){try{switch(k){
  case 'vid':return SV(20,14,'<circle cx="10" cy="7" r="6" fill="#dc2626" stroke="#fff" stroke-width="1"/><path d="M8.3 4.4L13 7L8.3 9.6Z" fill="#fff"/>');
  case 'hop':return SV(20,14,'<path d="M1 10H7A3 3 0 0 1 13 10H19" fill="none" stroke="#2563eb" stroke-width="1.8"/><path d="M10 1V13" stroke="#64748b" stroke-width="1.6"/>');
  case 'tb':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>');
+ case 'sb':return SV(20,14,'<line x1="1" y1="3" x2="19" y2="3" stroke="#16a34a" stroke-width="2"/><line x1="1" y1="11" x2="19" y2="11" stroke="#16a34a" stroke-width="2"/><line x1="1" y1="7" x2="19" y2="7" stroke="#ea580c" stroke-width="3" stroke-dasharray="4 2"/>');
  case 'rs':return SV(20,14,'<line x1="1" y1="4" x2="19" y2="4" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="4" x2="19" y2="4" stroke="#22d3ee" stroke-width="3"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#0f172a" stroke-width="5"/><line x1="1" y1="10.5" x2="19" y2="10.5" stroke="#f43f5e" stroke-width="3"/>');
  case 'cw':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#fff" stroke-width="7"/><line x1="1" y1="7" x2="19" y2="7" stroke="#dc2626" stroke-width="4.5" stroke-dasharray="2 3"/><line x1="1" y1="7" x2="19" y2="7" stroke="#cbd5e1" stroke-width=".6"/>');
  case 'rp':return SV(20,14,'<line x1="1" y1="7" x2="19" y2="7" stroke="#16a34a" stroke-width="8" stroke-linecap="round"/><line x1="1" y1="7" x2="19" y2="7" stroke="#2563eb" stroke-width="3"/>');
@@ -12246,6 +12260,103 @@ function rsInit(){if(!$('rsSec'))return;rsUi();
  $('cwPrice')&&$('cwPrice').addEventListener('change',()=>{if(RS.res)setTimeout(()=>rsRun().catch(()=>{}),50)});
  $('rsSec').addEventListener('focusin',rsHydMsg,{once:true})}
 {const o=hydPipePop;hydPipePop=function(f){const h=o.apply(this,arguments);try{return h?h+rsPopLine(f):h}catch(_){return h}}}
+/* ===== 🔀 급수관 묶음 → 메인관 부설 검토 (2026-11-12 B안) =====
+   한 골목에 급수관 여러 개가 나란히 들어간 곳을 찾아, 골목에 메인관(배수관) 하나를 묻고 짧게 분기하는 안과
+   급수관을 각각 교체하는 안의 개략공사비(💰 개략공사비 설계내역서 기준)를 비교.
+   찾는 법: 급수관(기본 15m 이상)을 4m마다 점으로 나누고, 점마다 간격 R m 안·방향 20° 안에 다른 급수관이 몇 개 있는지 셈 →
+   N개 이상 겹친 점끼리 8m 안·방향 30° 안이면 한 골목으로 묶음 → 골목 길이(주축 방향 길이) 기준 이상만 후보. */
+const SB={k:'geo-sb',c:{scope:'view',blk:'',R:6,N:3,Lmin:20,Smin:15,base:'YG08'},res:null,on:true,L:null,cv:null,hl:null,how:''};
+try{const v=JSON.parse(localStorage.getItem(SB.k)||'null');if(v)Object.assign(SB.c,v)}catch(_){}
+function sbSave(){try{localStorage.setItem(SB.k,JSON.stringify(SB.c))}catch(_){}}
+const SB_STEP=4,SB_ANG=20,SB_DIA=[50,75,100,150,200];
+function sbReadUi(){const g=id=>$(id).value,n=(v,d)=>{const x=parseFloat(v);return isFinite(x)&&x>0?x:d};Object.assign(SB.c,{scope:g('sbScope'),blk:g('sbBlk'),R:n(g('sbR'),6),N:Math.max(2,Math.round(n(g('sbN'),3))),Lmin:n(g('sbL'),20),Smin:n(g('sbS'),15),base:g('sbBase')});sbSave();$('sbBlkL').hidden=SB.c.scope!=='blk'}
+function sbUi(){const c=SB.c;$('sbScope').value=c.scope;$('sbBlk').value=c.blk;$('sbR').value=c.R;$('sbN').value=c.N;$('sbL').value=c.Lmin;$('sbS').value=c.Smin;$('sbBase').value=AXC_NAE[c.base]?c.base:'YG08';$('sbBlkL').hidden=c.scope!=='blk'}
+const sbAd=(a,b)=>{const d=Math.abs(a-b)%180;return Math.min(d,180-d)};
+/* 범위 고르기: 지금 화면 / 소블록 / 전체 */
+function sbScopeOk(){const c=SB.c;if(c.scope==='view'&&map){const b=map.getBounds().pad(.05);SB.how='지금 지도 화면';return m=>b.contains([m[1],m[0]])}
+ if(c.scope==='blk'){const want=String(c.blk||'').split(/[,\s]+/).map(s=>s.trim().toUpperCase()).filter(Boolean);if(!want.length)throw new Error('소블록 이름을 넣으세요.');SB.how='소블록 '+want.join(', ');return m=>{const b=String(blkAt(m[0],m[1])||'').toUpperCase();return want.some(w=>b.startsWith(w))}}
+ SB.how='전체';return()=>true}
+async function sbRun(){const msg=$('sbMsg');sbReadUi();if(!PIPE.feats.length){msg.textContent='⚠ ②-1 상수관로를 먼저 불러오세요.';return}
+ const ok=sbScopeOk(),c=SB.c,t0=performance.now();msg.textContent='⏳ 급수관 나란한 곳 찾는 중…';await new Promise(r=>setTimeout(r,20));
+ const lat0=map?map.getCenter().lat:36,MX=111320*Math.cos(lat0*Math.PI/180),MY=110574,P=[],SVC=[],MAINP=[];
+ PIPE.feats.forEach((f,fi)=>{const a=attrOf(f);const m=sxMid(f.geometry);if(!m||!ok(m))return;
+  if(a.use==='배수관'||a.use==='송수관'){for(const q of lineParts(f.geometry))for(let i=1;i<q.length;i++){const x0=q[i-1][0]*MX,y0=q[i-1][1]*MY,x1=q[i][0]*MX,y1=q[i][1]*MY,l=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(l/SB_STEP));for(let j=0;j<n;j++){const t=(j+.5)/n;MAINP.push(x0+(x1-x0)*t,y0+(y1-y0)*t)}}return}
+  if(a.use!=='급수관')return;let Lt=0;const segs=[];
+  for(const q of lineParts(f.geometry))for(let i=1;i<q.length;i++){const x0=q[i-1][0]*MX,y0=q[i-1][1]*MY,x1=q[i][0]*MX,y1=q[i][1]*MY,l=Math.hypot(x1-x0,y1-y0);Lt+=l;if(l>=SB_STEP)segs.push([x0,y0,x1,y1,l])}
+  if(Lt<c.Smin)return;const si=SVC.length;SVC.push({fi,a,L:Lt,n:0});
+  for(const [x0,y0,x1,y1,l] of segs){const an=(Math.atan2(y1-y0,x1-x0)*180/Math.PI+180)%180,n=Math.floor(l/SB_STEP);for(let j=0;j<n;j++){const t=(j+.5)/n;P.push([x0+(x1-x0)*t,y0+(y1-y0)*t,an,si])}}});
+ /* 1) 겹친 점 */
+ const R=c.R,R2=R*R,G=new Map(),key=(x,y,s)=>Math.floor(x/s)+','+Math.floor(y/s);P.forEach((p,k)=>{const q=key(p[0],p[1],R);let a=G.get(q);if(!a)G.set(q,a=[]);a.push(k)});
+ const bund=[];for(let k=0;k<P.length;k++){const [x,y,an,si]=P[k],cx=Math.floor(x/R),cy=Math.floor(y/R),ids=new Set([si]);
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=G.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){const p=P[m];if(ids.has(p[3]))continue;if((p[0]-x)**2+(p[1]-y)**2<=R2&&sbAd(p[2],an)<=SB_ANG)ids.add(p[3])}}
+  if(ids.size>=c.N)bund.push(k)}
+ /* 2) 골목으로 묶기 */
+ const par=new Map(bund.map(k=>[k,k])),fd=k=>{while(par.get(k)!==k){par.set(k,par.get(par.get(k)));k=par.get(k)}return k},C2=8,GB=new Map();
+ bund.forEach(k=>{const q=key(P[k][0],P[k][1],C2);let a=GB.get(q);if(!a)GB.set(q,a=[]);a.push(k)});
+ for(const k of bund){const [x,y,an]=P[k],cx=Math.floor(x/C2),cy=Math.floor(y/C2);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=GB.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){if(m<=k)continue;const p=P[m];if((p[0]-x)**2+(p[1]-y)**2<=C2*C2&&sbAd(p[2],an)<=30){const r1=fd(k),r2=fd(m);if(r1!==r2)par.set(r1,r2)}}}}
+ const CL=new Map();bund.forEach(k=>{const r=fd(k);let a=CL.get(r);if(!a)CL.set(r,a=[]);a.push(k)});
+ /* 배수관 점 격자 (옆에 이미 배수관 있는지) */
+ const GM=new Map();for(let i=0;i<MAINP.length;i+=2){const q=key(MAINP[i],MAINP[i+1],5);let a=GM.get(q);if(!a)GM.set(q,a=[]);a.push(i)}
+ const nearMain=(x,y)=>{const cx=Math.floor(x/5),cy=Math.floor(y/5);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=GM.get((cx+dx)+','+(cy+dy));if(a)for(const i of a)if((MAINP[i]-x)**2+(MAINP[i+1]-y)**2<=25)return true}return false};
+ const NP=axcNaeP(AXC_NAE[c.base]?c.base:'YG08'),res=[];
+ for(const ks of CL.values()){const ids=new Set(ks.map(k=>P[k][3]));if(ids.size<c.N)continue;
+  let mx=0,my=0;ks.forEach(k=>{mx+=P[k][0];my+=P[k][1]});mx/=ks.length;my/=ks.length;let sxx=0,syy=0,sxy=0;ks.forEach(k=>{const dx=P[k][0]-mx,dy=P[k][1]-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy});
+  const th=.5*Math.atan2(2*sxy,sxx-syy),ux=Math.cos(th),uy=Math.sin(th),pr=ks.map(k=>(P[k][0]-mx)*ux+(P[k][1]-my)*uy),p0=Math.min(...pr),p1=Math.max(...pr);if(p1-p0<c.Lmin)continue;
+  /* 가운데 선: 주축 6m 칸마다 점 평균 */
+  const BW=6,nb=Math.max(1,Math.ceil((p1-p0)/BW)),acc=Array.from({length:nb},()=>[0,0,0]);ks.forEach((k,i)=>{const b=Math.min(nb-1,Math.floor((pr[i]-p0)/BW));acc[b][0]+=P[k][0];acc[b][1]+=P[k][1];acc[b][2]++});
+  let line=acc.filter(a=>a[2]).map(a=>[a[0]/a[2],a[1]/a[2]]);if(line.length<2)continue;
+  let Lm=0;for(let i=1;i<line.length;i++)Lm+=Math.hypot(line[i][0]-line[i-1][0],line[i][1]-line[i-1][1]);Lm+=BW;/* 양 끝 반 칸씩 */
+  /* 급수관마다 골목 구간 길이 = 가운데 선에서 R+2m 안·방향 맞는 점 수 × 4m */
+  const dl=(x,y)=>{let b=1e18;for(let i=1;i<line.length;i++){const [ax,ay]=line[i-1],[bx,by]=line[i],vx=bx-ax,vy=by-ay,l2=vx*vx+vy*vy||1;let t=((x-ax)*vx+(y-ay)*vy)/l2;t=t<0?0:t>1?1:t;const d=(x-ax-vx*t)**2+(y-ay-vy*t)**2;if(d<b)b=d}return Math.sqrt(b)};
+  const mem=new Map();for(const si of ids)mem.set(si,0);
+  const bx0=Math.min(...line.map(p=>p[0]))-R-2,bx1=Math.max(...line.map(p=>p[0]))+R+2,by0=Math.min(...line.map(p=>p[1]))-R-2,by1=Math.max(...line.map(p=>p[1]))+R+2;
+  for(let x=Math.floor(bx0/R);x<=Math.floor(bx1/R);x++)for(let y=Math.floor(by0/R);y<=Math.floor(by1/R);y++){const a=G.get(x+','+y);if(a)for(const m of a){const p=P[m];if(!mem.has(p[3]))continue;if(sbAd(p[2],th*180/Math.PI+180)<=35&&dl(p[0],p[1])<=R+2)mem.set(p[3],mem.get(p[3])+SB_STEP)}}
+  const M=[...mem].map(([si,Lc])=>({...SVC[si],Lc:Math.min(Lc,SVC[si].L)})),dEq=Math.sqrt(M.reduce((s,o)=>s+(o.a.dia>0?o.a.dia:13)**2,0)),Dm=SB_DIA.find(d=>d>=dEq)||SB_DIA[SB_DIA.length-1];
+  const Lc=M.reduce((s,o)=>s+o.Lc,0),nm=line.filter(p=>nearMain(p[0],p[1])).length/line.length;
+  const each=axcNaeRun(NP,M.map(o=>({d:o.a.dia>0?o.a.dia:13,L:o.Lc}))).T,main=axcNaeRun(NP,[{d:Dm,L:Lm}]).T;
+  const ll=line.map(p=>[p[0]/MX,p[1]/MY]),mid=ll[Math.floor(ll.length/2)];
+  res.push({line:ll,mid,blk:blkAt(mid[0],mid[1])||'',n:M.length,M,Lm,Lc,save:Lc-Lm,dEq,Dm,each,main,diff:each-main,nm,yr:Math.min(...M.map(o=>o.a.year||9999))})}
+ res.sort((a,b)=>b.diff-a.diff);res.forEach((r,i)=>r.no=i+1);SB.res=res;SB.np=NP;SB.at=Date.now();
+ msg.textContent=`${SB.how}: 급수관 ${SVC.length.toLocaleString()}개(${c.Smin}m 이상) 살펴봄 → 나란한 골목 ${res.length}곳 · ${((performance.now()-t0)/1000).toFixed(1)}초`;
+ sbTable();sbDraw(true)}
+const sbM=v=>Math.round(v).toLocaleString()+'m';
+function sbTable(){const el=$('sbTbl'),r=SB.res;if(!r){el.innerHTML='';return}if(!r.length){el.innerHTML='<p class="hint">조건에 맞는 골목이 없습니다. 간격을 넓히거나(예: 8m) 최소 개수를 2로 낮춰 보세요.</p>';return}
+ const tot=r.reduce((s,o)=>s+o.diff,0),sv=r.reduce((s,o)=>s+o.save,0);
+ el.innerHTML=`<div class="kp" style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0"><span class="pill">후보 <b>${r.length}</b>곳</span><span class="pill">묶이는 급수관 <b>${r.reduce((s,o)=>s+o.n,0).toLocaleString()}</b>개</span><span class="pill">줄어드는 관 연장 <b>${sbM(sv)}</b></span><span class="pill">공사비 차이 합 <b>${axcEok(tot)}</b></span></div>
+ <div style="overflow:auto;max-height:360px"><table class="axct"><thead><tr><th>#</th><th>소블록</th><th class="r">급수관</th><th class="r">골목 길이</th><th class="r">급수관 골목 구간 합</th><th class="r">메인관</th><th class="r">각각 교체</th><th class="r">메인관 부설</th><th class="r">차이</th><th>옆 배수관</th><th></th></tr></thead><tbody>
+ ${r.slice(0,300).map((o,i)=>`<tr><td>${o.no}</td><td>${esc(o.blk)}</td><td class="r">${o.n}개</td><td class="r">${sbM(o.Lm)}</td><td class="r">${sbM(o.Lc)}</td><td class="r">${o.Dm}mm</td><td class="r">${axcEok(o.each)}</td><td class="r">${axcEok(o.main)}</td><td class="r ${o.diff>0?'axcOk':'c-am'}">${axcDE(o.diff)}</td><td>${o.nm>=.5?'<span class="c-am">있음 '+Math.round(o.nm*100)+'%</span>':'없음'}</td><td><button type="button" class="btn ol sbGo" data-i="${i}" style="padding:1px 6px">📍</button></td></tr>`).join('')}</tbody></table></div>
+ <p class="hint">차이 = 각각 교체 − 메인관 부설 (+면 메인관이 쌈). <b>옆 배수관 있음</b>이면 새 메인관보다 그 배수관에 급수관을 짧게 다시 붙이는 쪽을 먼저 보세요.</p>`}
+function sbLayer(){if(!map)return null;if(!map.getPane('sbPane')){const p=map.createPane('sbPane');p.style.zIndex=633;p.style.pointerEvents='none'}if(!SB.cv)SB.cv=L.canvas({pane:'sbPane',padding:.3});if(!SB.L)SB.L=L.layerGroup();if(!map.hasLayer(SB.L))SB.L.addTo(map);return SB.L}
+function sbDraw(fit){if(!map)return;const G=sbLayer();G.clearLayers();SB.hl=null;if(!SB.on||!SB.res||!SB.res.length)return;const B=[];
+ for(const o of SB.res){for(const m of o.M)for(const q of lineParts(PIPE.feats[m.fi].geometry))L.polyline(q.map(c=>[c[1],c[0]]),{renderer:SB.cv,color:'#16a34a',weight:4,opacity:.85,interactive:false}).addTo(G);
+  const ll=o.line.map(c=>[c[1],c[0]]);L.polyline(ll,{renderer:SB.cv,color:'#0f172a',weight:9,opacity:.55,interactive:false}).addTo(G);L.polyline(ll,{renderer:SB.cv,color:'#f97316',weight:5,dashArray:'10 6',interactive:false}).addTo(G);
+  L.circleMarker([o.mid[1],o.mid[0]],{renderer:SB.cv,radius:9,color:'#fff',weight:2,fillColor:'#ea580c',fillOpacity:1,interactive:false}).addTo(G);B.push(...ll)}
+ if(fit&&SB.c.scope!=='view'&&B.length)try{map.fitBounds(L.latLngBounds(B),{maxZoom:17,padding:[30,30]})}catch(_){}}
+function sbGo(i){const o=SB.res&&SB.res[i];if(!o||!map)return;const G=sbLayer();if(SB.hl)G.removeLayer(SB.hl);SB.hl=L.polyline(o.line.map(c=>[c[1],c[0]]),{renderer:SB.cv,color:'#facc15',weight:16,opacity:.6,interactive:false}).addTo(G);try{map.fitBounds(SB.hl.getBounds(),{maxZoom:19,padding:[60,60]})}catch(_){}}
+function sbInfo(){const c=SB.c,P=SB.np;return[['범위',SB.how],['찾는 기준',`급수관 ${c.Smin}m 이상 · 간격 ${c.R}m 안 · 방향 ${SB_ANG}° 안에 ${c.N}개 이상 나란히 · 골목 길이 ${c.Lmin}m 이상`],
+ ['메인관 관경','묶인 급수관 단면적 합의 같은 단면 지름을 50·75·100·150·200mm 규격으로 올림 (기준 확인 필요)'],
+ ['공사비 기준',`💰 개략공사비 ${P.nm.split('(')[0]} 설계내역서식(원가계산서 요율, 내역서 m당 ${axcF(P.tot/P.L)}원)`],
+ ['각각 교체','급수관마다 골목 구간을 따로 판다고 본 값(내역서 m당 공통 직접비 포함). 같은 골목에 함께 묻으면 더 적을 수 있음'],
+ ['메인관 부설','골목 가운데 선 길이 × 메인관 관경 (가정분기 재연결은 내역서 m당 공통 직접비에 포함)'],['작성',`${fmtDT(SB.at)} · 만든이: 구병순`]]}
+function sbXl(){if(!SB.res){alert('먼저 🔀 찾기를 누르세요.');return}const wb=XLSX.utils.book_new(),A=(r,n)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r.length?r:[{'내용':'자료 없음'}]),n);
+ A(SB.res.map(o=>({'순위':o.no,'소블록':o.blk,'급수관 수':o.n,'골목 길이(m)':+o.Lm.toFixed(1),'급수관 골목 구간 합(m)':+o.Lc.toFixed(1),'줄어드는 연장(m)':+o.save.toFixed(1),'같은 단면 지름(mm)':+o.dEq.toFixed(1),'메인관 관경(mm)':o.Dm,'각각 교체(원)':Math.round(o.each),'메인관 부설(원)':Math.round(o.main),'차이(원)':Math.round(o.diff),'옆 배수관(%)':Math.round(o.nm*100),'가장 오래된 급수관 설치년도':o.yr<9999?o.yr:'','경도':+o.mid[0].toFixed(6),'위도':+o.mid[1].toFixed(6)})),'후보 골목');
+ A(SB.res.flatMap(o=>o.M.map(m=>({'순위':o.no,'관리번호':m.a.id||'','소블록':blkAt(...sxMid(PIPE.feats[m.fi].geometry))||'','재질':m.a.matRaw||m.a.mat||'','구경(mm)':m.a.dia??'','설치년도':m.a.year??'','전체 길이(m)':+m.L.toFixed(1),'골목 구간(m)':+m.Lc.toFixed(1)}))),'묶이는 급수관');
+ A(sbInfo().map(([k,v])=>({'항목':k,'값':v})),'기준');XLSX.writeFile(wb,`급수관묶음_메인관검토_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
+async function sbHw(){if(!SB.res){alert('먼저 🔀 찾기를 누르세요.');return}const D=hwpxNew('급수관 묶음 메인관 검토'),r=SB.res,SITEN=(typeof SITE!=='undefined'&&SITE.name)||'';
+ hwpxTitle(D,`${SITEN} 골목 급수관 묶음 → 메인관 부설 검토`);hwpxP(D,`${SB.how} · ${fmtD(Date.now())} · 만든이: 구병순`,{c:11,pp:21});
+ hwpxH2(D,'1. 검토 기준');hwpxTable(D,[['항목','값'],...sbInfo()],{head:1,w:[1,4]});
+ hwpxH2(D,'2. 요약');hwpxTable(D,[['후보 골목','묶이는 급수관','줄어드는 관 연장','공사비 차이 합'],[r.length+'곳',r.reduce((s,o)=>s+o.n,0)+'개',sbM(r.reduce((s,o)=>s+o.save,0)),axcEok(r.reduce((s,o)=>s+o.diff,0))]],{head:1});
+ hwpxH2(D,'3. 후보 골목 (차이 큰 순, 최대 40곳)');hwpxTable(D,[['#','소블록','급수관','골목 길이','메인관','각각 교체','메인관 부설','차이','옆 배수관'],...r.slice(0,40).map(o=>[o.no,o.blk,o.n+'개',sbM(o.Lm),o.Dm+'mm',axcEok(o.each),axcEok(o.main),axcDE(o.diff),o.nm>=.5?'있음':'없음'])],{head:1});
+ hwpxP(D,'※ 개략 검토입니다. 메인관 관경 기준과 실제 골목 폭·지장물은 확인이 필요하며, 옆에 배수관이 있으면 급수관을 그 배수관에 다시 붙이는 안을 먼저 검토하세요. 급수관 목록은 함께 내려받는 엑셀을 참고하세요. 고객 정보는 넣지 않았습니다.',{c:11,pp:20});
+ await hwpxSave(D,`급수관묶음_메인관검토_${fmtD(Date.now())}.hwpx`)}
+function sbShow(on){SB.on=!!on;if(on&&!SB.res&&PIPE.feats.length){sbRun().catch(e=>{$('sbMsg').textContent='⚠ '+e.message});return}sbDraw(false)}
+function sbInit(){if(!$('sbSec'))return;sbUi();
+ $('sbRun').onclick=()=>sbRun().catch(e=>{$('sbMsg').textContent='⚠ '+e.message});$('sbXl').onclick=sbXl;$('sbHw').onclick=()=>sbHw().catch(e=>alert('한글 파일 만들기 실패: '+e.message));
+ $('sbOff').onclick=()=>{SB.on=false;if(SB.L)SB.L.clearLayers();$('sbMsg').textContent='지도 표시를 지웠습니다. (레이어 창 "급수관 묶음"으로 다시 켭니다)'};
+ ['sbScope','sbBlk','sbR','sbN','sbL','sbS','sbBase'].forEach(id=>$(id).addEventListener('change',sbReadUi));
+ $('sbTbl').addEventListener('click',e=>{const a=e.target.closest('.sbGo');if(a){e.preventDefault();sbGo(+a.dataset.i)}})}
+try{sbInit()}catch(e){console.warn('급수관 묶음',e)}
+
 try{rsInit()}catch(e){console.warn('적정 관경',e)}
 /* ===== ✅ 노후관 교체 완료 관로 (2026-11-12 B안) =====
    관로 속성 교체완료(완료일)·교체공사명·교체전재질·교체전관경·교체전설치일자·교체입력·교체입력자 → pedSetProps (현장 수정 기록: 직원 공유·↶ 되돌리기·수정 목록 엑셀 그대로)
