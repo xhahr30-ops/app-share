@@ -791,6 +791,9 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .hlpw .hfb{display:inline-flex;align-items:center;justify-content:center;width:1.8em;height:1.8em;border-radius:50%;background:#fff;color:#3f3f46;box-shadow:0 1px 4px rgba(0,0,0,.25),0 0 0 1px rgba(0,0,0,.06);vertical-align:-.55em}.hlpw .hfb-loc{color:#2563eb}.hlpw .hfb svg{width:56%;height:56%}
 @media (max-width:640px){.hlpw{left:0;right:0;top:auto;bottom:0;transform:none;width:auto;max-height:84vh;border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom))}}
 .refb a.busy{opacity:.75;pointer-events:none}
+.upb a{position:relative}.upb .upn{order:3;display:inline-block;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#dc2626;color:#fff;font:700 11px/18px system-ui,sans-serif;text-align:center;pointer-events:none}.upb .upn:empty{display:none}
+html.chipOn.chipV .chipbar .upb .upn,.leaflet-top .upb .upn{position:absolute;top:1px;right:1px;min-width:15px;height:15px;padding:0 3px;font-size:9.5px;line-height:15px}
+.chipbar a[data-lb]::after{order:2}
 .trkb a{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.trkb a .rd{display:none;width:9px;height:9px;border-radius:50%;background:#dc2626;margin-right:2px;animation:trkbl 1.2s ease-in-out infinite}
 .trkb a.rec{background:#fee2e2!important;color:#991b1b!important}.trkb a.rec .rd{display:inline-block}@keyframes trkbl{50%{opacity:.25}}
 .trkme i.hd{position:absolute;left:-9px;top:-17px;width:34px;height:34px;pointer-events:none;background:conic-gradient(from -28deg,#2563eb88 0deg 56deg,transparent 56deg);border-radius:50%;-webkit-mask:radial-gradient(circle,transparent 7px,#000 8px);mask:radial-gradient(circle,transparent 7px,#000 8px)}
@@ -2752,7 +2755,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','trk','bk','chg','shut','mk','ax','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','mk','ax','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -2775,7 +2778,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -2785,7 +2788,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -2839,7 +2842,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'길 기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -9458,14 +9461,14 @@ function beApply(){const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.dr
   try{const c=turf.center({type:'FeatureCollection',features:ch.map(fi=>poly.features[fi])}).geometry.coordinates;chgAdd({k:'ref',mine:1,by:chgMe(),n:ch.length,id:names.slice(0,3).join(', ')+(names.length>3?` 외 ${names.length-3}`:''),tx:`소블록 경계 수정 ${ch.length}개 (${names.slice(0,3).join(', ')}${names.length>3?' …':''})`,ll:[c[1],c[0]]})}catch(_){}
   beShareSoon();feUi();beDraw();feMsg(`✅ 경계 ${ch.length}개를 저장했습니다.`+(moved?` 블록이 바뀐 수용가 목록은 ① 소블록 경계 카드에서 엑셀로 받을 수 있습니다.`:''))})}
 /* 자동 동기화 켜짐: 20초 뒤 소블록 경계만 공유 서버에 올림 (서버가 더 새것이면 덮지 않고 알림) */
-function beShareSoon(){clearTimeout(BE.tm);if(typeof SH==='undefined'||!SH.on()||!SH.cfg.auto)return;BE.tm=setTimeout(()=>beShare().catch(e=>console.warn('소블록 경계 올리기',e)),20000)}
+function beShareSoon(){try{localStorage.setItem('geo-blk-dirty','1')}catch(_){}clearTimeout(BE.tm);try{upBadge()}catch(_){}if(typeof SH==='undefined'||!SH.on()||!SH.cfg.auto)return;BE.tm=setTimeout(()=>beShare().catch(e=>console.warn('소블록 경계 올리기',e)),20000)}
 async function beShare(){if(REF.busy){beShareSoon();return}let v=null;try{v=await IDB.get('blocks')}catch(_){}if(!v||!v.fc||!v.at)return;REF.busy=true;try{
-  const info=(await shReq('refinfo')).ref||{},s=info.blocks;if(s&&s.v===v.at)return;
+  const info=(await shReq('refinfo')).ref||{},s=info.blocks;if(s&&s.v===v.at){try{localStorage.removeItem('geo-blk-dirty')}catch(_){}return}
   const base=+(localStorage.getItem('geo-blk-sv')||0);if(s&&s.v>v.at){feMsg('<span class="c-am">공유 서버에 더 새 소블록 경계가 있어 올리지 않았습니다. ⏬ 기준자료 받기 뒤 다시 고쳐 주세요.</span>');return}
   if(s&&base&&s.v!==base&&s.by&&s.by!==chgMe())console.warn('소블록 경계: 다른 사람이 올린 판 위에 덮어씀',s);
   const z=new JSZip();z.file('d.json',JSON.stringify(v));const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART),c=v.fc.features.length;
   for(let p=0;p<parts;p++)await shReq('refput',{name:'blocks',v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
-  try{localStorage.setItem('geo-blk-sv',String(v.at))}catch(_){}if(typeof phToast==='function')phToast('🗺️ 고친 소블록 경계를 공유 서버에 올렸습니다.')}
+  try{localStorage.setItem('geo-blk-sv',String(v.at));localStorage.removeItem('geo-blk-dirty')}catch(_){}if(typeof phToast==='function')phToast('🗺️ 고친 소블록 경계를 공유 서버에 올렸습니다.')}
  catch(e){feMsg('<span class="c-rd">소블록 경계 자동 올리기 실패: '+esc((e&&e.message)||e)+' · ⏫ 기준자료 올리기로 다시 올려 주세요.</span>')}finally{REF.busy=false}}
 function beAct(btn){const E=btn.dataset.be;
  if(E==='link'){BE.link=!BE.link;feUi();beDraw();return}if(E==='place')return bePlace();if(E==='vdel')return beVDel();
@@ -9804,6 +9807,58 @@ async function refChipGo(a){const k=$('shKey');if(k)k.dispatchEvent(new Event('c
  const m=$('shRefMsg'),tmp=document.createElement('div');tmp.innerHTML=m?String(m.innerHTML).split(/<br\s*\/?>/i)[0]:'';const t=tmp.textContent.trim();
  phToast(t||'✅ 받기를 마쳤습니다.',{ms:/실패/.test(t)?15000:7000})}
 try{refChipInit()}catch(e){console.warn('지금 받기 칩',e)}
+/* ---------- ⬆️ 지금 올리기 칩 (2026-11-12): 이 기기에서 고친 관망(시설물 수정·추가·열림닫힘, 관로 현장 수정, 소블록 경계 수정)과 지도 그리기·올릴 사진을
+   20초·자동 동기화 간격을 기다리지 않고 지금 공유 서버에 올림. 규칙대로 각각 '먼저 받아 합친 뒤 올리기'. 칩 빨간 숫자 = 아직 안 올라간 건수 ---------- */
+const UP={busy:false,last:0,txt:''};
+function shWaitN(){try{return PH.list.filter(m=>!m.shUp).length+PH.list.filter(m=>m.shUp&&m.shSig!==shSig(m)).length+SH.del.size}catch(_){return 0}}
+/* 올릴 것 세기 (건수만, 주소·고객 정보 없음) */
+async function upPend(){const o={fac:0,facFull:false,ped:0,blk:false,mk:false,ph:0};
+ try{const s=await fsyGet();if(s.dirty){if(s.full)o.facFull=true;const st=s.st||0;for(const f of FAC.feats){const P=f.p;if(P&&(P._et||0)>st)o.fac++}if(!o.fac&&!o.facFull)o.fac=1}}catch(_){}
+ try{if(typeof PED!=='undefined'){await pedLoad();if(PED.dirty){const sv=PED.sv||0;o.ped=PED.recs.filter(r=>(r.t||0)>sv).length+(PED.hop||[]).filter(r=>(r.t||0)>sv).length||1}}}catch(_){}
+ try{o.blk=localStorage.getItem('geo-blk-dirty')==='1'}catch(_){}
+ try{o.mk=typeof MK!=='undefined'&&!!MK.at&&MK.at!==MK.base&&!!(MK.list.length||MK.gs.length)}catch(_){}
+ o.ph=SH.on()?shWaitN():0;o.n=o.fac+(o.facFull?1:0)+o.ped+(o.blk?1:0)+(o.mk?1:0)+o.ph;return o}
+function upPendTxt(o){return[o.fac&&`시설물 수정 ${o.fac.toLocaleString()}개`,o.facFull&&'시설물 SHP 바꾼 것',o.ped&&`관로 수정 ${o.ped}건`,o.blk&&'소블록 경계 수정',o.mk&&'지도 그리기',o.ph&&`사진 ${o.ph.toLocaleString()}장`].filter(Boolean).join(' · ')}
+async function upBadge(){const a=document.getElementById('upChip');if(!a||UP.busy)return;let o;try{o=await upPend()}catch(_){return}
+ const b=a.querySelector('.upn');if(b)b.textContent=o.n?(o.n>99?'99+':String(o.n)):'';
+ a.title=(o.n?'⬆️ 아직 안 올라간 것: '+upPendTxt(o):'⬆️ 올릴 것 없음')+(UP.last?` · 마지막 올림 ${new Date(UP.last).toTimeString().slice(0,5)}`:'')+' — 누르면 지금 공유 서버에 올립니다';a.setAttribute('aria-label',a.title)}
+function upChipInit(){if(!map||document.getElementById('upChip'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control refb upb np'),a=L.DomUtil.create('a','',d);d.dataset.ck='up';
+  a.href='#';a.id='upChip';a.setAttribute('role','button');a.setAttribute('aria-label','관망 변경 지금 올리기');a.title='이 기기에서 고친 시설물·관로·경계·그리기·사진을 지금 공유 서버에 올리기';a.innerHTML='<span class="ri">⬆️</span><b class="upn"></b>';
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);upGo(a)});return d}});
+ map.addControl(new Ctl());setTimeout(upBadge,3000);
+ setInterval(()=>{if(document.visibilityState==='visible')upBadge()},8000)}
+async function upGo(a){a=a||document.getElementById('upChip');const k=$('shKey');if(k)k.dispatchEvent(new Event('change'));
+ if(!SH.on()){phToast('⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}
+ if(UP.busy){phToast('⬆️ 이미 올리는 중입니다. 잠시 뒤 다시 눌러 주세요.',{ms:4000});return}
+ UP.busy=true;const lb=a&&a.dataset.lb;if(a){a.classList.add('busy');if(lb)a.dataset.lb='올리는 중…'}
+ const done=[],bad=[],got=[],T=t=>phToast('⬆️ '+t,{ms:120000});
+ try{const o=await upPend();
+  /* 20초 뒤 자동 올리기 예약은 지금 올리므로 취소 */
+  try{clearTimeout(FSY.tm)}catch(_){}try{clearTimeout(PED.tm)}catch(_){}try{clearTimeout(BE.tm)}catch(_){}
+  /* 앱 열 때 받기·다른 올리기가 돌고 있으면 끝날 때까지 기다림(최대 60초) */
+  for(let i=0;i<120&&(REF.busy||FSY.busy||PED.busy||(typeof MK!=='undefined'&&MK.busy));i++){if(i===0)T('다른 받기·올리기가 끝나길 기다리는 중…');await new Promise(r=>setTimeout(r,500))}
+  /* 1) 시설물: 서버가 바뀌었으면 먼저 받아 이 기기 수정을 얹고 올림. SHP를 바꾼 기기는 그것도 올림(⏫ 기준자료 올리기와 같음) */
+  T('시설물 먼저 받아 합치고 올리는 중…');
+  {const r=await facSync('manual',true);if(r.err&&!r.busy)bad.push('시설물: '+r.err);else{if(r.got)got.push(`시설물 ${r.got.toLocaleString()}개`+(r.kept?` (이 기기 수정 ${r.kept}개 유지)`:''));if(r.sent)done.push(o.fac?`시설물 수정 ${o.fac.toLocaleString()}개`:`시설물 ${r.sent.toLocaleString()}개`)}}
+  /* 2) 관로 현장 수정 */
+  T('관로 현장 수정 받고 올리는 중…');
+  {const r=await pedSync('both',true);if(r.err&&!r.busy)bad.push('관로 수정: '+(r.old?'공유 서버가 예전 판':r.err));else{if(r.got)got.push(`관로 수정 ${r.got}건`);if(r.sent)done.push(`관로 수정 ${o.ped||r.sent}건`)}}
+  /* 3) 소블록 경계: 이 기기에서 경계를 고쳤을 때만 (서버가 더 새것이면 덮지 않음) */
+  if(o.blk){T('소블록 경계 올리는 중…');await beShare();let ok=false;try{ok=localStorage.getItem('geo-blk-dirty')!=='1'}catch(_){}
+   if(ok)done.push('소블록 경계 수정');else bad.push('소블록 경계: 공유 서버에 더 새 경계가 있거나 올리기 실패')}
+  /* 4) 지도 그리기 */
+  {T('지도 그리기 받고 올리는 중…');const r=await mkSync(true);if(r.old)bad.push('지도 그리기: 공유 서버가 예전 판');else if(r.err)bad.push('지도 그리기: '+r.err);else{if(r.got)got.push(`그리기 ${r.got}건`);if(r.sent&&o.mk)done.push('지도 그리기')}}
+  /* 5) 올릴 사진이 있으면 사진 동기화(받기 → 올리기) */
+  if(o.ph){T(`사진 ${o.ph.toLocaleString()}장 올리는 중…`);await shSync(true);const w=shWaitN();if(SH.err)bad.push('사진: '+SH.err);else if(o.ph-w>0)done.push(`사진 ${(o.ph-w).toLocaleString()}장`+(w?` (남은 ${w.toLocaleString()}장은 자동으로 이어서)`:''))}
+  UP.last=Date.now();const hm=new Date(UP.last).toTimeString().slice(0,5);
+  const parts=[done.length?`✅ ${hm} 공유 서버에 올렸습니다: ${done.join(' · ')}`:bad.length?'':`✅ ${hm} 올릴 변경이 없습니다. 공유 서버와 같습니다.`,got.length?`먼저 받아 합침: ${got.join(' · ')}`:'',bad.length?`⚠️ 못 올림: ${bad.join(' / ')}`:''].filter(Boolean);
+  UP.txt=parts.join(' · ');refSay(parts.map(esc).join('<br>'));
+  try{if(done.length)chgAdd({k:'ref',mine:1,by:chgMe(),tx:'지금 올리기: '+done.join(' · ')})}catch(_){}
+  phToast(UP.txt,{ms:bad.length?15000:8000})}
+ catch(e){phToast('⚠️ 지금 올리기 실패: '+((e&&e.message)||e),{ms:15000})}
+ finally{UP.busy=false;if(a){a.classList.remove('busy');if(lb)a.dataset.lb=lb}upBadge()}}
+try{upChipInit()}catch(e){console.warn('지금 올리기 칩',e)}
 /* ---------- 👣 걸은 길 기록 (2026-11-05, B안): 직원이 켜고 끈 동안만 이 기기에 날짜별로 저장(IDB 'trk:YYYY-MM-DD'), 지도 선·점검 관로 m(소블록별)·그날 사진·고친 시설물, GPX·엑셀.
    공유 서버로 보내지 않음. 주소·고객 정보 없음(위도·경도·시각·오차만). 위쪽 칩 줄 👣: 누르면 켜기/끄기, 길게 누르기(PC 오른쪽 클릭)는 기록 목록 ---------- */
 const TRK={on:false,wid:null,day:'',D:null,last:null,nNew:0,saveT:0,wl:null,follow:true,lg:null,dlg:new Map(),shown:new Set(),idx:[],cfg:{r:10,keep:90},pend:0,gapAt:0,hd:null,live:0};
