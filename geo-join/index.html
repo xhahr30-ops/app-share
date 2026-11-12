@@ -1594,7 +1594,7 @@ html.dark svg.ri{color:var(--cd)!important}
    <img class="gwm" id="gwmR" alt="서용이">
   </div>
  </div>
- <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
+ <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 탐사·민원 번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
  <div id="gwRibW"><div id="gwRib"></div><button type="button" id="gwRibX" title="리본 접기·펴기">︿</button></div>
  <div id="gwBody">
   <aside id="gwLeft"><div id="gwLRs" role="separator" aria-orientation="vertical" tabindex="0" title="끌어서 레이어 창 폭 조절 · 두 번 누르면 처음 폭 (← → 키로도)"></div>
@@ -3055,7 +3055,7 @@ function initSearch(){
  let pin=null,list=[],sel=-1,busy=false;
  const Ctl=L.Control.extend({options:{position:'topright'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-control gsrch');
-  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 블록 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="button" class="gsv" title="말로 찾기 (🎤 누르고 블록·시설물·주소 말하기)" aria-label="말로 찾기" hidden>🎤</button><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
+  d.innerHTML=`<form autocomplete="off"><button type="button" class="gst" title="주소찾기 접기/펴기" aria-label="주소찾기 접기/펴기">🔍</button><span class="gsw"><input type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 블록 · 탐사·민원 번호 · 좌표" aria-label="지도에서 주소 찾기"><button type="button" class="gsx" title="지우기" hidden>✕</button></span><button type="button" class="gsv" title="말로 찾기 (🎤 누르고 블록·시설물·주소 말하기)" aria-label="말로 찾기" hidden>🎤</button><button type="submit" class="gsb">주소찾기</button></form><div class="gsl" role="listbox"></div>`;
   L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});
  const ctl=new Ctl();map.addControl(ctl);
  const box=ctl.getContainer(),corner=box.parentNode;corner.insertBefore(box,corner.firstChild); // 레이어 아이콘보다 위
@@ -3063,10 +3063,10 @@ function initSearch(){
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
  tog.onclick=()=>{const m=!box.classList.contains('min');setMin(m);if(!m)inp.focus()};
- inp.oninput=()=>{clr.hidden=!inp.value;const b=inBlocks(inp.value).concat(inFacs(inp.value));sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk'||r.k==='fac')){lst.innerHTML='';list=[]}};
+ inp.oninput=()=>{clr.hidden=!inp.value;const b=inPhs(inp.value).concat(inBlocks(inp.value),inFacs(inp.value));sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk'||r.k==='fac'||r.k==='ph'||r.k==='ref')){lst.innerHTML='';list=[]}};
  clr.onclick=()=>{inp.value='';clr.hidden=true;lst.innerHTML='';list=[];if(pin){map.removeLayer(pin);pin=null}if(typeof hlBlock==='function')hlBlock(null);inp.focus()};
  const msg=t=>{lst.innerHTML=`<div class="gsm">${t}</div>`;list=[]};
- const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
+ const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
  function show(){lst.innerHTML=list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
  lst.onclick=e=>{const b=e.target.closest('.gsi');if(b)go(list[+b.dataset.k])};
  inp.onkeydown=e=>{if(!list.length)return;
@@ -3077,6 +3077,7 @@ function initSearch(){
   if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);return}
   if(r.k==='fac'){if(pin){map.removeLayer(pin);pin=null}const i=r.i,ll=L.latLng(FAC.y[i],FAC.x[i]);map.setView(ll,Math.max(map.getZoom(),17));
    setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);return}
+  if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}phFind(r.gid);return}
   if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);return}
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
@@ -3111,7 +3112,7 @@ function initSearch(){
    const b=lst.querySelector('.gsvok');b.onclick=ev=>{ev.stopPropagation();try{localStorage.setItem('geo-voice-ok','1')}catch(_){}listen()}};
   tog.addEventListener('click',()=>{if(recOn&&box.classList.contains('min'))try{rec.abort()}catch(_){}})}
  function vPick(alts){const cs=vCands(alts);let pick=null,part=null;
-  for(const c of cs){const bl=inBlocks(c),fc=inFacs(c);if(bl.length&&bl[0].ex){pick={c,l:bl.concat(fc),g:bl[0]};break}if(fc.length&&fc[0].ex){pick={c,l:fc.concat(bl),g:fc[0]};break}if(!part&&(bl.length||fc.length))part={c,l:bl.concat(fc)}}
+  for(const c of cs){const pp=inPhs(c);if(pp.length&&pp[0].ex){pick={c,l:pp,g:pp[0]};break}const bl=inBlocks(c),fc=inFacs(c);if(bl.length&&bl[0].ex){pick={c,l:bl.concat(fc),g:bl[0]};break}if(fc.length&&fc[0].ex){pick={c,l:fc.concat(bl),g:fc[0]};break}if(!part&&(pp.length||bl.length||fc.length))part={c,l:pp.concat(bl,fc)}}
   if(pick){inp.value=pick.c;inp.dataset.q=pick.c;clr.hidden=false;list=pick.l;sel=-1;show();go(pick.g);return}
   if(part){inp.value=part.c;inp.dataset.q=part.c;clr.hidden=false;list=part.l;sel=-1;show();return}
   const q=cs[0]||'';inp.value=q;clr.hidden=!q;if(!q){msg('🎤 알아듣지 못했습니다. 다시 말해 주세요.');return}inp.dataset.q=q;run()}
@@ -3157,6 +3158,27 @@ function initSearch(){
   for(const x of facIdx()){const r=x.id?(x.key===n&&/\d/.test(n)?3:-1):x.key===n?0:x.key.startsWith(n)?1:x.key.includes(n)?2:-1;if(r<0||seen.has(x.i))continue;seen.add(x.i);
    res.push({k:'fac',i:x.i,t:x.t,r:r+(x.lo?1:0),ex:r===0&&!x.id&&!x.lo});if(res.length>=200)break}
   return res.sort((a,b)=>a.r-b.r||a.t.localeCompare(b.t,'ko',{numeric:true})).slice(0,res.some(o=>o.dm!=null)?12:8).map(o=>{let b='';try{b=blkAt(FAC.x[o.i],FAC.y[o.i])}catch(_){}o.s=(o.dm!=null?'가운데서 '+(o.dm>=1000?(o.dm/1000).toFixed(1)+'km':Math.round(o.dm)+'m')+' · ':'')+facDispName(o.i)+(b?' · 소블록 '+b:'');return o})}
+ /* 누수탐사·민원 사진 번호로 찾기(2026-11-12): 📷 현장 사진의 번호 묶음(민원대응 = 접수번호 PH.code, 누수탐사 등 = 파일명 번호 PH.kcode)과
+    민원지점(기준 위치 PH.ref)에서 찾음. '268'·'268-3'(사진 파일 번호)·'탐사268'·'누수탐사 268'·'민원 1880'·'접수1880'·'긴급159'.
+    번호만 넣으면 모든 종류, 앞에 종류 이름을 붙이면 그 종류만. 같은 번호가 해마다 있으면 연도별로 나눠 보여 줌(최근 해 먼저) */
+ const PHQ=[['누수탐사','ts'],['탐사','ts'],['민원대응','mw'],['긴급누수민원','mw'],['긴급누수','mw'],['민원','mw'],['접수번호','mw'],['접수','mw'],['경계밸브','bv'],['시설물관리','fc'],['시설물','fc'],['기타','et']];
+ function inPhs(q){let n=nsp(q).normalize('NFC').toUpperCase().replace(/번$/,'');if(!n||typeof PH==='undefined'||!PH.G||!PH.G.length)return [];
+  let kd='',core=n;for(const [w,k] of PHQ)if(n.startsWith(w)&&n.length>w.length){kd=k;core=n.slice(w.length).replace(/^(번호|NO\.?|#)/,'');break}
+  core=core.replace(/^[-_#:.]+/,'');const sub=/^(\d{1,7})(?:[-_]\d{1,3}){1,2}$/.exec(core);if(sub)core=sub[1];
+  const dg=/^\d{1,7}$/.test(core)?String(+core):'',full=n.replace(/(?:[-_]\d{1,3}){1,2}$/,'');
+  if(!dg&&!/\d/.test(n))return [];
+  const K=c=>nsp(c).toUpperCase(),hit=c=>{if(!c)return false;const k=K(c);return k===full||k===core||(dg&&(k===dg||String(phCodeNum(c))===dg))};
+  const res=[];
+  for(const g of PH.G){const c=g.code||g.kc;if(!c||(kd&&g.kd!==kd)||!hit(c))continue;const kn=PH_KD[g.kd]?PH_KD[g.kd].n:'';
+   let b='';if(g.lat!=null)try{b=phBlkAt(g.lat,g.lng)}catch(_){}
+   res.push({k:'ph',gid:g.id,yr:g.yr||0,t:kn+' '+(g.code?phRcpLbl(c):c)+(g.yr?' · '+g.yr+'년':''),
+    s:'사진 '+g.n.toLocaleString()+'장'+(g.t0?' · '+phGTime(g):'')+(g.lat==null?' · 위치 없음(누르면 사진 목록)':b?' · 소블록 '+b:'')})}
+  /* 민원지점(기준 위치)만 있고 사진은 아직 없는 접수번호 */
+  if((!kd||kd==='mw')&&PH.ref&&PH.ref.size){const have=new Set(res.map(r=>r.yr+'|'+r.t));PH.ref.forEach((a,key)=>{const j=key.indexOf('|'),y=+key.slice(0,j)||0,c=key.slice(j+1);if(!hit(c))return;
+    if(PH.G.some(g=>g.code===c&&(g.yr||0)===y))return;a.forEach(p=>{if(!isFinite(p[0])||!isFinite(p[1]))return;let b='';try{b=phBlkAt(p[0],p[1])}catch(_){}
+     res.push({k:'ref',lat:p[0],lng:p[1],yr:y,t:'민원지점 '+phRcpLbl(c)+(y?' · '+y+'년':''),s:'기준 위치 · 사진 없음'+(b?' · 소블록 '+b:'')})})})}
+  res.sort((a,b)=>(b.yr||0)-(a.yr||0)||(a.k==='ph'?0:1)-(b.k==='ph'?0:1));
+  if(res.length===1)res[0].ex=true;return res.slice(0,12)}
  function inRows(q){const n=nsp(q).toLowerCase();if(n.length<2)return [];const exact=[],part=[];
   for(let i=0;i<out.length;i++){const o=out[i];if(!o)continue;const lat=+o['_위도'],lng=+o['_경도'];if(!isFinite(lat)||!isFinite(lng)||(!lat&&!lng))continue;
    const id=[o['관리번호'],o['수용가번호']].map(v=>nsp(v).toLowerCase()),ad=nsp(o['_검색주소']||o['구주소(지번)']).toLowerCase();
@@ -3166,14 +3188,15 @@ function initSearch(){
  async function run(){const q=inp.value.trim();if(!q||busy)return;sel=-1;
   const c=q.match(/^\s*(3[3-9](?:\.\d+)?)\s*[, ]\s*(12[4-9](?:\.\d+)?)\s*$/)||q.match(/^\s*(12[4-9](?:\.\d+)?)\s*[, ]\s*(3[3-9](?:\.\d+)?)\s*$/);
   if(c){const a=+c[1],b=+c[2],lat=a<90?a:b,lng=a<90?b:a;list=[{k:'xy',lat,lng,t:lat.toFixed(6)+', '+lng.toFixed(6),s:'입력한 좌표'}];show();go(list[0]);return}
+  const pp=inPhs(q);if(pp.length&&pp[0].ex){list=pp;show();go(pp[0]);return}
   const bl=inBlocks(q),fc=inFacs(q);if(bl.length&&bl[0].ex){list=bl.concat(fc,inRows(q));show();go(bl[0]);return}
   if(fc.length&&fc[0].ex){list=fc.concat(bl,inRows(q));show();go(fc[0]);return}
-  list=bl.concat(fc,inRows(q));
+  list=pp.concat(bl,fc,inRows(q));if(pp.length){show();return} /* 탐사·민원 번호가 여러 개(연도·종류) → 목록에서 고름, 주소 검색 안 함 */
   busy=true;btn.disabled=true;btn.textContent='찾는 중…';if(!list.length)msg('검색 중입니다…');
   try{const key=$('kakao').value.trim(),mode=$('gcMode').value,pq=prep(q);
    const p=await addrSearch(pq,key);if(p)list.push({k:'addr',lat:p.lat,lng:p.lng,t:pq,s:'주소 검색 결과'});
    if(mode!=='osm'){const docs=await rawKwDocs(q,key);(docs||[]).slice(0,6).forEach(d=>list.push({k:'place',lat:+d.y,lng:+d.x,t:d.place_name||d.address_name,s:d.road_address_name||d.address_name||''}))}
-   if(!list.length)msg('찾은 결과가 없습니다. 시·군·리(동)와 번지까지 넣거나, 번호 붙은 리·동(예: 마산1리)은 번호를 빼고 찾아 보세요.');
+   if(!list.length&&/^\D{0,6}\d{1,7}(-\d{1,3})?$/.test(nsp(q)))msg('찾은 결과가 없습니다. 탐사·민원 번호는 📷 현장 사진에 그 번호 사진(예: 268-1.jpg)이나 민원지점이 있어야 찾을 수 있습니다.');else if(!list.length)msg('찾은 결과가 없습니다. 시·군·리(동)와 번지까지 넣거나, 번호 붙은 리·동(예: 마산1리)은 번호를 빼고 찾아 보세요.');
    else{show();if(!bl.length&&!fc.length&&(list.length===1||list[0].k!=='row'))go(list[0])}}
   catch(e){if(list.length)show();else msg('⚠️ '+esc(e.message||String(e))+'<br>왼쪽 설정의 <b>주소찾기 설정</b>(변환 방식·키)을 확인하세요.')}
   finally{busy=false;btn.disabled=false;btn.textContent='주소찾기'}}
@@ -6200,6 +6223,17 @@ function phPopOpen(gid,pid){const g=PH.V.mapG.find(x=>x.id===gid);if(!g||!map)re
  const v=phViewer(document,box,{compact:true,scope:'map'});v.show(pid&&PH.V.mOf.get(pid)===g?pid:g.ids[0]);PH.views.add(v);PH.pop=v;
  const p=L.popup({maxWidth:316,minWidth:300,className:'phpop',autoPanPadding:[30,30]}).setLatLng([g.lat,g.lng]).setContent(box);
  p.on('remove',()=>{PH.views.delete(v);if(PH.pop===v)PH.pop=null});p.openOn(map);phDrawSoon();phGalSel(v.pid)}
+/* 🔍 주소찾기에서 고른 사진 묶음으로 이동 — 종류·기간 보기에 가려져 있으면 '모든 종류·전체 기간'으로 풀고, 사진 표시가 꺼져 있으면 켬.
+   위치 없는 묶음은 사진 목록(갤러리)으로 엶 */
+function phFind(gid){const g0=PH.gById&&PH.gById.get(gid);if(!g0)return;
+ if(g0.lat==null){phGalOpen(g0.ids[0]);try{phToast(`📷 ${PH_KD[g0.kd].n} ${g0.code?phRcpLbl(g0.code):g0.kc}: 위치가 없는 묶음이라 사진 목록으로 열었습니다. 🔢 번호·주소로 위치를 넣을 수 있습니다.`)}catch(_){}return}
+ if(!map)return;const sh=$('phShow');if(sh&&sh.value==='off'){sh.value='on';try{phTogSync()}catch(_){}}
+ const fnd=()=>PH.V&&PH.V.mapG.find(x=>x.id===gid&&x.lat!=null);let g=fnd();
+ if(!g&&PH.kf!=='*'&&PH.kf!==g0.kd){PH.kf='*';try{localStorage.setItem('geo-phkf','*')}catch(_){}phView();g=fnd()}
+ if(!g&&PH.per&&PH.per.u!=='all'){phSetPer('all','*',true);g=fnd()}
+ if(!g){phView();phPerUI();g=fnd()}
+ phPerUI();phDraw();phStats();if(!g)return;
+ map.setView([g.lat,g.lng],Math.max(map.getZoom(),18));setTimeout(()=>phPopOpen(g.id),300);if(innerWidth<1024){const mb=$('mapBox');mb&&mb.scrollIntoView&&!document.fullscreenElement&&mb.scrollIntoView({behavior:'smooth',block:'center'})}}
 function phFitAll(){const MG=(PH.V?PH.V.mapG:PH.G).filter(g=>g.lat!=null);if(!map||!MG.length)return;map.fitBounds(L.latLngBounds(MG.map(g=>[g.lat,g.lng])),{padding:[50,50],maxZoom:18})}
 function phGoMap(pid){const g=PH.V.mOf.get(pid);if(!g||!map||g.lat==null)return;if(PH.gal&&PH.gal.isOpen())PH.gal.close();if($('phShow').value==='off'){$('phShow').value='on'}
  map.setView([g.lat,g.lng],Math.max(map.getZoom(),18));setTimeout(()=>phPopOpen(g.id,pid),300);if(innerWidth<1024)$('mapBox').scrollIntoView({behavior:'smooth',block:'center'})}
