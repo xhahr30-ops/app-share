@@ -211,6 +211,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .uiset .uib{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.uiset .uib .btn{flex:1 1 auto;width:auto;padding:6px 10px;font-size:12px}
 .uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
 .uiset .uidis{opacity:.5}
+.vpset{left:auto;right:10px;width:330px}.vpset .uif select{max-width:62%}.vpset .uib .btn{padding:6px 10px;font-size:12px}.vpfrm{position:absolute;z-index:1000;pointer-events:none;border:2px dashed #2563eb;box-shadow:0 0 0 9999px rgba(15,23,42,.28);border-radius:2px}.vpfrm[hidden]{display:none}.vpfrm b{position:absolute;left:0;top:-1px;transform:translateY(-100%);background:#2563eb;color:#fff;font:700 11px/1.5 sans-serif;padding:1px 7px;border-radius:4px 4px 0 0;white-space:nowrap}.vpfrm.big{border-color:#dc2626}.vpfrm.big b{background:#dc2626}.vpcov{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center}.vpcov div{background:#fff;color:#111827;padding:14px 22px;border-radius:12px;font:700 15px sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 .lblset .uif select{max-width:62%}.lblset .lbw{margin:2px 0 4px;color:#b45309;font-weight:600}
 .uiset .uitop{position:sticky;top:-10px;z-index:2;background:var(--card);margin:-10px -12px 4px;padding:10px 12px 6px;border-bottom:1px solid var(--line2)}
 .uiset .uitabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.uiset .uitabs button{flex:1 1 auto;border:1px solid var(--line2);background:var(--sub);color:var(--ink2);border-radius:999px;padding:5px 8px;font:700 11.5px 'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}
@@ -1716,7 +1717,7 @@ const TABS=[
  {k:'file',n:'파일',g:[
   {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 창']]},
   {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기'],['ax','crop','범위 내보내기']]},
-  {n:'인쇄',b:[['pdf','prt','PDF 미리보기',1],['po','page','출력 방향']]},
+  {n:'인쇄',b:[['vp','prt','지금 화면 출력',1],['pdf','doc','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
   {n:'파일 넣기',b:[['uni','open','파일 넣기',1]]},
@@ -1758,6 +1759,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
  const go={
   bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),
   /* 2026-11-05 '자료 탭에 누수탐사·민원 대장 넣기 없음' → ②-4 창 열고 📒 칸 펼침 */lrIn:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const d=$('lqLrSec');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},80)},frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
+  vp:()=>vpOpen(),
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   lblW:()=>{if(window.LBLM)LBLM.open()},lblOff:()=>{if(window.LBLM)LBLM.off()},
@@ -2005,6 +2007,150 @@ let prW=false;addEventListener('beforeprint',()=>{if(S.on){prW=true;set(false,tr
 const hb=$('gwBtn');if(hb)hb.onclick=()=>set(!S.on);
 /* 처음: 이 기기에서 마지막에 고른 화면 · 처음 쓰는 PC(마우스·폭 900px 이상)는 작업 화면, 폰·태블릿은 평소 화면 · 지도 준비를 기다렸다가 */
 const gw0=LS.get('geo-gw');if(gw0==='1'||(gw0==null&&!matchMedia('(pointer:coarse)').matches&&innerWidth>=900)){let n=0;const w=setInterval(()=>{n++;if(G('map')||n>60){clearInterval(w);set(true,true)}},250)}
+/* ===== 🖨 지금 화면 출력 (2026-11-12 B안) =====
+   지도 위에 용지 틀을 보여 주고, 틀 안을 화면 캡처(mapShotBase, 보이는 그대로)로 찍어 A4·A3 한 장(제목·범례·방위·축척·만든이)으로 만든다.
+   저장: PDF(새 창 인쇄) · PNG · 한글(HWPX 공용 함수). 축척을 고르면 지도 확대 단계를 맞추고, '선명'은 지도를 2배 크기로 잠깐 다시 그려 찍는다. */
+const VP_PAPER={A4:[297,210],A3:[420,297]},VP_SC=[0,500,1000,2500,5000,10000];
+const VP={o:Object.assign({p:'A4',ori:'l',sc:0,hq:1,leg:1},(()=>{try{return JSON.parse(LS.get('geo-vp')||'{}')}catch(_){return{}}})()),el:null,fr:null,ttl:'',memo:'',busy:false,ev:null};
+const vpMM=()=>{const [a,b]=VP_PAPER[VP.o.p]||VP_PAPER.A4,l=VP.o.ori!=='p',pw=l?a:b,ph=l?b:a,m=10,s=VP.o.p==='A3'?1.25:1,th=13*s,bh=(l?30:38)*s;
+ return{pw,ph,m,s,th,bh,mx:m,my:m+th,mw:pw-2*m,mh:ph-2*m-th-bh}};
+const vpMpp=(z,lat)=>156543.03392*Math.cos(lat*Math.PI/180)/2**z;
+const vpFmt=n=>Math.round(n).toLocaleString();
+/* 지도 칸에서 틀이 들어갈 자리(오른쪽 설정 창은 피함) */
+function vpAvail(){const m=G('map'),mc=m.getContainer(),cw=mc.clientWidth,ch=mc.clientHeight,dw=VP.el&&!VP.el.hidden&&cw>760?VP.el.offsetWidth+20:0;return{x:14,y:14,w:Math.max(80,cw-dw-28),h:Math.max(80,ch-28)}}
+/* 틀 크기(px): 화면 그대로 = 자리에 꽉 차게, 축척 고정 = 지금 확대 단계에서 그 축척이 되는 크기 */
+function vpRect(){const m=G('map'),A=vpAvail(),M=vpMM(),asp=M.mw/M.mh;let w,h;
+ if(!VP.o.sc){w=A.w;h=w/asp;if(h>A.h){h=A.h;w=h*asp}}
+ else{const mpp=vpMpp(m.getZoom(),m.getCenter().lat);w=M.mw/1000*VP.o.sc/mpp;h=w/asp}
+ return{x:A.x+(A.w-w)/2,y:A.y+(A.h-h)/2,w,h,fit:w<=A.w+1&&h<=A.h+1}}
+function vpScaleOf(r){const m=G('map'),M=vpMM();return r.w*vpMpp(m.getZoom(),m.getCenter().lat)/(M.mw/1000)}
+/* 축척을 고르면 틀이 화면에 가장 크게 들어가는 확대 단계로 (지도 zoomSnap 0.5 단위) */
+function vpFitZoom(){const m=G('map');if(!VP.o.sc)return;const A=vpAvail(),M=vpMM(),asp=M.mw/M.mh,lat=m.getCenter().lat,need=M.mw/1000*VP.o.sc;
+ const wpx=Math.min(A.w,A.h*asp);let z=Math.log2(156543.03392*Math.cos(lat*Math.PI/180)*wpx/need);z=Math.floor(z*2)/2;z=Math.max(m.getMinZoom(),Math.min(m.getMaxZoom(),z));if(Math.abs(z-m.getZoom())>.01)m.setZoom(z)}
+function vpDraw(){const m=G('map');if(!m||!VP.fr||VP.el.hidden)return;const r=vpRect(),f=VP.fr,M=vpMM();
+ Object.assign(f.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px'});f.classList.toggle('big',!r.fit);
+ f.querySelector('b').textContent=`${VP.o.p} ${VP.o.ori==='p'?'세로':'가로'} · ${VP.o.sc?'1:'+vpFmt(VP.o.sc):'약 1:'+vpFmt(vpScaleOf(r))}`+(r.fit?'':' · 틀이 화면보다 큼 → 찍을 때 지도를 줄여 찍음');
+ const t=VP.el.querySelector('[data-vp-ttl]');if(t&&!VP.ttlEd)t.value=vpTtlAuto()}
+function vpTtlAuto(){const m=G('map');let b='';try{const c=m.getCenter();b=F('blkAt',c.lng,c.lat)||''}catch(_){}return (b?b+' 일대 ':'')+'상수도 현황도'}
+function vpSave(){LS.set('geo-vp',JSON.stringify(VP.o))}
+function vpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않았습니다.');return}const mc=m.getContainer();
+ if(!VP.el){const p=document.createElement('div');p.className='uiset np vpset';p.id='vpDlg';p.setAttribute('role','dialog');p.setAttribute('aria-label','지금 화면 출력');p.hidden=true;
+  const op=(a,v,f)=>a.map(x=>`<option value="${x}"${String(x)===String(v)?' selected':''}>${f?f(x):x}</option>`).join('');
+  p.innerHTML=`<div class="uih"><b>🖨 지금 화면 출력</b><button type="button" class="uix" data-vp="x" aria-label="닫기">✕</button></div>
+<p class="uin" style="margin:0 0 4px">파란 점선 틀 안이 종이에 들어갑니다. 지도를 끌어 틀에 맞추세요.</p>
+<label class="uif">용지<select data-vo="p">${op(['A4','A3'],VP.o.p)}</select></label>
+<label class="uif">방향<select data-vo="ori"><option value="l"${VP.o.ori!=='p'?' selected':''}>가로</option><option value="p"${VP.o.ori==='p'?' selected':''}>세로</option></select></label>
+<label class="uif">축척<select data-vo="sc">${op(VP_SC,VP.o.sc,x=>x?'1:'+vpFmt(x):'화면 그대로')}</select></label>
+<label class="uif">화질<select data-vo="hq"><option value="1"${VP.o.hq?' selected':''}>선명 (지도를 2배로 다시 그림)</option><option value="0"${VP.o.hq?'':' selected'}>보통 (빠름)</option></select></label>
+<label class="uif">제목<input data-vp-ttl type="text" maxlength="60" style="flex:1;min-width:0;max-width:66%"></label>
+<label class="uif">비고<input data-vp-memo type="text" maxlength="80" placeholder="예: 11월 누수 보수 구간" style="flex:1;min-width:0;max-width:66%"></label>
+<label class="uir"><input type="checkbox" data-vo="leg"${VP.o.leg?' checked':''}> 범례 넣기 (켜진 레이어 · 틀 안 시설물)</label>
+<div class="uib"><button type="button" class="btn" data-vp="pdf">🖨 PDF · 인쇄</button><button type="button" class="btn" data-vp="png">🖼 그림(PNG)</button><button type="button" class="btn" data-vp="hwpx">📝 한글(HWPX)</button></div>
+<p class="uin" data-vp-st></p>
+<p class="uin">고객 이름·연락처가 든 정보창은 가려서 나갑니다. 관로가 보이면 '대외비'가 붙습니다. 만든이: 구병순</p>`;
+  mc.appendChild(p);VP.el=p;try{L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p)}catch(_){}
+  const fr=document.createElement('div');fr.className='vpfrm np';fr.innerHTML='<b></b>';mc.appendChild(fr);VP.fr=fr;
+  p.addEventListener('change',e=>{const s=e.target.closest('[data-vo]');if(!s)return;const k=s.dataset.vo;VP.o[k]=s.type==='checkbox'?(s.checked?1:0):(k==='sc'||k==='hq')?+s.value:s.value;vpSave();if(k==='sc'||k==='p'||k==='ori')vpFitZoom();vpDraw()});
+  p.addEventListener('input',e=>{if(e.target.matches('[data-vp-ttl]'))VP.ttlEd=!!e.target.value.trim()});
+  p.addEventListener('click',e=>{const b=e.target.closest('[data-vp]');if(!b)return;const a=b.dataset.vp;if(a==='x')vpClose();else vpOut(a)});
+  VP.ev=()=>vpDraw()}
+ VP.el.hidden=false;VP.fr.hidden=false;VP.ttlEd=false;m.on('move zoom resize',VP.ev);vpFitZoom();vpDraw();msg('🖨 지금 화면 출력: 틀 안이 종이에 들어갑니다.')}
+function vpClose(){const m=G('map');if(VP.el)VP.el.hidden=true;if(VP.fr)VP.fr.hidden=true;if(m&&VP.ev)m.off('move zoom resize',VP.ev)}
+const vpWait=ms=>new Promise(r=>setTimeout(r,ms));
+const vpSvgImg=s=>new Promise(res=>{if(!s){res(null);return}let u=s;const im0=/^<img[^>]*src="([^"]+)"/.exec(s);if(im0)u=im0[1].replace(/&amp;/g,'&');
+ else{if(!/^<svg/.test(s)){res(null);return}if(!/xmlns=/.test(s))s=s.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');u='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}
+ const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=u});
+/* 범례: 레이어 창에서 켜진 것만. 관로는 색 기준 항목, 시설물은 틀 안에 보이는 종류만 */
+async function vpLegend(bb){const out=[],SKIP=new Set(['bg','leg','bl','cl','pl','ind','vlv']),m=G('map'),z=m.getZoom();
+ for(const r of LAY){if(r.g||SKIP.has(r.k))continue;let on=false,ok=true;try{on=r.on();const c=r.c();ok=r.ok?r.ok():(c==null||c>0)}catch(_){on=false}if(!on||!ok)continue;
+  if(r.k==='pipe'){const d=F('pipeLegData');const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[d&&d.by]||'';const H=new Set(F('pipeHidList')||[]);
+   out.push({h:'상수관로'+(T?' · '+T:'')});if(d)d.items.filter(([n])=>!H.has(n)).forEach(([n,c])=>out.push({ln:c,t:n}));continue}
+  if(r.k==='fac'){const FAC=G('FAC');if(!FAC||!FAC.n)continue;const seen=new Map(),q=F('facQuery',bb.w,bb.s,bb.e,bb.n)||[];
+   for(const i of q){const x=FAC.x[i],y=FAC.y[i];if(x<bb.w||x>bb.e||y<bb.s||y>bb.n||FAC.dl[i])continue;const k=FAC.kinds[FAC.k[i]];if(!F('facOn',k,z))continue;const sk=FAC.sk[i];
+    const key=k+'|'+sk;const o=seen.get(key);if(o)o.n++;else seen.set(key,{k,sk,n:1})}
+   if(seen.size){out.push({h:'상수도 시설물 (틀 안)'});const KS=G('FSVG')||{};
+    for(const v of [...seen.values()].sort((a,b)=>(FAC.ki.get(a.k)-FAC.ki.get(b.k))||b.n-a.n)){const I=F('facKindInfo',v.k)||{name:v.k},nm=v.sk==='ind'?'공업밸브':v.sk==='vlv'?'마을상수도 밸브':I.name;
+     const u=KS[v.sk]?F('facSymUrl',v.sk):'';out.push({img:u?await vpSvgImg(`<img src="${u}">`):null,t:nm,n:v.n,col:I.col})}}
+   continue}
+  out.push({img:await vpSvgImg(laySym(r.k)),t:r.n,col:r.s})}
+ /* 단수구역을 보고 있으면 */
+ const SH=G('SHUT');if(SH&&SH.on&&SH.res)out.push({ln:'#dc2626',t:'단수 관로 (자료상 추정)',w:4});
+ return out}
+/* 출력 그림 만들기 → {cv,secret,note,scale} */
+async function vpMake(st){const m=G('map'),mc=m.getContainer(),M=vpMM(),dpm=(VP.o.hq?200:150)/25.4;
+ const c0=m.getCenter(),z0=m.getZoom(),r0=vpRect();const nw=m.containerPointToLatLng([r0.x,r0.y]),se=m.containerPointToLatLng([r0.x+r0.w,r0.y+r0.h]),fc=m.containerPointToLatLng([r0.x+r0.w/2,r0.y+r0.h/2]);
+ const cover=document.createElement('div');cover.className='vpcov';cover.innerHTML='<div>🖨 출력 그림 만드는 중…</div>';document.body.appendChild(cover);
+ VP.el.style.visibility='hidden';VP.fr.style.visibility='hidden';m.off('move zoom resize',VP.ev);
+ const st0=mc.getAttribute('style');let big=false;
+ try{let need=!r0.fit?Math.ceil(Math.log2(Math.max(r0.w/vpAvail().w,r0.h/vpAvail().h))*2)/2:0;
+  if(VP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);
+   m.invalidateSize({pan:false});need-=1}
+  m.setView(fc,z0-need,{animate:false});st('배경지도·관로를 다시 그리는 중…');await vpWait(need||big?1800:300);
+  const p1=m.latLngToContainerPoint(nw),p2=m.latLngToContainerPoint(se),fw=p2.x-p1.x,fh=p2.y-p1.y,tw=M.mw*dpm,kk=Math.max(1,Math.min(3,tw/fw));
+  st('지도를 찍는 중…');const B=await F('mapShotBase',[],0,null,kk,{dom:true});if(!B)throw new Error('지도 캡처 함수를 찾지 못했습니다');
+  const P=G('PIPE'),secret=!!P&&[P.layer,P.layerS].some(l=>l&&m.hasLayer(l)),scale=fw*vpMpp(m.getZoom(),m.getCenter().lat)/(M.mw/1000);
+  const bb={w:Math.min(nw.lng,se.lng),e:Math.max(nw.lng,se.lng),s:Math.min(nw.lat,se.lat),n:Math.max(nw.lat,se.lat)};
+  let blk='';try{const cc=m.containerPointToLatLng([p1.x+fw/2,p1.y+fh/2]);blk=F('blkAt',cc.lng,cc.lat)||'';bb.c=cc}catch(_){}
+  const leg=VP.o.leg?await vpLegend(bb):[];
+  return vpCompose(B,{x:p1.x*B.k,y:p1.y*B.k,w:fw*B.k,h:fh*B.k},{secret,scale,blk,leg,bb,dpm,M})}
+ finally{if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}
+  m.setView(c0,z0,{animate:false});cover.remove();VP.el.style.visibility='';VP.fr.style.visibility='';m.on('move zoom resize',VP.ev);vpDraw()}}
+function vpCompose(B,src,o){const {M,dpm}=o,X=v=>Math.round(v*dpm),W=X(M.pw),H=X(M.ph),cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+ const s=M.s,FT=(w,pt)=>`${w} ${Math.round(pt*.3528*dpm*s)}px "Noto Sans KR","Malgun Gothic",sans-serif`,ink='#111827',mute='#475569',ac='#2563eb';
+ g.fillStyle='#fff';g.fillRect(0,0,W,H);
+ const mx=X(M.mx),my=X(M.my),mw=X(M.mw),mh=X(M.mh);
+ /* 제목 줄 */
+ const ttl=(VP.el.querySelector('[data-vp-ttl]').value||vpTtlAuto()).trim(),memo=(VP.el.querySelector('[data-vp-memo]').value||'').trim();
+ g.textBaseline='middle';g.textAlign='left';g.fillStyle=ink;g.font=FT(800,16);g.fillText(ttl,mx,X(M.m+M.th*.45),mw*.66);
+ g.textAlign='right';g.fillStyle=mute;g.font=FT(500,9);g.fillText(fmtDTv(Date.now())+(o.blk?' · 소블록 '+o.blk:''),mx+mw,X(M.m+M.th*.3),mw*.33);
+ if(memo){g.fillText('비고: '+memo,mx+mw,X(M.m+M.th*.65),mw*.33)}
+ g.fillStyle=ac;g.fillRect(mx,X(M.m+M.th)-X(.9),mw,X(.6));
+ /* 지도 */
+ g.drawImage(B.cv,src.x,src.y,src.w,src.h,mx,my,mw,mh);g.strokeStyle='#334155';g.lineWidth=X(.35);g.strokeRect(mx,my,mw,mh);
+ const u=X(1);/* 방위 */{const cx=mx+mw-X(9),cy=my+X(10),r=X(6);g.save();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.arc(cx,cy,r,0,7);g.fill();g.strokeStyle='#334155';g.lineWidth=X(.25);g.stroke();
+  g.fillStyle=ink;g.beginPath();g.moveTo(cx,cy-r*.8);g.lineTo(cx+r*.38,cy+r*.45);g.lineTo(cx,cy+r*.18);g.lineTo(cx-r*.38,cy+r*.45);g.closePath();g.fill();g.font=FT(800,7);g.textAlign='center';g.fillText('N',cx,cy-r-X(2.2));g.restore()}
+ /* 축척 막대 */{const mpmm=o.scale/1000,len=niceBar(mpmm*50),bw=len/mpmm*dpm,bx=mx+X(4),by=my+mh-X(5);g.fillStyle='rgba(255,255,255,.9)';g.fillRect(bx-X(2),by-X(5.5),bw+X(22),X(8.5));
+  g.fillStyle=ink;for(let i=0;i<4;i++){g[i%2?'strokeRect':'fillRect'](bx+bw*i/4,by-X(1),bw/4,X(1.6))}g.strokeStyle=ink;g.lineWidth=X(.25);g.strokeRect(bx,by-X(1),bw,X(1.6));
+  g.font=FT(600,7);g.textAlign='left';g.textBaseline='alphabetic';g.fillText('0',bx-X(.6),by-X(2));g.fillText(len>=1000?len/1000+'km':len+'m',bx+bw-X(1.5),by-X(2));g.textBaseline='middle';g.fillText(`1:${vpFmt(o.scale)}`,bx+bw+X(3),by)}
+ if(o.secret){g.font=FT(800,9);g.textAlign='left';const t='대외비 (상수관로 포함)',tw=g.measureText(t).width+X(4);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(mx+X(3),my+X(3),tw,X(6));g.fillStyle='#dc2626';g.fillText(t,mx+X(5),my+X(6))}
+ /* 아래 띠: 범례(왼쪽) · 정보(오른쪽) */
+ const by0=my+mh+X(2.5),bh=X(M.bh)-X(3.5),iw=Math.round(mw*(M.pw>M.ph?.3:.42)),lw=mw-iw-X(4);
+ g.strokeStyle='#cbd5e1';g.lineWidth=X(.25);g.strokeRect(mx,by0,mw,bh);g.beginPath();g.moveTo(mx+lw+X(2),by0);g.lineTo(mx+lw+X(2),by0+bh);g.stroke();
+ const L=o.leg,rh=X(4.2*s),cols=Math.max(1,Math.floor(lw/X(46*s))),rows=Math.max(1,Math.floor((bh-X(7.5*s))/rh)),cap=cols*rows;
+ g.textAlign='left';g.fillStyle=ink;g.font=FT(800,8);g.fillText('범례',mx+X(2),by0+X(3*s));
+ if(!VP.o.leg||!L.length){g.fillStyle=mute;g.font=FT(400,7.5);g.fillText(VP.o.leg?'켜진 레이어가 없습니다':'범례 넣지 않음',mx+X(14*s),by0+X(3*s))}
+ else{const cw=lw/cols;let shown=L.slice(0,cap);if(L.length>cap)shown=L.slice(0,cap-1);
+  shown.forEach((it,i)=>{const c=Math.floor(i/rows),r=i%rows,x=mx+X(2)+c*cw,y=by0+X(6.5*s)+r*rh+rh/2;
+   if(it.h){g.fillStyle=ac;g.font=FT(800,7);g.fillText(it.h,x,y,cw-X(2));return}
+   const sw=X(6*s),sh=X(3.4*s);if(it.ln){g.strokeStyle=it.ln;g.lineWidth=X((it.w||2.4)*.25*s*1.6);g.lineCap='round';g.beginPath();g.moveTo(x,y);g.lineTo(x+sw,y);g.stroke()}
+   else if(it.img){const ih=X(3.6*s),iw2=ih*(it.img.naturalWidth&&it.img.naturalHeight?it.img.naturalWidth/it.img.naturalHeight:1);try{g.drawImage(it.img,x+(sw-Math.min(sw,iw2))/2,y-ih/2,Math.min(sw,iw2),ih)}catch(_){}}
+   else{g.fillStyle=it.col||'#94a3b8';g.fillRect(x+X(1),y-sh/2,sw-X(2),sh)}
+   g.fillStyle=ink;g.font=FT(500,7);g.fillText(it.t+(it.n?` (${it.n.toLocaleString()})`:''),x+sw+X(1.5),y,cw-sw-X(4))});
+  if(L.length>cap){const i=cap-1,c=Math.floor(i/rows),r=i%rows;g.fillStyle=mute;g.font=FT(500,7);g.fillText(`… 외 ${L.length-cap+1}개`,mx+X(2)+c*cw,by0+X(6.5*s)+r*rh+rh/2)}}
+ const ix=mx+lw+X(4),lines=[[`축척 1:${vpFmt(o.scale)}${VP.o.sc?'':' (화면 그대로, 지도 가운데 기준)'}`,700,8,ink],[`${VP.o.p} ${VP.o.ori==='p'?'세로':'가로'} · 출력 ${fmtDTv(Date.now())}`,400,7,mute],
+  [o.bb.c?`가운데 위경도 ${o.bb.c.lat.toFixed(5)}, ${o.bb.c.lng.toFixed(5)}`:'',400,7,mute],[`배경: ${B.attr||(G('BG')&&G('BG').off?'배경지도 끔':'배경지도 없음')}`,400,7,mute],
+  [o.secret?'대외비 · 외부 반출 금지 (상수관로 포함)':'',700,7,'#dc2626'],[`스마트 물길주소 · ${(G('SITE')||{}).tag||''} · 만든이: 구병순`,700,7.5,ink]].filter(x=>x[0]);
+ const lh=Math.min(X(4.4*s),(bh-X(2))/lines.length);lines.forEach(([t,w,pt,c],i)=>{g.fillStyle=c;g.font=FT(w,pt);g.fillText(t,ix,by0+X(1)+lh*(i+.5)+X(.5),iw-X(4))});
+ g.strokeStyle='#64748b';g.lineWidth=X(.5);g.strokeRect(X(M.m-3),X(M.m-3),W-X(2*(M.m-3)),H-X(2*(M.m-3)));
+ return{cv,note:B.note||'',masked:B.masked||0,dom:B.dom,scale:o.scale,ttl}}
+function niceBar(m){const c=[1,2,5];let b=1;for(let e=0;e<7;e++)for(const v of c){const x=v*10**e;if(x<=m)b=x}return b}
+function fmtDTv(t){const f=G('fmtDT');if(typeof f==='function')try{return f(t)}catch(_){}const d=new Date(t),p=v=>String(v).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`}
+async function vpOut(kind){if(VP.busy)return;VP.busy=true;const stEl=VP.el.querySelector('[data-vp-st]'),st=t=>{stEl.textContent=t};
+ const d=new Date(),pd=v=>String(v).padStart(2,'0'),base=`지도출력_${VP.o.p}${VP.o.ori==='p'?'세로':'가로'}_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}_${pd(d.getHours())}${pd(d.getMinutes())}`;
+ /* 팝업 막힘 방지: 누른 순간 창을 먼저 연다 */
+ let w=null;if(kind==='pdf'){w=window.open('','vpPrint','width=1000,height=800');if(!w){alert('팝업이 막혀 인쇄 창을 못 열었습니다. 팝업을 허용해 주세요.');VP.busy=false;return}
+  w.document.open();w.document.write('<!doctype html><meta charset="utf-8"><title>지도 출력</title><p style="font-family:sans-serif;padding:20px">⏳ 출력 그림 만드는 중…</p>');w.document.close()}
+ try{const R=await vpMake(st);let extra=(R.note?' · '+R.note:'')+(R.masked?` · 고객 정보 ${R.masked}곳 가림`:'')+(R.dom===false?'':'');
+  if(kind==='png'){const b=await new Promise(r=>R.cv.toBlob(r,'image/png'));if(!b)throw new Error('그림을 만들지 못했습니다');F('dlBlob',b,base+'.png');st('🖼 그림 저장 완료'+extra)}
+  else if(kind==='pdf'){const u=R.cv.toDataURL('image/jpeg',.92),M=vpMM();if(w.closed)throw new Error('인쇄 창이 닫혔습니다');
+   w.document.open();w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${base}</title><style>@page{size:${VP.o.p} ${VP.o.ori==='p'?'portrait':'landscape'};margin:0}html,body{margin:0;background:#e5e7eb}img{display:block;width:${M.pw}mm;height:${M.ph}mm;margin:0 auto;background:#fff}.bar{position:sticky;top:0;padding:8px;background:#1f2937;color:#fff;font:13px sans-serif;display:flex;gap:8px;align-items:center}.bar button{font:inherit;padding:4px 10px;cursor:pointer}@media print{.bar{display:none}html,body{background:#fff}img{width:auto;height:auto;max-width:${M.pw}mm;max-height:${M.ph-.8}mm;page-break-inside:avoid}}</style></head><body><div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button><span>인쇄 창에서 '대상: PDF로 저장'을 고르면 PDF 파일이 됩니다. 용지 ${VP.o.p} ${VP.o.ori==='p'?'세로':'가로'} · 여백 없음</span></div><img src="${u}" alt="지도 출력"></body></html>`);w.document.close();
+   const im=w.document.querySelector('img');const go=()=>{try{w.focus();w.print()}catch(_){}};if(im&&!im.complete)im.onload=()=>setTimeout(go,200);else setTimeout(go,300);st('🖨 인쇄 창을 열었습니다'+extra)}
+  else if(kind==='hwpx'){const u=R.cv.toDataURL('image/jpeg',.92),b=F('hwpxB64',u);if(!b)throw new Error('그림 변환 실패');const D=F('hwpxNew',R.ttl);F('hwpxTitle',D,R.ttl);
+   F('hwpxImg',D,b.bytes,'jpg',R.cv.width,R.cv.height,170);F('hwpxP',D,`축척 1:${vpFmt(R.scale)} · ${VP.o.p} ${VP.o.ori==='p'?'세로':'가로'} 그림 · 스마트 물길주소 · 만든이: 구병순`,{c:7});
+   const sv=G('hwpxSave');if(typeof sv!=='function')throw new Error('한글 저장 함수를 찾지 못했습니다');await sv(D,base+'.hwpx');st('📝 한글 파일 저장 완료'+extra)}}
+ catch(e){console.warn('vp',e);st('출력하지 못했습니다: '+(e&&e.message||e));if(w&&!w.closed)w.close()}
+ finally{VP.busy=false}}
+window.vpOpen=vpOpen;window.VP=VP;
 })();
 </script>
 <script>
