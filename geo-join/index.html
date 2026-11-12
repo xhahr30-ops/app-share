@@ -3093,11 +3093,11 @@ function initSearch(){
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
  tog.onclick=()=>{const m=!box.classList.contains('min');setMin(m);if(!m)inp.focus()};
- inp.oninput=()=>{clr.hidden=!inp.value;const b=inPhs(inp.value).concat(inBlocks(inp.value),inFacs(inp.value));sel=-1;if(b.length){list=b;show()}else if(list.length&&list.every(r=>r.k==='blk'||r.k==='fac'||r.k==='ph'||r.k==='ref')){lst.innerHTML='';list=[]}};
+ inp.oninput=()=>{clr.hidden=!inp.value;const b=inPhs(inp.value).concat(inBlocks(inp.value),inFacs(inp.value));sel=-1;if(b.length){list=b;show()}else if(inPhs.miss){list=[];lst.innerHTML=`<div class="gsm">${inPhs.miss}</div>`}else if(list.length&&list.every(r=>r.k==='blk'||r.k==='fac'||r.k==='ph'||r.k==='ref')){lst.innerHTML='';list=[]}};
  clr.onclick=()=>{inp.value='';clr.hidden=true;lst.innerHTML='';list=[];if(pin){map.removeLayer(pin);pin=null}if(typeof hlBlock==='function')hlBlock(null);inp.focus()};
  const msg=t=>{lst.innerHTML=`<div class="gsm">${t}</div>`;list=[]};
  const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
- function show(){lst.innerHTML=list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
+ function show(){const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
  lst.onclick=e=>{const b=e.target.closest('.gsi');if(b)go(list[+b.dataset.k])};
  inp.onkeydown=e=>{if(!list.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+list.length)%list.length;show();const o=lst.querySelector('.on');o&&o.scrollIntoView({block:'nearest'})}
@@ -3107,7 +3107,7 @@ function initSearch(){
   if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);return}
   if(r.k==='fac'){if(pin){map.removeLayer(pin);pin=null}const i=r.i,ll=L.latLng(FAC.y[i],FAC.x[i]);map.setView(ll,Math.max(map.getZoom(),17));
    setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);return}
-  if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}phFind(r.gid);return}
+  if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}if(r.gid)phFind(r.gid);else phGalOpen(r.pid);return}
   if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);return}
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
@@ -3192,7 +3192,7 @@ function initSearch(){
     민원지점(기준 위치 PH.ref)에서 찾음. '268'·'268-3'(사진 파일 번호)·'탐사268'·'누수탐사 268'·'민원 1880'·'접수1880'·'긴급159'.
     번호만 넣으면 모든 종류, 앞에 종류 이름을 붙이면 그 종류만. 같은 번호가 해마다 있으면 연도별로 나눠 보여 줌(최근 해 먼저) */
  const PHQ=[['누수탐사','ts'],['탐사','ts'],['민원대응','mw'],['긴급누수민원','mw'],['긴급누수','mw'],['민원','mw'],['접수번호','mw'],['접수','mw'],['경계밸브','bv'],['시설물관리','fc'],['시설물','fc'],['기타','et']];
- function inPhs(q){let n=nsp(q).normalize('NFC').toUpperCase().replace(/번$/,'');if(!n||typeof PH==='undefined'||!PH.G||!PH.G.length)return [];
+ function inPhs(q){let n=nsp(q).normalize('NFC').toUpperCase().replace(/번$/,'');inPhs.miss='';if(!n||typeof PH==='undefined'||!PH.G)return [];
   let kd='',core=n;for(const [w,k] of PHQ)if(n.startsWith(w)&&n.length>w.length){kd=k;core=n.slice(w.length).replace(/^(번호|NO\.?|#)/,'');break}
   core=core.replace(/^[-_#:.]+/,'');const sub=/^(\d{1,7})(?:[-_]\d{1,3}){1,2}$/.exec(core);if(sub)core=sub[1];
   const dg=/^\d{1,7}$/.test(core)?String(+core):'',full=n.replace(/(?:[-_]\d{1,3}){1,2}$/,'');
@@ -3207,7 +3207,16 @@ function initSearch(){
   if((!kd||kd==='mw')&&PH.ref&&PH.ref.size){const have=new Set(res.map(r=>r.yr+'|'+r.t));PH.ref.forEach((a,key)=>{const j=key.indexOf('|'),y=+key.slice(0,j)||0,c=key.slice(j+1);if(!hit(c))return;
     if(PH.G.some(g=>g.code===c&&(g.yr||0)===y))return;a.forEach(p=>{if(!isFinite(p[0])||!isFinite(p[1]))return;let b='';try{b=phBlkAt(p[0],p[1])}catch(_){}
      res.push({k:'ref',lat:p[0],lng:p[1],yr:y,t:'민원지점 '+phRcpLbl(c)+(y?' · '+y+'년':''),s:'기준 위치 · 사진 없음'+(b?' · 소블록 '+b:'')})})})}
+  /* 번호 묶음에 안 잡힌 사진(분류 이름 설정과 안 맞는 파일명 '누수탐사_268-1.jpg' 등) → 파일명 끝 번호가 같은 사진의 묶음 */
+  if(dg){const seen=new Set(res.map(r=>r.gid)),re=new RegExp('(?:^|[^0-9])0*'+dg+'(?:\\s*[-_(]\\s*\\d{1,3}\\)?){0,2}$');
+   for(const m of PH.list){if(kd&&phKd(m)!==kd)continue;const st=String(m.name||'').normalize('NFC').replace(/\.[^.]+$/,'').trim();if(!re.test(st))continue;
+    const g=PH.gOf&&PH.gOf.get(m.id);if(g?seen.has(g.id):seen.has('#'+m.id))continue;
+    if(g){seen.add(g.id);let b='';if(g.lat!=null)try{b=phBlkAt(g.lat,g.lng)}catch(_){}
+     res.push({k:'ph',gid:g.id,pid:m.id,yr:g.yr||(m.ts?new Date(m.ts).getFullYear():0),t:(PH_KD[g.kd]?PH_KD[g.kd].n:'')+' · 파일 '+m.name,s:'사진 '+g.n.toLocaleString()+'장 묶음'+(g.lat==null?' · 위치 없음(누르면 사진 목록)':b?' · 소블록 '+b:'')})}
+    else{seen.add('#'+m.id);res.push({k:'ph',pid:m.id,yr:m.ts?new Date(m.ts).getFullYear():0,t:(PH_KD[phKd(m)]?PH_KD[phKd(m)].n:'')+' · 파일 '+m.name,s:'위치 없는 사진(누르면 사진 목록)'})}
+    if(res.length>=12)break}}
   res.sort((a,b)=>(b.yr||0)-(a.yr||0)||(a.k==='ph'?0:1)-(b.k==='ph'?0:1));
+  if(!res.length&&dg)inPhs.miss=PH.list.length?`📷 사진 번호 ${esc(core)}: 이 기기의 현장 사진 ${PH.list.length.toLocaleString()}장${kd?'('+PH_KD[kd].n+')':''}에 이 번호 사진이 없습니다.`:`📷 사진 번호 ${esc(core)}: 이 기기에 현장 사진이 아직 없습니다(⬇ 지금 받기·📷 사진 넣기 뒤에 찾을 수 있음).`;
   if(res.length===1)res[0].ex=true;return res.slice(0,12)}
  function inRows(q){const n=nsp(q).toLowerCase();if(n.length<2)return [];const exact=[],part=[];
   for(let i=0;i<out.length;i++){const o=out[i];if(!o)continue;const lat=+o['_위도'],lng=+o['_경도'];if(!isFinite(lat)||!isFinite(lng)||(!lat&&!lng))continue;
