@@ -11,6 +11,6 @@
 | 포항시 유수율 분석 (자료 미포함 · 통합문서 첨부해 사용) | https://xhahr30-ops.github.io/app-share/nrw/ |
 | 스마트 식대정산 (법인·현장·예산 비움 · 자료는 각자 브라우저에 저장) | https://xhahr30-ops.github.io/app-share/meal-settlement/ |
 
-최근 변경: 2026-11-12 스마트 물길주소 — ⬚ 범위 내보내기(지도에 범위 그려 시설물·관로 SHP·CSV)
+최근 변경: 2026-11-12 스마트 물길주소 — 💰 범위 개략공사비 · 📝 한글(HWPX) 저장
 
 만든이: 구병순
