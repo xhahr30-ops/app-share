@@ -501,6 +501,22 @@ td .rt{width:auto;padding:5px 10px;font-size:12px}
 .axrb button.on{border-color:#6366f1;background:#eef2ff;color:#4338ca}html.dark .axrb button.on{background:rgba(99,102,241,.25);color:#c7d2fe}
 .axkh{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;font-size:13px}.axkh .bkqk{margin-left:auto}.axk{max-height:min(34vh,260px);flex:none}.axk li{cursor:default}.axk label{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;min-height:24px}
 .axk .sw{width:18px;height:18px;flex:none;object-fit:contain}
+/* ☑ 관로 선택 카드 (2026-11-12) */
+#selCard{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1001;width:min(460px,calc(100% - 20px));max-height:calc(100% - 120px);overflow:auto;background:#fff;color:#0f172a;border:1px solid #67e8f9;border-left:4px solid #06b6d4;border-radius:10px;box-shadow:0 4px 16px rgba(15,23,42,.22);padding:6px 9px;font:12.5px/1.45 'Noto Sans KR',sans-serif;box-sizing:border-box}
+#selCard .selh{display:flex;align-items:center;gap:8px}#selCard .selh>b{color:#0e7490;white-space:nowrap}#selCard .seln{flex:1;min-width:0;color:#334155}#selCard .seln b{color:#0e7490;font-size:14px}
+#selCard .selhb{display:flex;gap:2px}#selCard .selhb button{border:0;background:transparent;font-size:15px;cursor:pointer;color:#475569;min-width:30px;min-height:30px;border-radius:6px}#selCard .selhb button:hover{background:#f1f5f9}
+#selCard .selr{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center}
+#selCard .selr button{border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:7px;padding:4px 8px;min-height:30px;font:600 12.5px 'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}
+#selCard .selr button:hover{background:#ecfeff;border-color:#67e8f9}#selCard .selr button.on{background:#0891b2;border-color:#0891b2;color:#fff}#selCard .selr button.ok{background:#0e7490;border-color:#0e7490;color:#fff}
+#selCard .selr button:disabled{opacity:.45;cursor:default}#selCard .selr button.selx{color:#b91c1c}
+#selCard .selsg{display:inline-flex}#selCard .selsg button:first-child{border-radius:7px 0 0 7px}#selCard .selsg button:last-child{border-radius:0 7px 7px 0;margin-left:-1px}#selCard .selsg button[data-s="sub"].on{background:#dc2626;border-color:#dc2626}
+#selCard .selo label{font-size:12px;color:#334155;display:inline-flex;align-items:center;gap:3px;margin-right:6px}
+#selCard .selhint{margin:4px 0 0;font-size:11.5px;color:#64748b}#selCard .selsum{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+#selCard .selt{background:#ecfeff;border:1px solid #a5f3fc;border-radius:10px;padding:0 7px;font-size:11.5px;white-space:nowrap}
+#selCard .selef{margin-top:5px;padding:6px;border:1px dashed #67e8f9;border-radius:8px;background:#f0fdff}
+html.dark #selCard{background:#1e293b;color:#e2e8f0;border-color:#155e75}html.dark #selCard .seln{color:#cbd5e1}html.dark #selCard .selr button{background:#0f172a;color:#e2e8f0;border-color:#334155}
+html.dark #selCard .selt{background:#164e63;border-color:#155e75}html.dark #selCard .selef{background:#0f172a}html.dark #selCard .selo label{color:#cbd5e1}
+@media (max-width:699px){#selCard{left:8px;right:8px;width:auto;transform:none;bottom:8px;max-height:55%}}
 .shdraw .shdt.axdt{pointer-events:auto}.axdt button{margin:6px 3px 0;border:0;border-radius:8px;padding:6px 10px;font:700 12.5px 'Noto Sans KR',sans-serif;cursor:pointer;background:#fff;color:#1e293b;min-height:32px}.axdt button.ok{background:#4f46e5;color:#fff}
 @media (max-width:420px){.axrb{grid-template-columns:repeat(2,1fr)}}
 .pcm{position:fixed;inset:0;z-index:20000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}.pcm[hidden]{display:none}
@@ -1715,13 +1731,13 @@ const P='<svg class="gi" viewBox="0 0 24 24"><path d="',I={
  undo:'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',
  compass:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM15.5 8.5l-2 5-5 2 2-5z',calc:'M5 3h14v18H5zM8 6h8v4H8zM8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01',
  cloud:'M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5A3.8 3.8 0 0 1 17.5 18z',refresh:'M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4',
- crop:'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M12 8v7M9 12l3 3 3-3',minus:'M5 12h14',side:'M3 4h18v16H3zM9 4v16M5.5 8h1.5M5.5 11h1.5',flag:'M5 21V4M5 4h11l-2 4 2 4H5',ruler:'M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2',
+ crop:'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M12 8v7M9 12l3 3 3-3',sel:'M4 4h16v16H4zM8 12l3 3 5-6',selr:'M3 6V3h3M18 3h3v3M21 18v3h-3M6 21H3v-3M8 12l3 3 5-6',touch:'M9 11V5a2 2 0 0 1 4 0v6l4 1.5a2 2 0 0 1 1.3 2.3L17 21H10l-4-5 1.5-1.5L9 16z',minus:'M5 12h14',side:'M3 4h18v16H3zM9 4v16M5.5 8h1.5M5.5 11h1.5',flag:'M5 21V4M5 4h11l-2 4 2 4H5',ruler:'M3 16L16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2',
  warn:'M12 3l10 18H2zM12 10v5M12 18h.01',sat:'M5 13l6 6M8 4l3 3-4 4-3-3zM16 12l3 3-4 4-3-3zM10 9l5 5M17 3a4 4 0 0 1 4 4',plug:'M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5'};
 /* 기능별 색 [밝은 바탕, 어두운 바탕] — 리본·지도 칩이 같은 색을 씀 */
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],lime:['#65a30d','#a3e635'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8'],brown:['#92400e','#fdba74']};
 const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',steps:'lime',open:'amber',bell:'yellow',drop:'blue',leak:'red',draw:'orange',phed:'pink',pen:'pink',tool:'slate',lock:'red',unlock:'red',gear:'slate',key:'amber',eye:'violet',eyeoff:'violet',map:'green',mapoff:'green',full:'teal',fullx:'teal',book:'sky',help:'sky',
  save:'blue',box:'slate',xls:'green',link:'teal',cam:'sky',prt:'slate',page:'slate',pin:'red',poly:'green',pipe:'blue',dia:'teal',svm:'green',rep:'green',valve:'slate',mnt:'brown',bolt:'yellow',stop:'red',walk:'teal',img:'sky',plus:'green',grid:'violet',vid:'red',phone:'slate',chart:'green',kpi:'indigo',mon:'slate',play:'red',doc:'slate',tbl:'slate',loc:'blue',user:'indigo',bill:'amber',moon:'indigo',list:'slate',
- sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
+ sun:'yellow',inb:'amber',up:'cyan',palette:'pink',tag:'violet',trash:'red',undo:'slate',hist:'slate',compass:'orange',calc:'indigo',cloud:'sky',refresh:'teal',crop:'cyan',sel:'cyan',selr:'cyan',touch:'cyan',minus:'slate',side:'indigo',flag:'red',ruler:'orange',warn:'amber',sat:'violet',plug:'slate'};
 const icC=k=>HU[IC_H[k]]||HU.slate;
 const ic=k=>{const c=icC(k);return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24"><path d="'+(I[k]||I.box)+'"/></svg>'};
 window.GICO={I,col:icC};
@@ -1744,6 +1760,11 @@ const TABS=[
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
   {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
+ {k:'sel',n:'선택',g:[
+  {n:'고르기',b:[['sel:tap','touch','눌러 고르기',1],['sel:rect','selr','네모'],['sel:poly','poly','다각형'],['sel:free','draw','손 그리기'],['sel:view','full','지금 화면']]},
+  {n:'더하기 · 빼기',b:[['sel:add','plus','더하기',1],['sel:sub','minus','빼기',1],['sel:undo','undo','선택 되돌리기'],['sel:clr','trash','선택 지우기'],['sel:fit','srch','모두 보기']]},
+  {n:'고른 관로로',b:[['sel:edit','pen','속성 한꺼번에',1],['sel:rp','rep','교체 완료',1],['sel:ax','calc','개략공사비 · SHP',1],['sel:xl','xls','엑셀 목록',1]]},
+  {n:'선택 창',b:[['sel:card','sel','선택 창',1]]}]},
  {k:'lbl',n:'라벨',g:[
   {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
   {n:'관로 라벨',x:[['uiLbl','관종·구경'],['uiLblZ','보이기']]},
@@ -1770,6 +1791,7 @@ if(S.dock==null)S.dock='';
 function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
  if(h==='win')return winOpen(v);if(h==='dock')return dockSet(S.dock===v&&!$('gwDock').classList.contains('cl')?'':v);
  if(h==='ui'){F('uiPanel',true,v);return}
+ if(h==='sel'){const f=G('selCmd');if(f){if(v==='edit'){f('open');setTimeout(()=>f('edit'),0)}else f(v)}return}
  const go={
   bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),
   /* 2026-11-05 '자료 탭에 누수탐사·민원 대장 넣기 없음' → ②-4 창 열고 📒 칸 펼침 */lrIn:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const d=$('lqLrSec');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},80)},frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
@@ -1790,7 +1812,7 @@ function isOn(h,v){const html=R.classList;
  switch(h){case 'dark':return html.contains('dark');case 'bg':{const b=G('BG');return !!(b&&b.off)}case 'allOff':{const u=G('UI');return !!(u&&u.allOff)}
   case 'pt':{const p=G('PT');return !!(p&&p.off)}case 'lock':{const m=G('MLOCK');return !!(m&&m.user)}case 'fe':{const f=G('FE');return !!(f&&f.on)}
   case 'phEd':{const p=G('PH');return !!(p&&p.ed&&p.ed.on)}case 'fm':return document.body.classList.contains('fm');case 'kv':{const k=G('KV');return !!(k&&k.on)}
-  case 'shut':{const s=G('SHUT');return !!(s&&(s.pick||s.on))}case 'mk':{const m=G('MK');return !!(m&&m.on)}case 'win':return S.win===v;case 'dock':return S.dock===v&&!$('gwDock').classList.contains('cl');
+  case 'shut':{const s=G('SHUT');return !!(s&&(s.pick||s.on))}case 'mk':{const m=G('MK');return !!(m&&m.on)}case 'win':return S.win===v;case 'sel':{const f=G('selIsOn');return !!(f&&f(v))}case 'dock':return S.dock===v&&!$('gwDock').classList.contains('cl');
   case 'mapfs':{const b=$('mapBox');return !!(b&&b.classList.contains('mapfs'))}}return false}
 
 function ribBuild(){
@@ -3000,7 +3022,8 @@ window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout
 function hitInit(){if(HIT.on)return;HIT.on=true;
  map.on('preclick',e=>{const t=e.originalEvent&&e.originalEvent.target;PT.hit=-1;
   if((typeof PH!=='undefined'&&(PH.place||(PH.ed&&PH.ed.on&&PH.ed.mode==='add')))||(typeof shutEat==='function'&&shutEat(e)))return;
-  if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;/* 사진·밸브 번호 같은 마커는 자기 팝업 */
+  if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;
+  if(typeof selMapTap==='function'&&selMapTap(e))return;/* ☑ Shift+클릭·눌러 고르기 = 관로 더하기·빼기 *//* 사진·밸브 번호 같은 마커는 자기 팝업 */
   const H=hitCollect(e);if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk')return;
   setTimeout(()=>{const h={H,cur:0,ll:e.latlng,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true)},0)});
  map.on('popupclose',e=>{if(e.popup&&e.popup._hit)hitMark(null)});
@@ -3271,7 +3294,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','mk','ax','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -3294,7 +3317,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -3304,7 +3327,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','☑':'sel','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -3358,7 +3381,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -9038,7 +9061,7 @@ function feInit(){if(!map)return;if(!map.getPane('fePane')){const p=map.createPa
  /* 편집 중 탭: 시설 고르기 / 새 시설 놓기 — 수용가·관로·블록 팝업은 열지 않음 */
  C.addEventListener('click',e=>{if(!FE.on||skip(e.target))return;e.stopPropagation();e.preventDefault();if(Date.now()-FE.justDrag<400)return;
   const cp=map.mouseEventToContainerPoint(e);
-  if(FE.obj==='pipe'){peClick(cp);return}
+  if(FE.obj==='pipe'){if((e.shiftKey||(typeof SEL!=='undefined'&&SEL.tap))&&PE.tool==='sel'&&typeof selTapCp==='function'&&selTapCp(cp))return;peClick(cp);return}
   if(FE.obj==='blk'){beClick(cp);return}
   if(FE.tool==='add'){if(FE.cross){feMsg('십자선 켜짐: 지도를 움직여 맞춘 뒤 📍 여기에 놓기를 누르세요.');return}feAdd(feSnapAt(cp)).catch(er=>feMsg('<span class="c-rd">추가 실패: '+esc(er.message||er)+'</span>'));return}
   const i=facHitAt(cp);FE.sel=i;feUi();facDraw()},true);
@@ -9199,7 +9222,7 @@ $('sxDlg').addEventListener('click',e=>{if(e.target.id==='sxDlg')sxClose()});
 /* ── ⬚ 범위 내보내기 (2026-11-12 B안): 지도에 네모·다각형·손으로 범위를 그리면 그 안의 시설물(고르면 관로도)을 SHP·CSV zip으로 ──
    거르기·SHP 만들기는 💾 SHP 내보내기(sxZip·sxInR·sxPipeHit)를 그대로 씀. 관로는 범위에 걸치면 자르지 않고 통째로 넣음.
    설정(형식·좌표계·인코딩·관로·뺀 종류)은 이 기기에만 기억(geo-axx). 그린 범위는 저장하지 않음. */
-const AX={ring:null,how:'',lay:null,drawing:false,cache:null,off:new Set()};
+const AX={ring:null,how:'',lay:null,drawing:false,cache:null,off:new Set(),sel:null};
 /* 점이 다각형 안인지(광선 교차) — ring=[[경도,위도],...] */
 function axPip(r,x,y){let in_=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])in_=!in_}return in_}
 function axSegX(p,q,r,s){const d=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const d1=d(r,s,p),d2=d(r,s,q),d3=d(p,q,r),d4=d(p,q,s);return((d1>0)!==(d2>0))&&((d3>0)!==(d4>0))}
@@ -9215,26 +9238,28 @@ function axAreaTx(a){return a>=1e6?(a/1e6).toFixed(2)+'㎢':Math.round(a).toLoca
 function axCfg(){let m={};try{m=JSON.parse(localStorage.getItem('geo-axx')||'{}')||{}}catch(_){}return m}
 function axCfgSave(){try{localStorage.setItem('geo-axx',JSON.stringify({fmt:$('axFmt').value,crs:$('axCrs').value,enc:$('axEnc').value,pipe:$('axPipe').checked,del:$('axDel').checked,off:[...AX.off]}))}catch(_){}}
 /* 범위 안 시설물·관로 찾기 (범위·폐관 포함 여부가 바뀔 때만 다시) */
-function axScan(){const R=axR();if(!R){AX.cache=null;return null}const del=$('axDel').checked,key=AX.ring.length+'|'+AX.ring[0]+'|'+R.bb+'|'+del;
+function axScan(){const R=axR();if(!R){AX.cache=null;return null}const del=$('axDel').checked,key=AX.ring.length+'|'+AX.ring[0]+'|'+R.bb+'|'+del+'|'+(AX.sel?AX.sel.length:'');
  if(AX.cache&&AX.cache.key===key)return AX.cache;const facs=[],pipes=[],byK=new Map();
+ /* ☑ 관로 선택에서 넘어온 경우: 고른 관로만(시설물 없음), 범위는 고른 관로 둘레 네모 */
+ if(AX.sel){AX.sel.forEach(f=>{const P=f.properties||{};if(P._빈||!f.geometry)return;if(!del&&sxMark(P,0)==='폐관')return;pipes.push(f)});return AX.cache={key,R,facs,pipes,byK}}
  for(const f of FAC.feats||[]){const mk=sxMark(f.p,1);if(!del&&mk==='삭제')continue;const c=f.c||(f.a&&sxAreaPt(f.a));if(!c||!sxInR(R,c[0],c[1]))continue;facs.push(f);byK.set(f.k,(byK.get(f.k)||0)+1)}
  for(const f of PIPE.feats||[]){const P=f.properties||{};if(P._빈||!f.geometry)continue;const mk=sxMark(P,0);if(!del&&mk==='폐관')continue;if(!lineParts(f.geometry).some(p=>p.length>1))continue;if(axPipeHit(f.geometry,R))pipes.push(f)}
  return AX.cache={key,R,facs,pipes,byK}}
 function axList(){const C=axScan(),ul=$('axK');if(!C){ul.innerHTML='<li class="no">먼저 위에서 범위를 그려 주세요.</li>';return}
  const ks=[...C.byK.keys()].sort((a,b)=>C.byK.get(b)-C.byK.get(a)||String(a).localeCompare(String(b)));
- if(!ks.length){ul.innerHTML=`<li class="no">${(FAC.feats||[]).length?'이 범위 안에 시설물이 없습니다.':'시설물 자료가 없습니다(②-2 시설물 SHP를 먼저 올리세요).'}</li>`;return}
+  if(!ks.length){ul.innerHTML=AX.sel?'<li class="no">☑ 고른 관로만 담습니다 (시설물은 넣지 않음). 시설물도 넣으려면 범위를 다시 그리세요.</li>':`<li class="no">${(FAC.feats||[]).length?'이 범위 안에 시설물이 없습니다.':'시설물 자료가 없습니다(②-2 시설물 SHP를 먼저 올리세요).'}</li>`;return}
  ul.innerHTML=ks.map(k=>{const I=facKindInfo(k);return`<li><label><input type="checkbox" data-k="${esc(k)}"${AX.off.has(k)?'':' checked'}><span class="sw" style="border-radius:50%;width:12px;height:12px;background:${esc(I.col||'#64748b')}"></span><b>${esc(I.name||k)}</b><small>${esc(k)} · ${C.byK.get(k).toLocaleString()}개</small></label></li>`}).join('')}
 function axInfo(){const C=axScan(),n=x=>x.toLocaleString(),hasP=(PIPE.feats||[]).length>0;
  $('axRng').innerHTML=C?`범위: <b>${esc(AX.how)}</b> · 면적 ${axAreaTx(axArea(AX.ring))} <button type="button" class="btn ol" id="axClr" style="width:auto;min-height:28px;padding:2px 10px;font-size:12px;margin-left:6px">지우기</button>`:'<span class="c-am">위 단추로 지도에 범위를 그리세요.</span> 네모는 끌기, 다각형은 꼭짓점을 차례로 누르고 ✓ 완성, 손 그리기는 둘러 그리고 손을 떼면 됩니다.';
  const c=$('axClr');if(c)c.onclick=()=>{axSet(null,'');axInfo()};
- $('axPipeN').textContent=!hasP?'(상수관로 자료 없음)':C?`(범위에 걸친 관로 ${n(C.pipes.length)}개, 자르지 않고 통째로)`:'';$('axPipe').disabled=!hasP;
+ $('axPipeN').textContent=!hasP?'(상수관로 자료 없음)':C?(AX.sel?`(☑ 고른 관로 ${n(C.pipes.length)}개)`:`(범위에 걸친 관로 ${n(C.pipes.length)}개, 자르지 않고 통째로)`):'';$('axPipe').disabled=!hasP;
  $('axEnc').closest('label').style.display=$('axFmt').value==='csv'?'none':'';
  let t='';if(C){const nf=C.facs.filter(f=>!AX.off.has(f.k)).length,np=$('axPipe').checked&&hasP?C.pipes.length:0;
   t=`담길 자료: 시설물 <b>${n(nf)}</b>개${np?` · 상수관로 <b>${n(np)}</b>개`:''}`;
   t+=`<br><small>${$('axFmt').value!=='shp'?'CSV: 종류·관리번호·속성·소블록·X·Y·위도·경도·EDIT 칸, 엑셀에서 한글이 안 깨지게 저장합니다. ':''}${$('axFmt').value!=='csv'?'SHP: 종류(레이어)별 파일 + 그린 범위(범위/그린범위.shp).':''}</small>`;
   $('axGo').disabled=!(nf+np)}else $('axGo').disabled=true;
  $('axInfo').innerHTML=t;if(typeof axcShow==='function')axcShow()}
-function axSet(lls,how){if(AX.lay){AX.lay.remove();AX.lay=null}AX.cache=null;
+function axSet(lls,how,sel){if(AX.lay){AX.lay.remove();AX.lay=null}AX.cache=null;AX.sel=lls&&sel&&sel.length?sel:null;
  if(!lls){AX.ring=null;AX.how='';return}AX.ring=lls.map(p=>[+p.lng,+p.lat]);AX.how=how;
  if(map)AX.lay=L.polygon(lls,{color:'#4338ca',weight:2.5,dashArray:'7 5',fillColor:'#6366f1',fillOpacity:.08,interactive:false}).addTo(map)}
 function axOpen(){if(!map)return;if(!(FAC.feats||[]).length&&!(PIPE.feats||[]).length){alert('내보낼 시설물·상수관로 자료가 없습니다. 먼저 SHP를 올리거나 백업을 불러오세요.');return}
@@ -10932,7 +10957,7 @@ function hlpOpen(){let w=$('hlpW');
   w.innerHTML=`<div class="hh"><b>📖 사용법</b><button type="button" class="hlpx" id="hlpX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
 <a class="hman" href="${hlpUrl()}" target="_blank" rel="noopener">📘 사용 매뉴얼 열기 (새 탭)</a>
 <div class="hrow"><button type="button" class="btn ol" id="hlpVd">🎬 사용법 영상</button> <button type="button" class="btn ol" id="hlpFrd" title="다듬지 않은 기초자료를 클로드로 정리해 넣기">📑 자료 양식(FRD)</button></div>
-<div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 👣 탐사기록(누르면 기록 창: ▶ 시작·■ 끝내기·기록 목록·팀 탐사) · 📂 파일 넣기 · 🔔 변경 기록 · 💧 단수구역 · 🖍 그리기 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: <span class="hfb hfb-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></span> 화면 캡처 · <span class="hfb hfb-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span> 내 위치 · <span class="hfb hfb-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></span> 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li>PC는 <b>작업 화면</b>: 위 리본 탭(파일·자료·지도…) · 왼쪽 <b>레이어/속성 창</b>(▸ 펼쳐 항목별 켜고 끄기·심볼 크기, 가장자리 끌어 폭 조절) · 아래 상태줄. 📋 보고서형 화면으로 바꿀 수 있습니다.</li></ol></div>
+<div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 👣 탐사기록(누르면 기록 창: ▶ 시작·■ 끝내기·기록 목록·팀 탐사) · 📂 파일 넣기 · 🔔 변경 기록 · 💧 단수구역 · 🖍 그리기 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: <span class="hfb hfb-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></span> 화면 캡처 · <span class="hfb hfb-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span> 내 위치 · <span class="hfb hfb-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></span> 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li><b>☑ 관로 선택</b>: PC는 <b>Shift+클릭</b>으로 관로 더하기·빼기, <b>Shift+끌기</b> 네모로 더하기(Ctrl+Shift+끌기 빼기). 폰은 칩 ☑ › <b>☝ 눌러 고르기</b>. 네모·다각형·손 그리기·지금 화면으로도 고르고, 고른 관로는 ✏ 속성 한꺼번에 · ✅ 교체 완료 · ⬚ 개략공사비·SHP · 📊 엑셀로 넘김(작업 화면 리본 <b>선택</b> 탭).</li><li>PC는 <b>작업 화면</b>: 위 리본 탭(파일·자료·지도…) · 왼쪽 <b>레이어/속성 창</b>(▸ 펼쳐 항목별 켜고 끄기·심볼 크기, 가장자리 끌어 폭 조절) · 아래 상태줄. 📋 보고서형 화면으로 바꿀 수 있습니다.</li></ol></div>
 <div class="hbx"><h4>자주 하는 일 <small>(누르면 매뉴얼의 그 장으로)</small></h4><ul class="hq">${Q.map(([k,t])=>`<li><a href="${hlpUrl(k)}" target="_blank" rel="noopener">${t}</a></li>`).join('')}</ul></div>
 <p style="margin:8px 0 0"><small>매뉴얼은 인쇄(PDF 저장)도 됩니다. 그림 속 주소·사진은 예시입니다. · 만든이: 구병순</small></p>`;
   w.querySelector('#hlpX').onclick=()=>{w.hidden=true};
@@ -12858,6 +12883,179 @@ function rpInit(){if(!$('rpSec'))return;$('rpOn').checked=RP.on;$('rpW').value=M
   if(a.classList.contains('rpGo')){const f=PIPE.feats[+a.dataset.i];if(f)rpFit([f])}else rpFit(rpRows().filter(r=>(r.b||'(소블록 밖)')===a.dataset.b).map(r=>r.f))});
  $('rpSec').addEventListener('focusin',()=>{rpUiCnt();rpListShow()},{once:true});rpUiCnt()}
 try{rpInit()}catch(e){console.warn('교체 완료',e)}
+/* ===================== ☑ 관로 선택 (2026-11-12): Shift+클릭 더하기·빼기 · 그려서 고르기 · 선택 메뉴 =====================
+   - PC: Shift+클릭 = 그 관로를 선택에 더하기(이미 고른 관로면 빼기), Shift+끌기 = 네모 안 관로 더하기, Ctrl(Alt)+Shift+끌기 = 네모 안 관로 빼기
+   - 폰: ☝ 눌러 고르기를 켜면 그냥 눌러도 더하기·빼기
+   - 그려서 고르기: 네모·다각형·손 그리기·지금 화면 (➕ 더하기 / ➖ 빼기 모드)
+   - 고른 관로: 하늘색 테두리(관로 층 바로 아래, 화면 둘레만) → ✏ 속성 한꺼번에 · ✅ 교체 완료 · ⬚ 개략공사비·SHP · 📊 엑셀
+   - 보이는(켜진) 관로 층만 고름. 폐관·빈 자리는 빼고, 선택은 저장하지 않음(새로 고치면 지워짐). 관로 번호(fi)로 기억 → 기준자료를 다시 올리면 지움 */
+const SEL={fi:new Set(),src:null,tap:false,mode:'add',part:true,svc:true,hist:[],L:null,cv:null,ev:0,key:'',drawing:false,box:null,boxAt:0,open:false,fold:false,el:null};
+function selOk(){if(SEL.src&&SEL.src!==PIPE.raw){SEL.fi.clear();SEL.hist=[]}SEL.src=PIPE.raw;
+ for(const fi of SEL.fi){const f=PIPE.feats[fi];if(!f||!f.properties||f.properties._빈||f.properties._폐관)SEL.fi.delete(fi)}return SEL.fi}
+function selFeats(){selOk();return [...SEL.fi].sort((a,b)=>a-b).map(fi=>({fi,f:PIPE.feats[fi]}))}
+function selPush(){SEL.hist.push([...SEL.fi]);if(SEL.hist.length>20)SEL.hist.shift()}
+/* 관로 층이 켜져 있고 숨김 분류가 아닌 관로만 고를 수 있음 */
+function selCan(f){if(!f||!f.properties||f.properties._빈||f.properties._폐관||!f.geometry)return false;if(typeof pcHid==='function'&&pcHid(f))return false;
+ const onM=!!(PIPE.layer&&map.hasLayer(PIPE.layer)),onS=!!(PIPE.layerS&&map.hasLayer(PIPE.layerS)),svc=attrOf(f).use==='급수관';if(svc&&!SEL.svc)return false;return svc?onS:onM}
+function selChanged(msg){SEL.open=true;selDraw(true);selCardShow();try{selChip()}catch(_){}if(msg)try{phToast(msg,{ms:1800})}catch(_){}}
+/* 한 관로 더하기·빼기 (force: 1 더하기, -1 빼기, 없으면 바꾸기) */
+function selToggle(fi,force){selOk();selPush();const had=SEL.fi.has(fi),add=force?force>0:!had;if(add)SEL.fi.add(fi);else SEL.fi.delete(fi);
+ const a=attrOf(PIPE.feats[fi]);selChanged(`${add?'➕':'➖'} ${a.id||'관로'} ${add?(had?'(이미 선택)':'더함'):'뺌'} · 선택 ${SEL.fi.size.toLocaleString()}개`)}
+/* 범위(ring=[[경도,위도]...])로 더하기·빼기 */
+function selByRing(ring,how,sub){const R=(()=>{let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;ring.forEach(c=>{if(c[0]<x0)x0=c[0];if(c[0]>x1)x1=c[0];if(c[1]<y0)y0=c[1];if(c[1]>y1)y1=c[1]});return{t:'poly',ring,bb:[x0,y0,x1,y1]}})();
+ const t0=performance.now(),hit=[];
+ PIPE.feats.forEach((f,fi)=>{if(!selCan(f))return;const ps=lineParts(f.geometry);if(!ps.some(p=>p.length>1))return;
+  if(SEL.part?axPipeHit(f.geometry,R):ps.every(p=>p.every(c=>c[0]>=R.bb[0]&&c[0]<=R.bb[2]&&c[1]>=R.bb[1]&&c[1]<=R.bb[3]&&axPip(ring,c[0],c[1]))))hit.push(fi)});
+ selOk();selPush();let n=0;hit.forEach(fi=>{if(sub){if(SEL.fi.delete(fi))n++}else if(!SEL.fi.has(fi)){SEL.fi.add(fi);n++}});
+ selChanged(`${sub?'➖':'➕'} ${how}: 관로 ${n.toLocaleString()}개 ${sub?'뺌':'더함'}${hit.length>n?` (이미 ${sub?'없던':'고른'} ${(hit.length-n).toLocaleString()}개)`:''} · 선택 ${SEL.fi.size.toLocaleString()}개 (${Math.round(performance.now()-t0)}ms)`);return n}
+/* 지도 누르기: Shift+클릭 또는 ☝ 눌러 고르기 켜짐 → 정보창 대신 더하기·빼기. 처리했으면 true */
+function selMapTap(e){const oe=e&&e.originalEvent;if(!map||!PIPE.feats||!PIPE.feats.length)return false;if(!(oe&&oe.shiftKey)&&!SEL.tap)return false;
+ if(Date.now()-SEL.boxAt<500){setTimeout(()=>map.closePopup(),0);return true}/* Shift+끌기 네모가 끝나며 생긴 클릭 */
+ const f=typeof pipeHitAt==='function'?pipeHitAt(e.latlng):null,fi=f?PIPE.feats.indexOf(f):-1;
+ if(fi<0||!selCan(f)){if(SEL.tap){setTimeout(()=>map.closePopup(),0);try{phToast('누른 자리 가까이 고를 수 있는 관로가 없습니다.',{ms:1500})}catch(_){}return true}return false}
+ setTimeout(()=>map.closePopup(),0);selToggle(fi,oe&&(oe.ctrlKey||oe.altKey||oe.metaKey)?-1:(SEL.tap&&!(oe&&oe.shiftKey)?(SEL.mode==='sub'?-1:0):0));return true}
+/* 🛠 편집 › 관로 › 선택 도구에서도 Shift+클릭 (container point) */
+function selTapCp(cp){const f=typeof pipeHitAt==='function'?pipeHitAt(map.containerPointToLatLng(cp)):null,fi=f?PIPE.feats.indexOf(f):-1;if(fi<0||!selCan(f))return false;selToggle(fi);return true}
+
+/* ── 지도 표시: 관로 층(390) 바로 아래 하늘색 테두리 ── */
+function selPane(){if(!map.getPane('selPane')){const p=map.createPane('selPane');p.style.zIndex=389;p.style.pointerEvents='none'}if(!SEL.cv)SEL.cv=L.canvas({pane:'selPane',padding:.3});return SEL.cv}
+function selDraw(force){if(!map||!PIPE.feats)return;if(!SEL.ev){SEL.ev=1;map.on('moveend zoomend',()=>{try{selDraw()}catch(_){}})}
+ const z=map.getZoom(),B=map.getBounds().pad(.5);selOk();
+ const key=[SEL.fi.size,[...SEL.fi].slice(-3).join(','),(typeof PED!=='undefined'&&PED.at)||0,z,B.toBBoxString()].join('|');if(!force&&key===SEL.key)return;SEL.key=key;
+ const cv=selPane();if(!SEL.L)SEL.L=L.layerGroup().addTo(map);SEL.L.clearLayers();if(!SEL.fi.size)return;
+ const w=B.getWest(),e=B.getEast(),s=B.getSouth(),n=B.getNorth(),wt=Math.max(3,Math.min(9,z-9));
+ for(const fi of SEL.fi){const f=PIPE.feats[fi];if(!f)continue;const b=rpBox(f);if(b[2]<w||b[0]>e||b[3]<s||b[1]>n)continue;
+  const ls=lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));if(ls.length)L.polyline(ls,{renderer:cv,color:'#06b6d4',weight:wt+4,opacity:.8,lineCap:'round',interactive:false}).addTo(SEL.L)}}
+{const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{selDraw(true)}catch(_){}return r}}
+
+/* ── 그려서 고르기: 네모·다각형·손 그리기 (⬚ 개략공사비 그리기와 같은 덮개) ── */
+function selDrawRing(mode){if(!map||SEL.drawing)return;if(!PIPE.feats||!PIPE.feats.length){alert('상수관로 자료가 없습니다. ②-1 관로를 먼저 올리거나 백업을 불러오세요.');return}
+ const sub=SEL.mode==='sub',HOW={rect:'네모',poly:'다각형',free:'손 그리기'};
+ if(mode==='view'){const b=map.getBounds();selByRing([[b.getWest(),b.getNorth()],[b.getEast(),b.getNorth()],[b.getEast(),b.getSouth()],[b.getWest(),b.getSouth()]],'지금 화면',sub);return}
+ if(typeof MK!=='undefined'&&MK.on)mkSet(false);if((typeof SHUT!=='undefined'&&SHUT.drawing)||(typeof AX!=='undefined'&&AX.drawing))return;map.closePopup();
+ const mc=map.getContainer(),ov=L.DomUtil.create('div','shdraw',mc),col=sub?'#dc2626':'#0891b2',act=sub?'뺄':'더할';
+ const tip={rect:`⬚ ${act} 관로를 대각선으로 끌어 네모로 감싸세요`,poly:`⬠ ${act} 곳의 꼭짓점을 차례로 누르세요 · 첫 점을 다시 누르거나 ✓ 완성`,free:`✍ ${act} 관로를 둘러 그리세요 · 손을 떼면 완성`}[mode];
+ ov.innerHTML=`<div class="shdt axdt">${sub?'➖ 빼기':'➕ 더하기'} · ${tip}<br>${mode==='poly'?'<button type="button" class="ok" data-a="ok">✓ 완성</button><button type="button" data-a="back">↶ 점 빼기</button>':''}<button type="button" data-a="x">✕ 취소</button></div>`;
+ L.DomEvent.disableClickPropagation(ov);L.DomEvent.disableScrollPropagation(ov);
+ SEL.drawing=true;MLOCK.auto=true;mapLockSync();
+ let pts=[],shp=null,pid=null,last=null,p0=null;const sty={color:col,weight:3,dashArray:'7 5',fillColor:col,fillOpacity:.08,interactive:false};
+ const cp=e=>{const r=mc.getBoundingClientRect();return L.point(e.clientX-r.left,e.clientY-r.top)};
+ const show=lls=>{if(!shp)shp=(mode==='free'?L.polyline(lls,sty):L.polygon(lls,sty)).addTo(map);else shp.setLatLngs(lls)};
+ const end=lls=>{ov.remove();if(shp)shp.remove();SEL.drawing=false;MLOCK.auto=false;mapLockSync();document.removeEventListener('keydown',kd);
+  if(lls&&lls.length>=3){const b=L.latLngBounds(lls),m0=toM(b.getWest(),b.getSouth()),m1=toM(b.getEast(),b.getNorth());
+   if(Math.abs(m1[0]-m0[0])<2&&Math.abs(m1[1]-m0[1])<2){try{phToast('범위가 너무 작습니다. 조금 크게 그려 주세요.',{ms:2200})}catch(_){}}else selByRing(lls.map(p=>[+p.lng,+p.lat]),HOW[mode],sub)}
+  else if(lls)try{phToast('범위가 너무 작습니다.',{ms:1800})}catch(_){}
+  selCardShow()};
+ const kd=e=>{if(e.key==='Escape')end(null);else if(e.key==='Enter'&&mode==='poly')end(pts.length>=3?pts:[])};document.addEventListener('keydown',kd);
+ ov.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-a]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.a;
+  if(a==='x')end(null);else if(a==='ok')end(pts.length>=3?pts:[]);else if(a==='back'){pts.pop();if(pts.length)show(pts);else if(shp){shp.remove();shp=null}}});
+ ov.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button'))return;if(pid!=null)return;e.preventDefault();const p=cp(e),ll=map.containerPointToLatLng(p);
+  if(mode==='poly'){if(pts.length>=3&&map.latLngToContainerPoint(pts[0]).distanceTo(p)<16){end(pts);return}pts.push(ll);show(pts);return}
+  pid=e.pointerId;try{ov.setPointerCapture(pid)}catch(_){}last=p;p0=ll;pts=[ll];if(mode==='free')show(pts)});
+ ov.addEventListener('pointermove',e=>{if(e.pointerId!==pid)return;e.preventDefault();const p=cp(e);if(p.distanceTo(last)<4)return;last=p;const ll=map.containerPointToLatLng(p);
+  if(mode==='rect'){pts=[p0,L.latLng(p0.lat,ll.lng),ll,L.latLng(ll.lat,p0.lng)];show(pts)}else{pts.push(ll);show(pts)}});
+ const up=e=>{if(e.pointerId!==pid)return;pid=null;end(pts.length>=3?pts:[])};ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up)}
+
+/* ── Shift+끌기 네모 (마우스): Leaflet 상자 확대(Shift+끌기) 대신 관로 고르기. Ctrl·Alt를 같이 누르면 빼기 ── */
+function selBoxInit(){if(!map||SEL.boxOn)return;SEL.boxOn=1;try{map.boxZoom.disable()}catch(_){}const mc=map.getContainer();
+ mc.addEventListener('pointerdown',e=>{if(!e.shiftKey||e.button!==0||e.pointerType==='touch'||SEL.drawing||!PIPE.feats||!PIPE.feats.length)return;
+  if(e.target.closest&&e.target.closest('.leaflet-control,.leaflet-popup,.leaflet-marker-icon,#selCard,.shdraw'))return;
+  if((typeof AX!=='undefined'&&AX.drawing)||(typeof SHUT!=='undefined'&&SHUT.drawing)||(typeof MK!=='undefined'&&MK.on))return;
+  const r=mc.getBoundingClientRect(),P=e2=>L.point(e2.clientX-r.left,e2.clientY-r.top),p0=P(e),dr=map.dragging&&map.dragging.enabled();
+  if(dr)map.dragging.disable();let rc=null,moved=false;const sub=e.ctrlKey||e.altKey||e.metaKey;
+  const mv=e2=>{const p=P(e2);if(!moved&&p.distanceTo(p0)<6)return;moved=true;const b=L.latLngBounds(map.containerPointToLatLng(p0),map.containerPointToLatLng(p));
+   if(!rc)rc=L.rectangle(b,{color:sub?'#dc2626':'#0891b2',weight:2,dashArray:'6 4',fillOpacity:.08,interactive:false}).addTo(map);else rc.setBounds(b)};
+  const up=e2=>{document.removeEventListener('pointermove',mv,true);document.removeEventListener('pointerup',up,true);document.removeEventListener('pointercancel',up,true);
+   if(dr&&!(MLOCK.user||MLOCK.auto))map.dragging.enable();if(rc)rc.remove();if(!moved)return;SEL.boxAt=Date.now();
+   const b=L.latLngBounds(map.containerPointToLatLng(p0),map.containerPointToLatLng(P(e2)));
+   selByRing([[b.getWest(),b.getNorth()],[b.getEast(),b.getNorth()],[b.getEast(),b.getSouth()],[b.getWest(),b.getSouth()]],'Shift+끌기 네모',sub||(e2.ctrlKey||e2.altKey||e2.metaKey))};
+  document.addEventListener('pointermove',mv,true);document.addEventListener('pointerup',up,true);document.addEventListener('pointercancel',up,true)},true)}
+
+/* ── 집계 ── */
+function selStats(){const L0={n:0,L:0,use:new Map(),dia:new Map(),mat:new Map()};
+ selFeats().forEach(({f})=>{const a=attrOf(f),l=f._len||0;L0.n++;L0.L+=l;const add=(m,k)=>{const o=m.get(k)||{n:0,L:0};o.n++;o.L+=l;m.set(k,o)};add(L0.use,a.use||'미상');add(L0.dia,a.dia!=null?a.dia:'미상');add(L0.mat,a.mat||'미상')});return L0}
+const selKm=v=>(v/1000).toFixed(v<10000?2:1)+'km';
+
+/* ── 선택 카드 (지도 위, 아래쪽) ── */
+function selCardEl(){if(SEL.el&&SEL.el.isConnected)return SEL.el;const c=map.getContainer(),d=document.createElement('div');d.id='selCard';d.className='np';d.hidden=true;c.appendChild(d);
+ L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);d.addEventListener('pointerdown',e=>e.stopPropagation());
+ d.addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;e.preventDefault();selCmd(b.dataset.s)});
+ d.addEventListener('change',e=>{const t=e.target;if(t.id==='selPart'){SEL.part=t.checked;selCfgSave()}else if(t.id==='selSvc'){SEL.svc=t.checked;selCfgSave()}});
+ d.addEventListener('keydown',e=>e.stopPropagation());return SEL.el=d}
+function selCardShow(){if(!map)return;const d=selCardEl();if(!SEL.open){d.hidden=true;return}d.hidden=false;
+ const S=selStats(),n=x=>x.toLocaleString(),on=(k,v)=>SEL[k]===v?' on':'',pc=matchMedia('(pointer:fine)').matches;
+ const top=(m,u,lim)=>[...m.entries()].sort((a,b)=>b[1].L-a[1].L).slice(0,lim).map(([k,o])=>`<span class="selt">${esc(k)}${u} <b>${n(o.n)}</b> · ${selKm(o.L)}</span>`).join('');
+ let h=`<div class="selh"><b>☑ 관로 선택</b><span class="seln">${S.n?`<b>${n(S.n)}</b>개 · ${selKm(S.L)}`:'고른 관로 없음'}</span><span class="selhb"><button type="button" data-s="fold" aria-label="${SEL.fold?'펼치기':'접기'}">${SEL.fold?'▴':'▾'}</button><button type="button" data-s="close" aria-label="닫기">✕</button></span></div>`;
+ if(!SEL.fold){
+  h+=`<div class="selr"><button type="button" data-s="tap" class="${SEL.tap?'on':''}" title="켜면 지도에서 관로를 그냥 눌러도 더하기·빼기 (정보창 대신)">☝ 눌러 고르기${SEL.tap?' 켜짐':''}</button><span class="selsg"><button type="button" data-s="add" class="${on('mode','add')}">➕ 더하기</button><button type="button" data-s="sub" class="${on('mode','sub')}">➖ 빼기</button></span></div>
+  <div class="selr"><button type="button" data-s="rect">⬚ 네모</button><button type="button" data-s="poly">⬠ 다각형</button><button type="button" data-s="free">✍ 손 그리기</button><button type="button" data-s="view">🗺 지금 화면</button></div>
+  <div class="selr selo"><label><input type="checkbox" id="selPart"${SEL.part?' checked':''}> 범위에 걸친 관로도</label><label><input type="checkbox" id="selSvc"${SEL.svc?' checked':''}> 급수관 포함</label></div>
+  ${pc?'<p class="selhint"><b>Shift+클릭</b> 더하기·빼기 · <b>Shift+끌기</b> 네모로 더하기 · <b>Ctrl+Shift+끌기</b> 네모로 빼기</p>':'<p class="selhint">☝ 눌러 고르기를 켜면 관로를 누를 때마다 ➕/➖ 됩니다. 정보창을 보려면 끄세요.</p>'}`;
+  if(S.n){h+=`<div class="selsum">${top(S.use,'',3)}${top(S.dia,'mm',4)}</div>
+   <div class="selr sela"><button type="button" data-s="edit">✏ 속성 한꺼번에</button><button type="button" data-s="rp">✅ 교체 완료</button><button type="button" data-s="ax">⬚ 개략공사비·SHP</button><button type="button" data-s="xl">📊 엑셀</button><button type="button" data-s="fit">🔍 모두 보기</button><button type="button" data-s="undo"${SEL.hist.length?'':' disabled'}>↶ 선택 되돌리기</button><button type="button" data-s="clr" class="selx">🗑 선택 지우기</button></div>
+   <div id="selEd" hidden></div>`}
+  else if(SEL.hist.length)h+=`<div class="selr sela"><button type="button" data-s="undo">↶ 선택 되돌리기</button></div>`}
+ const ed=d.querySelector('#selEd'),keep=ed&&!ed.hidden?ed.innerHTML:null;d.innerHTML=h;if(keep!=null&&S.n){const e2=d.querySelector('#selEd');e2.innerHTML=keep;e2.hidden=false}}
+function selCfgSave(){try{localStorage.setItem('geo-sel',JSON.stringify({part:SEL.part,svc:SEL.svc}))}catch(_){}}
+try{const m=JSON.parse(localStorage.getItem('geo-sel')||'{}')||{};if(typeof m.part==='boolean')SEL.part=m.part;if(typeof m.svc==='boolean')SEL.svc=m.svc}catch(_){}
+
+/* ── ✏ 속성 한꺼번에: 관경·재질·비고 (🛠 편집 현장 수정으로 저장 → 직원 공유·↶ 되돌리기 그대로) ── */
+function selEdShow(){const e=$('selEd');if(!e)return;if(!e.hidden){e.hidden=true;return}const st='min-width:0;font-size:13px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:5px';
+ e.innerHTML=`<div class="selef"><p class="selhint" style="margin:0 0 4px">비운 칸은 그대로 둡니다. 고른 관로 <b>${SEL.fi.size.toLocaleString()}</b>개에 같은 값을 넣습니다.</p>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 6px;align-items:center"><span>관경(mm)</span><input id="selEdDia" inputmode="numeric" list="selDiaL" placeholder="예: 100" style="${st}">
+  <span>재질(관종)</span><input id="selEdMat" list="selMatL" placeholder="예: DCIP" style="${st}">
+  <span>비고</span><input id="selEdMemo" placeholder="예: 2026 현장 확인" style="${st}"></div>
+  <label style="display:block;margin-top:3px;font-size:12px"><input type="checkbox" id="selEdApp" checked> 비고는 원래 비고 뒤에 덧붙이기</label>
+  <datalist id="selDiaL">${PIPE_DIAS.map(d=>`<option value="${d}">`).join('')}</datalist><datalist id="selMatL">${Object.keys(MAT_COL).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
+  <div class="selr" style="margin-top:5px"><button type="button" data-s="edGo" class="ok">💾 ${SEL.fi.size.toLocaleString()}개 저장</button><button type="button" data-s="edX">닫기</button></div><div id="selEdMsg" class="selhint"></div></div>`;e.hidden=false}
+async function selEdGo(){const dia0=$('selEdDia').value.trim().replace(/mm$/i,'').replace(/^[Φφø]/,'').trim(),mat=$('selEdMat').value.trim(),memo=$('selEdMemo').value.trim(),app=$('selEdApp').checked;
+ if(!dia0&&!mat&&!memo){alert('바꿀 값을 하나 이상 넣으세요.');return}if(dia0&&!/^\d+(\.\d+)?$/.test(dia0)){alert('관경은 숫자(mm)로 넣으세요. 예: 100');return}
+ const its=selFeats();if(!its.length)return;
+ if(!confirm(`고른 관로 ${its.length.toLocaleString()}개에 저장할까요?\n${dia0?'관경 '+dia0+'mm  ':''}${mat?'재질 '+mat+'  ':''}${memo?'비고 '+(app?'덧붙이기':'바꾸기')+' "'+memo+'"':''}\n(🛠 편집 ↶ 되돌리기로 한 번에 돌릴 수 있습니다)`))return;
+ const items=its.map(({fi,f})=>{const P=f.properties||{},v={};if(dia0)v[pedKey(P,'dia')]=dia0;if(mat)v[pedKey(P,'mat')]=mat;
+  if(memo){const o=String(P['현장메모']??'').trim();v['현장메모']=app&&o&&!o.includes(memo)?o+' / '+memo:app&&o.includes(memo)?o:memo}return[fi,v]});
+ const m=$('selEdMsg');m.textContent='저장하는 중…';await sleep(20);const t0=performance.now();let n=0;
+ try{n=await pedSetPropsMany(items,`선택 관로 ${items.length}개 속성 고침`)}catch(e){m.textContent='⚠ 저장하지 못했습니다: '+(e&&e.message||e);return}
+ selDraw(true);m.textContent=`✅ ${n.toLocaleString()}개 저장 (${((performance.now()-t0)/1000).toFixed(1)}초) · 바뀐 칸이 없는 관로는 건너뜀`;try{phToast('✅ 선택 관로 '+n+'개 저장')}catch(_){}}
+
+/* ── 다른 기능으로 넘기기 ── */
+function selRp(){const its=selFeats();if(!its.length)return;if(typeof rpCandSet!=='function'){alert('교체 완료 기능이 없습니다.');return}
+ rpCandSet('sel',`선택 관로 ${its.length.toLocaleString()}개`,its.map(({fi})=>({fi})));rpGo()}
+function selAx(){const its=selFeats();if(!its.length)return;if(typeof axOpen!=='function'){alert('개략공사비 기능이 없습니다.');return}
+ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;its.forEach(({f})=>{const b=rpBox(f);if(b[0]<x0)x0=b[0];if(b[1]<y0)y0=b[1];if(b[2]>x1)x1=b[2];if(b[3]>y1)y1=b[3]});
+ const p=2e-5;x0-=p;y0-=p;x1+=p;y1+=p;axOpen();axSet([L.latLng(y1,x0),L.latLng(y1,x1),L.latLng(y0,x1),L.latLng(y0,x0)],`선택 관로 ${its.length.toLocaleString()}개`,its.map(o=>o.f));
+ const pc=$('axPipe');if(pc&&!pc.checked){pc.checked=true}axList();axInfo()}
+function selXl(){const its=selFeats();if(!its.length)return;if(typeof XLSX==='undefined'){alert('엑셀 라이브러리를 불러오지 못했습니다.');return}
+ const D=its.map(({f},i)=>{const a=attrOf(f),P=f.properties||{},m=sxMid(f.geometry);return{'순번':i+1,'관리번호':a.id||'','용도':a.use,'재질':a.matRaw||a.mat,'관경(mm)':a.dia??'','설치연도':a.year??'','경과년수':a.age??'','길이(m)':+(f._len||0).toFixed(2),'소블록(경계)':m?blkAt(m[0],m[1])||'':'','현장 수정':sxMark(P,0)||'','비고':P['현장메모']||''}});
+ const g=(key,u)=>{const M=new Map();D.forEach(r=>{const k=r[key]===''?'미상':r[key];const o=M.get(k)||{[u]:k,'개수':0,'연장(m)':0};o['개수']++;o['연장(m)']+=r['길이(m)'];M.set(k,o)});
+  return [...M.values()].sort((a,b)=>typeof a[u]==='number'&&typeof b[u]==='number'?a[u]-b[u]:String(a[u]).localeCompare(String(b[u]))).map(o=>({...o,'연장(m)':+o['연장(m)'].toFixed(2),'연장(km)':+(o['연장(m)']/1000).toFixed(3)}))};
+ const wb=XLSX.utils.book_new(),tot=D.reduce((s,r)=>s+r['길이(m)'],0);
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{'항목':'고른 관로','값':D.length},{'항목':'총 연장(km)','값':+(tot/1000).toFixed(3)},{'항목':'만든 날','값':fmtDT(Date.now())},{'항목':'현장','값':(window.SITE&&SITE.name)||''},{'항목':'만든이','값':'구병순 (스마트 물길주소)'}]),'요약');
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(g('관경(mm)','관경(mm)')),'관경별');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(g('재질','재질')),'재질별');
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(g('소블록(경계)','소블록(경계)')),'소블록별');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(D),'선택 관로');
+ XLSX.writeFile(wb,`선택관로_${D.length}개_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
+
+/* ── 명령 (카드·리본·칩 공용) ── */
+function selCmd(k){if(!map)return;
+ switch(k){case 'card':case 'open':SEL.open=k==='card'?!SEL.open:true;if(SEL.open)SEL.fold=false;break;case 'close':SEL.open=false;SEL.tap=false;break;case 'fold':SEL.fold=!SEL.fold;break;
+  case 'tap':SEL.tap=!SEL.tap;SEL.open=true;try{phToast(SEL.tap?'☝ 눌러 고르기 켜짐: 관로를 누르면 '+(SEL.mode==='sub'?'빠집니다':'더하기·빼기 됩니다'):'☝ 눌러 고르기 꺼짐: 관로를 누르면 정보창이 뜹니다',{ms:2200})}catch(_){}break;
+  case 'add':case 'sub':SEL.mode=k;SEL.open=true;break;
+  case 'rect':case 'poly':case 'free':case 'view':SEL.open=true;selCardShow();selDrawRing(k);break;
+  case 'undo':if(SEL.hist.length){SEL.fi=new Set(SEL.hist.pop());selDraw(true)}break;
+  case 'clr':if(SEL.fi.size&&(SEL.fi.size<20||confirm(`고른 관로 ${SEL.fi.size.toLocaleString()}개 선택을 지울까요?`))){selPush();SEL.fi.clear();selDraw(true)}break;
+  case 'fit':{const fs=selFeats().map(o=>o.f);if(fs.length)rpFit(fs);break}
+  case 'edit':selEdShow();return;case 'edGo':selEdGo();return;case 'edX':{const e=$('selEd');if(e)e.hidden=true;return}
+  case 'rp':selRp();break;case 'ax':selAx();break;case 'xl':selXl();break}
+ selCardShow();selChip()}
+function selIsOn(v){return v==='tap'?SEL.tap:v==='add'||v==='sub'?SEL.mode===v:v==='card'?SEL.open:false}
+/* ☑ 칩 (위쪽 칩 줄·전체화면) */
+function selChip(){const a=$('selA');if(a)a.classList.toggle('on',SEL.open||SEL.tap||SEL.fi.size>0)}
+function selInit(){if(!map){setTimeout(selInit,500);return}if($('selA'))return;
+ const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn selbtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='sel';
+  a.href='#';a.id='selA';a.textContent='☑';a.title='☑ 관로 선택 — Shift+클릭 더하기·빼기, 네모·다각형·손으로 그려 고르기';a.setAttribute('role','button');a.setAttribute('aria-label','관로 선택');
+  L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);selCmd('card')});return d}});
+ map.addControl(new Ctl());selBoxInit();selChip()}
+try{selInit()}catch(e){console.warn('관로 선택',e)}
 window.__APP_OK=1;
 </script><script type="text/plain" id="shCode">
 /**
