@@ -1729,7 +1729,7 @@ window.GICO={I,col:icC};
 const TABS=[
  {k:'file',n:'파일',g:[
   {n:'백업',b:[['bkSave','save','백업 만들기',1],['bkLoad','open','백업 불러오기'],['win:bk','box','백업 창']]},
-  {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기'],['ax','crop','범위 내보내기']]},
+  {n:'내보내기',b:[['ex','exp','내보내기 창',1],['xl','xls','결과 엑셀'],['lkXl','link','유수율 연동 엑셀'],['phZip','cam','현장 사진 내보내기'],['ax','crop','개략공사비']]},
   {n:'인쇄',b:[['vp','prt','지금 화면 출력',1],['bp','poly','소블록별 출력',1],['pdf','doc','PDF 미리보기',1],['po','page','출력 방향']]},
   {n:'화면',b:[['report','list','보고서형 화면',1],['dark','moon','다크 모드'],['dw','mon','대시보드 새 창']]}]},
  {k:'data',n:'자료',g:[
@@ -2529,7 +2529,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  <p class="hint" id="sxMsg" style="margin:6px 2px 0"></p>
  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button id="sxN" type="button" class="btn ol" style="width:auto">닫기</button><button id="sxGo" type="button" class="btn" style="width:auto">💾 SHP 저장</button></div></div></div>
 <div id="axDlg" class="pcm np" hidden role="dialog" aria-modal="true" aria-labelledby="axT"><div class="pcbox" style="width:min(520px,100%);height:auto;max-height:92vh;overflow:auto">
- <div class="pchd"><div><b id="axT">⬚ 범위 내보내기</b><small>지도에 범위를 그리면 그 안의 시설물(고르면 상수관로도)을 SHP·CSV로 저장합니다. 고객 정보 칸은 넣지 않습니다.</small></div><button id="axX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
+ <div class="pchd"><div><b id="axT">⬚ 개략공사비</b><small>지도에 범위를 그리면 그 안 관로·시설물의 개략공사비(아래 💰)를 계산하고, 자료를 SHP·CSV로도 저장합니다. 고객 정보 칸은 넣지 않습니다.</small></div><button id="axX" type="button" class="hbtn" aria-label="닫기">✕</button></div>
  <div class="axrb" role="group" aria-label="범위 그리는 방법"><button type="button" data-m="rect">⬚ 네모</button><button type="button" data-m="poly">⬠ 다각형</button><button type="button" data-m="free">✍ 손 그리기</button><button type="button" data-m="view">▭ 지금 화면</button></div>
  <p class="hint" id="axRng" style="margin:6px 2px 8px"></p>
  <div class="axkh"><b>담을 시설물</b><span class="bkqk" style="margin:0"><button type="button" data-q="all">모두</button><button type="button" data-q="none">모두 해제</button></span></div>
@@ -3234,7 +3234,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -3298,7 +3298,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'범위 내보내기',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -9244,7 +9244,7 @@ async function axGo(){if(typeof JSZip==='undefined'){$('axMsg').textContent='JSZ
    z.file('범위/그린범위.prj',sxPrj(rc));z.file('범위/그린범위.cpg',cp?'CP949':'UTF-8')}
   msg.textContent='⏳ 압축 중…';await sleep(10);
   const kinds=[...new Set(facs.map(f=>facKindInfo(f.k).name||f.k))];
-  const txt=['스마트 물길주소 · 범위 내보내기 (만든이: 구병순)',`현장: ${(window.SITE&&SITE.name)||''} · 저장: ${fmtDT(Date.now())}`,
+  const txt=['스마트 물길주소 · 개략공사비 범위 자료 (만든이: 구병순)',`현장: ${(window.SITE&&SITE.name)||''} · 저장: ${fmtDT(Date.now())}`,
    `범위: ${AX.how} · 면적 ${axAreaTx(area)} · 꼭짓점 ${AX.ring.length}개 (경위도 범위 ${C.R.bb.map(v=>v.toFixed(6)).join(', ')})`,
    `담은 것: 시설물 ${facs.length.toLocaleString()}개 (${kinds.join(', ')||'없음'})${pipes.length?` · 상수관로 ${pipes.length.toLocaleString()}개 (범위에 걸친 관로를 자르지 않고 통째로)`:''} · 폐관·삭제 표시 ${S.sxDel?'포함':'제외'}`,
    `형식: ${fmt==='both'?'SHP + CSV':fmt==='shp'?'SHP':'CSV'} · 좌표계: ${S.sxCrs==='orig'?'원래 좌표계(레이어별, 모르면 '+defC+')':S.sxCrs}${fmt!=='csv'?' · SHP 한글: '+(cp?'CP949':'UTF-8'):''}`,'',...rep,
@@ -9254,7 +9254,7 @@ async function axGo(){if(typeof JSZip==='undefined'){$('axMsg').textContent='JSZ
    ...(ren.size?['','SHP 칸 이름 바뀜 (10바이트 제한):',...[...ren].map(([a,b])=>`  ${a} → ${b}`)]:[])].join('\r\n');
   z.file('읽어주세요.txt','﻿'+txt);
   const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}}),
-   what=(facs.length?'시설물':'')+(pipes.length?(facs.length?'관로':'상수관로'):''),fn=`범위내보내기_${what}_${fmt==='both'?'SHP_CSV':fmt.toUpperCase()}_${AX.how.replace(/\s/g,'')}_${day}.zip`;
+   what=(facs.length?'시설물':'')+(pipes.length?(facs.length?'관로':'상수관로'):''),fn=`개략공사비_범위자료_${what}_${fmt==='both'?'SHP_CSV':fmt.toUpperCase()}_${AX.how.replace(/\s/g,'')}_${day}.zip`;
   dlBlob(blob,fn);msg.innerHTML=`💾 저장했습니다: ${esc(fn)} (${(blob.size/1048576).toFixed(2)}MB)<br><small>${rep.map(esc).join('<br>')}</small>`}
  catch(e){msg.textContent='내보내기 실패: '+((e&&e.message)||e)}finally{bt.disabled=false;axInfo()}}
 $('axX').onclick=$('axN').onclick=axClose;$('axGo').onclick=axGo;
@@ -9266,7 +9266,7 @@ document.querySelectorAll('#axDlg .axkh button').forEach(b=>b.onclick=()=>{const
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('axDlg').hidden&&!AX.drawing)axClose()});
 function axInit(){if(!map||$('axA'))return;
  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn axbtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='ax';
-  a.href='#';a.id='axA';a.textContent='⬚';a.title='⬚ 범위 내보내기 — 지도에 범위를 그려 그 안의 시설물(관로)을 SHP·CSV로 저장';a.setAttribute('role','button');a.setAttribute('aria-label','범위 내보내기');
+  a.href='#';a.id='axA';a.textContent='⬚';a.title='⬚ 개략공사비 — 지도에 범위를 그려 그 안의 시설물(관로)을 SHP·CSV로 저장';a.setAttribute('role','button');a.setAttribute('aria-label','개략공사비');
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(AX.drawing)return;$('axDlg').hidden?axOpen():axClose()});return d}});
  map.addControl(new Ctl())}
 try{axInit()}catch(e){console.warn('범위 내보내기',e)}
@@ -9487,7 +9487,7 @@ footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#6474
 @media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}header,th,tr.sub td,tr.tot td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:700px){.kp{grid-template-columns:repeat(2,1fr)}}</style></head><body>
 <div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${HWPX_BTN(axcFn('hwpx'))}<button onclick="close()">닫기</button></div>
-<div class="pg"><header><h1>💰 개략공사비 보고서 · ${e(r.how)} 범위${r.nae&&r.nae.B?' · 현 관경 ↔ 적정 관경 비교':''}</h1><p>스마트 물길주소 ⬚ 범위 내보내기 · ${e((window.SITE&&SITE.name)||'')} · 작성 ${fmtDT(r.at)} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section${(x.match(/<tr/g)||[]).length>22?' class="long"':''}>${x}</section>`).join('\n')}
+<div class="pg"><header><h1>💰 개략공사비 보고서 · ${e(r.how)} 범위${r.nae&&r.nae.B?' · 현 관경 ↔ 적정 관경 비교':''}</h1><p>스마트 물길주소 ⬚ 개략공사비 · ${e((window.SITE&&SITE.name)||'')} · 작성 ${fmtDT(r.at)} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section${(x.match(/<tr/g)||[]).length>22?' class="long"':''}>${x}</section>`).join('\n')}
 <p class="n" style="margin-top:12px">${r.nae?`개략 금액이며 실제 설계와 다를 수 있습니다. ${esc(r.nae.key)} 설계내역서의 m당 값과 원가계산서 요율을 범위 안 연장에 적용했고,`:'개략 금액(단가 × 수량)이며 실제 설계 내역과 다를 수 있습니다. 단가·비율은 앱에 넣은 값이고,'} 비어 있는 것은 '확인 필요'로 금액에서 뺐습니다. 관리번호·소블록만 쓰며 고객 정보는 넣지 않습니다. 관로 목록은 함께 저장한 엑셀(관로 목록 시트)을 보세요.</p></main>
 <footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
   if(hw)await hwpxFromHtml(html,axcFn('hwpx'));else{w.document.open();w.document.write(html);w.document.close()}}
