@@ -2172,7 +2172,7 @@ window.vpOpen=vpOpen;window.VP=VP;
    쪽 구성: 지도(방위·축척·대외비) + 오른쪽(세로 용지는 아래) 제목·INDEX 위치도(전체 소블록 중 대상 검게)·범례·현황표(관로·사고·수용가·비고)
    + 아래 월별 유수율 표(📊 '유수율(소블록별)' 시트: 공급량·부과량·야간최소·유수율, 해마다 평균·1~12월).
    숫자는 앱 자료와 시트에서만, 없으면 '확인 필요'. 고객 이름·주소·연락처는 넣지 않는다. 저장: PDF(여러 쪽)·PNG zip·한글(HWPX). 만든이: 구병순 */
-const BP={o:Object.assign({p:'A3',ori:'l',hq:0,fade:2,leak:1,leg:1,nrw:1,no:1},(()=>{try{return JSON.parse(LS.get('geo-bp')||'{}')}catch(_){return{}}})()),
+const BP={o:Object.assign({p:'A3',ori:'l',hq:0,fade:2,leak:1,leg:1,nrw:1,no:1,g1:85,g2:70},(()=>{try{return JSON.parse(LS.get('geo-bp')||'{}')}catch(_){return{}}})()),
  el:null,sel:new Set(),cur:'',q:'',lay:null,busy:false,stop:false,nrw:null,nrwT:false,memo:(()=>{try{return JSON.parse(LS.get('geo-bpm')||'{}')}catch(_){return{}}})(),ps:null};
 const BP_FADE=[0,.42,.6,.78],BP_FC='226,232,240';
 const bpK=s=>String(s??'').replace(/\s+/g,'').toUpperCase();
@@ -2195,19 +2195,19 @@ function bpShow(n){const b=bpBlocks().find(x=>x.n===n);if(!b)return;BP.cur=n;bpP
  bpList();bpMemoUI()}
 /* ---- 관로 소블록별 집계 (관로 가운데 점이 든 소블록) ---- */
 function bpPipeStats(){const P=G('PIPE'),poly=G('poly');if(!P||!P.feats||!P.feats.length||!poly)return null;const fld=bpFld();
- const key=P.feats.length+'|'+(poly._v||(poly._v=Math.random()))+'|'+fld+'|'+(($('pYmd')||{}).value||'');if(BP.ps&&BP.ps.key===key)return BP.ps.m;
+ const key=P.feats.length+'|'+(poly._v||(poly._v=Math.random()))+'|'+fld+'|'+(($('pYmd')||{}).value||'')+'|m2';if(BP.ps&&BP.ps.key===key)return BP.ps.m;
  F('pidxBuild');const lp=G('lineParts'),ao=G('attrOf'),pf=G('pidxFind'),DB=G('DIA_BANDS')||[],m=new Map();if(!lp||!ao||!pf)return null;
  for(const f of P.feats){if(f.properties&&f.properties._빈)continue;const p=lp(f.geometry)[0]||[],c=p[Math.floor(p.length/2)]||p[0];if(!c)continue;const r=pf(c[0],c[1],0);if(!r)continue;
-  const n=String(poly.features[r.fi].properties[fld]??'').trim();if(!n)continue;const a=ao(f),km=(f._len||0)/1000;let s=m.get(n);if(!s)m.set(n,s={km:0,svc:0,old:0,known:0,band:DB.map(()=>0)});
-  if(a.use==='급수관'){s.svc+=km;continue}s.km+=km;if(a.age!=null){s.known+=km;if(a.age>30)s.old+=km}if(a.dia!=null){const i=DB.findIndex(b=>a.dia<=b[0]);if(i>=0)s.band[i]+=km}}
+  const n=String(poly.features[r.fi].properties[fld]??'').trim();if(!n)continue;const a=ao(f),km=(f._len||0)/1000;let s=m.get(n);if(!s)m.set(n,s={km:0,svc:0,old:0,known:0,band:DB.map(()=>0),mat:{}});
+  if(a.use==='급수관'){s.svc+=km;continue}s.km+=km;s.mat[a.mat]=(s.mat[a.mat]||0)+km;if(a.age!=null){s.known+=km;if(a.age>30)s.old+=km}if(a.dia!=null){const i=DB.findIndex(b=>a.dia<=b[0]);if(i>=0)s.band[i]+=km}}
  BP.ps={key,m};return m}
 /* ---- 누수·민원 대장(②-4 📒)에서 소블록 안 누수 ---- */
-function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return null;const K=bpK(b.n),bx=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),pts=[];let tam=0,civ=0;
+function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return null;const K=bpK(b.n),bx=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),pts=[],mo=new Map();let tam=0,civ=0;LR.recs.forEach(o=>{const y=/^(\d{4})-/.exec(o.d||'');if(y)mo.set('y'+y[1],true)});
  for(const o of LR.recs){if(!o.ok)continue;let inn=false;
   if(o.ll){const x=o.ll[1],y=o.ll[0];for(let i=0;i<b.fs.length&&!inn;i++){const q=bx[i];if(x>=q[0]&&x<=q[2]&&y>=q[1]&&y<=q[3]&&turf.booleanPointInPolygon(turf.point([x,y]),b.fs[i]))inn=true}if(inn)pts.push({ll:o.ll,src:o.src})}
   else if(o.blk&&bpK(o.blk)===K)inn=true;
-  if(inn){if(o.src==='민원')civ++;else tam++}}
- return{tam,civ,pts,files:(LR.names||[]).length}}
+  if(inn){if(o.src==='민원')civ++;else tam++;const d=/^(\d{4})-(\d{1,2})/.exec(o.d||'');if(d){const k=d[1]+'-'+(+d[2]);const q=mo.get(k)||{tam:0,civ:0};if(o.src==='민원')q.civ++;else q.tam++;mo.set(k,q)}}}
+ return{tam,civ,pts,mo,files:(LR.names||[]).length}}
 /* ---- 📊 유수율(소블록별) 시트 읽기 ---- */
 const BP_NRW_W=`onmessage=function(e){try{var buf=new Uint8Array(e.data.buf),wb=XLSX.read(buf,{type:'array',bookSheets:true}),N=wb.SheetNames||[],sn=null;
 for(var i=0;i<N.length;i++){if(/유수율/.test(N[i])&&/소블록/.test(N[i])){sn=N[i];break}}if(!sn){postMessage({err:'NOSHEET',names:N});return}
@@ -2223,14 +2223,15 @@ function bpNrwRead(buf,onMsg){const main=()=>{const wb=XLSX.read(new Uint8Array(
 /* 시트 → {years:[2025,2026], B:{이름:{s,b,n,r:[[평균,1월…12월]…해마다], memo}}} */
 function bpNrwParse(A){let hr=-1,yc=[];
  for(let i=0;i<Math.min(A.length,30)&&hr<0;i++){const r=A[i]||[],c=[];r.forEach((v,j)=>{if(typeof v==='number'&&v>=2000&&v<=2100&&Number.isInteger(v))c.push(j)});if(c.length){hr=i;yc=c}}
- if(hr<0)return null;const years=yc.map(j=>A[hr][j]),B={},K={s:/공급/,b:/부과|사용/,n:/야간/,r:/유수율/};let cur=null;
+ if(hr<0)return null;const years=yc.map(j=>A[hr][j]),B={},T={},K={s:/공급/,b:/부과|사용/,n:/야간/,r:/유수율/};let cur=null;
  for(let i=hr+1;i<A.length;i++){const r=A[i]||[],nm=r[2]!=null?String(r[2]).trim():'';
   if(nm&&!/\n|^소\s*블\s*록$/.test(nm)&&!/^(합계|계|소계)$/.test(nm))cur=nm;else if(nm)cur=null;
-  if(!cur)continue;const lab=String(r[3]??'').trim();const key=Object.keys(K).find(k=>K[k].test(lab));if(!key)continue;
+  const lab=String(r[3]??'').trim();const key=Object.keys(K).find(k=>K[k].test(lab));if(!key)continue;
+  if(!cur){if(!Object.keys(B).length){T[key]=yc.map(j=>{const v=[];for(let k=0;k<13;k++){const x=r[j+k];v.push(typeof x==='number'&&isFinite(x)&&x!==0?x:null)}return v})}continue}
   const o=B[cur]||(B[cur]={s:[],b:[],n:[],r:[],memo:''});
   o[key]=yc.map(j=>{const v=[];for(let k=0;k<13;k++){const x=r[j+k];v.push(typeof x==='number'&&isFinite(x)&&x!==0?x:null)}return v});
   yc.forEach(j=>{const m=r[j+13];if(m!=null&&String(m).trim()&&!o.memo.includes(String(m).trim()))o.memo=(o.memo?o.memo+' · ':'')+String(m).trim()})}
- return Object.keys(B).length?{years,B}:null}
+ return Object.keys(B).length?{years,B,T:Object.keys(T).length?T:null}:null}
 async function bpNrwLoad(file){const st=BP.el.querySelector('[data-bp-nrw]');if(typeof XLSX==='undefined'){st.textContent='엑셀 읽기 도구를 못 불러왔습니다(인터넷 확인).';return}
  st.textContent='⏳ '+file.name+' 여는 중… (파일이 크면 몇십 초 걸립니다)';try{const buf=await file.arrayBuffer(),d=await bpNrwRead(buf,p=>{st.textContent='⏳ '+p});
   if(d.err){st.textContent=d.err==='NOSHEET'?`⚠ '유수율(소블록별)' 시트를 찾지 못했습니다. 시트: ${(d.names||[]).slice(0,8).join(', ')}`:'⚠ 읽지 못했습니다: '+d.err;return}
@@ -2263,6 +2264,7 @@ function bpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않
 <label class="uif">방향<select data-bo="ori"><option value="l"${BP.o.ori!=='p'?' selected':''}>가로</option><option value="p"${BP.o.ori==='p'?' selected':''}>세로</option></select></label>
 <label class="uif">밖 흐림<select data-bo="fade">${op([1,2,3],BP.o.fade,x=>['','약하게','보통','진하게'][x])}</select></label>
 <label class="uif">화질<select data-bo="hq"><option value="0"${BP.o.hq?'':' selected'}>보통 (빠름)</option><option value="1"${BP.o.hq?' selected':''}>선명 (지도를 2배로 다시 그림)</option></select></label>
+<label class="uif">유수율 기준 (양호·주의 %)<span><input data-bo="g1" type="number" min="1" max="100" value="${+BP.o.g1||85}" style="width:54px"> <input data-bo="g2" type="number" min="1" max="100" value="${+BP.o.g2||70}" style="width:54px"></span></label>
 <label class="uif">쪽 번호 시작<input data-bo="no" type="number" min="1" max="999" value="${+BP.o.no||1}" style="width:70px"></label>
 <label class="uir"><input type="checkbox" data-bo="leg"${BP.o.leg?' checked':''}> 범례 (켜진 레이어 · 소블록 안 시설물 개수)</label>
 <label class="uir"><input type="checkbox" data-bo="leak"${BP.o.leak?' checked':''}> 누수·민원 지점 별표 (②-4 📒 대장)</label>
@@ -2312,18 +2314,30 @@ async function bpShot(b,mm,dpm,info){const m=G('map'),mc=m.getContainer(),st0=mc
    leg=await vpLegend({w:q.getWest(),e:q.getEast(),s:q.getSouth(),n:q.getNorth(),inF})}
   return{B,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg}}
  finally{if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
-/* ---- 쪽 배치(mm) ---- */
-function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,tH=BP.o.nrw?33*s:0;
- const L0={pw,ph,s,m,l,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}};
- if(l){const sw=Math.round(84*s),mw=pw-2*m-sw-gap,mh=ph-2*m-fh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},side:{x:m+mw+gap,y:m,w:sw,h:mh},tbl:tH?{x:m,y:m+mh+gap,w:pw-2*m,h:tH}:null})}
- else{const bh=70*s,mw=pw-2*m,mh=ph-2*m-fh-gap-bh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},low:{x:m,y:m+mh+gap,w:mw,h:bh},tbl:tH?{x:m,y:m+mh+gap+bh+gap,w:mw,h:tH}:null})}
+/* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
+function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,tH=BP.o.nrw?(l?40:46)*s:0;
+ const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}};
+ if(l){const sw=Math.round(112*s),mw=pw-2*m-sw-gap,mh=ph-2*m-fh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},side:{x:m+mw+gap,y:m,w:sw,h:mh}})}
+ else{const bh=80*s,mw=pw-2*m,mh=ph-2*m-fh-gap-bh-gap-(tH?tH+gap:0);Object.assign(L0,{map:{x:m,y:m,w:mw,h:mh},low:{x:m,y:m+mh+gap,w:mw,h:bh}})}
+ if(tH){const y=L0.map.y+L0.map.h+gap+(l?0:80*s+gap),w=pw-2*m,tw=w*.57;L0.tbl={x:m,y,w:tw,h:tH};L0.chart={x:m+tw+gap,y,w:w-tw-gap,h:tH}}
  return L0}
+const BP_G=()=>[+BP.o.g1||85,+BP.o.g2||70];
+const bpGrade=v=>{if(v==null)return null;const [a,b]=BP_G();return v>=a?{t:'양호',c:'#15803d',bg:'#dcfce7'}:v>=b?{t:'주의',c:'#b45309',bg:'#fef3c7'}:{t:'심각',c:'#b91c1c',bg:'#fee2e2'}};
+const bpPct=v=>v==null?null:v<=1.5?v*100:v;
+/* 유수율 표 자료 → 연도별 월 값 */
+function bpSeries(N){const Y=BP.nrw?BP.nrw.years:[],yi=Math.max(0,Y.length-2),Yr=Y.slice(yi),f=(k,j)=>((N&&N[k]||[])[yi+j]||[]);return{Yr,yi,f}}
 /* ---- 한 쪽 그리기 ---- */
 function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X(M.ph),cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d'),s=M.s;
- const FT=(w,pt)=>`${w} ${Math.max(6,Math.round(pt*.3528*dpm*s))}px "Noto Sans KR","Malgun Gothic",sans-serif`,ink='#111827',mute='#475569',ac='#1e3a8a',line='#94a3b8';
- const R=r=>({x:X(r.x),y:X(r.y),w:X(r.w),h:X(r.h)}),box=(r,fill)=>{if(fill){g.fillStyle=fill;g.fillRect(r.x,r.y,r.w,r.h)}g.strokeStyle='#334155';g.lineWidth=X(.3);g.strokeRect(r.x,r.y,r.w,r.h)};
- const txt=(t,x,y,w,o)=>{o=o||{};g.font=FT(o.w||500,o.pt||7);g.fillStyle=o.c||ink;g.textAlign=o.a||'left';g.textBaseline='middle';g.fillText(String(t),x,y,w)};
+ const FT=(w,pt)=>`${w} ${Math.max(6,Math.round(pt*.3528*dpm*s))}px "Noto Sans KR","Malgun Gothic",sans-serif`,ink='#0f172a',mute='#64748b',ac='#3730a3',line='#cbd5e1',hd='#eef2ff';
+ const R=r=>({x:X(r.x),y:X(r.y),w:X(r.w),h:X(r.h)});
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
+ const card=(r,fill)=>{rr(r.x,r.y,r.w,r.h,X(1.6*s));g.fillStyle=fill||'#fff';g.fill();g.strokeStyle=line;g.lineWidth=X(.3);g.stroke()};
+ const txt=(t,x,y,w,o)=>{o=o||{};g.font=FT(o.w||500,o.pt||7);g.fillStyle=o.c||ink;g.textAlign=o.a||'left';g.textBaseline='middle';g.fillText(String(t),x,y,Math.max(1,w))};
+ const head=(r,t,sub)=>{g.fillStyle=ac;g.fillRect(r.x+X(2.5*s),r.y+X(2.4*s),X(.9*s),X(3.2*s));txt(t,r.x+X(4.6*s),r.y+X(4*s),r.w*.6,{w:800,pt:7.6,c:ink});if(sub)txt(sub,r.x+r.w-X(2.5*s),r.y+X(4*s),r.w*.5,{pt:6,c:mute,a:'right'})};
+ const f1=v=>v.toFixed(1),f2=v=>v.toFixed(2),need='확인 필요';
  g.fillStyle='#fff';g.fillRect(0,0,W,H);
+ /* 머리 띠(인디고→블루) */
+ {const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#4338ca');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;g.fillRect(0,0,W,X(2.2*s))}
  /* 지도 + 밖 흐림 + 경계 + 누수 별 */
  const mp=R(M.map),k=mp.w/S.src.w,P=([x,y])=>[mp.x+x*k,mp.y+y*k];
  g.drawImage(S.B.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
@@ -2331,74 +2345,117 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()});
  g.fillStyle=`rgba(${BP_FC},${BP_FADE[BP.o.fade]||.6})`;g.fill('evenodd');
  g.beginPath();S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()});g.lineJoin='round';g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=X(1.1*s);g.stroke();g.strokeStyle='#0f172a';g.lineWidth=X(.55*s);g.stroke();
- const star=(x,y,r,c)=>{g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;g.lineTo(x+rr*Math.cos(a),y+rr*Math.sin(a))}g.closePath();g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=X(.2);g.stroke()};
+ const star=(x,y,r,c)=>{g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;g.lineTo(x+q*Math.cos(a),y+q*Math.sin(a))}g.closePath();g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=X(.2);g.stroke()};
  S.lk.forEach(o=>{const [x,y]=P(o.p);star(x,y,X(1.7*s),o.src==='민원'?'#16a34a':'#dc2626')});g.restore();
- box(mp);
- {const cx=mp.x+mp.w-X(9*s),cy=mp.y+X(10*s),r=X(6*s);g.save();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.arc(cx,cy,r,0,7);g.fill();g.strokeStyle='#334155';g.lineWidth=X(.25);g.stroke();
+ g.strokeStyle='#334155';g.lineWidth=X(.3);g.strokeRect(mp.x,mp.y,mp.w,mp.h);
+ {const cx=mp.x+mp.w-X(9*s),cy=mp.y+X(10*s),r=X(6*s);g.save();g.fillStyle='rgba(255,255,255,.92)';g.beginPath();g.arc(cx,cy,r,0,7);g.fill();g.strokeStyle='#334155';g.lineWidth=X(.25);g.stroke();
   g.fillStyle=ink;g.beginPath();g.moveTo(cx,cy-r*.8);g.lineTo(cx+r*.38,cy+r*.45);g.lineTo(cx,cy+r*.18);g.lineTo(cx-r*.38,cy+r*.45);g.closePath();g.fill();txt('N',cx,cy-r-X(2.2*s),r*2,{w:800,pt:7,a:'center'});g.restore()}
- {const mpmm=S.scale/1000,len=niceBar(mpmm*45*s),bw=len/mpmm*dpm,bx=mp.x+X(4*s),by=mp.y+mp.h-X(5*s);g.fillStyle='rgba(255,255,255,.9)';g.fillRect(bx-X(2),by-X(5.5*s),bw+X(24*s),X(8.5*s));
+ {const mpmm=S.scale/1000,len=niceBar(mpmm*45*s),bw=len/mpmm*dpm,bx=mp.x+X(4*s),by=mp.y+mp.h-X(5*s);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(bx-X(2),by-X(5.5*s),bw+X(24*s),X(8.5*s));
   g.fillStyle=ink;for(let i=0;i<4;i++){g[i%2?'strokeRect':'fillRect'](bx+bw*i/4,by-X(1),bw/4,X(1.6))}g.strokeStyle=ink;g.lineWidth=X(.25);g.strokeRect(bx,by-X(1),bw,X(1.6));
   txt('0',bx-X(.6),by-X(3*s),X(5),{w:600,pt:6.5});txt(len>=1000?len/1000+'km':len+'m',bx+bw-X(2),by-X(3*s),X(14),{w:600,pt:6.5});txt(`1:${vpFmt(S.scale)}`,bx+bw+X(3),by,X(22*s),{w:600,pt:6.5})}
  if(S.secret){g.font=FT(800,8.5);const t='대외비 (상수관로 포함)',tw=g.measureText(t).width+X(4);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(mp.x+X(3),mp.y+X(3),tw,X(6*s));txt(t,mp.x+X(5),mp.y+X(3+3*s),tw,{w:800,pt:8.5,c:'#dc2626'})}
- /* 오른쪽(가로) / 아래(세로) 칸 나누기 */
- const it=[{ln:'#0f172a',t:'대상 소블록 경계',w:3},{col:`rgba(${BP_FC},.95)`,t:'대상 소블록 밖 (흐리게)'}];
- if(S.lk.length){const nt=S.lk.filter(o=>o.src!=='민원').length,nc=S.lk.length-nt;if(nt)it.push({star:'#dc2626',t:'누수지점 (탐사 대장)',n:nt});if(nc)it.push({star:'#16a34a',t:'민원 누수지점',n:nc})}
- const items=it.concat((BP.o.leg?S.leg:[]).map(x=>x.h&&/틀 안/.test(x.h)?{...x,h:'상수도 시설물 (소블록 안)'}:x));
- /* 가로: 오른쪽 칸 = 제목·INDEX·현황표, 범례는 지도 오른쪽 아래(인쇄본처럼) · 세로: 지도 아래 세 칸 */
- let tb,ib,lb,sb;if(M.l){const sd=M.side,th=22*s,sh=62*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};ib={x:sd.x,y:sd.y+th+2*s,w:sd.w,h:sb.y-2*s-(sd.y+th+2*s)};
-  const mm=M.map,lw=Math.min(mm.w*.42,92*s),lh=Math.min(mm.h*.55,9*s+Math.ceil(items.length/2)*4.1*s);lb={x:mm.x+mm.w-lw-2*s,y:mm.y+mm.h-lh-2*s,w:lw,h:lh,ov:1}}
- else{const lo=M.low,w1=lo.w*.34,w2=lo.w*.32,w3=lo.w-w1-w2-4*s,th=20*s;tb={x:lo.x,y:lo.y,w:w1,h:th};ib={x:lo.x,y:lo.y+th+2*s,w:w1,h:lo.h-th-2*s};lb={x:lo.x+w1+2*s,y:lo.y,w:w2,h:lo.h};sb={x:lo.x+w1+w2+4*s,y:lo.y,w:w3,h:lo.h}}
- /* 제목 */
- {const r=R(tb);box(r,'#fff');g.fillStyle=ac;g.fillRect(r.x,r.y,X(1.4*s),r.h);txt(`${b.n} 블록 현황도`,r.x+X(4*s),r.y+r.h*.4,r.w-X(6*s),{w:800,pt:15});
-  txt([b.big&&b.big!==b.mid?'대블록 '+b.big:'',b.mid?'중블록 '+b.mid:'',`출력 ${fmtDTv(Date.now()).slice(0,10)}`].filter(Boolean).join(' · '),r.x+X(4*s),r.y+r.h*.78,r.w-X(6*s),{pt:7,c:mute})}
- /* INDEX 위치도: 전체 소블록 윤곽 중 대상 검게 */
- {const r=R(ib);box(r,'#fff');const all=(G('poly')||{}).features||[];txt('INDEX',r.x+X(2.5*s),r.y+X(3.5*s),r.w,{w:800,pt:8,c:ac});
+ /* 숫자 모으기 */
+ const ps=info.ps,lk=info.lk,N=info.nrw,SE=bpSeries(N);let lastR=null,lastM='',avgS=null;
+ if(N){for(let j=SE.Yr.length-1;j>=0&&lastR==null;j--){const a=SE.f('r',j);for(let m=12;m>=1;m--)if(a[m]!=null){lastR=bpPct(a[m]);lastM=`${SE.Yr[j]}.${m}월`;break}}const sa=SE.f('s',SE.Yr.length-1);avgS=sa[0]}
+ const gr=bpGrade(lastR);
+ /* 칸 나누기 */
+ let tb,kb,ib,lb,sb;const G2=M.gap;
+ if(M.l){const sd=M.side,th=19*s,kh=15*s,sh=50*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};kb={x:sd.x,y:sd.y+th+G2,w:sd.w,h:kh};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};
+  const my=kb.y+kh+G2,mh2=sb.y-G2-my,iw=sd.w*.38;ib={x:sd.x,y:my,w:iw,h:mh2};lb={x:sd.x+iw+G2,y:my,w:sd.w-iw-G2,h:mh2}}
+ else{const lo=M.low,w1=lo.w*.36,w3=lo.w*.33,w2=lo.w-w1-w3-2*G2,th=17*s,kh=14*s;tb={x:lo.x,y:lo.y,w:w1,h:th};kb={x:lo.x,y:lo.y+th+G2,w:w1,h:kh};ib={x:lo.x,y:kb.y+kh+G2,w:w1,h:lo.h-th-kh-2*G2};
+  lb={x:lo.x+w1+G2,y:lo.y,w:w2,h:lo.h};sb={x:lb.x+w2+G2,y:lo.y,w:w3,h:lo.h}}
+ /* 제목 + 상태 배지 */
+ {const r=R(tb);card(r,'#fff');g.fillStyle=ac;rr(r.x,r.y,X(1.6*s),r.h,X(.8*s));g.fill();let bw0=0;if(gr){g.font=FT(800,7.4);bw0=g.measureText(`유수율 ${f1(lastR)}% ${gr.t}`).width+X(5*s)+X(5*s)}
+  g.font=FT(900,15);const tt=`${b.n} 블록 현황도`,room=r.w-X(7*s)-bw0,tpt=g.measureText(tt).width>room?Math.max(9,15*room/g.measureText(tt).width):15;txt(tt,r.x+X(4.5*s),r.y+r.h*.42,room,{w:900,pt:tpt});
+  txt([b.big&&b.big!==b.mid?'대블록 '+b.big:'',b.mid?'중블록 '+b.mid:'',`출력 ${fmtDTv(Date.now()).slice(0,10)}`].filter(Boolean).join(' · '),r.x+X(4.5*s),r.y+r.h*.8,r.w*.62,{pt:6.6,c:mute});
+  if(gr){const t=`유수율 ${f1(lastR)}% ${gr.t}`;g.font=FT(800,7.4);const bw=g.measureText(t).width+X(5*s),bh=X(5.6*s),bx=r.x+r.w-bw-X(3*s),by=r.y+r.h*.42-bh/2;rr(bx,by,bw,bh,bh/2);g.fillStyle=gr.bg;g.fill();g.strokeStyle=gr.c;g.lineWidth=X(.3);g.stroke();txt(t,bx+bw/2,by+bh/2,bw,{w:800,pt:7.4,c:gr.c,a:'center'});
+   txt(lastM+' 기준',bx+bw/2,by+bh+X(2.6*s),bw+X(6*s),{pt:5.8,c:mute,a:'center'})}}
+ /* 요약 카드 5개 */
+ {const r=R(kb),n=5,gp=X(1.4*s),cw=(r.w-gp*(n-1))/n,oldP=ps&&ps.known?ps.old/ps.known*100:null,lkm=lk&&ps&&ps.km>0?(lk.tam+lk.civ)/ps.km:null;
+  const K=[['유수율',lastR!=null?f1(lastR)+'%':need,gr?gr.c:'#b45309',gr?gr.bg:'#fff'],['평균 공급량',avgS!=null?Math.round(avgS).toLocaleString()+' ㎥/일':need,ink],['관로 연장',ps?f2(ps.km)+' km':need,ink],['노후관 비율',oldP!=null?Math.round(oldP)+'%':need,oldP!=null&&oldP>=30?'#b91c1c':ink],['누수 건/km',lkm!=null?f2(lkm):need,ink]];
+  K.forEach(([l,v,c,bg],i)=>{const x=r.x+i*(cw+gp);card({x,y:r.y,w:cw,h:r.h},bg&&bg!=='#fff'?bg:'#f8fafc');txt(l,x+cw/2,r.y+r.h*.3,cw-X(2*s),{w:600,pt:5.8,c:mute,a:'center'});txt(v,x+cw/2,r.y+r.h*.68,cw-X(2*s),{w:800,pt:/확인/.test(v)?6.2:8.2,c:/확인/.test(v)?'#b45309':c,a:'center'})})}
+ /* INDEX 위치도 */
+ {const r=R(ib);card(r);head(r,'INDEX','위치');const all=(G('poly')||{}).features||[];
   let x0=180,y0=90,x1=-180,y1=-90;all.forEach(f=>{const q=f.properties._bbox||turf.bbox(f);x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[2]);y1=Math.max(y1,q[3])});
-  const cs=Math.cos((y0+y1)/2*Math.PI/180),iw=r.w-X(6*s),ih=r.h-X(10*s),sc=Math.min(iw/((x1-x0)*cs||1),ih/((y1-y0)||1)),ox=r.x+(r.w-(x1-x0)*cs*sc)/2,oy=r.y+X(7.5*s)+(ih-(y1-y0)*sc)/2,Q=c=>[ox+(c[0]-x0)*cs*sc,oy+(y1-c[1])*sc];
+  const cs=Math.cos((y0+y1)/2*Math.PI/180),iw=r.w-X(5*s),ih=r.h-X(10*s),sc=Math.min(iw/((x1-x0)*cs||1),ih/((y1-y0)||1)),ox=r.x+(r.w-(x1-x0)*cs*sc)/2,oy=r.y+X(8*s)+(ih-(y1-y0)*sc)/2,Q=c=>[ox+(c[0]-x0)*cs*sc,oy+(y1-c[1])*sc];
   const path=f=>{const gm=f.geometry;if(!gm)return;g.beginPath();(gm.type==='Polygon'?[gm.coordinates]:gm.type==='MultiPolygon'?gm.coordinates:[]).forEach(pl=>pl.forEach(rg=>{rg.forEach((c,i)=>{const [x,y]=Q(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()}))};
-  const me=new Set(b.fs);all.forEach(f=>{if(me.has(f))return;path(f);g.fillStyle='#f1f5f9';g.fill('evenodd');g.strokeStyle='#64748b';g.lineWidth=Math.max(1,X(.12*s));g.stroke()});
-  b.fs.forEach(f=>{path(f);g.fillStyle='#111827';g.fill('evenodd')});
+  const me=new Set(b.fs);all.forEach(f=>{if(me.has(f))return;path(f);g.fillStyle='#f1f5f9';g.fill('evenodd');g.strokeStyle='#94a3b8';g.lineWidth=Math.max(1,X(.12*s));g.stroke()});
+  b.fs.forEach(f=>{path(f);g.fillStyle='#0f172a';g.fill('evenodd')});
   const q=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),cx=(Math.min(...q.map(z=>z[0]))+Math.max(...q.map(z=>z[2])))/2,cy=(Math.min(...q.map(z=>z[1]))+Math.max(...q.map(z=>z[3])))/2,[px,py]=Q([cx,cy]);
-  g.strokeStyle='#dc2626';g.lineWidth=X(.45*s);g.beginPath();g.arc(px,py,X(4.5*s),0,7);g.stroke()}
- /* 범례 */
- {const r=R(lb);box(r,lb.ov?'rgba(255,255,255,.94)':'#fff');txt('범 례',r.x+X(2.5*s),r.y+X(3.5*s),r.w,{w:800,pt:8,c:ac});
-  const rh=X(4.1*s),top=r.y+X(7*s),rows=Math.max(1,Math.floor((r.h-X(8*s))/rh)),cols=Math.max(1,Math.min(lb.ov?2:3,Math.ceil(items.length/rows))),cw=(r.w-X(3*s))/cols,cap=rows*cols;
-  const show=items.length>cap?items.slice(0,cap-1):items;
-  show.forEach((o,i)=>{const c=Math.floor(i/rows),rr=i%rows,x=r.x+X(2.5*s)+c*cw,y=top+rr*rh+rh/2,sw=X(6*s),sh=X(3.2*s);
-   if(o.h){txt(o.h,x,y,cw-X(2),{w:800,pt:6.8,c:ac});return}
+  g.strokeStyle='#dc2626';g.lineWidth=X(.45*s);g.beginPath();g.arc(px,py,X(4*s),0,7);g.stroke()}
+ /* 범례 (지도 밖) */
+ {const r=R(lb);card(r);head(r,'범 례');
+  const it=[{ln:'#0f172a',t:'대상 소블록 경계',w:3},{col:`rgba(${BP_FC},.95)`,t:'대상 소블록 밖 (흐리게)'}];
+  if(S.lk.length){const nt=S.lk.filter(o=>o.src!=='민원').length,nc=S.lk.length-nt;if(nt)it.push({star:'#dc2626',t:'누수지점 (탐사)',n:nt});if(nc)it.push({star:'#16a34a',t:'민원 누수지점',n:nc})}
+  const items=it.concat((BP.o.leg?S.leg:[]).map(x=>x.h&&/틀 안/.test(x.h)?{...x,h:'상수도 시설물 (소블록 안)'}:x));
+  const rh=X(3.7*s),top=r.y+X(7.5*s),rows=Math.max(1,Math.floor((r.h-X(9*s))/rh)),cols=Math.max(1,Math.min(2,Math.ceil(items.length/rows))),cw=(r.w-X(4*s))/cols,cap=rows*cols,show=items.length>cap?items.slice(0,cap-1):items;
+  show.forEach((o,i)=>{const c=Math.floor(i/rows),q=i%rows,x=r.x+X(2.5*s)+c*cw,y=top+q*rh+rh/2,sw=X(5.5*s),sh=X(2.8*s);
+   if(o.h){txt(o.h,x,y,cw-X(2),{w:800,pt:6.2,c:ac});return}
    if(o.ln){g.strokeStyle=o.ln;g.lineWidth=X((o.w||2.4)*.25*s*1.6);g.lineCap='round';g.beginPath();g.moveTo(x,y);g.lineTo(x+sw,y);g.stroke()}
-   else if(o.star)star(x+sw/2,y,X(1.7*s),o.star);
-   else if(o.img){const ih=X(3.4*s),iw2=ih*(o.img.naturalWidth&&o.img.naturalHeight?o.img.naturalWidth/o.img.naturalHeight:1);try{g.drawImage(o.img,x+(sw-Math.min(sw,iw2))/2,y-ih/2,Math.min(sw,iw2),ih)}catch(_){}}
-   else{g.fillStyle=o.col||'#94a3b8';g.fillRect(x+X(.5),y-sh/2,sw-X(1),sh);g.strokeStyle=line;g.lineWidth=X(.15);g.strokeRect(x+X(.5),y-sh/2,sw-X(1),sh)}
-   txt(o.t+(o.n?` (${o.n.toLocaleString()})`:''),x+sw+X(1.5),y,cw-sw-X(3),{pt:6.6})});
-  if(items.length>cap){const i=cap-1,c=Math.floor(i/rows),rr=i%rows;txt(`… 외 ${items.length-cap+1}개`,r.x+X(2.5*s)+c*cw,top+rr*rh+rh/2,cw,{pt:6.6,c:mute})}}
- /* 현황표: 관로 · 사고 · 수용가 · 비고 */
- {const r=R(sb);box(r,'#fff');const ps=info.ps,lk=info.lk,f1=v=>v.toFixed(2),need='확인 필요';
-  const DB=G('DIA_BANDS')||[],bandTxt=ps?DB.map((d,i)=>ps.band[i]>=.005?`${d[1].replace('mm 이하','↓').replace('mm 이상','↑').replace('mm','')} ${f1(ps.band[i])}`:'').filter(Boolean).join(' · '):'';
-  const rows=[['관로현황',''],['관로연장(km)',ps?`${f1(ps.km)} (급수관 ${f1(ps.svc)} 별도)`:need],['노후관(30년 초과)',ps?(ps.known?`${f1(ps.old)} km (${Math.round(ps.old/ps.known*100)}%)${ps.known<ps.km*.98?' · 연도 모름 '+f1(ps.km-ps.known):''}`:'설치연도 없음 · '+need):need],['관경별(mm, km)',ps?bandTxt.split(' · ').slice(0,3).join(' · ')||'-':need],...(ps&&bandTxt.split(' · ').length>3?[['',bandTxt.split(' · ').slice(3).join(' · ')]]:[]),
-   ['사고현황',''],['누수(탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})`:need+' (②-4 📒 대장)'],['건/km',lk&&ps&&ps.km>0?((lk.tam+lk.civ)/ps.km).toFixed(2):need],
-   ['수용가',''],['수용가 수 (Y열)',info.cu!=null?info.cu.toLocaleString()+'전':need]];
-  const memo=bpMemoOf(b.n),lh=X(4*s),hdr=X(4.4*s);let y=r.y+X(1*s);const kw=r.w*.36;
-  rows.forEach(([a,v])=>{if(!v){g.fillStyle='#e0e7ff';g.fillRect(r.x+X(.4),y,r.w-X(.8),hdr);txt(a,r.x+X(2.5*s),y+hdr/2,r.w,{w:800,pt:6.8,c:ac});y+=hdr;return}
-   txt(a,r.x+X(2.5*s),y+lh/2,kw-X(3*s),{w:600,pt:6.6,c:mute});txt(v,r.x+kw,y+lh/2,r.w-kw-X(2*s),{pt:6.6,c:/확인 필요/.test(v)?'#b45309':ink});g.strokeStyle='#e2e8f0';g.lineWidth=X(.12);g.beginPath();g.moveTo(r.x,y+lh);g.lineTo(r.x+r.w,y+lh);g.stroke();y+=lh});
-  g.fillStyle='#e0e7ff';g.fillRect(r.x+X(.4),y,r.w-X(.8),hdr);txt('비고 (유수율 제고계획)',r.x+X(2.5*s),y+hdr/2,r.w,{w:800,pt:6.8,c:ac});y+=hdr;
-  g.font=FT(500,6.6);const ws=String(memo||'-').split(/\s+/),L2=[];let cur='';ws.forEach(w=>{const t=cur?cur+' '+w:w;if(g.measureText(t).width>r.w-X(5*s)&&cur){L2.push(cur);cur=w}else cur=t});if(cur)L2.push(cur);
-  const room=Math.max(1,Math.floor((r.y+r.h-y)/lh));L2.slice(0,room).forEach((t,i)=>txt(i===room-1&&L2.length>room?t+' …':t,r.x+X(2.5*s),y+lh*(i+.5),r.w-X(5*s),{pt:6.6}))}
- /* 월별 유수율 표 */
- if(M.tbl){const r=R(M.tbl),N=info.nrw,Yr=BP.nrw?BP.nrw.years.slice(-2):[];box(r,'#fff');
-  if(!N){txt(BP.nrw?`'${BP.nrw.sn}' 시트에 ${b.n} 소블록이 없습니다 — 확인 필요`:'월별 유수율: 창에서 유수율 분석 엑셀(유수율(소블록별) 시트)을 넣으면 들어갑니다 — 확인 필요',r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:7.5,c:'#b45309'})}
-  else{const yi=BP.nrw.years.length-Yr.length,lw=X(24*s),nc=Yr.length*13,cw=(r.w-lw)/nc,rh=r.h/6,LB=[['공급량(㎥/일)','s',0],['부과량(㎥/일)','b',0],['야간최소(㎥/h)','n',1],['유수율(%)','r',1]];
-   g.fillStyle='#e0e7ff';g.fillRect(r.x,r.y,r.w,rh*2);txt('구분',r.x+lw/2,r.y+rh,lw,{w:800,pt:7,a:'center',c:ac});
-   Yr.forEach((y,j)=>{const x0=r.x+lw+j*13*cw;txt(y+'년',x0+13*cw/2,r.y+rh/2,13*cw,{w:800,pt:7,a:'center',c:ac});for(let k2=0;k2<13;k2++)txt(k2?k2+'월':'평균',x0+(k2+.5)*cw,r.y+rh*1.5,cw,{w:700,pt:6.4,a:'center',c:ac})});
-   LB.forEach(([t,key,dg],i)=>{const y=r.y+rh*(2+i)+rh/2;if(key==='r'){g.fillStyle='#f8fafc';g.fillRect(r.x,r.y+rh*(2+i),r.w,rh)}txt(t,r.x+X(2*s),y,lw-X(3*s),{w:700,pt:6.6});
-    Yr.forEach((_,j)=>{const arr=(N[key]||[])[yi+j]||[];for(let k2=0;k2<13;k2++){let v=arr[k2];if(v==null)continue;if(key==='r'&&v<=1.5)v*=100;txt(dg?v.toFixed(1):Math.round(v).toLocaleString(),r.x+lw+(j*13+k2+.5)*cw,y,cw-X(.6),{w:k2?500:700,pt:6.2,a:'center',c:key==='r'&&v<60?'#b91c1c':ink})}})});
-   g.strokeStyle='#cbd5e1';g.lineWidth=X(.12);for(let i=1;i<6;i++){g.beginPath();g.moveTo(i===1?r.x+lw:r.x,r.y+rh*i);g.lineTo(r.x+r.w,r.y+rh*i);g.stroke()}
-   for(let c=0;c<=nc;c++){const x=r.x+lw+c*cw;g.strokeStyle=c%13===0?'#64748b':'#e2e8f0';g.lineWidth=X(c%13===0?.25:.12);g.beginPath();g.moveTo(x,c%13===0?r.y:r.y+rh);g.lineTo(x,r.y+r.h);g.stroke()}}}
+   else if(o.star)star(x+sw/2,y,X(1.6*s),o.star);
+   else if(o.img){const ih=X(3.2*s),iw2=ih*(o.img.naturalWidth&&o.img.naturalHeight?o.img.naturalWidth/o.img.naturalHeight:1);try{g.drawImage(o.img,x+(sw-Math.min(sw,iw2))/2,y-ih/2,Math.min(sw,iw2),ih)}catch(_){}}
+   else{g.fillStyle=o.col||'#94a3b8';g.fillRect(x+X(.5),y-sh/2,sw-X(1),sh);g.strokeStyle='#94a3b8';g.lineWidth=X(.15);g.strokeRect(x+X(.5),y-sh/2,sw-X(1),sh)}
+   txt(o.t+(o.n?` (${o.n.toLocaleString()})`:''),x+sw+X(1.3*s),y,cw-sw-X(3*s),{pt:6})});
+  if(items.length>cap){const i=cap-1,c=Math.floor(i/rows),q=i%rows;txt(`… 외 ${items.length-cap+1}개`,r.x+X(2.5*s)+c*cw,top+q*rh+rh/2,cw,{pt:6,c:mute})}}
+ /* 현황표 + 관경·재질 100% 막대 */
+ {const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
+  const rows=[['관로연장',ps?`${f2(ps.km)} km  (급수관 ${f2(ps.svc)} km 별도)`:need],['노후관 30년 초과',ps?(ps.known?`${f2(ps.old)} km (${Math.round(ps.old/ps.known*100)}%)${ps.known<ps.km*.98?' · 연도 모름 '+f2(ps.km-ps.known)+' km':''}`:'설치연도 없음 · '+need):need],
+   ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
+  const lh=X(3.9*s),kw=r.w*.3;let y=r.y+X(7.5*s);
+  rows.forEach(([a,v])=>{txt(a,r.x+X(2.5*s),y+lh/2,kw-X(3*s),{w:600,pt:6.2,c:mute});txt(v,r.x+kw,y+lh/2,r.w-kw-X(2.5*s),{pt:6.4,c:/확인 필요/.test(v)?'#b45309':ink});g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(r.x+X(2*s),y+lh);g.lineTo(r.x+r.w-X(2*s),y+lh);g.stroke();y+=lh});
+  const bars=[];if(ps){const DB=G('DIA_BANDS')||[],DC=['#bae6fd','#7dd3fc','#3b82f6','#1d4ed8','#1e3a8a'];bars.push(['관경별',DB.map((d,i)=>[d[1].replace(' 이하','↓').replace(' 이상','↑'),ps.band[i],DC[i]||'#64748b'])]);
+   const MC=G('MAT_COL')||{},mat=Object.entries(ps.mat||{}).sort((a,b2)=>b2[1]-a[1]);if(mat.length){const top=mat.slice(0,5),rest=mat.slice(5).reduce((t,x)=>t+x[1],0);bars.push(['재질별',top.map(([n2,v])=>[n2.replace(/관\(.*\)$/,'').replace(/\(.*\)$/,'').replace(/관$/,''),v,MC[n2]||'#94a3b8']).concat(rest>0?[['기타',rest,'#cbd5e1']]:[])])}}
+  const bh=X(3*s),room=r.y+r.h-y-X(1.5*s),per=bars.length?room/bars.length:0;
+  bars.forEach(([lab,parts],i)=>{const tot=parts.reduce((t,p)=>t+(p[1]||0),0);if(!tot)return;const y0=y+per*i,x0=r.x+kw,ww=r.w-kw-X(2.5*s);txt(lab+' (km)',r.x+X(2.5*s),y0+per*.3,kw-X(3*s),{w:600,pt:6.2,c:mute});
+   let x=x0;parts.forEach(([n2,v,c])=>{if(!v)return;const w2=ww*v/tot;g.fillStyle=c;g.fillRect(x,y0+per*.3-bh/2,Math.max(1,w2-X(.2)),bh);x+=w2});
+   g.font=FT(500,5.6);let lx=x0;const ly=y0+per*.3+bh/2+X(2.6*s);parts.forEach(([n2,v,c])=>{if(!v||v/tot<.03)return;const t=`${n2} ${f1(v)}`,tw=g.measureText(t).width+X(3.4*s);if(lx+tw>x0+ww)return;g.fillStyle=c;g.fillRect(lx,ly-X(.9*s),X(1.8*s),X(1.8*s));txt(t,lx+X(2.3*s),ly,tw,{pt:5.6,c:ink});lx+=tw+X(1*s)})})}
+ /* 아래 띠: 월별 표(최근 해 + 전년 평균) + 그래프(2개년) */
+ if(M.tbl){const r=R(M.tbl),Yr=SE.Yr,J=Yr.length-1,mo=info.mo||null;card(r);
+  if(!N){txt(BP.nrw?`'${BP.nrw.sn}' 시트에 ${b.n} 소블록이 없습니다 — 확인 필요`:'월별 유수율: 창에서 유수율 분석 엑셀(유수율(소블록별) 시트)을 넣으면 들어갑니다 — 확인 필요',r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:7,c:'#b45309'})}
+  else{const y0=Yr[J],LB=[['공급량(㎥/일)','s',0],['부과량(㎥/일)','b',0],['야간최소(㎥/h)','n',1],['유수율(%)','r',1],['누수탐사(건)','lt',2],['누수민원(건)','lc',2]],lw=X(19*s),nc=14,cw=(r.w-lw)/nc,rh=r.h/8,pt=M.l?6:5.6;
+   rr(r.x,r.y,r.w,rh*2,X(1.6*s));g.fillStyle=hd;g.fill();g.fillRect(r.x,r.y+rh,r.w,rh);txt('구분',r.x+lw/2,r.y+rh,lw,{w:800,pt:6.6,a:'center',c:ac});
+   txt(`${y0}년`,r.x+lw+cw*6.5,r.y+rh/2,cw*13,{w:800,pt:6.8,a:'center',c:ac});txt(Yr.length>1?`${Yr[0]}년`:'전년',r.x+lw+cw*13.5,r.y+rh/2,cw,{w:800,pt:6,a:'center',c:ac});
+   for(let c=0;c<14;c++)txt(c===13?'평균':c?c+'월':'평균',r.x+lw+(c+.5)*cw,r.y+rh*1.5,cw,{w:700,pt:pt,a:'center',c:ac});
+   const lkM=(key,j,m)=>{if(!mo)return null;const y=Yr[j];if(m===0){let t=0,any=false;for(let q=1;q<=12;q++){const o=mo.get(y+'-'+q);if(o){t+=o[key];any=true}}return any||mo.has('y'+y)?t:null}const o=mo.get(y+'-'+m);return o?o[key]:(mo.has('y'+y)?0:null)};
+   LB.forEach(([t,key,dg],i)=>{const yy=r.y+rh*(2+i),yc=yy+rh/2;if(i%2){g.fillStyle='#f8fafc';g.fillRect(r.x+X(.3),yy,r.w-X(.6),rh)}txt(t,r.x+X(2*s),yc,lw-X(2.5*s),{w:700,pt:6});
+    const val=(j,m)=>key==='lt'?lkM('tam',j,m):key==='lc'?lkM('civ',j,m):(SE.f(key,j)[m]??null);
+    for(let c=0;c<14;c++){const j=c===13?J-1:J,m=c===13?0:c;if(j<0)continue;let v=val(j,m);if(v==null)continue;if(key==='r')v=bpPct(v);const x=r.x+lw+c*cw;
+     if(key==='r'){const q=bpGrade(v);if(q){g.fillStyle=q.bg;g.fillRect(x+X(.3),yy+X(.3),cw-X(.6),rh-X(.6))}}
+     txt(dg===2?String(v):dg?v.toFixed(1):Math.round(v).toLocaleString(),x+cw/2,yc,cw-X(.6),{w:m===0?800:500,pt:pt,a:'center',c:key==='r'?(bpGrade(v)||{}).c||ink:(dg===2&&v>0?'#b91c1c':ink)})}});
+   g.strokeStyle=line;g.lineWidth=X(.12);for(let i=2;i<8;i++){g.beginPath();g.moveTo(r.x,r.y+rh*i);g.lineTo(r.x+r.w,r.y+rh*i);g.stroke()}
+   [0,1,13,14].forEach(c=>{const x=r.x+lw+c*cw;g.strokeStyle=c===13||c===0?'#94a3b8':line;g.lineWidth=X(c===13||c===0?.25:.12);g.beginPath();g.moveTo(x,r.y+(c===1?rh:0));g.lineTo(x,r.y+r.h);g.stroke()});
+   if(!mo){txt('누수 건수: ②-4 📒 대장을 넣으면 채워집니다',r.x+lw+X(2*s),r.y+rh*7.5,r.w-lw,{pt:5.8,c:'#b45309'})}}}
+ if(M.chart){const r=R(M.chart);card(r);
+  if(!N){head(r,'월별 추이');txt('유수율 시트를 넣으면 그래프가 그려집니다',r.x+r.w/2,r.y+r.h/2,r.w,{pt:6.6,c:mute,a:'center'})}
+  else{const Yr=SE.Yr,T=BP.nrw&&BP.nrw.T,n=Yr.length*12,mo=info.mo;
+   /* 위: 공급·부과 막대 + 유수율 꺾은선(+전체 점선) */
+   const top=r.y+X(7*s),h1=(r.h-X(7*s))*.6-X(2*s),h2=(r.h-X(7*s))*.4-X(4*s),px0=r.x+X(9*s),px1=r.x+r.w-X(8*s),bw=(px1-px0)/n;
+   head(r,'월별 공급·부과량 · 유수율',Yr.join('~')+'년');
+   const sv=[],bv=[],rv=[],tv=[],nv=[],lv=[];Yr.forEach((y,j)=>{for(let m=1;m<=12;m++){sv.push(SE.f('s',j)[m]);bv.push(SE.f('b',j)[m]);rv.push(bpPct(SE.f('r',j)[m]));nv.push(SE.f('n',j)[m]);
+    const ti=T&&BP.nrw.years.indexOf(y);tv.push(T&&ti>=0?bpPct((T.r[ti]||[])[m]):null);const o=mo&&mo.get(y+'-'+m);lv.push(o?o.tam+o.civ:(mo&&mo.has('y'+y)?0:null))}});
+   const mx=Math.max(1,...sv.filter(v=>v!=null),...bv.filter(v=>v!=null))*1.1,rs=rv.concat(tv).filter(v=>v!=null),rmn=Math.max(0,Math.floor((Math.min(...rs,100)-5)/10)*10),rmx=Math.min(120,Math.ceil((Math.max(...rs,0)+3)/10)*10)||100;
+   const yB=v=>top+h1-(v/mx)*h1,yR=v=>top+h1-((v-rmn)/((rmx-rmn)||1))*h1;
+   g.strokeStyle='#eef2f7';g.lineWidth=X(.12);for(let q=0;q<=4;q++){const yy=top+h1*q/4;g.beginPath();g.moveTo(px0,yy);g.lineTo(px1,yy);g.stroke()}
+   txt(Math.round(mx).toLocaleString(),px0-X(1*s),top,X(9*s),{pt:5.2,c:mute,a:'right'});txt('0',px0-X(1*s),top+h1,X(8*s),{pt:5.2,c:mute,a:'right'});txt(rmx+'%',px1+X(1*s),top,X(8*s),{pt:5.2,c:'#dc2626'});txt(rmn+'%',px1+X(1*s),top+h1,X(8*s),{pt:5.2,c:'#dc2626'});
+   for(let i=0;i<n;i++){const x=px0+i*bw;if(sv[i]!=null){g.fillStyle='#bfdbfe';g.fillRect(x+bw*.12,yB(sv[i]),bw*.38,top+h1-yB(sv[i]))}if(bv[i]!=null){g.fillStyle='#6366f1';g.fillRect(x+bw*.5,yB(bv[i]),bw*.38,top+h1-yB(bv[i]))}}
+   const line2=(arr,yf,c,w,dash)=>{g.save();g.strokeStyle=c;g.lineWidth=X(w*s);g.setLineDash(dash||[]);g.beginPath();let on=false;arr.forEach((v,i)=>{if(v==null){on=false;return}const x=px0+(i+.5)*bw,y=yf(v);on?g.lineTo(x,y):g.moveTo(x,y);on=true});g.stroke();g.restore();if(!dash)arr.forEach((v,i)=>{if(v==null)return;g.fillStyle=c;g.beginPath();g.arc(px0+(i+.5)*bw,yf(v),X(.55*s),0,7);g.fill()})};
+   const [ga,gb]=BP_G();[ga,gb].forEach((t,q)=>{if(t<rmn||t>rmx)return;g.save();g.strokeStyle=q?'#f59e0b':'#22c55e';g.globalAlpha=.6;g.setLineDash([X(.6),X(.8)]);g.lineWidth=X(.2);g.beginPath();g.moveTo(px0,yR(t));g.lineTo(px1,yR(t));g.stroke();g.restore()});
+   if(tv.some(v=>v!=null))line2(tv,yR,'#64748b',.3,[X(1.2),X(.9)]);line2(rv,yR,'#dc2626',.45);
+   g.strokeStyle='#94a3b8';g.lineWidth=X(.15);for(let j=1;j<Yr.length;j++){const x=px0+j*12*bw;g.beginPath();g.moveTo(x,top);g.lineTo(x,top+h1+X(1*s));g.stroke()}
+   /* 아래: 야간최소 꺾은선 + 누수 건수 막대 */
+   const t2=top+h1+X(5*s),nmx=Math.max(1,...nv.filter(v=>v!=null))*1.5,lmx=Math.max(1,...lv.filter(v=>v!=null)),yN=v=>t2+h2-(v/nmx)*h2;
+   txt('야간최소(㎥/h) · 누수 건수',px0+X(1*s),t2+X(1.4*s),X(40*s),{w:700,pt:5.6,c:ink});
+   g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(px0,t2+h2);g.lineTo(px1,t2+h2);g.stroke();
+   lv.forEach((v,i)=>{if(!v)return;const hh=(v/lmx)*h2*.55;g.fillStyle='rgba(220,38,38,.55)';g.fillRect(px0+i*bw+bw*.3,t2+h2-hh,bw*.4,hh)});
+   line2(nv,yN,'#0d9488',.4);txt(Math.round(nmx/1.5).toLocaleString(),px0-X(1*s),yN(nmx/1.5),X(9*s),{pt:5.2,c:'#0d9488',a:'right'});if(mo)txt('최대 '+lmx+'건',px1+X(1*s),t2+h2-h2*.55,X(9*s),{pt:5.2,c:'#dc2626'});
+   for(let i=0;i<n;i++){const m=i%12+1;if(m%3===1)txt(m===1?`${Yr[Math.floor(i/12)]}.1`:m+'',px0+(i+.5)*bw,t2+h2+X(2*s),bw*3,{pt:5,c:mute,a:'center'})}
+   /* 범례 줄 */
+   const LG=[['#bfdbfe','공급량','b'],['#6366f1','부과량','b'],['#dc2626','유수율','l'],...(tv.some(v=>v!=null)?[['#64748b','포항 전체','d']]:[]),['#0d9488','야간최소','l'],['rgba(220,38,38,.55)','누수','b']];
+   g.font=FT(500,5.4);let lx=r.x+r.w-X(2.5*s);const ly=top+h1+X(2.4*s);[...LG].reverse().forEach(([c,t,k2])=>{const tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5.4,c:mute});lx-=X(3.4*s);if(k2==='b'){g.fillStyle=c;g.fillRect(lx,ly-X(.9*s),X(2.6*s),X(1.8*s))}else{g.save();g.strokeStyle=c;g.lineWidth=X(.4*s);if(k2==='d')g.setLineDash([X(1),X(.8)]);g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+X(2.8*s),ly);g.stroke();g.restore()}lx-=X(1.6*s)})}}
  /* 아래 줄 */
- {const r=R(M.foot);g.fillStyle=ac;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
-  txt(`스마트 물길주소 · ${site} · 만든이: 구병순 · 축척 1:${vpFmt(S.scale)} · ${BP.o.p} ${M.l?'가로':'세로'} · 배경: ${S.B.attr||'없음'}`+(S.secret?' · 대외비(외부 반출 금지)':''),r.x,r.y+r.h*.6,r.w*.82,{pt:6.6,c:S.secret?'#991b1b':mute});
-  txt(`No. ${no}`,r.x+r.w,r.y+r.h*.6,r.w*.15,{w:800,pt:9,a:'right'})}
- g.strokeStyle='#64748b';g.lineWidth=X(.5);g.strokeRect(X(M.m-3*s),X(M.m-3*s),W-X(2*(M.m-3*s)),H-X(2*(M.m-3*s)));
+ {const r=R(M.foot);const gr2=g.createLinearGradient(r.x,0,r.x+r.w,0);gr2.addColorStop(0,'#4338ca');gr2.addColorStop(1,'#2563eb');g.fillStyle=gr2;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
+  const [ga,gb]=BP_G();txt(`스마트 물길주소 · ${site} · 만든이: 구병순 · 축척 1:${vpFmt(S.scale)} · ${BP.o.p} ${M.l?'가로':'세로'} · 배경: ${S.B.attr||'없음'} · 유수율 ${ga}%↑ 양호 · ${gb}~${ga}% 주의 · ${gb}% 미만 심각`+(S.secret?' · 대외비(외부 반출 금지)':''),r.x,r.y+r.h*.6,r.w*.85,{pt:6.2,c:S.secret?'#991b1b':mute});
+  txt(`No. ${no}`,r.x+r.w,r.y+r.h*.6,r.w*.12,{w:800,pt:9,a:'right'})}
  return cv}
 /* ---- 출력: 고른 소블록마다 찍어 모으기 ---- */
 async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.sel.has(b.n));if(!list.length){alert('출력할 소블록을 체크해 주세요.');return}
@@ -2414,7 +2471,7 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
  const pages=[],zip=kind==='png'?new JSZip():null,D=kind==='hwpx'?F('hwpxNew','소블록 현황도'):null;let done=0,masked=0,note='';
  try{for(const b of list){if(BP.stop)break;cover.firstChild.textContent=`🗺 ${b.n} 현황도 만드는 중… (${done+1}/${list.length})`;st(`${b.n} (${done+1}/${list.length}) 지도 다시 그리는 중…`);
    const info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0)}:null,lk:bpLeaks(b),cu:hasOut?cnt.get(b.n)||0:null,nrw:bpNrwOf(b.n)};
-   const S=await bpShot(b,M.map,dpm,info);masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
+   info.mo=info.lk?info.lk.mo:null;const S=await bpShot(b,M.map,dpm,info);masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
    if(kind==='pdf'){const bl=await new Promise(r=>cv.toBlob(r,'image/jpeg',.9));pages.push(URL.createObjectURL(bl))}
    else if(kind==='png'){const bl=await new Promise(r=>cv.toBlob(r,'image/png'));zip.file(`${String(no).padStart(3,'0')}_${b.n.replace(/[\\/:*?"<>|]/g,'_')}_현황도.png`,bl)}
    else if(kind==='hwpx'){const u=cv.toDataURL('image/jpeg',.9),bb=F('hwpxB64',u);if(!bb)throw new Error('그림 변환 실패');if(done){D.xs.push(`<hp:p id="${D.id++}" paraPrIDRef="20" styleIDRef="0" pageBreak="1" columnBreak="0" merged="0"><hp:run charPrIDRef="7"><hp:t></hp:t></hp:run></hp:p>`)}
