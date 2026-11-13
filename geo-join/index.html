@@ -249,6 +249,14 @@ html.dark .shutp .shwarn{background:#450a0a;color:#fecaca}html.dark .shutp .shwa
 .shutp a.shtl{display:inline-block;white-space:nowrap;font-weight:700;color:var(--ind);text-decoration:none;padding:2px 0}.shutp .mute{color:var(--mute)}
 .shv{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 3px;box-sizing:border-box;border-radius:999px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);color:#fff;font:700 11px/1 'Noto Sans KR',sans-serif;background:#1d4ed8;cursor:pointer}
 .shv.cl{background:#111827}.shv.br{background:#94a3b8;border:2px dashed #dc2626}.shv.st{background:#f59e0b;cursor:default}
+.uiset.stp{z-index:1001}.stp .sthd{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px}.stp .sthd span{display:flex;gap:4px}
+.stp .shtq select{flex:1;min-width:0;padding:5px 6px;font-size:12px;margin:0}.stp .stw{border:2px solid #f59e0b;background:#fffbeb;color:#78350f;border-radius:8px;padding:4px 8px;margin:4px 0;font-size:11.5px}.stp .stw summary{cursor:pointer;font-weight:700}.stp .stw ul{margin:4px 0 0;padding-left:16px}.stp .stw li{margin:2px 0}
+.stp .stw button{font:inherit;font-size:11px;border:1px solid #fcd34d;background:#fff;border-radius:999px;padding:0 6px;margin:2px 2px 0 0;cursor:pointer}html.dark .stp .stw{background:#422006;color:#fde68a}html.dark .stp .stw button{background:#78350f;color:#fff}
+.stp .stt2 td{vertical-align:top}.stp .stk{white-space:nowrap;text-align:center}.stp .stk b{display:inline-block;min-width:22px;color:#fff;border-radius:999px;padding:1px 6px;font-size:12px}.stp .stk span{display:flex;flex-direction:column;gap:2px;margin-top:3px;align-items:center}.stp .stk span button{border:1px solid var(--line2);background:var(--sub);color:var(--ink);border-radius:5px;font-size:9px;line-height:1;padding:2px 5px;cursor:pointer}.stp .stk span button:disabled{opacity:.3}.stp .shc .stn{display:inline-flex;align-items:center;gap:5px}.stp .shc .stn button{border:1px solid var(--line2);background:var(--card,#fff);color:var(--ink);border-radius:6px;width:24px;height:22px;font-weight:800;cursor:pointer;padding:0;line-height:1}.stp .shc .stn button:disabled{opacity:.35}
+.stp .stvb{font:700 11.5px 'Noto Sans KR',sans-serif;border:2px solid;background:var(--card,#fff);color:var(--ink);border-radius:999px;padding:1px 7px;margin:0 3px 3px 0;cursor:pointer}.stp .sts{font-size:10.5px;color:var(--mute);line-height:1.4}
+.stp .str{width:96px}.stp .str .stt{width:100%!important;display:block}.stp .str input{width:100%;box-sizing:border-box;margin:3px 0 0;padding:4px 5px;font-size:12px}.stp .str small{display:block;font-weight:700;color:#16a34a}.stp .stnt{display:flex;flex-direction:column;font-size:10.5px;font-weight:700;color:var(--mute);margin:4px 0}.stp .stnt input{margin:2px 0 0;padding:4px 6px;font-size:12px}
+.stmk{background:none;border:0}.stmk span{display:inline-block;transform:translate(-50%,-50%);white-space:nowrap;font:800 11px 'Noto Sans KR',sans-serif;color:#fff;border:2px solid #fff;border-radius:999px;padding:1px 6px;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.stmk.stv span{min-width:14px;text-align:center;padding:1px 4px}.stmk.stlb span{font-size:12px;opacity:.92}.stmk.stb span{background:#dc2626;font-size:10px;padding:0 4px;border-radius:4px}.stmk.stb.cl span{background:#16a34a}.stmk.sto span{background:#f97316;padding:0 6px}.stmk.stin span{background:#0f172a;font-size:12px}
 @media (max-width:640px){.uiset.shutp{left:0;right:0;bottom:0;width:auto;max-height:48%}}
 /* ✏️ 단수 범위 그리기 · 🔒 화면 고정 */
 .shdraw{position:absolute;inset:0;z-index:640;touch-action:none;cursor:crosshair;-webkit-user-select:none;user-select:none}
@@ -1535,6 +1543,17 @@ html.dark svg.ri{color:var(--cd)!important}
   <p class="hint">지도: <b style="color:#16a34a">초록</b> = 묶이는 급수관, <b style="color:#ea580c">주황 점선</b> = 메인관 제안 노선(골목 가운데 선). 공사비는 💰 개략공사비의 설계내역서 m당 값·원가계산서 요율로 셈. 메인관 관경은 묶인 급수관 단면적 합 기준이며 실제 기준은 확인이 필요합니다. 관리번호·소블록만 쓰고 고객 정보는 넣지 않습니다.</p>
  </div>
 
+<div class="sec" id="stSec">
+  <h4>🪜 단계시험 계획 <small style="font-weight:400;color:var(--mute)">야간 최소유량 시간에 제수밸브를 단계별로 닫아 유입 유량 감소로 누수 구간 좁히기</small></h4>
+  <div class="g2"><label class="f">소블록<select id="stBlk"></select></label><label class="f">단계 수 <small style="font-weight:400">(처음 6, 확인 필요)</small><input id="stN" type="number" min="1" step="1" style="width:100%"></label>
+  <label class="f">수용가 1곳당 야간 사용량 <small style="font-weight:400">(L/h)</small><input id="stLph" type="number" min="0" step="0.1" placeholder="확인 필요" style="width:100%"></label><label class="f">단계당 유지 시간 <small style="font-weight:400">(분)</small><input id="stMin" type="number" min="1" step="1" placeholder="확인 필요" style="width:100%"></label>
+  <label class="f">시험 시작 시각<input id="stT0" type="time" style="width:100%"></label><div class="f"><span style="font-size:12px;font-weight:700">유입점 (유량계 자리)</span><button id="stInPick" type="button" class="btn ol" style="margin:2px 0">📍 지도에서 찍기</button><small id="stInMsg" class="hint" style="display:block"></small></div></div>
+  <div class="sbtns"><button id="stRun" type="button" class="btn">🪜 계획 만들기·지도 표시</button><button id="stOpen" type="button" class="btn ol">📋 현장 창 (닫은 시각·유량 기록)</button><button id="stXl" type="button" class="btn ol">⬇ 기록표 엑셀</button><button id="stHw" type="button" class="btn ol">📝 한글(HWPX)</button><button id="stOff" type="button" class="btn ol">🙈 지도 표시 끄기</button></div>
+  <p class="hint" id="stMsg"></p>
+  <div id="stSum"></div>
+  <p class="hint">💧 단수구역과 같은 관망 연결표로 소블록 안 관로를 <b>제수밸브로 나눈 구간</b>으로 자르고, 유입점 구간에서 <b>먼 가지 끝부터</b> 닫는 순서를 정해 관로 길이가 비슷하게 단계로 묶습니다. 앞 단계에서 닫은 밸브는 끝까지 닫아 두며, 단계마다 <b>새로 닫을 밸브</b>만 보여 줍니다. 현장 창의 <b>단계 −/＋</b>로 단계 수를 바로 바꾸고(유입점과 이어진 구간 수까지), <b>⤒</b>로 앞 단계와 합치고, <b>✂</b>로 한 단계를 관로 길이 반씩 둘로 나누며, ▲▼로 순서를 바꿉니다(남은 구간이 유입점과 끊기는 순서는 막음). 지도: 단계 색 관로·번호 = 그 단계에 닫을 밸브, <b>경</b> = 경계밸브(초록 닫힘·빨강 열림/미상), 주황 <b>!</b> = 밸브 없이 이웃 블록과 이어진 관, 회색 점선 = 유입 구간(닫지 않음). 수용가 수는 관리번호로만 세며 이름·주소·연락처는 넣지 않습니다. 단계 수·1곳당 야간 사용량·단계당 시간은 현장 기준을 넣어 주세요(확인 필요).</p>
+ </div>
+
  <div class="sec" id="rpSec">
   <h4>✅ 노후관 교체 완료 관로 <small style="font-weight:400;color:var(--mute)">교체 공사가 끝난 관로를 지도에 초록 테두리로 구분 · 🏗 공사 추천에서 뺌</small></h4>
   <p style="margin:0 0 4px;font-size:12.5px"><label><input type="checkbox" id="rpOn"> 지도에 보이기</label> · <span id="rpCnt"></span></p>
@@ -1759,7 +1778,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:st','flag','단계시험',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'sel',n:'선택',g:[
   {n:'고르기',b:[['sel:tap','touch','눌러 고르기',1],['sel:rect','selr','네모'],['sel:poly','poly','다각형'],['sel:free','draw','손 그리기'],['sel:view','full','지금 화면']]},
@@ -1783,8 +1802,8 @@ const TABS=[
   {n:'안내',b:[['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),sb:()=>$('sbRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',sb:'🔀 급수관 묶음 → 메인관 검토',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),sb:()=>$('sbRun'),st:()=>$('stRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -3441,7 +3460,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','step','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -3464,7 +3483,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -3528,7 +3547,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -9046,7 +9065,7 @@ function shutDrawStart(){if(!map||SHUT.drawing)return;if(typeof MK!=='undefined'
  const up=e=>{if(e.pointerId!==pid)return;pid=null;end(pts.length>=3?pts:[])};ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up)}
 function shutClose(){if(SHUT.drawX)SHUT.drawX();if(SHUT.leg)SHUT.leg.getContainer().style.display='none';SHUT.area=null;SHUT.info=null;SHUT.dMsg='';SHUT.on=false;SHUT.pick=false;SHUT.mode='';SHUT.res=null;SHUT.seen=null;SHUT.e0=-1;SHUT.add.clear();SHUT.del.clear();SHUT.broken.clear();shutRowT++;if(SHUT.L)SHUT.L.clearLayers();shutPlainSync();shutRender()}
 /* 단수구역 고르기·넣기·빼기 중에는 지도 클릭을 여기서 받고 다른 팝업(수용가·시설물·블록·관로)은 막음 */
-function shutEat(e){if(typeof SHUT==='undefined')return false;if(SHUT.pick||SHUT.mode)return true;const t=e&&e.originalEvent&&e.originalEvent.target;return !!(t&&t.closest&&t.closest('.shvi'))}
+function shutEat(e){if(typeof ST!=='undefined'&&ST.pickIn)return true;if(typeof SHUT==='undefined')return false;if(SHUT.pick||SHUT.mode)return true;const t=e&&e.originalEvent&&e.originalEvent.target;return !!(t&&t.closest&&t.closest('.shvi'))}
 function shutTap(ll){if(SHUT.pick){shutStartAt(ll);return}if(!SHUT.on||!SHUT.net)return;
  if(SHUT.mode==='loc'){const I=SHUT.info||(SHUT.info={no:'',addr:'',z:'',ed:new Set(),ll:null});I.ll=ll;I.ed.delete('addr');I.ed.delete('z');SHUT.mode='';shutDraw();shutInfoFill(true);return}const e=shutEdgeAt(ll);if(e<0)return;
  if(SHUT.mode==='add'){if(SHUT.del.has(e))SHUT.del.delete(e);else if(!SHUT.seen[e])SHUT.add.add(e)}else if(SHUT.mode==='del'){if(SHUT.add.has(e))SHUT.add.delete(e);else if(SHUT.seen[e])SHUT.del.add(e);else SHUT.del.delete(e)}shutUpdate()}
@@ -12870,6 +12889,242 @@ function sbInit(){if(!$('sbSec'))return;sbUi();
  ['sbScope','sbBlk','sbR','sbN','sbL','sbS','sbBase'].forEach(id=>$(id).addEventListener('change',sbReadUi));
  $('sbTbl').addEventListener('click',e=>{const a=e.target.closest('.sbGo');if(a){e.preventDefault();sbGo(+a.dataset.i)}})}
 try{sbInit()}catch(e){console.warn('급수관 묶음',e)}
+/* ===== 🪜 단계시험 계획 (2026-11-13 B안) =====
+   야간 최소유량 시간에 소블록 유입 유량을 보며 제수밸브를 단계별로 닫아 누수 구간을 좁히는 시험의 계획·현장 기록.
+   ① 💧 단수구역 연결표(shutNet)에서 소블록 안 관로를 제수밸브로 나눈 '구간'을 만들고
+   ② 유입점 구간에서 먼 구간부터(가지 끝부터) 닫는 순서를 정해 관로 길이가 비슷하게 단계로 묶음 (앞 단계에서 닫은 구간은 계속 닫아 둠)
+   ③ 단계마다 새로 닫을 밸브·관로 길이·수용가 수(관리번호만)·예상 야간 사용량, 시작 전 확인 목록(경계밸브·밸브 없는 경계 연결·가압장·감압밸브·대수용가)
+   ④ 현장 창: 단계마다 '닫음' 시각·유입 유량 기록(이 기기 geo-step-rec), 기록표 엑셀·한글(HWPX).
+   단계 수·1곳당 야간 사용량·단계당 유지 시간 기본값은 확인 필요. 결과 분석(추정 누수량)은 하지 않음(C안 몫) */
+const ST={k:'geo-step',c:{blk:'',n:6,lph:'',min:'',t0:'',inl:{},sw:{}},plan:null,rec:{},L:null,cv:null,box:null,pickIn:false,busy:false,on:true,fold:false};
+try{const v=JSON.parse(localStorage.getItem(ST.k)||'null');if(v)Object.assign(ST.c,v);if(!ST.c.inl)ST.c.inl={};if(!ST.c.sw)ST.c.sw={}}catch(_){}
+try{ST.rec=JSON.parse(localStorage.getItem('geo-step-rec')||'{}')||{}}catch(_){ST.rec={}}
+function stSave(){try{localStorage.setItem(ST.k,JSON.stringify(ST.c))}catch(_){}}
+function stRecSave(){try{localStorage.setItem('geo-step-rec',JSON.stringify(ST.rec))}catch(_){}}
+const ST_COL=['#2563eb','#db2777','#16a34a','#ea580c','#7c3aed','#0891b2','#ca8a04','#dc2626','#4f46e5','#059669','#c026d3','#65a30d'];
+const stCol=k=>ST_COL[k%ST_COL.length];
+const stHM=t=>{if(!t)return '';const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const stNum=v=>{const x=parseFloat(v);return isFinite(x)?x:null};
+function stReadUi(){const g=id=>$(id)?$(id).value:'';const n=Math.round(stNum(g('stN'))||6);Object.assign(ST.c,{blk:g('stBlk')||ST.c.blk,n:Math.max(1,n),lph:g('stLph'),min:g('stMin'),t0:g('stT0')});stSave()}
+function stUi(){const s=$('stBlk');if(!s)return;const ns=typeof blkNames==='function'?blkNames():[];s.innerHTML='<option value="">— 소블록 고르기 —</option>'+ns.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');if(ns.includes(ST.c.blk))s.value=ST.c.blk;
+ $('stN').value=ST.c.n;$('stLph').value=ST.c.lph;$('stMin').value=ST.c.min;$('stT0').value=ST.c.t0;stInTxt()}
+function stInTxt(){const el=$('stInMsg');if(!el)return;const nm=ST.c.blk,u=nm&&ST.c.inl[nm];el.innerHTML=ST.pickIn?'<b class="c-am">👆 지도에서 유입점(유량계 자리) 관로를 누르세요.</b>':u?`📍 지도에서 찍은 유입점 사용 <button type="button" class="btn ol" id="stInClr" style="width:auto;padding:1px 8px;min-height:24px;font-size:11.5px">자동으로</button>`:'자동: ②-4 준비 파일 유입점 → 없으면 소블록 경계를 지나는 가장 굵은 관';const b=$('stInClr');if(b)b.onclick=()=>{delete ST.c.inl[nm];stSave();stInTxt()}}
+
+/* ── 계획 만들기 ── */
+async function stBuild(nm){if(ST.busy)return;nm=nm||ST.c.blk;const msg=t=>{const a=$('stMsg');if(a)a.innerHTML=t;if(ST.box&&!ST.box.hidden){ST.bmsg=t;stRender()}};
+ if(!nm){msg('⚠ 소블록을 고르세요.');return}if(!poly||!poly.features){msg('⚠ ② 소블록 경계를 먼저 불러오세요.');return}
+ if(!PIPE.segs||!PIPE.feats.length){msg('⚠ ②-1 상수관로를 먼저 불러오세요.');return}if(!FAC.n||!shutValveIdx().length){msg('⚠ ②-2 시설물(제수밸브)을 먼저 불러오세요.');return}
+ const pf=poly.features.find(f=>blkNm(f)===nm);if(!pf){msg('⚠ 소블록 '+esc(nm)+'을(를) 경계 자료에서 찾지 못했습니다.');return}
+ ST.busy=true;msg('⏳ 관망 연결표를 만드는 중… (처음 한 번, 몇 초~수십 초)');
+ try{const N=await shutNet();msg('⏳ 구간 나누는 중…');await tick();ST.plan=stCalc(N,nm,pf);ST.bmsg='';
+  if(ST.plan.err){msg('⚠ '+ST.plan.err);ST.plan=null;return}
+  await stCust();stValves(ST.plan);const P=ST.plan;
+  msg(`✅ ${esc(nm)}: 구간 ${P.Z.length}개 → ${P.steps.length}단계 · 관로 ${(P.Lall/1000).toFixed(2)}km · 유입점 ${esc(P.inHow)}`+(P.bad?` <b class="c-am">· 순서 확인 필요</b>`:''));
+  stTable();stOpen();stDraw(true)}
+ catch(e){msg('⚠ 계획을 만들지 못했습니다: '+esc(e&&e.message||e));console.warn('단계시험',e)}finally{ST.busy=false}}
+function stCalc(N,nm,pf){const E=N.ea.length,bb=pf.properties._bbox||turf.bbox(pf),c=[toM(bb[0],bb[1]),toM(bb[2],bb[3])],x0=Math.min(c[0][0],c[1][0])-5,x1=Math.max(c[0][0],c[1][0])+5,y0=Math.min(c[0][1],c[1][1])-5,y1=Math.max(c[0][1],c[1][1])+5;
+ const inB=new Uint8Array(E);let nIn=0;
+ for(let e=0;e<E;e++){const v0=N.eo[e],v1=N.eo[e+1]-1,x=(N.exy[2*v0]+N.exy[2*v1])/2,y=(N.exy[2*v0+1]+N.exy[2*v1+1])/2;if(x<x0||x>x1||y<y0||y>y1)continue;if(shutEB(e)===nm){inB[e]=1;nIn++}}
+ if(!nIn)return{err:esc(nm)+' 안에 관로가 없습니다.'};
+ /* 구간 = 밸브 아닌 노드로 이어진 관로 묶음 */
+ const par=new Int32Array(E).fill(-1),fd=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a]}return a};for(let e=0;e<E;e++)if(inB[e])par[e]=e;
+ const nodes=new Set();for(let e=0;e<E;e++)if(inB[e]){nodes.add(N.ea[e]);nodes.add(N.eb[e])}
+ for(const n of nodes){if(N.nv[n]>=0)continue;let r=-1;for(let j=N.ao[n];j<N.ao[n+1];j++){const e=N.ae[j];if(!inB[e])continue;if(r<0)r=fd(e);else{const q=fd(e);if(q!==r)par[q]=r}}}
+ const zid=new Int32Array(E).fill(-1),Z=[],zm=new Map();
+ for(let e=0;e<E;e++){if(!inB[e])continue;const r=fd(e);let z=zm.get(r);if(z==null){z=Z.length;zm.set(r,z);Z.push({id:z,E:[],L:0,sx:0,sy:0,key:Infinity,nC:0,big:[],fac:[],open:[]})}zid[e]=z;const o=Z[z];o.E.push(e);o.L+=N.el[e];const v0=N.eo[e],v1=N.eo[e+1]-1;o.sx+=(N.exy[2*v0]+N.exy[2*v1])/2*N.el[e];o.sy+=(N.exy[2*v0+1]+N.exy[2*v1+1])/2*N.el[e];if(N.ef[e]<o.key)o.key=N.ef[e]}
+ Z.forEach(o=>{const w=o.L||1;o.cx=o.sx/w;o.cy=o.sy/w});
+ /* 노드 살펴보기: 안쪽 밸브(구간 사이) · 경계밸브 · 밸브 없는 경계 연결 · 이미 닫힌 밸브 */
+ const VIN=[],BND=[],OPN=[],CLS=[];const dOf=e=>{const a=attrOf(PIPE.feats[N.ef[e]]);return a&&a.dia>0?a.dia:0};
+ for(const n of nodes){const zs=new Set();let out=[];for(let j=N.ao[n];j<N.ao[n+1];j++){const e=N.ae[j];if(inB[e])zs.add(zid[e]);else out.push(e)}
+  const vi=N.nv[n];
+  if(vi>=0){const cl=!!FAC.cl[vi];if(out.length)BND.push({n,vi,cl,z:[...zs][0],d:Math.max(0,...out.map(dOf))});if(zs.size>=2){if(cl)CLS.push({n,vi,z:[...zs]});else VIN.push({n,vi,z:[...zs]})}}
+  else if(out.length){const z=[...zs][0],d=Math.max(0,...out.map(dOf));OPN.push({n,z,d});Z[z].open.push(OPN.length-1)}}
+ /* 유입점 */
+ let inLL=null,inHow='';const u=ST.c.inl[nm];
+ if(u){inLL=u;inHow='지도에서 찍은 곳'}
+ else{try{const b=typeof lqPB==='function'?lqPB(nm):null;if(b&&b.inlet&&b.inlet.length){const i=b.inlet[0].i;inLL=[b.lat[i],b.lng[i]];inHow='②-4 준비 파일 유입점'}}catch(_){}}
+ let z0=-1,inN=-1;
+ if(inLL){const m=toM(inLL[1],inLL[0]);let bd=Infinity;for(let e=0;e<E;e++){if(!inB[e])continue;for(let v=N.eo[e];v<N.eo[e+1]-1;v++){const d=segDist(m[0],m[1],[N.exy[2*v],N.exy[2*v+1],N.exy[2*v+2],N.exy[2*v+3]]);if(d<bd){bd=d;z0=zid[e]}}}if(bd>300){z0=-1;inLL=null;inHow=''}}
+ /* 자동: 열린 밸브로 이어진 구간 묶음 중 관로가 가장 긴 묶음에서, 경계를 지나는 가장 굵은 관 (블록을 지나가기만 하는 송수관 등은 따로 떨어진 묶음이라 빠짐) */
+ const cp=new Int32Array(Z.length).fill(-1),cL=[];{const ad=Z.map(()=>[]);VIN.forEach(v=>{for(const a of v.z)for(const b of v.z)if(a!==b)ad[a].push(b)});for(let i=0;i<Z.length;i++){if(cp[i]>=0)continue;const k=cL.length,q=[i];cp[i]=k;let s=0;for(let h=0;h<q.length;h++){s+=Z[q[h]].L;for(const b of ad[q[h]])if(cp[b]<0){cp[b]=k;q.push(b)}}cL.push(s)}}
+ if(z0<0){const C=OPN.map(o=>({z:o.z,n:o.n,d:o.d,t:'관'})).concat(BND.filter(o=>!o.cl).map(o=>({z:o.z,n:o.n,d:o.d,t:'열린 경계밸브'})));C.sort((a,b)=>cL[cp[b.z]]-cL[cp[a.z]]||b.d-a.d||Z[b.z].L-Z[a.z].L);
+  if(C.length){z0=C[0].z;inN=C[0].n;inLL=fromM(N.nx[inN],N.ny[inN]);inHow=`자동 — 경계를 지나는 가장 굵은 ${C[0].t}${C[0].d?' ⌀'+C[0].d+'mm':''} (확인 필요)`}
+  else{z0=Z.reduce((b,o)=>o.L>Z[b].L?o.id:b,0);const c2=fromM(Z[z0].cx,Z[z0].cy);inLL=c2;inHow='경계 연결을 못 찾아 가장 긴 구간 (확인 필요)'}}
+ /* 구간 그래프 (열린 안쪽 밸브로 이어짐) → 유입 구간에서 BFS */
+ const adj=Z.map(()=>[]);VIN.forEach((v,k)=>{for(const a of v.z)for(const b of v.z)if(a!==b)adj[a].push(b)});
+ const dep=new Int32Array(Z.length).fill(-1),pa=new Int32Array(Z.length).fill(-1),q=[z0];dep[z0]=0;
+ for(let h=0;h<q.length;h++){const a=q[h];for(const b of adj[a])if(dep[b]<0){dep[b]=dep[a]+1;pa[b]=a;q.push(b)}}
+ const ch=Z.map(()=>[]);for(const z of q)if(pa[z]>=0)ch[pa[z]].push(z);
+ const sub=new Float64Array(Z.length),md=new Int32Array(Z.length);for(let h=q.length-1;h>=0;h--){const z=q[h];sub[z]+=Z[z].L;md[z]=Math.max(md[z],dep[z]);if(pa[z]>=0){sub[pa[z]]+=sub[z];md[pa[z]]=Math.max(md[pa[z]],md[z])}}
+ ch.forEach(a=>a.sort((x,y)=>md[y]-md[x]||sub[y]-sub[x]));
+ /* 뒤 순서(가지 끝부터) */
+ const order=[],stk=[[z0,0]];while(stk.length){const t=stk[stk.length-1],z=t[0];if(t[1]<ch[z].length){stk.push([ch[z][t[1]++],0])}else{stk.pop();if(z!==z0)order.push(z)}}
+ const lost=Z.filter(o=>dep[o.id]<0).map(o=>o.id),clsZ=new Set(CLS.flatMap(v=>v.z));
+ const P={nm,N,Z,zid,inB,VIN,BND,OPN,CLS,z0,inLL,inHow,inN,dep,adj,order,lost,lostCl:lost.filter(z=>clsZ.has(z)).length,lostL:lost.reduce((s,z)=>s+Z[z].L,0),Lall:Z.reduce((s,o)=>s+o.L,0),at:Date.now()};
+ stGroup(P,ST.c.n);
+ /* 순서 바꾸기·합치기·나누기를 한 적이 있으면 그대로 (구간 key 목록이 지금 구간과 똑같을 때만) */
+ const sw=ST.c.sw[nm];if(Array.isArray(sw)&&sw.length&&sw.every(Array.isArray)){const m=new Map(order.map(z=>[Z[z].key,z])),fl=sw.flat();if(fl.length===order.length&&new Set(fl).size===fl.length&&fl.every(k=>m.has(k)))P.steps=sw.map(ks=>stStep(P,ks.map(k=>m.get(k))))}
+ /* 가압장·감압밸브 → 구간 */
+ const ks=new Map();FAC.kinds.forEach((k,ki)=>{const s=facKindInfo(k).sym;if(s==='pump'||s==='prv')ks.set(ki,s==='pump'?'가압장':'감압밸브')});
+ if(ks.size)for(let i=0;i<FAC.n;i++){if(!ks.has(FAC.k[i])||(FAC.dl&&FAC.dl[i]))continue;const h=nearestPipe(FAC.x[i],FAC.y[i],15);if(!h)continue;const m=toM(FAC.x[i],FAC.y[i]),e=shutEdgeOfF(h.fi,m[0],m[1]);if(e>=0&&inB[e]){const p=FAC.pt[i].p||{};Z[zid[e]].fac.push({i,t:ks.get(FAC.k[i]),nm:String(p['가압장명']||p['명칭']||p['관리번호']||'#'+i)})}}
+ return P}
+/* 수용가(관리번호만) → 구간: 💧 단수구역과 같은 연결(가장 가까운 관로 조각) */
+async function stCust(){const P=ST.plan;if(!P)return;P.cust=false;if(!shutSrc().length)return;let r=null;try{r=await shutRows()}catch(_){r=null}if(!r)return;
+ const src=shutSrc(),o0=src[0]||{},kQ=('월평균(㎥)' in o0)?'월평균(㎥)':shutRowKey(o0,/월평균|평균사용량/),bq=+SHUT.opt.bigQ||500;P.bigQ=bq;
+ P.Z.forEach(o=>{o.nC=0;o.big=[];o.mg=[]});
+ for(let i=0;i<r.length;i++){const e=r[i];if(e<0||!P.inB[e])continue;const z=P.Z[P.zid[e]],c=src[i];z.nC++;z.mg.push(String(c['관리번호']||''));const qv=kQ?shutNum(c[kQ]):null;if(qv!=null&&qv>=bq)z.big.push({mg:String(c['관리번호']||''),q:qv,i})}
+ P.cust=true}
+/* 단계마다 새로 닫을 밸브 + 순서가 맞는지(남은 구간이 유입 구간과 이어지는지) */
+/* 단계 묶기: 뒤 순서(가지 끝부터)를 관로 길이가 비슷하게 n단계로. 묶음은 늘 뒤 순서의 앞부분이라 남은 구간은 유입 구간과 이어짐 */
+const stStep=(P,zs)=>({zs,key:zs.map(z=>P.Z[z].key).sort((a,b)=>a-b).join('.')});
+function stGroup(P,n){const Z=P.Z,order=P.order,tot=order.reduce((s,z)=>s+Z[z].L,0),nS=Math.max(1,Math.min(n||6,order.length));let steps=[],cur=[],acc=0,tgt=tot/nS;
+ order.forEach((z,i)=>{cur.push(z);acc+=Z[z].L;const left=order.length-i-1,need=nS-steps.length-1;if(need>0&&(acc>=tgt*.98||left<=need)){steps.push(cur);cur=[];acc=0;tgt=(tot-steps.flat().reduce((s,x)=>s+Z[x].L,0))/Math.max(1,nS-steps.length)}});
+ if(cur.length)steps.push(cur);P.steps=steps.map(zs=>stStep(P,zs))}
+const stMaxN=P=>Math.max(1,P.order.length);
+/* 기록(시각·유량)이 있는 단계를 바꾸기 전 확인 */
+function stRecHit(keys){const P=ST.plan,R=P&&ST.rec[P.nm];if(!R)return false;return keys.some(k=>R.s[k]&&(R.s[k].t||R.s[k].q!=null))}
+function stAfter(S0){const P=ST.plan;ST.bmsg='';stValves(P);if(S0&&P.bad&&!S0.bad0){P.steps=S0;stValves(P);alert('이렇게 바꾸면 남은 구간 일부가 유입점과 끊깁니다(유량계로 못 봄). 순서를 먼저 바꿔 보세요.');return}ST.c.sw[P.nm]=P.steps.map(s=>s.zs.map(z=>P.Z[z].key));ST.c.n=P.steps.length;stSave();if($('stN'))$('stN').value=ST.c.n;stTable();stDraw(false);stRender()}
+function stSetN(n){const P=ST.plan;if(!P)return;n=Math.round(n);const mx=stMaxN(P);if(!(n>=1)||n>mx){alert(`단계 수는 1~${mx} 사이로 정할 수 있습니다 (유입점과 이어진 구간 ${mx}개).`);if($('stN'))$('stN').value=P.steps.length;return}
+ if(n===P.steps.length&&!ST.c.sw[P.nm])return;if(stRecHit(P.steps.map(s=>s.key))&&!confirm('단계를 다시 묶으면 이미 적은 닫은 시각·유량 기록이 새 단계와 맞지 않을 수 있습니다. 계속할까요?\n(▲▼ 순서·합치기·나누기도 처음으로 돌아갑니다)')){if($('stN'))$('stN').value=P.steps.length;return}
+ delete ST.c.sw[P.nm];stGroup(P,n);stAfter()}
+/* ⤒ 앞 단계와 합치기: 앞 단계 구간 뒤에 이어 붙임(두 단계 밸브를 한 번에 닫는 것과 같음) */
+function stMerge(k){const P=ST.plan;if(!P||k<1||k>=P.steps.length)return;const a=P.steps[k-1],b=P.steps[k];
+ if(stRecHit([a.key,b.key])&&!confirm(`${k}·${k+1}단계에 적은 기록은 합친 단계와 맞지 않게 됩니다. 합칠까요?`))return;
+ const S0=P.steps.slice();S0.bad0=P.bad;P.steps.splice(k-1,2,stStep(P,a.zs.concat(b.zs)));stAfter(S0)}
+/* ✂ 나누기: 단계 안 구간(가지 끝부터 순서)을 관로 길이 반씩 앞·뒤 둘로 */
+function stSplit(k){const P=ST.plan;if(!P)return;const s=P.steps[k];if(!s)return;if(s.zs.length<2){alert(`${k+1}단계는 밸브로 나뉜 구간이 하나뿐이라 더 나눌 수 없습니다.`);return}
+ if(stRecHit([s.key])&&!confirm(`${k+1}단계에 적은 기록은 나눈 단계와 맞지 않게 됩니다. 나눌까요?`))return;
+ const tot=s.zs.reduce((a,z)=>a+P.Z[z].L,0);let acc=0,cut=1,best=Infinity;for(let i=0;i<s.zs.length-1;i++){acc+=P.Z[s.zs[i]].L;const d=Math.abs(acc-tot/2);if(d<best){best=d;cut=i+1}}
+ const S0=P.steps.slice();S0.bad0=P.bad;P.steps.splice(k,1,stStep(P,s.zs.slice(0,cut)),stStep(P,s.zs.slice(cut)));stAfter(S0)}
+function stValves(P){const Z=P.Z,inS=new Uint8Array(Z.length),reach=z=>P.dep[z]>=0;P.bad=0;
+ P.steps.forEach((s,k)=>{s.zs.forEach(z=>inS[z]=1);
+  /* 남은 구간 이어짐 검사 */
+  const seen=new Uint8Array(Z.length),q=[P.z0];seen[P.z0]=1;for(let h=0;h<q.length;h++)for(const b of P.adj[q[h]])if(!seen[b]&&!inS[b]){seen[b]=1;q.push(b)}
+  s.cut=Z.filter(o=>reach(o.id)&&!inS[o.id]&&!seen[o.id]).map(o=>o.id);if(s.cut.length)P.bad++;
+  s.V=P.VIN.filter(v=>v.z.some(z=>s.zs.includes(z))&&v.z.some(z=>reach(z)&&!inS[z])).map(v=>v.vi);
+  s.L=s.zs.reduce((a,z)=>a+Z[z].L,0);s.nC=s.zs.reduce((a,z)=>a+Z[z].nC,0);s.big=s.zs.flatMap(z=>Z[z].big);s.fac=s.zs.flatMap(z=>Z[z].fac);s.open=s.zs.flatMap(z=>Z[z].open);
+  const lph=stNum(ST.c.lph);s.qx=lph!=null&&P.cust?s.nC*lph/1000:null;
+  let bz=s.zs[0];s.zs.forEach(z=>{if(Z[z].L>Z[bz].L)bz=z});s.c=fromM(Z[bz].cx,Z[bz].cy)});
+ const z0=Z[P.z0];P.rest={L:z0.L,nC:z0.nC,big:z0.big,fac:z0.fac}}
+function stMove(k,d){const P=ST.plan;if(!P)return;const j=k+d;if(j<0||j>=P.steps.length)return;const S0=P.steps.slice();[P.steps[k],P.steps[j]]=[P.steps[j],P.steps[k]];stValves(P);
+ if(P.bad){P.steps=S0;stValves(P);alert('이 순서로 바꾸면 앞 단계에서 닫은 구간 때문에 남은 구간 일부가 유입점과 끊깁니다(유량계로 못 봄). 다른 단계를 먼저 옮겨 보세요.');return}
+ stAfter()}
+
+/* ── 지도 ── */
+function stLayer(){if(!map)return null;if(!map.getPane('stPane')){const p=map.createPane('stPane');p.style.zIndex=634;p.style.pointerEvents='none'}if(!ST.cv)ST.cv=L.canvas({pane:'stPane',padding:.3});if(!ST.L)ST.L=L.layerGroup();if(!map.hasLayer(ST.L))ST.L.addTo(map);return ST.L}
+const stVLL=vi=>[FAC.y[vi],FAC.x[vi]];
+function stDraw(fit){if(!map)return;const G=stLayer();G.clearLayers();const P=ST.plan;if(!P||!ST.on)return;const N=P.N,o={renderer:ST.cv,interactive:false},B=[];
+ const lines=zs=>zs.flatMap(z=>P.Z[z].E.map(e=>shutLL(e)));
+ const r0=lines([P.z0]);if(r0.length){L.polyline(r0,{...o,color:'#fff',weight:8,opacity:.8}).addTo(G);L.polyline(r0,{...o,color:'#334155',weight:4,dashArray:'8 6'}).addTo(G)}
+ if(P.lost.length)L.polyline(lines(P.lost),{...o,color:'#94a3b8',weight:4,opacity:.8,dashArray:'2 6'}).addTo(G);
+ P.steps.forEach((s,k)=>{const ls=lines(s.zs);ls.forEach(l=>B.push(...l));L.polyline(ls,{...o,color:'#fff',weight:9,opacity:.85}).addTo(G);L.polyline(ls,{...o,color:stCol(k),weight:5,opacity:.95}).addTo(G)});
+ const mk=(ll,html,cls,z)=>L.marker(ll,{icon:L.divIcon({className:'stmk '+cls,html,iconSize:null}),interactive:false,keyboard:false,zIndexOffset:z||0}).addTo(G);
+ P.steps.forEach((s,k)=>{mk(s.c,`<span style="background:${stCol(k)}">${k+1}단계</span>`,'stlb',600);s.V.forEach(vi=>mk(stVLL(vi),`<span style="background:${stCol(k)}">${k+1}</span>`,'stv',800))});
+ P.BND.forEach(b=>mk(stVLL(b.vi),'<span>경</span>','stb'+(b.cl?' cl':''),700));
+ P.OPN.forEach(x=>{if(x.n!==P.inN)mk(fromM(N.nx[x.n],N.ny[x.n]),'<span>!</span>','sto',700)});
+ if(P.inLL)mk(P.inLL,'<span>💧 유입</span>','stin',900);
+ if(fit&&B.length)try{const on=ST.box&&!ST.box.hidden,ms=map.getSize(),mob=innerWidth<=640,pr=on&&!mob?Math.min(ST.box.offsetWidth+20,ms.x*.5):30,pb=on&&mob?Math.min(ST.box.offsetHeight,ms.y*.5):30;map.fitBounds(L.latLngBounds(B),{maxZoom:18,paddingTopLeft:[30,30],paddingBottomRight:[pr,pb]})}catch(_){}}
+function stGoV(vi){if(!map||vi==null)return;map.setView(stVLL(vi),Math.max(map.getZoom(),18));try{hitMark({t:'fac',ll:stVLL(vi)})}catch(_){}}
+function stGoLL(ll){if(map&&ll)map.setView(ll,Math.max(map.getZoom(),17))}
+
+/* ── 보고서형 칸 표 ── */
+const stM=v=>Math.round(v).toLocaleString()+'m';
+const stVn=vi=>{const p=FAC.pt[vi]&&FAC.pt[vi].p||{};return String(p['관리번호']||'').trim()||'(관리번호 없음 #'+vi+')'};
+function stWarns(P){const W=[],openB=P.BND.filter(b=>!b.cl),opn=P.OPN.filter(x=>x.n!==P.inN),fac=P.Z.flatMap(z=>z.fac),big=P.Z.flatMap(z=>z.big);
+ if(openB.length)W.push({t:'경계밸브 열림·미상',n:openB.length,d:'시험 전 닫혀 있는지 확인 (열려 있으면 이웃 블록 물이 들어와 유량 감소가 작게 보임)',v:openB.map(b=>b.vi)});
+ if(opn.length)W.push({t:'밸브 없이 이웃 블록과 이어진 관',n:opn.length,d:'지도의 주황 ! 자리. 실제로 이어져 있으면 그 단계는 유량이 덜 줄 수 있음 (확인 필요)',ll:opn.map(x=>fromM(P.N.nx[x.n],P.N.ny[x.n]))});
+ if(fac.length)W.push({t:'가압장·감압밸브',n:fac.length,d:fac.slice(0,5).map(f=>f.t+' '+f.nm).join(', ')+' — 닫으면 수압이 달라짐, 운영 담당과 미리 확인',v:fac.map(f=>f.i)});
+ if(P.cust&&big.length)W.push({t:`대수용가(월평균 ${P.bigQ}㎥ 이상)`,n:big.length,d:'야간 사용 여부 미리 확인: '+big.slice(0,6).map(b=>b.mg).join(', ')+(big.length>6?' 외':'')});
+ if(!P.cust)W.push({t:'수용가 수',n:'',d:'결과(①) 또는 부과량 자료가 없어 확인 필요'});
+ if(P.lost.length){const lc=P.cust?P.lost.reduce((s,z)=>s+P.Z[z].nC,0):null;W.push({t:'유입점과 이어지지 않는 구간',n:P.lost.length,d:`관로 ${stM(P.lostL)}${lc!=null?' · 수용가 '+lc+'곳':''} — 이미 닫힌 밸브 너머 ${P.lostCl}곳, 관로가 안 이어진 조각 ${P.lost.length-P.lostCl}곳. 단계에 넣지 않음(회색 점선)`})}
+ if(P.bad)W.push({t:'순서 확인 필요',n:P.bad,d:'남은 구간이 유입점과 끊기는 단계가 있음'});
+ return W}
+function stTable(){const el=$('stSum');if(!el)return;const P=ST.plan;if(!P){el.innerHTML='';return}const W=stWarns(P);
+ el.innerHTML=`<div class="kp" style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0"><span class="pill">단계 <b>${P.steps.length}</b></span><span class="pill">구간 <b>${P.Z.length}</b></span><span class="pill">관로 <b>${(P.Lall/1000).toFixed(2)}km</b></span><span class="pill">수용가 <b>${P.cust?P.Z.reduce((s,z)=>s+z.nC,0).toLocaleString()+'곳':'확인 필요'}</b></span><span class="pill">확인할 것 <b>${W.length}</b></span></div>
+ <div style="overflow:auto;max-height:340px"><table class="axct"><thead><tr><th>단계</th><th>새로 닫을 밸브</th><th class="r">관로</th><th class="r">수용가</th><th class="r">예상 야간 사용</th><th>주의</th></tr></thead><tbody>
+ ${P.steps.map((s,k)=>`<tr><td><b style="color:${stCol(k)}">${k+1}</b></td><td>${s.V.map(vi=>esc(stVn(vi))).join(', ')||'-'}</td><td class="r">${stM(s.L)}</td><td class="r">${P.cust?s.nC+'곳':'확인 필요'}</td><td class="r">${s.qx!=null?s.qx.toFixed(2)+'㎥/h':'확인 필요'}</td><td>${[s.big.length?'🏭'+s.big.length:'',s.fac.length?'⚠ '+s.fac.map(f=>f.t).join('·'):'',s.open.length?'! 경계연결 '+s.open.length:'',s.cut.length?'<b class="c-am">순서</b>':''].filter(Boolean).join(' ')}</td></tr>`).join('')}
+ <tr><td>남음</td><td class="mute">유입 구간 (닫지 않음)</td><td class="r">${stM(P.rest.L)}</td><td class="r">${P.cust?P.rest.nC+'곳':'-'}</td><td></td><td></td></tr></tbody></table></div>`}
+
+/* ── 현장 창 (지도 위) ── */
+function stRecOf(){const P=ST.plan;if(!P)return null;return ST.rec[P.nm]||(ST.rec[P.nm]={q0:{},s:{},end:{}})}
+function stOpen(){if(!map)return;stBoxInit();ST.box.hidden=false;stRender();stChip()}
+function stClose(){if(ST.box)ST.box.hidden=true;ST.pickIn=false;stInTxt();stChip()}
+function stBoxInit(){if(ST.box||!map)return;const p=L.DomUtil.create('div','uiset shutp stp np',map.getContainer());p.id='stBox';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','단계시험');
+ L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p);ST.box=p;
+ p.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT'||b.tagName==='SELECT')return;const a=b.dataset.a,k=+b.dataset.k,R=stRecOf();
+  if(a==='x')stClose();else if(a==='fold'){ST.fold=!ST.fold;stRender()}else if(a==='fit')stDraw(true);
+  else if(a==='mk'){const s=p.querySelector('[data-a="blk"]');if(s&&s.value){ST.c.blk=s.value;stSave();if($('stBlk'))$('stBlk').value=s.value}stBuild()}
+  else if(a==='pin'){ST.pickIn=!ST.pickIn;stInTxt();stRender()}
+  else if(a==='v')stGoV(+b.dataset.i);else if(a==='ll')stGoLL(JSON.parse(b.dataset.ll));
+  else if(a==='up'||a==='dn')stMove(k,a==='up'?-1:1);else if(a==='mg')stMerge(k);else if(a==='sp')stSplit(k);else if(a==='nm'||a==='np')stSetN(ST.plan.steps.length+(a==='np'?1:-1));
+  else if(a==='t'&&R){const o=b.dataset.w==='q0'?R.q0:b.dataset.w==='end'?R.end:(R.s[b.dataset.key]||(R.s[b.dataset.key]={}));o.t=o.t?0:Date.now();stRecSave();stRender()}
+  else if(a==='clr'&&R){if(!confirm('이 소블록의 단계시험 기록(시각·유량)을 모두 지울까요?'))return;delete ST.rec[ST.plan.nm];stRecSave();stRender()}
+  else if(a==='xl')stXl();else if(a==='hw')stHw().catch(er=>alert('한글 파일 만들기 실패: '+er.message))});
+ p.addEventListener('change',e=>{const b=e.target;if(b.dataset.a==='q'){const R=stRecOf();if(!R)return;const w=b.dataset.w,o=w==='q0'?R.q0:(R.s[w]||(R.s[w]={}));const v=stNum(b.value);if(v==null)delete o.q;else o.q=v;stRecSave();stRender()}
+  else if(b.dataset.a==='nt'){const R=stRecOf();if(!R)return;R.nt=b.value;stRecSave()}})}
+function stRender(){const p=ST.box;if(!p||p.hidden)return;const P=ST.plan,ns=typeof blkNames==='function'?blkNames():[],sel=P?P.nm:ST.c.blk;p.classList.toggle('fold',ST.fold);
+ const hd=`<div class="sthd"><b>🪜 단계시험${P?' · '+esc(P.nm):''}</b><span><button type="button" class="btn ol shbr" data-a="fold" title="접기·펴기">${ST.fold?'▴':'▾'}</button>${P?'<button type="button" class="btn ol shbr" data-a="fit" title="계획 전체 보기">🔍</button>':''}<button type="button" class="btn ol shbr" data-a="x" title="닫기" aria-label="닫기">✕</button></span></div>`;
+ if(ST.fold){p.innerHTML=hd;return}
+ const top=`<div class="shtq"><select data-a="blk" aria-label="소블록">${'<option value="">— 소블록 —</option>'+ns.map(n=>`<option${n===sel?' selected':''}>${esc(n)}</option>`).join('')}</select><button type="button" class="btn shbr" data-a="mk"${ST.busy?' disabled':''}>${P?'다시 만들기':'🪜 계획 만들기'}</button><button type="button" class="btn ol shbr${ST.pickIn?' on':''}" data-a="pin" title="유입점(유량계 자리)을 지도에서 찍기">📍 유입점</button></div>`+(ST.pickIn?'<p class="shh"><b class="c-am">👆 지도에서 유입점(유량계 자리) 관로를 누르세요.</b></p>':'')+(ST.bmsg?`<p class="shh">${ST.bmsg}</p>`:'');
+ if(!P){p.innerHTML=hd+top+'<p class="shh mute">소블록을 고르고 계획을 만들면, 단계마다 닫을 밸브가 지도에 번호로 나오고 여기서 닫은 시각과 유량을 적을 수 있습니다.</p>';return}
+ const R=stRecOf(),W=stWarns(P),lph=stNum(ST.c.lph),mn=stNum(ST.c.min);
+ const wb=W.length?`<details class="stw"${P.bad?' open':''}><summary>⚠ 시작 전 확인 ${W.length}가지</summary><ul>${W.map(w=>`<li><b>${esc(w.t)}${w.n!==''?' '+w.n:''}</b> — ${esc(w.d)}${w.v?'<br>'+w.v.slice(0,12).map(vi=>`<button type="button" data-a="v" data-i="${vi}">📍${esc(stVn(vi))}</button>`).join(''):''}${w.ll?'<br>'+w.ll.slice(0,8).map((ll,j)=>`<button type="button" data-a="ll" data-ll="${esc(JSON.stringify(ll))}">📍${j+1}</button>`).join(''):''}</li>`).join('')}</ul></details>`:'';
+ const qv=o=>o&&o.q!=null?o.q:'',tb=(w,o,key)=>`<button type="button" class="btn ${o&&o.t?'':'ol '}shbr stt" data-a="t" data-w="${w}"${key?` data-key="${key}"`:''}>${o&&o.t?'✓ '+stHM(o.t):w==='q0'?'시작':w==='end'?'다시 엶':'닫음'}</button>`;
+ let prev=R.q0&&R.q0.q!=null?R.q0.q:null;
+ const rows=P.steps.map((s,k)=>{const o=R.s[s.key]||{},dq=prev!=null&&o.q!=null?prev-o.q:null;if(o.q!=null)prev=o.q;
+  return `<tr><td class="stk"><b style="background:${stCol(k)}">${k+1}</b><span><button type="button" data-a="up" data-k="${k}" title="앞으로"${k?'':' disabled'}>▲</button><button type="button" data-a="dn" data-k="${k}" title="뒤로"${k<P.steps.length-1?'':' disabled'}>▼</button><button type="button" data-a="mg" data-k="${k}" title="앞 단계와 합치기"${k?'':' disabled'}>⤒</button><button type="button" data-a="sp" data-k="${k}" title="이 단계를 둘로 나누기 (관로 길이 반씩)"${s.zs.length>1?'':' disabled'}>✂</button></span></td>
+  <td>${s.V.map(vi=>`<button type="button" class="stvb" data-a="v" data-i="${vi}" style="border-color:${stCol(k)}">${esc(stVn(vi))}${FAC.pt[vi]&&FAC.pt[vi].p&&FAC.pt[vi].p['구경']?' <small>⌀'+esc(FAC.pt[vi].p['구경'])+'</small>':''}</button>`).join('')||'<small class="mute">닫을 밸브 없음</small>'}
+  <div class="sts">${stM(s.L)} · 수용가 ${P.cust?s.nC:'확인 필요'}${s.qx!=null?' · 예상 '+s.qx.toFixed(2)+'㎥/h':''}${s.big.length?' · 🏭'+s.big.length:''}${s.fac.length?' · <b class="c-am">⚠'+s.fac.map(f=>f.t).join('·')+'</b>':''}${s.open.length?' · <b class="c-am">! 경계연결</b>':''}${s.cut.length?' · <b class="c-am">순서 확인</b>':''}</div></td>
+  <td class="str">${tb('s',o,s.key)}<input type="number" inputmode="decimal" step="0.01" data-a="q" data-w="${s.key}" value="${qv(o)}" placeholder="유량 ㎥/h" aria-label="${k+1}단계 유량">${dq!=null?`<small class="${dq>0?'':'c-am'}">↓ ${dq.toFixed(2)}</small>`:''}</td></tr>`}).join('');
+ p.innerHTML=hd+top+`<div class="shc"><span class="stn">단계 <button type="button" data-a="nm" title="단계 줄이기"${P.steps.length>1?'':' disabled'}>−</button><b>${P.steps.length}</b><button type="button" data-a="np" title="단계 늘리기"${P.steps.length<stMaxN(P)?'':' disabled'}>＋</button></span><span>관로 ${(P.Lall/1000).toFixed(2)}km</span><span>유입: ${esc(P.inHow)}</span>${mn!=null?`<span>단계당 ${mn}분</span>`:'<span class="c-am">단계당 시간 확인 필요</span>'}${lph==null?'<span class="c-am">1곳당 야간 사용량 확인 필요</span>':''}</div>`+wb+
+ `<table class="sht stt2"><tr><th>단계</th><th>새로 닫을 밸브 · 구간</th><th>닫은 시각 · 유입 유량</th></tr>
+ <tr><td class="stk"><b style="background:#334155">0</b></td><td><small>모두 열린 상태 (시작 전 유량)</small></td><td class="str">${tb('q0',R.q0)}<input type="number" inputmode="decimal" step="0.01" data-a="q" data-w="q0" value="${qv(R.q0)}" placeholder="유량 ㎥/h" aria-label="시작 유량"></td></tr>${rows}
+ <tr><td class="stk"><b style="background:#334155">끝</b></td><td><small>닫은 밸브를 거꾸로(마지막 단계부터) 다시 엶 · 남은 유입 구간 ${stM(P.rest.L)}${P.cust?' · 수용가 '+P.rest.nC:''}</small></td><td class="str">${tb('end',R.end)}</td></tr></table>
+ <label class="stnt">메모<input data-a="nt" value="${esc(R.nt||'')}" placeholder="날씨·특이사항 등"></label>
+ <div class="shb"><button type="button" class="btn ol" data-a="xl">⬇ 기록표 엑셀</button><button type="button" class="btn ol" data-a="hw">📝 한글(HWPX)</button><button type="button" class="btn ol" data-a="clr">🗑 기록 지우기</button></div>
+ <p class="shh mute">'닫음'을 누르면 지금 시각이 적힙니다(한 번 더 누르면 지움). 유량은 유입 유량계 값을 넣으면 앞 단계보다 줄어든 양(↓)이 보입니다. 기록은 이 기기에만 저장됩니다.</p>`}
+/* 지도에서 유입점 찍기 */
+function stMapClick(e){if(!ST.pickIn)return;ST.pickIn=false;const nm=(ST.plan&&ST.plan.nm)||ST.c.blk||(ST.box&&ST.box.querySelector('[data-a="blk"]')||{}).value;if(!nm){alert('소블록을 먼저 고르세요.');stRender();return}
+ ST.c.blk=nm;ST.c.inl[nm]=[e.latlng.lat,e.latlng.lng];stSave();stInTxt();stBuild(nm)}
+
+/* ── 기록표 엑셀·한글 ── */
+function stInfo(P){const lph=stNum(ST.c.lph),mn=stNum(ST.c.min);return[['소블록',P.nm],['유입점',P.inHow],['관로 · 구간',`${(P.Lall/1000).toFixed(2)}km · 제수밸브로 나눈 구간 ${P.Z.length}개`],['단계 수',P.steps.length+'단계 (유입 구간에서 먼 가지 끝부터 닫음, 앞 단계 밸브는 계속 닫아 둠)'],
+ ['시험 시각',ST.c.t0?ST.c.t0+' 시작':'야간 최소유량 시간 (확인 필요)'],['단계당 유지 시간',mn!=null?mn+'분':'확인 필요'],['수용가 1곳당 야간 사용량',lph!=null?lph+' L/h':'확인 필요'],['대수용가 기준',`월평균 ${P.bigQ||SHUT.opt.bigQ||500}㎥ 이상`],['작성',`${fmtDT(P.at)} · 만든이: 구병순`]]}
+function stRows(P){const R=ST.rec[P.nm]||{q0:{},s:{},end:{}};let prev=R.q0&&R.q0.q!=null?R.q0.q:null;const out=[{'단계':0,'새로 닫을 밸브(관리번호)':'모두 열림 (시작)','밸브 구경':'','관로 길이(m)':'','수용가 수':'','대수용가 수':'','예상 야간 사용(㎥/h)':'','주의':'','닫은 시각':R.q0&&R.q0.t?stHM(R.q0.t):'','유입 유량(㎥/h)':R.q0&&R.q0.q!=null?R.q0.q:'','줄어든 유량(㎥/h)':''}];
+ P.steps.forEach((s,k)=>{const o=R.s[s.key]||{},dq=prev!=null&&o.q!=null?+(prev-o.q).toFixed(3):'';if(o.q!=null)prev=o.q;
+  out.push({'단계':k+1,'새로 닫을 밸브(관리번호)':s.V.map(stVn).join(', '),'밸브 구경':s.V.map(vi=>{const p=FAC.pt[vi].p||{};return p['구경']!=null&&String(p['구경']).trim()!==''?p['구경']:'확인 필요'}).join(', '),'관로 길이(m)':Math.round(s.L),'수용가 수':P.cust?s.nC:'확인 필요','대수용가 수':P.cust?s.big.length:'','예상 야간 사용(㎥/h)':s.qx!=null?+s.qx.toFixed(3):'확인 필요',
+   '주의':[s.fac.length?s.fac.map(f=>f.t+' '+f.nm).join(', '):'',s.open.length?'밸브 없는 경계 연결 '+s.open.length:'',s.cut.length?'순서 확인':''].filter(Boolean).join(' / '),'닫은 시각':o.t?stHM(o.t):'','유입 유량(㎥/h)':o.q!=null?+(+o.q).toFixed(3):'','줄어든 유량(㎥/h)':dq})});
+ out.push({'단계':'끝','새로 닫을 밸브(관리번호)':'거꾸로 다시 엶','밸브 구경':'','관로 길이(m)':Math.round(P.rest.L),'수용가 수':P.cust?P.rest.nC:'','대수용가 수':'','예상 야간 사용(㎥/h)':'','주의':'남은 유입 구간','닫은 시각':R.end&&R.end.t?stHM(R.end.t):'','유입 유량(㎥/h)':'','줄어든 유량(㎥/h)':''});return out}
+function stXl(){const P=ST.plan;if(!P){alert('먼저 🪜 계획 만들기를 누르세요.');return}const wb=XLSX.utils.book_new(),A=(r,n,w)=>{const ws=XLSX.utils.json_to_sheet(r.length?r:[{'내용':'없음'}]);if(w)ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)};
+ A(stRows(P),'단계시험 기록표',[6,30,12,11,9,9,15,26,10,13,14]);
+ A(stWarns(P).map(w=>({'항목':w.t,'개수':w.n,'내용':w.d,'관리번호':w.v?w.v.map(stVn).join(', '):''})),'시작 전 확인',[24,6,60,40]);
+ A(P.BND.map(b=>({'경계밸브(관리번호)':stVn(b.vi),'지금 상태':b.cl?'닫힘':'열림·미상','이웃 관경(mm)':b.d||'','위도':+FAC.y[b.vi].toFixed(6),'경도':+FAC.x[b.vi].toFixed(6)})),'경계밸브',[20,10,12,11,11]);
+ A(P.cust?P.steps.flatMap((s,k)=>s.zs.flatMap(z=>P.Z[z].mg.map(m=>({'단계':k+1,'관리번호':m,'대수용가':P.Z[z].big.some(b=>b.mg===m)?'Y':''})))).concat(P.Z[P.z0].mg.map(m=>({'단계':'남음','관리번호':m,'대수용가':''}))):[],'단계별 수용가(관리번호)',[6,14,8]);
+ A(stInfo(P).map(([k,v])=>({'항목':k,'값':v})).concat([{'항목':'메모','값':(ST.rec[P.nm]||{}).nt||''}]),'기준',[22,70]);
+ XLSX.writeFile(wb,`단계시험_${P.nm}_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
+async function stHw(){const P=ST.plan;if(!P){alert('먼저 🪜 계획 만들기를 누르세요.');return}const D=hwpxNew('단계시험 계획·기록표'),SITEN=(typeof SITE!=='undefined'&&SITE.name)||'';
+ hwpxTitle(D,`${SITEN} ${P.nm} 단계시험(Step Test) 계획·기록표`);hwpxP(D,`${fmtD(Date.now())} · 만든이: 구병순`,{c:11,pp:21});
+ hwpxH2(D,'1. 시험 기준');hwpxTable(D,[['항목','값'],...stInfo(P)],{head:1,w:[1,3]});
+ const W=stWarns(P);hwpxH2(D,'2. 시작 전 확인');hwpxTable(D,[['항목','개수','내용'],...(W.length?W.map(w=>[w.t,String(w.n),w.d+(w.v?' ('+w.v.slice(0,10).map(stVn).join(', ')+(w.v.length>10?' 외':'')+')':'')]):[['없음','','']])],{head:1,w:[2,1,5]});
+ hwpxH2(D,'3. 단계별 기록표');const rs=stRows(P);hwpxTable(D,[['단계','새로 닫을 밸브','관로(m)','수용가','예상 야간(㎥/h)','닫은 시각','유입 유량(㎥/h)','줄어든 유량'],...rs.map(r=>[String(r['단계']),r['새로 닫을 밸브(관리번호)'],String(r['관로 길이(m)']),String(r['수용가 수']),String(r['예상 야간 사용(㎥/h)']),r['닫은 시각']||'',String(r['유입 유량(㎥/h)']),String(r['줄어든 유량(㎥/h)'])])],{head:1,w:[1,4,1.3,1.2,1.5,1.3,1.5,1.4]});
+ hwpxP(D,'※ 밸브는 유입점에서 먼 가지 끝 구간부터 닫고, 앞 단계에서 닫은 밸브는 시험이 끝날 때까지 닫아 둡니다. 끝나면 마지막 단계부터 거꾸로 다시 엽니다. 단계별 수용가 관리번호는 함께 내려받는 엑셀을 참고하세요. 고객 이름·주소·연락처는 넣지 않았습니다.',{c:11,pp:20});
+ await hwpxSave(D,`단계시험_${P.nm}_${fmtD(Date.now())}.hwpx`)}
+
+/* ── 칩·초기화 ── */
+function stChip(){const a=$('stA');if(a)a.classList.toggle('on',!!(ST.box&&!ST.box.hidden))}
+function stInit(){if(!$('stSec'))return;stUi();
+ $('stRun').onclick=()=>{stReadUi();stBuild()};$('stOpen').onclick=()=>{stReadUi();stOpen();if(!ST.plan&&ST.c.blk)stBuild()};$('stXl').onclick=stXl;$('stHw').onclick=()=>stHw().catch(e=>alert('한글 파일 만들기 실패: '+e.message));
+ $('stOff').onclick=()=>{ST.on=!ST.on;stDraw(false);$('stOff').textContent=ST.on?'🙈 지도 표시 끄기':'👁 지도 표시 켜기'};
+ $('stInPick').onclick=()=>{stReadUi();if(!ST.c.blk){$('stMsg').textContent='⚠ 소블록을 먼저 고르세요.';return}ST.pickIn=!ST.pickIn;stInTxt()};
+ ['stBlk','stN','stLph','stMin','stT0'].forEach(id=>$(id).addEventListener('change',()=>{stReadUi();stInTxt();if(ST.plan&&id==='stN'&&ST.plan.nm===ST.c.blk){stSetN(ST.c.n);return}if(ST.plan&&id!=='stBlk'&&id!=='stN'){stValves(ST.plan);stTable();stRender()}}));
+ $('stBlk').addEventListener('focus',()=>{if($('stBlk').options.length<=1)stUi()});
+ const go=()=>{if(!map){setTimeout(go,500);return}if($('stA'))return;map.on('click',stMapClick);
+  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn stbtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='step';
+   a.href='#';a.id='stA';a.textContent='🪜';a.title='🪜 단계시험 — 밸브를 단계별로 닫으며 야간 유량 기록';a.setAttribute('role','button');a.setAttribute('aria-label','단계시험');
+   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(ST.box&&!ST.box.hidden)stClose();else{stOpen();if(!ST.plan&&ST.c.blk)stBuild()}});return d}});
+  map.addControl(new Ctl())};go();}
+try{stInit()}catch(e){console.warn('단계시험',e)}
+
 
 try{rsInit()}catch(e){console.warn('적정 관경',e)}
 /* ===== ✅ 노후관 교체 완료 관로 (2026-11-12 B안) =====
