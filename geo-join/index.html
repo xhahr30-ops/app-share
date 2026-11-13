@@ -12858,7 +12858,7 @@ try{rsInit()}catch(e){console.warn('적정 관경',e)}
 const RP={k:'geo-rp',on:true,w:1,yr:'',yrUse:'dist',L:null,cv:null,key:'',ev:0,cand:null,bb:new WeakMap(),bk:new WeakMap(),idx:null,idxKey:''};
 try{const v=JSON.parse(localStorage.getItem(RP.k)||'null');if(v){if(v.on===false)RP.on=false;if(+v.w>0)RP.w=+v.w;if(v.yr)RP.yr=v.yr;if(v.yrUse)RP.yrUse=v.yrUse}}catch(_){}
 function rpSaveCfg(){try{localStorage.setItem(RP.k,JSON.stringify({on:RP.on,w:RP.w,yr:RP.yr,yrUse:RP.yrUse}))}catch(_){}}
-const RP_HOW={pop:'정보창',ax:'범위 그리기',cw:'공사 추천 대상',xl:'엑셀 목록'};
+const RP_HOW={pop:'정보창',ax:'범위 그리기',cw:'공사 추천 대상',xl:'엑셀 목록',sel:'관로 선택'};
 /* 'mk' = 교체 완료로 지정 · 'yr' = 설치연도 기준으로 교체 관로로 봄 · null */
 function rpKind(f){const P=f&&f.properties;if(!P||P._빈||P._폐관)return null;if(P['교체완료'])return 'mk';const y=+RP.yr;if(!(y>0))return null;
  const a=attrOf(f);if(a.year==null||a.year<y)return null;if(RP.yrUse==='dist'&&a.use!=='배수관')return null;if(RP.yrUse==='ds'&&a.use!=='배수관'&&a.use!=='급수관')return null;return 'yr'}
@@ -13143,7 +13143,7 @@ function selCfgSave(){try{localStorage.setItem('geo-sel',JSON.stringify({part:SE
 try{const m=JSON.parse(localStorage.getItem('geo-sel')||'{}')||{};if(typeof m.part==='boolean')SEL.part=m.part;if(typeof m.svc==='boolean')SEL.svc=m.svc}catch(_){}
 
 /* ── ✏ 속성 한꺼번에: 관경·재질·비고 (🛠 편집 현장 수정으로 저장 → 직원 공유·↶ 되돌리기 그대로) ── */
-function selEdShow(){const e=$('selEd');if(!e)return;if(!e.hidden){e.hidden=true;return}const st='min-width:0;font-size:13px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:5px';
+function selEdShow(){const e=$('selEd');if(!e)return;if(!e.hidden&&e.dataset.k!=='rp'){e.hidden=true;return}e.dataset.k='ed';const st='min-width:0;font-size:13px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:5px';
  e.innerHTML=`<div class="selef"><p class="selhint" style="margin:0 0 4px">비운 칸은 그대로 둡니다. 고른 관로 <b>${SEL.fi.size.toLocaleString()}</b>개에 같은 값을 넣습니다.</p>
   <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 6px;align-items:center"><span>관경(mm)</span><input id="selEdDia" inputmode="numeric" list="selDiaL" placeholder="예: 100" style="${st}">
   <span>재질(관종)</span><input id="selEdMat" list="selMatL" placeholder="예: DCIP" style="${st}">
@@ -13162,6 +13162,47 @@ async function selEdGo(){const dia0=$('selEdDia').value.trim().replace(/mm$/i,''
  selDraw(true);m.textContent=`✅ ${n.toLocaleString()}개 저장 (${((performance.now()-t0)/1000).toFixed(1)}초) · 바뀐 칸이 없는 관로는 건너뜀`;try{phToast('✅ 선택 관로 '+n+'개 저장')}catch(_){}}
 
 /* ── 다른 기능으로 넘기기 ── */
+/* ── ✅ 교체 완료 등록 (2026-11-13 B안): 선택 창 안에서 바로 — 완료일·공사명(전에 쓴 이름 고르기)·교체 후 재질·지금 관경마다 교체 후 관경, 선택 관로 교체 완료 지우기 ── */
+/* 저장·지우기 뒤에는 관경이 바뀌므로 관경별 칸(d:)은 비움 */
+const selRpNoD=v=>Object.fromEntries(Object.entries(v||{}).filter(([k])=>!k.startsWith('d:')));
+function selRpVals(){const e=$('selEd'),v={};if(e&&e.dataset.k==='rp')e.querySelectorAll('[data-rv]').forEach(x=>v[x.dataset.rv]=x.type==='checkbox'?x.checked:x.value);return v}
+function selRpShow(re,keep){const e=$('selEd');if(!e)return;if(!re&&!e.hidden&&e.dataset.k==='rp'){e.hidden=true;return}const old=keep||(re?selRpVals():{});
+ const its=selFeats();if(!its.length){e.hidden=true;return}const n=x=>x.toLocaleString(),st='min-width:0;font-size:13px;padding:4px 6px;border:1px solid #86efac;border-radius:5px';
+ const D=new Map(),M=new Map();let done=0,yr=0;its.forEach(({f})=>{const a=attrOf(f),k=a.dia==null?'?':String(a.dia),L=f._len||0;const o=D.get(k)||{n:0,L:0};o.n++;o.L+=L;D.set(k,o);
+  const mk=a.matRaw||a.mat||'미상',m=M.get(mk)||{n:0,L:0};m.n++;m.L+=L;M.set(mk,m);const k2=rpKind(f);if(k2==='mk')done++;else if(k2==='yr')yr++});
+ const ds=[...D.keys()].sort((a,b)=>a==='?'?1:b==='?'?-1:+a-+b),ws=[...new Set(PIPE.feats.map(f=>f.properties&&f.properties['교체공사명']).filter(Boolean))].sort().slice(-50);
+ let cfg={};try{cfg=JSON.parse(localStorage.getItem('geo-selrp')||'{}')||{}}catch(_){}
+ const ov=(k,d)=>old[k]!=null?old[k]:d,km=L=>(L/1000).toFixed(2)+'km';
+ e.dataset.k='rp';e.innerHTML=`<div class="selef"><p class="selhint" style="margin:0 0 4px">고른 관로 <b>${n(its.length)}</b>개를 <b>노후관 교체 완료</b>로 등록합니다.${done?` 이미 교체 지정 <b>${n(done)}</b>개는 값만 고칩니다.`:''}${yr?` (설치연도 기준 ${n(yr)}개 포함)`:''}</p>
+  <p class="selhint" style="margin:0 0 4px">지금 재질: ${[...M.entries()].sort((a,b)=>b[1].L-a[1].L).slice(0,5).map(([k,o])=>`${esc(k)} ${n(o.n)}개`).join(' · ')}${M.size>5?' …':''}</p>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 6px;align-items:center"><span>완료일</span><input type="date" data-rv="date" value="${esc(ov('date',rpToday()))}" style="${st}">
+  <span>공사명</span><input data-rv="work" list="selRpWL" value="${esc(ov('work',''))}" placeholder="예: 2026년 노후관 교체공사 (전에 쓴 이름 고르기)" style="${st}">
+  <span>교체 후 재질</span><input data-rv="mat" list="selMatL" value="${esc(ov('mat',''))}" placeholder="비우면 그대로 · 예: DCIP" style="${st}"></div>
+  <div style="margin-top:5px;font-size:12px;font-weight:700">교체 후 관경 <small style="font-weight:400">(지금 관경마다 · 비우면 그대로)</small></div>
+  <div style="display:grid;grid-template-columns:auto auto 1fr;gap:3px 6px;align-items:center;font-size:12.5px">${ds.map(d=>`<span>${d==='?'?'관경 모름':d+'mm'}</span><small style="color:#64748b">${n(D.get(d).n)}개 · ${km(D.get(d).L)} →</small><input data-rv="d:${d}" inputmode="numeric" list="selDiaL" value="${esc(ov('d:'+d,''))}" placeholder="${d==='?'?'예: 100':'그대로 ('+d+')'}" style="${st}">`).join('')}</div>
+  <label style="display:block;margin-top:4px;font-size:12px"><input type="checkbox" data-rv="clr"${ov('clr',!!cfg.clr)?' checked':''}> 저장한 뒤 선택 지우기</label>
+  <datalist id="selRpWL">${ws.map(w=>`<option value="${esc(w)}">`).join('')}</datalist><datalist id="selDiaL">${PIPE_DIAS.map(d=>`<option value="${d}">`).join('')}</datalist><datalist id="selMatL">${Object.keys(MAT_COL).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
+  <div class="selr" style="margin-top:5px"><button type="button" data-s="rpGo" class="ok">✅ ${n(its.length)}개 교체 완료 저장</button>${done?`<button type="button" data-s="rpDel">🗑 교체 완료 지우기 (${n(done)}개)</button>`:''}<button type="button" data-s="rpWin" title="✅ 교체 완료 창으로 후보를 넘겨 그 창에서 저장">✅ 창에서 열기</button><button type="button" data-s="edX">닫기</button></div><div id="selRpMsg" class="selhint">${esc(old.msg||'')}</div></div>`;
+ e.hidden=false}
+async function selRpGo(){const v=selRpVals(),its=selFeats();if(!its.length)return;const num=x=>String(x||'').trim().replace(/mm$/i,'').replace(/^[Φφø]/,'').trim();
+ if(!/^\d{4}-\d\d-\d\d$/.test(v.date||'')){alert('완료일을 넣으세요.');return}
+ const DM={};for(const k of Object.keys(v))if(k.startsWith('d:')){const x=num(v[k]);if(x&&!/^\d+(\.\d+)?$/.test(x)){alert('교체 후 관경은 숫자(mm)로 넣으세요. 예: 100');return}if(x)DM[k.slice(2)]=x}
+ const work=String(v.work||'').trim(),mat=String(v.mat||'').trim(),dl=Object.entries(DM).map(([a,b])=>(a==='?'?'모름':a)+'→'+b).join(', ');
+ if(!confirm(`고른 관로 ${its.length.toLocaleString()}개를 교체 완료로 저장할까요?\n완료일 ${v.date}${work?' · '+work:''}${mat?'\n재질 → '+mat:''}${dl?'\n관경 '+dl:''}\n(🛠 편집 ↶ 되돌리기 또는 ✅ 교체 완료 창 '↶ 방금 지정 되돌리기'로 한 번에 돌릴 수 있습니다)`))return;
+ const m=$('selRpMsg');m.textContent='저장하는 중…';await sleep(20);const t0=performance.now();let n=0;
+ try{const items=its.map(({fi,f})=>{const a=attrOf(f);return[fi,rpVals(f,{date:v.date,work,mat,dia:DM[a.dia==null?'?':String(a.dia)]||'',how:'sel'})]});
+  n=await pedSetPropsMany(items,`교체 완료 ${items.length}개 (관로 선택)`)}catch(err){m.textContent='⚠ 저장하지 못했습니다: '+(err&&err.message||err);return}
+ try{localStorage.setItem('geo-selrp',JSON.stringify({clr:!!v.clr}))}catch(_){}
+ const msg=`✅ ${n.toLocaleString()}개 교체 완료 저장 (${((performance.now()-t0)/1000).toFixed(1)}초) · 바뀐 칸이 없는 관로는 건너뜀`;try{rpAfter()}catch(_){}
+ if(v.clr){selPush();SEL.fi.clear();selDraw(true);selCardShow();selChip()}else{selDraw(true);selCardShow();selRpShow(true,selRpNoD(selRpVals()));const mm=$('selRpMsg');if(mm)mm.textContent=msg}
+ try{phToast('✅ 교체 완료 '+n+'개 저장')}catch(_){}}
+async function selRpDel(){const its=selFeats().filter(({f})=>f.properties&&f.properties['교체완료']);if(!its.length)return;
+ if(!confirm(`고른 관로 중 교체 완료로 지정된 ${its.length.toLocaleString()}개의 표시를 지우고 설치연도·재질·관경을 교체 전 값으로 돌릴까요?`))return;
+ let n=0;try{n=await pedSetPropsMany(its.map(({fi,f})=>[fi,rpUnVals(f)]),`교체 완료 지우기 ${its.length}개 (관로 선택)`)}catch(err){alert('지우지 못했습니다: '+(err&&err.message||err));return}
+ try{rpAfter()}catch(_){}selDraw(true);selCardShow();selRpShow(true,selRpNoD(selRpVals()));const mm=$('selRpMsg');if(mm)mm.textContent=`🗑 ${n.toLocaleString()}개 교체 완료 표시를 지웠습니다`;try{phToast('🗑 교체 완료 '+n+'개 지움')}catch(_){}}
+/* 선택이 바뀌어 카드를 다시 그릴 때 등록 칸도 개수·관경 줄을 새로 (넣은 값은 그대로) */
+{const o=selCardShow;selCardShow=function(){const e=$('selEd'),rp=!!(e&&!e.hidden&&e.dataset.k==='rp');let v=null;if(rp){v=selRpVals();const mm=$('selRpMsg');v.msg=mm?mm.textContent:''}
+ const r=o.apply(this,arguments);if(rp){const e2=$('selEd');if(e2)selRpShow(true,v)}return r}}
 function selRp(){const its=selFeats();if(!its.length)return;if(typeof rpCandSet!=='function'){alert('교체 완료 기능이 없습니다.');return}
  rpCandSet('sel',`선택 관로 ${its.length.toLocaleString()}개`,its.map(({fi})=>({fi})));rpGo()}
 function selAx(){const its=selFeats();if(!its.length)return;if(typeof axOpen!=='function'){alert('개략공사비 기능이 없습니다.');return}
@@ -13188,7 +13229,7 @@ function selCmd(k){if(!map)return;
   case 'clr':if(SEL.fi.size&&(SEL.fi.size<20||confirm(`고른 관로 ${SEL.fi.size.toLocaleString()}개 선택을 지울까요?`))){selPush();SEL.fi.clear();selDraw(true)}break;
   case 'fit':{const fs=selFeats().map(o=>o.f);if(fs.length)rpFit(fs);break}
   case 'edit':selEdShow();return;case 'edGo':selEdGo();return;case 'edX':{const e=$('selEd');if(e)e.hidden=true;return}
-  case 'rp':selRp();break;case 'ax':selAx();break;case 'xl':selXl();break}
+  case 'rp':selRpShow();return;case 'rpGo':selRpGo();return;case 'rpDel':selRpDel();return;case 'rpWin':selRp();break;case 'ax':selAx();break;case 'xl':selXl();break}
  selCardShow();selChip()}
 function selIsOn(v){return v==='tap'?SEL.tap:v==='add'||v==='sub'?SEL.mode===v:v==='card'?SEL.open:false}
 /* ☑ 칩 (위쪽 칩 줄·전체화면) */
