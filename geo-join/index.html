@@ -2229,7 +2229,9 @@ function bpPipeStats(){const P=G('PIPE'),poly=G('poly');if(!P||!P.feats||!P.feat
  BP.ps={key,m};return m}
 /* ---- 누수·민원 대장(②-4 📒)에서 소블록 안 누수 ---- */
 /* 수용가 현황(2026-11-12 C안): 부과량 엑셀(BILL, Y열 소블록) → 수전·가구·월평균·업종·구경·대수용가·업종별 월 사용량. 이름·주소·연락처는 쓰지 않음(관리번호만) */
-function bpCust(n){const B=G('BILL');if(!B||!B.R||!B.R.length)return null;const k=F('bNorm',n),M=B.M,L=M.length,R=B.R.filter(r=>r.b===k);if(!R.length)return{n:0,M};
+/* 유수율 엑셀 '부과량' 시트 → 수용가 현황용(소블록 Y열·업종·구경·가구수·관리번호·월 사용량만, 이름·주소·연락처는 버림) */
+function bpBillOf(A){if(!A)return null;try{const P=F('billParse',A);return{M:P.M,R:P.R.map(r=>({b:r[9],u:r[3],d:r[4],h:r[5],mg:r[11],q:r.slice(12)}))}}catch(_){return null}}
+function bpCust(n){const B=BP.nrw&&BP.nrw.bill&&BP.nrw.bill.R.length?BP.nrw.bill:G('BILL');if(!B||!B.R||!B.R.length)return null;const k=F('bNorm',n),M=B.M,L=M.length,R=B.R.filter(r=>r.b===k);if(!R.length)return{n:0,M};
  let li=L-1;while(li>0&&!R.some(r=>r.q[li]!=null))li--;const w0=Math.max(0,li-11);
  const avg=r=>{let t=0,c=0;for(let i=w0;i<=li;i++){const v=r.q[i];if(v!=null){t+=v;c++}}return c?t/c:null};
  let hh=0,qs=0;const ind=new Map(),dia=new Map(),uS=new Map(),qm=new Map(),A=[];
@@ -2241,7 +2243,7 @@ function bpCust(n){const B=G('BILL');if(!B||!B.R||!B.R.length)return null;const 
  const ser=mi.map(i=>{const o={};R.forEach(r=>{const v=r.q[i];if(v==null)return;const u=top.includes(r.u||'(빈칸)')?(r.u||'(빈칸)'):'기타';o[u]=(o[u]||0)+v});return o});
  for(let i=0;i<=li;i++){let t=0,any=false;R.forEach(r=>{const v=r.q[i];if(v!=null){t+=v;any=true}});const m=/^(\d{4})-(\d\d)$/.exec(M[i]||'');if(m&&any)tot.set(m[1]+'-'+(+m[2]),t)}
  const dn=v=>{const x=parseFloat(v);return isNaN(x)?1e9:x};
- return{n:R.length,hh,qs,avg:R.length?qs/R.length:null,ind:[...ind].sort((a,b)=>b[1]-a[1]),dia:[...dia].sort((a,b)=>dn(a[0])-dn(b[0])),big,bq,keys,mi,ser,tot,M,li,w0,qm}}
+ return{n:R.length,hh,qs,avg:R.length?qs/R.length:null,ind:[...ind].sort((a,b)=>b[1]-a[1]),dia:[...dia].sort((a,b)=>dn(a[0])-dn(b[0])),big,bq,keys,mi,ser,tot,M,li,w0,qm,src:B===G('BILL')?'부과량':'유수율 엑셀 부과량'}}
 function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return null;const K=bpK(b.n),bx=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),pts=[],mo=new Map();let tam=0,civ=0;LR.recs.forEach(o=>{const y=/^(\d{4})-/.exec(o.d||'');if(y)mo.set('y'+y[1],true)});
  for(const o of LR.recs){if(!o.ok)continue;let inn=false;
   if(o.ll){const x=o.ll[1],y=o.ll[0];for(let i=0;i<b.fs.length&&!inn;i++){const q=bx[i];if(x>=q[0]&&x<=q[2]&&y>=q[1]&&y<=q[3]&&turf.booleanPointInPolygon(turf.point([x,y]),b.fs[i]))inn=true}if(inn)pts.push({ll:o.ll,src:o.src})}
@@ -2251,10 +2253,10 @@ function bpLeaks(b){const LR=G('LR');if(!LR||!LR.recs||!LR.recs.length)return nu
 /* ---- 📊 유수율(소블록별) 시트 읽기 ---- */
 const BP_NRW_W=`onmessage=function(e){try{var buf=new Uint8Array(e.data.buf),wb=XLSX.read(buf,{type:'array',bookSheets:true}),N=wb.SheetNames||[],sn=null;
 for(var i=0;i<N.length;i++){if(/유수율/.test(N[i])&&/소블록/.test(N[i])){sn=N[i];break}}if(!sn){postMessage({err:'NOSHEET',names:N});return}
-var s2=null;for(var i2=0;i2<N.length;i2++){if(/유수율/.test(N[i2])&&/계통/.test(N[i2])){s2=N[i2];break}}postMessage({p:sn+' 읽는 중…'});var w=XLSX.read(buf,{type:'array',sheets:s2?[sn,s2]:[sn]});postMessage({sn:sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null}),A2:s2&&w.Sheets[s2]?XLSX.utils.sheet_to_json(w.Sheets[s2],{header:1,raw:true,defval:null}):null})}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
+var s2=null,s3=null;for(var i2=0;i2<N.length;i2++){if(!s2&&/유수율/.test(N[i2])&&/계통/.test(N[i2]))s2=N[i2];if(!s3&&/^\\s*부과량\\s*$/.test(N[i2]))s3=N[i2]}postMessage({p:sn+' 읽는 중…'});var L=[sn];if(s2)L.push(s2);if(s3)L.push(s3);var w=XLSX.read(buf,{type:'array',sheets:L}),J=function(n){return n&&w.Sheets[n]?XLSX.utils.sheet_to_json(w.Sheets[n],{header:1,raw:true,defval:null}):null};postMessage({sn:sn,A:J(sn),A2:J(s2),A3:J(s3)})}catch(err){postMessage({err:String(err&&err.message||err)})}}`;
 let BP_NRW_URL=null;
 function bpNrwRead(buf,onMsg){const main=()=>{const wb=XLSX.read(new Uint8Array(buf),{type:'array',bookSheets:true}),sn=(wb.SheetNames||[]).find(n=>/유수율/.test(n)&&/소블록/.test(n));if(!sn)return{err:'NOSHEET',names:wb.SheetNames};
-  const s2=(wb.SheetNames||[]).find(n=>/유수율/.test(n)&&/계통/.test(n)),w=XLSX.read(new Uint8Array(buf),{type:'array',sheets:s2?[sn,s2]:[sn]});return{sn,A:XLSX.utils.sheet_to_json(w.Sheets[sn],{header:1,raw:true,defval:null}),A2:s2&&w.Sheets[s2]?XLSX.utils.sheet_to_json(w.Sheets[s2],{header:1,raw:true,defval:null}):null}};
+  const s2=(wb.SheetNames||[]).find(n=>/유수율/.test(n)&&/계통/.test(n)),s3=(wb.SheetNames||[]).find(n=>/^\s*부과량\s*$/.test(n)),w=XLSX.read(new Uint8Array(buf),{type:'array',sheets:[sn,s2,s3].filter(Boolean)}),J=n=>n&&w.Sheets[n]?XLSX.utils.sheet_to_json(w.Sheets[n],{header:1,raw:true,defval:null}):null;return{sn,A:J(sn),A2:J(s2),A3:J(s3)}};
  if(typeof Worker==='undefined'||typeof Blob==='undefined')return Promise.resolve(main());
  if(!BP_NRW_URL)BP_NRW_URL=URL.createObjectURL(new Blob([`var ok=0,U=${JSON.stringify(G('XLSX_URLS')||[])};for(var i=0;i<U.length&&!ok;i++){try{importScripts(U[i]);ok=1}catch(e){}}\n`+BP_NRW_W.replace('onmessage=function(e){try{',"onmessage=function(e){try{if(!ok)throw new Error('NOLIB');")],{type:'text/javascript'}));
  const cp=buf.slice(0);
@@ -2276,7 +2278,7 @@ async function bpNrwLoad(file){const st=BP.el.querySelector('[data-bp-nrw]');if(
  st.textContent='⏳ '+file.name+' 여는 중… (파일이 크면 몇십 초 걸립니다)';try{const buf=await file.arrayBuffer(),d=await bpNrwRead(buf,p=>{st.textContent='⏳ '+p});
   if(d.err){st.textContent=d.err==='NOSHEET'?`⚠ '유수율(소블록별)' 시트를 찾지 못했습니다. 시트: ${(d.names||[]).slice(0,8).join(', ')}`:'⚠ 읽지 못했습니다: '+d.err;return}
   const R=bpNrwParse(d.A);if(!R){st.textContent='⚠ 시트에서 연도 머리글(2025 등)이나 소블록 줄을 찾지 못했습니다.';return}
-  R.f=file.name;R.sn=d.sn;R.at=Date.now();R.sys=bpSysParse(d.A2);BP.nrw=R;try{await G('IDB').set('nrw_blk',R)}catch(_){}bpNrwInfo();bpList()}
+  R.f=file.name;R.sn=d.sn;R.at=Date.now();R.sys=bpSysParse(d.A2);R.bill=bpBillOf(d.A3);BP.nrw=R;try{await G('IDB').set('nrw_blk',R)}catch(_){}bpNrwInfo();bpList()}
  catch(e){st.textContent='⚠ 읽지 못했습니다: '+(e&&e.message||e)}}
 function bpNrwOf(n){const R=BP.nrw;if(!R)return null;if(R.B[n])return R.B[n];const k=bpK(n);for(const x in R.B)if(bpK(x)===k)return R.B[x];
  const al=F('aliasMap');if(al){const to=al.get(bpK(n));if(to&&R.B[to])return R.B[to]}return null}
@@ -2363,6 +2365,7 @@ function bpList(){if(!BP.el)return;const box=BP.el.querySelector('[data-bp-list]
 function bpMemoOf(n){return BP.memo[n]!=null?BP.memo[n]:((bpNrwOf(n)||{}).memo||'')}
 function bpMemoUI(){if(!BP.el)return;bpSysUI();const t=BP.el.querySelector('[data-bp-memo]'),l=BP.el.querySelector('[data-bp-mn]');if(!BP.cur){t.disabled=true;t.value='';l.textContent='소블록 이름을 누르세요';return}t.disabled=false;t.value=bpMemoOf(BP.cur);l.textContent=BP.cur}
 /* ---- 한 소블록 지도 찍기 → {B,src,rings,lk,scale,secret,leg} ---- */
+const BP_SYM=.5;/* 현황도 지도: 유량계·경계밸브 밖 심볼 크기(2026-11-13 사용자 0.5, 제수밸브 포함) */
 const BP_BND='#ea580c',BP_RC='#2563eb',BP_OC='#dc2626',BP_RY0=()=>new Date().getFullYear()-9;/* 소블록 경계 = 주황 점선(2026-11-12 사용자) */
 async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContainer(),st0=mc.getAttribute('style');let big=false;
  /* 관로 검정 통일(2026-11-12): 화면 관로 레이어는 빼고 찍은 뒤, 블록 안 관로만 검정 선으로 직접 그림(배수관 = 급수관 × 1.5) */
@@ -2377,7 +2380,8 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  if(cs&&cs.qm&&cs.qm.size&&PT&&PT.n){const o=G('out')||[],[q1,q2]=(()=>{try{const a=F('ptQB');return[a[0]||20,a[1]||100]}catch(_){return[20,100]}})();
   for(let i=0;i<PT.n;i++){const r=o[i];if(!r)continue;const a=cs.qm.get(String(r['관리번호']??''));if(a==null)continue;ptOld.push([i,PT.fill[i]]);PT.fill[i]=a<=q1?'#bbf7d0':a<=q2?'#4ade80':'#15803d'}
   if(ptOld.length)try{F('ptDraw')}catch(_){}}
- const FA=G('FAC'),cl=BP.o.cl!==0;if(FA){FA.bndAll=true;FA.bpLbl=1.35;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
+ const FA=G('FAC'),cl=BP.o.cl!==0;const PHg=G('PH');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}
+ if(FA){FA.bndAll=true;FA.bpLbl=1.35;FA.bpSm=BP_SYM;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
  try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
   const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(14,fw*.05);
   const bb=L.geoJSON({type:'FeatureCollection',features:b.fs}).getBounds();m.fitBounds(bb,{paddingTopLeft:[px+pad,py+pad],paddingBottomRight:[px+pad,py+pad],animate:false,maxZoom:18});
@@ -2413,7 +2417,7 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
   let leg=[];if(BP.o.leg){const q=bb;
    leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}
   return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,ptC:ptOld.length>0}}
- finally{if(ptOld.length){ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+ finally{const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
 function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,nr=!!BP.o.nrw,cu=BP.o.cu!==0,tH=nr?(l?(cu?50:40)*s:(cu?46*s+gap+44*s:46*s)):cu?(l?44:50)*s:0;
  const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}},sy=BP.o.sys!==0?11*s:0;L0.syH=sy;
@@ -2460,7 +2464,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
   S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?q.lineTo(x,y):q.moveTo(x,y)});q.closePath()});q.fillStyle=`rgba(${BP_FC},${BP_FADE[BP.o.fade]||.6})`;q.fill('evenodd');
   q.globalCompositeOperation='destination-out';q.beginPath();S.rings.forEach(r=>{r.forEach((c,i)=>{const [x,y]=P(c);i?q.lineTo(x,y):q.moveTo(x,y)});q.closePath()});q.lineJoin='round';q.lineWidth=X(3.2*s);q.stroke();g.drawImage(o,0,0)}
  const star=(x,y,r,c)=>{g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;g.lineTo(x+q*Math.cos(a),y+q*Math.sin(a))}g.closePath();g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=X(.2);g.stroke()};
- S.lk.forEach(o=>{const [x,y]=P(o.p);star(x,y,X(1.7*s),o.src==='민원'?'#16a34a':'#dc2626')});
+ S.lk.forEach(o=>{const [x,y]=P(o.p);star(x,y,X(1.7*BP_SYM*s),o.src==='민원'?'#16a34a':'#dc2626')});
  (S.bigP||[]).forEach(o=>{const [x0,y0]=P(o.p),r=X(1.9*s),x=x0+r*1.3,y=y0-r*1.3;g.strokeStyle='#c2410c';g.lineWidth=X(.2*s);g.beginPath();g.moveTo(x0,y0);g.lineTo(x,y);g.stroke();
   g.beginPath();g.arc(x,y,r,0,7);g.fillStyle='#c2410c';g.fill();g.strokeStyle='#fff';g.lineWidth=X(.3*s);g.stroke();txt(String(o.no),x,y+X(.1*s),r*2,{w:800,pt:6.2,c:'#fff',a:'center'})});
  g.restore();
@@ -2588,8 +2592,8 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    const LG=[['#bfdbfe','공급량','b'],['#6366f1','부과량','b'],['#dc2626','유수율','l'],...(tv.some(v=>v!=null)?[['#64748b','포항 전체','d']]:[]),['#0d9488','야간최소','l'],['rgba(220,38,38,.55)','누수','b']];
    g.font=FT(500,5.4);let lx=r.x+r.w-X(2.5*s);const ly=top+h1+X(2.4*s);[...LG].reverse().forEach(([c,t,k2])=>{const tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5.4,c:mute});lx-=X(3.4*s);if(k2==='b'){g.fillStyle=c;g.fillRect(lx,ly-X(.9*s),X(2.6*s),X(1.8*s))}else{g.save();g.strokeStyle=c;g.lineWidth=X(.4*s);if(k2==='d')g.setLineDash([X(1),X(.8)]);g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+X(2.8*s),ly);g.stroke();g.restore()}lx-=X(1.6*s)})}}
  /* 수용가 현황 카드(C안) */
- if(M.cu){const r=R(M.cu),cs=info.cs;card(r);head(r,'수용가 현황',cs&&cs.n?`부과량 ${cs.M[cs.li]} 기준 · 관리번호만`:'');
-  if(!cs||!cs.n){txt(!cs?'부과량 엑셀(③ 부과량)을 넣으면 채워집니다 — 확인 필요':`부과량 자료 Y열에 ${b.n} 소블록 수용가가 없습니다 — 확인 필요`,r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:6.4,c:'#b45309'})}
+ if(M.cu){const r=R(M.cu),cs=info.cs;card(r);head(r,'수용가 현황',cs&&cs.n?`${cs.src||'부과량'} ${cs.M[cs.li]} 기준 · 관리번호만`:'');
+  if(!cs||!cs.n){txt(!cs?'유수율 엑셀(부과량 시트)을 넣으면 채워집니다 — 확인 필요':`부과량 자료 Y열에 ${b.n} 소블록 수용가가 없습니다 — 확인 필요`,r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:6.4,c:'#b45309'})}
   else{const pad=X(2.5*s),cx=r.x+pad,cw=r.w-2*pad,top=r.y+X(7.5*s),hTop=(r.h-X(7.5*s))*.62,lw=cw*.5,UC=['#6366f1','#22c55e','#f59e0b','#06b6d4','#cbd5e1'],lh=X(3*s);
    /* 왼쪽: 요약 줄 + 업종·구경 막대 */
    const N0=info.nrw,SE2=bpSeries(N0),ym=/^(\d{4})-(\d\d)$/.exec(cs.M[cs.li]||''),nb=(()=>{if(!N0||!ym)return null;const j=SE2.Yr.indexOf(+ym[1]);return j>=0?SE2.f('b',j)[+ym[2]]:null})();
@@ -2766,7 +2770,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <label class="f">SHP 한글 인코딩<select id="axEnc"><option value="cp949">CP949 (국내 GIS 권장)</option><option value="utf8">UTF-8</option></select></label>
  </div>
  <details id="axCostBox" class="axcost"><summary>💰 개략공사비 <small>설계내역서(원가계산서) 기준 · 현 관경 ↔ 적정 관경 비교 · 엑셀 · A4 보고서</small></summary>
-  <label class="f" style="margin-top:6px">대표 주소 <small style="font-weight:400">보고서 제목에 씀 · 범위 가운데 지점 주소를 자동으로 넣고, 고쳐 쓸 수 있음</small><span style="display:flex;gap:6px"><input id="axcAddr" placeholder="범위를 그리면 자동으로 찾음 (예: 북구 용흥동 123 일원)" style="flex:1;min-width:0"><button id="axcAddrBtn" type="button" class="btn ol" style="width:auto;padding:4px 10px" title="범위 가운데 지점 주소 다시 찾기">📍 다시 찾기</button></span></label>
   <label class="f" style="margin-top:6px">계산 기준<select id="axcMode"><option value="YG08">YG08 설계내역서식 (원가계산서 요율 · m당 44.4만 원 실적)</option><option value="YD06">YD06 설계내역서식 (원가계산서 요율 · m당 53.7만 원 실적)</option><option value="simple">단순 단가표 (관경별 단가 + 포장·제경비·부가세 직접 입력)</option></select></label>
   <details id="axcNaeInfo" class="axcnae"><summary>📑 기준 내역서 값 보기</summary><div id="axcNaeTbl"></div></details>
   <div class="g2" style="margin-top:6px">
@@ -3079,7 +3082,7 @@ function ptRender(){if(!map||!PT.cv)return;const sz=map.getSize(),pad=0.25,W=Mat
  const tl=map.containerPointToLayerPoint([-sz.x*pad,-sz.y*pad]).round();L.DomUtil.setPosition(cv,tl);
  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px'}
  const g=PT.ctx;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);if(!PT.n||PT.off)return;
- const b=map.getBounds().pad(pad),z=map.getZoom(),R0=ptRadius(z),ox=-sz.x*pad,oy=-sz.y*pad;
+ const b=map.getBounds().pad(pad),z=map.getZoom(),R0=ptRadius(z)*(PT.bpK||1),ox=-sz.x*pad,oy=-sz.y*pad;
  const ids=ptQuery(b.getWest(),b.getSouth(),b.getEast(),b.getNorth()),groups=new Map();
  const sc=map.getZoomScale(z,0),po=map.getPixelOrigin(),ax=-po.x-tl.x,ay=-po.y-tl.y,bm=ptBigOn()&&ptBigSync()>0,bl=[];ptHidSync();const hm=PT.hm;
  for(const i of ids){if(!PT.vis[i]||hm&&hm[i]||i===PT.sel)continue;const x=PT.px[i]*sc+ax,y=PT.py[i]*sc+ay;if(x<-10||y<-10||x>W+10||y>H+10)continue;
@@ -6072,6 +6075,7 @@ const facSz=(z,big)=>Math.round((z>=18?22:z>=17?18:z>=16?15:z>=15?13:z>=13?11:9)
 /* 실제 그릴 크기 = 줌별 기본 × ⚙️ 시설물 아이콘 배율 × 종류별 배율(목록의 −/＋) */
 const FKS_STEPS=[.5,.75,1,1.25,1.5,2,2.5];
 const facKS=k=>+((FAC.ksz||{})[k])||1;
+const BP_KEEP=/^(bnd|meter)/; /* 소블록 현황도 출력 때 원래 크기로 두는 심볼: 경계밸브·유량계, 나머지(제수밸브 포함, 2026-11-13)는 FAC.bpSm배 */
 const facSzK=(z,I,k)=>Math.max(6,Math.round(facSz(z,I.z===0)*(+UI.fsz||1)*facKS(k)));
 function facShape(g,sh,x,y,r){if(sh==='ci'){g.moveTo(x+r,y);g.arc(x,y,r,0,6.2832)}else if(sh==='di'){g.moveTo(x,y-r*1.25);g.lineTo(x+r*1.25,y);g.lineTo(x,y+r*1.25);g.lineTo(x-r*1.25,y);g.closePath()}
  else if(sh==='tr'){g.moveTo(x,y-r*1.3);g.lineTo(x+r*1.2,y+r*.9);g.lineTo(x-r*1.2,y+r*.9);g.closePath()}else{const s=sh==='SQ'?r*1.6:r;g.rect(x-s,y-s,s*2,s*2)}}
@@ -6088,7 +6092,7 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
  const KI=FAC.kinds.map(facKindInfo);g.lineJoin='round';
  /* 많은 종류(제수밸브)부터 그려서 적은 시설(소화전·정수장 등)이 위에 보이게 */
  by.map((a,k)=>k).sort((x,y)=>by[y].length-by[x].length).forEach(k=>{const a=by[k];if(!a.length)return;const I=KI[k],s0=facSzK(z,I,FAC.kinds[k]),sb=facSzK(z,I,'#bnd'),si=facSzK(z,I,'#ind'),sv=facSzK(z,I,'#vil'); /* 경계·공업밸브는 크기 따로 (범례 경계밸브 줄 −/＋) */
-  for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],s=facBndI(i)?sb:facIndI(i)?si:facVilI(i)?sv:s0,sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;g.globalAlpha=FAC.dl[i]?.35:1;
+  for(let j=0;j<a.length;j+=3){const i=a[j+2],x=a[j],y=a[j+1],s=(facBndI(i)?sb:facIndI(i)?si:facVilI(i)?sv:s0)*(FAC.bpSm&&!BP_KEEP.test(FAC.sk[i])?FAC.bpSm:1),sp=I.sym?facSprite(FAC.sk[i],s,dpr):null;g.globalAlpha=FAC.dl[i]?.35:1;
    if(!sp){g.beginPath();facShape(g,'ci',x,y,R);g.fillStyle=I.col;g.fill();g.lineWidth=1.3;g.strokeStyle='#fff';g.stroke();continue}
    const r=FAC.rot[i];if(r===r){g.save();g.translate(x,y);g.rotate(r*Math.PI/180);g.drawImage(sp,-s/2,-s/2,s,s);g.restore()}else g.drawImage(sp,x-s/2,y-s/2,s,s)}})
  g.globalAlpha=1;
@@ -6993,7 +6997,7 @@ function phYrLeg(MG){const on=phColOn()&&$('phShow').value!=='off'&&MG.length>0,
 /* 🎧 누수탐사 미수리(m.lr=1): 묶음에 한 장이라도 있으면 빨강 아이콘, 수리 완료는 기존 색 */
 const phLrG=g=>!!g&&g.kd==='ts'&&g.ids.some(id=>{const m=PH.byId.get(id);return m&&m.lr});
 /* 사진 아이콘 크기: 전체(UI.phSz) × 종류별(UI.phKs) — 시설물 −/＋와 같은 단계 (2026-11-11) */
-function phSzOf(g){const a=+UI.phSz||1,b=g&&!g.ref&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
+function phSzOf(g){const a=(+UI.phSz||1)*(PH.bpK||1),b=g&&!g.ref&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
 function phLsApply(){try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1))}catch(_){}}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
@@ -9574,7 +9578,7 @@ function axcNaeKRows(N){const P=N.P,A=N.A,B=N.B;return P.ks.map(k=>({k,t:AXC_PT(
 function axcNaeChg(r){const M=new Map();for(const x of r.rows){if(!x.Dn)continue;const k=x.dia+'→'+x.Dn;const o=M.get(k)||{D:x.dia,Dn:x.Dn,n:0,L:0};o.n++;o.L+=x.L;M.set(k,o)}return [...M.values()].sort((a,b)=>b.L-a.L)}
 function axcRsCond(){try{const O=rsOpt();return `적정 유속 ${O.lo}~${O.hi} m/s · 첨두 계수 ${O.pk}${O.pkSet?'':'(기본)'} · 최소 관경 ${O.min}mm${O.hy?` · 소화전 ${O.hyR}m 안 관은 유지`:''} (📐 적정 관경 창 설정, 기준값은 확인 필요)`}catch(_){return ''}}
 function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.round(v),day=fmtDT(r.at),c=AXC.c;
- const s1=[{'항목':'범위','값':`${r.addr?r.addr+' · ':''}${r.how} · 면적 ${Math.round(r.area).toLocaleString()}㎡`},{'항목':'작성','값':`${day} · 만든이: 구병순 · 현장 ${(window.SITE&&SITE.name)||''}`},
+ const s1=[{'항목':'범위','값':`${r.how} · 면적 ${Math.round(r.area).toLocaleString()}㎡`},{'항목':'작성','값':`${day} · 만든이: 구병순 · 현장 ${(window.SITE&&SITE.name)||''}`},
   {'항목':'계산 기준','값':`${N.key} 설계내역서 (${P.nm}) · 설계 연장 ${axcF(P.L)}m · 총공사비 ${axcF(P.tot)}원 · m당 ${axcF(P.tot/P.L)}원`},{'항목':'설계 연장 근거','값':P.Lsrc},
   {'항목':'대상 관로','값':`재질 ${c.mat==='pvc'?'PVC만':'전체'} · 용도 ${{all:'전체',dist:'배수관만',ds:'배수·급수관'}[c.use]} · 관경 ${axcNum(c.dia)?c.dia+'mm 이하':'전체'}`},
   {'항목':'교체 연장(범위 안, m)','값':+A.Lall.toFixed(1)},{'항목':'뺀 급수관(가정분기는 공통 직접비에 포함)','값':`${N.svN}개 ${N.svL.toFixed(1)}m`},{'항목':'총공사비 — 현 관경(원)','값':n(A.T)},{'항목':'총공사비 — 적정 관경(원)','값':B?n(B.T):'관망해석 결과 없음(확인 필요)'},
@@ -9588,7 +9592,7 @@ function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.ro
  const s6=r.FS.map(o=>({'종류코드':o.k,'종류':o.nm,'구경(mm)':o.dia??'','개수':o.n}));
  return [['요약',s1],['원가계산서 비교',s2],['관경별 비교',s3],['관경 변경 집계',s4],['관로 목록',s5],['시설물 집계',s6]]}
 function axcNaeSec(r,sec,o){const{img,e,kpi,T,cond,blks,km,f0}=o,N=r.nae,A=N.A,B=N.B,P=N.P,dd=(b,a)=>B?`<td class="r">${axcDf(b-a)}</td>`:'<td class="r">—</td>';
- sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('교체 연장 (범위 안)',km(A.Lall)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('총공사비 · 현 관경',axcEok(A.T),'m당 '+(A.Lall?axcWon(A.T/A.Lall):'—'))}${kpi('총공사비 · 적정 관경',B?axcEok(B.T):'확인 필요',B?'m당 '+axcWon(B.T/B.Lall):'관망해석 결과 없음','tot')}${kpi('차이 (적정−현)',B?axcDE(B.T-A.T):'—',B?`줄임 ${km(N.LO)}km · 키움 ${km(N.LS)}km`:'')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}<p class="n">계산 기준: ${e(N.key)} 설계내역서(${e(P.nm)}) — 설계 연장 ${axcF(P.L)}m, 총공사비 ${axcF(P.tot)}원(m당 ${axcF(P.tot/P.L)}원)</p>`);
+ sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('교체 연장 (범위 안)',km(A.Lall)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('총공사비 · 현 관경',axcEok(A.T),'m당 '+(A.Lall?axcWon(A.T/A.Lall):'—'))}${kpi('총공사비 · 적정 관경',B?axcEok(B.T):'확인 필요',B?'m당 '+axcWon(B.T/B.Lall):'관망해석 결과 없음','tot')}${kpi('차이 (적정−현)',B?axcDE(B.T-A.T):'—',B?`줄임 ${km(N.LO)}km · 키움 ${km(N.LS)}km`:'')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}<p class="n">계산 기준: ${e(N.key)} 설계내역서(${e(P.nm)}) — 설계 연장 ${axcF(P.L)}m, 총공사비 ${axcF(P.tot)}원(m당 ${axcF(P.tot/P.L)}원)</p>`);
  sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map" src="${img}" alt="범위 지도">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시</p>`);
  sec.push(`<h2>3. 원가계산서 비교 (현 관경 ↔ 적정 관경)</h2>${T(['비목','산출 근거','현 관경(원)','적정 관경(원)','차이(원)'],[`<tr><td>교체 연장</td><td>범위 경계에서 자른 안쪽</td><td class="r">${A.Lall.toFixed(1)} m</td><td class="r">${B?B.Lall.toFixed(1)+' m':'—'}</td><td class="r"></td></tr>`,
   ...A.lines.map((l,i)=>`<tr${l[3]?` class="${l[3]}"`:''}><td>${e(l[0])}</td><td>${e(l[1])}</td><td class="r">${f0(l[2])}</td><td class="r">${B?f0(B.lines[i][2]):'확인 필요'}</td>${dd(B?B.lines[i][2]:0,l[2])}</tr>`),
@@ -9636,7 +9640,7 @@ function axcCalc(){const C=axScan();if(!C)return AXC.r=null;const c=AXC.c,T=cwPT
  const pave=axcNum(c.pave),paveAmt=pave!=null?pave*pL:null,over=axcNum(c.over),vat=axcNum(c.vat);
  const net=pAmt+fAmt+(paveAmt||0),overAmt=over!=null?net*over/100:null,vatAmt=vat!=null?(net+(overAmt||0))*vat/100:null,tot=net+(overAmt||0)+(vatAmt||0);
  const nae=AXC_NAE[c.mode]?axcNae(rows,c.mode):null;
- return AXC.r={rows,DS,FS,pL,pAmt,pNo,fN,fAmt,fNo,pave,paveAmt,over,overAmt,vat,vatAmt,net:nae?nae.A.D:net,tot:nae?nae.A.T:tot,nae,addr:(typeof axcAddrNow==='function'?axcAddrNow():''),skip,T,at:Date.now(),how:AX.how,area:axArea(AX.ring),nP:C.pipes.length}}
+ return AXC.r={rows,DS,FS,pL,pAmt,pNo,fN,fAmt,fNo,pave,paveAmt,over,overAmt,vat,vatAmt,net:nae?nae.A.D:net,tot:nae?nae.A.T:tot,nae,skip,T,at:Date.now(),how:AX.how,area:axArea(AX.ring),nP:C.pipes.length}}
 function axcHtml(r){if(!r)return '<p class="hint">범위를 먼저 그리세요.</p>';if(r.nae)return axcNaeHtml(r)+`<p class="hint" style="margin:2px 2px 0">범위 안 관 ${r.nP.toLocaleString()}개 중 조건에 맞는 ${r.rows.length.toLocaleString()}개 · 시설물 ${r.fN.toLocaleString()}개(개수만 표시)${r.skip.mat+r.skip.use+r.skip.dia?` · 조건으로 뺀 관: 재질 ${r.skip.mat} · 용도 ${r.skip.use} · 관경 ${r.skip.dia}`:''}</p>`;const L=v=>(v/1000>=1?(v/1000).toFixed(2)+'km':Math.round(v).toLocaleString()+'m');
  const row=(a,b,c,cls)=>`<tr${cls?` class="${cls}"`:''}><td>${a}</td><td class="r">${b}</td><td class="r">${c}</td></tr>`;
  return `<table class="axct"><thead><tr><th>항목</th><th class="r">수량</th><th class="r">금액</th></tr></thead><tbody>
@@ -9657,10 +9661,10 @@ function axcRead(){const g=id=>$(id).value;Object.assign(AXC.c,{mode:g('axcMode'
 function axcModeUi(){const nae=!!AXC_NAE[$('axcMode').value];document.querySelectorAll('#axCostBox .axcS').forEach(e=>e.style.display=nae?'none':'');$('axcNaeInfo').style.display=nae?'':'none';if(nae)$('axcNaeTbl').innerHTML=axcNaeInfoHtml($('axcMode').value)}
 function axcNaeInfoHtml(key){const P=axcNaeP(key),r=P.r;return `<table class="axct"><thead><tr><th>관경</th><th>교체 관종</th><th class="r">부설+사급(원/m)</th><th class="r">관급 관값(원/m)</th></tr></thead><tbody>${P.ks.slice().reverse().map(k=>`<tr><td style="white-space:nowrap">${k}mm 이하</td><td>${AXC_PT(k)}${P.note[k]?` <small class="c-am">${esc(P.note[k])}</small>`:''}</td><td class="r">${axcF(P.pin[k])}</td><td class="r">${axcF(P.pout[k])}</td></tr>`).join('')}</tbody></table>
  <p class="hint" style="margin:4px 0 0">${esc(P.nm)} · 연장 ${esc(P.Lsrc)}<br>공통 직접비 ${axcF(P.cin)}원/m · 관급 아스콘 등 ${axcF(P.cgw)}원/m · 폐기물 ${axcF(P.wm)}원/m · 야적장 ${axcF(P.yardm)}원/m<br>요율: 간접노무 ${r.ind}% · 산재 ${r.san}% · 고용 ${r.emp}% · 건강 ${r.hea}% · 연금 ${r.pen}% · 요양 ${r.care}% · 퇴직공제 ${r.ret}% · 안전보건 ${r.safe}% · 환경 ${r.env}% · 기타경비 ${r.etc}% · 일반관리 ${r.gen}% · 이윤 ${r.prof}% · 부가세 ${r.vat}%<br>200mm 넘는 관은 내역서에 없어 관 자재 단가 확인 필요.</p>`}
-function axcShow(){if(!$('axCostBox').open)return;try{if(axcAddrKey()&&axcAddrKey()!==AXA.k){if(!AXA.man)$('axcAddr').value='';AXA.man=false;axcAddrFind()}}catch(_){}$('axcOut').innerHTML=axcHtml(axcCalc());const ok=!!AXC.r;$('axcXl').disabled=!ok;$('axcRep').disabled=!ok;
+function axcShow(){if(!$('axCostBox').open)return;$('axcOut').innerHTML=axcHtml(axcCalc());const ok=!!AXC.r;$('axcXl').disabled=!ok;$('axcRep').disabled=!ok;
  const kinds=AX.cache?[...AX.cache.byK.keys()].filter(k=>!AX.off.has(k)).map(k=>facKindInfo(k).name||k):[];$('axcFac').placeholder='예) '+(kinds.length?kinds.slice(0,3).map((n,i)=>i?n+'=':n+':100=').join('\n'):'제수밸브:100=\n소화전=')}
 function axcSheets(r){if(r.nae)return axcNaeSheets(r);const day=fmtDT(r.at),n=v=>v==null?'확인 필요':Math.round(v);
- const s1=[{'항목':'범위','값':`${r.addr?r.addr+' · ':''}${r.how} · 면적 ${Math.round(r.area).toLocaleString()}㎡`},{'항목':'작성','값':`${day} · 만든이: 구병순 · 현장 ${(window.SITE&&SITE.name)||''}`},
+ const s1=[{'항목':'범위','값':`${r.how} · 면적 ${Math.round(r.area).toLocaleString()}㎡`},{'항목':'작성','값':`${day} · 만든이: 구병순 · 현장 ${(window.SITE&&SITE.name)||''}`},
   {'항목':'대상 관로','값':`재질 ${AXC.c.mat==='pvc'?'PVC만':'전체'} · 용도 ${{all:'전체',dist:'배수관만',ds:'배수·급수관'}[AXC.c.use]} · 관경 ${axcNum(AXC.c.dia)?AXC.c.dia+'mm 이하':'전체'}`},
   {'항목':'관로 연장(범위 안, m)','값':+r.pL.toFixed(1)},{'항목':'관로 공사비(원)','값':n(r.pAmt)},{'항목':'단가 없는 관(m, 빼고 셈)','값':+r.pNo.toFixed(1)},
   {'항목':'시설물(개)','값':r.fN},{'항목':'시설물비(원)','값':n(r.fAmt)},{'항목':'단가 없는 시설물(개, 빼고 셈)','값':r.fNo},
@@ -9673,7 +9677,7 @@ function axcSheets(r){if(r.nae)return axcNaeSheets(r);const day=fmtDT(r.at),n=v=
  const s4=r.FS.map(o=>({'종류코드':o.k,'종류':o.nm,'구경(mm)':o.dia??'','개수':o.n,'단가(원/개)':o.unit??'확인 필요','금액(원)':o.amt!=null?Math.round(o.amt):'확인 필요','적용 단가 줄':o.src||''}));
  return [['요약',s1],['관경별 집계',s2],['관로 목록',s3],['시설물 집계',s4]]}
 function axcWb(r){const wb=XLSX.utils.book_new();axcSheets(r).forEach(([nm,rows])=>{const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{'내용':'자료 없음'}]);ws['!cols']=Object.keys(rows[0]||{a:1}).map(k=>({wch:k==='값'?60:Math.max(10,k.length*2)}));XLSX.utils.book_append_sheet(wb,ws,nm)});return wb}
-function axcFn(ext){const ad=typeof axcAddrNow==='function'?axcAddrNow().replace(/\s*일원$/,'').split(/\s+/).slice(-2).join(''):'';return `개략공사비_${(ad||AX.how).replace(/[\s\\/:*?"<>|]/g,'')}_${fmtD(Date.now()).replace(/-/g,'')}.${ext}`}
+function axcFn(ext){return `개략공사비_${AX.how.replace(/\s/g,'')}_${fmtD(Date.now()).replace(/-/g,'')}.${ext}`}
 function axcXl(){if(typeof XLSX==='undefined'){alert('엑셀 라이브러리를 불러오지 못했습니다.');return}axcRead();const r=axcCalc();if(!r)return;XLSX.writeFile(axcWb(r),axcFn('xlsx'),{compression:true})}
 /* 보고서 지도: 범위에 맞춰 캡처하고 범위 밖은 흐리게(누수 예측 보고서와 같은 방식) */
 async function axcMap(){try{if(!map||typeof mapShotBase!=='function'||!AX.ring)return'';const c0=map.getCenter(),z0=map.getZoom(),dl=$('axDlg'),h0=dl.hidden;dl.hidden=true;
@@ -9684,13 +9688,13 @@ async function axcMap(){try{if(!map||typeof mapShotBase!=='function'||!AX.ring)r
    mapShotDeco(B,secret);return B.cv.toDataURL('image/jpeg',.85)}finally{try{map.setView(c0,z0,{animate:false})}catch(_){}dl.hidden=h0}}catch(e){console.warn('공사비 보고서 지도',e);return''}}
 async function axcReport(mode){const hw=mode==='hwpx';axcRead();const r=axcCalc();if(!r)return;const w=hw?null:window.open('','axcReport','width=900,height=1000');if(!hw&&!w){alert('팝업이 막혀 보고서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}
  if(w)w.document.write('<p style="font-family:sans-serif;padding:20px">⏳ 보고서 만드는 중… (지도 캡처)</p>');const bt=hw?$('axcHw'):$('axcRep'),bt0=bt.textContent;bt.disabled=true;if(hw)bt.textContent='⏳ 한글 파일 만드는 중…';
- try{if(!r.addr){try{r.addr=(await Promise.race([axcAddrFind(),new Promise(z=>setTimeout(()=>z(''),4000))]))||''}catch(_){}}const img=await axcMap(),e=esc,f0=v=>v==null?'확인 필요':Math.round(v).toLocaleString(),km=v=>(v/1000).toFixed(2);
+ try{const img=await axcMap(),e=esc,f0=v=>v==null?'확인 필요':Math.round(v).toLocaleString(),km=v=>(v/1000).toFixed(2);
   const kpi=(t,v,s,c)=>`<div class="k"><small>${t}</small><b${c?` class="${c}"`:''}>${v}</b>${s?`<i>${s}</i>`:''}</div>`;
   const T=(h,rows,cls)=>`<table${cls?` class="${cls}"`:''}><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${h.length}">자료 없음</td></tr>`}</tbody></table>`;
   const c=AXC.c,cond=`재질 ${c.mat==='pvc'?'PVC만':'전체'} · 용도 ${{all:'전체',dist:'배수관만',ds:'배수·급수관'}[c.use]} · 관경 ${axcNum(c.dia)?c.dia+'mm 이하':'전체'}`;
   const blks=[...new Set(r.rows.map(x=>x.blk).filter(Boolean))].sort();
   const sec=[];if(r.nae)axcNaeSec(r,sec,{img,e,kpi,T,cond,blks,km,f0});else{
-  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('관로 연장 (범위 안)',km(r.pL)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('시설물',r.fN.toLocaleString()+'개',r.FS.length?[...new Set(r.FS.map(o=>o.nm))].slice(0,4).map(e).join(', '):'')}${kpi('순공사비',axcEok(r.net),'관로+시설물+포장')}${kpi('총 개략공사비',axcEok(r.tot),'제경비·부가세 포함','tot')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}`);
+  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('관로 연장 (범위 안)',km(r.pL)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('시설물',r.fN.toLocaleString()+'개',r.FS.length?[...new Set(r.FS.map(o=>o.nm))].slice(0,4).map(e).join(', '):'')}${kpi('순공사비',axcEok(r.net),'관로+시설물+포장')}${kpi('총 개략공사비',axcEok(r.tot),'제경비·부가세 포함','tot')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}`);
   sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map" src="${img}" alt="범위 지도">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시</p>`);
   sec.push(`<h2>3. 공사비 내역</h2>${T(['항목','산출','금액(원)'],[
    `<tr><td>관로 교체</td><td>${km(r.pL)}km × 관경별 단가 (아래 4)</td><td class="r">${f0(r.pAmt)}</td></tr>`,
@@ -9717,27 +9721,13 @@ footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#6474
 @media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}header,th,tr.sub td,tr.tot td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:700px){.kp{grid-template-columns:repeat(2,1fr)}}</style></head><body>
 <div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${HWPX_BTN(axcFn('hwpx'))}<button onclick="close()">닫기</button></div>
-<div class="pg"><header><h1>💰 개략공사비 보고서 · ${r.addr?e(r.addr):e(r.how)+' 범위'}${r.nae&&r.nae.B?' · 현 관경 ↔ 적정 관경 비교':''}</h1><p>스마트 물길주소 ⬚ 개략공사비 · ${e((window.SITE&&SITE.name)||'')} · 작성 ${fmtDT(r.at)} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section${(x.match(/<tr/g)||[]).length>22?' class="long"':''}>${x}</section>`).join('\n')}
+<div class="pg"><header><h1>💰 개략공사비 보고서 · ${e(r.how)} 범위${r.nae&&r.nae.B?' · 현 관경 ↔ 적정 관경 비교':''}</h1><p>스마트 물길주소 ⬚ 개략공사비 · ${e((window.SITE&&SITE.name)||'')} · 작성 ${fmtDT(r.at)} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section${(x.match(/<tr/g)||[]).length>22?' class="long"':''}>${x}</section>`).join('\n')}
 <p class="n" style="margin-top:12px">${r.nae?`개략 금액이며 실제 설계와 다를 수 있습니다. ${esc(r.nae.key)} 설계내역서의 m당 값과 원가계산서 요율을 범위 안 연장에 적용했고,`:'개략 금액(단가 × 수량)이며 실제 설계 내역과 다를 수 있습니다. 단가·비율은 앱에 넣은 값이고,'} 비어 있는 것은 '확인 필요'로 금액에서 뺐습니다. 관리번호·소블록만 쓰며 고객 정보는 넣지 않습니다. 관로 목록은 함께 저장한 엑셀(관로 목록 시트)을 보세요.</p></main>
 <footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
   if(hw)await hwpxFromHtml(html,axcFn('hwpx'));else{w.document.open();w.document.write(html);w.document.close()}}
  catch(err){try{if(w)w.close()}catch(_){}alert('보고서를 만들지 못했습니다: '+(err&&err.message||err))}finally{bt.disabled=false;bt.textContent=bt0}}
 $('axCostBox').addEventListener('toggle',()=>{if($('axCostBox').open){axcUi();axcShow()}});
 $('axcMode').addEventListener('change',axcModeUi);['axcMode','axcMat','axcDia','axcUse','axcPave','axcOver','axcVat','axcFac','axcPrice','axcUnit','axcZip'].forEach(id=>$(id).addEventListener('change',()=>{axcRead();axcShow()}));
-/* 대표 주소: 범위 가운데(안에 없으면 범위 안 첫 관로 가운데) 지점의 지번 주소 + '일원'. 고객 정보가 아니라 땅 위치 주소이며, 시·도는 뺌 */
-const AXA={k:'',v:'',man:false,busy:null};
-function axcAddrKey(){const r=AX.ring;return r&&r.length?r.length+':'+r[0].map(v=>v.toFixed(6)).join(',')+':'+r[r.length>>1].map(v=>v.toFixed(6)).join(','):''}
-function axcAddrPt(){const r=AX.ring;if(!r||!r.length)return null;let a=0,cx=0,cy=0;for(let i=0;i<r.length;i++){const [x0,y0]=r[i],[x1,y1]=r[(i+1)%r.length],f=x0*y1-x1*y0;a+=f;cx+=(x0+x1)*f;cy+=(y0+y1)*f}
- let c=Math.abs(a)>1e-14?[cx/(3*a),cy/(3*a)]:[r.reduce((s,p)=>s+p[0],0)/r.length,r.reduce((s,p)=>s+p[1],0)/r.length];
- if(!axPip(r,c[0],c[1])){const x=AXC.r&&AXC.r.rows&&AXC.r.rows[0];const m=x&&x.f&&sxMid(x.f.geometry);if(m)c=m}return{lng:c[0],lat:c[1]}}
-function axcAddrFmt(a){const t=String(a||'').trim().split(/\s+/).filter(Boolean);if(!t.length)return '';if(t.length>2&&/(도|특별시|광역시|특별자치시|특별자치도|^경북|^경남|^전북|^전남|^충북|^충남)$/.test(t[0]))t.shift();return t.join(' ')+' 일원'}
-async function axcAddrFind(force){const el=$('axcAddr');if(!el)return AXA.v;const k=axcAddrKey();if(!k)return el.value.trim();
- if(AXA.man&&!force)return el.value.trim();if(!force&&AXA.k===k&&AXA.v)return AXA.v;if(AXA.busy&&AXA.busyK===k&&!force)return AXA.busy;
- const pt=axcAddrPt();if(!pt)return el.value.trim();AXA.busyK=k;
- AXA.busy=(async()=>{try{const a=await shutAddrOf(pt);const v=axcAddrFmt(a);if(axcAddrKey()===k){AXA.k=k;AXA.v=v;if(!AXA.man||force){AXA.man=false;el.value=v;el.title=v?'범위 가운데 지점 주소 (자동)':'주소를 찾지 못했습니다'}}return v}catch(e){el.title=e.message||'';if(force)alert(e.message||'주소를 찾지 못했습니다.');return el.value.trim()}finally{AXA.busy=null}})();return AXA.busy}
-function axcAddrNow(){const el=$('axcAddr');return el?el.value.trim():''}
-$('axcAddr').addEventListener('input',()=>{AXA.man=!!$('axcAddr').value.trim()});
-$('axcAddrBtn').onclick=()=>{AXA.man=false;axcAddrFind(true)};
 $('axcXl').onclick=axcXl;$('axcRep').onclick=()=>axcReport();$('axcHw').onclick=()=>axcReport('hwpx');
 /* ── 📝 한글(HWPX) 저장 공용 (2026-11-12 B안) ──
    HWPX = 한글 2014 이후 공개 형식(OWPML XML을 zip으로 묶음). 서버 없이 JSZip으로 만듦.
