@@ -13187,13 +13187,35 @@ function stPPDel(j){const L=stPP();L.splice(j,1);stPPName(L);stSave();stDraw(fal
 function stPPZ(p){try{const e=typeof elevAt==='function'?elevAt(p.la,p.ln):null;return e&&isFinite(e.z)?Math.round(e.z*10)/10:null}catch(_){return null}}
 
 /* ── 계획 도면 (전체 1장 + 단계별): 지도를 소블록에 맞추고 배경만 받은 뒤 관로·밸브·수압점을 직접 그림 (화면 표시와 상관없이 같은 모양) ── */
-async function stFigs(P,onMsg){if(!map||typeof mapShotBase!=='function')return null;const c0=map.getCenter(),z0=map.getZoom(),N=P.N;
+const ST_FAR=1.15;/* 단계별 쪽: 제목·설명·밸브 표 빼고 남는 도면 높이(mm) */
+const stStepHmm=s=>Math.max(110,Math.min(195,273-22-(s.V.length+1)*6.6));
+/* 계획 도면 가로:세로 기본값 */
+/* 계획서 1쪽에서 전체 계획도가 들어갈 칸 재기(mm): w = 도면 폭, av = 1쪽 남은 높이(설명 글 뺌) */
+function stLay(html){return new Promise(res=>{const f=document.createElement('iframe'),MM=96/25.4;f.setAttribute('aria-hidden','true');f.tabIndex=-1;
+ f.style.cssText=`position:fixed;left:-9999px;top:0;width:${Math.round(186*MM)}px;height:1400px;border:0;visibility:hidden`;let done=false;
+ const end=v=>{if(done)return;done=true;try{f.remove()}catch(_){}res(v)};
+ f.onload=()=>setTimeout(()=>{try{const d=f.contentDocument,g=d.querySelector('.pg'),i=d.querySelector('img.stm0');if(!g||!i)return end(null);const bar=d.querySelector('.bar');if(bar)bar.style.display='none';d.body.style.margin='0';
+  const G=g.getBoundingClientRect(),I=i.getBoundingClientRect(),c=i.nextElementSibling,ch=c?c.getBoundingClientRect().height+4:14,top=(I.top-G.top)/MM;
+  end({w:(i.parentElement.clientWidth)/MM,av:273-top-ch/MM-4})}catch(_){end(null)}},250);
+ setTimeout(()=>end(null),4000);f.srcdoc=html;document.body.appendChild(f)})}
+async function stFigs(P,onMsg,ar){if(!map||typeof mapShotBase!=='function')return null;const c0=map.getCenter(),z0=map.getZoom(),N=P.N;
  const pf=poly&&poly.features.find(f=>blkNm(f)===P.nm);let bd=null;
  try{bd=pf?L.geoJSON(pf).getBounds():null}catch(_){}if(!bd||!bd.isValid()){const a=[];P.Z.forEach(z=>z.E.forEach(e=>shutLL(e).forEach(x=>a.push(x))));bd=L.latLngBounds(a)}
  const vis=ST.L&&map.hasLayer(ST.L);if(vis)map.removeLayer(ST.L);
- try{map.fitBounds(bd.pad(.04),{animate:false});await new Promise(r=>setTimeout(r,1500));
-  const B=await mapShotBase([],0,null,null,{bgOnly:true}),k=B.k,W=B.W,H=B.Hm,secret=true;
-  const pt=ll=>{const p=map.latLngToContainerPoint(ll);return[p.x*k,p.y*k]};
+ /* 계획서 1쪽을 채우게: 그리는 동안만 지도 칸을 가로:세로 ≈ ST_FAR로 바꿔 소블록을 크게 맞춤 (화면이 가로로 길면 도면이 납작해져 아래가 비던 문제) */
+ const mc=map.getContainer(),css0=mc.style.cssText,zs0=map.options.zoomSnap,R0=mc.getBoundingClientRect();
+ let AR=ar||ST_FAR;const setAR=a=>{AR=a;mc.style.cssText=css0;if(R0.width&&R0.height){if(R0.width/R0.height>AR)mc.style.width=Math.round(R0.height*AR)+'px';else mc.style.height=Math.round(R0.width/AR)+'px';map.invalidateSize({animate:false,pan:false})}};
+ try{setAR(AR);
+  map.options.zoomSnap=.25;const secret=true;let B,k,W,H,ox,oy;
+  /* bb 범위에 맞춰 배경 받기 (전체 = 소블록, 단계별 = 그 단계 구간·밸브로 확대) */
+  const cap=async(bb,pd)=>{map.fitBounds(bb.pad(pd),{animate:false,maxZoom:18});await new Promise(r=>setTimeout(r,1500));
+  B=await mapShotBase([],0,null,null,{bgOnly:true});k=B.k;W=B.W;H=B.Hm;ox=0;oy=0;
+  /* 지도 칸 크기를 못 바꾼 경우 대비: 범위 둘레로 가로:세로 ≈ AR만큼 잘라 냄 */
+  {const a=map.latLngToContainerPoint(bb.getNorthWest()),b=map.latLngToContainerPoint(bd.getSouthEast()),bx0=a.x*k,bx1=b.x*k,by0=a.y*k,by1=b.y*k;
+   if(W/H>AR*1.03){const cw=Math.min(W,Math.max(Math.round(H*AR),Math.round((bx1-bx0)*1.06)));ox=Math.max(0,Math.min(W-cw,Math.round((bx0+bx1)/2-cw/2)));W=cw}
+   else if(W/H<AR/1.03){const ch=Math.min(H,Math.max(Math.round(W/AR),Math.round((by1-by0)*1.06)));oy=Math.max(0,Math.min(H-ch,Math.round((by0+by1)/2-ch/2)));H=ch}}};
+  await cap(bd,.03);
+  const pt=ll=>{const p=map.latLngToContainerPoint(ll);return[p.x*k-ox,p.y*k-oy]};
   const path=(g,e)=>{shutLL(e).forEach((ll,i)=>{const[x,y]=pt(ll);i?g.lineTo(x,y):g.moveTo(x,y)})};
   const strokeZ=(g,zs,col,w,dash)=>{g.beginPath();zs.forEach(z=>P.Z[z].E.forEach(e=>path(g,e)));g.setLineDash(dash?dash.map(d=>d*k):[]);g.lineCap='round';g.lineJoin='round';
    g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=(w+3)*k;g.stroke();g.strokeStyle=col;g.lineWidth=w*k;g.stroke();g.setLineDash([])};
@@ -13206,7 +13228,7 @@ async function stFigs(P,onMsg){if(!map||typeof mapShotBase!=='function')return n
    g.font=`600 ${10.5*k}px "Noto Sans KR",sans-serif`;rows.forEach((r,i)=>{const yy=y+(27+i*16)*k;if(r[2]==='c'){g.beginPath();g.arc(x+18*k,yy,5*k,0,7);g.fillStyle=r[0];g.fill()}else if(r[2]==='s'){g.fillStyle=r[0];g.fillRect(x+13*k,yy-5*k,10*k,10*k)}else{g.setLineDash(r[2]==='d'?[4*k,3*k]:[]);g.strokeStyle=r[0];g.lineWidth=4*k;g.beginPath();g.moveTo(x+10*k,yy);g.lineTo(x+26*k,yy);g.stroke();g.setLineDash([])}g.fillStyle='#0f172a';g.fillText(r[1],x+32*k,yy)})};
   const ring=(g)=>{if(!pf)return;const G=pf.geometry;g.beginPath();(G.type==='Polygon'?[G.coordinates]:G.type==='MultiPolygon'?G.coordinates:[]).forEach(Pg=>Pg.forEach(r=>{r.forEach(([x,y],i)=>{const q=pt([y,x]);i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])});g.closePath()}));g.strokeStyle='#4338ca';g.lineWidth=2.5*k;g.setLineDash([8*k,5*k]);g.stroke();g.setLineDash([])};
   const allZ=P.Z.map(z=>z.id),done=new Set(),out=[],PP=stPP(P.nm);
-  const base=()=>{const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.drawImage(B.cv,0,0,W,H,0,0,W,H);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(0,0,W,H);ring(g);strokeZ(g,allZ,'#94a3b8',1.6);return{cv,g}};
+  const base=()=>{const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.drawImage(B.cv,ox,oy,W,H,0,0,W,H);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(0,0,W,H);ring(g);strokeZ(g,allZ,'#94a3b8',1.6);return{cv,g}};
   const finish=(o)=>{const S={g:o.g,k,W,Hm:H,used:B.used,attr:B.attr};mapShotDeco(S,secret);return o.cv.toDataURL('image/jpeg',.88)};
   const pps=g=>PP.forEach(p=>sq(g,[p.la,p.ln],'#0369a1',p.nm));
   const inl=g=>{if(P.inLL){circ(g,P.inLL,11,'#0f172a','유입',8);}};
@@ -13221,6 +13243,8 @@ async function stFigs(P,onMsg){if(!map||typeof mapShotBase!=='function')return n
    out.push({t:'전체 계획도',url:finish(o)})}
   /* 단계별 */
   for(let i=0;i<P.steps.length;i++){const s=P.steps[i];onMsg&&onMsg(`⏳ ${i+1}단계 계획도 그리는 중…`);await tick();
+   /* 단계별 상세도: 그 단계에서 끊는 구간과 닫을 밸브만 보이게 확대 */
+   {const a=[];s.zs.forEach(z=>P.Z[z].E.forEach(e=>shutLL(e).forEach(x=>a.push(x))));s.V.forEach(vi=>a.push(stVLL(vi)));const sb=a.length?L.latLngBounds(a):null;if(sb&&sb.isValid()){s.hmm=stStepHmm(s);setAR(Math.max(.7,Math.min(1.8,178/s.hmm)));await cap(sb,.15)}}
    const o=base(),g=o.g,later=P.steps.slice(i+1).flatMap(x=>x.zs).concat([P.z0]);
    strokeZ(g,later,'#60a5fa',3);if(done.size)strokeZ(g,[...done],'#6b7280',4);strokeZ(g,s.zs,stCol(i),6.5);
    P.steps.slice(0,i).forEach(x=>x.V.forEach(vi=>circ(g,stVLL(vi),5,'#374151','')));
@@ -13229,38 +13253,46 @@ async function stFigs(P,onMsg){if(!map||typeof mapShotBase!=='function')return n
    legend(g,[[stCol(i),`${i+1}단계에서 새로 끊는 구간 ${stM(s.L)} · 수용가 ${P.cust?s.nC+'곳':'확인 필요'}`],...(i?[['#6b7280',`앞 단계(${i>1?'1~'+i:'1'}단계)에서 이미 닫은 구간`]]:[]),['#60a5fa','물이 계속 흐르는 구간 (유량계 쪽)'],['#dc2626',`이번에 닫을 차단밸브 ${s.V.length}개 (번호 = 표 순서)`,'c'],...(i?[['#374151','앞 단계에서 닫아 둔 밸브','c']]:[]),...(PP.length?[['#0369a1','수압 측정 위치','s']]:[])],`${P.nm} · ${i+1}단계 계획도`);
    out.push({t:`${i+1}단계 계획도`,url:finish(o)});s.zs.forEach(z=>done.add(z))}
   return{figs:out,note:B.note}}
- finally{try{map.setView(c0,z0,{animate:false})}catch(_){}if(vis)ST.L.addTo(map)}}
+ finally{mc.style.cssText=css0;map.options.zoomSnap=zs0;try{map.invalidateSize({animate:false,pan:false});map.setView(c0,z0,{animate:false})}catch(_){}if(vis)ST.L.addTo(map)}}
 
 /* ── 📄 계획서 (A4·PDF 인쇄 창 / 📝 한글 HWPX): 기준·확인 목록·전체 계획도·단계별 계획도·차단밸브 표·수압 측정 위치·기록표 ── */
 async function stReport(mode){const P=ST.plan;if(!P){alert('먼저 🪜 계획 만들기를 누르세요.');return}const hw=mode==='hwpx',e=esc,SITEN=(typeof SITE!=='undefined'&&SITE.name)||'';
  const say=t=>{const a=$('stMsg');if(a)a.textContent=t;ST.bmsg=t;stRender()};
- let F=null;try{F=await stFigs(P,say)}catch(er){console.warn('단계시험 도면',er)}
  const T=(h,rows,cls)=>`<table${cls?` class="${cls}"`:''}><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${h.length}">없음</td></tr>`}</tbody></table>`;
  const vRow=(vi,j,k)=>{const p=FAC.pt[vi].p||{},d=p['구경']!=null&&String(p['구경']).trim()!==''?e(p['구경']):'확인 필요';return[k!=null?String(k):String(j+1),e(stVn(vi)),d,FAC.cl[vi]?'닫힘':'열림·미상',FAC.y[vi].toFixed(6),FAC.x[vi].toFixed(6)]};
- const PP=stPP(P.nm),W=stWarns(P),rs=stRows(P),sec=[];
- sec.push(`<h2>1. 시험 기준</h2>${T(['항목','값'],stInfo(P).map(([a,b])=>[e(a),e(b)]))}`);
+ const PP=stPP(P.nm),W=stWarns(P),rs=stRows(P);let F=null,own=false,hm0=150;
+ const title=`${SITEN} ${P.nm} 단계시험(Step Test) 계획서`,fn=`단계시험계획서_${P.nm}_${fmtD(Date.now()).replace(/-/g,'')}`;
+ const mk=()=>{const sec=[];
+ /* 1. 기준은 짧은 값끼리 한 줄에 두 개씩(1쪽 도면 칸을 넓히려고) */
+ {const it=stInfo(P),rw=[],lg=[];let hold=null;it.forEach(([a,b])=>{const c=`<th>${e(a)}</th>`;if(String(b).length>26){lg.push(`<tr>${c}<td colspan="3">${e(b)}</td></tr>`);return}const x=c+`<td>${e(b)}</td>`;if(hold){rw.push(`<tr>${hold}${x}</tr>`);hold=null}else hold=x});if(hold)rw.push(`<tr>${hold}<th></th><td></td></tr>`);rw.push(...lg);
+  sec.push(`<h2>1. 시험 기준</h2><table class="kv"><colgroup><col style="width:17%"><col style="width:33%"><col style="width:17%"><col style="width:33%"></colgroup><tbody>${rw.join('')}</tbody></table>`)}
  sec.push(`<h2>2. 시작 전 확인</h2>${T(['항목','개수','내용'],W.map(w=>[e(w.t),e(String(w.n)),e(w.d)+(w.v&&!/가압장/.test(w.t)?' ('+w.v.slice(0,10).map(vi=>e(stVn(vi))).join(', ')+(w.v.length>10?' 외':'')+')':'')]))}`);
- const fig=(i,cap)=>F&&F.figs[i]?`<img class="map" src="${F.figs[i].url}" alt="${e(F.figs[i].t)}"><p class="n">${cap}</p>`:'<p class="n">도면을 만들지 못했습니다(지도가 준비되지 않음). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>';
+ const fig=(i,cap)=>F&&F.figs[i]?`<img class="map ${i?'stm':'stm0'+(own?' own':'')}" src="${F.figs[i].url}" alt="${e(F.figs[i].t)}" data-hmm="${i?Math.round(Math.min(170,(P.steps[i-1]&&P.steps[i-1].hmm)||140)):Math.round(hm0)}"${i&&P.steps[i-1]&&P.steps[i-1].hmm?` style="max-height:${Math.round(P.steps[i-1].hmm)}mm"`:''}><p class="n">${cap}</p>`:'<p class="n">도면을 만들지 못했습니다(지도가 준비되지 않음). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>';
  sec.push(`<h2>3. 전체 계획도</h2>${fig(0,`단계 색 = 닫는 순서 · 원 안 숫자 = 그 단계에 닫을 밸브 · 네모 = 경계밸브(초록 닫힘·빨강 열림/미상) · 점선 = 유입 구간 · P = 수압 측정 위치${F&&F.note?' · '+e(F.note):''}`)}`);
  P.steps.forEach((s,i)=>sec.push(`<h3>4-${i+1}. ${i+1}단계 계획도 — 차단밸브 ${s.V.length}개 · 끊는 관로 ${stM(s.L)} · 수용가 ${P.cust?s.nC+'곳':'확인 필요'}</h3>${fig(i+1,`빨간 원 = 이번에 닫을 차단밸브(번호 = 아래 표) · 회색 = 앞 단계에서 이미 닫은 구간 · 하늘색 = 물이 계속 흐르는 구간`)}${T(['번호','차단밸브(관리번호)','구경(mm)','지금 상태','위도','경도'],s.V.map((vi,j)=>vRow(vi,j)))}`));
  sec.push(`<h2>5. 차단밸브 전체 목록 (닫는 순서)</h2>${T(['단계','차단밸브(관리번호)','구경(mm)','지금 상태','위도','경도'],P.steps.flatMap((s,i)=>s.V.map((vi,j)=>vRow(vi,j,i+1))))}<p class="n">시험이 끝나면 마지막 단계부터 거꾸로 다시 엽니다. 경계밸브는 시작 전 닫힘 확인만 하고 이 표의 밸브는 아닙니다.</p>`);
  sec.push(`<h2>6. 수압 측정 위치</h2>${PP.length?T(['지점','위치(근거)','표고(m)','위도','경도'],PP.map(p=>{const z=stPPZ(p);return[p.nm,e(p.src),z!=null?String(z):'확인 필요',p.la.toFixed(6),p.ln.toFixed(6)]})):'<p class="n">수압 측정 위치를 아직 정하지 않았습니다. 현장 창의 📍 수압점으로 찍거나 ②-4 추천 자리를 불러오세요.</p>'}<p class="n">표고는 관망해석(②-3) 절점에서 가까운 값(참고). 단계마다 유입 유량과 함께 각 지점 수압(m)을 적습니다.</p>`);
  const ph=PP.map(p=>p.nm+' 수압(m)');
  sec.push(`<h2>7. 단계별 기록표</h2>${T(['단계','새로 닫을 밸브','관로(m)','수용가','예상 야간(㎥/h)','닫은 시각','유입 유량(㎥/h)','줄어든 유량',...ph],rs.map(r=>[String(r['단계']),e(r['새로 닫을 밸브(관리번호)']),String(r['관로 길이(m)']),String(r['수용가 수']),String(r['예상 야간 사용(㎥/h)']),r['닫은 시각']||'',String(r['유입 유량(㎥/h)']),String(r['줄어든 유량(㎥/h)']),...PP.map(p=>String(r[p.nm+' 수압(m)']??''))]),'rec')}<p class="n">메모: ${e((ST.rec[P.nm]||{}).nt||'')}</p>`);
- const title=`${SITEN} ${P.nm} 단계시험(Step Test) 계획서`,fn=`단계시험계획서_${P.nm}_${fmtD(Date.now()).replace(/-/g,'')}`;
- const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
 .pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 10mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:14px 18px;-webkit-print-color-adjust:exact;print-color-adjust:exact}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.9;font-size:11.5px}
 main{padding:4px 16px}section{break-inside:avoid;page-break-inside:avoid}section.long{break-inside:auto;page-break-inside:auto}section.fig{break-before:page}thead{display:table-header-group}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}h3{font-size:12.5px;color:#1e1b4b;margin:12px 0 5px;break-after:avoid}
 table{border-collapse:collapse;width:100%;font-size:10.5px;break-inside:auto;margin:3px 0}th{background:#eef2ff;color:#3730a3;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact}th,td{border:1px solid #e2e8f0;padding:3px 5px;vertical-align:top}tr{break-inside:avoid}table.rec td{height:22px}
-.n{color:#64748b;font-size:10px;margin:3px 0}.map{width:100%;border:1px solid #e2e8f0;border-radius:6px;display:block}
+.n{color:#64748b;font-size:10px;margin:3px 0}.map{width:100%;border:1px solid #e2e8f0;border-radius:6px;display:block}img.stm0,img.stm{width:auto;max-width:100%;margin:0 auto}table.kv th{background:#f8fafc;color:#334155;font-weight:700}img.stm0{max-height:150mm}img.stm0.own{max-height:235mm}img.stm{max-height:140mm}
 footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px;display:flex;justify-content:space-between}.bar{position:sticky;top:0;background:#1e293b;padding:8px;text-align:center}.bar button{font:inherit;font-weight:700;padding:6px 14px;border-radius:8px;border:0;background:#4f46e5;color:#fff;cursor:pointer;margin:0 4px}
 @media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}}</style></head><body>
 <div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${HWPX_BTN(fn+'.hwpx')}<button onclick="close()">닫기</button></div>
-<div class="pg"><header><h1>🪜 ${e(title)}</h1><p>스마트 물길주소 · 작성 ${fmtDT(Date.now())} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section class="${/^<h3>4-/.test(x)?'fig':''}${(x.match(/<tr/g)||[]).length>22?' long':''}">${x}</section>`).join('\n')}
+<div class="pg"><header><h1>🪜 ${e(title)}</h1><p>스마트 물길주소 · 작성 ${fmtDT(Date.now())} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section class="${/^<h3>4-/.test(x)||(own&&/^<h2>3\./.test(x))?'fig':''}${(x.match(/<tr/g)||[]).length>22?' long':''}">${x}</section>`).join('\n')}
 <p class="n" style="margin-top:12px">관리번호·소블록만 씁니다(고객 이름·주소·연락처 없음). 밸브 위치·개폐 상태는 시설물 자료 기준이며 현장 확인이 필요합니다. 단계 수·1곳당 야간 사용량·단계당 시간은 확인 필요.</p></main>
-<footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
+<footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div>
+<script>/* 1쪽 전체 계획도: 위 표 길이에 맞춰 1쪽 남은 높이만큼 키움(넘으면 줄임) */(function(){function f(){var i=document.querySelector('img.stm0'),g=document.querySelector('.pg');if(!i||!g||/own/.test(i.className))return;var G=g.getBoundingClientRect(),mm=(i.getBoundingClientRect().top-G.top)*186/G.width,a=273-mm-14;i.style.maxHeight=Math.max(90,Math.min(200,a)).toFixed(0)+'mm'}addEventListener('load',f);addEventListener('beforeprint',f);f()})()<\/script></body></html>`};
+ /* 1쪽 남은 칸 재기: 도면 자리만 비운 계획서를 A4 폭(186mm)으로 몰래 펼쳐 1. 기준·2. 확인 아래 남는 높이를 잼 → 그 칸 모양에 맞춰 도면 가로:세로를 정함 */
+ F={figs:[{url:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',t:''}],note:''};let ar=ST_FAR;
+ try{const y=await stLay(mk());if(y){if(y.av<85){own=true;ar=y.w/235}else{hm0=Math.min(150,y.av);ar=y.w/Math.min(y.av,200)}ar=Math.max(.7,Math.min(2.2,ar))}}catch(er){console.warn('단계시험 1쪽 재기',er)}
+ F=null;try{F=await stFigs(P,say,ar)}catch(er){console.warn('단계시험 도면',er)}
+ const html=mk();
  say('');
  if(hw){await hwpxFromHtml(html,fn+'.hwpx');return}
  const w=window.open('','stReport','width=900,height=1000');if(!w){alert('팝업이 막혀 계획서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}w.document.open();w.document.write(html);w.document.close();ST.lastHtml=html}
