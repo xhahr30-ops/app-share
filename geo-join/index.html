@@ -2329,7 +2329,8 @@ function bpSysUI(){if(!BP.el)return;const box=BP.el.querySelector('[data-bp-sys]
  box.dataset.key=y.key}
 function bpNrwInfo(){const st=BP.el&&BP.el.querySelector('[data-bp-nrw]');if(!st)return;const R=BP.nrw;
  if(!R){st.textContent='유수율 엑셀을 넣으면 쪽마다 월별 표가 들어갑니다 (시트 이름에 유수율·소블록이 든 시트).';return}
- const nb=bpBlocks(),hit=nb.filter(b=>bpNrwOf(b.n)).length;st.textContent=`📊 ${R.f||''} · ${R.sn||''} · 소블록 ${Object.keys(R.B).length}개 · ${R.years.join('·')}년`+(nb.length?` · 지도 소블록 ${nb.length}개 중 ${hit}개 맞음`:'')}
+ const nb=bpBlocks(),hit=nb.filter(b=>bpNrwOf(b.n)).length;st.textContent=`📊 ${R.f||''} · ${R.sn||''} · 소블록 ${Object.keys(R.B).length}개 · ${R.years.join('·')}년`+(nb.length?` · 지도 소블록 ${nb.length}개 중 ${hit}개 맞음`:'')+(R.bill&&R.bill.R.length?` · 부과량 시트 수용가 ${R.bill.R.length.toLocaleString()}전 (${R.bill.M[R.bill.M.length-1]||''}까지)`:R.bill===undefined?' · ⚠ 부과량 시트를 아직 안 읽었습니다(예전에 넣은 엑셀) — 수용가 현황을 채우려면 이 엑셀을 한 번 다시 넣어 주세요':' · ⚠ 이 엑셀에서 \'부과량\' 시트를 찾지 못했습니다 — 수용가 현황 확인 필요');
+ st.style.color=R.bill&&R.bill.R.length?'':'#b45309'}
 /* ---- 창 ---- */
 function bpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않았습니다.');return}if(!bpBlocks().length){msg('소블록 경계(② 소블록)를 먼저 넣어 주세요.');return}
  try{vpClose()}catch(_){}const mc=m.getContainer();
@@ -2395,7 +2396,7 @@ const BP_SYM=.5;/* 현황도 지도: 유량계·경계밸브 밖 심볼 크기(2
 const BP_BND='#ea580c',BP_RC='#2563eb',BP_OC='#dc2626',BP_RY0=()=>new Date().getFullYear()-9;/* 소블록 경계 = 주황 점선(2026-11-12 사용자) */
 async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContainer(),st0=mc.getAttribute('style');let big=false;
  /* 관로 검정 통일(2026-11-12): 화면 관로 레이어는 빼고 찍은 뒤, 블록 안 관로만 검정 선으로 직접 그림(배수관 = 급수관 × 1.5) */
- const PP=G('PIPE'),pOn=!!PP&&[PP.layer,PP.layerS].some(l=>l&&m.hasLayer(l)),pk=BP.o.pk!==0&&pOn,pRm=[];let tmp=null;
+ const PP=G('PIPE'),pOn=!!PP&&[PP.layer,PP.layerS].some(l=>l&&m.hasLayer(l)),pk=BP.o.pk!==0&&pOn,pRm=[];let tmp=null,zs0;
  if(pk)[PP.layer,PP.layerS].forEach(l=>{if(l&&m.hasLayer(l)){m.removeLayer(l);pRm.push(l)}});
  /* 블록 안 + 경계선 15m 안(경계밸브는 경계 위·바로 밖에 있어 안쪽 판정만 하면 빠짐) */
  const bxs=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),E=.0002,lns=[];b.fs.forEach(f=>{const g=f.geometry;if(!g)return;(g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]).forEach(pl=>pl.forEach(r=>{if(r.length>1)lns.push(turf.lineString(r))}))});
@@ -2409,8 +2410,9 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  const FA=G('FAC'),cl=BP.o.cl!==0;const PHg=G('PH');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}
  if(FA){FA.bndAll=true;FA.bpLbl=1.35;FA.bpSm=BP_SYM;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
  try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
-  const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(14,fw*.05);
-  const bb=L.geoJSON({type:'FeatureCollection',features:b.fs}).getBounds();m.fitBounds(bb,{paddingTopLeft:[px+pad,py+pad],paddingBottomRight:[px+pad,py+pad],animate:false,maxZoom:18});
+  const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(8,fw*.025);
+  const bb=L.geoJSON({type:'FeatureCollection',features:b.fs}).getBounds();zs0=m.options.zoomSnap;m.options.zoomSnap=0; /* 블록이 칸에 꽉 차게: 줌을 0.5 단위로 끊지 않음(2026-11-13) */
+  m.fitBounds(bb,{paddingTopLeft:[px+pad,py+pad],paddingBottomRight:[px+pad,py+pad],animate:false,maxZoom:18});
   await vpWait(BP.o.hq?2200:1500);
   const kk=Math.max(1,Math.min(3,mm.w*dpm/fw));
   /* 관로 검정 선·경계선은 지도 캡처 안(블록 칸 400 위·시설물 칸 440 아래, 420)에 그려 유량계·밸브 아이콘이 선 위에 오게 함 */
@@ -2443,7 +2445,7 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
   let leg=[];if(BP.o.leg){const q=bb;
    leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}
   return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,ptC:ptOld.length>0}}
- finally{const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+ finally{if(zs0!==undefined)m.options.zoomSnap=zs0;const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
 function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,nr=!!BP.o.nrw,cu=BP.o.cu!==0,tH=nr?(l?(cu?50:40)*s:(cu?46*s+gap+44*s:46*s)):cu?(l?44:50)*s:0;
  const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}},sy=BP.o.sys!==0?11*s:0;L0.syH=sy;
@@ -2619,7 +2621,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    g.font=FT(500,5.4);let lx=r.x+r.w-X(2.5*s);const ly=top+h1+X(2.4*s);[...LG].reverse().forEach(([c,t,k2])=>{const tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5.4,c:mute});lx-=X(3.4*s);if(k2==='b'){g.fillStyle=c;g.fillRect(lx,ly-X(.9*s),X(2.6*s),X(1.8*s))}else{g.save();g.strokeStyle=c;g.lineWidth=X(.4*s);if(k2==='d')g.setLineDash([X(1),X(.8)]);g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+X(2.8*s),ly);g.stroke();g.restore()}lx-=X(1.6*s)})}}
  /* 수용가 현황 카드(C안) */
  if(M.cu){const r=R(M.cu),cs=info.cs;card(r);head(r,'수용가 현황',cs&&cs.n?`${cs.src||'부과량'} ${cs.M[cs.li]} 기준 · 관리번호만`:'');
-  if(!cs||!cs.n){txt(!cs?'유수율 엑셀(부과량 시트)을 넣으면 채워집니다 — 확인 필요':`부과량 자료 Y열에 ${b.n} 소블록 수용가가 없습니다 — 확인 필요`,r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:6.4,c:'#b45309'})}
+  if(!cs||!cs.n){txt(!cs?(BP.nrw&&BP.nrw.bill===undefined?'유수율 엑셀을 출력 창에 한 번 다시 넣으면 부과량 시트로 채워집니다 — 확인 필요':'유수율 엑셀(부과량 시트)을 넣으면 채워집니다 — 확인 필요'):`부과량 자료 Y열에 ${b.n} 소블록 수용가가 없습니다 — 확인 필요`,r.x+X(3*s),r.y+r.h/2,r.w-X(6*s),{w:600,pt:6.4,c:'#b45309'})}
   else{const pad=X(2.5*s),cx=r.x+pad,cw=r.w-2*pad,top=r.y+X(7.5*s),hTop=(r.h-X(7.5*s))*.62,lw=cw*.5,UC=['#6366f1','#22c55e','#f59e0b','#06b6d4','#cbd5e1'],lh=X(3*s);
    /* 왼쪽: 요약 줄 + 업종·구경 막대 */
    const N0=info.nrw,SE2=bpSeries(N0),ym=/^(\d{4})-(\d\d)$/.exec(cs.M[cs.li]||''),nb=(()=>{if(!N0||!ym)return null;const j=SE2.Yr.indexOf(+ym[1]);return j>=0?SE2.f('b',j)[+ym[2]]:null})();
