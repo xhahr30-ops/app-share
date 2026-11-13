@@ -413,6 +413,11 @@ html body .leaflet-container .fmctl button.loc{color:#2563eb}html body .leaflet-
 }
 /* PC(마우스): 같은 칩 줄을 쓰되 칩은 조금 작게, 줄은 칩 길이만큼만(오른쪽 빈 곳은 지도 끌기 가능), 단수구역 창은 원래 PC 자리(오른쪽 아래) 그대로 */
 html.chipPc .chipbar{right:auto;max-width:100%;box-sizing:border-box;touch-action:auto}
+/* PC 칩 줄: 넘친 아이콘을 볼 수 있게 양 끝 ‹ › 버튼 + 마우스로 끌어 넘기기 */
+.chscr{display:none}
+html.chipPc:not(.chipV) .chscr.on{display:flex;position:absolute;z-index:1001;width:32px;height:32px;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:50%;padding:0 0 3px;margin:0;cursor:pointer;color:#1e293b;font:700 24px/1 sans-serif;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.28)}
+html.chipPc .chscr:hover{color:#fff;background:#4f46e5;border-color:#4f46e5}
+html.chipPc .chipbar.chdrg,html.chipPc .chipbar.chdrg a{cursor:grabbing!important}
 /* 전체화면 + 아이콘 줄 왼쪽 세로(geo-chipv=l): 아이콘만 세로 한 줄, 이름은 말풍선. --chw = 세로 줄 폭(JS가 넣음) */
 html.chipOn.chipV .chipbar{flex-direction:column;right:auto!important;top:0;bottom:0;max-width:none;width:auto;overflow-x:hidden;overflow-y:auto;padding:8px 8px 10px!important;gap:8px;touch-action:pan-y!important;box-sizing:border-box}
 html.chipOn.chipV .chipbar>.leaflet-control{display:flex;flex-direction:column;gap:8px}
@@ -3503,7 +3508,28 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  if(ph||tb)shutDodgeInit(C);/* 태블릿도 📷·📍·🖼️가 오른쪽 아래에 있어 단수구역 창과 겹치지 않게 비킴 */
  if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
   bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}
- chipOrdChip(bar);chipVInit(bar)}
+ chipOrdChip(bar);chipVInit(bar);if(!ph)chipScrollInit(bar)}
+/* PC·태블릿 칩 줄: 아이콘이 화면보다 많으면 오른쪽(왼쪽)으로 넘길 ‹ › 버튼을 보이고, 마우스로 줄을 끌어도 넘어감. 끌고 놓으면 그 칩은 눌리지 않음 */
+function chipScrollInit(bar){if(bar._cs)return;bar._cs=1;const root=bar.parentNode,mk=(c,t,d)=>{const b=L.DomUtil.create('button','chscr np '+c,root);b.type='button';b.textContent=t;b.title=d>0?'아이콘 더 보기(오른쪽)':'아이콘 더 보기(왼쪽)';b.setAttribute('aria-label',b.title);
+  L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);b.addEventListener('click',e=>{e.preventDefault();bar.scrollBy({left:d*Math.max(120,bar.clientWidth*.7),behavior:'smooth'})});return b},
+ bl=mk('l','‹',-1),br=mk('r','›',1);
+ const upd=()=>{const H=document.documentElement,hz=!H.classList.contains('chipV')&&getComputedStyle(bar).display!=='none',mx=bar.scrollWidth-bar.clientWidth,x=bar.scrollLeft;
+  const sl=hz&&mx>2&&x>2,sr=hz&&mx>2&&x<mx-2;bl.classList.toggle('on',sl);br.classList.toggle('on',sr);if(!sl&&!sr)return;
+  const t=Math.round(bar.offsetTop+(bar.offsetHeight-32)/2)+'px';for(const b of [bl,br])if(b.style.top!==t)b.style.top=t;
+  bl.style.left=(bar.offsetLeft+3)+'px';br.style.left=(bar.offsetLeft+bar.offsetWidth-35)+'px'};
+ bar.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);try{new ResizeObserver(upd).observe(bar)}catch(_){}
+ new MutationObserver(upd).observe(bar,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});new MutationObserver(upd).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+ if(map&&map.on)map.on('resize',upd);
+ /* 마우스로 끌어 넘기기(세로 줄이면 위아래로) */
+ let d0=null,moved=false;bar.addEventListener('dragstart',e=>e.preventDefault());
+ bar.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;d0={x:e.clientX,y:e.clientY,sl:bar.scrollLeft,st:bar.scrollTop,id:e.pointerId};moved=false});
+ bar.addEventListener('pointermove',e=>{if(!d0||e.pointerId!==d0.id)return;const dx=e.clientX-d0.x,dy=e.clientY-d0.y;
+  if(!moved){if(Math.hypot(dx,dy)<6)return;moved=true;bar.classList.add('chdrg');try{bar.setPointerCapture(e.pointerId)}catch(_){}chipTipHide()}
+  if(document.documentElement.classList.contains('chipV'))bar.scrollTop=d0.st-dy;else bar.scrollLeft=d0.sl-dx});
+ const end=()=>{if(!d0)return;d0=null;bar.classList.remove('chdrg');if(moved)setTimeout(()=>{moved=false},0)};
+ bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);
+ bar.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false}},true);
+ upd();setTimeout(upd,300)}
 
 /* ⇅ 아이콘 정리 칩: 칩 줄 맨 끝에 붙고, 누르면 순서·줄 위치 창 */
 const CHV_SVG='M7 20V4M3 8l4-4 4 4M17 4v16M13 16l4 4 4-4';
