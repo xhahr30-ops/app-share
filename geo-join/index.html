@@ -8548,6 +8548,7 @@ const SH_URL0=SITE.url||'';/* 현장 공유 서버 주소: 포항·의성은 앱
 function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);if(m)return `https://script.google.com/macros/s/${m[1]}/exec`;
  const c=u.match(/^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\/[^\s?#]*)?/);return c&&!/^https:\/\/script\.google\.com/i.test(c[0])?c[0].replace(/\/+$/,''):SH_URL0}
 SH.cfg.url=shUrlFix(SH.cfg.url);
+setTimeout(()=>{if(!SH.cfg.url){const m=document.getElementById('shMsg');if(m&&!m.textContent)m.textContent='⚠ '+SITE.name+' 공유 서버 주소가 아직 없습니다. 관리자가 👑 현장 관리에 이 현장의 공유 서버 주소를 저장하면 앱을 열 때 자동으로 채워집니다.'}},0);
 try{SH.since=+localStorage.getItem('geo-share-since')||0}catch(_){}
 try{(JSON.parse(localStorage.getItem('geo-share-del')||'[]')||[]).forEach(id=>SH.del.add(id))}catch(_){}
 /* 휴지통에서 되살린 공유 사진 (서버에 '되살리기'를 보낼 것) · 지운 시각(10초 동안은 서버에 안 보내 되돌리기 가능) */
@@ -15097,6 +15098,8 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   if(!LSg('geo-user'))setTimeout(nameAsk,400);
   if(j.none){if(old){delete H[id];saveCache();if(!SITE.bi)return lockOut('이 현장('+SITE.name+')이 본부 현장 목록에서 빠졌습니다.');if((SITE.off||[]).length){FEAT.set([]);toast('🏢 본부 설정이 없어 이 현장의 모든 기능을 켰습니다.')}}return}
   const r=j.site;if(!r)return;r.h=j.has?(j.pw?lk:'?'):'';if(j.keys)r.k=j.keys;else if(old&&old.k&&j.pw)r.k=old.k;H[id]=r;saveCache();
+  /* ☁️ 공유 서버 주소: 본부(또는 앱 기본값) 주소가 새로 생기거나 바뀌면, 이 기기 주소가 비었거나 예전 기본 주소일 때 바로 바꿈 */
+  try{const nu=siteMake(id).url||'',cu=SH.cfg.url||'';if(nu&&nu!==cu&&(!cu||cu===SH_URL0||cu===(old&&old.url))){SH.cfg.url=nu;shSaveCfg();const e=document.getElementById('shUrl');if(e)e.value=nu;const m=document.getElementById('shMsg');if(m)m.textContent='☁️ 본부에서 '+SITE.name+' 공유 서버 주소를 받았습니다.';toast('☁️ 본부에서 '+SITE.name+' 공유 서버 주소를 받았습니다.'+(SH.cfg.key?'':'\n공유 키가 아직 없습니다. 관리자에게 받아 넣어 주세요.'))}}catch(_){}
   if(j.keys&&keyApply(id,j.keys,false)){/* 새 키를 지금 쓰는 화면에도 바로 넣음 */
    const K=j.keys,got=[];
    try{if(K.sk||SITE.url){if(K.sk)SH.cfg.key=K.sk;if(SITE.url)SH.cfg.url=SITE.url;if(!SH.cfg.by&&un)SH.cfg.by=un;const e1=document.getElementById('shKey'),e2=document.getElementById('shUrl'),e3=document.getElementById('shBy');if(e1)e1.value=SH.cfg.key||'';if(e2)e2.value=SH.cfg.url||'';if(e3&&!e3.value)e3.value=SH.cfg.by||'';if(K.sk)got.push('직원 공유 키')}}catch(_){}
@@ -15109,7 +15112,7 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   const off=(r.off||[]).slice().sort(),off0=(SITE.off||[]).slice().sort();
   if(!same(off,off0)){const on=off0.filter(k=>!off.includes(k)).map(FEAT.name),of=off.filter(k=>!off0.includes(k)).map(FEAT.name);FEAT.set(r.off||[]);
    toast('🏢 관리자가 이 현장 기능을 바꿨습니다.'+(on.length?'\n켬: '+on.join(' · '):'')+(of.length?'\n끔: '+of.join(' · '):''))}
-  const nw=siteMake(id),keys=['name','short','col','region','c','crs','url','alias','gc','cw'];
+  const nw=siteMake(id),keys=['name','short','col','region','c','crs','alias','gc','cw'];
   if(old&&keys.some(k=>!same(nw[k],SITE[k])))toast('🏢 '+SITE.name+' 현장 정보(이름·지도 위치·서버 주소 등)가 바뀌었습니다. 앱을 다시 열면 반영됩니다.')}
  /* 이름이 없는 기기(이미 열려 있던 기기)는 한 번만 물음 — 관리자 사용자 현황에 나옴 */
  function nameAsk(){if(document.getElementById('nmAsk')||SSg('geo-nmask'))return;SSs('geo-nmask','1');
@@ -15155,6 +15158,7 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
    return `<div class="hqCard" style="--c:${E(col)}"><div style="min-width:120px"><span class="nm">${E(s.name||s.id)}</span><span class="cd">${E(s.id)}</span>${s.id===SITE.id?' <span class="bd b">지금 현장</span>':''}</div>
    <div class="inf">${s.reg?(s.on===false?'<span class="bd r">사용 중지</span>':'<span class="bd g">사용 중</span>'):'<span class="bd a">본부 미등록 · 앱 기본값</span>'}
    ${s.reg?(s.hasPw?'<span class="bd b">비밀번호 있음</span>':(s.bi?'<span class="bd a">앱 기본 비밀번호</span>':'<span class="bd r">비밀번호 없음</span>')):''}
+   ${s.reg&&!s.url&&!(SITE_BI[s.id]||{}).url?'<span class="bd r">☁️ 공유 서버 주소 없음</span>':''}
    ${s.reg?(nK(s.keys)?'<span class="bd g">🔑 키 '+nK(s.keys)+'개</span>':'<span class="bd a">🔑 키 없음</span>'):''}
    기능 ${N-offN}/${N} 켬${offN?' · 끔: '+E((s.off||[]).map(FEAT.name).join(', ')):''}${s.reg&&s.at?` · 고친 날 ${E(new Date(s.at).toLocaleString('ko-KR'))}${s.by?' ('+E(s.by)+')':''}`:''}</div>
    <button type="button" class="hqBtn${s.reg?'':' pri'}" data-x="ed" data-id="${E(s.id)}">${s.reg?'✏ 고치기':'➕ 본부에 등록'}</button></div>`}).join('')+
