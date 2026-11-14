@@ -43,16 +43,16 @@
  /* ── 현장별 기능 묶음: 관리자가 본부에서 끈 기능은 <html class="ft-코드">로 메뉴·칩·리본·왼쪽 칸을 숨김 (자료는 지우지 않음) ── */
  var FEATS=window.FEATS=[
   {k:'addr',n:'주소 매칭·대시보드',d:'① 주소 · 부과량 연동 · 주소찾기 설정 · 변환 시작',css:['.sec:has(#f1)','.bsec','#afBtn'],a:['win:addr','win:bill','af','start','stop']},
-  {k:'photo',n:'현장 사진',d:'📷 사진 올리기·편집·갤러리 · 🎬 동영상',css:['.sec.ph:not(#vdSec)>:not(#shBox)','#vdSec','.fmctl .cam','[data-ck="phed"]','#phZip2'],a:['win:ph','phAdd','phEd','gal','win:vid','phZip']},
+  {k:'photo',n:'현장 사진',d:'📷 사진 올리기·편집·갤러리 · 🎬 동영상',css:['.sec.ph:not(#vdSec)>:not(#shBox)','#vdSec','.fmctl .cam','[data-ck="phed"]','#phZip2','#uiSet .uitabs [data-t="ph"]','.uig:has(+#uiPhSzBox)','#uiPhSzBox'],a:['win:ph','phAdd','phEd','gal','win:vid','phZip','ui:ph'],lay:['ph','vid']},
   {k:'share',n:'직원 공유',d:'☁️ 받기·올리기 · 공유 키 칸',css:['#shBox','#uiShBox','.uig:has(+#uiShBox)','[data-ck="ref"]','[data-ck="up"]'],a:[]},
   {k:'edit',n:'관로·시설물 편집',d:'🛠 편집 · ☑ 관로 선택 · 소블록 경계 고치기',css:['[data-ck="fe"]','[data-ck="sel"]'],a:['fe','sel:*']},
-  {k:'shut',n:'단수구역',d:'💧 단수구역 · 안내문 · 연락처',css:['[data-ck="shut"]'],a:['shut']},
-  {k:'trk',n:'탐사기록',d:'👣 탐사기록 · 👥 팀 탐사',css:['[data-ck="trk"]'],a:[]},
-  {k:'hyd',n:'관망해석 결과',d:'②-3 표고·수압·유속',css:['.sec:has(#ePanel)'],a:['win:elev']},
+  {k:'shut',n:'단수구역',d:'💧 단수구역 · 안내문 · 연락처',css:['[data-ck="shut"]'],a:['shut'],lay:['tb']},
+  {k:'trk',n:'탐사기록',d:'👣 탐사기록 · 👥 팀 탐사',css:['[data-ck="trk"]'],a:[],lay:['tp']},
+  {k:'hyd',n:'관망해석 결과',d:'②-3 표고·수압·유속',css:['.sec:has(#ePanel)'],a:['win:elev'],lay:['elev']},
   {k:'leak',n:'누수 예측',d:'②-4 누수 지점 예측 · 누수·민원 대장 · 보고서',css:['#lqSec'],a:['win:leak','lrIn']},
   {k:'step',n:'단계시험',d:'🪜 단계시험 계획 · 기록표',css:['#stSec','[data-ck="step"]'],a:['win:st']},
-  {k:'works',n:'공사 검토',d:'🏗 공사 추천 · ⬚ 개략공사비 · 📐 적정 관경 · 🔀 메인관',css:['#cwSec','#rsSec','#sbSec','[data-ck="ax"]'],a:['win:cw','win:rs','win:sb','ax','sel:ax']},
-  {k:'rp',n:'노후관 교체',d:'✅ 교체 완료 관로',css:['#rpSec'],a:['win:rp','sel:rp']},
+  {k:'works',n:'공사 검토',d:'🏗 공사 추천 · ⬚ 개략공사비 · 📐 적정 관경 · 🔀 메인관',css:['#cwSec','#rsSec','#sbSec','[data-ck="ax"]'],a:['win:cw','win:rs','win:sb','ax','sel:ax'],lay:['cw','sb','rs']},
+  {k:'rp',n:'노후관 교체',d:'✅ 교체 완료 관로',css:['#rpSec'],a:['win:rp','sel:rp'],lay:['rp']},
   {k:'chg',n:'변경 기록',d:'🔔 변경 기록',css:['[data-ck="chg"]'],a:[]},
   {k:'ex',n:'내보내기',d:'결과 엑셀 · SHP · 내보내기 창',css:['#exBtn'],a:['ex','xl','lkXl','phZip','sel:xl']},
   {k:'prt',n:'인쇄·현황도',d:'🖨 PDF · 지금 화면 출력 · 소블록별 현황도',css:['#hpr','.hlab:has(#po)'],a:['vp','bp','pdf','po']},
@@ -71,11 +71,14 @@
   name:function(k){for(var i=0;i<FEATS.length;i++)if(FEATS[i].k===k)return FEATS[i].n;return k},
   offNames:function(){return SITE.off.map(window.FEAT.name)},
   okA:function(a){for(var i=0;i<FEATS.length;i++){var f=FEATS[i];if(!R.classList.contains('ft-'+f.k))continue;for(var j=0;j<f.a.length;j++){var x=f.a[j];if(x===a||(x.slice(-1)==='*'&&a.indexOf(x.slice(0,-1))===0))return false}}return true},
+  /* 2026-11-15 ⇅ 아이콘 정리 창·레이어 창에서도 꺼진 기능은 빼기: 칩 키(data-ck)·레이어 키가 꺼진 기능에 속하면 false */
+  ckOk:function(k){for(var i=0;i<FEATS.length;i++){var f=FEATS[i];if(R.classList.contains('ft-'+f.k)&&f.css.indexOf('[data-ck="'+k+'"]')>=0)return false}return true},
+  layOk:function(k){for(var i=0;i<FEATS.length;i++){var f=FEATS[i];if(R.classList.contains('ft-'+f.k)&&f.lay&&f.lay.indexOf(k)>=0)return false}return true},
   /* 리본: 꺼진 기능 버튼을 빼고, 빈 묶음·빈 탭도 뺌 */
   ribTabs:function(T){var F=window.FEAT;return T.map(function(t){return Object.assign({},t,{g:t.g.map(function(g){return Object.assign({},g,{b:g.b?g.b.filter(function(x){return F.okA(x[0])}):g.b})}).filter(function(g){return (g.b&&g.b.length)||g.x})})}).filter(function(t){return t.g.length})},
   set:function(off){off=(off||[]).filter(function(k){return FEATS.some(function(f){return f.k===k})});
    FEATS.forEach(function(f){R.classList.toggle('ft-'+f.k,off.indexOf(f.k)>=0)});SITE.off=off.slice();
-   try{if(window.__ribRe)window.__ribRe()}catch(e){}try{if(typeof aiUi==='function')aiUi()}catch(e){}}};
+   try{if(window.__ribRe)window.__ribRe()}catch(e){}try{if(typeof aiUi==='function')aiUi()}catch(e){}try{var o=document.getElementById('chOrdBox');if(o)o.remove()}catch(e){}}};
  for(var i=0;i<SITE.off.length;i++)R.classList.add('ft-'+SITE.off[i]);
  window.siteSwitch=function(){if(!confirm('현장을 바꿀까요? (지금: '+SITE.name+')\n시작 비밀번호 화면이 다시 뜹니다. 바꿀 현장의 비밀번호를 넣으면 그 현장으로 열립니다.\n지금 현장의 자료는 그대로 남습니다.'))return;try{localStorage.removeItem('geo-lock')}catch(e){}location.reload()};
  if(S!=='phg'){
@@ -2077,7 +2080,7 @@ function laySub(k){try{
 }catch(e){console.warn('gw laySub',k,e)}return''}
 const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl','rp']);
 function layRender(){const tb=$('gwLayB');if(!tb||gw.querySelector('#gwLay').hidden)return;
- const rows=LAY.map(r=>{if(r.g)return{g:r.g};let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}
+ const rows=LAY.filter(r=>r.g||!window.FEAT||!FEAT.layOk||FEAT.layOk(r.k)).map(r=>{if(r.g)return{g:r.g};/* 관리자가 끈 기능의 레이어 항목은 뺌 */let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}
   const can=LX_K.has(r.k)&&ok,sub=can&&LX.has(r.k)?laySub(r.k):'';return{r,c,on,ok,can,sub,sym:laySym(r.k)}});
  const key=JSON.stringify(rows.map(x=>x.g||[x.r.k,x.c,x.on,x.ok,x.can,LX.has(x.r.k),x.sub,x.sym]));if(key===layKey)return;layKey=key;
  tb.innerHTML=rows.map(x=>x.g?`<tr class="g"><td colspan="3">${x.g}</td></tr>`:`<tr class="${x.ok?'':'dis'}"><td><input type="checkbox" data-l="${x.r.k}" ${x.on&&x.ok?'checked':''} ${x.ok?'':'disabled'} aria-label="${x.r.n}"></td><td class="sy"><button type="button" class="gwl-x" data-x="${x.r.k}" ${x.can?'':'hidden'} title="항목별 범례 ${LX.has(x.r.k)?'접기':'펼치기'}" aria-expanded="${LX.has(x.r.k)}">${LX.has(x.r.k)?'▾':'▸'}</button><label>${x.sym}${x.r.n}</label></td><td class="n">${x.c==null?'':num(x.c)}</td></tr>`+(x.sub?`<tr class="sub"><td colspan="3"><div class="gwl-lg">${x.sub}</div></td></tr>`:'')).join('');
@@ -4392,7 +4395,7 @@ function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide
  document.body.appendChild(w);const ul=w.querySelector('ul');
  const ico=k=>{const el=bar&&[...bar.children].find(x=>x.dataset.ck===k),s=el&&el.querySelector('svg.ci');if(s){const c=s.cloneNode(true);c.removeAttribute('class');return c.outerHTML}
   const a=el&&el.querySelector('a');return '<span style="width:20px;text-align:center">'+(a?(a.textContent||'').trim().slice(0,2):'')+'</span>'};
- const have=k=>!bar||[...bar.children].some(x=>x.dataset.ck===k);
+ const have=k=>(!bar||[...bar.children].some(x=>x.dataset.ck===k))&&(!window.FEAT||!FEAT.ckOk||FEAT.ckOk(k));/* 관리자가 이 현장에서 끈 기능의 칩은 목록에도 안 보임 */
  const save=ks=>{try{localStorage.setItem('geo-chipord',JSON.stringify(ks))}catch(_){}chipResort()};
  const draw=()=>{const ks=chipOrd().filter(have),off=chipOff();ul.innerHTML=ks.map((k,i)=>'<li data-k="'+k+'"'+(off.includes(k)?' class="off"':'')+'><span class="cog" title="끌어서 옮기기">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="sw" aria-pressed="'+(!off.includes(k))+'" title="지도 아이콘 줄에 보이기·숨기기">'+(off.includes(k)?'꺼짐':'켜짐')+'</button><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<ks.length-1?'':' disabled')+'>▼</button></li>').join('');
   const v=chipVWant()?'l':'t';w.querySelectorAll('.cop button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))};
