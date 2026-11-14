@@ -1462,7 +1462,7 @@ html.dark svg.ri{color:var(--cd)!important}
   <div id="fPanel" hidden>
    <label class="f">지도 표시<select id="fShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label>
    <label class="f">심볼 모양<select id="fSym"><option value="badge">색 원 배지 (지금 기본)</option><option value="orig">처음 첨부한 SVG 심볼</option></select></label>
-   <label class="f">이름 라벨<select id="fLbl"><option value="on">보이기 (유량계·가압장·배수지·정수장)</option><option value="off">숨김</option></select></label>
+   <label class="f">시설물 라벨<select id="fLbl"><option value="on">이름 (유량계·가압장·배수지·정수장)</option><option value="yr">설치년도 (모든 시설물, 줌 17부터)</option><option value="both">이름 + 설치년도</option><option value="off">숨김</option></select></label>
    <div class="sbtns"><button type="button" class="btn ol" id="fEdGo" title="지도 왼쪽 🛠 단추와 같음: 시설 옮기기·추가·삭제 표시·속성 고치기 (관로에 붙이기)">🛠 지도에서 편집</button><button type="button" class="btn ol" onclick="sxOpen('fac')" title="현장 수정이 반영된 지금 시설물을 SHP(zip)로 저장: 전체/수정분만 · 전체/소블록/지금 화면 · 좌표계 · CP949/UTF-8">💾 SHP 내보내기</button><button type="button" class="btn ol" onclick="mtXlsx()" title="시설물 정보창 🗂 유지관리 기록 (회차별·시설별 요약, 관리번호·소블록만, 고객 정보 없음)">🗂 유지관리 대장 엑셀</button><button type="button" class="btn ol" id="fChgX" title="현장에서 고친 시설 목록 (관리번호·바뀐 항목·좌표, 고객 정보 없음)">📋 현장 수정 목록 엑셀</button><button type="button" class="btn ol" id="fRotFill" title="회전값이 없는 밸브를 3m 안의 관로 방향으로 채우기 (미리보기 후 적용)">🧭 밸브 회전값 채우기</button></div>
    <p class="hint" id="fZoomHint" hidden></p>
    <div id="fKinds" class="fkinds"></div>
@@ -1807,8 +1807,8 @@ const TABS=[
   {n:'선택 창',b:[['sel:card','sel','선택 창',1]]}]},
  {k:'lbl',n:'라벨',g:[
   {n:'수용가 라벨',x:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기']]},
-  {n:'관로 라벨',x:[['uiLbl','관종·구경'],['uiLblZ','보이기']]},
-  {n:'시설물 · 소블록 이름',x:[['fLbl','시설물 이름'],['lblMode','소블록 이름'],['lblSize','소블록 글자']]},
+  {n:'관로 라벨',x:[['uiLbl','관종·구경·년도'],['uiLblZ','보이기']]},
+  {n:'시설물 · 소블록 이름',x:[['fLbl','시설물 라벨'],['lblMode','소블록 이름'],['lblSize','소블록 글자']]},
   {n:'글자 크기',x:[['uiLblPx','라벨 글자']]},
   {n:'라벨',b:[['lblOff','eyeoff','라벨 모두 끄기',1],['lblW','tag','라벨 창',1]]}]},
  {k:'field',n:'현장',g:[
@@ -1908,7 +1908,7 @@ const LAY=[
  {g:'글자 · 배경'},
  {k:'bl',n:'소블록 이름',s:'#475569',c:()=>null,on:()=>selOn('lblMode'),set:o=>selSet('lblMode',o,'auto'),ok:()=>!!G('polyL')},
  {k:'cl',n:'수용가 라벨',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&!!u.cl&&u.cl!=='off'},set:o=>{const u=G('UI');if(u&&u.cl&&u.cl!=='off')S.clLast=u.cl;mir('uiCl',o?(S.clLast||'mg'):'off',()=>{u.cl=o?(S.clLast||'mg'):'off';F('uiSave');F('ptDraw')})},ok:()=>{const p=G('PT');return !!p&&p.n>0}},
- {k:'pl',n:'관로 라벨 (관종·구경)',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.lbl&&u.lbl!=='off'},set:o=>{const e=$('uiLbl'),u=G('UI');if(u&&u.lbl&&u.lbl!=='off')S.lblLast=u.lbl;if(e){e.value=o?S.lblLast:'off';e.dispatchEvent(new Event('change'))}},ok:()=>!$('pPanel').hidden},
+ {k:'pl',n:'관로 라벨 (관종·구경·매설년도)',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.lbl&&u.lbl!=='off'},set:o=>{const e=$('uiLbl'),u=G('UI');if(u&&u.lbl&&u.lbl!=='off')S.lblLast=u.lbl;if(e){e.value=o?S.lblLast:'off';e.dispatchEvent(new Event('change'))}},ok:()=>!$('pPanel').hidden},
  {k:'leg',n:'지도 범례',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&!!u.leg},set:o=>{const e=$('uiLeg');if(e&&e.checked!==o)e.click()}},
  {k:'bg',n:'배경 지도',s:'#94a3b8',c:()=>null,on:()=>{const b=G('BG');return !!b&&!b.off},set:o=>F('bgToggle',!o),ok:()=>!!G('map')}];
 let layKey='';
@@ -3282,8 +3282,9 @@ function blkHaloSync(){if(!map||!shpL)return;if(blkHalo){shpL.removeLayer(blkHal
 const MAT_SHORT={'덕타일주철관(DCIP)':'DCIP','회주철관(CIP)':'CIP','강관(SP)':'SP','스테인리스관(STS)':'STS','아연도강관':'GSP','PVC관(HI-3P·VP)':'PVC','PE관':'PE','콘크리트관(PC·PCC)':'PC','GRP관':'GRP','석면시멘트관':'ACP','동관':'동관'};
 const PLB={cv:null,cache:new Map(),key:'',raf:0,n:0,MAX:300};
 const fromM=(x,y)=>[y/110574+LY0,x/(LCOS*111320)+LX0];
-function plblText(a){const raw=String(a.matRaw||'').trim(),mt=a.mat==='미상'?'':(MAT_SHORT[a.mat]||(raw&&raw.length<=8?raw:a.mat)),d=a.dia!=null?'Φ'+a.dia:'';
- return UI.lbl==='mat'?mt:UI.lbl==='dia'?d:[mt,d].filter(Boolean).join(' ')}
+function plblText(a){const raw=String(a.matRaw||'').trim(),mt=a.mat==='미상'?'':(MAT_SHORT[a.mat]||(raw&&raw.length<=8?raw:a.mat)),d=a.dia!=null?'Φ'+a.dia:'',y=a.year?String(a.year):'';
+ /* 매설년도(2026-11-14): 관로 설치연도 칸(포항 설치일자·IST_YMD, 의성 매설년도) 앞 4자리. 1940년 전(1900 등 빈값)은 안 씀 */
+ return UI.lbl==='mat'?mt:UI.lbl==='dia'?d:UI.lbl==='yr'?y:UI.lbl==='all'?[mt,d,y].filter(Boolean).join(' '):[mt,d].filter(Boolean).join(' ')}
 function plblInit(){if(!map||PLB.cv)return;const p=map.createPane('plbl');p.style.zIndex=395;p.style.pointerEvents='none';
  PLB.cv=L.DomUtil.create('canvas','plbl-cv',p);PLB.cv.style.display='none';
  map.on('zoomstart',()=>{PLB.cv.style.display='none'});map.on('moveend zoomend resize',plblSoon)}
@@ -3386,7 +3387,7 @@ function uiInit(){if(!map)return;plblInit();
 <div class="uig" style="border:0;margin-top:2px">🚰 상수관로</div>
 <div id="uiPipeBox"></div><p class="uin" id="uiPipeNo">왼쪽 ③ 상수관로에 SHP를 올리면 지도 표시·색상 기준·원거리 기준이 여기 나타납니다.</p>
 <div class="uig">🏷️ 관로 라벨</div>
-<label class="uif">관종 / 구경<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경']])}</select></label>
+<label class="uif">관종 / 구경 / 매설년도<select id="uiLbl" class="msel">${opt([['off','끔'],['mat','관종'],['dia','구경'],['both','관종 + 구경'],['yr','매설년도'],['all','관종 + 구경 + 매설년도']])}</select></label>
 <label class="uif">보이기 시작<select id="uiLblZ" class="msel">${opt([['16','줌 16부터'],['17','줌 17부터 (권장)'],['18','줌 18부터']])}</select></label>
 <p class="uin" id="uiLblHint" hidden></p>
 <div class="uig">⌒ 관로 교차 반원 <small>(꼭짓점 없이 지나가기만 하는 곳)</small></div>
@@ -6212,9 +6213,15 @@ function facRender(){if(!map||!FAC.cv)return;const sz=map.getSize(),pad=.25,W=Ma
 const FLBL={wtp:[11,0],res:[11,1],pump:[12,2],meter:[14,3]},FLBL_F=['정수장명','배수지명','가압장명','소블록명','블록명','중블록명','관리번호'];
 function facLblText(i){let t=FAC.lt.get(i);if(t!==undefined)return t;const P=FAC.pt[i].p||{};t='';
  for(const k of FLBL_F){const v=P[k];if(v!=null&&String(v).trim()&&String(v).trim()!=='-'){t=String(v).trim().slice(0,20);break}}FAC.lt.set(i,t);return t}
-function facLabels(g,z,by,KI,W,H){if($('fLbl').value==='off'||!FAC.lt)return;const fp=Math.round((+UI.lblPx||11)*(FAC.bpLbl||1)),cand=[]; /* bpLbl·bpIn: 소블록 현황도 출력 때 글자 크게·블록 안 시설만 */
- by.forEach((a,k)=>{const L0=FLBL[KI[k].sym];if(!L0||z<L0[0]||!a.length)return;const s=facSzK(z,KI[k],FAC.kinds[k]);
-  for(let j=0;j<a.length;j+=3){if(FAC.bpIn&&!FAC.bpIn(a[j+2]))continue;const t=facLblText(a[j+2]);if(t)cand.push({x:a[j],y:a[j+1],t,s,o:L0[1]})}});
+/* 설치년도 라벨(2026-11-14): 포항 설치일자·설치연도·준공일자·IST_YMD, 의성 매설년도·ist_ymd·fns_ymd 순으로 첫 값의 앞 4자리(1940년 전 = 빈값) */
+const FYR_F=['설치일자','설치연도','설치년도','매설년도','매설연도','준공일자','IST_YMD','FNS_YMD'];
+function facYear(i){const P=FAC.pt[i].p||{};for(const k of FYR_F){let v=P[k];if(v==null||v==='')v=P[k.toLowerCase()];const y=parseYear(v);if(y)return y}return null}
+const FYR_Z=17;
+function facLabels(g,z,by,KI,W,H){const md=$('fLbl').value;FAC.ln=0;if(md==='off'||!FAC.lt)return;const nm=md==='on'||md==='both',yr=md==='yr'||md==='both';
+ const fp=Math.round((+UI.lblPx||11)*(FAC.bpLbl||1)),cand=[]; /* bpLbl·bpIn: 소블록 현황도 출력 때 글자 크게·블록 안 시설만 */
+ by.forEach((a,k)=>{if(!a.length)return;const L0=nm?FLBL[KI[k].sym]:null,nOk=!!L0&&z>=L0[0],yOk=yr&&z>=Math.min(FYR_Z,L0&&nOk?L0[0]:FYR_Z);if(!nOk&&!yOk)return;const s=facSzK(z,KI[k],FAC.kinds[k]);
+  for(let j=0;j<a.length;j+=3){const i=a[j+2];if(FAC.bpIn&&!FAC.bpIn(i))continue;if(FAC.dl&&FAC.dl[i])continue;
+   const t=[nOk?facLblText(i):'',yOk?(facYear(i)||''):''].filter(Boolean).join(' · ');if(t)cand.push({x:a[j],y:a[j+1],t,s,o:L0?L0[1]:9})}});
  if(!cand.length)return;cand.sort((p,q)=>p.o-q.o);
  g.save();g.font=`700 ${fp}px "Noto Sans KR",sans-serif`;g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3.2*Math.max(1,fp/11*.9);
  const box=[],hit=(r)=>box.some(b=>r[0]<b[2]&&r[2]>b[0]&&r[1]<b[3]&&r[3]>b[1]);let n=0;
@@ -11405,8 +11412,8 @@ try{hlpChipInit()}catch(e){console.warn('사용법 칩',e)}
 const LBLM_UI={uiCl:()=>UI.cl||'off',uiClR:()=>UI.clR||'all',uiClZ:()=>String(UI.clZ||18),uiLbl:()=>UI.lbl||'off',uiLblZ:()=>String(UI.lblZ||17),
  uiLblPx:()=>{const e=$('uiLblPx'),v=+UI.lblPx||11;if(!e||!e.options.length)return String(v);return [...e.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b).value}};
 const LBLM_G=[{n:'👥 수용가 라벨',s:'이름·주소·연락처는 넣지 않음',f:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기 시작']],h:'uiClHint'},
- {n:'🚰 관로 라벨',f:[['uiLbl','관종 / 구경'],['uiLblZ','보이기 시작']],h:'uiLblHint'},
- {n:'🔧 시설물 이름',s:'유량계·가압장·배수지·정수장',f:[['fLbl','이름 라벨']]},
+ {n:'🚰 관로 라벨',s:'관종·구경·매설년도',f:[['uiLbl','내용'],['uiLblZ','보이기 시작']],h:'uiLblHint'},
+ {n:'🔧 시설물 라벨',s:'이름 = 유량계·가압장·배수지·정수장 · 설치년도 = 모든 시설물(줌 17부터)',f:[['fLbl','내용']]},
  {n:'🟩 소블록 이름',f:[['lblMode','표시'],['lblSize','글자 크기']]},
  {n:'🔤 라벨 글자 크기',s:'관로·시설물·수용가 라벨 같이',f:[['uiLblPx','글자']]}];
 const LBLM_IDS=new Set(LBLM_G.flatMap(g=>g.f.map(f=>f[0])));
