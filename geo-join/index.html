@@ -23,6 +23,7 @@
   o.off=(h.off&&h.off.slice)?h.off.slice():[];o.bi=!!BI[id];o.hq=!!HQS[id];return o};
  var S=rd('geo-site')||'phg';if(!/^[a-z][a-z0-9]{1,5}$/.test(S)||S==='geo'||!(BI[S]||HQS[S]))S='phg';
  var SITE=window.SITE=siteMake(S);
+ try{document.documentElement.style.setProperty('--site-col',SITE.col)}catch(e){}/* 현장 색: 작업 화면 🏢 현장 단추 바탕 (👑 현장 관리 › 색) */
  /* ── 🔑 본부 서버가 내려준 현장별 API 키 (2026-11-14 B안) ──
     로그인·앱 열 때 본부에서 받은 키(geo-sites 안 k: 카카오 JS 키 kjs · 브이월드 키 vw · 직원 공유 키 sk, v=고친 시각)를
     이 현장 저장 이름(포항 geo-…, 의성 uis-…)에 넣음. 키 글자는 앱 소스(app-share)에 없고 본부 서버·이 기기에만 있음 */
@@ -1096,6 +1097,8 @@ html.gwOn header,html.gwOn main.dash,html.gwOn #sideTab{display:none!important}
 .gwm{height:28px;width:auto;max-width:56px;object-fit:contain}
 .gw-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--gw-bd)!important;border-radius:4px;background:var(--gw-ch2)!important;font-size:11px;white-space:nowrap}#gw button.gw-pill:hover{background:var(--gw-hv)!important}
 .gw-pill .dot{width:8px;height:8px}
+/* 🏢 현장 단추 = 현장 색 바탕·흰 글자 (2026-11-14 B안) */
+#gw #gwSite.gw-pill{background:var(--site-col,#4f46e5)!important;border-color:var(--site-col,#4f46e5)!important;color:#fff!important;font-weight:700}#gw #gwSite.gw-pill:hover{filter:brightness(1.12)}
 /* 메뉴 탭 + 검색 */
 #gwMenu{display:flex;align-items:flex-end;gap:2px;padding:0 8px;height:32px;background:var(--gw-ch)}
 #gwTabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;min-width:0}#gwTabs::-webkit-scrollbar{display:none}
