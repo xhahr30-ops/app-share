@@ -727,9 +727,10 @@ async function run(){
     R.PE.push(Float32Array.from(PU,i=>p.getLinkValue(i,13)));
    }
    if(++guard>100000)break;
+   {const y=window.__gw43&&__gw43.tick(t,dur,'h');if(y)await y}
   }while(p.nextH()>0);
   p.closeH();
-  if(qt){const m=new Map();p.openQ();p.initQ(0);let tq=0,g2=0;do{tq=p.runQ();if(R.t.includes(tq)&&!m.has(tq))m.set(tq,Float32Array.from(p.getNodeValues(12)));if(++g2>200000)break}while(p.nextQ()>0);p.closeQ();R.QN=R.t.map(tt=>m.get(tt)||new Float32Array(nn))}
+  if(qt){const m=new Map();p.openQ();p.initQ(0);let tq=0,g2=0;do{tq=p.runQ();if(R.t.includes(tq)&&!m.has(tq))m.set(tq,Float32Array.from(p.getNodeValues(12)));if(++g2>200000)break;{const y=window.__gw43&&__gw43.tick(tq,dur,'q');if(y)await y}}while(p.nextQ()>0);p.closeQ();R.QN=R.t.map(tt=>m.get(tt)||new Float32Array(nn))}
   S.res=R;
   if(S.k>=R.t.length)S.k=0;
   $('tSl').max=R.t.length-1;$('tSl').value=S.k;
@@ -2725,7 +2726,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='관망해석기 v42 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='관망해석기 v43 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -6138,6 +6139,87 @@ TR.outBind=function(){if(ob0)ob0.apply(this,arguments);const on=(id,f,ev)=>{cons
 
 window.__gw42={live,openTable,quick};
 })()}catch(e){console.warn('v42',e)}
+
+/* ════ v43 동적 표시: 해석 진행 표시 · 수압 이상 절점 파동 · 흐름 점선 애니메이션 ════ */
+;(()=>{try{
+ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const V={o:{flow:!RM,pulse:!RM},busy:null,tS:0,tL:0,shown:false,raf:0,key:'',paths:[],pul:[],over:0,last:0,t0:performance.now()};
+ try{Object.assign(V.o,JSON.parse(localStorage.getItem('gw-v43')||'{}'))}catch(e){}
+ const save=()=>{try{localStorage.setItem('gw-v43',JSON.stringify(V.o))}catch(e){}};
+ const MB=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'')||matchMedia('(pointer:coarse)').matches,LIM=MB?500:3000,PLIM=MB?60:200,PFEW=MB?15:30;
+ const st=document.createElement('style');st.textContent=`
+#g43fx{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:1}
+#g43chip{position:absolute;left:50%;transform:translateX(-50%);top:44px;white-space:nowrap;z-index:9;display:none;padding:3px 9px;border-radius:9999px;background:rgba(15,23,42,.72);color:#fff;font-size:11px;pointer-events:none}
+#g43blk{position:fixed;inset:0;z-index:2147483000;cursor:progress;display:none}
+.g43card{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid #c7d2fe;box-shadow:0 4px 16px rgba(30,41,59,.15);color:#3730a3;font-size:13px;min-width:250px}
+.g43bar{width:220px;height:8px;border-radius:4px;background:#e2e8f0;overflow:hidden}
+.g43bar b{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,#4f46e5 0 7px,#818cf8 7px 14px);background-size:20px 8px;animation:g43s .6s linear infinite;transition:width .15s}
+.g43sub{font-size:11px;font-weight:400;color:#64748b}
+#g43st{display:none;align-items:center;gap:6px;color:#3730a3;font-weight:600}
+#g43st i{display:block;width:90px;height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden}#g43st i b{display:block;height:100%;width:0;background:#4f46e5}
+@keyframes g43s{to{background-position:20px 0}}
+html.dark .g43card{background:#1e293b;border-color:#4338ca;color:#c7d2fe}html.dark .g43bar{background:#334155}
+@media (prefers-reduced-motion:reduce){.g43bar b{animation:none}}
+@media print{#g43fx,#g43chip,#g43blk{display:none!important}}`;document.head.appendChild(st);
+ const cv=document.createElement('canvas');cv.id='g43fx';cv.setAttribute('aria-hidden','true');
+ const chip=document.createElement('div');chip.id='g43chip';
+ const host=MAP.cv.parentElement;host.insertBefore(cv,MAP.cv.nextSibling);host.appendChild(chip);
+ const blk=document.createElement('div');blk.id='g43blk';document.body.appendChild(blk);
+ const keyBlock=e=>{if(V.busy){e.stopPropagation();e.preventDefault()}};
+
+ /* ── 1. 해석 진행 표시 ── */
+ const hh=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')};
+ function stEl(){let e=$('g43st');if(!e){const p=$('gpSt_msg');if(!p)return null;e=document.createElement('div');e.id='g43st';e.innerHTML='<span></span><i><b></b></i>';p.parentElement.insertBefore(e,p)}return e}
+ function show(f,txt,sub){const b=$('busy');if(b){if(!V.shown||!b.querySelector('.g43card'))b.innerHTML='<div class="g43card"><div class="g43t"></div><div class="g43bar"><b></b></div><div class="g43sub"></div></div>';b.querySelector('.g43t').textContent=txt;b.querySelector('.g43bar b').style.width=Math.round(f*100)+'%';b.querySelector('.g43sub').textContent=sub}
+  const e=stEl();if(e){e.style.display='flex';e.firstChild.textContent=txt;e.querySelector('b').style.width=Math.round(f*100)+'%'}V.shown=true}
+ function tick(t,dur,ph){const now=performance.now();if(now-V.tL<200)return null;V.tL=now;if(now-V.tS<250)return null;
+  const f=dur>0?Math.min(1,t/dur):1,pc=Math.round(f*100);
+  const txt=(ph==='q'?'수질 해석 중 ':'해석 중 ')+pc+'%',sub=dur>0?`모의 시각 ${hh(t)} / ${hh(dur)} · ${((now-V.tS)/1000).toFixed(1)}초`:'정상류 해석';
+  show(f,txt,sub);return new Promise(r=>{let d=0;const go=()=>{if(!d){d=1;setTimeout(r,0)}};requestAnimationFrame(go);setTimeout(go,60)})}
+ function endShow(){blk.style.display='none';const b=$('busy');if(b&&b.querySelector('.g43card'))b.textContent='해석 중…';const e=$('g43st');if(e)e.style.display='none';V.shown=false}
+ const _run43=run;
+ run=function(){if(V.busy)return V.busy;V.tS=V.tL=performance.now();V.shown=false;blk.style.display='block';chip.style.display='none';clear();document.addEventListener('keydown',keyBlock,true);
+  V.busy=(async()=>{try{return await _run43.apply(this,arguments)}finally{V.busy=null;document.removeEventListener('keydown',keyBlock,true);endShow();V.key='';kick()}})();return V.busy};
+
+ /* ── 2·3. 흐름 점선 · 수압 이상 절점 파동 ── */
+ const SPD=[[0.3,16],[0.6,28],[1.0,44],[1e9,66]];
+ function act(){return S.open&&S.res&&S.net&&(V.o.flow||V.o.pulse)&&!document.hidden&&!V.busy&&cv.offsetWidth>0&&!MAP.inter}
+ function build(){const R=S.res,k=Math.min(S.k||0,R.t.length-1),Q=R.Q[k],Vv=R.V[k],STt=R.ST[k],P=R.P[k],vw=S.view,W=MAP.W,H=MAP.H;
+  const x0=vw.cx-W/2*vw.s,x1=vw.cx+W/2*vw.s,y0=vw.cy-H/2*vw.s,y1=vw.cy+H/2*vw.s;
+  V.paths=[];V.over=0;V.pul=[];
+  if(V.o.flow){const vis=[];for(const l of S.net.links){const b=l.bb;if(!b||b[2]<x0||b[0]>x1||b[3]<y0||b[1]>y1)continue;const i=l.i-1;const v=Vv[i];if(!(v>=0.01)||STt[i]===0||!Q[i])continue;if(Math.max(b[2]-b[0],b[3]-b[1])/vw.s<10)continue;vis.push(l)}
+   if(vis.length>LIM)V.over=vis.length;else{const ps=SPD.map(()=>new Path2D());let n=0;
+    for(const l of vis){const i=l.i-1,v=Vv[i],bi=SPD.findIndex(s=>v<s[0]),p=ps[bi],xs=l.xs,ys=l.ys,m=xs.length;if(m<2)continue;n++;
+     if(Q[i]>0){p.moveTo(SX(xs[0]),SY(ys[0]));for(let j=1;j<m;j++)p.lineTo(SX(xs[j]),SY(ys[j]))}else{p.moveTo(SX(xs[m-1]),SY(ys[m-1]));for(let j=m-2;j>=0;j--)p.lineTo(SX(xs[j]),SY(ys[j]))}}
+    V.paths=n?ps.map((p,j)=>[p,SPD[j][1]]):[]}}
+  if(V.o.pulse){const pm=crit().pmin,a=[];S.net.nodes.forEach((nd,i)=>{if(nd.type!==0)return;const p=P[i];if(!(p<pm))return;if(nd.x<x0||nd.x>x1||nd.y<y0||nd.y>y1)return;a.push([SX(nd.x),SY(nd.y),p<0,p,i])});a.sort((u,w)=>u[3]-w[3]);V.pulN=a.length;V.pul=a.slice(0,a.length>PLIM?PFEW:PLIM)}
+  chip.style.display=V.over||(V.o.pulse&&V.pulN>PLIM)?'block':'none';
+  chip.textContent=V.over?`흐름 표시: 화면 관로 ${V.over.toLocaleString()}개 · 확대하면 움직입니다`:`수압 부족 ${V.pulN.toLocaleString()}곳 중 가장 낮은 ${V.pul.length}곳만 파동 · 확대하면 모두`}
+ function clear(){const c=cv.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height)}
+ function frame(ts){V.raf=0;if(!act()){clear();if(MAP.inter||!(S.res&&(V.o.flow||V.o.pulse)))chip.style.display='none';return}
+  V.raf=requestAnimationFrame(frame);if(ts-V.last<33)return;V.last=ts;
+  const d=MAP.dpr||1,w=Math.round(MAP.W*d),h=Math.round(MAP.H*d);if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;V.key=''}
+  const vw=S.view,key=[vw.cx,vw.cy,vw.s,MAP.W,MAP.H,S.k,V.o.flow,V.o.pulse,$('cPmin')&&$('cPmin').value].join('|');
+  if(key!==V.key||V.res!==S.res||V.net!==S.net){V.key=key;V.res=S.res;V.net=S.net;build()}
+  const c=cv.getContext('2d'),dt=(ts-V.t0)/1000;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,MAP.W,MAP.H);
+  if(V.paths.length){c.lineCap='round';c.lineWidth=2.2;c.setLineDash([3,11]);c.strokeStyle='rgba(255,255,255,.92)';
+   for(const [p,s] of V.paths){c.lineDashOffset=-((dt*s)%14);c.stroke(p)}c.setLineDash([])}
+  if(V.pul.length){const ph=(dt%1.4)/1.4;c.lineWidth=2.5;
+   for(const [x,y,neg] of V.pul){c.beginPath();c.arc(x,y,5+ph*15,0,6.2832);c.strokeStyle=(neg?'rgba(127,29,29,':'rgba(239,68,68,')+(1-ph).toFixed(2)+')';c.stroke()}}}
+ function kick(){if(!V.raf&&act())V.raf=requestAnimationFrame(frame);else if(!act()){clear();if(!S.res)chip.style.display='none'}}
+ const _d43=draw;draw=function(){const r=_d43.apply(this,arguments);kick();return r};
+ const _f43=fastDraw;fastDraw=function(){const r=_f43.apply(this,arguments);clear();chip.style.display='none';return r};
+ document.addEventListener('visibilitychange',kick);
+
+ /* ── 레이어 창 켜고 끄기 ── */
+ const _gl43=gpLayers;gpLayers=function(){const r=_gl43.apply(this,arguments);try{const box=$('gpLay'),a=box&&box.querySelector('[data-gl="arrows"]');if(a){const tr=a.closest('tr'),ep=tr.querySelector('.gl-e')?tr.querySelector('.gl-e').textContent:'-';
+   const mk=(k,lab,ic)=>`<tr><td><input type="checkbox" data-g43="${k}" ${V.o[k]?'checked':''} aria-label="${lab}"></td><td class="gl-n"><span class="gl-i">${ic}</span>${lab}</td><td class="gl-e">${ep}</td></tr>`;
+   tr.insertAdjacentHTML('afterend',mk('flow','흐름 애니메이션(해석 후)','<i style="display:inline-block;width:14px;border-top:2px dashed #38bdf8;vertical-align:middle"></i>')+mk('pulse','수압 부족 절점 파동','<i style="display:inline-block;width:8px;height:8px;border-radius:9999px;border:2px solid #ef4444;vertical-align:middle"></i>'));
+   box.querySelectorAll('[data-g43]').forEach(c=>c.onchange=()=>{V.o[c.dataset.g43]=c.checked;save();V.key='';if(!c.checked&&!V.o.flow&&!V.o.pulse){clear();chip.style.display='none'}kick()})}}catch(e){}return r};
+ try{gpLayers()}catch(e){}
+
+ window.__gw43={V,tick,kick,build,set(k,v){V.o[k]=!!v;save();V.key='';kick();try{gpLayers()}catch(e){}}};
+}catch(e){console.warn('v43',e)}})();
 
 AITOOLS.push(...TOOL_AI);Object.assign(TOOLLAB,TOOL_LAB);
 window.__gw={T,winOpen,gpSet,rbAct,run,refresh,AI,AITOOLS,cxSend,draw,fastDraw,fitView,midOf,S,MAP,ED,MS,edClick,setMode,setDual,hit,get SX(){return SX},get SY(){return SY}};
