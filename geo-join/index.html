@@ -9727,14 +9727,17 @@ function axcNaeRun(P,list){const r=P.r;let Lall=0,Pin=0,Kp=0,noL=0;const byK=new
   ['하도급대금지급보증수수료',AL*r.sub/100,`(재료비+직접노무비+산출경비) × ${r.sub}%`],...P.lumpm.map(([n,v])=>[n,Lall*v,`연장 × ${axcF(v)}원/m (내역서 1식 ÷ 설계 연장)`]),
   ['기타경비',(mat+B)*r.etc/100,`(재료비+노무비계) × ${r.etc}%`],...(r.asb?[['석면부담금',B*r.asb/100,`노무비계 × ${r.asb}%`]]:[]),...(r.wage?[['임금채권부담금',B*r.wage/100,`노무비계 × ${r.wage}%`]]:[])];
  const C=ex+it.reduce((s,x)=>s+x[1],0),Dn=mat+B+C,E=Dn*r.gen/100,F=(B+C+E)*r.prof/100,G=Dn+E+F,H=Lall*P.yardm,I=(G+H)*r.vat/100,J=G+H+I,Kc=Lall*P.cgw,K=Kp+Kc,W=Lall*P.wm,T=J+K+W;
- const lines=[['관 자재+직관 부설 (부설비·사급 PE)','관경별 m당 × 연장 (아래 관경별 표)',Pin,'',1],['공통 직접비',`연장 × ${axcF(P.cin)}원/m (토공·포장·부대·이형관·밸브·철거·가정분기 등)`,Cin,'',1],
-  ['순직접공사비','',D,'sub',1],['└ 재료비',`순직접 × ${(P.fm*100).toFixed(1)}% (내역서 비율)`,mat],['└ 직접노무비',`순직접 × ${(P.fl*100).toFixed(1)}%`,lab],['└ 산출경비',`순직접 × ${(P.fe*100).toFixed(1)}%`,ex],
-  ['간접노무비',`직접노무비 × ${r.ind}%`,ind,'',1],...it.map(x=>[x[0],x[2],x[1]]),['보험·안전·기타경비 등 소계','산출경비 제외 경비',C-ex,'',2],
-  ['순공사원가','재료비+노무비계+경비계',Dn,'sub'],['일반관리비',`순공사원가 × ${r.gen}%`,E,'',1],['이윤',`(노무비계+경비계+일반관리비) × ${r.prof}%`,F,'',1],['총원가','',G,'sub'],
-  ['야적장',`연장 × ${axcF(P.yardm)}원/m (내역서 1식 ÷ 설계 연장)`,H,'',1],['부가가치세',`(총원가+야적장) × ${r.vat}%`,I,'',1],['도급액','',J,'sub',1],
-  ['관급자재 — 관(DCIP·HI-3P)','관경별 관급 관값 m당 × 연장',Kp,'',1],['관급자재 — 아스콘·골재·밸브 등',`연장 × ${axcF(P.cgw)}원/m`,Kc,'',1],['폐기물처리비',`연장 × ${axcF(P.wm)}원/m`,W,'',1],
-  ['총공사비','도급액+관급자재+폐기물처리비',T,'tot',1]];
- return{Lall,noL,Pin,Cin,D,lab,mat,ex,ind,B,C,Dn,E,F,G,H,I,J,Kp,Kc,K,W,T,byK,lines}}
+ /* 천원 미만 버림(2026-11-14 사용자 요청): 각 비목을 천원 아래 버리고, 합계 줄(순직접·소계·순공사원가·총원가·도급액·총공사비)은 버린 값의 합 */
+ const tk=v=>Math.floor(v/1000+1e-9)*1000,q={Pin:tk(Pin),Cin:tk(Cin),mat:tk(mat),lab:tk(lab),ind:tk(ind),E:tk(E),F:tk(F),H:tk(H),I:tk(I),Kp:tk(Kp),Kc:tk(Kc),W:tk(W)};it.forEach(x=>x[1]=tk(x[1]));
+ q.D=q.Pin+q.Cin;q.ex=q.D-q.mat-q.lab;q.S=it.reduce((s,x)=>s+x[1],0);q.B=q.lab+q.ind;q.C=q.ex+q.S;q.Dn=q.D+q.ind+q.S;q.G=q.Dn+q.E+q.F;q.J=q.G+q.H+q.I;q.K=q.Kp+q.Kc;q.T=q.J+q.K+q.W;
+ const lines=[['관 자재+직관 부설 (부설비·사급 PE)','관경별 m당 × 연장 (아래 관경별 표)',q.Pin,'',1],['공통 직접비',`연장 × ${axcF(P.cin)}원/m (토공·포장·부대·이형관·밸브·철거·가정분기 등)`,q.Cin,'',1],
+  ['순직접공사비','',q.D,'sub',1],['└ 재료비',`순직접 × ${(P.fm*100).toFixed(1)}% (내역서 비율)`,q.mat],['└ 직접노무비',`순직접 × ${(P.fl*100).toFixed(1)}%`,q.lab],['└ 산출경비',`순직접 × ${(P.fe*100).toFixed(1)}%`,q.ex],
+  ['간접노무비',`직접노무비 × ${r.ind}%`,q.ind,'',1],...it.map(x=>[x[0],x[2],x[1]]),['보험·안전·기타경비 등 소계','산출경비 제외 경비',q.S,'',2],
+  ['순공사원가','재료비+노무비계+경비계',q.Dn,'sub'],['일반관리비',`순공사원가 × ${r.gen}%`,q.E,'',1],['이윤',`(노무비계+경비계+일반관리비) × ${r.prof}%`,q.F,'',1],['총원가','',q.G,'sub'],
+  ['야적장',`연장 × ${axcF(P.yardm)}원/m (내역서 1식 ÷ 설계 연장)`,q.H,'',1],['부가가치세',`(총원가+야적장) × ${r.vat}%`,q.I,'',1],['도급액','',q.J,'sub',1],
+  ['관급자재 — 관(DCIP·HI-3P)','관경별 관급 관값 m당 × 연장',q.Kp,'',1],['관급자재 — 아스콘·골재·밸브 등',`연장 × ${axcF(P.cgw)}원/m`,q.Kc,'',1],['폐기물처리비',`연장 × ${axcF(P.wm)}원/m`,q.W,'',1],
+  ['총공사비','도급액+관급자재+폐기물처리비',q.T,'tot',1]];
+ return{Lall,noL,Pin:q.Pin,Cin:q.Cin,D:q.D,lab:q.lab,mat:q.mat,ex:q.ex,ind:q.ind,B:q.B,C:q.C,Dn:q.Dn,E:q.E,F:q.F,G:q.G,H:q.H,I:q.I,J:q.J,Kp:q.Kp,Kc:q.Kc,K:q.K,W:q.W,T:q.T,byK,lines}}
 /* 범위 안 관 → 현 관경 / 적정 관경(📐 판정) 두 번 계산 */
 function axcNae(rows,key){const P=axcNaeP(key);if(!P)return null;let O=null,why='';try{if(hydLk()&&typeof rsJudge==='function'&&typeof rsOpt==='function')O=rsOpt();else why=(typeof ELEV!=='undefined'&&ELEV.n)?'inp':'none'}catch(e){O=null;why='err:'+(e&&e.message||e)}
  let nO=0,LO=0,nS=0,LS=0;rows.forEach(x=>{x.Dn=null;x.rk='';if(!O||!x.f||x.use==='급수관')return;try{const j=rsJudge(x.f,O);if(!j)return;x.rk=(RS_K[j.k]||[j.k])[0];if(j.Dn&&j.Dn!==x.dia){x.Dn=j.Dn;if(j.Dn<x.dia){nO++;LO+=x.L}else{nS++;LS+=x.L}}}catch(_){}});
@@ -9746,9 +9749,9 @@ const axcDE=v=>v==null||!isFinite(v)?'':(v>0?'+':v<0?'−':'')+axcEok(Math.abs(v
 function axcNaeHtml(r){const N=r.nae,A=N.A,B=N.B,L=v=>(v/1000>=1?(v/1000).toFixed(2)+'km':Math.round(v).toLocaleString()+'m');
  const rows=A.lines.map((l,i)=>[l,B?B.lines[i]:null]).filter(([l])=>l[4]);
  const td=(v,cls)=>`<td class="r${cls?' '+cls:''}">${v}</td>`;
- return `<table class="axct"><thead><tr><th>비목</th><th class="r">현 관경</th><th class="r">적정 관경</th><th class="r">차이</th></tr></thead><tbody>
+ return `<p class="hint" style="text-align:right;margin:0 2px 2px">단위: 천원 (총공사비는 억 원, m당은 원)</p><table class="axct"><thead><tr><th>비목</th><th class="r">현 관경</th><th class="r">적정 관경</th><th class="r">차이</th></tr></thead><tbody>
   <tr><td>교체 연장</td>${td(L(A.Lall))}${td(B?L(B.Lall):'—')}${td('')}</tr>
-  ${rows.map(([a,b])=>`<tr${a[3]?` class="${a[3]}"`:''}><td>${a[3]?'<b>'+a[0]+'</b>':a[0]}</td>${td(a[3]==='tot'?`<b class="axctot">${axcEok(a[2])}</b>`:axcWon(a[2]).replace('원',''))}${td(b?(a[3]==='tot'?`<b class="axctot">${axcEok(b[2])}</b>`:axcWon(b[2]).replace('원','')):'—')}${td(b?(a[3]==='tot'?'<b>'+axcDE(b[2]-a[2])+'</b>':axcDf(b[2]-a[2])):'',b&&b[2]<a[2]?'axcOk':b&&b[2]>a[2]?'c-am':'')}</tr>`).join('')}
+  ${rows.map(([a,b])=>`<tr${a[3]?` class="${a[3]}"`:''}><td>${a[3]?'<b>'+a[0]+'</b>':a[0]}</td>${td(a[3]==='tot'?`<b class="axctot">${axcEok(a[2])}</b>`:Math.round(a[2]/1000).toLocaleString())}${td(b?(a[3]==='tot'?`<b class="axctot">${axcEok(b[2])}</b>`:Math.round(b[2]/1000).toLocaleString()):'—')}${td(b?(a[3]==='tot'?'<b>'+axcDE(b[2]-a[2])+'</b>':axcDf((b[2]-a[2])/1000)):'',b&&b[2]<a[2]?'axcOk':b&&b[2]>a[2]?'c-am':'')}</tr>`).join('')}
   <tr><td>m당 총공사비</td>${td(A.Lall?axcWon(A.T/A.Lall):'—')}${td(B&&B.Lall?axcWon(B.T/B.Lall):'—')}${td('')}</tr></tbody></table>
   <p class="hint" style="margin:4px 2px 0">기준: <b>${esc(N.key)} 설계내역서</b>(${esc(N.P.nm)}, 연장 ${axcF(N.P.L)}m · 총공사비 ${axcEok(N.P.tot)} · m당 ${axcWon(N.P.tot/N.P.L)}). ${B?`적정 관경: 📐 판정 ${N.nJ.toLocaleString()}개 중 <b>줄임 ${N.nO}개 ${L(N.LO)}</b> · <b>키움 ${N.nS}개 ${L(N.LS)}</b>, 나머지는 현 관경 그대로(기준 유속은 📐 적정 관경 창 값).`:`<span class="c-am">적정 관경: ${N.why==='inp'?'②-3에 표고(.inp)만 있고 관로 유속이 든 관망해석 결과 파일(.zip)이 이 기기에 없어 비교 못 함 — ②-3 관망해석 칸에 결과 .zip을 올리세요':String(N.why||'').startsWith('err:')?'적정 관경 판정 중 오류로 비교 못 함 ('+esc(N.why.slice(4))+')':'이 기기에 관망해석 결과(②-3)가 없어 비교 못 함 — ②-3 관망해석 칸에 결과 .zip을 올리세요'}.</span>`}
   ${A.noL>0?` <span class="c-am">관경 ${N.P.ks[N.P.ks.length-1]}mm 넘거나 관경 모르는 관 ${L(A.noL)}은 관 자재 단가 확인 필요(공통 직접비만 셈).</span>`:''}${N.svN?` 급수관 ${N.svN.toLocaleString()}개 ${L(N.svL)}은 내역서에서 가정분기로 공통 직접비(m당)에 들어 있어 연장에서 뺐습니다.`:''} 시설물도 제수밸브·이형관이 공통 직접비에 들어 있어 따로 더하지 않습니다.</p>`}
@@ -9764,7 +9767,7 @@ function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.ro
   {'항목':'차이(적정−현, 원)','값':B?n(B.T-A.T):''},{'항목':'적정 관경 바뀐 관','값':B?`줄임 ${N.nO}개 ${N.LO.toFixed(1)}m · 키움 ${N.nS}개 ${N.LS.toFixed(1)}m (📐 판정 ${N.nJ}개)`:'—'},
   {'항목':'적정 관경 기준','값':B?axcRsCond():'—'},{'항목':'관 자재 단가 없는 연장(m)','값':+A.noL.toFixed(1)},{'항목':'시설물(개, 금액은 공통 직접비에 포함)','값':r.fN},
   {'항목':'주의','값':'개략 금액. 실제 설계내역서의 m당 값·원가계산서 요율을 범위 안 연장에 적용(관경별로는 관 자재+직관 부설만 다름). 고객 정보 없음.'}];
- const s2=A.lines.map((l,i)=>({'비목':l[0],'산출 근거':l[1],'현 관경(원)':n(l[2]),'적정 관경(원)':B?n(B.lines[i][2]):'','차이(원)':B?n(B.lines[i][2]-l[2]):''}));
+ const s2=A.lines.map((l,i)=>({'비목':l[0],'산출 근거':l[1],'현 관경(천원)':n(l[2]/1000),'적정 관경(천원)':B?n(B.lines[i][2]/1000):'','차이(천원)':B?n((B.lines[i][2]-l[2])/1000):''}));
  const s3=axcNaeKRows(N).map(o=>({'기준 관경(mm 이하)':o.k,'교체 관종':o.t,'부설+사급(원/m)':Math.round(o.pin),'관급 관값(원/m)':Math.round(o.pout),'현 관경 연장(m)':+o.LA.toFixed(1),'적정 관경 연장(m)':o.LB!=null?+o.LB.toFixed(1):'','비고':o.note}));
  const s4=axcNaeChg(r).map(o=>({'현 관경(mm)':o.D,'적정 관경(mm)':o.Dn,'구분':o.Dn<o.D?'줄임':'키움','관 수':o.n,'연장(m)':+o.L.toFixed(1)}));
  const s5=r.rows.map(x=>({'관리번호':x.id,'소블록':x.blk,'용도':x.use,'재질':x.mat,'관경(mm)':x.dia??'','설치년도':x.year??'','범위 안 연장(m)':+x.L.toFixed(2),'📐 판정':x.rk||'','적정 관경(mm)':x.Dn||x.dia||'','기준 관경(현)':axcNaeBk(P,x.dia)??'확인 필요','기준 관경(적정)':axcNaeBk(P,x.Dn||x.dia)??'확인 필요','현장 표시':x.ed}));
@@ -9773,9 +9776,10 @@ function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.ro
 function axcNaeSec(r,sec,o){const{img,e,kpi,T,cond,blks,km,f0}=o,N=r.nae,A=N.A,B=N.B,P=N.P,dd=(b,a)=>B?`<td class="r">${axcDf(b-a)}</td>`:'<td class="r">—</td>';
  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('교체 연장 (범위 안)',km(A.Lall)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('총공사비 · 현 관경',axcEok(A.T),'m당 '+(A.Lall?axcWon(A.T/A.Lall):'—'))}${kpi('총공사비 · 적정 관경',B?axcEok(B.T):'확인 필요',B?'m당 '+axcWon(B.T/B.Lall):'관망해석 결과 없음','tot')}${kpi('차이 (적정−현)',B?axcDE(B.T-A.T):'—',B?`줄임 ${km(N.LO)}km · 키움 ${km(N.LS)}km`:'')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}<p class="n">계산 기준: ${e(N.key)} 설계내역서(${e(P.nm)}) — 설계 연장 ${axcF(P.L)}m, 총공사비 ${axcF(P.tot)}원(m당 ${axcF(P.tot/P.L)}원)</p>`);
  sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="150">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시</p>`);
- sec.push(`<h2 class="pgb">3. 원가계산서 비교 (현 관경 ↔ 적정 관경)</h2>${T(['비목','산출 근거','현 관경(원)','적정 관경(원)','차이(원)'],[`<tr><td>교체 연장</td><td>범위 경계에서 자른 안쪽</td><td class="r">${A.Lall.toFixed(1)} m</td><td class="r">${B?B.Lall.toFixed(1)+' m':'—'}</td><td class="r"></td></tr>`,
-  ...A.lines.map((l,i)=>`<tr${l[3]?` class="${l[3]}"`:''}><td>${e(l[0])}</td><td>${e(l[1])}</td><td class="r">${f0(l[2])}</td><td class="r">${B?f0(B.lines[i][2]):'확인 필요'}</td>${dd(B?B.lines[i][2]:0,l[2])}</tr>`),
-  `<tr><td>m당 총공사비</td><td>총공사비 ÷ 교체 연장</td><td class="r">${A.Lall?f0(A.T/A.Lall):''}</td><td class="r">${B&&B.Lall?f0(B.T/B.Lall):''}</td><td class="r"></td></tr>`])}${A.noL>0?`<p class="n am">관경 ${P.ks[P.ks.length-1]}mm 넘거나 관경 모르는 관 ${A.noL.toFixed(1)}m는 내역서에 단가가 없어 관 자재가 빠졌습니다(확인 필요, 공통 직접비만 셈).</p>`:''}`);
+ const fk=v=>v==null?'확인 필요':Math.round(v/1000).toLocaleString(),dk=(b,a)=>B?`<td class="r">${axcDf((b-a)/1000)}</td>`:'<td class="r">—</td>';
+ sec.push(`<h2 class="pgb">3. 원가계산서 비교 (현 관경 ↔ 적정 관경)</h2><p class="n ur" style="text-align:right;margin:0 0 3px">(단위: 천원)</p>${T(['비목','산출 근거','현 관경','적정 관경','차이'],[`<tr><td>교체 연장</td><td>범위 경계에서 자른 안쪽</td><td class="r">${A.Lall.toFixed(1)} m</td><td class="r">${B?B.Lall.toFixed(1)+' m':'—'}</td><td class="r"></td></tr>`,
+  ...A.lines.map((l,i)=>`<tr${l[3]?` class="${l[3]}"`:''}><td>${e(l[0])}</td><td>${e(l[1])}</td><td class="r">${fk(l[2])}</td><td class="r">${B?fk(B.lines[i][2]):'확인 필요'}</td>${dk(B?B.lines[i][2]:0,l[2])}</tr>`),
+  `<tr><td>m당 총공사비(원)</td><td>총공사비 ÷ 교체 연장</td><td class="r">${A.Lall?f0(A.T/A.Lall):''}</td><td class="r">${B&&B.Lall?f0(B.T/B.Lall):''}</td><td class="r"></td></tr>`])}${A.noL>0?`<p class="n am">관경 ${P.ks[P.ks.length-1]}mm 넘거나 관경 모르는 관 ${A.noL.toFixed(1)}m는 내역서에 단가가 없어 관 자재가 빠졌습니다(확인 필요, 공통 직접비만 셈).</p>`:''}`);
  sec.push(`<h2>4. 관경별 비교</h2>${T(['기준 관경','교체 관종','부설+사급(원/m)','관급 관값(원/m)','현 관경 연장(m)','적정 관경 연장(m)','증감(m)'],axcNaeKRows(N).map(o=>`<tr><td style="white-space:nowrap">${o.k}mm 이하</td><td>${e(o.t)}${o.note?` <small class="am">${e(o.note)}</small>`:''}</td><td class="r">${f0(o.pin)}</td><td class="r">${f0(o.pout)}</td><td class="r">${o.LA.toFixed(1)}</td><td class="r">${o.LB!=null?o.LB.toFixed(1):'—'}</td><td class="r">${o.LB!=null?axcDf(o.LB-o.LA):''}</td></tr>`).reverse())}`);
  const CH=axcNaeChg(r);sec.push(`<h2>5. 적정 관경으로 바뀌는 관</h2>${B?T(['현 관경(mm)','적정 관경(mm)','구분','관 수','연장(m)'],CH.map(o=>`<tr><td>${o.D}</td><td>${o.Dn}</td><td>${o.Dn<o.D?'줄임':'<span class="am">키움</span>'}</td><td class="r">${o.n}</td><td class="r">${o.L.toFixed(1)}</td></tr>`))+`<p class="n">📐 판정 ${N.nJ.toLocaleString()}개 중 줄임 ${N.nO}개 · 키움 ${N.nS}개, 나머지(적정·정체·최소 관경·소화전 유지·관망해석 없음)는 현 관경 그대로. ${e(axcRsCond())}</p>`:'<p class="n am">관망해석 결과가 없어 적정 관경을 판정하지 못했습니다(🌊 관망해석 결과를 불러온 뒤 다시 만드세요).</p>'}`);
  sec.push(`<h2>6. 시설물 (개수)</h2>${T(['종류','구경(mm)','개수'],r.FS.map(o=>`<tr><td>${e(o.nm)} <small>${e(o.k)}</small></td><td>${o.dia??''}</td><td class="r">${o.n}</td></tr>`))}<p class="n">제수밸브·이형관·분수전 비용은 내역서 공통 직접비(m당)에 들어 있어 따로 더하지 않았습니다.</p>`);
@@ -9784,7 +9788,8 @@ function axcNaeSec(r,sec,o){const{img,e,kpi,T,cond,blks,km,f0}=o,N=r.nae,A=N.A,B
  기준 내역서: ${e(P.nm)} · 설계 연장 ${e(P.Lsrc)}.<br>관경별 m당 = 관 자재(관급 단가 ÷ 6m) + 직관 접합·부설(일위대가 ÷ 6m), PE는 m당 사급 관값 + 부설. 관경 사이는 바로 위 기준 관경 값.<br>
  공통 직접비 ${axcF(P.cin)}원/m = (순직접공사비 ${axcF(P.dir)}원 − 관경별 부설·사급 합) ÷ ${axcF(P.L)}m. 직접비 구성 재료 ${(P.fm*100).toFixed(1)}% · 노무 ${(P.fl*100).toFixed(1)}% · 경비 ${(P.fe*100).toFixed(1)}%.<br>
  원가계산서 요율: 간접노무비 ${R.ind}% · 산재 ${R.san}% · 고용 ${R.emp}% · 건강 ${R.hea}% · 연금 ${R.pen}% · 노인장기요양 ${R.care}% · 퇴직공제 ${R.ret}% · 건설기계 보증 ${R.mach}% · 산업안전보건 ${R.safe}% · 환경보전 ${R.env}% · 하도급 보증 ${R.sub}% · 기타경비 ${R.etc}%${R.asb?` · 석면 ${R.asb}%`:''}${R.wage?` · 임금채권 ${R.wage}%`:''} · 일반관리비 ${R.gen}% · 이윤 ${R.prof}% · 부가세 ${R.vat}%.<br>
- 관급자재(아스콘·골재·슬래그·밸브·철개 등) ${axcF(P.cgw)}원/m · 폐기물처리비 ${axcF(P.wm)}원/m · 야적장 ${axcF(P.yardm)}원/m 은 내역서 금액 ÷ 설계 연장.</p>`)}
+ 관급자재(아스콘·골재·슬래그·밸브·철개 등) ${axcF(P.cgw)}원/m · 폐기물처리비 ${axcF(P.wm)}원/m · 야적장 ${axcF(P.yardm)}원/m 은 내역서 금액 ÷ 설계 연장.<br>
+ 금액 단수 정리: 원가계산서 각 비목은 천원 미만 버림, 순직접공사비·소계·순공사원가·총원가·도급액·총공사비는 버린 금액의 합.</p>`)}
 /* 선이 범위 안에 든 길이(m): 선분마다 경계와 만나는 곳에서 나눠 가운데 점이 안이면 더함 */
 function axcInLen(g,R){const r=R.ring,bb=R.bb;let s=0;
  for(const p of lineParts(g))for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],A=toM(a[0],a[1]),B=toM(b[0],b[1]),len=Math.hypot(B[0]-A[0],B[1]-A[1]);if(!len)continue;
@@ -10002,7 +10007,7 @@ async function hwpxFromDoc(doc,fname){const root=doc.querySelector('.pg')||doc.b
   if(t==='HEADER'||t==='SCRIPT'||t==='STYLE'||cl.contains('bar'))continue;if(cl.contains('pgb'))D.pb=1;
   if(t==='H1'){hwpxTitle(D,hwpxTx(el));continue}
   if(/^H[2-4]$/.test(t)){hwpxH2(D,hwpxTx(el));continue}
-  if(t==='P'){const x=hwpxTx(el);if(x)hwpxP(D,x,cl.contains('n')||cl.contains('hint')?{c:11,pp:20}:{c:7,pp:20});continue}
+  if(t==='P'){const x=hwpxTx(el);if(x)hwpxP(D,x,cl.contains('ur')?{c:11,pp:25}:cl.contains('n')||cl.contains('hint')?{c:11,pp:20}:{c:7,pp:20});continue}
   if(t==='TABLE'){const R=[],trs=[...el.querySelectorAll(':scope>thead>tr,:scope>tbody>tr,:scope>tr')];let hn=0;
    trs.forEach(tr=>{const inH=tr.parentNode.tagName==='THEAD',tot=tr.classList.contains('tot')||tr.classList.contains('sub');if(inH)hn++;
     R.push([...tr.children].map(td=>{const th=td.tagName==='TH'||inH,al=td.classList.contains('r')||td.style.textAlign==='right'?'r':th?'c':'l';
