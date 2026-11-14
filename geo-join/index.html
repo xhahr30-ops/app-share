@@ -6865,7 +6865,7 @@ const FK_OTHER=['#0f766e','#a16207','#9333ea','#be185d','#15803d','#b45309'];
 const FAC_ID=['관리번호','FTR_IDN','MNG_NO'];
 const FAC={feats:[],kinds:[],ki:new Map(),hidden:new Set(),names:'',n:0,x:null,y:null,px:null,py:null,k:null,cl:null,grid:new Map(),cs:.005,cv:null,ctx:null,raf:0,areaL:null,hit:-1,hint:''};
 /* 속성 줄이기: 빈칸·"-"·0 값과 개인정보 칸(수용가번호 등)은 저장하지 않음 (워커와 같은 함수를 씀) */
-function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/;for(var k in P){var v=P[k];if(v!=null&&/^(수용가번호|CUST_NO)$/i.test(k)){v=String(v).trim().replace(/\.0+$/,'');if(v&&!/^0+$/.test(v))o._cno=v;continue}if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
+function facSlim(P){var o={},D=/수용가|성명|고객|전화|연락처|휴대/,M=P&&(P['수용가번호']!=null||P['CUST_NO']!=null);for(var k in P){if(M&&/주소|인구수/.test(k))continue;var v=P[k];if(v!=null&&/^(수용가번호|CUST_NO)$/i.test(k)){v=String(v).trim().replace(/\.0+$/,'');if(v&&!/^0+$/.test(v))o._cno=v;continue}if(v==null||D.test(k))continue;if(typeof v==='number'){if(v!==0&&isFinite(v))o[k]=v;continue}
  v=String(v).trim();if(!v||v==='-'||/^0+(\.0+)?$/.test(v))continue;o[k]=v.length>80?v.slice(0,80):v}return o}
 function facCfg(){let v={};try{v=JSON.parse(localStorage.getItem('geo-fac')||'{}')||{}}catch(_){}return v}
 function facCfgSave(){try{localStorage.setItem('geo-fac',JSON.stringify({show:$('fShow').value,crs:$('fCrs').value,names:$('fNames').value,lbl:$('fLbl').value,sym:$('fSym').value,hidden:[...FAC.hidden],ksz:FAC.ksz||{},phOnly:!!FAC.phOnly}))}catch(_){}}
@@ -12360,6 +12360,8 @@ async function uniWait(p,mid){try{await p}catch(_){}const m=$(mid);if(!m)return;
  const t0=Date.now();let ok=0;await sleep(500);while(Date.now()-t0<600000){if(busy())ok=0;else if(++ok>=3)break;await sleep(400)}}
 const uniLine=mid=>{const m=$(mid);if(!m)return'';const t=document.createElement('div');t.innerHTML=String(m.innerHTML).split(/<br\s*\/?>/i)[0];return t.textContent.trim()};
 async function uniRun(items){const msg=$('uniMsg'),grp=new Map(),pre=[];UNI.out=[];
+ {const bx=items.filter(it=>it.k==='billX');if(bx.length>1){let nf=null;try{nf=await uniBillMerge(bx,pre)}catch(err){pre.push(`❌ 월별 부과량 합치기 실패: ${(err&&err.message)||err}`)}
+  bx.forEach(it=>it.k='skip');if(nf){UNI.out.push(nf);items=items.filter(it=>it.k!=='skip').concat([{f:nf,k:'bill',why:'월별 합침'}])}}}
  /* A-2: FRD 양식으로 맞추기 (부과량 열 대응 · SHP .prj/.cpg/칸 이름/파일명) */
  for(const it of items){try{
    if(it.k==='billX'){phToast(`📥 ${it.f.name} 열 살펴보는 중…`,{ms:120000});const nf=await uniBillConvert(it);if(!nf){pre.push(`⏭ ${it.f.name}: 건너뜀`);it.k='skip';continue}UNI.out.push(nf);pre.push(`🛠 ${it.f.name} → ${nf.name} (FRD 양식)`);it.f=nf}
@@ -12480,22 +12482,53 @@ function uniBillDlg(S,fname){return new Promise(res=>{const col=i=>XLSX.utils.en
   if(map.ad==null&&map.ji==null){alert('주소 또는 구주소 열 중 하나는 꼭 골라야 합니다.');return}
   const y=$('uniYr')?+$('uniYr').value:S.yr;if(noYr&&!(y>=2000&&y<=2100)){alert('연도를 넣어 주세요.');return}
   done({map,yr:y,mem:$('uniMem').checked})})})}
-async function uniBillConvert(it){const S=await uniBillScan(it.f),need=S.map.id==null||S.map.b==null||(S.map.ad==null&&S.map.ji==null)||!S.mon.length||(S.mon.some(m=>!m.ym)&&!(S.mem&&S.mem.yr));
- let r={map:S.map,yr:S.yr,mem:false};if(!S.mem||need){r=await uniBillDlg(S,it.f.name);if(!r)return null}
+async function uniBillConvert(it,opt){const S=await uniBillScan(it.f),need=S.map.id==null||S.map.b==null||(S.map.ad==null&&S.map.ji==null)||!S.mon.length||(S.mon.some(m=>!m.ym)&&!(S.mem&&S.mem.yr));
+ let r={map:S.map,yr:S.yr,mem:false};const sk=JSON.stringify(S.map);
+ /* 월별 합치기: 첫 파일에서 고른 열 대응을 열 자리가 같은 다음 파일에 그대로 씀(파일마다 창을 띄우지 않음) */
+ if(opt&&opt.prev&&opt.prev.sk===sk&&!S.mon.some(m=>!m.ym))r=opt.prev.r;
+ else if(!S.mem||need){r=await uniBillDlg(S,it.f.name);if(!r)return null}
+ if(opt)opt.prev={sk,r};
  if(r.mem){try{const all=JSON.parse(localStorage.getItem('geo-billmap')||'{}')||{},mm={};UNI_BR.forEach(([k])=>{mm[k]=r.map[k]!=null?S.H[r.map[k]]:''});all[S.sig]={map:mm,yr:r.yr,at:Date.now()};localStorage.setItem('geo-billmap',JSON.stringify(all))}catch(_){}}
  const mon=S.mon.map(m=>({c:m.c,ym:m.ym||r.yr+'-'+String(m.mo).padStart(2,'0')})).sort((a,b)=>a.ym<b.ym?-1:a.ym>b.ym?1:a.c-b.c);const ms=[];mon.forEach(m=>{const i=ms.findIndex(x=>x.ym===m.ym);if(i>=0)ms[i]=m;else ms.push(m)});
  const W=25+ms.length,hd=new Array(W).fill(null);UNI_BR.forEach(([k,lb])=>hd[UNI_BCOL[k]]=lb);ms.forEach((m,j)=>hd[25+j]=m.ym);
- const rows=[hd];for(const src of S.body){const o=new Array(W).fill(null);for(const k in r.map){let v=src[r.map[k]];if(v==null)continue;if(k==='mg'||k==='id')v=String(v).trim();else if(k==='b'||k==='b2')v=String(v).trim();o[UNI_BCOL[k]]=v}
-  if(o[0]==null||o[0]==='')continue;ms.forEach((m,j)=>{const v=src[m.c];o[25+j]=v==null||v===''?null:v});rows.push(o)}
+ let nShort=0;const rows=[hd];for(const src of S.body){const o=new Array(W).fill(null);for(const k in r.map){let v=src[r.map[k]];if(v==null)continue;if(k==='mg'||k==='id')v=String(v).trim();else if(k==='b'||k==='b2')v=String(v).trim();o[UNI_BCOL[k]]=v}
+  if(o[0]==null||o[0]==='')continue;
+  /* 2026-11-14 안동 요금데이터: 맨 위 블록 합계 줄(수용가번호 2·3·4처럼 4자리 이하 숫자)은 수용가가 아니므로 뺌 */
+  if(/^\d{1,4}$/.test(String(o[0]).trim())){nShort++;continue}
+  ms.forEach((m,j)=>{const v=src[m.c];o[25+j]=v==null||v===''?null:v});rows.push(o)}
+ if(opt&&opt.raw)return{rows,ms:ms.map(m=>m.ym),short:nShort,sh:S.sh};
  const nb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);
  for(let i=1;i<rows.length;i++)for(const c of [0,1]){const a=XLSX.utils.encode_cell({r:i,c});if(ws[a]){ws[a].t='s';ws[a].v=String(ws[a].v)}}
  XLSX.utils.book_append_sheet(nb,ws,'부과량');if(S.wb.Sheets['유수율(소블록별)'])XLSX.utils.book_append_sheet(nb,S.wb.Sheets['유수율(소블록별)'],'유수율(소블록별)');
  const how=[['스마트 물길주소 · 부과량 FRD 양식 (만든이: 구병순)'],[`원본: ${it.f.name} · '${S.sh}' 시트 · ${rows.length-1}행 · ${new Date().toLocaleString('ko-KR')}`],
   ...UNI_BR.map(([k,lb])=>[`${XLSX.utils.encode_col(UNI_BCOL[k])}열 ${lb} = ${r.map[k]!=null?'원본 '+XLSX.utils.encode_col(r.map[k])+'열 "'+S.H[r.map[k]]+'"':'(없음)'}`]),
   [`Z열부터 월별 사용량 ${ms.length}개 = 원본 ${ms.map(m=>XLSX.utils.encode_col(m.c)+'열').join(', ')}`],...(S.mon.some(m=>!m.ym)?[[`연도 없는 월 머리글은 ${r.yr}년으로 넣음 (확인 필요)`]]:[]),
+  ...(nShort?[[`수용가번호가 4자리 이하 숫자인 줄 ${nShort}개는 블록 합계 줄로 보고 뺌`]]:[]),
   ['빈칸은 0으로 바꾸지 않고 그대로 둠. 수용가명·상호·전화번호·검침담당 열은 넣지 않음.']];
  XLSX.utils.book_append_sheet(nb,XLSX.utils.aoa_to_sheet(how),'사용법');
  const u=XLSX.write(nb,{type:'array',bookType:'xlsx'});return new File([u],String(it.f.name).replace(/\.[^.]+$/,'')+'_FRD양식.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+/* 2026-11-14 안동 B: 월별 부과량 파일 여러 개(요금데이터 24년01월…)를 📥에 한꺼번에 넣으면 수용가번호(A열)로 합쳐 월이 옆으로 늘어선 FRD 부과량 하나로 만듦.
+   파일마다 바로 접어 넣어 메모리를 아낌. 같은 달이 두 파일에 있으면 뒤(새) 파일 값, 한 파일 안 같은 번호·같은 달은 더함. 수용가 정보(주소·업종·구경·소블록)는 가장 최근 달 파일 값 */
+async function uniBillMerge(its,pre){const A=new Map(),MS=new Set(),OPT={raw:true};let last='',nShort=0,dup=0,used=[];
+ for(let i=0;i<its.length;i++){const it=its[i];phToast(`📥 월별 부과량 합치는 중… ${i+1}/${its.length} ${it.f.name}`,{ms:120000});const m=$('uniMsg');if(m)m.textContent=`월별 부과량 합치는 중… ${i+1}/${its.length}`;
+  let res=null;try{res=await uniBillConvert(it,OPT)}catch(err){pre.push(`❌ ${it.f.name}: ${(err&&err.message)||err}`);continue}if(!res){pre.push(`⏭ ${it.f.name}: 건너뜀`);continue}
+  used.push(it.f.name);nShort+=res.short;const top=res.ms.slice().sort().pop()||'',newer=top>=last;if(newer)last=top;const seen=new Set();
+  for(let r=1;r<res.rows.length;r++){const o=res.rows[r],id=String(o[0]).trim();let e=A.get(id);if(!e){e={a:o.slice(0,25),m:{}};A.set(id,e)}else for(let c=1;c<25;c++){if(o[c]!=null&&o[c]!==''&&(newer||e.a[c]==null||e.a[c]===''))e.a[c]=o[c]}
+   res.ms.forEach((ym,j)=>{const v=o[25+j];if(v==null||v==='')return;const k=id+'|'+ym;if(seen.has(k)){e.m[ym]=(+e.m[ym]||0)+(+v||0);dup++}else{seen.add(k);e.m[ym]=v}})}
+  res.ms.forEach(x=>MS.add(x));res.rows.length=0;await sleep(0)}
+ if(!A.size)return null;
+ const ms=[...MS].sort(),W=25+ms.length,hd=new Array(W).fill(null);UNI_BR.forEach(([k,lb])=>hd[UNI_BCOL[k]]=lb);ms.forEach((m,j)=>hd[25+j]=m);
+ const rows=[hd];for(const [,e] of A){const o=e.a.slice(0,25);while(o.length<25)o.push(null);ms.forEach(m=>o.push(e.m[m]??null));rows.push(o)}
+ const nb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);
+ for(let i=1;i<rows.length;i++)for(const c of [0,1]){const a=XLSX.utils.encode_cell({r:i,c});if(ws[a]){ws[a].t='s';ws[a].v=String(ws[a].v)}}
+ XLSX.utils.book_append_sheet(nb,ws,'부과량');
+ const how=[['스마트 물길주소 · 부과량 FRD 양식 — 월별 파일 합침 (만든이: 구병순)'],[`원본 ${used.length}개 파일 → 수용가 ${(rows.length-1).toLocaleString()}명 · 월 ${ms.length}개(${ms[0]}~${ms[ms.length-1]}) · ${new Date().toLocaleString('ko-KR')}`],
+  ['수용가번호(A열)로 합침. 주소·업종·구경·소블록은 가장 최근 달 파일 값(없으면 이전 파일 값).'],['같은 달이 두 파일에 있으면 뒤 파일 값, 한 파일 안에서 같은 번호·같은 달이 두 줄이면 더함'+(dup?` (${dup.toLocaleString()}건)`:'')],
+  ...(nShort?[[`수용가번호가 4자리 이하 숫자인 줄 ${nShort.toLocaleString()}개는 블록 합계 줄로 보고 뺌`]]:[]),['원본 파일: '+used.join(', ')],['빈칸은 0으로 바꾸지 않고 그대로 둠. 수용가명·상호·전화번호·검침담당 열은 넣지 않음.']];
+ XLSX.utils.book_append_sheet(nb,XLSX.utils.aoa_to_sheet(how),'사용법');
+ const u=XLSX.write(nb,{type:'array',bookType:'xlsx',compression:true});
+ pre.push(`🧩 월별 부과량 ${used.length}개 파일 → 하나로 합침: 수용가 ${(rows.length-1).toLocaleString()}명 · ${ms[0]}~${ms[ms.length-1]} ${ms.length}개월${nShort?` · 합계 줄 ${nShort}개 뺌`:''}${dup?` · 같은 달 두 줄 ${dup}건 더함`:''}`);
+ return new File([u],`부과량_월별합침_${ms[0]}_${ms[ms.length-1]}_FRD양식.xlsx`,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
 /* ---------- 블록 이름 대조: 부과량 Y열 ↔ 경계 이름, 다른 것만 별칭 후보로 ---------- */
 function uniAliasHint(){try{if(!BILL.R||!BILL.R.length||!poly)return'';const am=aliasMap(),sh=shpNames(),bl=new Set();BILL.R.forEach(r=>{const v=bNorm(r&&r.b!=null?r.b:r&&r[9]);if(v)bl.add(v)});
  const nk=s=>bParen(s).replace(/[\s\-_.·]/g,'').replace(/블록|블럭|BLOCK/gi,'').toUpperCase(),onlyB=[...bl].filter(b=>!sh.has(b)&&!sh.has(am.get(b)||'')&&!sh.has(bParen(b))),onlyS=[...sh].filter(s=>![...bl].some(b=>b===s||am.get(b)===s||bParen(b)===s));
@@ -12551,7 +12584,7 @@ const frdNm=s=>String(s||'').split(/[\\/]/).pop().trim().toLowerCase();
 const frdStem=s=>frdNm(s).replace(/\.[^.]+$/,'').replace(/(_frd양식)+$/,'');
 /* 가림: 전화 모양 숫자 · 주소 번지 · 주민번호 모양 */
 function frdMask(v){if(v==null)return'';if(v instanceof Date)return v.toISOString().slice(0,10);let t=String(v).replace(/\s+/g,' ').trim();if(!t)return'';
- t=t.replace(/\d{6}-?[1-4]\d{6}/g,'******-*******').replace(/(01[016789]|0\d{1,2})[-.\s)]?\d{3,4}[-.\s]?\d{4}/g,'***-****-****');
+ t=t.replace(/(?<!\d)\d{6}-?[1-4]\d{6}(?!\d)/g,'******-*******').replace(/(?<!\d)(01[016789]|0\d{1,2})[-.\s)]?\d{3,4}[-.\s]?\d{4}(?!\d)/g,'***-****-****');/* 2026-11-14 숫자 경계: 10자리 수용가번호(1001020000)를 전화로 가리던 것 고침 */
  if(/\S(로|길)\s*\d|\S(동|리|가)\s*(산\s*)?\d/.test(t))t=t.replace(/((?:로|길|동|리|가)\s*(?:산\s*)?)\d[\d\-]*(.*)$/,(m,a)=>a+'○')+' (번지 가림)';
  return t.length>40?t.slice(0,40)+'…':t}
 const frdMd=s=>String(s??'').replace(/\|/g,'\\|').replace(/\n/g,' ');
