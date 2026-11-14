@@ -618,6 +618,7 @@ progress{width:100%;height:10px;accent-color:#4f46e5}
 .bt .bb{display:flex;align-items:center;gap:6px}.bt .bb i{display:block;height:9px;border-radius:5px;background:linear-gradient(90deg,var(--bar1),var(--bar2));min-width:2px}
 .q-ok{color:var(--em);font-weight:700}.q-mid{color:var(--am);font-weight:700}.q-bad{color:var(--rd);font-weight:700}
 .pleg{background:var(--card);color:var(--ink);padding:6px 9px;border-radius:8px;box-shadow:0 1px 4px #0003;font-size:11.5px;line-height:1.55;max-width:210px}
+.pleg .pbyw{display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin:2px 0 3px}.pleg .pbys{font-size:11px;padding:1px 2px;border:1px solid var(--line2);border-radius:5px;background:var(--card);color:var(--ink);max-width:120px}.pleg .pyrb{font-size:10.5px;padding:1px 6px;border:1px solid var(--line2);border-radius:999px;background:transparent;color:var(--mute);cursor:pointer}.pleg .pyrb.on{background:#e0f2fe;color:#075985;border-color:#7dd3fc;font-weight:700}.pleg.min .pbyw{display:none}
 .pleg i{display:inline-block;width:16px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}.pleg small{color:var(--mute)}
 .pleg .lbr{cursor:pointer;border-radius:4px}.pleg .lbr:hover{background:var(--line)}
 .pleg .lbn{display:flex;flex-wrap:wrap;gap:3px;max-height:140px;overflow:auto;margin:2px 0 4px 21px}
@@ -1426,7 +1427,7 @@ html.dark svg.ri{color:var(--cd)!important}
   <div id="pPanel" hidden>
    <div class="g2"><label class="f">관경 필드<select id="pDia" disabled></select></label><label class="f">재질 필드<select id="pMat" disabled></select></label>
    <label class="f">설치일 필드<select id="pYmd" disabled></select></label><label class="f">용도 필드<select id="pUse" disabled></select></label>
-   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option><option value="risk">파손 위험 점수 (누수 예측)</option></select></label>
+   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="yr">매설년도 (설치연도 구간)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option><option value="risk">파손 위험 점수 (누수 예측)</option></select></label><label class="f" id="pYrL" style="display:none">매설년도 구간<select id="pYrSt"><option value="10">10년 단위</option><option value="5">5년 단위</option><option value="c">직접 경계 넣기</option></select><input id="pYrCut" placeholder="경계 연도, 예: 1990,2000,2010" style="display:none;margin-top:3px" title="쉼표로 나눈 연도. 예: 1990,2000,2010 → 1990년 이전 / 1990~1999년 / 2000~2009년 / 2010년 이후"></label>
    <label class="f">지도 표시<select id="pShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label><label class="f">원거리 기준(m)<input id="pFar" type="number" value="50" min="1"></label></div>
    <p class="hint" id="pZoomHint" hidden>관로가 많아 지도를 더 확대하면(줌 15 이상) 표시됩니다.</p>
    <span class="ck"><input type="checkbox" id="pPrint" checked> PDF 인쇄에 관로 포함</span>
@@ -1936,10 +1937,11 @@ const lxRow=(sym,nm,n)=>`<div>${sym}<span class="nm" title="${escH(nm)}">${escH(
 function laySub(k){try{
  if(k==='blk'){const nm=F('blkNames')||[];if(!nm.length)return'';const H=new Set(F('blkHidList')||[]),on=nm.filter(n=>!H.has(n)).length;
   return selH('uiBcol','경계 색')+`<div class="tip">체크 = 지도에 보이기 · ${on.toLocaleString()} / ${nm.length.toLocaleString()}개 켜짐</div><div class="gwl-bb"><button type="button" data-ba="0">모두 켜기</button><button type="button" data-ba="1">모두 끄기</button></div><div class="gwl-sc">`+nm.map(n=>{const h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-bh="${escH(n)}"${h?'':' checked'}><span class="nm" title="${escH(n)}">${escH(n)}</span></label>`}).join('')+`</div>`}
- if(k==='pipe'){const P=G('PIPE');if(!P||!P.feats||!P.feats.length)return'';const by=($('pBy')||{}).value||'',ck=by+'|'+P.feats.length+'|'+(P.fc&&P.fc.features?P.fc.features.length:0);
+ if(k==='pipe'){const P=G('PIPE');if(!P||!P.feats||!P.feats.length)return'';const by=($('pBy')||{}).value||'',ck=by+'|'+P.feats.length+'|'+(P.fc&&P.fc.features?P.fc.features.length:0)+'|'+(by==='yr'?F('pyrKey'):'');
   if(!LXC.pipe||LXC.pipe.k!==ck){const d=F('pipeLegData');if(!d)return'';LXC.pipe={k:ck,d}}const {cnt,items}=LXC.pipe.d,DB=G('DIA_BANDS')||[],H=new Set(F('pipeHidList')||[]);
-  const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[by]||'';
-  return `<div class="tip">색 기준: ${T} · 체크 = 지도에 보이기 (⚙️ 관로 탭에서 색 기준 바꿈)</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3,h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-phd="${escH(n)}"${h?'':' checked'}><span class="ln" style="height:${w}px;background:${c}"></span><span class="nm" title="${escH(n)}">${escH(n)}</span><small>${((cnt.get(n)||0)/1000).toFixed(1)}km</small></label>`}).join('')}
+  const T=(G('PBY_NM')||{})[by]||'';
+  const PY=G('PYR')||{},yrH=by==='yr'?selH('pYrSt','년도 구간')+(PY.st==='c'?`<label class="gwl-sel"><span class="nm">경계 연도</span><input data-mir="pYrCut" value="${escH(PY.cut||'')}" placeholder="예: 1990,2000,2010" style="min-width:0;flex:1"></label>`:''):'';
+  return selH('pBy','색 기준')+yrH+`<div class="tip">색 기준: ${T} · 체크 = 지도에 보이기${by==='yr'?' · 설치연도 없는 관로(1900·SA00 등)는 미상':''}</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3,h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-phd="${escH(n)}"${h?'':' checked'}><span class="ln" style="height:${w}px;background:${c}"></span><span class="nm" title="${escH(n)}">${escH(n)}</span><small>${((cnt.get(n)||0)/1000).toFixed(1)}km</small></label>`}).join('')}
  if(k==='rp'){const r=G('RP');if(!r)return'';const pc=Math.round((+r.w||1)*100)+'%';return lxRow('<span class="ln" style="height:6px;background:#16a34a;flex:none;width:18px;border-radius:3px"></span>','교체 완료로 지정','')+lxRow('<span class="ln" style="height:5px;background:#4ade80;flex:none;width:18px;border-radius:3px"></span>','설치연도 기준'+(r.yr?' ('+r.yr+'년 이후)':' (꺼짐)'),'')+`<div class="gwl-psz"><span class="nm">초록 테두리 두께</span><button type="button" data-rpw="-1" title="가늘게" aria-label="교체 완료 테두리 가늘게">−</button><small>${pc}</small><button type="button" data-rpw="1" title="굵게" aria-label="교체 완료 테두리 굵게">＋</button></div><div class="gwl-bb"><button type="button" data-rpw="0">↺ 두께 처음대로</button></div><div class="tip">✅ 교체 완료 창의 두께 막대와 같이 바뀜</div>`}
  if(k==='fac'){const f=G('FAC');if(!f||!f.kinds||!f.kinds.length)return'';/* ⚙️ 시설물 탭과 같은 목록(켜고 끄기·크기·사진 있는 것만)을 그대로 그림 → layFill */
   return `<div class="gwl-fk" data-v="${escH(JSON.stringify([f.feats.length,f.kinds,[...(f.hidden||[])],f.ksz||{},!!f.phOnly,f.phc||0]))}"></div><div class="tip">체크 = 지도에 보이기 · −/＋ = 아이콘 크기 (⚙️ 시설물 탭과 같이 바뀜)</div>`}
@@ -2131,7 +2133,7 @@ const vpSvgImg=s=>new Promise(res=>{if(!s){res(null);return}let u=s;const im0=/^
 /* 범례: 레이어 창에서 켜진 것만. 관로는 색 기준 항목, 시설물은 틀 안에 보이는 종류만 */
 async function vpLegend(bb){const out=[],SKIP=new Set(['bg','leg','bl','cl','pl','ind','vlv']),m=G('map'),z=m.getZoom();
  for(const r of LAY){if(r.g||SKIP.has(r.k))continue;let on=false,ok=true;try{on=r.on();const c=r.c();ok=r.ok?r.ok():(c==null||c>0)}catch(_){on=false}if(!on||!ok)continue;
-  if(r.k==='pipe'){const d=F('pipeLegData');const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[d&&d.by]||'';const H=new Set(F('pipeHidList')||[]);
+  if(r.k==='pipe'){const d=F('pipeLegData');const T=(G('PBY_NM')||{})[d&&d.by]||'';const H=new Set(F('pipeHidList')||[]);
    out.push({h:'상수관로'+(T?' · '+T:'')});if(d)d.items.filter(([n])=>!H.has(n)).forEach(([n,c])=>out.push({ln:c,t:n}));continue}
   if(r.k==='fac'){const FAC=G('FAC');if(!FAC||!FAC.n)continue;const seen=new Map(),q=F('facQuery',bb.w,bb.s,bb.e,bb.n)||[];
    for(const i of q){const x=FAC.x[i],y=FAC.y[i];if(x<bb.w||x>bb.e||y<bb.s||y>bb.n||FAC.dl[i])continue;if(bb.inF&&!bb.inF(x,y))continue;const k=FAC.kinds[FAC.k[i]],sk=FAC.sk[i];if(!F('facOn',k,z)&&!(FAC.bndAll&&/^bnd/.test(sk)&&!FAC.hidden.has(k)&&!FAC.hidden.has('#bnd')))continue;
@@ -3329,7 +3331,7 @@ function uiPanelSync(){const a=document.getElementById('uiAllBtn');if(a){a.textC
 function uiMove(){const lab=id=>{const el=$(id);return el?(el.closest('label,.ck')||el):null};
  const G=[
   {box:'uiBlkBox',tab:'map',btn:'⚙️ 블록명 표시 · 글자 크기',n:[lab('lblMode'),lab('lblSize')]},
-  {box:'uiPipeBox',tab:'pipe',btn:'⚙️ 관로 보기 설정 (표시·색상·원거리)',n:[lab('pShow'),$('pZoomHint'),lab('pBy'),lab('pFar'),lab('pPrint')]},
+  {box:'uiPipeBox',tab:'pipe',btn:'⚙️ 관로 보기 설정 (표시·색상·원거리)',n:[lab('pShow'),$('pZoomHint'),lab('pBy'),$('pYrL'),lab('pFar'),lab('pPrint')]},
   {box:'uiFacBox',tab:'pipe',btn:'⚙️ 시설물 보기 설정 (종류별 켜기·크기)',n:[lab('fShow'),lab('fSym'),lab('fLbl'),$('fZoomHint'),$('fKinds')]},
   {box:'uiElevBox',tab:'pipe',btn:'⚙️ 표고·수압 지도 표시 (기본 숨김)',n:[lab('eShow'),lab('eBy'),$('eLeg')]},
   {box:'uiPhBox',tab:'ph',btn:'⚙️ 사진 보기 설정 (표시·묶음·기간)',n:[lab('phShow'),lab('phCol'),lab('phR'),lab('phT'),lab('phPU'),lab('phPK'),$('phPerInfo'),$('phYrLeg')]},
@@ -4482,9 +4484,9 @@ $('f3').onchange=e=>{const f=e.target.files[0];if(!f)return;if(typeof shp==='und
  if(!$('pSaveBox').hidden&&!confirm('저장된 상수관로 기준자료를 이 파일로 전체 교체할까요?\n(바뀐 부분만 반영하려면 취소 후 ➕ 변경분 반영을 쓰세요. 이전 버전은 되돌리기용으로 1개 보관됩니다)')){e.target.value='';return}
  const r=new FileReader();r.onload=ev=>loadPipes(ev.target.result,f.name).catch(err=>{$('pMsg').textContent='상수관로 SHP 로드 실패: '+((err&&err.message)||err)});r.readAsArrayBuffer(f)};
 ['pDia','pMat','pYmd','pUse','pId'].forEach(id=>$(id).onchange=()=>{PSEL=null;PIPE.ct=null;pipeRefresh(true)});
-$('pBy').onchange=()=>pipeRefresh(false);$('pShow').onchange=()=>{pipeRefresh(false)};$('pFar').oninput=()=>pipeRefresh(false);$('pPrint').onchange=()=>pipeRefresh(false);
+$('pBy').onchange=()=>{pyrUi();pipeRefresh(false)};$('pYrSt').onchange=()=>pyrSet($('pYrSt').value);$('pYrCut').onchange=()=>pyrSet('c',$('pYrCut').value);$('pShow').onchange=()=>{pipeRefresh(false)};$('pFar').oninput=()=>pipeRefresh(false);$('pPrint').onchange=()=>pipeRefresh(false);
 $('pCodes').oninput=()=>{PIPE.ct=null;PIPE.stats=null;pipeRefresh(true)};
-{let v={};try{v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}}catch(_){}if(v.by)$('pBy').value=v.by;if(v.show)$('pShow').value=v.show;if(v.far)$('pFar').value=v.far;if(v.codes)$('pCodes').value=v.codes;if(v.print===false)$('pPrint').checked=false}
+{let v={};try{v=JSON.parse(localStorage.getItem('geo-pipe')||'{}')||{}}catch(_){}if(v.by)$('pBy').value=v.by;if(v.show)$('pShow').value=v.show;if(v.far)$('pFar').value=v.far;if(v.codes)$('pCodes').value=v.codes;if(v.print===false)$('pPrint').checked=false;setTimeout(pyrUi,0)}
 if(map){map.on('zoomend',pipeShow);map.on('moveend',pcCullAll);map.on('zoomend',()=>{const b=($('pBy')||{}).value,k=map.getZoom()>=FA_Z;if((b==='vel'||b==='flow')&&k!==PIPE.faZ){PIPE.faZ=k;renderLegend()}})}
 let pWas=[];window.addEventListener('beforeprint',()=>{pWas=[PIPE.layer,PIPE.layerS].filter(l=>l&&map&&map.hasLayer(l));if(!$('pPrint').checked)pWas.forEach(l=>map.removeLayer(l))});
 window.addEventListener('afterprint',()=>{pWas.forEach(l=>{if(!map.hasLayer(l))l.addTo(map)});pWas=[]});
@@ -4625,6 +4627,23 @@ const MAT_RULES=[
 const MAT_COL={'덕타일주철관(DCIP)':'#2563eb','회주철관(CIP)':'#7c3aed','강관(SP)':'#0891b2','스테인리스관(STS)':'#0d9488','아연도강관':'#a16207','PVC관(HI-3P·VP)':'#ca8a04','PE관':'#16a34a','콘크리트관(PC·PCC)':'#78716c','GRP관':'#db2777','석면시멘트관':'#dc2626','동관':'#ea580c'};
 const USE_COL={'취수관':'#0f766e','도수관':'#7c3aed','송수관':'#db2777','배수관':'#2563eb','급수관':'#16a34a','소방관':'#ea580c','불탐관':'#64748b'};
 const AGE_BANDS=[[10,'10년 이하','#16a34a'],[20,'10~20년','#84cc16'],[30,'20~30년','#f59e0b'],[1e9,'30년 초과 (노후)','#dc2626']];
+/* 색 기준 이름 (지도 범례·레이어 창·출력 범례 공용) */
+const PBY_NM={mat:'재질',age:'경과연수',yr:'매설년도',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'};
+/* 매설년도 색: 설치연도는 attrOf(f).year 하나만 씀(설치일자·IST_YMD, parseYear 1940~올해 — '1900'·'SA00'은 미상). 구간 = 10년·5년·직접 경계, localStorage geo-pyr {st,cut}
+   색은 오래될수록 진한 빨강 → 최근일수록 파랑·보라 (구간 수에 맞춰 고르게 뽑음) */
+const PYR={st:'10',cut:'1990,2000,2010',k:'',b:null};
+try{const v=JSON.parse(localStorage.getItem('geo-pyr')||'{}')||{};if(['10','5','c'].includes(v.st))PYR.st=v.st;if(typeof v.cut==='string')PYR.cut=v.cut}catch(_){}
+const PYR_PAL=['#7f1d1d','#b91c1c','#ea580c','#f59e0b','#84cc16','#16a34a','#0d9488','#0284c7','#2563eb','#4f46e5','#7c3aed'];
+function pyrCuts(){const now=new Date().getFullYear();if(PYR.st==='c'){const c=[...new Set(String(PYR.cut||'').split(/[^0-9]+/).map(Number).filter(y=>y>=1940&&y<=now+1))].sort((a,b)=>a-b).slice(0,11);if(c.length)return c}
+ const st=PYR.st==='5'?5:10,c=[];for(let y=1980;y<=now;y+=st)c.push(y);return c}
+function pyrKey(){return PYR.st+'|'+(PYR.st==='c'?PYR.cut:'')}
+function pyrBands(){const k=pyrKey();if(PYR.b&&PYR.k===k)return PYR.b;const c=pyrCuts(),n=c.length+1,col=i=>PYR_PAL[n<2?0:Math.round(i*(PYR_PAL.length-1)/(n-1))];
+ const b=[[c[0],(c[0]-1)+'년 이전',col(0)]];for(let i=1;i<c.length;i++){const lo=c[i-1],hi=c[i];b.push([hi,hi-lo===10&&lo%10===0?lo+'년대':hi-lo===1?lo+'년':lo+'~'+(hi-1)+'년',col(i)])}
+ b.push([1e9,c[c.length-1]+'년 이후',col(n-1)]);PYR.k=k;PYR.b=b;return b}
+function pyrUi(){const on=$('pBy').value==='yr',l=$('pYrL'),st=$('pYrSt'),ct=$('pYrCut');if(!l)return;l.style.display=on?'':'none';st.value=PYR.st;ct.style.display=PYR.st==='c'?'':'none';if(document.activeElement!==ct)ct.value=PYR.cut}
+/* 구간 바꾸기: 항목 이름이 바뀌므로 매설년도에서 끈 항목은 풀고, 색만 다시 칠함(관로 층은 그대로) */
+function pyrSet(st,cut){if(st)PYR.st=st;if(cut!=null)PYR.cut=String(cut);PYR.b=null;try{localStorage.setItem('geo-pyr',JSON.stringify({st:PYR.st,cut:PYR.cut}))}catch(_){}
+ if(UI.pHid&&UI.pHid.yr){delete UI.pHid.yr;uiSave()}pyrUi();if($('pBy').value!=='yr')return;if(map)map.closePopup();if(PIPE.fc)pipeRecolor();try{PLB.key='';plblSoon()}catch(_){}}
 /* 관망해석 결과(관로 관리번호로 연결) 색: 유속 m/s(최대) · 유량 ㎥/일(평균, 방향 무시) */
 const VEL_BANDS=[[0.01,'0.01 미만 (정체)','#a855f7'],[0.3,'0.01~0.3 m/s','#38bdf8'],[1,'0.3~1.0 m/s','#22c55e'],[2,'1.0~2.0 m/s','#f59e0b'],[1e9,'2.0 m/s 초과 (과속)','#dc2626']];
 const FLOW_BANDS=[[10,'10 ㎥/일 미만','#bae6fd',1.4],[100,'10~100 ㎥/일','#38bdf8',2],[1000,'100~1,000 ㎥/일','#0284c7',3],[10000,'1,000~1만 ㎥/일','#1d4ed8',4.4],[1e9,'1만 ㎥/일 이상','#312e81',6]];
@@ -4712,6 +4731,7 @@ function pipeFar(o){if(!PIPE.segs||o['_위도']==='')return false;const th=+$('p
 var SHUT_PL=false;
 function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  if(by==='age')col=a.age==null?'#94a3b8':band(AGE_BANDS,a.age)[2];
+ else if(by==='yr')col=a.year==null?'#94a3b8':band(pyrBands(),a.year)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
  else if(by==='use')col=USE_COL[a.use]||catCol(a.use);
  else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else if(by==='risk')col=a.rk==null?'#cbd5e1':band(RISK_BANDS,a.rk)[2];else col=MAT_COL[a.mat]||catCol(a.mat);
@@ -4810,22 +4830,26 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
 /* 관로 범례 항목(지도 범례·작업 화면 레이어 창 공용): 색 기준 by, 항목 [이름,색], 항목별 연장 cnt */
 /* 관로 한 개가 지금 색 기준에서 어느 항목인지 (범례·레이어 창 켜고 끄기 공용) */
-function pipeCat(a,by){return by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
+function pipeCat(a,by){return by==='yr'?(a.year==null?'미상':band(pyrBands(),a.year)[1]):by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
 /* 관로 항목별 켜고 끄기: 색 기준마다 따로 기억 (UI.pHid[색 기준] = 끈 항목). 끈 관로는 그리지 않고 누르기·라벨에서도 뺌 */
 function pipeHidList(){return ((UI.pHid||{})[$('pBy').value])||[]}
 function pipeHidMask(){const by=$('pBy').value,s=new Set(pipeHidList());PIPE.hidS=s.size?s:null;PIPE.hidBy=by;if(!s.size){PIPE.hm=null;return}const m=new Uint8Array(PIPE.feats.length);PIPE.feats.forEach((f,i)=>{if(s.has(pipeCat(attrOf(f),by)))m[i]=1});PIPE.hm=m}
 function pipeHidSet(n,hide){const by=$('pBy').value;UI.pHid=UI.pHid||{};const s=new Set(UI.pHid[by]||[]);hide?s.add(n):s.delete(n);if(s.size)UI.pHid[by]=[...s];else delete UI.pHid[by];uiSave();if(map)map.closePopup();if(PIPE.fc)pipeRecolor();PLB.key='';plblSoon()}
 function pipeLegData(){
  const by=$('pBy').value,cnt=new Map();if(by==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();PIPE.feats.forEach(f=>{const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
- let items;if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
+ let items;if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='yr')items=pyrBands().filter(b=>cnt.get(b[1])).map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
  return{by,cnt,items}}
-function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('click',e=>{if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
+/* 지도 범례 위 색 기준 바로 바꾸기 + 매설년도면 10년·5년 단추 */
+function pbyLegCtl(by){const o=[...$('pBy').options].map(x=>`<option value="${x.value}"${x.value===by?' selected':''}>${esc(PBY_NM[x.value]||x.textContent)}</option>`).join('');
+ const yb=by!=='yr'?'':`<span class="pyrw">${[['10','10년'],['5','5년']].map(([k,t])=>`<button type="button" class="pyrb${PYR.st===k?' on':''}" data-st="${k}">${t}</button>`).join('')}${PYR.st==='c'?'<button type="button" class="pyrb on" data-st="c" title="⚙️ 관로 탭에서 경계 연도를 바꿉니다">직접</button>':''}</span>`;
+ return `<div class="pbyw"><select class="pbys" aria-label="관로 색 기준">${o}</select>${yb}</div>`}
+function renderLegend(){if(!map)return;if(!PIPE.legend){const C=L.Control.extend({options:{position:'bottomright'},onAdd(){const d=L.DomUtil.create('div','pleg');L.DomEvent.disableClickPropagation(d);d.addEventListener('change',e=>{const t=e.target;if(t.classList.contains('pbys')){const b=$('pBy');b.value=t.value;b.dispatchEvent(new Event('change'))}});d.addEventListener('click',e=>{const yb=e.target.closest('.pyrb');if(yb){pyrSet(yb.dataset.st);return}if(e.target.closest('.plt')){UI.legMin=!UI.legMin;uiSave();renderLegend()}else if(e.target.closest('.pfa')){UI.fa=UI.fa===false;uiSave();renderLegend();faRedraw()}});return d}});PIPE.legend=new C();map.addControl(PIPE.legend)}
  const el=PIPE.legend.getContainer?PIPE.legend.getContainer():null;if(!el)return;if(!PIPE.fc||$('pShow').value==='off'||!UI.leg){el.style.display='none';return}el.style.display='';el.classList.toggle('min',!!UI.legMin);
  const {by,cnt,items}=pipeLegData();
- const T={mat:'재질',age:'경과연수',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'}[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
- el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div><button type="button" class="pfa" title="물 흐름 방향 화살표 켜기/끄기" style="display:block;margin:3px 0 2px;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;background:${UI.fa===false?'transparent':'#e0f2fe'};color:${UI.fa===false?'var(--mute)':'#075985'};font-size:11px;font-weight:700;cursor:pointer">➤ 흐름 방향 ${UI.fa===false?'꺼짐':'켜짐'}${map&&map.getZoom()<FA_Z&&UI.fa!==false?` <small style="font-weight:400">(줌 ${FA_Z}부터)</small>`:''}</button>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
+ const T=PBY_NM[by],hydNo=(by==='vel'||by==='flow')&&!hydLk();
+ el.innerHTML=`<b class="plt" title="눌러서 범례 접기/펴기">🚰 관로 · ${T} <span style="color:var(--mute)">${UI.legMin?'▸':'▾'}</span></b><div class="pst" hidden style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px"></div>`+pbyLegCtl(by)+(hydNo?`<div style="margin:2px 0 4px;padding:3px 6px;border-radius:6px;background:#fef9c3;color:#713f12;font-size:11px;max-width:200px">관망해석 결과 파일(.zip)을 ②-3에 올리면 색이 나옵니다</div>`:(by==='vel'||by==='flow')?`<div style="font-size:10.5px;color:var(--mute);max-width:200px">관망해석 모델 ${by==='vel'?'최대 유속':'평균 유량'} · 참고값<br>선 굵기 = 유량 (굵을수록 많이 흐름)</div><button type="button" class="pfa" title="물 흐름 방향 화살표 켜기/끄기" style="display:block;margin:3px 0 2px;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;background:${UI.fa===false?'transparent':'#e0f2fe'};color:${UI.fa===false?'var(--mute)':'#075985'};font-size:11px;font-weight:700;cursor:pointer">➤ 흐름 방향 ${UI.fa===false?'꺼짐':'켜짐'}${map&&map.getZoom()<FA_Z&&UI.fa!==false?` <small style="font-weight:400">(줌 ${FA_Z}부터)</small>`:''}</button>`:'')+items.map(([k,c])=>`<div><i style="background:${c}"></i>${esc(k)} <small>${((cnt.get(k)||0)/1000).toFixed(1)}km</small></div>`).join('')}
 /* 블록별 관로 연장·노후도 (관로 가운데 지점이 속한 블록 기준) */
 async function pipeBlockStats(){if(!PIPE.feats.length||!poly){PIPE.stats=null;renderBlk();return}
  if(!poly._v)poly._v=Math.random();const key=[poly._v,$('blkField').value,$('pYmd').value,PIPE.feats.length].join('|');
