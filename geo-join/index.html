@@ -10785,23 +10785,32 @@ function axcBlkRows(r){const out=[];axcBlkStat(r).forEach(B=>B.mats.forEach(m=>{
    구경별·업종별 개수, 월평균 사용량·가구수·대수용가, 계량기 설치(교체) 연도가 있으면 경과연수. 고객 이름·주소·연락처는 안 씀(개수·합계만) */
 const AXM_AGE=8;/* 수도미터 검정 유효기간으로 잡은 교체 기준 연수(확인 필요) */
 const AXM_PAL=['#2563eb','#16a34a','#f59e0b','#db2777','#7c3aed','#0891b2','#94a3b8'];
-function axcMtrStat(r){if(!r)return null;if(r._ms!==undefined)return r._ms;const src=(typeof shutSrc==='function'?shutSrc():[])||[];if(!src.length)return r._ms={none:'cust'};
- const o0=src.find(o=>o&&('소블록' in o||'_결합블록' in o))||src[0]||{},K=re=>shutRowKey(o0,re),kD=('구경' in o0)?'구경':K(/^구경|관경|계량기.?구경/),kU=('업종' in o0)?'업종':K(/업종|용도/),
-  kQ=('월평균(㎥)' in o0)?'월평균(㎥)':K(/월평균|평균사용량/),kH=('가구수' in o0)?'가구수':K(/가구수/),kY=K(/(계량기|수도미터|미터).*(설치|교체)|^(설치|교체)(일자|년도|연도|일)$/),bq=+(SHUT.opt&&SHUT.opt.bigQ)||500;
+function axcMtrStat(r){if(!r)return null;if(r._ms!==undefined)return r._ms;const src=(typeof shutSrc==='function'?shutSrc():[])||[],hasB=typeof BILL!=='undefined'&&BILL.R&&BILL.R.length;
+ if(!src.length&&!hasB)return r._ms={none:'cust'};
  const S=axcBlkStat(r),names=S.map(B=>B.n);if(!names.length)return r._ms={none:'blk'};
- const ring=AX.ring&&AX.ring.length>2?turf.polygon([[...AX.ring,AX.ring[0]]]):null,Y=new Date().getFullYear(),num=v=>{const n=parseFloat(String(v??'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:null};
- const mk=n=>({n,cnt:0,inR:0,H:0,Q:0,big:0,byD:new Map(),byU:new Map(),age:{a:0,b:0,c:0,u:0},yrSrc:kY?'col':''}),M=new Map(names.map(n=>[n,mk(n)])),add=(m,k,c,q,h,b,ir)=>{const o=m.get(k)||{k,n:0,Q:0,H:0,big:0,inR:0};o.n+=c;o.Q+=q;o.H+=h;o.big+=b;o.inR+=ir;m.set(k,o)};
- for(const o of src){const n=String(o['소블록']||o['_결합블록']||'').trim(),B=M.get(n);if(!B)continue;
-  const d=num(o[kD]),dk=d!=null&&d>0?String(Math.round(d)):'미상',u=String(o[kU]??'').trim()||'미상',q=Math.max(0,num(o[kQ])||0),h=Math.max(0,num(o[kH])||0),bg=q>=bq?1:0;
-  let ir=0;if(ring&&o['_위도']!=null&&o['_경도']!=null){try{ir=turf.booleanPointInPolygon(turf.point([+o['_경도'],+o['_위도']]),ring)?1:0}catch(_){}}
+ const ring=AX.ring&&AX.ring.length>2?turf.polygon([[...AX.ring,AX.ring[0]]]):null,Y=new Date().getFullYear(),num=v=>{const n=parseFloat(String(v??'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:null},bq=+(SHUT.opt&&SHUT.opt.bigQ)||500;
+ /* 자료 고르기(2026-11-15 사용자 '수도미터 자료는 부과량 연동 자료 활용'): 📥 부과량 연동 자료가 있으면 그 수용가 목록(소블록 Y열·업종·구경·가구수·최근 6개월 월평균)을 쓰고,
+    범위 안 여부만 주소 변환 결과의 위치를 관리번호·수용가번호로 찾아 씀. 부과 자료가 없으면 주소 변환 결과 칸으로 */
+ const o0=src.find(o=>o&&('소블록' in o||'_결합블록' in o))||src[0]||{},K=re=>shutRowKey(o0,re),kY=K(/(계량기|수도미터|미터).*(설치|교체)|^(설치|교체)(일자|년도|연도|일)$/);let L=[],how='';
+ if(hasB){const loc=new Map();for(const o of src){if(o['_위도']==null||o['_경도']==null)continue;const ll=[+o['_경도'],+o['_위도']];for(const k of ['관리번호','수용가번호']){const v=bNorm(o[k]);if(v&&!loc.has(k+v))loc.set(k+v,ll)}}
+  let an=[];try{an=billAnalyze()}catch(_){an=BILL.R.map(c=>({c,a6:0}))}
+  L=an.map(x=>{const c=x.c,ll=loc.get('관리번호'+bNorm(c.mg))||loc.get('수용가번호'+bNorm(c.id))||null;return{b:bNorm(c.b),d:c.d,u:c.u,q:x.a6||0,h:c.h,y:null,ll}});how='bill'}
+ else{const kD=('구경' in o0)?'구경':K(/^구경|관경|계량기.?구경/),kU=('업종' in o0)?'업종':K(/업종|용도/),kQ=('월평균(㎥)' in o0)?'월평균(㎥)':K(/월평균|평균사용량/),kH=('가구수' in o0)?'가구수':K(/가구수/);
+  L=src.map(o=>({b:bNorm(o['소블록']||o['_결합블록']),d:o[kD],u:o[kU],q:o[kQ],h:o[kH],y:kY?o[kY]:null,ll:o['_위도']!=null&&o['_경도']!=null?[+o['_경도'],+o['_위도']]:null}));how='addr'}
+ const useY=how==='addr'&&!!kY;
+ const mk=n=>({n,cnt:0,inR:0,H:0,Q:0,big:0,byD:new Map(),byU:new Map(),age:{a:0,b:0,c:0,u:0},yrSrc:useY?'col':''}),M=new Map(names.map(n=>[n,mk(n)])),NB=new Map(names.map(n=>[bNorm(n),n])),add=(m,k,c,q,h,b,ir)=>{const o=m.get(k)||{k,n:0,Q:0,H:0,big:0,inR:0};o.n+=c;o.Q+=q;o.H+=h;o.big+=b;o.inR+=ir;m.set(k,o)};
+ for(const o of L){const B=M.get(NB.get(o.b));if(!B)continue;
+  const d=num(o.d),dk=d!=null&&d>0?String(Math.round(d)):'미상',u=String(o.u??'').trim()||'미상',q=Math.max(0,num(o.q)||0),h=Math.max(0,num(o.h)||0),bg=q>=bq?1:0;
+  let ir=0;if(ring&&o.ll){try{ir=turf.booleanPointInPolygon(turf.point(o.ll),ring)?1:0}catch(_){}}
   B.cnt++;B.inR+=ir;B.H+=h;B.Q+=q;B.big+=bg;add(B.byD,dk,1,q,h,bg,ir);add(B.byU,u,1,q,h,bg,ir);
-  const yr=kY?parseYear(o[kY]):null,ag=yr?Y-yr:null;B.age[ag==null?'u':ag<=AXM_AGE?'a':ag<=AXM_AGE*2?'b':'c']++}
+  const yr=useY?parseYear(o.y):null,ag=yr?Y-yr:null;B.age[ag==null?'u':ag<=AXM_AGE?'a':ag<=AXM_AGE*2?'b':'c']++}
+ const kY0=useY?kY:'';
  /* 수용가 자료에 설치 연도가 없으면 급수전계량기(SA122) 시설물 설치일자로 경과연수만 셈 */
- if(!kY&&FAC&&FAC.feats){const fld=$('blkField').value,G=[];for(const g of (poly&&poly.features)||[]){const n=String(g.properties[fld]??'');if(M.has(n))G.push([n,g,g.properties._bbox||turf.bbox(g)])}
+ if(!kY0&&FAC&&FAC.feats){const fld=$('blkField').value,G=[];for(const g of (poly&&poly.features)||[]){const n=String(g.properties[fld]??'');if(M.has(n))G.push([n,g,g.properties._bbox||turf.bbox(g)])}
   for(const f of FAC.feats){if(f.k!=='SA122'||!Array.isArray(f.c))continue;const c=f.c;for(const [n,g,bb] of G){if(c[0]<bb[0]||c[0]>bb[2]||c[1]<bb[1]||c[1]>bb[3]||!turf.booleanPointInPolygon(turf.point(c),g))continue;const B=M.get(n);
     if(B.yrSrc!=='fac'){B.yrSrc='fac';B.age={a:0,b:0,c:0,u:0}}let yr=null;for(const k of FYR_F){const y=parseYear((f.p||{})[k]);if(y){yr=y;break}}const ag=yr?Y-yr:null;B.age[ag==null?'u':ag<=AXM_AGE?'a':ag<=AXM_AGE*2?'b':'c']++;break}}}
  const srt=(m,f)=>[...m.values()].sort(f),out=[...M.values()].filter(B=>B.cnt>0).map(B=>({...B,ds:srt(B.byD,(a,b)=>(a.k==='미상')-(b.k==='미상')||(+a.k)-(+b.k)),us:srt(B.byU,(a,b)=>(a.k==='미상')-(b.k==='미상')||b.n-a.n)}));
- return r._ms={B:out,kY,bq,none:out.length?'':'match'}}
+ return r._ms={B:out,kY:kY0,bq,how,none:out.length?'':'match'}}
 function axcDonut(g,cx,cy,R,parts,title,center,sub,F){const tot=parts.reduce((s,p)=>s+p.v,0);g.save();g.fillStyle='#0f172a';g.font=`bold 19px ${F}`;g.textAlign='center';g.textBaseline='middle';g.fillText(title,cx,cy-R-30);
  if(tot<=0){g.beginPath();g.arc(cx,cy,R*.79,0,7);g.strokeStyle='#e2e8f0';g.lineWidth=R*.42;g.stroke();g.fillStyle='#64748b';g.font=`bold 16px ${F}`;g.fillText('자료 없음',cx,cy-8);g.font=`13px ${F}`;g.fillText('확인 필요',cx,cy+14);g.restore();return}
  let a=-Math.PI/2;parts.forEach(p=>{if(p.v<=0)return;const b=a+p.v/tot*Math.PI*2;g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,R,a,b);g.closePath();g.fillStyle=p.c;g.fill();g.strokeStyle='#fff';g.lineWidth=2;g.stroke();
@@ -10821,14 +10830,14 @@ function axcMtrFig(B,kY){try{const W=1600,H=Math.max(...[B.ds.length,B.us.length
 function axcMtrSec(r,o){const S=axcMtrStat(r);if(!S)return '';const{e,T}=o,n0=v=>v>0?Math.round(v).toLocaleString():'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
  let h=`<h2>4. 소블록 수도미터 현황</h2>`;
  if(S.none){return h+`<p class="n">${S.none==='cust'?'수용가 자료(주소 변환 결과·부과 자료)가 없어 수도미터 현황을 셀 수 없습니다(확인 필요). 수용가 엑셀을 올린 뒤 다시 만들어 주세요.':S.none==='blk'?'범위에 걸친 소블록이 없습니다.':'수용가 자료에 이 소블록 이름(소블록 Y열·결합 블록)과 맞는 줄이 없습니다(확인 필요).'}</p>`}
- h+=`<p class="n">위 관로 현황과 같은 소블록에서 <b>수용가 자료 한 줄 = 계량기 1개</b>로 셌습니다(고객 이름·주소·연락처는 쓰지 않고 개수·합계만). 사용량은 월평균(㎥), 대수용가는 월평균 ${S.bq}㎥ 이상, 범위 안은 수용가 위치가 이번 개략공사비 범위 안에 든 개수입니다. `+
+ h+=`<p class="n">위 관로 현황과 같은 소블록에서 ${S.how==='bill'?`<b>📥 부과량 연동 자료</b>(${e(BILL.name||'부과량 시트')}, 소블록 = Y열) 수용가 한 줄 = 계량기 1개`:'<b>주소 변환 수용가 자료</b> 한 줄 = 계량기 1개(📥 부과량 연동 자료를 올리면 그 자료로 셈)'}로 셌습니다(고객 이름·주소·연락처는 쓰지 않고 개수·합계만). 사용량은 ${S.how==='bill'?`최근 6개월 월평균(㎥, 기준월 ${e(BILL.M[BILL.mi]||'')})`:'월평균(㎥)'}, 대수용가는 월평균 ${S.bq}㎥ 이상, 범위 안은 수용가 위치(주소 변환 결과)가 이번 개략공사비 범위 안에 든 개수입니다. `+
   (S.kY?`경과연수는 수용가 자료 '${e(S.kY)}' 칸 연도 기준`:S.B.some(B=>B.yrSrc==='fac')?'경과연수는 급수전계량기(SA122) 시설물 설치일자 기준':'계량기 설치·교체 연도 자료가 없어 경과연수는 <b>확인 필요</b>')+`(교체 기준 ${AXM_AGE}년 = 수도미터 검정 유효기간으로 잡음, 확인 필요).</p>`;
  for(const B of S.B){const A=B.age,an=A.a+A.b+A.c,fig=axcMtrFig(B,S.kY);
   h+=`<h3>${e(B.n)} — 계량기 ${B.cnt.toLocaleString()}개 · 가구 ${n0(B.H)} · 월평균 ${n0(B.Q)}㎥ · 대수용가 ${B.big}곳 · 범위 안 ${B.inR.toLocaleString()}개 (${pc(B.inR,B.cnt)})</h3>`;
   if(fig)h+=`<img class="map" src="${fig}" alt="${e(B.n)} 수도미터 현황 그래프" style="border:0">`;
-  h+=`<p class="n ur" style="text-align:right;margin:4px 0 3px">(단위: 개, ㎥/월)</p>`+T(['구경','계량기 수','비율','범위 안','가구수','월평균 사용량','1개당 월평균','대수용가'],[...B.ds.map(x=>`<tr><td>${x.k==='미상'?'미상':x.k+'mm'}</td><td class="r">${x.n.toLocaleString()}</td><td class="r">${pc(x.n,B.cnt)}</td><td class="r">${x.inR.toLocaleString()}</td><td class="r">${n0(x.H)}</td><td class="r">${n0(x.Q)}</td><td class="r">${x.n?(x.Q/x.n).toFixed(1):'—'}</td><td class="r">${x.big||'—'}</td></tr>`),
+  h+=`<p class="n ur" style="text-align:right;margin:4px 0 3px">(단위: 개, ㎥/월)</p>`+T(['구경','계량기 수','비율','범위 안','가구수','월평균 사용량','1개당 월평균','대수용가'],[...B.ds.map(x=>`<tr><td style="white-space:nowrap">${x.k==='미상'?'미상':x.k+'mm'}</td><td class="r">${x.n.toLocaleString()}</td><td class="r">${pc(x.n,B.cnt)}</td><td class="r">${x.inR.toLocaleString()}</td><td class="r">${n0(x.H)}</td><td class="r">${n0(x.Q)}</td><td class="r">${x.n?(x.Q/x.n).toFixed(1):'—'}</td><td class="r">${x.big||'—'}</td></tr>`),
    `<tr class="tot"><td>계</td><td class="r">${B.cnt.toLocaleString()}</td><td class="r">100%</td><td class="r">${B.inR.toLocaleString()}</td><td class="r">${n0(B.H)}</td><td class="r">${n0(B.Q)}</td><td class="r">${B.cnt?(B.Q/B.cnt).toFixed(1):'—'}</td><td class="r">${B.big||'—'}</td></tr>`]);
-  h+=`<p class="n ur" style="text-align:right;margin:6px 0 3px">(단위: 개, ㎥/월)</p>`+T(['업종','계량기 수','비율','월평균 사용량','사용량 비율','대수용가'],[...B.us.map(x=>`<tr><td>${e(x.k)}</td><td class="r">${x.n.toLocaleString()}</td><td class="r">${pc(x.n,B.cnt)}</td><td class="r">${n0(x.Q)}</td><td class="r">${pc(x.Q,B.Q)}</td><td class="r">${x.big||'—'}</td></tr>`),
+  h+=`<p class="n ur" style="text-align:right;margin:6px 0 3px">(단위: 개, ㎥/월)</p>`+T(['업종','계량기 수','비율','월평균 사용량','사용량 비율','대수용가'],[...B.us.map(x=>`<tr><td style="white-space:nowrap">${e(x.k)}</td><td class="r">${x.n.toLocaleString()}</td><td class="r">${pc(x.n,B.cnt)}</td><td class="r">${n0(x.Q)}</td><td class="r">${pc(x.Q,B.Q)}</td><td class="r">${x.big||'—'}</td></tr>`),
    `<tr class="tot"><td>계</td><td class="r">${B.cnt.toLocaleString()}</td><td class="r">100%</td><td class="r">${n0(B.Q)}</td><td class="r">100%</td><td class="r">${B.big||'—'}</td></tr>`]);
   if(an>0)h+=`<p class="n ur" style="text-align:right;margin:6px 0 3px">(단위: 개)</p>`+T([`${AXM_AGE}년 이하`,`${AXM_AGE}~${AXM_AGE*2}년`,`${AXM_AGE*2}년 초과`,'미상','계',`${AXM_AGE}년 넘은 비율`],[`<tr><td class="r">${A.a}</td><td class="r">${A.b}</td><td class="r">${A.c}</td><td class="r">${A.u}</td><td class="r">${A.a+A.b+A.c+A.u}</td><td class="r">${pc(A.b+A.c,an)}</td></tr>`])}
  return h}
