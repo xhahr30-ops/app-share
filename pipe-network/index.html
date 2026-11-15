@@ -4824,16 +4824,39 @@ try{(()=>{
   const hrs=nt>1?`${Math.round((R.t[nt-1]-R.t[0])/360)/10}시간 ${nt}개 시각`:'정상상태 1개 시각';
   o.calc=`스마트 물길해석 계산 ${ymd(new Date())} · ${S.name||'관망'} · ${hrs} · 수압 m, 유속 m/s, 유량 ㎥/일`;
   return{o,out,skipEl}}
+ /* 판(버전) 번호: 모델 이름별로 결과 지문이 바뀔 때마다 v1, v2… (같은 결과를 다시 내보내면 같은 판). localStorage gw-mgpan */
+ function pan(o){const h=s=>{let x=2166136261>>>0;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)>>>0}return x.toString(16).padStart(8,'0')};
+  const n0=o.lat.length,st0=Math.max(1,Math.floor(n0/2000));let sa=0,sb=0,sc=0;for(let i=0;i<n0;i+=st0){sa+=o.lat[i];sb+=o.lng[i];sc++}const la=sc?sa/sc:0,lo=sc?sb/sc:0;
+  const key=h(o.pmin.join(',')+'|'+o.pmax.join(',')+'|'+o.links.id.join(',')+'|'+o.links.v.join(',')+'|'+o.links.q.join(',')),nm=String(S.name||'관망');
+  let R={};try{R=JSON.parse(localStorage.getItem('gw-mgpan')||'{}')||{}}catch(e){R={}}const rk=nm+'@'+la.toFixed(1)+','+lo.toFixed(1),c=R[rk]||{n:0};/* 판 번호는 모델 이름+지역(위경도 0.1°)별 → 현장마다 따로 */
+  const d=new Date(),at=`${ymd(d)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if(c.key!==key){c.n=(+c.n||0)+1;c.key=key;c.at=at;R[rk]=c;try{localStorage.setItem('gw-mgpan',JSON.stringify(R))}catch(e){}}
+  o.pan={n:c.n,at:c.at||at,inp:nm,key,c:[+la.toFixed(4),+lo.toFixed(4)]};o.calc=o.calc.replace(/^스마트 물길해석 계산/,`스마트 물길해석 v${c.n} 계산`);return o.pan}
+ const fname=o=>(String(S.name||'관망').replace(/\.(inp|txt)$/i,'')||'관망')+`_물길주소용_결과_v${o.pan.n}_${o.pan.at.slice(0,10).replace(/-/g,'')}.json`;
  async function mulgil(){if(!needNet())return;let b;try{b=build()}catch(e){toast(e.message||String(e),7000);return}
-  const {o,out,skipEl}=b,nm=(String(S.name||'관망').replace(/\.(inp|txt)$/i,'')||'관망')+'_물길주소용_결과.json';
+  const {o,out,skipEl}=b;pan(o);const nm=fname(o);
   await offer(JSON.stringify(o),nm,'application/json');
   const ex=[out?`좌표가 우리나라 밖 ${out}개`:'',skipEl?`표고 −1 ${skipEl}개`:''].filter(Boolean).join(' · ');
-  setTimeout(()=>toast(`물길주소용 결과: 절점 ${o.z.length.toLocaleString()}개 · 관로 ${o.links.id.length.toLocaleString()}개${o.neg?` · 부압 절점 ${o.neg.toLocaleString()}개`:''}${ex?` (제외: ${ex})`:''}. 스마트 물길주소 ⛰️ 표고·수압 칸에 올리세요.`,9000),400)}
- const btn=gb('mulgil','down','물길주소용 결과',{tip:'해석 결과(수압·유속·유량)를 스마트 물길주소에서 읽는 .json으로 내보냅니다'});
+  setTimeout(()=>toast(`물길주소용 결과 v${o.pan.n}: 절점 ${o.z.length.toLocaleString()}개 · 관로 ${o.links.id.length.toLocaleString()}개${o.neg?` · 부압 절점 ${o.neg.toLocaleString()}개`:''}${ex?` (제외: ${ex})`:''}. 스마트 물길주소 ⛰️ 표고·수압 칸에 올리세요.`,9000),400)}
+ /* ➜ 물길주소로 보내기 (2026-11-15 A안): 같은 주소(github.io)의 공용 보관함 IndexedDB 'mulgil-hyd-box' kv['h'+보낸 시각](현장 섞여도 안 덮어씀, 최근 12개) + BroadcastChannel 'mulgil-hyd'.
+    물길주소가 열려 있으면 바로 도착 카드, 아니면 다음에 열 때 카드 → 현장 확인 → 반영. 파일 저장·고르기 없음 */
+ function hbPut(v){return new Promise((ok,no)=>{let r;try{r=indexedDB.open('mulgil-hyd-box',1)}catch(e){no(e);return}r.onupgradeneeded=()=>{try{r.result.createObjectStore('kv')}catch(e){}};
+  r.onerror=()=>no(r.error);r.onsuccess=()=>{const d=r.result;try{const t=d.transaction('kv','readwrite');const os=t.objectStore('kv');os.put(v,'h'+v.at);const kq=os.getAllKeys();kq.onsuccess=()=>{const ks=kq.result.filter(k=>k!==('h'+v.at)).sort().reverse();ks.slice(11).forEach(k=>os.delete(k))};t.oncomplete=()=>{d.close();ok()};t.onerror=t.onabort=()=>{d.close();no(t.error)}}catch(e){d.close();no(e)}}})}
+ async function mulgilGo(){if(!needNet())return;let b;try{b=build()}catch(e){toast(e.message||String(e),7000);return}
+  const {o}=b;pan(o);const at=Date.now();
+  if(EMB){toast('이 화면(첨부 HTML 미리보기)에서는 물길주소로 바로 보낼 수 없습니다. 💾 물길주소용 결과로 파일을 내려받아 올리세요.',8000);return}
+  try{await hbPut({at,from:'pipe-network',o})}catch(e){toast('브라우저 보관함에 넣지 못했습니다: '+(e&&e.message||e)+' — 💾 물길주소용 결과 파일로 옮기세요.',8000);return}
+  let ack=null,ch=null;try{ch=new BroadcastChannel('mulgil-hyd');ch.onmessage=e=>{const d=e.data||{};if(d.ack===at&&!ack)ack=d;if(d.done===at)toast(`✅ 물길주소에 결과 v${o.pan.n}이(가) 반영되었습니다.`,6000)};ch.postMessage({sent:at,pan:o.pan})}catch(e){}
+  await new Promise(r=>setTimeout(r,900));
+  if(ack){toast(`➜ 결과 v${o.pan.n}을(를) 열려 있는 물길주소로 보냈습니다. 그 탭의 도착 카드에서 반영하세요.`,8000);return}
+  const url=new URL('../geo-join/',location.href).href;
+  if(/^https?:/.test(location.protocol)&&confirm(`결과 v${o.pan.n}을(를) 이 기기의 물길주소로 보냈습니다.\n(절점 ${o.z.length.toLocaleString()}개 · 관로 ${o.links.id.length.toLocaleString()}개)\n\n열려 있는 물길주소가 없습니다. 지금 새 탭으로 열까요?\n열면 '관망해석기에서 결과가 왔습니다' 카드가 뜹니다.`))window.open(url,'_blank');
+  else toast(`➜ 결과 v${o.pan.n}을(를) 보냈습니다. 물길주소를 열면 도착 카드가 뜹니다.`,8000)}
+ const btn=gb('mulgilGo','arrow','물길주소로 보내기',{tip:'해석 결과(수압·유속·유량)를 이 기기의 스마트 물길주소로 바로 보냅니다(파일 없이). 판 번호 v1, v2…가 붙습니다'})+gb('mulgil','down','물길주소용 결과',{tip:'해석 결과(수압·유속·유량)를 스마트 물길주소에서 읽는 .json 파일(판 번호 포함)로 내려받습니다'});
  const _rf25=RIB.file;RIB.file=()=>_rf25().replace(/(data-rb="pdf"[\s\S]*?<\/button><\/div>)/,(m)=>m+col(btn));
- const _ra25=rbAct;rbAct=function(a,btn2){if(a==='mulgil'){mulgil();return}return _ra25.apply(this,arguments)};
+ const _ra25=rbAct;rbAct=function(a,btn2){if(a==='mulgil'){mulgil();return}if(a==='mulgilGo'){mulgilGo();return}return _ra25.apply(this,arguments)};
  try{if($('gp')&&T.rib)gpRib(T.rib)}catch(e){}
- window.__gw25={build,mulgil,mgId};
+ window.__gw25={build,mulgil,mulgilGo,pan,mgId};
 })()}catch(e){console.warn('v25',e)}
 /* ════ v26 유량 표시 단위(톤/h 기본) ════ */
 // 앱 안 값·계산·INP·AI 도구는 L/s 그대로. 보이는 곳만 flF()·flU()로 바꾼다(맨 위 FLQ). 고정 표 머리글은 flRelabel로 다시 쓴다.
