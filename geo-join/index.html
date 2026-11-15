@@ -2626,8 +2626,8 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  /* 머리 띠(인디고→블루) */
  if(GS){/* BsstGis 머리: 회색 제목줄 + 파란 밑줄 */const h=X(6*s);g.fillStyle=hd;g.fillRect(0,0,W,h);g.fillStyle=ac;g.fillRect(0,h-X(.5*s),W,X(.5*s));txt('물길주소 · 소블록 현황도',X(M.m),h/2-X(.2*s),W*.5,{w:700,pt:6.4,c:ink});txt(`${b.n} · ${fmtDTv(Date.now()).slice(0,10)}`,W-X(M.m),h/2-X(.2*s),W*.4,{pt:5.8,c:mute,a:'right'})}
  else{const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#4338ca');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;g.fillRect(0,0,W,X(2.2*s))}
- /* 지도 + 밖 흐림 + 경계 + 누수 별 */
- const mp=R(M.map),k=mp.w/S.src.w,P=([x,y])=>[mp.x+x*k,mp.y+y*k];
+ /* 지도 + 밖 흐림 + 경계 + 누수 별 (보고서용 칸 그리기 M.rep는 지도 없음) */
+ if(S){const mp=R(M.map),k=mp.w/S.src.w,P=([x,y])=>[mp.x+x*k,mp.y+y*k];
  if(S.B0){/* 블록 밖 = 배경만, 블록 안(+경계 둘레 띠) = 전체 */
   g.drawImage(S.B0.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
   const o=document.createElement('canvas');o.width=W;o.height=H;const q=o.getContext('2d');q.drawImage(S.B.cv,S.src.x,S.src.y,S.src.w,S.src.h,mp.x,mp.y,mp.w,mp.h);
@@ -2653,25 +2653,26 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  {const mpmm=S.scale/1000,len=niceBar(mpmm*45*s),bw=len/mpmm*dpm,bx=mp.x+X(4*s),by=mp.y+mp.h-X(5*s);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(bx-X(2),by-X(5.5*s),bw+X(24*s),X(8.5*s));
   g.fillStyle=ink;for(let i=0;i<4;i++){g[i%2?'strokeRect':'fillRect'](bx+bw*i/4,by-X(1),bw/4,X(1.6))}g.strokeStyle=ink;g.lineWidth=X(.25);g.strokeRect(bx,by-X(1),bw,X(1.6));
   txt('0',bx-X(.6),by-X(3*s),X(5),{w:600,pt:6.5});txt(len>=1000?len/1000+'km':len+'m',bx+bw-X(2),by-X(3*s),X(14),{w:600,pt:6.5});txt(`1:${vpFmt(S.scale)}`,bx+bw+X(3),by,X(22*s),{w:600,pt:6.5})}
- if(S.secret){g.font=FT(800,8.5);const t='대외비 (상수관로 포함)',tw=g.measureText(t).width+X(4);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(mp.x+X(3),mp.y+X(3),tw,X(6*s));txt(t,mp.x+X(5),mp.y+X(3+3*s),tw,{w:800,pt:8.5,c:'#dc2626'})}
+ if(S.secret){g.font=FT(800,8.5);const t='대외비 (상수관로 포함)',tw=g.measureText(t).width+X(4);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(mp.x+X(3),mp.y+X(3),tw,X(6*s));txt(t,mp.x+X(5),mp.y+X(3+3*s),tw,{w:800,pt:8.5,c:'#dc2626'})}}
  /* 숫자 모으기 */
  const ps=info.ps,lk=info.lk,N=info.nrw,SE=bpSeries(N);let lastR=null,lastM='',avgS=null;
  if(N){for(let j=SE.Yr.length-1;j>=0&&lastR==null;j--){const a=SE.f('r',j);for(let m=12;m>=1;m--)if(a[m]!=null){lastR=bpPct(a[m]);lastM=`${SE.Yr[j]}.${m}월`;break}}const sa=SE.f('s',SE.Yr.length-1);avgS=sa[0]}
  const gr=bpGrade(lastR);
  /* 칸 나누기 */
  let tb,kb,ib,lb,sb;const G2=M.gap;
- if(M.l){const sd=M.side,th=19*s,kh=15*s,sh=(M.cu?44:50)*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};kb={x:sd.x,y:sd.y+th+G2,w:sd.w,h:kh};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};
+ if(M.rep){tb=M.tb;kb=M.kb;sb=M.sb}
+ else if(M.l){const sd=M.side,th=19*s,kh=15*s,sh=(M.cu?44:50)*s;tb={x:sd.x,y:sd.y,w:sd.w,h:th};kb={x:sd.x,y:sd.y+th+G2,w:sd.w,h:kh};sb={x:sd.x,y:sd.y+sd.h-sh,w:sd.w,h:sh};
   let my=kb.y+kh+G2;if(M.syH){M.sys={x:sd.x,y:my,w:sd.w,h:M.syH};my+=M.syH+G2}const mh2=sb.y-G2-my,iw=sd.w*.38;ib={x:sd.x,y:my,w:iw,h:mh2};lb={x:sd.x+iw+G2,y:my,w:sd.w-iw-G2,h:mh2}}
  else{const lo=M.low,w1=lo.w*.36,w3=lo.w*.33,w2=lo.w-w1-w3-2*G2,th=17*s,kh=14*s;tb={x:lo.x,y:lo.y,w:w1,h:th};kb={x:lo.x,y:lo.y+th+G2,w:w1,h:kh};ib={x:lo.x,y:kb.y+kh+G2,w:w1,h:lo.h-th-kh-2*G2};
   lb={x:lo.x+w1+G2,y:lo.y,w:w2,h:lo.h};sb={x:lb.x+w2+G2,y:lo.y,w:w3,h:lo.h}}
  /* 제목 + 상태 배지 */
- {const r=R(tb);card(r,'#fff');g.fillStyle=ac;rr(r.x,r.y,X((GS?.7:1.6)*s),r.h,X((GS?.3:.8)*s));g.fill();let bw0=0;if(gr){g.font=FT(800,7.4);bw0=g.measureText(`유수율 ${f1(lastR)}% ${gr.t}`).width+X(5*s)+X(5*s)}
-  g.font=FT(900,15);const tt=`${b.n} 블록 현황도`,room=r.w-X(7*s)-bw0,tpt=g.measureText(tt).width>room?Math.max(9,15*room/g.measureText(tt).width):15;txt(tt,r.x+X(4.5*s),r.y+r.h*.42,room,{w:900,pt:tpt});
+ if(tb){const r=R(tb);card(r,'#fff');g.fillStyle=ac;rr(r.x,r.y,X((GS?.7:1.6)*s),r.h,X((GS?.3:.8)*s));g.fill();let bw0=0;if(gr){g.font=FT(800,7.4);bw0=g.measureText(`유수율 ${f1(lastR)}% ${gr.t}`).width+X(5*s)+X(5*s)}
+  g.font=FT(900,15);const tt=M.ttl||`${b.n} 블록 현황도`,room=r.w-X(7*s)-bw0,tpt=g.measureText(tt).width>room?Math.max(9,15*room/g.measureText(tt).width):15;txt(tt,r.x+X(4.5*s),r.y+r.h*.42,room,{w:900,pt:tpt});
   txt([b.big&&b.big!==b.mid?'대블록 '+b.big:'',b.mid?'중블록 '+b.mid:'',`출력 ${fmtDTv(Date.now()).slice(0,10)}`].filter(Boolean).join(' · '),r.x+X(4.5*s),r.y+r.h*.8,r.w*.62,{pt:6.6,c:mute});
   if(gr){const t=`유수율 ${f1(lastR)}% ${gr.t}`;g.font=FT(800,7.4);const bw=g.measureText(t).width+X(5*s),bh=X(5.6*s),bx=r.x+r.w-bw-X(3*s),by=r.y+r.h*.42-bh/2;rr(bx,by,bw,bh,bh/2);g.fillStyle=gr.bg;g.fill();g.strokeStyle=gr.c;g.lineWidth=X(.3);g.stroke();txt(t,bx+bw/2,by+bh/2,bw,{w:800,pt:7.4,c:gr.c,a:'center'});
    txt(lastM+' 기준',bx+bw/2,by+bh+X(2.6*s),bw+X(6*s),{pt:5.8,c:mute,a:'center'})}}
  /* 요약 카드 5개 */
- {const r=R(kb),n=5,gp=X(1.4*s),cw=(r.w-gp*(n-1))/n,oldP=ps&&ps.known?ps.old/ps.known*100:null,lkm=lk&&ps&&ps.km>0?(lk.tam+lk.civ)/ps.km:null;
+ if(kb){const r=R(kb),n=5,gp=X(1.4*s),cw=(r.w-gp*(n-1))/n,oldP=ps&&ps.known?ps.old/ps.known*100:null,lkm=lk&&ps&&ps.km>0?(lk.tam+lk.civ)/ps.km:null;
   const K=[['유수율',lastR!=null?f1(lastR)+'%':need,gr?gr.c:'#b45309',gr?gr.bg:'#fff'],['평균 공급량',avgS!=null?Math.round(avgS).toLocaleString()+' ㎥/일':need,ink],['관로 연장',ps?f2(ps.km)+' km':need,ink],['노후관 비율',oldP!=null?Math.round(oldP)+'%':need,oldP!=null&&oldP>=30?'#b91c1c':ink],['누수 건/km',lkm!=null?f2(lkm):need,ink]];
   K.forEach(([l,v,c,bg],i)=>{const x=r.x+i*(cw+gp);card({x,y:r.y,w:cw,h:r.h},bg&&bg!=='#fff'?bg:'#f8fafc');txt(l,x+cw/2,r.y+r.h*.3,cw-X(2*s),{w:600,pt:5.8,c:mute,a:'center'});txt(v,x+cw/2,r.y+r.h*.68,cw-X(2*s),{w:800,pt:/확인/.test(v)?6.2:8.2,c:/확인/.test(v)?'#b45309':c,a:'center'})})}
  /* 급수계통도 (지도 밖 가로 한 줄) */
@@ -2685,7 +2686,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
     txt(miss?need:v,bx+bw/2,by+bh*.68,bw-X(1.4*s),{w:me?900:700,pt:me?7:6,c:me?'#fff':miss?'#b45309':ink,a:'center'});
     if(i<n-1){const ax=bx+bw+X(.5*s),ay=by+bh/2,a2=bx+bw+ag-X(.5*s);g.strokeStyle='#475569';g.lineWidth=X(.3*s);g.beginPath();g.moveTo(ax,ay);g.lineTo(a2-X(.9*s),ay);g.stroke();g.fillStyle='#475569';g.beginPath();g.moveTo(a2-X(1.1*s),ay-X(.9*s));g.lineTo(a2,ay);g.lineTo(a2-X(1.1*s),ay+X(.9*s));g.closePath();g.fill()}})}}
  /* INDEX 위치도 */
- {const r=R(ib);card(r);head(r,'INDEX','위치');const all=(G('poly')||{}).features||[];
+ if(ib){const r=R(ib);card(r);head(r,'INDEX','위치');const all=(G('poly')||{}).features||[];
   let x0=180,y0=90,x1=-180,y1=-90;all.forEach(f=>{const q=f.properties._bbox||turf.bbox(f);x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[2]);y1=Math.max(y1,q[3])});
   const cs=Math.cos((y0+y1)/2*Math.PI/180),iw=r.w-X(5*s),ih=r.h-X(10*s),sc=Math.min(iw/((x1-x0)*cs||1),ih/((y1-y0)||1)),ox=r.x+(r.w-(x1-x0)*cs*sc)/2,oy=r.y+X(8*s)+(ih-(y1-y0)*sc)/2,Q=c=>[ox+(c[0]-x0)*cs*sc,oy+(y1-c[1])*sc];
   const path=f=>{const gm=f.geometry;if(!gm)return;g.beginPath();(gm.type==='Polygon'?[gm.coordinates]:gm.type==='MultiPolygon'?gm.coordinates:[]).forEach(pl=>pl.forEach(rg=>{rg.forEach((c,i)=>{const [x,y]=Q(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()}))};
@@ -2694,7 +2695,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
   const q=b.fs.map(f=>f.properties._bbox||turf.bbox(f)),cx=(Math.min(...q.map(z=>z[0]))+Math.max(...q.map(z=>z[2])))/2,cy=(Math.min(...q.map(z=>z[1]))+Math.max(...q.map(z=>z[3])))/2,[px,py]=Q([cx,cy]);
   g.strokeStyle='#dc2626';g.lineWidth=X(.45*s);g.beginPath();g.arc(px,py,X(4*s),0,7);g.stroke()}
  /* 범례 (지도 밖) */
- {const r=R(lb);card(r);head(r,'범 례');
+ if(lb){const r=R(lb);card(r);head(r,'범 례');
   const it=[{ln:BP_BND,t:'대상 소블록 경계',w:3,dash:1},{col:`rgba(${BP_FC},.95)`,t:'대상 소블록 밖 (흐리게)'}];
   if(S.lk.length){const nt=S.lk.filter(o=>o.src!=='민원').length,nc=S.lk.length-nt;if(nt)it.push({star:'#dc2626',t:'누수지점 (탐사)',n:nt});if(nc)it.push({star:'#16a34a',t:'민원 누수지점',n:nc})}
   let L0=(BP.o.leg?S.leg:[]).map(x=>x.h&&/틀 안/.test(x.h)?{...x,h:'상수도 시설물 (소블록 안)'}:x);
@@ -2714,7 +2715,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    txt(o.t+(o.n?` (${o.n.toLocaleString()})`:''),x+sw+X(1.3*s),y,cw-sw-X(3*s),{pt:cols>2?5.4:6})});
   if(items.length>cap){const i=cap-1,c=Math.floor(i/rows),q=i%rows;txt(`… 외 ${items.length-cap+1}개`,r.x+X(2.5*s)+c*cw,top+q*rh+rh/2,cw,{pt:6,c:mute})}}
  /* 현황표 + 관경·재질 100% 막대 */
- {const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
+ if(sb){const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
   const rows=[['관로연장',ps?`${f2(ps.km)} km  (급수관 ${f2(ps.svc)} km 별도)`:need],['노후관 30년 초과',ps?(ps.known?`${f2(ps.old)} km (${Math.round(ps.old/ps.known*100)}%)${ps.known<ps.km*.98?' · 연도 모름 '+f2(ps.km-ps.known)+' km':''}`:'설치연도 없음 · '+need):need],
    ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
   const lh=X(3.9*s),kw=r.w*.3;let y=r.y+X(7.5*s);
@@ -2747,7 +2748,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
   if(!N){head(r,'월별 추이');txt('유수율 시트를 넣으면 그래프가 그려집니다',r.x+r.w/2,r.y+r.h/2,r.w,{pt:6.6,c:mute,a:'center'})}
   else{const Yr=SE.Yr,T=BP.nrw&&BP.nrw.T,n=Yr.length*12,mo=info.mo;
    /* 위: 공급·부과 막대 + 유수율 꺾은선(+전체 점선) */
-   const top=r.y+X(7*s),h1=(r.h-X(7*s))*.6-X(2*s),h2=(r.h-X(7*s))*.4-X(4*s),px0=r.x+X(9*s),px1=r.x+r.w-X(8*s),bw=(px1-px0)/n;
+   const top=r.y+X(7*s),h1=(r.h-X(7*s))*.6-X(2*s),h2=(r.h-X(7*s))*.4-X(8*s),px0=r.x+X(9*s),px1=r.x+r.w-X(8*s),bw=(px1-px0)/n;
    head(r,'월별 공급·부과량 · 유수율',Yr.join('~')+'년');
    const sv=[],bv=[],rv=[],tv=[],nv=[],lv=[];Yr.forEach((y,j)=>{for(let m=1;m<=12;m++){sv.push(SE.f('s',j)[m]);bv.push(SE.f('b',j)[m]);rv.push(bpPct(SE.f('r',j)[m]));nv.push(SE.f('n',j)[m]);
     const ti=T&&BP.nrw.years.indexOf(y);tv.push(T&&ti>=0?bpPct((T.r[ti]||[])[m]):null);const o=mo&&mo.get(y+'-'+m);lv.push(o?o.tam+o.civ:(mo&&mo.has('y'+y)?0:null))}});
@@ -2803,7 +2804,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    cs.mi.forEach((mi2,i)=>{const m=/^(\d{4})-(\d\d)$/.exec(cs.M[mi2]||'');if(!m)return;const mm=+m[2];if(mm%3===1||i===0)txt(mm===1||i===0?`${m[1].slice(2)}.${mm}`:String(mm),px0+(i+.5)*bw,ct+chh+X(1.8*s),bw*3,{pt:4.6,c:mute,a:'center'})});
    g.font=FT(500,5);let lx=px1;const ly=c0+X(1*s);[...cs.keys].reverse().forEach((k2)=>{const q=cs.keys.indexOf(k2),t=k2,tw=g.measureText(t).width;lx-=tw;txt(t,lx,ly,tw+2,{pt:5,c:mute});lx-=X(2.4*s);g.fillStyle=UC[Math.min(q,4)];g.fillRect(lx,ly-X(.8*s),X(1.8*s),X(1.6*s));lx-=X(1.2*s)})}}
  /* 아래 줄 */
- {const r=R(M.foot);const gr2=g.createLinearGradient(r.x,0,r.x+r.w,0);gr2.addColorStop(0,GS?ac:'#4338ca');gr2.addColorStop(1,'#2563eb');g.fillStyle=gr2;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
+ if(M.foot){const r=R(M.foot);const gr2=g.createLinearGradient(r.x,0,r.x+r.w,0);gr2.addColorStop(0,GS?ac:'#4338ca');gr2.addColorStop(1,'#2563eb');g.fillStyle=gr2;g.fillRect(r.x,r.y,r.w,X(.5));const site=(G('SITE')||{}).name||(G('SITE')||{}).tag||'';
   const [ga,gb]=BP_G();txt(`스마트 물길주소 · ${site} · 만든이: 구병순 · 축척 1:${vpFmt(S.scale)} · ${BP.o.p} ${M.l?'가로':'세로'} · 배경: ${S.B.attr||'없음'} · 유수율 ${ga}%↑ 양호 · ${gb}~${ga}% 주의 · ${gb}% 미만 심각`+(S.secret?' · 대외비(외부 반출 금지)':''),r.x,r.y+r.h*.6,r.w*.85,{pt:6.2,c:S.secret?'#991b1b':mute});
   txt(`No. ${no}`,r.x+r.w,r.y+r.h*.6,r.w*.12,{w:800,pt:9,a:'right'})}
  return cv}
@@ -2837,6 +2838,22 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
  catch(e){console.warn('bp',e);st('출력하지 못했습니다: '+(e&&e.message||e));if(w&&!w.closed&&!pages.length)w.close()}
  finally{m.setView(c0,z0,{animate:false});cover.remove();BP.el.style.visibility='';if(hl)try{hl.addTo(m)}catch(_){}if(pv&&BP.cur)bpPrev((bpBlocks().find(x=>x.n===BP.cur)||{}).fs);BP.busy=false;stopB.hidden=true;
   if(kind==='pdf')setTimeout(()=>pages.forEach(u=>{try{URL.revokeObjectURL(u)}catch(_){}}),600000)}}
+/* ---- 보고서(⬚ 개략공사비)용: 현황도와 같은 코드로 칸만 그림 (2026-11-15 사용자 '소블록 현황도·수용가 현황·블록현황도 참고')
+   part 'blk' = 제목·유수율 배지·지표 카드 5개·급수계통·블록 현황·월별 표·월별 그래프 / 'cu' = 수용가 현황(대수용가는 관리번호만). 폭 178mm(A4 세로 본문) ---- */
+const BPR_C={ps:undefined,at:0};
+async function bpRepPrep(){if(!BP.nrw){try{const v=await G('IDB').get('nrw_blk');if(v&&v.B)BP.nrw=v}catch(_){}}BPR_C.ps=undefined;BPR_C.cnt=null;return !!BP.nrw}
+function bpRepInfo(n){const k=bpK(n),b=bpBlocks().find(x=>x.n===n)||bpBlocks().find(x=>bpK(x.n)===k);if(!b)return null;
+ if(BPR_C.ps===undefined)BPR_C.ps=bpPipeStats();if(!BPR_C.cnt){const c=new Map();(G('out')||[]).forEach(o=>{const q=o['_결합블록'];if(q)c.set(q,(c.get(q)||0)+1)});BPR_C.cnt=c;BPR_C.hasOut=(G('out')||[]).length>0}
+ const ps=BPR_C.ps,info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0)}:null,lk:bpLeaks(b),cu:BPR_C.hasOut?BPR_C.cnt.get(b.n)||0:null,nrw:bpNrwOf(b.n)};
+ info.mo=info.lk?info.lk.mo:null;info.cs=bpCust(b.n);info.sy=bpSysOf(b);if(info.cs&&info.cs.n&&!info.cu)info.cu=info.cs.n;return{b,info}}
+function bpRepPanel(n,part){try{const o=bpRepInfo(n);if(!o)return null;const {b,info}=o;if(part==='cu'&&(!info.cs||!info.cs.n))return null;if(part==='blk'&&!info.nrw&&!info.ps)return null;
+ const w=177,x=.5,g=3,M={rep:1,s:1,l:false,gap:g,pw:178,ph:0,ttl:`${b.n} 소블록 현황`};let y=3;
+ if(part==='blk'){M.tb={x,y,w,h:17};y+=17+g;M.kb={x,y,w,h:14};y+=14+g;if(info.sy&&info.sy.key){M.sys={x,y,w,h:11};y+=11+g}M.sb={x,y,w,h:46};y+=46+g;
+  const nr=6+(info.cs&&info.cs.n?2:0)+2;M.tbl={x,y,w,h:nr*4.4};y+=nr*4.4+g;M.chart={x,y,w,h:62};y+=62+1}
+ else{M.cu={x,y,w,h:58};y+=58+1}
+ M.ph=y;const dpm=200/25.4,cv=bpCompose(b,null,info,1,M,dpm);let lr=null,lm='';if(info.nrw){const SE=bpSeries(info.nrw);for(let j=SE.Yr.length-1;j>=0&&lr==null;j--){const a=SE.f('r',j);for(let m=12;m>=1;m--)if(a[m]!=null){lr=bpPct(a[m]);lm=`${SE.Yr[j]}.${m}월`;break}}}
+ return{r:lr,m:lm,u:cv.toDataURL('image/jpeg',.92),w:cv.width,h:cv.height,src:[info.nrw?`유수율 '${BP.nrw.f||BP.nrw.sn||'유수율(소블록별)'}'`:'유수율 확인 필요',info.cs&&info.cs.n?`수용가 ${info.cs.src}`:'',info.lk?'누수 📒 대장':'누수 확인 필요'].filter(Boolean).join(' · '),g:BP_G()}}catch(err){console.warn('보고서 현황 칸',n,part,err);return null}}
+window.bpRep={prep:bpRepPrep,panel:bpRepPanel,g:BP_G,nrwParse:bpNrwParse,billOf:a=>bpBillOf(a),sysParse:a=>bpSysParse(a),set:R=>{BP.nrw=R}};
 window.bpOpen=bpOpen;window.BPR=BP;window.bpCust=bpCust;
 })();
 </script>
@@ -10612,7 +10629,7 @@ function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.ro
  return [['요약',s1],['원가계산서 비교',s2],['소블록 관로 현황',axcBlkRows(r)],['소블록 수도미터 현황',axcMtrRows(r)],['관경별 비교',s3],['관경 변경 집계',s4],['관로 목록',s5],['시설물 집계',s6]]}
 function axcNaeSec(r,sec,o){const{img,e,kpi,T,cond,blks,km,f0}=o,N=r.nae,A=N.A,B=N.B,P=N.P,dd=(b,a)=>B?`<td class="r">${axcDf(b-a)}</td>`:'<td class="r">—</td>';
  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('교체 연장 (범위 안)',km(A.Lall)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('총공사비 · 현 관경',axcEok(A.T),'m당 '+(A.Lall?axcWon(A.T/A.Lall):'—'))}${kpi('총공사비 · 적정 관경',B?axcEok(B.T):'확인 필요',B?'m당 '+axcWon(B.T/B.Lall):'관망해석 결과 없음','tot')}${kpi('차이 (적정−현)',B?axcDE(B.T-A.T):'—',B?`줄임 ${km(N.LO)}km · 키움 ${km(N.LS)}km`:'')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}<p class="n">계산 기준: ${e(N.key)} 설계내역서(${e(P.nm)}) — 설계 연장 ${axcF(P.L)}m, 총공사비 ${axcF(P.tot)}원(m당 ${axcF(P.tot/P.L)}원)</p>`);
- sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="150">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시</p>`);
+ sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="260">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시 · 아래 INDEX = 범위에 걸친 소블록 안 공사 범위 위치</p>`);
  const fk=v=>v==null?'확인 필요':Math.round(v/1000).toLocaleString(),dk=(b,a)=>B?`<td class="r">${axcDf((b-a)/1000)}</td>`:'<td class="r">—</td>';
  sec.push(`<h2 class="pgb">3. 원가계산서 비교 (현 관경 ↔ 적정 관경)</h2><p class="n ur" style="text-align:right;margin:0 0 3px">(단위: 천원)</p>${T(['비목','산출 근거','현 관경','적정 관경','차이'],[`<tr><td>교체 연장</td><td>범위 경계에서 자른 안쪽</td><td class="r">${A.Lall.toFixed(1)} m</td><td class="r">${B?B.Lall.toFixed(1)+' m':'—'}</td><td class="r"></td></tr>`,
   ...A.lines.map((l,i)=>`<tr${l[3]?` class="${l[3]}"`:''}><td>${e(l[0])}</td><td>${e(l[1])}</td><td class="r">${fk(l[2])}</td><td class="r">${B?fk(B.lines[i][2]):'확인 필요'}</td>${dk(B?B.lines[i][2]:0,l[2])}</tr>`),
@@ -10775,17 +10792,43 @@ function axcBlkFig(B){try{const W=1600,TH=170,CH=560,H=TH+CH+20,cv=document.crea
   g.fillStyle='#334155';g.font=`13px ${F}`;g.textAlign='left';g.fillText(`${km(m.L)}km · 범위 안 ${km(m.inL)}km (${m.L>0?(m.inL/m.L*100).toFixed(0):0}%)`,rx+Math.max(xx-rx,iw)+8,yy+rh*.3)});
  let lx=W/2+20;const ly=y0+CH-24;g.font=`14px ${F}`;g.textAlign='left';for(const [,t,col] of [...AB,['','이번 범위 안','#1e3a8a']]){g.fillStyle=col;g.fillRect(lx,ly-7,16,14);g.fillStyle='#334155';g.fillText(t,lx+22,ly);lx+=g.measureText(t).width+52}
  return cv.toDataURL('image/jpeg',.9)}catch(e){console.warn('소블록 그래프',e);return ''}}
+/* 소블록 유수율 지표(2026-11-15 사용자 '유수율 지표도 가지고 와서 넣어줘'): 📥 부과량 연동의 '유수율(소블록별)' 시트(BILL.WY: 유수율·공급량·부과량, ㎥/일) → 없으면 🏗 공사 추천에 넣은 유수율 엑셀(CW.WY). 최근 12개월 평균·최근 달. 자료 없으면 확인 필요 */
+function axcBlkNrw(n){const b=bNorm(n),W=typeof BILL!=='undefined'&&BILL.WY&&BILL.WY[b]&&BILL.WY[b].r?BILL.WY[b]:null,C=typeof CW!=='undefined'&&CW.WY&&CW.WY[b]?CW.WY[b]:null,R=W?W.r:C;if(!R)return null;
+ const ks=Object.keys(R).filter(k=>R[k]!=null).sort().slice(-12);if(!ks.length)return null;const av=(o,kk)=>{const v=kk.filter(k=>o&&o[k]!=null);return v.length?v.reduce((s,k)=>s+o[k],0)/v.length:null};
+ const sup=W?av(W.sup,ks):null,bil=W?av(W.bil,ks):null,lk=ks[ks.length-1],py=String(+lk.slice(0,4)-1)+lk.slice(4),pk=Object.keys(R).sort().filter(k=>k<=py).slice(-12);
+ return{src:W?'부과량 연동':'공사 추천 유수율 엑셀',from:ks[0],to:lk,n:ks.length,r:av(R,ks),last:R[lk],sup,bil,nrw:sup!=null&&bil!=null?sup-bil:null,prev:pk.length>=6?av(R,pk):null}}
+function axcNrwFig(n){try{const b=bNorm(n),W0=typeof BILL!=='undefined'&&BILL.WY&&BILL.WY[b]&&BILL.WY[b].r?BILL.WY[b]:null,C=typeof CW!=='undefined'&&CW.WY&&CW.WY[b]?CW.WY[b]:null,R=W0?W0.r:C;if(!R)return '';
+ const ks=Object.keys(R).filter(k=>R[k]!=null).sort().slice(-12);if(ks.length<2)return '';const W=1600,H=400,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d'),F='"Noto Sans KR","Malgun Gothic",sans-serif';
+ g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#eef2ff';g.fillRect(0,0,W,46);g.fillStyle='#4338ca';g.fillRect(0,0,10,46);g.fillStyle='#1e1b4b';g.font=`bold 24px ${F}`;g.textAlign='left';g.textBaseline='middle';g.fillText(`${n} 소블록 — 월별 유수율 · 공급량 · 부과량 (최근 ${ks.length}개월)`,24,24);
+ const x0=110,x1=W-110,y0=80,y1=H-60,bw=(x1-x0)/ks.length,sup=ks.map(k=>W0&&W0.sup?W0.sup[k]:null),bil=ks.map(k=>W0&&W0.bil?W0.bil[k]:null),mq=Math.max(1,...sup.filter(v=>v!=null),...bil.filter(v=>v!=null));
+ const step=[1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000].find(v=>mq/v<=5)||50000,qmax=Math.ceil(mq/step)*step,qy=v=>y1-v/qmax*(y1-y0),ry=v=>y1-Math.max(0,Math.min(100,v))/100*(y1-y0);
+ g.font=`14px ${F}`;g.strokeStyle='#e2e8f0';g.lineWidth=1;for(let v=0;v<=qmax+1e-9;v+=step){g.beginPath();g.moveTo(x0,qy(v));g.lineTo(x1,qy(v));g.stroke();g.fillStyle='#64748b';g.textAlign='right';g.fillText(Math.round(v).toLocaleString(),x0-8,qy(v))}
+ [0,20,40,60,80,100].forEach(v=>{g.fillStyle='#4338ca';g.textAlign='left';g.fillText(v+'%',x1+8,ry(v))});
+ g.save();g.translate(28,(y0+y1)/2);g.rotate(-Math.PI/2);g.fillStyle='#64748b';g.textAlign='center';g.fillText('㎥/일',0,0);g.restore();
+ ks.forEach((k,i)=>{const cx=x0+bw*(i+.5),w=bw*.32;if(sup[i]!=null){g.fillStyle='#93c5fd';g.fillRect(cx-w,qy(sup[i]),w,y1-qy(sup[i]))}if(bil[i]!=null){g.fillStyle='#2563eb';g.fillRect(cx,qy(bil[i]),w,y1-qy(bil[i]))}
+  g.fillStyle='#334155';g.textAlign='center';g.font=`14px ${F}`;g.fillText(k.slice(2).replace('-','.'),cx,y1+20)});
+ g.beginPath();ks.forEach((k,i)=>{const cx=x0+bw*(i+.5);i?g.lineTo(cx,ry(R[k])):g.moveTo(cx,ry(R[k]))});g.strokeStyle='#dc2626';g.lineWidth=3;g.stroke();
+ ks.forEach((k,i)=>{const cx=x0+bw*(i+.5),v=R[k];g.beginPath();g.arc(cx,ry(v),5,0,7);g.fillStyle='#dc2626';g.fill();g.fillStyle='#7f1d1d';g.font=`bold 14px ${F}`;g.textAlign='center';g.fillText(v.toFixed(1),cx,ry(v)-14)});
+ let lx=x0;const ly=H-18;g.font=`14px ${F}`;g.textAlign='left';[['공급량','#93c5fd'],['부과량','#2563eb'],['유수율(오른쪽 축)','#dc2626']].forEach(([t,c])=>{g.fillStyle=c;g.fillRect(lx,ly-7,16,14);g.fillStyle='#334155';g.fillText(t,lx+22,ly);lx+=g.measureText(t).width+60});
+ if(!W0){g.fillStyle='#64748b';g.fillText('공급량·부과량 자료 없음(확인 필요)',lx,ly)}
+ return cv.toDataURL('image/jpeg',.9)}catch(err){console.warn('유수율 그림',err);return ''}}
+/* 2026-11-15 사용자 '소블록 현황도 참고': 소블록 현황도 창(bpCompose)과 같은 코드로 그린 칸(제목·판정 배지·지표 카드·급수계통·블록 현황·월별 표·그래프)을 먼저 쓰고, 현황도 자료(유수율 엑셀)가 없으면 부과량 연동 유수율로 그린 예전 그래프·표 */
+function axcNrwTbl(n,e,T,B,P){{if(P===undefined)P=window.bpRep&&bpRep.panel(n,'blk');if(P)return `<img class="map bpr" src="${P.u}" alt="${e(n)} 소블록 현황" data-wmm="178">`+`<p class="n" style="margin:2px 0 4px">자료: ${e(P.src)} · 유수율 판정 ${P.g[0]}%↑ 양호 · ${P.g[1]}~${P.g[0]}% 주의 · ${P.g[1]}% 미만 심각 (소블록 현황도와 같은 기준)</p>`}
+const w=axcBlkNrw(n),f1=v=>v==null?'확인 필요':v.toFixed(1),f0=v=>v==null?'확인 필요':Math.round(v).toLocaleString();
+ if(!w)return `<p class="n" style="margin:4px 0">유수율 지표: <b>확인 필요</b> (📥 부과량 연동의 '유수율(소블록별)' 시트에 ${e(n)} 자료 없음)</p>`;
+ const G2=window.bpRep?bpRep.g():[85,70],g=w.r<G2[1]?['심각','#b91c1c']:w.r<G2[0]?['주의','#b45309']:['양호','#15803d'];
+ const fg=axcNrwFig(n);return (fg?`<img class="map" src="${fg}" alt="${e(n)} 유수율 그래프" style="border:0;margin-top:6px">`:'')+`<p class="n ur" style="text-align:right;margin:4px 0 3px">(유수율 %, 수량 ㎥/일 · ${e(w.src)} ${e(w.from)}~${e(w.to)} ${w.n}개월 평균)</p>`+T(['구분','평균 유수율','최근 달 유수율','전년 같은 기간','공급량','부과량','무수량(공급−부과)','판정'],
+  [`<tr><td style="white-space:nowrap">${e(n)}</td><td class="r"><b>${f1(w.r)}</b></td><td class="r">${f1(w.last)} (${e(w.to)})</td><td class="r">${f1(w.prev)}</td><td class="r">${f0(w.sup)}</td><td class="r">${f0(w.bil)}</td><td class="r">${f0(w.nrw)}</td><td style="color:${g[1]};font-weight:700">${g[0]}</td></tr>`])}
 function axcBlkSec(r,o){const S=axcBlkStat(r);if(!S.length)return '';const{e,T}=o,k=v=>v>0?(v/1000).toFixed(2):'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
- let h=`<h2>3. 소블록 관로 현황</h2><p class="n">범위에 걸친 소블록 ${S.length}곳의 <b>소블록 전체</b> 관로(급수관 포함)를 관종·매설년대별로 셌습니다. 경과연수는 ${new Date().getFullYear()}년 기준, 설치연도 없는 관은 '미상'. 관종은 재질 값이 HI-VP·HI-3P인 관을 PVC와 따로 'HIVP'로 나눴습니다. 관종 사진은 덕타일·회주철관·도복장강관·스테인리스(STS)·PE·GRP·PVC·HIVP만 실제 사진이고 나머지는 관 모양을 그린 것이며, 재질 코드는 상수도 GIS 코드표(MOP001 DCIP·002 SP·003 아연도강관·004 PVC·005 PE·006 STS·007 동관·008 CIP·009 석면시멘트관·010 PC관)로 나누고, 표에 없는 코드는 미분류로 둡니다.</p>`;
+ let h=`<h2>3. 소블록 관로 현황</h2><p class="n">범위에 걸친 소블록 ${S.length}곳의 <b>소블록 전체</b> 관로(급수관 포함)를 관종·매설년대(그래프)·경과연수(표)별로 셌고, 소블록 현황도와 같은 모양의 소블록 현황(유수율 판정·지표 카드·블록 현황·월별 공급·부과·야간최소·유수율 표와 그래프)을 함께 붙였습니다. 경과연수는 ${new Date().getFullYear()}년 기준, 설치연도 없는 관은 '미상'. 관종은 재질 값이 HI-VP·HI-3P인 관을 PVC와 따로 'HIVP'로 나눴습니다. 관종 사진은 덕타일·회주철관·도복장강관·스테인리스(STS)·PE·GRP·PVC·HIVP만 실제 사진이고 나머지는 관 모양을 그린 것이며, 재질 코드는 상수도 GIS 코드표(MOP001 DCIP·002 SP·003 아연도강관·004 PVC·005 PE·006 STS·007 동관·008 CIP·009 석면시멘트관·010 PC관)로 나누고, 표에 없는 코드는 미분류로 둡니다.</p>`;
  for(const B of S){const sum=f=>B.mats.reduce((s,m)=>s+f(m),0),cU=sum(m=>m.byD.get('u')||0),old=sum(m=>m.c),fig=axcBlkFig(B);
-  h+=`<h3>${e(B.n)} — 관로 ${k(B.tot)} km · 30년 초과 ${k(old)} km (${pc(old,B.tot)}) · 이번 범위 안 ${k(B.inL)} km (${pc(B.inL,B.tot)})</h3>`;
+  const wy=axcBlkNrw(B.n),P=window.bpRep&&bpRep.panel(B.n,'blk'),ry=P&&P.r!=null?`${P.r.toFixed(1)}% (${P.m})`:wy?wy.r.toFixed(1)+'%':'확인 필요';h+=`<h3>${e(B.n)} — 관로 ${k(B.tot)} km · 30년 초과 ${k(old)} km (${pc(old,B.tot)}) · 이번 범위 안 ${k(B.inL)} km (${pc(B.inL,B.tot)}) · 유수율 ${ry}</h3>`;
+  h+=axcNrwTbl(B.n,e,T,B,P);
   if(fig)h+=`<img class="map" src="${fig}" alt="${e(B.n)} 관로 현황 그래프" style="border:0">`;
-  h+=`<p class="n ur" style="text-align:right;margin:4px 0 3px">(단위: km)</p>`+T(['관종',...B.decs.map(d=>d+'년대'),...(cU>0?['미상']:[]),'계'],[...B.mats.map(m=>`<tr><td>${e(m.mt)}</td>${B.decs.map(d=>`<td class="r">${k(m.byD.get(d)||0)}</td>`).join('')}${cU>0?`<td class="r">${k(m.byD.get('u')||0)}</td>`:''}<td class="r"><b>${k(m.L)}</b></td></tr>`),
-   `<tr class="tot"><td>계</td>${B.decs.map(d=>`<td class="r">${k(sum(m=>m.byD.get(d)||0))}</td>`).join('')}${cU>0?`<td class="r">${k(cU)}</td>`:''}<td class="r">${k(B.tot)}</td></tr>`]);
   h+=`<p class="n ur" style="text-align:right;margin:6px 0 3px">(단위: km)</p>`+T(['관종','20년 이하','20~30년','30년 초과','미상','계','이번 범위 안','범위 안 비율'],[...B.mats.map(m=>`<tr><td>${e(m.mt)}</td><td class="r">${k(m.a)}</td><td class="r">${k(m.b)}</td><td class="r">${k(m.c)}</td><td class="r">${k(m.u)}</td><td class="r"><b>${k(m.L)}</b></td><td class="r">${k(m.inL)}</td><td class="r">${pc(m.inL,m.L)}</td></tr>`),
    `<tr class="tot"><td>계</td><td class="r">${k(sum(m=>m.a))}</td><td class="r">${k(sum(m=>m.b))}</td><td class="r">${k(old)}</td><td class="r">${k(sum(m=>m.u))}</td><td class="r">${k(B.tot)}</td><td class="r">${k(B.inL)}</td><td class="r">${pc(B.inL,B.tot)}</td></tr>`])}
  return h+`<p class="n">이번 범위 안 = 개략공사비 대상 관로(위 조건)의 범위 안 길이. 소블록 전체는 조건과 관계없이 모든 관로. 소블록은 관로 가운데 점이 든 소블록 경계 기준이라 관로 속성의 소블록명과 다를 수 있습니다.</p>`}
-function axcBlkRows(r){const out=[];axcBlkStat(r).forEach(B=>B.mats.forEach(m=>{const o={'소블록':B.n,'관종':m.mt};B.decs.forEach(d=>o[d+'년대(km)']=+((m.byD.get(d)||0)/1000).toFixed(3));o['미상(km)']=+((m.byD.get('u')||0)/1000).toFixed(3);o['계(km)']=+(m.L/1000).toFixed(3);
+function axcBlkRows(r){const out=[];axcBlkStat(r).forEach(B=>B.mats.forEach(m=>{const wy=axcBlkNrw(B.n),o={'소블록':B.n,'소블록 유수율(%)':wy?+wy.r.toFixed(1):'확인 필요','관종':m.mt};B.decs.forEach(d=>o[d+'년대(km)']=+((m.byD.get(d)||0)/1000).toFixed(3));o['미상(km)']=+((m.byD.get('u')||0)/1000).toFixed(3);o['계(km)']=+(m.L/1000).toFixed(3);
   o['20년 이하(km)']=+(m.a/1000).toFixed(3);o['20~30년(km)']=+(m.b/1000).toFixed(3);o['30년 초과(km)']=+(m.c/1000).toFixed(3);o['이번 범위 안(km)']=+(m.inL/1000).toFixed(3);o['범위 안 비율(%)']=m.L>0?+(m.inL/m.L*100).toFixed(1):'';out.push(o)}));return out}
 /* 파일 이름: 개략공사비_소블록 동번지_YYYYMMDD (x.x억) — 예) 개략공사비_YG01 죽도동74-41_20261113 (4.1억) (2026-11-14 사용자 요청) */
 /* 💧 소블록 수도미터 현황(2026-11-15 사용자 B안 + 도넛 그래프): 관로 현황과 같은 소블록마다 수용가 자료 한 줄 = 계량기 1개로 세어
@@ -10836,11 +10879,14 @@ function axcMtrFig(B,kY){try{const W=1600,H=Math.max(...[B.ds.length,B.us.length
  return cv.toDataURL('image/jpeg',.9)}catch(e){console.warn('수도미터 그래프',e);return ''}}
 function axcMtrSec(r,o){const S=axcMtrStat(r);if(!S)return '';const{e,T}=o,n0=v=>v>0?Math.round(v).toLocaleString():'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
  let h=`<h2>4. 소블록 수도미터 현황</h2>`;
- if(S.none){return h+`<p class="n">${S.none==='cust'?'수용가 자료(주소 변환 결과·부과 자료)가 없어 수도미터 현황을 셀 수 없습니다(확인 필요). 수용가 엑셀을 올린 뒤 다시 만들어 주세요.':S.none==='blk'?'범위에 걸친 소블록이 없습니다.':'수용가 자료에 이 소블록 이름(소블록 Y열·결합 블록)과 맞는 줄이 없습니다(확인 필요).'}</p>`}
+ if(S.none){const cuP=axcBlkStat(r).map(B=>{const P=window.bpRep&&bpRep.panel(B.n,'cu');return P?`<h3>${e(B.n)} — 수용가 현황</h3><img class="map bpr" src="${P.u}" alt="${e(B.n)} 수용가 현황" data-wmm="178"><p class="n" style="margin:2px 0 4px">소블록 현황도의 수용가 현황 칸과 같은 그림(${e(P.src)}) · 대수용가는 관리번호만 씀</p>`:''}).join('');
+  if(cuP)return h+`<p class="n">📥 부과량 연동 자료가 없어 계량기 구경·업종 표는 비우고, 소블록 현황도 창에 넣은 유수율 엑셀의 부과량 시트로 수용가 현황만 넣었습니다.</p>`+cuP;
+  return h+`<p class="n">${S.none==='cust'?'수용가 자료(주소 변환 결과·부과 자료)가 없어 수도미터 현황을 셀 수 없습니다(확인 필요). 수용가 엑셀을 올린 뒤 다시 만들어 주세요.':S.none==='blk'?'범위에 걸친 소블록이 없습니다.':'수용가 자료에 이 소블록 이름(소블록 Y열·결합 블록)과 맞는 줄이 없습니다(확인 필요).'}</p>`}
  h+=`<p class="n">위 관로 현황과 같은 소블록에서 ${S.how==='bill'?`<b>📥 부과량 연동 자료</b>(${e(BILL.name||'부과량 시트')}, 소블록 = Y열) 수용가 한 줄 = 계량기 1개`:'<b>주소 변환 수용가 자료</b> 한 줄 = 계량기 1개(📥 부과량 연동 자료를 올리면 그 자료로 셈)'}로 셌습니다(고객 이름·주소·연락처는 쓰지 않고 개수·합계만). 사용량은 ${S.how==='bill'?`최근 6개월 월평균(㎥, 기준월 ${e(BILL.M[BILL.mi]||'')})`:'월평균(㎥)'}, 대수용가는 월평균 ${S.bq}㎥ 이상, 범위 안은 수용가 위치(주소 변환 결과)가 이번 개략공사비 범위 안에 든 개수입니다. `+
   (S.kY?`경과연수는 수용가 자료 '${e(S.kY)}' 칸 연도 기준`:S.B.some(B=>B.yrSrc==='fac')?'경과연수는 급수전계량기(SA122) 시설물 설치일자 기준':'계량기 설치·교체 연도 자료가 없어 경과연수는 <b>확인 필요</b>')+`(교체 기준 ${AXM_AGE}년 = 수도미터 검정 유효기간으로 잡음, 확인 필요).</p>`;
  for(const B of S.B){const A=B.age,an=A.a+A.b+A.c,fig=axcMtrFig(B,S.kY);
   h+=`<h3>${e(B.n)} — 계량기 ${B.cnt.toLocaleString()}개 · 가구 ${n0(B.H)} · 월평균 ${n0(B.Q)}㎥ · 대수용가 ${B.big}곳 · 범위 안 ${B.inR.toLocaleString()}개 (${pc(B.inR,B.cnt)})</h3>`;
+  {const P=window.bpRep&&bpRep.panel(B.n,'cu');if(P)h+=`<img class="map bpr" src="${P.u}" alt="${e(B.n)} 수용가 현황" data-wmm="178"><p class="n" style="margin:2px 0 4px">소블록 현황도의 수용가 현황 칸과 같은 그림(${e(P.src)}) · 대수용가는 관리번호만 씀</p>`}
   if(fig)h+=`<img class="map" src="${fig}" alt="${e(B.n)} 수도미터 현황 그래프" style="border:0">`;
   h+=`<p class="n ur" style="text-align:right;margin:4px 0 3px">(단위: 개, ㎥/월)</p>`+T(['구경','계량기 수','비율','범위 안','가구수','월평균 사용량','1개당 월평균','대수용가'],[...B.ds.map(x=>`<tr><td style="white-space:nowrap">${x.k==='미상'?'미상':x.k+'mm'}</td><td class="r">${x.n.toLocaleString()}</td><td class="r">${pc(x.n,B.cnt)}</td><td class="r">${x.inR.toLocaleString()}</td><td class="r">${n0(x.H)}</td><td class="r">${n0(x.Q)}</td><td class="r">${x.n?(x.Q/x.n).toFixed(1):'—'}</td><td class="r">${x.big||'—'}</td></tr>`),
    `<tr class="tot"><td>계</td><td class="r">${B.cnt.toLocaleString()}</td><td class="r">100%</td><td class="r">${B.inR.toLocaleString()}</td><td class="r">${n0(B.H)}</td><td class="r">${n0(B.Q)}</td><td class="r">${B.cnt?(B.Q/B.cnt).toFixed(1):'—'}</td><td class="r">${B.big||'—'}</td></tr>`]);
@@ -10858,19 +10904,42 @@ function axcFn(ext){const r=AXC.r,a0=(typeof axcAddrNow==='function'&&axcAddrNow
  return `개략공사비_${nm.replace(/[\\/:*?"<>|]/g,'').trim()}_${fmtD(Date.now()).replace(/-/g,'')}${eok}.${ext}`}
 function axcXl(){if(typeof XLSX==='undefined'){alert('엑셀 라이브러리를 불러오지 못했습니다.');return}axcRead();const r=axcCalc();if(!r)return;XLSX.writeFile(axcWb(r),axcFn('xlsx'),{compression:true})}
 /* 보고서 지도: 범위에 맞춰 캡처하고 범위 밖은 흐리게(누수 예측 보고서와 같은 방식) */
+/* 삽도 틀: 소블록 현황도처럼 진한 테두리 지도 칸 + 아래 INDEX(범위에 걸친 소블록 안에서 공사 범위가 어디쯤인지)·범례 칸 (2026-11-15 사용자 요청) */
+function axcMapFrame(mc0){const W=mc0.width,u=W/178,mh=Math.round(mc0.height*(W-4*u)/mc0.width),gp=Math.round(3*u),rh=Math.round(44*u),H=Math.round(2*u)+mh+gp+rh+2,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d'),F='"Noto Sans KR","Malgun Gothic",sans-serif';
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
+ const tx=(t,x,y,pt,o)=>{o=o||{};g.font=`${o.w||500} ${Math.round(pt*.3528*u)}px ${F}`;g.fillStyle=o.c||'#0f172a';g.textAlign=o.a||'left';g.textBaseline='middle';g.fillText(String(t),x,y,o.mw||W)};
+ const card=(x,y,w,h,t,sub)=>{rr(x,y,w,h,1.6*u);g.fillStyle='#fff';g.fill();g.strokeStyle='#cbd5e1';g.lineWidth=Math.max(1,.3*u);g.stroke();g.fillStyle='#3730a3';g.fillRect(x+2.5*u,y+2.4*u,.9*u,3.2*u);tx(t,x+4.6*u,y+4*u,7.6,{w:800,mw:w*.6});if(sub)tx(sub,x+w-2.5*u,y+4*u,6,{c:'#64748b',a:'right',mw:w*.5})};
+ g.fillStyle='#fff';g.fillRect(0,0,W,H);const x0=Math.round(2*u),y0=Math.round(1*u);g.drawImage(mc0,x0,y0,W-4*u,mh);g.strokeStyle='#334155';g.lineWidth=Math.max(2,.4*u);g.strokeRect(x0,y0,W-4*u,mh);
+ const ry=y0+mh+gp,iw=(W-4*u)*.58,lx=x0+iw+gp,lw=W-2*u-lx;card(x0,ry,iw,rh,'INDEX','범위에 걸친 소블록 안 공사 범위 위치');card(lx,ry,lw,rh,'범 례');
+ /* INDEX: 범위에 걸친 소블록(관로 기준) 둘레 + 이웃 소블록 흐리게 + 공사 범위 빨강 */
+ try{const ring=AX.ring,rows=(AXC.r&&AXC.r.rows)||[],fld=$('blkField').value,nm=new Set(rows.map(x=>x.blk).filter(Boolean)),fs=poly&&poly.features?poly.features.filter(f=>nm.has(String(f.properties[fld]??''))):[];
+  const bb=fs.length?fs.map(f=>f.properties._bbox||turf.bbox(f)):[[Math.min(...ring.map(c=>c[0])),Math.min(...ring.map(c=>c[1])),Math.max(...ring.map(c=>c[0])),Math.max(...ring.map(c=>c[1]))]];
+  let a0=Math.min(...bb.map(q=>q[0])),b0=Math.min(...bb.map(q=>q[1])),a1=Math.max(...bb.map(q=>q[2])),b1=Math.max(...bb.map(q=>q[3]));ring.forEach(([x,y])=>{a0=Math.min(a0,x);a1=Math.max(a1,x);b0=Math.min(b0,y);b1=Math.max(b1,y)});
+  const cs=Math.cos((b0+b1)/2*Math.PI/180),bx=x0+2*u,by=ry+7.5*u,bw=iw-4*u,bh=rh-9.5*u,sc=Math.min(bw/((a1-a0)*cs||1e-9),bh/((b1-b0)||1e-9))*.9,ox=bx+(bw-(a1-a0)*cs*sc)/2,oy=by+(bh-(b1-b0)*sc)/2,Q=c=>[ox+(c[0]-a0)*cs*sc,oy+(b1-c[1])*sc];
+  const path=f=>{const gm=f.geometry;g.beginPath();if(!gm)return;(gm.type==='Polygon'?[gm.coordinates]:gm.type==='MultiPolygon'?gm.coordinates:[]).forEach(pl=>pl.forEach(rg=>{rg.forEach((c,i)=>{const [x,y]=Q(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath()}))};
+  g.save();g.beginPath();g.rect(bx,by,bw,bh);g.clip();const ex=[a0-(a1-a0),b0-(b1-b0),a1+(a1-a0),b1+(b1-b0)];
+  (poly&&poly.features||[]).forEach(f=>{if(fs.includes(f))return;const q=f.properties._bbox||turf.bbox(f);if(q[2]<ex[0]||q[0]>ex[2]||q[3]<ex[1]||q[1]>ex[3])return;path(f);g.fillStyle='#f1f5f9';g.fill('evenodd');g.strokeStyle='#94a3b8';g.lineWidth=Math.max(1,.15*u);g.stroke()});
+  fs.forEach(f=>{path(f);g.fillStyle='#e0e7ff';g.fill('evenodd');g.strokeStyle='#4338ca';g.lineWidth=Math.max(1.5,.35*u);g.stroke()});
+  g.beginPath();ring.forEach((c,i)=>{const [x,y]=Q(c);i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath();g.fillStyle='rgba(220,38,38,.45)';g.fill();g.strokeStyle='#dc2626';g.lineWidth=Math.max(1.5,.4*u);g.stroke();
+  {const xs=ring.map(c=>Q(c)[0]),ys=ring.map(c=>Q(c)[1]),w2=Math.max(...xs)-Math.min(...xs),h2=Math.max(...ys)-Math.min(...ys);if(Math.max(w2,h2)<8*u){g.beginPath();g.arc((Math.max(...xs)+Math.min(...xs))/2,(Math.max(...ys)+Math.min(...ys))/2,Math.max(w2,h2)/2+2.5*u,0,7);g.strokeStyle='#dc2626';g.lineWidth=Math.max(1.5,.4*u);g.stroke()}}
+  fs.forEach(f=>{const q=f.properties._bbox||turf.bbox(f);let p=[(q[0]+q[2])/2,(q[1]+q[3])/2];try{const c=turf.pointOnFeature(f).geometry.coordinates;p=c}catch(_){}const [x,y]=Q(p),t=String(f.properties[fld]??'');g.font=`800 ${Math.round(7.2*.3528*u)}px ${F}`;const tw=g.measureText(t).width+2*u;g.fillStyle='rgba(255,255,255,.85)';g.fillRect(x-tw/2,y-2.2*u,tw,4.4*u);tx(t,x,y,7.2,{w:800,c:'#3730a3',a:'center'})});
+  g.restore()}catch(err){console.warn('삽도 INDEX',err);tx('INDEX를 그리지 못했습니다(소블록 경계 확인 필요)',x0+4*u,ry+rh/2,6.4,{c:'#b45309'})}
+ /* 범례 */
+ {const it=[['dash','#4338ca','공사 범위 (그린 범위)'],['fill','rgba(255,255,255,.72)','범위 밖 (흐리게)'],['fill','#e0e7ff','INDEX: 범위에 걸친 소블록'],['fill','#f1f5f9','INDEX: 이웃 소블록'],['fill','rgba(220,38,38,.45)','INDEX: 공사 범위']],rh2=(rh-9*u)/it.length;
+  it.forEach(([k,c,t],i)=>{const y=ry+7.5*u+rh2*(i+.5),x=lx+3*u,sw=6*u;if(k==='dash'){g.strokeStyle=c;g.lineWidth=Math.max(2,.6*u);g.setLineDash([1.6*u,1*u]);g.beginPath();g.moveTo(x,y);g.lineTo(x+sw,y);g.stroke();g.setLineDash([])}else{g.fillStyle=c;g.fillRect(x,y-1.4*u,sw,2.8*u);g.strokeStyle='#94a3b8';g.lineWidth=1;g.strokeRect(x,y-1.4*u,sw,2.8*u)}tx(t,x+sw+1.6*u,y,6.4,{mw:lw-sw-6*u})})}
+ return cv}
 async function axcMap(){try{if(!map||typeof mapShotBase!=='function'||!AX.ring)return'';const c0=map.getCenter(),z0=map.getZoom(),dl=$('axDlg'),h0=dl.hidden;dl.hidden=true;
   /* 보고서 1쪽을 채우게: 캡처하는 동안만 지도 칸을 가로:세로 ≈ 0.95로 바꿔 범위를 크게 맞춤 */
-  const mc=map.getContainer(),css0=mc.style.cssText,R0=mc.getBoundingClientRect(),AR=.95;
+  const mc=map.getContainer(),css0=mc.style.cssText,R0=mc.getBoundingClientRect(),AR=178/146;/* 2026-11-15 사용자 '삽도도 블록현황도처럼 박스 안에 최대한 크게': 본문 폭(178mm)×146mm 지도 칸(요약과 한 쪽에 들어가게) + 아래 INDEX·범례 칸 */
   try{if(R0.width&&R0.height){if(R0.width/R0.height>AR)mc.style.width=Math.round(R0.height*AR)+'px';else mc.style.height=Math.round(R0.width/AR)+'px';map.invalidateSize({animate:false,pan:false})}
-   map.fitBounds(L.latLngBounds(AX.ring.map(c=>[c[1],c[0]])).pad(.08),{animate:false});await new Promise(r=>setTimeout(r,1600));
+   map.fitBounds(L.latLngBounds(AX.ring.map(c=>[c[1],c[0]])).pad(.04),{animate:false});await new Promise(r=>setTimeout(r,1600));
    const B=await mapShotBase([],k=>0,null,null,{dom:true}),secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l)),g=B.g,k=B.k,ring=AX.ring.map(([x,y])=>{const p=map.latLngToContainerPoint([y,x]);return[p.x*k,p.y*k]});
    g.save();g.beginPath();g.rect(0,0,B.W,B.Hm);ring.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fillStyle='rgba(255,255,255,.72)';g.fill('evenodd');
    g.beginPath();ring.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.lineWidth=3*k;g.setLineDash([9*k,6*k]);g.strokeStyle='#4338ca';g.stroke();g.restore();
    /* 지도 칸 크기를 못 바꾼 경우 대비: 범위 둘레로 가로:세로 ≈ 0.95로 잘라 냄 */
-   {const xs=ring.map(p=>p[0]),ys=ring.map(p=>p[1]),bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys),A=.95;let cw=B.W,ch=B.Hm;
-    if(cw/ch>A)cw=Math.min(B.W,Math.max(Math.round(ch*A),Math.round((bx1-bx0)*1.12)));else ch=Math.min(B.Hm,Math.max(Math.round(cw/A),Math.round((by1-by0)*1.12)));
+   {const xs=ring.map(p=>p[0]),ys=ring.map(p=>p[1]),bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys),A=AR;let w0=(bx1-bx0)*1.08,h0=(by1-by0)*1.08;if(w0/h0>A)h0=w0/A;else w0=h0*A;let cw=Math.round(Math.min(B.W,w0)),ch=Math.round(Math.min(B.Hm,h0));/* 지도 줌이 정수라 남는 여백까지 잘라 범위가 칸을 꽉 채우게 */
     if(cw<B.W||ch<B.Hm){const x0=Math.max(0,Math.min(B.W-cw,Math.round((bx0+bx1)/2-cw/2))),y0=Math.max(0,Math.min(B.Hm-ch,Math.round((by0+by1)/2-ch/2))),c2=document.createElement('canvas');c2.width=cw;c2.height=ch;c2.getContext('2d').drawImage(B.cv,x0,y0,cw,ch,0,0,cw,ch);B.cv=c2;B.g=c2.getContext('2d');B.W=cw;B.Hm=ch}}
-   mapShotDeco(B,secret);return B.cv.toDataURL('image/jpeg',.85)}finally{mc.style.cssText=css0;try{map.invalidateSize({animate:false,pan:false});map.setView(c0,z0,{animate:false})}catch(_){}dl.hidden=h0}}catch(e){console.warn('공사비 보고서 지도',e);return''}}
+   mapShotDeco(B,secret);return axcMapFrame(B.cv).toDataURL('image/jpeg',.88)}finally{mc.style.cssText=css0;try{map.invalidateSize({animate:false,pan:false});map.setView(c0,z0,{animate:false})}catch(_){}dl.hidden=h0}}catch(e){console.warn('공사비 보고서 지도',e);return''}}
 async function axcReport(mode){const hw=mode==='hwpx';axcRead();const r=axcCalc();if(!r)return;const w=hw?null:window.open('','axcReport','width=900,height=1000');if(!hw&&!w){alert('팝업이 막혀 보고서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}
  if(w)w.document.write('<p style="font-family:sans-serif;padding:20px">⏳ 보고서 만드는 중… (지도 캡처)</p>');const bt=hw?$('axcHw'):$('axcRep'),bt0=bt.textContent;bt.disabled=true;if(hw)bt.textContent='⏳ 한글 파일 만드는 중…';
  try{if(!r.addr){try{r.addr=(await Promise.race([axcAddrFind(),new Promise(z=>setTimeout(()=>z(''),8000))]))||''}catch(_){}}if(!r.addr)r.addr=axcAddrAlt();const img=await axcMap(),e=esc,f0=v=>v==null?'확인 필요':Math.round(v).toLocaleString(),km=v=>(v/1000).toFixed(2);
@@ -10880,7 +10949,7 @@ async function axcReport(mode){const hw=mode==='hwpx';axcRead();const r=axcCalc(
   const blks=[...new Set(r.rows.map(x=>x.blk).filter(Boolean))].sort();
   const sec=[];if(r.nae)axcNaeSec(r,sec,{img,e,kpi,T,cond,blks,km,f0});else{
   sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('관로 연장 (범위 안)',km(r.pL)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('시설물',r.fN.toLocaleString()+'개',r.FS.length?[...new Set(r.FS.map(o=>o.nm))].slice(0,4).map(e).join(', '):'')}${kpi('순공사비',axcEok(r.net),'관로+시설물+포장')}${kpi('총 개략공사비',axcEok(r.tot),'제경비·부가세 포함','tot')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}`);
-  sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="150">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시</p>`);
+  sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="260">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시 · 아래 INDEX = 범위에 걸친 소블록 안 공사 범위 위치</p>`);
   sec.push(`<h2 class="pgb">3. 공사비 내역</h2>${T(['항목','산출','금액(원)'],[
    `<tr><td>관로 교체</td><td>${km(r.pL)}km × 관경별 단가 (아래 관경별 관로)</td><td class="r">${f0(r.pAmt)}</td></tr>`,
    ...(r.pNo>0?[`<tr><td class="am">└ 단가 없는 관</td><td>${km(r.pNo)}km (빼고 셈)</td><td class="r am">확인 필요</td></tr>`]:[]),
@@ -10894,13 +10963,13 @@ async function axcReport(mode){const hw=mode==='hwpx';axcRead();const r=axcCalc(
   sec.push(`<h2>4. 관경별 관로</h2>${T(['관경(mm)','관 수','연장(m)','단가(원/m)','금액(원)'],r.DS.map(o=>`<tr><td>${e(o.dia)}</td><td class="r">${o.n}</td><td class="r">${o.L.toFixed(1)}</td><td class="r">${o.unit!=null?o.unit.toLocaleString():'<span class="am">확인 필요</span>'}</td><td class="r">${o.unit!=null?f0(o.amt):'<span class="am">확인 필요</span>'}</td></tr>`))}`);
   sec.push(`<h2>5. 시설물</h2>${T(['종류','구경(mm)','개수','단가(원/개)','금액(원)'],r.FS.map(o=>`<tr><td>${e(o.nm)} <small>${e(o.k)}</small></td><td>${o.dia??''}</td><td class="r">${o.n}</td><td class="r">${o.unit!=null?o.unit.toLocaleString():'<span class="am">확인 필요</span>'}</td><td class="r">${o.amt!=null?f0(o.amt):'<span class="am">확인 필요</span>'}</td></tr>`))}`);
   sec.push(`<h2>6. 계산 조건</h2><p class="n">대상 관로: ${e(cond)} · 범위에 걸친 관 ${r.nP.toLocaleString()}개 중 조건에 맞는 ${r.rows.length.toLocaleString()}개, 길이는 범위 경계에서 자른 안쪽만.<br>관경별 단가(원/m): ${r.T.map(t=>`${t[0]}=${t[1]!=null?t[1].toLocaleString():'확인 필요'}`).join(' · ')||'없음'} (🏗 공사 추천과 같은 표, 표보다 가는 관은 가장 가는 관경 값, 사이는 바로 위 관경 값)<br>시설물 단가(원/개): ${axcFT().map(x=>`${e(x.k)}${x.d!=null?':'+x.d:''}=${x.v!=null?x.v.toLocaleString():'확인 필요'}`).join(' · ')||'없음'}</p>`);}
-  try{await axcPipeImgs()}catch(_){}
+  try{await axcPipeImgs()}catch(_){}try{if(window.bpRep)await bpRep.prep()}catch(_){}
   try{const bs=axcBlkSec(r,{e,T}),ms=(()=>{try{return axcMtrSec(r,{e,T})}catch(err){console.warn('수도미터 현황',err);return ''}})();if(bs||ms){const i=sec.findIndex(x=>/^<h2[^>]*>3\./.test(x));sec.splice(i+1,0,...[bs,ms].filter(Boolean));let n=0;for(let j=0;j<sec.length;j++)sec[j]=sec[j].replace(/^(<h2[^>]*>)\d+\./,(m,h)=>h+(++n)+'.')}}catch(err){console.warn('소블록 관로 현황',err)}
   const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(axcFn('pdf').replace(/\.pdf$/,''))}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
 .pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 10mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:14px 18px}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.9;font-size:11.5px}
-main{padding:4px 16px}section{break-inside:avoid;page-break-inside:avoid}section.long{break-inside:auto;page-break-inside:auto}.pgb{break-before:page;page-break-before:always}h3{font-size:12.5px;margin:10px 0 3px;color:#3730a3}img.axm{display:block;width:auto;max-width:100%;max-height:150mm;margin:0 auto}thead{display:table-header-group}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}
+main{padding:4px 16px}section{break-inside:avoid;page-break-inside:avoid}section.long{break-inside:auto;page-break-inside:auto}.pgb{break-before:page;page-break-before:always}h3{font-size:12.5px;margin:10px 0 3px;color:#3730a3;break-after:avoid;page-break-after:avoid}img.axm{display:block;width:100%;max-height:205mm;object-fit:contain;margin:0 auto;border:0;border-radius:0}img.bpr{border:0;border-radius:0;margin-top:4px}thead{display:table-header-group}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}
 .kp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.k{border:1px solid #e2e8f0;border-radius:10px;padding:6px 8px}.k small{display:block;color:#64748b;font-size:10px}.k b{font-size:14px}.k b.tot{color:#4338ca;font-size:16px}.k i{display:block;font-style:normal;color:#64748b;font-size:9.5px}
 table{border-collapse:collapse;width:100%;font-size:10.5px}th{background:#eef2ff;color:#3730a3;text-align:left}th,td{border:1px solid #e2e8f0;padding:3px 6px;vertical-align:top}tr{break-inside:avoid}td.r{text-align:right;white-space:nowrap}
 tr.sub td{background:#f8fafc;font-weight:700}tr.tot td{background:#eef2ff;font-weight:700;color:#3730a3;font-size:12px}.am{color:#b45309}.n{color:#64748b;font-size:10px;margin:3px 0;line-height:1.5}.map{width:100%;border:1px solid #e2e8f0;border-radius:8px}
@@ -10956,12 +11025,20 @@ function hwpxH2(D,t){hwpxP(D,t,{c:10,pp:26})}
 /* 2026-11-15 쪽 넘음: 글자처럼 취급(treatAsChar=1)한 표는 한글에서 쪽을 못 나눠 아래로 넘침 → 12줄 넘는 표(또는 o.split)는 본문 표(treatAsChar=0)로 두어 쪽마다 나뉘고 머리 줄이 되풀이됨 */
 function hwpxTable(D,rows,o){o=o||{};rows=rows.filter(r=>r&&r.length);if(!rows.length)return;const head=o.head||0;
  const nc=Math.max(...rows.map(r=>r.reduce((s,x)=>s+((x&&x.span)||1),0)));
- let w=o.w&&o.w.length===nc?o.w.slice():null;
- if(!w){w=Array(nc).fill(0);rows.forEach(r=>{let ci=0;r.forEach(x=>{const sp=(x&&x.span)||1;if(sp===1){const t=typeof x==='object'&&x?(x.t??(x.ps||[]).map(p=>p.t).join('\n')):String(x??'');const L=Math.max(...String(t).split('\n').map(s=>[...s].reduce((a,ch)=>a+(ch.charCodeAt(0)>255?2:1),0)),2);w[ci]=Math.max(w[ci],Math.min(L,40))}ci+=sp})});w=w.map(v=>Math.max(v,4))}
- const tw=o.width||HWPX.W,sw=w.reduce((a,b)=>a+b,0);
- /* 칸 폭(2026-11-15 한글에서 'MOP004'·'100mm' 첫 칸 줄바꿈): 글자 수 비율만 쓰면 칸이 많을 때 짧은 칸이 안 여백(좌우 510)에 먹혀 줄이 바뀜 →
-    칸마다 '글자 폭(반각 1자 ≈ 470) + 안 여백'을 먼저 주고 남는 폭만 글자 수 비율로 나눔(모자라면 최소 폭 비율) */
- const mn=w.map(v=>v*470+1100),smn=mn.reduce((a,b)=>a+b,0),cw=smn<=tw?mn.map((m,i)=>Math.floor(m+(tw-smn)*w[i]/sw)):mn.map(m=>Math.floor(tw*m/smn));cw[nc-1]+=tw-cw.reduce((a,b)=>a+b,0);
+ const tw=o.width||HWPX.W;let cw;
+ if(o.w&&o.w.length===nc){const w=o.w,sw=w.reduce((a,b)=>a+b,0);cw=w.map(v=>Math.floor(tw*v/sw))}
+ else{/* 칸 폭(2026-11-15 사용자 '한글표도 안 밀리게'): 9pt 글자의 실제 폭(한글 ≈920, 숫자·영문 ≈520~620, 띄어쓰기 ≈280)으로 칸마다
+    '줄 안 바꿈 폭'을 재고, 긴 설명 칸(한 줄 6,000 넘음)만 낱말 단위로 줄을 바꿀 수 있게 함 → 숫자·짧은 칸은 줄이 안 바뀜.
+    모자라면 긴 설명 칸부터 줄이고, 그래도 넘칠 때만 전체를 비율로 줄임 */
+  const cwd=t=>[...String(t)].reduce((a,ch)=>{const c=ch.charCodeAt(0);return a+(c>0x2000?920:ch===' '?280:/[mwMW%@]/.test(ch)?760:/[A-Z]/.test(ch)?640:/[.,:;'|!il]/.test(ch)?300:545)},0),PAD=1020+300;
+  const full=Array(nc).fill(0),word=Array(nc).fill(0);
+  rows.forEach(r=>{let ci=0;r.forEach(x=>{const sp=(x&&x.span)||1;if(sp===1){const t=typeof x==='object'&&x?(x.t??(x.ps||[]).map(p=>p.t).join('\n')):String(x??'');
+   String(t).split('\n').forEach(l=>{full[ci]=Math.max(full[ci],cwd(l));l.split(/\s+/).forEach(wd=>{word[ci]=Math.max(word[ci],cwd(wd))})})}ci+=sp})});
+  const wrap=full.map((v,i)=>v>6000&&word[i]<v*.7),want=full.map(v=>Math.max(v,1400)+PAD),need=full.map((v,i)=>(wrap[i]?Math.max(Math.min(word[i],6000),3000):Math.max(v,1400))+PAD),sw=want.reduce((a,b)=>a+b,0),sn=need.reduce((a,b)=>a+b,0);
+  if(sw<=tw)cw=want.map(v=>Math.floor(v+(tw-sw)*v/sw));
+  else if(sn<=tw){const room=tw-sn,gap=want.map((v,i)=>wrap[i]?v-need[i]:0),sg=gap.reduce((a,b)=>a+b,0)||1;cw=need.map((v,i)=>Math.floor(v+room*gap[i]/sg))}
+  else cw=need.map(v=>Math.floor(tw*v/sn))}
+ cw[nc-1]+=tw-cw.reduce((a,b)=>a+b,0);
  const tid=1e8+Math.floor(Math.random()*9e8);let x=`<hp:tbl id="${tid}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="${head?1:0}" rowCnt="${rows.length}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${rows.length*282}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="${(o.split??rows.length>12)?0:1}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
  rows.forEach((r,ri)=>{x+='<hp:tr>';let ci=0;r.forEach(cell=>{const C=cell!=null&&typeof cell==='object'?cell:{t:cell};const sp=Math.min(C.span||1,nc-ci),hd=ri<head;
   const ps=C.ps||[{t:C.t??'',c:C.c??(hd?13:12),pp:C.pp??(hd?24:23)}],bf=C.bf??(hd?4:3);let wd=0;for(let k=ci;k<ci+sp;k++)wd+=cw[k];
