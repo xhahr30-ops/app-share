@@ -1675,6 +1675,7 @@ html.dark svg.ri{color:var(--cd)!important}
   <div class="sbtns"><button id="pgRun" type="button" class="btn">🧭 찾기·지도 표시</button><button id="pgHw" type="button" class="btn ol">📝 한글(HWPX) 보고서</button><button id="pgXl" type="button" class="btn ol">⬇ 엑셀</button><button id="pgOff" type="button" class="btn ol">🙈 지도 표시 지우기</button></div>
   <p class="hint" id="pgMsg"></p>
   <div id="pgSum"></div>
+  <details id="pgChD" style="margin:2px 0 4px"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">📊 그래프 (항목별 · 거리별 · 소블록별)</summary><div id="pgCh"></div></details>
   <div class="g2" id="pgFilt" hidden><label class="f">목록 항목<select id="pgK"></select></label><label class="f">확인 상태<select id="pgSt"></select></label></div>
   <div id="pgEd" hidden style="border:1px solid var(--line);border-left:4px solid #e11d48;border-radius:8px;padding:6px 8px;margin:4px 0;font-size:12.5px"></div>
   <div id="pgTbl"></div>
@@ -10936,12 +10937,13 @@ function hwpxP(D,text,o){o=o||{};const c=o.c??7,pp=o.pp??20;String(text??'').spl
 function hwpxTitle(D,t){if(D.first==null){D.first={t,c:9,pp:21};D.txt.push(t)}else hwpxP(D,t,{c:9,pp:21})}
 function hwpxH2(D,t){hwpxP(D,t,{c:10,pp:26})}
 /* 표: rows = [[칸,..],..], 칸 = 글자 또는 {t, ps:[{t,c,pp}], c, pp, bf, span}. o.head = 머리 줄 수, o.w = 칸 너비 비율 */
+/* 2026-11-15 쪽 넘음: 글자처럼 취급(treatAsChar=1)한 표는 한글에서 쪽을 못 나눠 아래로 넘침 → 12줄 넘는 표(또는 o.split)는 본문 표(treatAsChar=0)로 두어 쪽마다 나뉘고 머리 줄이 되풀이됨 */
 function hwpxTable(D,rows,o){o=o||{};rows=rows.filter(r=>r&&r.length);if(!rows.length)return;const head=o.head||0;
  const nc=Math.max(...rows.map(r=>r.reduce((s,x)=>s+((x&&x.span)||1),0)));
  let w=o.w&&o.w.length===nc?o.w.slice():null;
  if(!w){w=Array(nc).fill(0);rows.forEach(r=>{let ci=0;r.forEach(x=>{const sp=(x&&x.span)||1;if(sp===1){const t=typeof x==='object'&&x?(x.t??(x.ps||[]).map(p=>p.t).join('\n')):String(x??'');const L=Math.max(...String(t).split('\n').map(s=>[...s].reduce((a,ch)=>a+(ch.charCodeAt(0)>255?2:1),0)),2);w[ci]=Math.max(w[ci],Math.min(L,40))}ci+=sp})});w=w.map(v=>Math.max(v,4))}
  const tw=o.width||HWPX.W,sw=w.reduce((a,b)=>a+b,0),cw=w.map(v=>Math.floor(tw*v/sw));cw[nc-1]+=tw-cw.reduce((a,b)=>a+b,0);
- const tid=1e8+Math.floor(Math.random()*9e8);let x=`<hp:tbl id="${tid}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="${head?1:0}" rowCnt="${rows.length}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${rows.length*282}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
+ const tid=1e8+Math.floor(Math.random()*9e8);let x=`<hp:tbl id="${tid}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="${head?1:0}" rowCnt="${rows.length}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${rows.length*282}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="${(o.split??rows.length>12)?0:1}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
  rows.forEach((r,ri)=>{x+='<hp:tr>';let ci=0;r.forEach(cell=>{const C=cell!=null&&typeof cell==='object'?cell:{t:cell};const sp=Math.min(C.span||1,nc-ci),hd=ri<head;
   const ps=C.ps||[{t:C.t??'',c:C.c??(hd?13:12),pp:C.pp??(hd?24:23)}],bf=C.bf??(hd?4:3);let wd=0;for(let k=ci;k<ci+sp;k++)wd+=cw[k];
   const inner=ps.flatMap(p=>String(p.t??'').split('\n').map(l=>hwPx(D,hwR(l,p.c??12),p.pp??23))).join('');
@@ -14099,11 +14101,22 @@ try{PG.rec=JSON.parse(localStorage.getItem(PG.kr)||'[]')||[]}catch(_){PG.rec=[]}
 function pgSave(){try{localStorage.setItem(PG.k,JSON.stringify({c:PG.c,on:PG.on}))}catch(_){}}
 function pgRecSave(){try{localStorage.setItem(PG.kr,JSON.stringify(PG.rec))}catch(_){alert('기록을 저장하지 못했습니다 (저장 공간 부족일 수 있음).')}pgRecN()}
 /* 항목: [이름, 색, 번호 앞글자, 짧은 이름] */
-const PG_IT={cu:['수용가에서 관로까지 먼 곳','#dc2626','A','수용가 먼 곳'],dg:['끊긴 관로 끝','#7c3aed','B','끊긴 끝'],dj:['관경 급변','#0891b2','C','관경 급변'],at:['속성 빈 관로','#64748b','D','빈 속성'],fc:['관로에서 떨어진 시설물','#0f766e','E','시설물 어긋남'],lk:['누수탐사·민원 지점 근처 관로 없음','#db2777','F','누수·민원 지점'],ng:['관망해석 부압','#1d4ed8','G','부압'],bk:['관로 소블록명 ≠ 경계','#a16207','H','소블록명 다름']};
+const PG_IT={cu:['수용가에서 관로까지 먼 곳','#dc2626','A','수용가 먼 곳'],dg:['끊긴 관로 끝','#7c3aed','B','끊긴 끝'],dj:['관경 급변','#0891b2','C','관경 급변'],at:['속성 빈 관로','#c2410c','D','빈 속성'],fc:['관로에서 떨어진 시설물','#15803d','E','시설물 어긋남'],lk:['누수탐사·민원 지점 근처 관로 없음','#db2777','F','누수·민원 지점'],ng:['관망해석 부압','#2563eb','G','부압'],bk:['관로 소블록명 ≠ 경계','#a16207','H','소블록명 다름']};
 const PG_ITS=Object.keys(PG_IT);
 const PG_ST={'':['확인 전','#94a3b8'],miss:['관로 누락 — 추가 필요','#dc2626'],fix:['관로 위치·속성 고칠 것','#ea580c'],addr:['주소·좌표 오차','#f59e0b'],vil:['마을상수도·자가수도 (관망 밖)','#65a30d'],ok:['문제 없음 (맞음)','#16a34a'],done:['관망도 반영 완료','#2563eb']};
 /* 수용가 거리 구간 색 (기준 1·2·3·4번째…) */
 const PG_BAND=['#f59e0b','#ea580c','#dc2626','#7f1d1d','#450a0a'];
+/* 2026-11-15 항목마다 모양: ■ 수용가(정사각, 사용자 요청) · ▲ 끊긴 끝 · ▼ 관경 급변 · ● 빈 속성 · ◆ 시설물 · ★ 누수·민원 · ⬢ 부압 · ✚ 소블록명 (색약이어도 모양으로 구분) */
+const PG_SH={cu:'sq',dg:'tri',dj:'itri',at:'cir',fc:'dia',lk:'star',ng:'hex',bk:'plus'};
+/* 모양 꼭짓점 (가운데 x,y · 바깥 반지름 r 안에 들어감) */
+function pgPts(sh,x,y,r){const P=(n,a0,rr)=>Array.from({length:n},(_,i)=>{const a=a0+i*2*Math.PI/n;return[x+rr*Math.cos(a),y+rr*Math.sin(a)]});
+ if(sh==='tri')return P(3,-Math.PI/2,r).map(([a,b])=>[a,b+r*.18]);if(sh==='itri')return P(3,Math.PI/2,r).map(([a,b])=>[a,b-r*.18]);if(sh==='sq'){const k=r*.8;return[[x-k,y-k],[x+k,y-k],[x+k,y+k],[x-k,y+k]]}
+ if(sh==='dia')return P(4,-Math.PI/2,r);if(sh==='hex')return P(6,0,r*.95);if(sh==='star'){const o=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)])}return o}
+ if(sh==='plus'){const k=r*.34,m=r*.92;return[[x-k,y-m],[x+k,y-m],[x+k,y-k],[x+m,y-k],[x+m,y+k],[x+k,y+k],[x+k,y+m],[x-k,y+m],[x-k,y+k],[x-m,y+k],[x-m,y-k],[x-k,y-k]]}return null}
+function pgPath(c,sh,x,y,r){const q=pgPts(sh,x,y,r);if(!q){c.arc(x,y,r*.85,0,Math.PI*2);return}q.forEach(([a,b],i)=>i?c.lineTo(a,b):c.moveTo(a,b));c.closePath()}
+function pgSvg(sh,col,sz){sz=sz||14;const h=sz/2,q=pgPts(sh,h,h,h-1.5);return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" style="vertical-align:-2px;flex:none">${q?`<path d="${q.map(([a,b],i)=>(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)).join('')}Z"`:`<circle cx="${h}" cy="${h}" r="${(h-1.5)*.85}"`} fill="${col}" stroke="#0f172a" stroke-width="1"/></svg>`}
+/* 지도 캔버스용 모양 점 (Leaflet CircleMarker 그리기만 바꿈 · 반지름 = 바깥 크기라 다시 그리기 범위 안) */
+function pgMark(ll,o){if(!PG.MK)PG.MK=L.CircleMarker.extend({_updatePath(){const R=this._renderer;if(!R||!R._drawing||this._empty())return;const c=R._ctx;c.beginPath();pgPath(c,this.options.sh,this._point.x,this._point.y,this._radius);R._fillStroke(c,this)}});return new PG.MK(ll,o)}
 function pgTh(){const T=[...new Set(String(PG.c.T||'').split(/[,\s·]+/).map(Number).filter(v=>v>0))].sort((a,b)=>a-b);return T.length?T:[50,100,200]}
 const pgR1=v=>Math.round(v*10)/10,pgM=v=>v==null||!isFinite(v)?'-':(v>=100?Math.round(v):pgR1(v)).toLocaleString();
 /* 가장 가까운 관로 토막 + 그 위 가장 가까운 점 (ok(fi) = 쓸 관로) */
@@ -14196,11 +14209,11 @@ async function pgRun(){const msg=$('pgMsg');pgReadUi();pgSrcMsg();PG.ed=-1;$('pg
  res.sort((a,b)=>PG_ITS.indexOf(a.it)-PG_ITS.indexOf(b.it)||parseInt(a.no.slice(1))-parseInt(b.no.slice(1)));
  PG.res=res;PG.info=info;PG.its=its;PG.at=Date.now();PG.how=c.scope==='blk'?'소블록 '+pgPre().join(', '):c.scope==='view'?'지금 지도 화면':'전체';pgRecAttach();PG.lim=200;
  const nb=new Set(res.map(r=>r.b)).size;msg.textContent=`후보 ${res.length.toLocaleString()}곳 · 소블록 ${nb.toLocaleString()}개 (${PG.how} · ${((Date.now()-t0)/1000).toFixed(1)}초)`+its.filter(k=>info[k]&&info[k].none).map(k=>` · ${PG_IT[k][3]}: 자료 없음`).join('');
- PG.on=true;pgSave();pgSumHtml();pgTable();pgDraw(true)}
+ PG.on=true;pgSave();pgSumHtml();pgTable();pgDraw(true);if($('pgChD').open)pgChartHtml()}
 /* ---------- 요약·목록 ---------- */
 function pgCnt(L){const A={};PG_ITS.forEach(k=>A[k]=0);for(const r of L)A[r.it]++;return A}
 function pgSumHtml(){const el=$('pgSum');if(!PG.res){el.innerHTML='';$('pgFilt').hidden=true;return}$('pgFilt').hidden=false;const A=pgCnt(PG.res),I=PG.info;
- const card=(k,sub)=>`<div style="flex:1 1 30%;min-width:104px;border:1px solid var(--line);border-left:4px solid ${PG_IT[k][1]};border-radius:8px;padding:5px 7px;cursor:pointer" data-k="${k}" title="이 항목만 목록에"><small style="color:var(--mute)">${PG_IT[k][2]}. ${PG_IT[k][3]}</small><br><b style="font-size:15px">${I[k]&&I[k].none?'<span class="c-rd" style="font-size:12px">자료 없음</span></b>':A[k].toLocaleString()+'</b> <small>곳</small>'}${sub?`<br><small>${sub}</small>`:''}</div>`;
+ const card=(k,sub)=>`<div style="flex:1 1 30%;min-width:104px;border:1px solid var(--line);border-left:4px solid ${PG_IT[k][1]};border-radius:8px;padding:5px 7px;cursor:pointer" data-k="${k}" title="이 항목만 목록에"><small style="color:var(--mute)">${pgSvg(PG_SH[k],PG_IT[k][1],13)} ${PG_IT[k][2]}. ${PG_IT[k][3]}</small><br><b style="font-size:15px">${I[k]&&I[k].none?'<span class="c-rd" style="font-size:12px">자료 없음</span></b>':A[k].toLocaleString()+'</b> <small>곳</small>'}${sub?`<br><small>${sub}</small>`:''}</div>`;
  const cu=I.cu?I.cu.T.map((t,i)=>`<span style="color:${PG_BAND[Math.min(i,PG_BAND.length-1)]}">●</span>${t}m↑ ${I.cu.cnt[i].toLocaleString()}`).join(' · ')+`<br><small>수용가 ${I.cu.far.toLocaleString()}곳 → 구간 ${I.cu.grp.toLocaleString()}개${I.cu.ad?' · 인근대체 '+I.cu.ad:''}</small>`:'';
  const st={};for(const r of PG.res){const s=pgStOf(r);st[s]=(st[s]||0)+1}
  el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin:4px 0" id="pgCards">${PG.its.map(k=>card(k,k==='cu'?cu:k==='ng'&&I.ng&&!I.ng.none?esc(I.ng.pan):k==='dg'&&I.dg?`${I.dg.gap}m 안`:k==='fc'&&I.fc&&!I.fc.none?`${I.fc.X}m 넘게`:k==='lk'&&I.lk&&!I.lk.none?`${I.lk.X}m 넘게`:'')).join('')}</div>
@@ -14209,14 +14222,14 @@ function pgList(){const K=PG.c.K||'*',S=PG.c.St||'*';return (PG.res||[]).filter(
 function pgTgTxt(r,n){const t=r.tg||[];n=n||6;return t.slice(0,n).join(', ')+(t.length>n?` 외 ${t.length-n}`:'')}
 function pgTable(){const el=$('pgTbl');if(!PG.res){el.innerHTML='';return}const L=pgList(),n=Math.min(L.length,PG.lim);
  el.innerHTML=L.length?`<div style="overflow:auto;max-height:440px"><table class="bt" style="white-space:nowrap"><thead><tr><th>번호</th><th>항목</th><th>소블록</th><th>값</th><th title="수용가 = 관리번호 · 관로 = 관로 관리번호 · 시설물 = 이름·번호">대상</th><th>확인 상태</th><th></th></tr></thead><tbody>${L.slice(0,n).map(r=>{const i=PG.res.indexOf(r),s=pgStOf(r),cl=r.it==='cu'?PG_BAND[Math.min(r.bd,PG_BAND.length-1)]:PG_IT[r.it][1];
-  return `<tr><td><a href="#" class="pgGo" data-i="${i}"><b style="color:${cl}">${r.no}</b></a></td><td>${PG_IT[r.it][3]}</td><td>${esc(r.b)}</td><td>${esc(r.vt)}</td><td><small>${esc(pgTgTxt(r))}</small>${r.note?`<br><small style="color:var(--mute)">${esc(r.note)}</small>`:''}</td><td><b style="color:${PG_ST[s][1]}">${PG_ST[s][0]}</b>${r.rec&&r.rec.memo?`<br><small>${esc(r.rec.memo.slice(0,40))}</small>`:''}</td><td><button type="button" class="btn ol pgEdB" data-i="${i}" style="width:auto;min-height:24px;padding:1px 6px;font-size:12px" title="현장 확인 기록">✏</button> <button type="button" class="btn ol pgFe" data-i="${i}" style="width:auto;min-height:24px;padding:1px 6px;font-size:12px" title="${r.it==='fc'?'시설물 편집 열기':r.fi>=0?'이 관로 편집':'여기서 새 관로 그리기'}">🛠</button></td></tr>`}).join('')}</tbody></table></div>${L.length>n?`<div class="sbtns"><button type="button" class="btn ol" id="pgMore">더 보기 (${n.toLocaleString()}/${L.length.toLocaleString()})</button></div>`:''}`:'<p class="hint">해당하는 후보가 없습니다.</p>'}
+  return `<tr><td>${pgSvg(PG_SH[r.it],cl,12)} <a href="#" class="pgGo" data-i="${i}"><b style="color:${cl}">${r.no}</b></a></td><td>${PG_IT[r.it][3]}</td><td>${esc(r.b)}</td><td>${esc(r.vt)}</td><td><small>${esc(pgTgTxt(r))}</small>${r.note?`<br><small style="color:var(--mute)">${esc(r.note)}</small>`:''}</td><td><b style="color:${PG_ST[s][1]}">${PG_ST[s][0]}</b>${r.rec&&r.rec.memo?`<br><small>${esc(r.rec.memo.slice(0,40))}</small>`:''}</td><td><button type="button" class="btn ol pgEdB" data-i="${i}" style="width:auto;min-height:24px;padding:1px 6px;font-size:12px" title="현장 확인 기록">✏</button> <button type="button" class="btn ol pgFe" data-i="${i}" style="width:auto;min-height:24px;padding:1px 6px;font-size:12px" title="${r.it==='fc'?'시설물 편집 열기':r.fi>=0?'이 관로 편집':'여기서 새 관로 그리기'}">🛠</button></td></tr>`}).join('')}</tbody></table></div>${L.length>n?`<div class="sbtns"><button type="button" class="btn ol" id="pgMore">더 보기 (${n.toLocaleString()}/${L.length.toLocaleString()})</button></div>`:''}`:'<p class="hint">해당하는 후보가 없습니다.</p>'}
 /* ---------- 지도 ---------- */
 function pgLayer(){if(!map)return null;if(!map.getPane('pgPane')){const p=map.createPane('pgPane');p.style.zIndex=633;p.style.pointerEvents='none'}if(!PG.cv)PG.cv=L.canvas({pane:'pgPane',padding:.3});if(!PG.L)PG.L=L.layerGroup();if(!map.hasLayer(PG.L))PG.L.addTo(map);return PG.L}
 function pgCol(r){return r.it==='cu'?PG_BAND[Math.min(r.bd,PG_BAND.length-1)]:PG_IT[r.it][1]}
 function pgDraw(fit){if(!map)return;const G=pgLayer();G.clearLayers();PG.hl=null;if(!PG.on||!PG.res)return;const B=[],K=PG.c.K||'*';
  for(const r of PG.res){if(K!=='*'&&r.it!==K)continue;const s=pgStOf(r),dim=s==='ok'||s==='done',col=dim?'#94a3b8':pgCol(r);
   if(r.to&&r.fr)L.polyline([r.fr,r.to],{renderer:PG.cv,color:col,weight:2,opacity:dim?.4:.85,dashArray:'4 4',interactive:false}).addTo(G);
-  L.circleMarker([r.lat,r.lng],{renderer:PG.cv,radius:r.it==='cu'?Math.min(5+Math.sqrt(r.n||1)*1.6,16):5.5,color:'#0f172a',weight:1.5,fillColor:col,fillOpacity:dim?.35:.9,opacity:dim?.4:1,interactive:false}).addTo(G);B.push([r.lat,r.lng])}
+  pgMark([r.lat,r.lng],{sh:PG_SH[r.it],renderer:PG.cv,radius:r.it==='cu'?Math.min(6+Math.sqrt(r.n||1)*1.6,17):r.it==='lk'?9:7.5,color:'#0f172a',weight:1.5,fillColor:col,fillOpacity:dim?.35:.9,opacity:dim?.4:1,interactive:false}).addTo(G);B.push([r.lat,r.lng])}
  if(fit&&B.length&&PG.c.scope!=='view'){try{map.fitBounds(L.latLngBounds(B),{padding:[30,30],maxZoom:17})}catch(_){}}}
 function pgShow(on){PG.on=!!on;pgSave();if(on&&!PG.res){if(PIPE.feats.length)pgRun().catch(e=>{$('pgMsg').textContent='⚠ '+e.message});return}pgDraw(false)}
 function pgGo(i){const r=PG.res&&PG.res[i];if(!r||!map)return;const G=pgLayer();if(PG.hl)G.removeLayer(PG.hl);
@@ -14260,7 +14273,7 @@ function pgInfoRows(){const c=PG.c,I=PG.info,H=typeof ELEV!=='undefined'&&ELEV.h
 function pgXlRows(L){return L.map(r=>{const s=pgStOf(r);return{'번호':r.no,'항목':PG_IT[r.it][0],'소블록':r.b,'값':r.vt,'수용가 수':r.it==='cu'?r.n:'','대상(관리번호)':(r.tg||[]).join(', '),'비고':r.note||'','위도':+r.lat.toFixed(r.it==='cu'?4:6),'경도':+r.lng.toFixed(r.it==='cu'?4:6),'확인 결과':PG_ST[s][0],'확인 메모':r.rec?r.rec.memo||'':'','확인자':r.rec?r.rec.by||'':'','확인 시각':r.rec&&r.rec.t?fmtDT(r.rec.t):''}})}
 function pgXl(){if(!PG.res){alert('먼저 🧭 찾기를 누르세요.');return}const wb=XLSX.utils.book_new(),A=(r,n)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r.length?r:[{'':'없음'}]),n),T=PG.info.cu?PG.info.cu.T:[];
  A(pgBlkRows().map(o=>{const x={'소블록':o.b,'겹친 항목 수':o.k,'후보 합계':o.n,'고칠 곳(확인 전 포함)':o.open,'문제 없음·반영 완료':o.done};T.forEach((t,i)=>x[`수용가 ${t}m↑(곳)`]=o.cuT[i]);PG.its.forEach(k=>x[PG_IT[k][2]+'. '+PG_IT[k][3]]=o.c[k]||0);return x}),'소블록 요약');
- A(pgXlRows(PG.res),'후보 목록');A(pgInfoRows().map(([a,b])=>({'항목':a,'값':b})),'기준');if(PG.rec.length)A(pgRecRows(),'현장 확인 기록');
+ A(pgXlRows(PG.res),'후보 목록');A(pgInfoRows().map(([a,b])=>({'항목':a,'값':b})),'기준');A(PG.its.map(k=>({'항목':PG_IT[k][2]+'. '+PG_IT[k][0],'의미·가능한 원인':PG_OP[k][0],'현장 확인':PG_OP[k][1],'조치 (관망도 반영)':PG_OP[k][2],'참고 기준':PG_REF+' (조항·수치 원문 확인 필요)'})),'검토 의견');if(PG.rec.length)A(pgRecRows(),'현장 확인 기록');
  XLSX.writeFile(wb,`관망도업데이트구간_${SITE.short||SITE.name}_${fmtD(Date.now())}.xlsx`,{compression:true})}
 /* ---------- 소블록 위치도 (배경 지도 없이 캔버스로: 관로 회색 · 경계 주황 점선 · 바깥 흐림 · 후보 번호) ---------- */
 async function pgBlkImg(b,L){const g=poly&&poly.features?poly.features.find(f=>bNorm(blkNm(f))===b):null,rings=[];
@@ -14276,26 +14289,63 @@ async function pgBlkImg(b,L){const g=poly&&poly.features?poly.features.find(f=>b
   c.beginPath();rings.forEach(r=>{r.forEach(([x,y],k)=>k?c.lineTo(X(x),Y(y)):c.moveTo(X(x),Y(y)));c.closePath()});c.setLineDash([12,7]);c.strokeStyle='#ea580c';c.lineWidth=3.5;c.stroke();c.setLineDash([])}
  const F=(sz,w)=>`${w||700} ${sz}px "Noto Sans KR","Malgun Gothic",sans-serif`;
  L.forEach((r,k)=>{const x=X(P[k][0]),y=Y(P[k][1]),col=pgCol(r);if(r.to&&r.fr){const a=toM(r.fr[1],r.fr[0]),t=toM(r.to[1],r.to[0]);c.setLineDash([6,5]);c.strokeStyle=col;c.lineWidth=2;c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(t[0]),Y(t[1]));c.stroke();c.setLineDash([])}
-  c.beginPath();c.arc(x,y,r.it==='cu'?Math.min(7+Math.sqrt(r.n||1)*2,20):7,0,Math.PI*2);c.fillStyle=col;c.fill();c.lineWidth=2;c.strokeStyle='#0f172a';c.stroke()});
+  c.beginPath();pgPath(c,PG_SH[r.it],x,y,r.it==='cu'?Math.min(8+Math.sqrt(r.n||1)*2,21):r.it==='lk'?11:9);c.fillStyle=col;c.fill();c.lineWidth=1.8;c.strokeStyle='#0f172a';c.stroke()});
  c.font=F(17);c.textBaseline='middle';c.lineJoin='round';{const bx=[];let skip=0;L.forEach((r,k)=>{const x=X(P[k][0])+11,y=Y(P[k][1])-11,w=c.measureText(r.no).width,q=[x-2,y-11,x+w+2,y+11];if(bx.some(o=>q[0]<o[2]&&q[2]>o[0]&&q[1]<o[3]&&q[3]>o[1])){skip++;return}bx.push(q);c.lineWidth=4;c.strokeStyle='#fff';c.strokeText(r.no,x,y);c.fillStyle='#0f172a';c.fillText(r.no,x,y)});
   if(skip){c.font=F(14,500);const t=`번호 겹친 ${skip}곳은 글자 생략 (아래 표 참고)`,w=c.measureText(t).width;c.fillStyle='rgba(255,255,255,.9)';c.fillRect(W-w-28,8,w+20,26);c.fillStyle='#475569';c.fillText(t,W-w-18,21)}}
  /* 범례·축척 */
- const its=[...new Set(L.map(r=>r.it))],lg=its.map(k=>[PG_IT[k][2]+'. '+PG_IT[k][3],PG_IT[k][1]]);if(its.includes('cu')&&PG.info.cu)lg.splice(its.indexOf('cu'),1,...PG.info.cu.T.map((t,i)=>[`A. 수용가 ${t}m↑`,PG_BAND[Math.min(i,PG_BAND.length-1)]]));
+ const its=[...new Set(L.map(r=>r.it))],lg=its.map(k=>[PG_IT[k][2]+'. '+PG_IT[k][3],PG_IT[k][1],PG_SH[k]]);if(its.includes('cu')&&PG.info.cu)lg.splice(its.indexOf('cu'),1,...PG.info.cu.T.map((t,i)=>[`A. 수용가 ${t}m↑`,PG_BAND[Math.min(i,PG_BAND.length-1)],'cir']));
  c.font=F(16,500);const lw=Math.max(...lg.map(x=>c.measureText(x[0]).width))+46,lh=24*lg.length+46;c.fillStyle='rgba(255,255,255,.92)';c.fillRect(12,H-lh-12,lw,lh);c.strokeStyle='#94a3b8';c.lineWidth=1;c.strokeRect(12,H-lh-12,lw,lh);
- lg.forEach(([t,col],i)=>{const y=H-lh+8+i*24;c.beginPath();c.arc(30,y,7,0,Math.PI*2);c.fillStyle=col;c.fill();c.strokeStyle='#0f172a';c.lineWidth=1.5;c.stroke();c.fillStyle='#0f172a';c.fillText(t,44,y)});
+ lg.forEach(([t,col,sh],i)=>{const y=H-lh+8+i*24;c.beginPath();pgPath(c,sh,30,y,9);c.fillStyle=col;c.fill();c.strokeStyle='#0f172a';c.lineWidth=1.5;c.stroke();c.fillStyle='#0f172a';c.fillText(t,44,y)});
  {const y=H-30;c.strokeStyle='#ea580c';c.setLineDash([10,6]);c.lineWidth=3;c.beginPath();c.moveTo(22,y);c.lineTo(40,y);c.stroke();c.setLineDash([]);c.fillStyle='#0f172a';c.fillText('소블록 경계',44,y)}
  {const m=[50,100,200,500,1000,2000].find(v=>v*sc>=90)||2000,px=m*sc,x=W-px-24,y=H-24;c.strokeStyle='#0f172a';c.lineWidth=3;c.beginPath();c.moveTo(x,y-6);c.lineTo(x,y);c.lineTo(x+px,y);c.lineTo(x+px,y-6);c.stroke();c.font=F(15);c.textAlign='center';c.fillText(m>=1000?m/1000+'km':m+'m',x+px/2,y-14);c.textAlign='left'}
  c.font=F(22);c.fillStyle='#0f172a';c.fillText(b+' 관망도 업데이트 후보',16,26);
  const bl=await new Promise(res=>cv.toBlob(res,'image/jpeg',.9));if(!bl)return null;return{bytes:new Uint8Array(await bl.arrayBuffer()),w:W,h:H}}
+/* ---------- 전문가 검토 의견 (2026-11-15 사용자: 모든 보고서는 상수도관망 최고 전문가가 상수도시설기준·상수도관망관리 매뉴얼을 참고해 작성)
+   기준 원문(조항·수치)은 첨부 자료가 없어 넣지 않음 → '원문 확인 필요'. 앱 숫자만 씀 */
+const PG_REF='상수도설계기준(KDS 57 00 00, 옛 상수도시설기준, 환경부) 관로·배수시설 편 · 상수도관망관리 매뉴얼(환경부) 관망도 정비·블록(소블록) 관리 편';
+const PG_OP={
+ cu:['GIS 관망도에 급수·배수관이 빠졌거나(신설·이설 미반영), 주소 좌표가 지번 중심점이라 실제 수도계량기와 떨어졌거나, 마을상수도·자가수도처럼 관망 밖 수용가일 수 있음','수도계량기 실제 위치·급수 인입 경로 현장 확인, 급수공사 대장·준공도면과 대조','누락 관로는 관경·재질·설치연도 속성과 함께 GIS에 추가하고 배수관과 연결(위상) · 주소 오차는 수용가 좌표 보정 · 관망 밖이면 사용자블록으로 구분'],
+ dg:['도면상 연결 누락(위상 오류·스냅 미흡) 또는 실제 관말','이토밸브·관말 표시 여부, 준공도면의 이음 위치 확인','연결 누락은 끝점을 이어 위상을 정정(관망해석 모델에도 반영) · 실제 관말은 관말로 표시하고 정체수 관리(이토·세척) 대상에 포함'],
+ dj:['편락관 등 실제 이형관일 수 있으나, 관경 속성 오기이거나 관로 일부만 갱신된 흔적일 수 있음','준공도면·교체공사 이력의 관경 확인, 필요하면 밸브실·맨홀에서 관경 확인','오기는 관경 속성 정정 · 실제 축소 구간은 수리적 병목 여부를 관망해석으로 검토'],
+ at:['관경·재질·설치연도가 비었거나 설치일자가 1900(미상 기입)인 관로 — 노후도 평가·관망해석·갱신 우선순위 산정의 기초가 비어 있음','공사 대장·준공도면·교체 이력 대조, 현장 굴착 때 확인','확인한 값으로 속성 보완 · 끝내 모를 때는 미상으로 명시해 기준연도 추정과 구분'],
+ fc:['밸브·소화전 등의 GIS 위치가 관로와 어긋남 — 단수구역 산정·밸브 조작 판단을 그르칠 수 있음','현장 밸브 위치(밸브 뚜껑) 측위, 관로 위치와 함께 확인','시설물을 관로 위로 옮기거나 관로 위치를 정정 · 밸브는 개폐 상태도 함께 갱신'],
+ lk:['누수·민원이 난 곳 근처에 관로가 없음 — 관로 누락 가능성이 높은 곳','누수 수리 기록(관경·재질)·현장 사진과 대조','누락 관로를 우선 GIS에 추가하고 누수 이력을 관로에 연결'],
+ ng:['관망해석에서 수압이 0 미만 — 실제 부압이면 역류·오염 위험(위생 문제)이지만, 대개 모델의 표고 오류·관로 누락·연결 오류·밸브 상태·수요 과다 배분 신호','절점 표고(지형 대비)·관로 연결·밸브 개폐 확인, 가까운 소화전·수압계로 실측 수압 비교','모델·관망도 오류를 먼저 정정한 뒤 다시 해석 · 실측으로도 수압이 부족하면 관경·배수계통 개선 검토'],
+ bk:['관로 속성의 소블록명이 지금 소블록 경계와 다름 — 블록 개편 뒤 속성 미갱신이거나 경계 근처 관로의 귀속 오류','블록 개편 이력·별칭표 확인','소블록 코드 체계를 하나로 맞추고(별칭표) 관로 속성 일괄 갱신 · 경계 근처는 경계밸브 기준으로 귀속 판단']};
+/* ---------- 📊 그래프 (가로 막대 · 쌓은 막대): 캔버스 → JPG(보고서) / dataURL(창) ----------
+   막대 끝만 둥글게 4px · 쌓은 조각 사이 흰 틈 2px · 값 글자는 검정(막대 색 아님) · 2개 이상 항목은 범례(모양+색) */
+function pgHBar(o){const W=o.W||1400,F=(sz,w)=>`${w||500} ${sz}px "Noto Sans KR","Malgun Gothic",sans-serif`,R=o.rows.filter(r=>r.segs.some(s=>s.v>0));if(!R.length)return null;
+ const bh=o.bh||26,gap=o.gap||12,top=56+(o.legend&&o.legend.length>1?34:0),H=top+R.length*(bh+gap)+40,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,W,H);
+ c.font=F(16);const lw=Math.min(300,Math.max(...R.map(r=>c.measureText(r.label).width))+(R.some(r=>r.sh)?30:8)),x0=lw+24,x1=W-110,tot=r=>r.segs.reduce((a,s)=>a+Math.max(0,s.v),0),mx=Math.max(...R.map(tot));
+ const st=(()=>{const e=Math.pow(10,Math.floor(Math.log10(mx||1))),f=mx/e;return(f<=2?.25:f<=5?.5:1)*e})(),top2=Math.ceil(mx/st)*st||1,X=v=>x0+(x1-x0)*v/top2;
+ c.fillStyle='#0f172a';c.font=F(22,700);c.textBaseline='middle';c.fillText(o.title,16,24);if(o.sub){const tw=c.measureText(o.title).width;c.font=F(14);c.fillStyle='#64748b';c.fillText(o.sub,16+tw,24)}
+ if(o.legend&&o.legend.length>1){let lx=16;c.font=F(15);o.legend.forEach(g=>{c.beginPath();pgPath(c,g.sh||'sq',lx+8,62,8);c.fillStyle=g.col;c.fill();c.strokeStyle='#0f172a';c.lineWidth=1;c.stroke();c.fillStyle='#334155';c.fillText(g.name,lx+22,62);lx+=c.measureText(g.name).width+46})}
+ c.strokeStyle='#e2e8f0';c.lineWidth=1;c.font=F(13);c.fillStyle='#64748b';c.textAlign='center';for(let v=0;v<=top2+1e-9;v+=st){const x=Math.round(X(v))+.5;c.beginPath();c.moveTo(x,top-8);c.lineTo(x,H-30);c.stroke();c.fillText(v>=1000?v.toLocaleString():String(+v.toFixed(2)),x,H-16)}c.textAlign='left';
+ R.forEach((r,i)=>{const y=top+i*(bh+gap);c.font=F(16);c.fillStyle='#0f172a';c.textAlign='right';c.fillText(r.label,lw+(r.sh?-6:4),y+bh/2);c.textAlign='left';
+  if(r.sh){c.beginPath();pgPath(c,r.sh,lw+10,y+bh/2,9);c.fillStyle=r.col||'#64748b';c.fill();c.strokeStyle='#0f172a';c.lineWidth=1;c.stroke()}
+  let a=0;const segs=r.segs.filter(s=>s.v>0);segs.forEach((s,k)=>{const xa=X(a),xb=X(a+s.v),last=k===segs.length-1,w=Math.max(1,xb-xa-(last?0:2));c.fillStyle=s.col;c.beginPath();if(last&&c.roundRect)c.roundRect(xa,y,w,bh,[0,4,4,0]);else c.rect(xa,y,w,bh);c.fill();a+=s.v});
+  c.font=F(15,700);c.fillStyle='#0f172a';c.fillText((o.fmt||(v=>v.toLocaleString()))(tot(r)),X(a)+8,y+bh/2)});
+ c.strokeStyle='#94a3b8';c.beginPath();c.moveTo(x0+.5,top-8);c.lineTo(x0+.5,H-30);c.stroke();return cv}
+async function pgCvImg(cv){if(!cv)return null;const bl=await new Promise(res=>cv.toBlob(res,'image/jpeg',.92));return bl?{bytes:new Uint8Array(await bl.arrayBuffer()),w:cv.width,h:cv.height}:null}
+/* 보고서·창에 쓰는 그래프 묶음 */
+function pgCharts(W){if(!PG.res)return[];const B=o=>pgHBar(Object.assign({W},o));const I=PG.info,A=pgCnt(PG.res),out=[],its=PG.its.filter(k=>!(I[k]&&I[k].none)&&A[k]);
+ if(its.length)out.push({k:'items',cv:B({title:'항목별 후보 수',sub:'  (곳)',rows:its.map(k=>({label:PG_IT[k][2]+'. '+PG_IT[k][3],sh:PG_SH[k],col:PG_IT[k][1],segs:[{v:A[k],col:PG_IT[k][1]}]}))})});
+ if(I.cu&&I.cu.far)out.push({k:'cu',cv:B({title:'관로에서 떨어진 수용가 (거리 기준별)',sub:'  (수용가 곳 · 기준 이상 누적)',rows:I.cu.T.map((t,i)=>({label:`${t}m 이상`,segs:[{v:I.cu.cnt[i],col:PG_BAND[Math.min(i,PG_BAND.length-1)]}]}))})});
+ const BR=pgBlkRows().slice(0,15);if(BR.length>1)out.push({k:'blk',cv:B({title:'소블록별 후보 (겹친 항목 많은 순 15곳)',sub:'  (곳)',legend:its.map(k=>({name:PG_IT[k][3],col:PG_IT[k][1],sh:PG_SH[k]})),rows:BR.map(o=>({label:o.b,segs:its.map(k=>({v:o.c[k]||0,col:PG_IT[k][1]}))}))})});
+ const st={};for(const r of PG.res){const s=pgStOf(r);st[s]=(st[s]||0)+1}if(Object.keys(st).some(s=>s!==''))out.push({k:'st',cv:B({title:'현장 확인 결과',sub:'  (곳)',rows:Object.keys(PG_ST).filter(s=>st[s]).map(s=>({label:PG_ST[s][0],segs:[{v:st[s],col:PG_ST[s][1]}]}))})});
+ return out.filter(x=>x.cv)}
+function pgChartHtml(){const el=$('pgCh');if(!el)return;if(!PG.res){el.innerHTML='';return}try{el.innerHTML=pgCharts(760).map(x=>`<img src="${x.cv.toDataURL('image/png')}" alt="" style="width:100%;border:1px solid var(--line);border-radius:8px;margin:3px 0;background:#fff">`).join('')}catch(e){el.innerHTML=''}}
 /* ---------- 📝 소블록별 한글(HWPX) 보고서 ---------- */
 async function pgHw(){if(!PG.res){alert('먼저 🧭 찾기를 누르세요.');return}const msg=$('pgMsg'),D=hwpxNew('관망도 업데이트 구간 선정'),SN=SITE.name||'',I=PG.info,T=I.cu?I.cu.T:[],BR=pgBlkRows(),c=PG.c;
  hwpxTitle(D,`${SN} 관망도 업데이트 구간 선정 보고서`);hwpxP(D,`수용가·관로·시설물·현장 사진·관망해석 자료로 관망도(상수관로) 고칠 곳 후보를 소블록별로 정리 · ${fmtD(Date.now())} · 만든이: 구병순`,{c:11,pp:21});
  hwpxH2(D,'1. 점검 기준');hwpxTable(D,[['항목','기준·자료'],...pgInfoRows()],{head:1,w:[1,4]});
  const A=pgCnt(PG.res),st={};for(const r of PG.res){const s=pgStOf(r);(st[r.it]||(st[r.it]={}))[s]=((st[r.it]||{})[s]||0)+1}
  hwpxH2(D,'2. 전체 요약');hwpxTable(D,[['항목','후보(곳)','확인 전','고칠 곳','문제 없음','반영 완료'],...PG.its.map(k=>{const s=st[k]||{};return[PG_IT[k][2]+'. '+PG_IT[k][0],I[k]&&I[k].none?'자료 없음':A[k].toLocaleString(),(s['']||0).toLocaleString(),((s.miss||0)+(s.fix||0)+(s.addr||0)+(s.vil||0)).toLocaleString(),(s.ok||0).toLocaleString(),(s.done||0).toLocaleString()]}),['합계',{t:PG.res.length.toLocaleString(),c:14},'','','','']],{head:1,w:[4,1.3,1.2,1.2,1.2,1.2]});
- if(I.cu)hwpxP(D,`수용가 거리: ${T.map((t,i)=>`${t}m 이상 ${I.cu.cnt[i].toLocaleString()}곳`).join(' · ')} (수용가 점 ${I.cu.pts.toLocaleString()}곳 중) → 후보 구간 ${I.cu.grp.toLocaleString()}개. 인근대체·실패로 찾은 수용가 ${I.cu.ad.toLocaleString()}곳은 주소 오차일 수 있습니다.`,{c:11,pp:20});
+ const CH=pgCharts(),chImg=async(k,mm)=>{const x=CH.find(o=>o.k===k);if(!x)return;const im=await pgCvImg(x.cv);if(im)hwpxImg(D,im.bytes,'jpg',im.w,im.h,mm||170)};
+ await chImg('items',150);await chImg('st',150);
+ if(I.cu){await chImg('cu',150);hwpxP(D,`수용가 거리: ${T.map((t,i)=>`${t}m 이상 ${I.cu.cnt[i].toLocaleString()}곳`).join(' · ')} (수용가 점 ${I.cu.pts.toLocaleString()}곳 중) → 후보 구간 ${I.cu.grp.toLocaleString()}개. 인근대체·실패로 찾은 수용가 ${I.cu.ad.toLocaleString()}곳은 주소 오차일 수 있습니다.`,{c:11,pp:20})}
  const its=PG.its.filter(k=>!(I[k]&&I[k].none));
- hwpxH2(D,'3. 소블록별 요약 (겹친 항목 많은 순)');hwpxTable(D,[['소블록','겹침',...T.map(t=>`수용가 ${t}m↑`),...its.filter(k=>k!=='cu').map(k=>PG_IT[k][3]),'합계','남은 곳'],...BR.slice(0,60).map(o=>[o.b,String(o.k),...o.cuT.map(v=>v?v.toLocaleString():'-'),...its.filter(k=>k!=='cu').map(k=>o.c[k]?o.c[k].toLocaleString():'-'),o.n.toLocaleString(),o.open.toLocaleString()])],{head:1});
+ hwpxH2(D,'3. 소블록별 요약 (겹친 항목 많은 순)');await chImg('blk',170);hwpxTable(D,[['소블록','겹침',...T.map(t=>`수용가 ${t}m↑`),...its.filter(k=>k!=='cu').map(k=>PG_IT[k][3]),'합계','남은 곳'],...BR.slice(0,60).map(o=>[o.b,String(o.k),...o.cuT.map(v=>v?v.toLocaleString():'-'),...its.filter(k=>k!=='cu').map(k=>o.c[k]?o.c[k].toLocaleString():'-'),o.n.toLocaleString(),o.open.toLocaleString()])],{head:1});
  if(BR.length>60)hwpxP(D,`※ 소블록 ${BR.length}곳 중 위 60곳만 표에 넣었습니다. 모두는 엑셀을 참고하세요.`,{c:11,pp:20});
  hwpxP(D,'겹침 = 그 소블록에서 나온 항목 종류 수. 수용가 칸은 그 거리 이상 떨어진 수용가 수(곳), 나머지 칸은 후보 수입니다. 남은 곳 = 현장 확인 기록이 문제 없음·반영 완료가 아닌 후보.',{c:11,pp:20});
  const nB=c.repN==='all'?BR.length:Math.min(+c.repN||10,BR.length),withMap=c.repMap!=='0';
@@ -14303,8 +14353,21 @@ async function pgHw(){if(!PG.res){alert('먼저 🧭 찾기를 누르세요.');r
   D.pb=1;hwpxH2(D,`${4}-${bi+1}. ${o.b} — 후보 ${o.n.toLocaleString()}곳 · 항목 ${o.k}종`);
   hwpxP(D,PG.its.filter(k=>o.c[k]).map(k=>`${PG_IT[k][2]}. ${PG_IT[k][3]} ${o.c[k]}`).join(' · ')+(T.length&&o.c.cu?` · 수용가 ${T.map((t,i)=>`${t}m↑ ${o.cuT[i]}`).join('·')}`:''),{c:11,pp:20});
   if(withMap){try{const im=await pgBlkImg(o.b,L);if(im)hwpxImg(D,im.bytes,'jpg',im.w,im.h,170)}catch(e){console.warn('위치도',o.b,e)}}
+  {const ks=PG.its.filter(k=>o.c[k]);if(ks.length>1||(ks[0]==='cu'&&T.length>1)){const rows=ks.flatMap(k=>k==='cu'&&T.length?T.map((t,i)=>({label:`A. 수용가 ${t}m↑`,sh:'cir',col:PG_BAND[Math.min(i,PG_BAND.length-1)],segs:[{v:o.cuT[i],col:PG_BAND[Math.min(i,PG_BAND.length-1)]}]})):[{label:PG_IT[k][2]+'. '+PG_IT[k][3],sh:PG_SH[k],col:PG_IT[k][1],segs:[{v:o.c[k],col:PG_IT[k][1]}]}]);
+   const im=await pgCvImg(pgHBar({title:`${o.b} 항목별 후보`,sub:'  (곳 · 수용가는 거리 기준별 수용가 수)',rows,bh:22,gap:9}));if(im)hwpxImg(D,im.bytes,'jpg',im.w,im.h,140)}}
   const M=300;hwpxTable(D,[['번호','항목','값','대상 (관리번호)','확인 결과','메모'],...L.slice(0,M).map(r=>{const s=pgStOf(r);return[r.no,PG_IT[r.it][3],r.vt+(r.note?'\n'+r.note:''),pgTgTxt(r,8),PG_ST[s][0],r.rec?r.rec.memo||'':'']})],{head:1,w:[.8,1.3,2.4,2.6,1.4,1.6]});
   if(L.length>M)hwpxP(D,`※ 후보 ${L.length}곳 중 ${M}곳만 넣었습니다. 나머지는 엑셀을 참고하세요.`,{c:11,pp:20})}
+ /* 5. 전문가 검토 의견: 항목별 의미·현장 확인·조치 + 우선순위 */
+ D.pb=1;hwpxH2(D,'5. 검토 의견 및 조치 방향');
+ hwpxP(D,`이 장은 상수도관망 관리 실무 관점에서 각 항목이 무엇을 뜻하고, 현장에서 무엇을 확인하며, 관망도(GIS)에 어떻게 반영할지를 정리한 것입니다. 참고 기준: ${PG_REF}. 기준의 세부 조항·수치는 원문 확인이 필요합니다(이 보고서에 원문 자료가 첨부되지 않음).`,{c:7,pp:20});
+ hwpxTable(D,[['항목','의미·가능한 원인','현장 확인','조치 (관망도 반영)'],...PG.its.filter(k=>A[k]).map(k=>[PG_IT[k][2]+'. '+PG_IT[k][3]+'\n'+A[k].toLocaleString()+'곳',...PG_OP[k]])],{head:1,w:[1.2,2.6,2.1,2.6]});
+ {const top=BR.slice(0,5).map(o=>`${o.b}(${o.k}종 ${o.n.toLocaleString()}곳)`).join(', '),hasLk=A.lk>0,hasNg=A.ng>0;
+  hwpxP(D,'우선순위 제안',{c:8,pp:26});
+  hwpxP(D,[`① 위생·급수 안전과 바로 이어지는 항목부터: ${hasLk?'F(누수·민원 지점 근처 관로 없음)':''}${hasLk&&hasNg?', ':''}${hasNg?'G(부압)':''}${!hasLk&&!hasNg?'F·G 후보 없음':''} — 관로 누락·모델 오류를 먼저 정정해야 단수구역·누수 예측·관망해석 결과를 믿을 수 있습니다.`,
+   `② 여러 항목이 겹친 소블록을 한 번에 현장 정비: ${top||'-'} — 같은 소블록을 한 번 나가 A·B·E를 함께 확인하면 현장 출동을 줄일 수 있습니다.`,
+   `③ A(수용가 먼 곳)는 거리가 먼 구간부터, 수용가 수가 많은 구간부터 확인합니다. 인근대체·실패로 찾은 수용가는 주소 오차를 먼저 의심합니다.`,
+   `④ D(빈 속성)·H(소블록명)는 현장보다 대장·도면 정리로 처리할 수 있어 사무 정비 대상으로 묶습니다.`,
+   `⑤ 정비한 결과는 이 앱의 현장 확인 기록(관로 누락·위치 수정·주소 오차·관망 밖·문제 없음·반영 완료)으로 남기고, 관망도 반영 뒤 다시 점검해 후보가 줄었는지 확인합니다.`].join('\n'),{c:7,pp:20})}
  if(nB<BR.length){D.pb=1;hwpxP(D,`※ 상세는 겹친 항목 많은 순 ${nB}곳만 넣었습니다 (모두 ${BR.length}곳). 나머지는 엑셀을 참고하세요.`,{c:11,pp:20})}
  hwpxP(D,'※ 후보는 앱 자료로 기계적으로 뽑은 "고칠 곳일 수 있는 곳"입니다. 수용가 점은 지번 중심점일 수 있어 주소·좌표 오차가 섞이며, 끊긴 끝·관경 급변·부압도 실제로 맞을 수 있으니 현장 확인 뒤 관망도에 반영하세요. 대상에는 관리번호만 넣었고 이름·주소·연락처는 넣지 않았습니다.',{c:11,pp:20});
  msg.textContent='📝 한글 파일 저장 중…';await hwpxSave(D,`관망도업데이트구간_${SITE.short||SN}_${fmtD(Date.now())}.hwpx`);msg.textContent=`📝 한글(HWPX) 보고서를 저장했습니다 (소블록 ${nB}곳${withMap?' · 위치도 포함':''}).`}
@@ -14313,6 +14376,7 @@ function pgInit(){if(!$('pgSec'))return;pgUi();
  $('pgOff').onclick=()=>{PG.on=false;pgSave();if(PG.L)PG.L.clearLayers();$('pgMsg').textContent='지도 표시를 지웠습니다. (레이어 창 "관망도 점검 후보"로 다시 켭니다)'};
  ['pgT','pgSvc','pgGrp','pgGap','pgDj','pgAtS','pgFc','pgLk','pgNg','pgScope','pgBlk','pgRepN','pgRepMap',...PG_ITS.map(k=>'pgI_'+k)].forEach(id=>$(id).addEventListener('change',()=>pgReadUi()));
  ['pgK','pgSt'].forEach(id=>$(id).addEventListener('change',()=>{pgReadUi();PG.lim=200;pgTable();if(id==='pgK')pgDraw(false)}));
+ $('pgChD').addEventListener('toggle',()=>{if($('pgChD').open)pgChartHtml()});
  $('pgSum').addEventListener('click',e=>{const d=e.target.closest('[data-k]');if(!d)return;$('pgK').value=PG.c.K===d.dataset.k?'*':d.dataset.k;pgReadUi();PG.lim=200;pgTable();pgDraw(false)});
  $('pgTbl').addEventListener('click',e=>{const a=e.target.closest('.pgGo');if(a){e.preventDefault();pgGo(+a.dataset.i);return}const b=e.target.closest('.pgEdB');if(b){pgEdOpen(+b.dataset.i);return}const f=e.target.closest('.pgFe');if(f){pgFe(+f.dataset.i);return}if(e.target.id==='pgMore'){PG.lim+=500;pgTable()}});
  $('pgEd').addEventListener('click',e=>{const id=e.target.id;if(id==='pgEdOk')pgEdSave(false);else if(id==='pgEdDel'){if(confirm('이 현장 확인 기록을 지울까요?'))pgEdSave(true)}else if(id==='pgEdX'){$('pgEd').hidden=true;PG.ed=-1}});
