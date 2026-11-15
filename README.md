@@ -11,6 +11,6 @@
 | 포항시 유수율 분석 (자료 미포함 · 통합문서 첨부해 사용) | https://xhahr30-ops.github.io/app-share/nrw/ |
 | 스마트 식대정산 (법인·현장·예산 비움 · 자료는 각자 브라우저에 저장) | https://xhahr30-ops.github.io/app-share/meal-settlement/ |
 
-최근 변경: 2026-11-15 스마트 물길주소 — 개략공사비 관로 현황 MOP00 코드→PE, PVC·HIVP(HI3P 포함) 따로, HIVP·STS 사진, 소블록 그림 제목 띠, 한글 표 첫 칸 줄바꿈 수정
+최근 변경: 2026-11-15 스마트 물길주소 — 관재질 코드표(MOP001 DCIP~010 PC관) 자동 분류, 표에 없는 MOP 코드·CI는 미분류
 
 만든이: 구병순
