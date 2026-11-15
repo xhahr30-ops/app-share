@@ -51,6 +51,7 @@
   {k:'hyd',n:'관망해석 결과',d:'②-3 표고·수압·유속',css:['.sec:has(#ePanel)'],a:['win:elev'],lay:['elev']},
   {k:'leak',n:'누수 예측',d:'②-4 누수 지점 예측 · 누수·민원 대장 · 보고서',css:['#lqSec'],a:['win:leak','lrIn']},
   {k:'step',n:'단계시험',d:'🪜 단계시험 계획 · 기록표',css:['#stSec','[data-ck="step"]'],a:['win:st']},
+  {k:'em',n:'긴급 점검',d:'🚨 긴급상황 우선점검 · 대처 카드 · 보고서',css:['[data-ck="em"]','#emBox'],a:['em']},
   {k:'works',n:'공사 검토',d:'🏗 공사 추천 · ⬚ 개략공사비 · 📐 적정 관경 · 🔀 메인관',css:['#cwSec','#rsSec','#sbSec','[data-ck="ax"]'],a:['win:cw','win:rs','win:sb','ax','sel:ax'],lay:['cw','sb','rs']},
   {k:'rp',n:'노후관 교체',d:'✅ 교체 완료 관로',css:['#rpSec'],a:['win:rp','sel:rp'],lay:['rp']},
   {k:'chg',n:'변경 기록',d:'🔔 변경 기록',css:['[data-ck="chg"]'],a:[]},
@@ -59,7 +60,7 @@
   {k:'ai',n:'AI 도우미',d:'🤖 AI 버튼 · 💬 묻기 AI 답',css:['.aib'],a:[]},
   {k:'mk',n:'지도 그리기',d:'🖍 펜·도형·글자',css:['[data-ck="mk"]'],a:['mk']}];
  /* 새 현장 기본값: 기본 = 아래 6개만 켬, 전체 = 모두 켬 */
- window.FEAT_BASIC=['addr','photo','share','shut','chg','ex'];
+ window.FEAT_BASIC=['addr','photo','share','shut','em','chg','ex'];
  var css=[],R=document.documentElement;
  FEATS.forEach(function(f){var sel=f.css.map(function(x){return 'html.ft-'+f.k+' '+x});
   f.a.forEach(function(x){sel.push('html.ft-'+f.k+' #gwRib '+(x.slice(-1)==='*'?'[data-a^="'+x.slice(0,-1)+'"]':'[data-a="'+x+'"]'))});
@@ -330,6 +331,10 @@ html.dark .shutp .shwarn{background:#450a0a;color:#fecaca}html.dark .shutp .shwa
 .stp .stt2 td{vertical-align:top}.stp .stk{white-space:nowrap;text-align:center}.stp .stk b{display:inline-block;min-width:22px;color:#fff;border-radius:999px;padding:1px 6px;font-size:12px}.stp .stk span{display:flex;flex-direction:column;gap:2px;margin-top:3px;align-items:center}.stp .stk span button{border:1px solid var(--line2);background:var(--sub);color:var(--ink);border-radius:5px;font-size:9px;line-height:1;padding:2px 5px;cursor:pointer}.stp .stk span button:disabled{opacity:.3}.stp .shc .stn{display:inline-flex;align-items:center;gap:5px}.stp .shc .stn button{border:1px solid var(--line2);background:var(--card,#fff);color:var(--ink);border-radius:6px;width:24px;height:22px;font-weight:800;cursor:pointer;padding:0;line-height:1}.stp .shc .stn button:disabled{opacity:.35}
 .stp .stvb{font:700 11.5px 'Noto Sans KR',sans-serif;border:2px solid;background:var(--card,#fff);color:var(--ink);border-radius:999px;padding:1px 7px;margin:0 3px 3px 0;cursor:pointer}.stp .sts{font-size:10.5px;color:var(--mute);line-height:1.4}
 .stp .str{width:112px}.stp .str .stt{width:100%!important;display:block}.stp .str input{width:100%;box-sizing:border-box;margin:3px 0 0;padding:4px 5px;font-size:12px}.stp .str small{display:block;font-weight:700;color:#16a34a}.stp .stnt{display:flex;flex-direction:column;font-size:10.5px;font-weight:700;color:var(--mute);margin:4px 0}.stp .stnt input{margin:2px 0 0;padding:4px 6px;font-size:12px}
+.emp2 .empts{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11.5px;margin:4px 0}.emp2 .empts>span{display:inline-flex}.emp2 .empts>span button{font:700 11px 'Noto Sans KR',sans-serif;border:1.5px solid #dc2626;background:var(--card,#fff);color:#dc2626;padding:1px 6px;cursor:pointer}.emp2 .empts>span button:first-child{border-radius:999px 0 0 999px}.emp2 .empts>span button:last-child{border-radius:0 999px 999px 0;border-left:0}
+.emp2 .emlv{border:2px solid;border-radius:10px;padding:6px 8px;margin:6px 0;font-size:12px;background:var(--sub)}.emp2 .emlv small{display:block;color:var(--mute);margin-top:3px;font-size:10.5px}.emp2 .emd{margin:4px 0;font-size:12px}.emp2 .emd summary{cursor:pointer;font-weight:700;padding:3px 0}
+.emp2 .emt td{vertical-align:top}.emp2 .emt tr.done td{opacity:.55}.emp2 .emb{white-space:nowrap;text-align:right}.emp2 .emb .shbr+.shbr{margin-left:3px!important}.emp2 .emact{margin:2px 0;padding-left:18px}.emp2 .emact li{margin:3px 0;line-height:1.45}.emp2 .emact .shbr{margin-top:2px}.emp2 .g2 input{width:100%;box-sizing:border-box;padding:3px 5px;font-size:12px;margin:2px 0 0}
+.stmk.emp span{background:#dc2626;font-size:12px}.stmk.emc span{background:#0f172a;font-size:12px}.stmk.emi span{background:#ea580c;min-width:14px;text-align:center;padding:1px 5px}.stmk.emi.ok span{background:#16a34a}
 .stmk{background:none;border:0}.stmk span{display:inline-block;transform:translate(-50%,-50%);white-space:nowrap;font:800 11px 'Noto Sans KR',sans-serif;color:#fff;border:2px solid #fff;border-radius:999px;padding:1px 6px;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 .stmk.stv span{min-width:14px;text-align:center;padding:1px 4px}.stmk.stlb span{font-size:12px;opacity:.92}.stmk.stb span{background:#dc2626;font-size:10px;padding:0 4px;border-radius:4px}.stmk.stb.cl span{background:#16a34a}.stmk.sto span{background:#f97316;padding:0 6px}.stmk.stin span{background:#0f172a;font-size:12px}.stmk.stp2 span{background:#0369a1;border-radius:4px;padding:0 5px}
 .stp .stppb{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11.5px;margin:4px 0}.stp .stppb>span{display:inline-flex}.stp .stppb>span button{font:700 11px 'Noto Sans KR',sans-serif;border:1.5px solid #0369a1;background:var(--card,#fff);color:#0369a1;padding:1px 5px;cursor:pointer}.stp .stppb>span button:first-child{border-radius:999px 0 0 999px}.stp .stppb>span button:last-child{border-radius:0 999px 999px 0;border-left:0}
@@ -1897,7 +1902,7 @@ const TABS=[
  {k:'map',n:'지도',g:[
   {n:'보기 설정',b:[['lblW','tag','라벨 설정',1],['ui:map','gear','지도 설정',1],['ui:pipe','pipe','관로·시설물 설정'],['ui:ph','cam','사진 보기 설정'],['ui:app','key','앱 설정 (키·공유)']]},
   {n:'표시',b:[['allOff','eyeoff','표시 모두 끄기',1],['bg','map','배경 지도 끄기'],['pt','user','수용가 점 끄기'],['mapfs','full','지도 전체화면']]},
-  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:st','flag','단계시험',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
+  {n:'분석 · 편집',b:[['shut','drop','단수구역',1],['win:leak','leak','누수 지점 예측',1],['win:cw','pipe','공사 추천',1],['win:rs','dia','적정 관경',1],['win:sb','svm','급수관 묶음',1],['win:st','flag','단계시험',1],['em','warn','긴급 점검',1],['win:rp','rep','교체 완료',1],['mk','draw','지도 그리기',1],['fe','tool','시설물·관로 편집',1],['lock','lock','화면 고정']]},
   {n:'현장 보기',b:[['kv','walk','카카오 로드뷰',1],['shot','img','지도 캡처'],['loc','loc','내 위치']]}]},
  {k:'sel',n:'선택',g:[
   {n:'고르기',b:[['sel:tap','touch','눌러 고르기',1],['sel:rect','selr','네모'],['sel:poly','poly','다각형'],['sel:free','draw','손 그리기'],['sel:view','full','지금 화면']]},
@@ -1934,7 +1939,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
  const go={
   bkLoad:()=>clk('bkLoad'),uni:()=>clk('uniFile'),
   /* 2026-11-05 '자료 탭에 누수탐사·민원 대장 넣기 없음' → ②-4 창 열고 📒 칸 펼침 */lrIn:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const d=$('lqLrSec');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},80)},frd:()=>clk('frdBtn'),dw:()=>{const b=document.querySelector('header .dwBtn');if(b)b.click()},
-  vp:()=>vpOpen(),
+  em:()=>F('emToggle'),vp:()=>vpOpen(),
   bp:()=>bpOpen(),
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
@@ -1951,7 +1956,7 @@ function isOn(h,v){const html=R.classList;
  switch(h){case 'dark':return html.contains('dark');case 'bg':{const b=G('BG');return !!(b&&b.off)}case 'allOff':{const u=G('UI');return !!(u&&u.allOff)}
   case 'pt':{const p=G('PT');return !!(p&&p.off)}case 'lock':{const m=G('MLOCK');return !!(m&&m.user)}case 'fe':{const f=G('FE');return !!(f&&f.on)}
   case 'phEd':{const p=G('PH');return !!(p&&p.ed&&p.ed.on)}case 'fm':return document.body.classList.contains('fm');case 'kv':{const k=G('KV');return !!(k&&k.on)}
-  case 'shut':{const s=G('SHUT');return !!(s&&(s.pick||s.on))}case 'mk':{const m=G('MK');return !!(m&&m.on)}case 'win':return S.win===v;case 'sel':{const f=G('selIsOn');return !!(f&&f(v))}case 'dock':return S.dock===v&&!$('gwDock').classList.contains('cl');
+  case 'shut':{const s=G('SHUT');return !!(s&&(s.pick||s.on))}case 'mk':{const m=G('MK');return !!(m&&m.on)}case 'em':{const m=G('EM');return !!(m&&m.box&&!m.box.hidden)}case 'win':return S.win===v;case 'sel':{const f=G('selIsOn');return !!(f&&f(v))}case 'dock':return S.dock===v&&!$('gwDock').classList.contains('cl');
   case 'mapfs':{const b=$('mapBox');return !!(b&&b.classList.contains('mapfs'))}}return false}
 
 window.__ribRe=()=>{try{if(S.on)ribBuild()}catch(_){}};
@@ -4283,7 +4288,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','step','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','em','step','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -4306,7 +4311,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -4316,7 +4321,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🖍':'draw','⬚':'crop','☑':'sel','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🚨':'warn','🖍':'draw','⬚':'crop','☑':'sel','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -4391,7 +4396,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -11553,7 +11558,7 @@ async function vidSync(quiet){if(!SH.on())return{};if(VID.busy)return{busy:true}
    이 기기에서 고친 것과 공유 서버에서 받은 것을 함께 남기고, 받은 것 중 아직 안 본 건수를 🔔에 빨간 숫자로 보여 줌.
    기록은 이 기기 IDB 'chglog'(30일·최대 3000줄), 본 시각은 localStorage geo-chg-seen. 고객 정보 없이 관리번호·소블록만 남김 */
 const CHG={list:[],loaded:null,seen:0,prev:0,f:'all',d:7,oth:false,rg:[],nt:[],ntT:null,svT:null,max:300};
-const CHG_DAYS=30,CHG_MAX=3000,CHG_K={pipe:['🚰','관로'],fac:['🔧','시설물'],photo:['📷','사진'],mk:['🖍️','그리기'],ref:['🗺️','기준자료']};
+const CHG_DAYS=30,CHG_MAX=3000,CHG_K={pipe:['🚰','관로'],fac:['🔧','시설물'],photo:['📷','사진'],mk:['🖍️','그리기'],ref:['🗺️','기준자료'],em:['🚨','긴급 점검']};
 try{CHG.seen=+localStorage.getItem('geo-chg-seen')||0}catch(_){}
 /* ✨ 새 항목 강조: 🔔 기록 중 다른 직원에게서 받은 사진·시설물(내 것·처음 한꺼번에 받은 것·지워진 것 제외).
    꺼짐 = 그 아이콘을 눌러 봄 / 🔔 창 '강조 모두 끄기' / 받은 지 d일 지남. 설정 geo-hl {d,clr}, 눌러 본 것 geo-hl-off {키:시각} */
@@ -12175,7 +12180,7 @@ const hcDiagTxt=R=>R.map(r=>`${r.ok===false?'✗':r.ok?'✓':'·'} ${r.k}: ${r.v
 function hcDiagHtml(R,onlyBad){const L=onlyBad?R.filter(r=>r.ok===false):R;if(!L.length)return '<div class="hcd ok">🩺 점검해 보니 눈에 띄는 문제는 없습니다.</div>';
  return `<div class="hcd"><b>🩺 앱 점검${onlyBad?' — 확인할 것':''}</b><ul>${L.map(r=>`<li class="${r.ok===false?'bad':r.ok?'ok':''}"><span>${r.ok===false?'✗':r.ok?'✓':'·'} ${esc(r.k)}</span> <b>${esc(r.v)}</b>${r.ok===false&&r.tip?`<br><small>${esc(r.tip)}</small>`:''}</li>`).join('')}</ul></div>`}
 /* ▶ 바로 열기 */
-const HC_CHIP={srch:'🔍 주소찾기',ref:'⬇️ 지금 받기',trk:'👣 탐사기록',bk:'📂 파일 넣기',shut:'💧 단수구역',step:'🪜 단계시험',mk:'🖍 그리기',ax:'⬚ 개략공사비',sel:'☑ 관로 선택',lock:'🔒 화면 고정',lbl:'🏷️ 라벨'};
+const HC_CHIP={srch:'🔍 주소찾기',ref:'⬇️ 지금 받기',trk:'👣 탐사기록',bk:'📂 파일 넣기',shut:'💧 단수구역',em:'🚨 긴급 점검',step:'🪜 단계시험',mk:'🖍 그리기',ax:'⬚ 개략공사비',sel:'☑ 관로 선택',lock:'🔒 화면 고정',lbl:'🏷️ 라벨'};
 function hcGoLbl(go){if(!go)return '';const [h,v]=go.split(':');if(h==='chip')return HC_CHIP[v]?'▶ '+HC_CHIP[v]+' 열기':'';
  if(h==='gw')return matchMedia('(pointer:coarse)').matches?'':'▶ 작업 화면에서 열기';if(h==='fn')return {site:'▶ 현장 바꾸기',gw:'▶ 작업 화면 열기',vp:'▶ 출력 창 열기',af:'▶ 주소찾기 설정 열기'}[v]||'';return ''}
 function hcGo(go){const [h,v]=String(go||'').split(':'),w=$('hlpW');if(h==='man'){window.open(hlpUrl(v),'_blank','noopener');return}
@@ -14374,6 +14379,266 @@ function stInit(){if(!$('stSec'))return;stUi();
    L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(ST.box&&!ST.box.hidden)stClose();else{stOpen();if(!ST.plan&&ST.c.blk)stBuild()}});return d}});
   map.addControl(new Ctl())};go();}
 try{stInit()}catch(e){console.warn('단계시험',e)}
+/* ===== 🚨 긴급 점검 (2026-11-15 B안) =====
+   긴급상황(출수불량·대형 누수·관 파손·가압장 정지·수질사고) 신고 지점을 넣으면
+   ① 💧 단수구역 연결표(shutNet)에서 신고 지점 관로를 찾고, 관망해석 흐름 방향(faDir) → 없으면 굵은 관 쪽으로 상류를 거슬러 올라감
+   ② 신고 여러 건의 공통 상류 지점을 찾아 원인 범위 판정(개별 급수관 · 배수관 구간 · 블록 전체 · 가압장/감압밸브 계통)
+   ③ 우선 점검 목록(닫힘 기록 밸브 · 상류 제수밸브 · 가압장·감압밸브 · 경계밸브 · 최근 변경 · 누수 이력 · 저압 · 노후관 · 이웃 수용가)
+   ④ 상황별 대처 카드 → 💧 단수구역·혼탁수·안내문, 🔔 변경 기록, 📝 한글(HWPX)·📄 인쇄·⬇ 엑셀 보고서
+   신고 지점은 좌표·관리번호만 저장(입력한 주소 글자는 저장·결과물에 넣지 않음). 판정 규칙·거리 기준은 참고용(확인 필요), 현장 확인이 우선 */
+const EM={k:'geo-em',c:{ty:'low',up:2000,R:100,days:30,main:300},pts:[],chk:{},t0:0,nt:'',res:null,box:null,L:null,cv:null,pick:false,busy:false,fold:false,msg:''};
+try{const v=JSON.parse(localStorage.getItem(EM.k)||'null');if(v){Object.assign(EM.c,v.c||{});EM.pts=Array.isArray(v.pts)?v.pts:[];EM.chk=v.chk||{};EM.t0=v.t0||0;EM.nt=v.nt||''}}catch(_){}
+function emSave(){try{localStorage.setItem(EM.k,JSON.stringify({c:EM.c,pts:EM.pts,chk:EM.chk,t0:EM.t0,nt:EM.nt}))}catch(_){}}
+const EM_TY={low:{n:'출수불량',ic:'🚱',d:'물이 안 나오거나 약하게 나옴'},leak:{n:'대형 누수',ic:'💦',d:'도로·지면으로 물이 솟거나 많이 샘'},burst:{n:'관 파손',ic:'💥',d:'공사 중 파손·관 터짐'},pump:{n:'가압장 정지',ic:'🏭',d:'가압장 고장·정전'},wq:{n:'수질사고',ic:'🟤',d:'혼탁수·이물·냄새 민원'}};
+/* 원인 범위 */
+const EM_LV={one:{n:'개별 급수관·계량기',c:'#16a34a',d:'신고가 한 곳뿐입니다. 그 수용가의 계량기·급수관·옥내 설비를 먼저 보고, 이웃도 같은 증상이면 배수관 쪽으로 넓힙니다.'},
+ same:{n:'같은 관로 (배수관 지선)',c:'#ca8a04',d:'신고 지점이 모두 같은 관로 토막에 있습니다. 그 관로와 바로 위 제수밸브를 먼저 봅니다.'},
+ dist:{n:'배수관 구간',c:'#ea580c',d:'신고 지점들이 같은 상류 관로를 지납니다. 공통 상류 지점과 신고 지점 사이의 밸브·관로에 원인이 있을 가능성이 큽니다.'},
+ pump:{n:'가압장·감압밸브 계통',c:'#c026d3',d:'공통 상류 쪽에 가압장·감압밸브가 있습니다. 운전 상태·설정 수압을 먼저 확인합니다.'},
+ block:{n:'블록 전체 (유입부·본관)',c:'#dc2626',d:'신고가 소블록 여러 곳이거나 공통 상류가 본관(굵은 관·송수관)입니다. 블록 유입부·배수지·송수 계통을 먼저 확인합니다.'},
+ wide:{n:'서로 다른 계통 (넓은 범위)',c:'#7f1d1d',d:'신고 지점들의 공통 상류를 정해 둔 거리 안에서 찾지 못했습니다. 배수지 수위·송수관·여러 블록 동시 문제를 의심합니다.'}};
+/* 상황별 대처 단계 (a = 앱 기능 단추) */
+const EM_ACT={
+ low:[['이웃 수용가 확인','같은 관로 이웃(우선 점검 목록의 관리번호)도 같은 증상인지 확인합니다. 한 집만이면 계량기·급수관·옥내 설비 문제입니다.'],
+  ['닫힘 기록 밸브·최근 공사 자리','닫힘으로 기록된 밸브와 최근 관로·시설물 수정 자리의 밸브를 먼저 봅니다(공사 뒤 안 연 밸브).'],
+  ['상류 제수밸브 개도 확인','공통 상류 지점에서 신고 지점 쪽으로 밸브 개도를 차례로 확인합니다.'],
+  ['가압장·감압밸브 운전','경로에 가압장·감압밸브가 있으면 운영 담당과 운전 상태·설정 수압을 확인합니다.'],
+  ['누수 확인','상류 미수리 누수·최근 민원 자리를 보고, 필요하면 누수탐사를 합니다.'],
+  ['수압 측정','가까운 소화전에서 수압을 재어 관망해석 수압(참고값)과 비교합니다. 측정값은 ②-4 수압측정 대장에 넣을 수 있습니다.'],
+  ['복구 뒤 혼탁수','밸브를 다시 열면 천천히 열고, 혼탁수가 나오면 이토밸브·소화전으로 배수합니다.','tb'],
+  ['안내','범위가 넓으면 대수용가·중요 수용가부터 안내하고 단수 안내문을 씁니다.','shut']],
+ leak:[['현장 안전','물이 솟는 자리 주변 교통·보행 통제, 도로 침하 확인.'],
+  ['💧 단수구역 정하기','누수 자리에서 단수구역을 만들어 닫을 밸브 순서를 봅니다.','shut'],
+  ['단수 주의 확인','단수구역에 가압장·감압밸브가 들면 단수 주의 문구가 나옵니다. 운영 담당과 미리 확인합니다.'],
+  ['안내','대수용가·중요 수용가부터 알리고 📝 단수 안내문(문자·공고문·한글)을 씁니다.','shut'],
+  ['차단·수리','닫을 밸브 순서대로 차단 → 굴착·수리 → 복구.'],
+  ['통수·혼탁수','천천히 열고 혼탁수 주의 구간(덕타일 저유속)은 배수합니다.','tb'],
+  ['기록','누수탐사·민원대응 사진을 올리고 🔔 기록을 남깁니다.','chg']],
+ burst:[['작업 중지·안전','공사 중 파손이면 그 업체 작업을 멈추고 현장을 통제합니다.'],
+  ['💧 단수구역 정하기','파손 자리에서 단수구역을 만들어 닫을 밸브 순서를 봅니다.','shut'],
+  ['단수 주의 확인','가압장·감압밸브가 들면 단수 주의 문구 확인.'],
+  ['안내','대수용가·중요 수용가부터 알리고 단수 안내문을 씁니다.','shut'],
+  ['차단·수리','차단 → 수리 → 복구. 관 재질·관경·매설년도는 우선 점검 목록에서 확인합니다.'],
+  ['통수·혼탁수','천천히 열고 혼탁수 구간은 배수합니다.','tb'],
+  ['기록','사진·🔔 기록. 원인자 부담 여부 확인 필요.','chg']],
+ pump:[['가압장 상태','정지 원인(정전·고장)과 예비 펌프를 운영 담당과 확인합니다.'],
+  ['공급 범위','가압장 자리에서 💧 단수구역으로 영향 관로·수용가 범위를 봅니다(밸브 경계 기준, 실제 가압 범위는 확인 필요).','shut'],
+  ['고지대·중요 수용가','영향 범위의 대수용가·중요 수용가(병원·학교 등)를 먼저 안내합니다.'],
+  ['비상 공급','비상 운전·이동식 가압·급수차 가능 여부 확인(확인 필요).'],
+  ['재가동 뒤 확인','재가동 뒤 소화전 수압 회복과 혼탁수를 확인합니다.','tb'],
+  ['기록','🔔 기록을 남깁니다.','chg']],
+ wq:[['시료·측정','신고 지점에서 잔류염소·탁도 등을 측정합니다(측정 기준 확인 필요).'],
+  ['범위 판정','신고를 모두 넣어 공통 상류를 찾고 범위를 판정합니다.'],
+  ['혼탁수 주의 구간','💧 단수구역의 혼탁수 주의(덕타일 저유속·하류)를 켜서 의심 구간을 봅니다.','tb'],
+  ['배수','우선 점검 목록의 이토밸브·소화전으로 배수합니다.'],
+  ['안내','학교·병원 등 중요 수용가와 대수용가에 먼저 알립니다.'],
+  ['재측정·기록','배수 뒤 다시 재고 🔔 기록을 남깁니다.','chg']]};
+const EM_VUP=8,EM_VDN=12,EM_IMP=/병원|의원|요양|투석|학교|유치원|어린이집|보육|복지|경로당|소방|경찰|정수|식품|급식/;
+const emLL=p=>[p.la,p.ln];
+function emDia(e){const f=PIPE.feats[SHUT.net.ef[e]],a=f?attrOf(f):null;return a&&a.dia>0?a.dia:0}
+function emDir(e){const f=PIPE.feats[SHUT.net.ef[e]];try{return f?faDir(f):0}catch(_){return 0}}
+/* 상류 따라가기: 흐름 방향이 있으면 들어오는 관 중 가장 굵은 관, 없으면 같거나 더 굵은 관 쪽 */
+function emTrace(e0,lim){const N=SHUT.net,seen=new Set([e0]),how={dir:0,dia:0};let len=0,n;
+ const d0=emDir(e0);if(d0){n=d0>0?N.ea[e0]:N.eb[e0];how.dir++}
+ else{const mx=k=>{let m=0;for(let j=N.ao[k];j<N.ao[k+1];j++){const e=N.ae[j];if(e!==e0)m=Math.max(m,emDia(e))}return m};n=mx(N.ea[e0])>=mx(N.eb[e0])?N.ea[e0]:N.eb[e0];how.dia++}
+ const path=[{e:e0,n}];let cur=e0;
+ while(len<lim&&path.length<600){let best=-1,bs=-1;
+  for(let j=N.ao[n];j<N.ao[n+1];j++){const e=N.ae[j];if(seen.has(e))continue;const dd=emDir(e);let s;if(dd){const dn=dd>0?N.eb[e]:N.ea[e];if(dn!==n)continue;s=1e6+emDia(e)}else s=emDia(e);if(s>bs){bs=s;best=e}}
+  if(best<0)break;const dd=emDir(best);if(!dd&&emDia(best)<emDia(cur))break;
+  if(dd)how.dir++;else how.dia++;seen.add(best);len+=N.el[best];const nn=N.ea[best]===n?N.eb[best]:N.ea[best];path.push({e:best,n:nn});cur=best;n=nn}
+ return{path,len,how,set:new Set(path.map(p=>p.e))}}
+/* 밸브로 둘러싸인 구간 (단수구역과 같은 연결) */
+function emZone(E0){const N=SHUT.net,seen=new Set(E0),q=[...E0];for(let h=0;h<q.length&&q.length<20000;h++){const e=q[h];for(const n of [N.ea[e],N.eb[e]]){if(N.nv[n]>=0)continue;for(let j=N.ao[n];j<N.ao[n+1];j++){const e2=N.ae[j];if(!seen.has(e2)){seen.add(e2);q.push(e2)}}}}return seen}
+/* 공통 상류를 흐름 방향으로 못 찾을 때: 신고 지점끼리 잇는 가장 짧은 관로 길 → 그 안에서 가장 굵은 관을 공통 상류로 추정 */
+function emLink(E0,lim){const N=SHUT.net,nN=N.nx.length,dist=new Float64Array(nN).fill(Infinity),pe=new Int32Array(nN).fill(-1),H=[],push=(d,n)=>{H.push([d,n]);let i=H.length-1;while(i>0){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p}},pop=()=>{const t=H[0],l=H.pop();if(H.length){H[0]=l;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<H.length&&H[a][0]<H[m][0])m=a;if(b<H.length&&H[b][0]<H[m][0])m=b;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m}}return t};
+ const e0=E0[0];for(const n of [N.ea[e0],N.eb[e0]]){dist[n]=N.el[e0]/2;push(dist[n],n)}const goal=new Map();E0.slice(1).forEach(e=>{goal.set(N.ea[e],e);goal.set(N.eb[e],e)});let left=new Set(E0.slice(1));
+ while(H.length&&left.size){const [d,n]=pop();if(d>dist[n])continue;if(d>lim)break;if(goal.has(n))left.delete(goal.get(n));for(let j=N.ao[n];j<N.ao[n+1];j++){const e=N.ae[j],m=N.ea[e]===n?N.eb[e]:N.ea[e],nd=d+N.el[e];if(nd<dist[m]){dist[m]=nd;pe[m]=e;push(nd,m)}}}
+ if(left.size)return null;const U=new Set(E0);E0.slice(1).forEach(e=>{let n=dist[N.ea[e]]<=dist[N.eb[e]]?N.ea[e]:N.eb[e],k=0;while(pe[n]>=0&&k++<5000){const x=pe[n];U.add(x);n=N.ea[x]===n?N.eb[x]:N.ea[x]}});
+ let be=-1,bd=-1;U.forEach(e=>{const d=emDia(e);if(d>bd){bd=d;be=e}});return{U,ce:be}}
+function emEdgeMid(e){const N=SHUT.net,v0=N.eo[e],v1=N.eo[e+1]-1;return fromM((N.exy[2*v0]+N.exy[2*v1])/2,(N.exy[2*v0+1]+N.exy[2*v1+1])/2)}
+/* 경로 관로 조각(미터) 둘레 R 안 점인지 */
+function emNear(E,R){const N=SHUT.net,S=[];let x0=1e12,x1=-1e12,y0=1e12,y1=-1e12;E.forEach(e=>{for(let v=N.eo[e];v<N.eo[e+1]-1;v++){const s=[N.exy[2*v],N.exy[2*v+1],N.exy[2*v+2],N.exy[2*v+3]];S.push(s);x0=Math.min(x0,s[0],s[2]);x1=Math.max(x1,s[0],s[2]);y0=Math.min(y0,s[1],s[3]);y1=Math.max(y1,s[1],s[3])}});
+ return(lng,lat)=>{const [x,y]=toM(lng,lat);if(x<x0-R||x>x1+R||y<y0-R||y>y1+R)return Infinity;let d=Infinity;for(const s of S){const q=segDist(x,y,s);if(q<d)d=q}return d}}
+const emVn=vi=>{const p=FAC.pt[vi]&&FAC.pt[vi].p||{},v=String(p['관리번호']||'').trim();return v&&v!=='-'?v:'(관리번호 없음 #'+vi+')'};
+const emFn=i=>{const p=FAC.pt[i]&&FAC.pt[i].p||{},n=String(p['가압장명']||p['명칭']||'').trim(),v=String(p['관리번호']||'').trim();return n&&n!=='-'?n:v&&v!=='-'?v:'이름 없음 #'+i};
+/* ── 계산 ── */
+async function emRun(){if(EM.busy)return;if(!EM.pts.length){EM.msg='신고 지점을 먼저 넣으세요 (📍 지도에서 찍기 또는 관리번호·주소).';emRender();return}
+ if(typeof shutHasData!=='function'||!shutHasData()){EM.msg='상수관로·시설물(제수밸브) 자료가 있어야 상류를 따라갈 수 있습니다.';emRender();return}
+ EM.busy=true;EM.msg='관망 연결표를 준비하는 중… (처음 한 번은 몇 초~수십 초)';emRender();
+ try{await shutNet();EM.msg='상류를 따라가는 중…';emRender();await tick();EM.res=await emCalc();EM.msg='';emDraw(true)}
+ catch(e){console.warn('긴급 점검',e);EM.msg='⚠ 점검 순서를 만들지 못했습니다: '+esc(e&&e.message||e)}finally{EM.busy=false;emRender()}}
+async function emCalc(){const N=SHUT.net,C=EM.c,ty=C.ty,lim=Math.max(200,+C.up||2000),R=Math.max(10,+C.R||100),now=Date.now();
+ /* 신고 지점 → 관로 토막 */
+ const P=EM.pts.map((p,k)=>{const h=nearestPipe(p.ln,p.la,60);let e=-1,d=null;if(h){const m=toM(p.ln,p.la);e=shutEdgeOfF(h.fi,m[0],m[1]);d=Math.round(h.d)}let bk='';try{bk=blkAt(p.ln,p.la)||''}catch(_){}return{...p,k,e,d,bk}});
+ const ok=P.filter(p=>p.e>=0);if(!ok.length)throw new Error('신고 지점 60m 안에 상수관로가 없습니다.');
+ const T=ok.map(p=>emTrace(p.e,lim));
+ /* 공통 상류: 첫 신고 경로를 따라 올라가며 모든 경로에 든 첫 관로 */
+ let ci=-1,ce=-1;if(T.length>1){for(let i=0;i<T[0].path.length;i++){const e=T[0].path[i].e;if(T.every(t=>t.set.has(e))){ci=i;ce=e;break}}}
+ const blocks=[...new Set(P.map(p=>p.bk).filter(Boolean))];
+ const allSame=ok.length>1&&ok.every(p=>p.e===ok[0].e);let lk=null;
+ if(ok.length>1&&ce<0&&!allSame&&blocks.length<=1){lk=emLink(ok.map(p=>p.e),lim*2);if(lk&&lk.ce>=0)ce=lk.ce}
+ /* 공통 상류 위쪽 관로 · 신고 쪽 관로 */
+ const upE=new Set(),dnE=new Set();if(lk){lk.U.forEach(e=>dnE.add(e));const t=emTrace(ce,lim);t.path.forEach(s=>{if(s.e!==ce)upE.add(s.e)});T.push(t)}
+ else T.forEach((t,j)=>{let hit=false;t.path.forEach((s,i)=>{if(ce>=0&&s.e===ce)hit=true;if(ce<0||hit)upE.add(s.e);if(ce>=0&&!hit)dnE.add(s.e)})});if(ce>=0)dnE.add(ce);
+ const pathE=new Set([...upE,...dnE]);
+ /* 가압장·감압밸브·경계밸브·이토밸브·소화전 */
+ const near=emNear(pathE,R),nearP=emNear(pathE,15),KI=FAC.kinds.map(facKindInfo),fs=[];
+ const pv=new Map();pathE.forEach(e=>{for(const n of [N.ea[e],N.eb[e]]){const vi=N.nv[n];if(vi<0)continue;const up=!dnE.has(e);const o=pv.get(vi);if(!o)pv.set(vi,{vi,up});else if(!up)o.up=false}});
+ for(let i=0;i<FAC.n;i++){if(FAC.dl&&FAC.dl[i])continue;const ki=KI[FAC.k[i]],sym=ki&&ki.sym;if(!sym)continue;
+  if(sym==='pump'||sym==='prv'){const d=nearP(FAC.x[i],FAC.y[i]);if(d<=15)fs.push({i,t:sym==='pump'?'가압장':'감압밸브',d})}
+  else if(facBndI(i)){const d=near(FAC.x[i],FAC.y[i]);if(d<=R)fs.push({i,t:'경계밸브',d})}
+  else if((ty==='wq'||ty==='low')&&(sym==='drain'||sym==='hyd')){const d=near(FAC.x[i],FAC.y[i]);if(d<=R)fs.push({i,t:sym==='drain'?'이토밸브':'소화전',d})}}
+ const pumpUp=fs.some(f=>(f.t==='가압장'||f.t==='감압밸브'));
+ /* 범위 판정 */
+ const cA=ce>=0?attrOf(PIPE.feats[N.ef[ce]]):null,main=+C.main||300;let lv,why=[];
+ if(ok.length===1){lv='one';why.push('신고 1곳')}
+ else if(allSame){lv='same';why.push(`신고 ${ok.length}곳이 모두 같은 관로 토막`)}
+ else if(ce<0){lv=blocks.length>1?'block':'wide';why.push(`상류 ${lim.toLocaleString()}m 안에서 공통 지점 없음`);if(blocks.length>1)why.push('소블록 '+blocks.length+'곳')}
+ else if(blocks.length>1){lv='block';why.push(`신고가 소블록 ${blocks.length}곳(${blocks.join(', ')})`)}
+ else if(cA&&(cA.dia>=main||/송수|도수/.test(cA.use||''))){lv='block';why.push(`공통 상류가 ${cA.use||''} ⌀${cA.dia||'?'}mm (본관 기준 ${main}mm 이상, 확인 필요)`)}
+ else if(pumpUp){lv='pump';why.push('경로 15m 안에 가압장·감압밸브')}
+ else{lv='dist';why.push(`공통 상류 ⌀${cA&&cA.dia||'?'}mm ${cA&&cA.mat||''}`)}
+ if(lv==='one'&&pumpUp)why.push('상류 경로에 가압장·감압밸브 있음 — 이웃도 같으면 계통 문제');
+ const hw=T.reduce((a,t)=>({dir:a.dir+t.how.dir,dia:a.dia+t.how.dia}),{dir:0,dia:0});
+const trust=lk?'흐름 방향으로 공통 지점을 못 찾아 신고 지점을 잇는 관로 중 가장 굵은 관으로 추정 (확인 필요)':hw.dir&&hw.dir>=hw.dia?'관망해석 흐름 방향 기준':hw.dir?'흐름 방향 일부 + 굵은 관 쪽 추정 (확인 필요)':'흐름 방향 없음 — 굵은 관 쪽을 상류로 추정 (확인 필요)';
+ /* 우선 점검 목록: p 작을수록 먼저 */
+ const I=[],add=o=>{o.key=o.t+'|'+o.id;if(!I.some(x=>x.key===o.key))I.push(o)};
+ const s0=ce>=0?emEdgeMid(ce):emLL(ok[0]),dist=ll=>{const a=toM(ll[1],ll[0]),b=toM(s0[1],s0[0]);return Math.round(Math.hypot(a[0]-b[0],a[1]-b[1]))};
+ if(ty==='pump')fs.filter(f=>f.t==='가압장').forEach(f=>add({p:0,t:'가압장',id:emFn(f.i),d:'운전 상태·정지 원인(정전·고장)·예비 펌프 확인',ll:[FAC.y[f.i],FAC.x[f.i]],vi:f.i}));
+ [...pv.values()].filter(v=>FAC.cl[v.vi]).forEach(v=>add({p:1,t:'닫힘 기록 제수밸브',id:emVn(v.vi),d:'자료에 닫힘으로 기록됨 — 공사 뒤 안 연 밸브인지 가장 먼저 확인',ll:[FAC.y[v.vi],FAC.x[v.vi]],vi:v.vi}));
+ /* 최근 변경(관로·시설물 수정) 자리 */
+ try{const t1=now-(+C.days||30)*864e5;(CHG.list||[]).filter(e=>(e.k==='pipe'||e.k==='fac')&&e.ll&&(e.t||e.at)>=t1).forEach(e=>{const d=near(e.ll[1],e.ll[0]);if(d<=R)add({p:2,t:'최근 변경 자리',id:(e.id||e.tx||'').toString().slice(0,40)+' · '+chgMd(e.t||e.at),d:'최근 '+(+C.days||30)+'일 안 '+((CHG_K[e.k]||['',''])[1])+' 수정·공사 — 밸브 개폐·관 연결 확인',ll:e.ll})})}catch(_){}
+ {const VV=[...pv.values()].filter(v=>!FAC.cl[v.vi]).map(v=>({...v,dd:dist([FAC.y[v.vi],FAC.x[v.vi]])})).sort((a,b)=>(a.up-b.up)||a.dd-b.dd),cap=[0,0];VV.forEach(v=>{if(cap[+v.up]++>=(v.up?EM_VUP:EM_VDN)){return}add({p:v.up?4:3,t:v.up?'상류 제수밸브':'공통 상류~신고 사이 제수밸브',id:emVn(v.vi),d:(v.up?'공통 상류 위쪽':'신고 지점 쪽')+' 밸브 개도 확인'+(facBndI(v.vi)?' (경계밸브)':''),ll:[FAC.y[v.vi],FAC.x[v.vi]],vi:v.vi})});const more=VV.filter(v=>v.up).length-EM_VUP;if(more>0)add({p:4.5,t:'상류 제수밸브 더',id:more+'개',d:'더 위쪽 밸브는 지도 경로(회색 점선)를 따라 확인'})}
+ fs.filter(f=>f.t==='감압밸브'||(f.t==='가압장'&&ty!=='pump')).forEach(f=>add({p:2,t:f.t,id:emFn(f.i),d:f.t==='가압장'?'운전 상태·토출 수압 확인 (운영 담당)':'설정 수압·앞뒤 수압 확인',ll:[FAC.y[f.i],FAC.x[f.i]],vi:f.i}));
+ fs.filter(f=>f.t==='경계밸브').forEach(f=>add({p:5,t:'경계밸브',id:emVn(f.i),d:(FAC.cl[f.i]?'닫힘':'열림·미상')+' — 이웃 블록과 이어진 상태 확인',ll:[FAC.y[f.i],FAC.x[f.i]],vi:f.i}));
+ /* 누수 이력(민원대응·누수탐사 사진) */
+ try{lqLeakPts().forEach(g=>{const d=near(+g.lng,+g.lat);if(d>R)return;const un=phLrG(g),t=g.t1||g.t0||0;if(!un&&g.kd==='ts')return;if(g.kd==='mw'&&t&&now-t>180*864e5)return;add({p:un?2:6,t:un?'미수리 누수탐사':'최근 민원 자리',id:String(g.code||g.kc||g.id||'').slice(0,30)+(t?' · '+fmtD(t):''),d:un?'수리 안 된 누수 — 수압 저하 원인일 수 있음':'민원대응 사진 자리 — 같은 원인인지 확인',ll:[+g.lat,+g.lng]})})}catch(_){}
+ /* 저압(관망해석 모델) */
+ ok.forEach(p=>{try{const r=hydNear(p.la,p.ln);if(r){const pm=ELEV.hyd.pmin[r.i];if(pm<HYD_LOW)add({p:3,t:'모델 저압 지점',id:'신고 '+(p.k+1),d:`관망해석 최저 수압 ${hydF(pm)}m (${HYD_LOW}m 미만, 참고값) — 평소에도 수압이 낮은 곳일 수 있음`,ll:emLL(p)})}}catch(_){}});
+ if(ty==='wq'||ty==='low')fs.filter(f=>f.t==='이토밸브'||f.t==='소화전').sort((a,b)=>a.d-b.d).slice(0,ty==='wq'?8:3).forEach(f=>add({p:ty==='wq'?3:7,t:f.t,id:emVn(f.i),d:ty==='wq'?'배수(이토) 자리':'수압 측정 자리',ll:[FAC.y[f.i],FAC.x[f.i]],vi:f.i}));
+ /* 노후관 (경로 위 오래된 관) */
+ {const seen=new Set(),A=[];pathE.forEach(e=>{const fi=N.ef[e];if(seen.has(fi))return;seen.add(fi);const a=attrOf(PIPE.feats[fi]);if(a.year)A.push({fi,a,ll:emEdgeMid(e)})});A.sort((x,y)=>x.a.year-y.a.year);A.slice(0,3).forEach(x=>add({p:8,t:'경로 위 오래된 관',id:(x.a.id||'관리번호 없음')+' · '+x.a.year+'년',d:`${x.a.mat} ⌀${x.a.dia||'?'}mm — 관 내부 막힘·부식 가능성`,ll:x.ll}))}
+ /* 수용가: 이웃(같은 관로) · 영향 추정 범위 */
+ let cust=null;try{const r=await shutRows();if(r){const src=shutSrc(),o0=src[0]||{},kQ=('월평균(㎥)' in o0)?'월평균(㎥)':shutRowKey(o0,/월평균|평균사용량/),kU=('업종' in o0)?'업종':shutRowKey(o0,/업종|용도/),bq=+SHUT.opt.bigQ||500;
+  const own=new Set(ok.map(p=>p.mg).filter(Boolean)),rep=new Set(ok.map(p=>p.e)),nb=[];[...rep].forEach(e=>{for(const n of [N.ea[e],N.eb[e]])for(let j=N.ao[n];j<N.ao[n+1];j++)rep.add(N.ae[j])});
+  const wide=lv==='block'||lv==='wide'||lv==='pump',zone=wide?null:emZone(lv==='one'||lv==='same'?[...rep]:[...dnE]),bs=new Set(blocks);
+  const A=[];for(let i=0;i<src.length;i++){const o=src[i],e=r[i];if(rep.has(e)&&nb.length<12&&!own.has(String(o['관리번호']||''))&&o['관리번호'])nb.push(String(o['관리번호']||''));
+   const inA=wide?bs.has(String(o['소블록']||o['_결합블록']||'')):(e>=0&&zone.has(e));if(!inA)continue;const q=kQ?shutNum(o[kQ]):null,u=kU?String(o[kU]||''):'';A.push({mg:String(o['관리번호']||''),bk:String(o['소블록']||o['_결합블록']||''),big:q!=null&&q>=bq,q,u,imp:EM_IMP.test(u)})}
+  cust={n:A.length,big:A.filter(a=>a.big),imp:A.filter(a=>a.imp),all:A,bq,how:wide?'신고 소블록 전체':'밸브로 둘러싸인 구간(단수구역과 같은 연결)',nb};
+  if(nb.length)add({p:lv==='one'?0:9,t:'같은 관로 이웃 수용가',id:nb.slice(0,6).join(', ')+(nb.length>6?' 외':''),d:'같은 증상인지 전화·방문 확인 (한 집만이면 계량기·급수관)',ll:emLL(ok[0])})}}catch(e){console.warn('긴급 점검 수용가',e)}
+ I.sort((a,b)=>a.p-b.p);I.forEach((x,k)=>x.no=k+1);
+ return{at:now,ty,P,ok,T,ci,ce,cll:ce>=0?emEdgeMid(ce):null,cA,lv,why,trust,blocks,I,fs,cust,upE,dnE,lim,R}}
+/* ── 지도 ── */
+function emLayer(){if(!map)return null;if(!map.getPane('emPane')){const p=map.createPane('emPane');p.style.zIndex=636;p.style.pointerEvents='none'}if(!EM.cv)EM.cv=L.canvas({pane:'emPane',padding:.3});if(!EM.L)EM.L=L.layerGroup();if(!map.hasLayer(EM.L))EM.L.addTo(map);return EM.L}
+function emDraw(fit){if(!map)return;const G=emLayer();G.clearLayers();const R=EM.res,o={renderer:EM.cv,interactive:false},B=[];
+ const mk=(ll,html,cls,z)=>{B.push(ll);return L.marker(ll,{icon:L.divIcon({className:'stmk '+cls,html,iconSize:null}),interactive:false,keyboard:false,zIndexOffset:z||0}).addTo(G)};
+ if(R&&SHUT.net&&R.T){const ln=E=>[...E].map(e=>shutLL(e));const up=ln(R.upE),dn=ln(R.dnE);
+  if(dn.length){L.polyline(dn,{...o,color:'#fff',weight:9,opacity:.85}).addTo(G);L.polyline(dn,{...o,color:EM_LV[R.lv].c,weight:5}).addTo(G)}
+  if(up.length){L.polyline(up,{...o,color:'#fff',weight:8,opacity:.8}).addTo(G);L.polyline(up,{...o,color:'#334155',weight:4,dashArray:'8 6'}).addTo(G)}
+  if(R.cll)mk(R.cll,'<span>🎯 공통 상류</span>','emc',900);
+  R.I.forEach(x=>{if(x.ll&&x.p<9)mk(x.ll,`<span>${x.no}</span>`,'emi'+(EM.chk[x.key]?' ok':''),800)})}
+ EM.pts.forEach((p,k)=>mk(emLL(p),`<span>🚨${k+1}</span>`,'emp',950));
+ if(fit&&B.length)try{const on=EM.box&&!EM.box.hidden,ms=map.getSize(),mob=innerWidth<=640,pr=on&&!mob?Math.min(EM.box.offsetWidth+20,ms.x*.5):30,pb=on&&mob?Math.min(EM.box.offsetHeight,ms.y*.5):30;map.fitBounds(L.latLngBounds(B),{maxZoom:18,paddingTopLeft:[30,30],paddingBottomRight:[pr,pb]})}catch(_){}}
+function emGo(ll,vi){if(!map||!ll)return;map.setView(ll,Math.max(map.getZoom(),18));try{hitMark({t:'fac',ll})}catch(_){}}
+/* ── 신고 지점 넣기 ── */
+function emAddPt(la,ln,mg,src){if(!EM.t0)EM.t0=Date.now();EM.pts.push({la:+la,ln:+ln,mg:mg||'',t:Date.now(),src:src||''});EM.res=null;emSave();emDraw(false);emRender()}
+async function emFind(q){q=String(q||'').trim();if(!q)return;
+ const c=q.match(/^\s*(3[3-9](?:\.\d+)?)\s*[, ]\s*(12[4-9](?:\.\d+)?)\s*$/);if(c){emAddPt(+c[1],+c[2],'','좌표');return}
+ const src=shutSrc(),hit=src.find(o=>String(o['관리번호']||'').trim()===q&&o['_위도']!==''&&o['_위도']!=null);if(hit){emAddPt(+hit['_위도'],+hit['_경도'],q,'관리번호');return}
+ EM.msg='주소를 찾는 중…';emRender();
+ try{const key=$('kakao')?$('kakao').value.trim():'',rg=($('region')&&$('region').value.trim())||(typeof SITE!=='undefined'&&SITE.region)||'',q2=/[가-힣](시|군)\b/.test(q)||!rg?q:rg+' '+q;const p=await geocode(q2,key);
+  if(p){EM.msg='';emAddPt(p.lat,p.lng,'','주소 검색');return}EM.msg='찾은 결과가 없습니다. 📍 지도에서 찍어 주세요.'}catch(e){EM.msg='주소 검색 실패: '+esc(e&&e.message||e)+' — 📍 지도에서 찍어 주세요.'}emRender()}
+function emMapClick(e){if(!EM.pick)return;EM.pick=false;emAddPt(e.latlng.lat,e.latlng.lng,'','지도에서 찍음')}
+/* ── 대처 단추 ── */
+async function emAct(a){const R=EM.res,ll=R?(R.cll||emLL(R.ok[0])):EM.pts[0]&&emLL(EM.pts[0]);
+ if(a==='shut'||a==='tb'){if(!ll){alert('신고 지점을 먼저 넣으세요.');return}let at=ll;if(EM.c.ty==='pump'&&R){const p=R.I.find(x=>x.t==='가압장'&&x.ll);if(p)at=p.ll}else if((EM.c.ty==='leak'||EM.c.ty==='burst')&&EM.pts[0])at=emLL(EM.pts[0]);
+  if(a==='tb'){try{SHUT.opt.tb=true;localStorage.setItem('geo-shut',JSON.stringify(SHUT.opt))}catch(_){}}
+  EM.fold=true;emRender();await shutStartAt(L.latLng(at[0],at[1]));phToast&&phToast(a==='tb'?'💧 단수구역 창에 혼탁수 주의 구간이 함께 나옵니다':'💧 단수구역 창 아래 📝 안내문으로 문자·공고문을 쓸 수 있습니다');return}
+ if(a==='chg'){emLog();return}}
+function emLog(){const R=EM.res;if(!R){alert('먼저 🔎 점검 순서 만들기를 누르세요.');return}const n=R.I.filter(x=>EM.chk[x.key]).length;
+ try{chgAdd({k:'em',mine:1,by:chgMe(),n:R.ok.length,id:R.blocks.join(', ')||'',tx:`🚨 긴급 점검 ${EM_TY[R.ty].n}: 신고 ${R.ok.length}곳 · 판정 ${EM_LV[R.lv].n} · 점검 ${n}/${R.I.length}${EM.nt?' · '+EM.nt.slice(0,40):''}`,ll:R.cll||emLL(R.ok[0])});phToast&&phToast('🔔 변경 기록에 남겼습니다')}catch(e){alert('기록을 남기지 못했습니다: '+e.message)}}
+/* ── 창 ── */
+function emOpen(){if(!map)return;emBoxInit();EM.box.hidden=false;EM.fold=false;emRender();emChip();emDraw(false)}
+function emClose(){if(EM.box)EM.box.hidden=true;EM.pick=false;emChip()}
+function emToggle(){if(EM.box&&!EM.box.hidden)emClose();else emOpen()}
+function emChip(){const a=$('emA');if(a)a.classList.toggle('on',!!(EM.box&&!EM.box.hidden))}
+function emBoxInit(){if(EM.box||!map)return;const p=L.DomUtil.create('div','uiset shutp stp emp2 np',map.getContainer());p.id='emBox';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','긴급 점검');
+ L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p);EM.box=p;
+ p.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT'||b.tagName==='SELECT'||b.tagName==='TEXTAREA')return;const a=b.dataset.a,j=+b.dataset.j;
+  if(a==='x')emClose();else if(a==='fold'){EM.fold=!EM.fold;emRender()}else if(a==='fit')emDraw(true);
+  else if(a==='pin'){EM.pick=!EM.pick;emRender()}else if(a==='find'){const i=p.querySelector('[data-a="q"]');emFind(i&&i.value);if(i)i.value=''}
+  else if(a==='del'){EM.pts.splice(j,1);EM.res=null;emSave();emDraw(false);emRender()}else if(a==='gp'){const q=EM.pts[j];if(q)emGo(emLL(q))}
+  else if(a==='run')emRun();else if(a==='go'){const x=EM.res&&EM.res.I[j];if(x)emGo(x.ll,x.vi)}
+  else if(a==='ck'){const x=EM.res&&EM.res.I[j];if(!x)return;if(EM.chk[x.key])delete EM.chk[x.key];else EM.chk[x.key]=Date.now();emSave();emRender();emDraw(false)}
+  else if(a==='act')emAct(b.dataset.w).catch(er=>alert(er.message));else if(a==='hw')emReport('hwpx').catch(er=>alert('한글 파일 만들기 실패: '+er.message));else if(a==='rep')emReport().catch(er=>alert('보고서를 만들지 못했습니다: '+er.message));
+  else if(a==='xl')emXl();else if(a==='log')emLog();
+  else if(a==='new'){if(EM.pts.length&&!confirm('지금 상황(신고 지점·점검 표시·메모)을 지우고 새로 시작할까요?'))return;EM.pts=[];EM.chk={};EM.t0=0;EM.nt='';EM.res=null;emSave();emDraw(false);emRender()}});
+ p.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.a==='q'){e.preventDefault();emFind(e.target.value);e.target.value=''}});
+ p.addEventListener('change',e=>{const b=e.target;if(b.dataset.a==='ty'){EM.c.ty=b.value;EM.res=null;emSave();emRender();emDraw(false)}else if(b.dataset.a==='nt'){EM.nt=b.value;emSave()}
+  else if(b.dataset.a==='cf'){const v=+b.value;if(isFinite(v)&&v>0){EM.c[b.dataset.w]=v;emSave()}}})}
+function emRender(){const p=EM.box;if(!p||p.hidden)return;const R=EM.res,ty=EM.c.ty,T=EM_TY[ty];p.classList.toggle('fold',EM.fold);
+ const hd=`<div class="sthd"><b>🚨 긴급 점검 · ${esc(T.n)}</b><span><button type="button" class="btn ol shbr" data-a="fold" title="접기·펴기">${EM.fold?'▴':'▾'}</button>${R?'<button type="button" class="btn ol shbr" data-a="fit" title="전체 보기">🔍</button>':''}<button type="button" class="btn ol shbr" data-a="x" title="닫기" aria-label="닫기">✕</button></span></div>`;
+ if(EM.fold){p.innerHTML=hd;return}
+ const top=`<div class="shtq"><select data-a="ty" aria-label="상황 종류">${Object.entries(EM_TY).map(([k,v])=>`<option value="${k}"${k===ty?' selected':''}>${v.ic} ${v.n}</option>`).join('')}</select><button type="button" class="btn ol shbr" data-a="new" title="새 상황">🗑 새로</button></div>
+ <small class="mute">${esc(T.d)}${EM.t0?' · 접수 '+fmtDT(EM.t0):''}</small>
+ <div class="empts"><b>신고 지점 ${EM.pts.length}곳</b>${EM.pts.map((q,j)=>`<span><button type="button" data-a="gp" data-j="${j}" title="${esc(q.src||'')}${q.mg?' · '+esc(q.mg):''}">🚨${j+1}${q.mg?' '+esc(q.mg):''}</button><button type="button" data-a="del" data-j="${j}" aria-label="신고 ${j+1} 빼기">✕</button></span>`).join('')}</div>
+ <div class="shtq"><input data-a="q" placeholder="관리번호·주소·좌표" aria-label="신고 지점 찾기" style="flex:1;min-width:0;padding:5px 6px;font-size:12px;margin:0"><button type="button" class="btn ol shbr" data-a="find">넣기</button><button type="button" class="btn ol shbr${EM.pick?' on':''}" data-a="pin" title="지도에서 신고 지점 찍기">📍 찍기</button></div>
+ ${EM.pick?'<p class="shh c-am">지도에서 신고 지점을 누르세요.</p>':''}
+ <div class="shb"><button type="button" class="btn" data-a="run"${EM.busy||!EM.pts.length?' disabled':''}>🔎 ${R?'다시 판정':'점검 순서 만들기'}</button></div>${EM.msg?`<p class="shh">${EM.msg}</p>`:''}`;
+ if(!R){p.innerHTML=hd+top+'<p class="shh mute">같은 시간대 신고를 모두 넣을수록 원인 범위를 잘 가립니다. 입력한 주소 글자는 저장하지 않고 좌표·관리번호만 씁니다.</p>';return}
+ const V=EM_LV[R.lv],done=R.I.filter(x=>EM.chk[x.key]).length;
+ const jd=`<div class="emlv" style="border-color:${V.c}"><b style="color:${V.c}">원인 범위: ${esc(V.n)}</b><div>${esc(V.d)}</div><small>근거: ${esc(R.why.join(' · '))} · 상류 찾기: ${esc(R.trust)}${R.ok.length<R.P.length?` · 관로 60m 밖 신고 ${R.P.length-R.ok.length}곳 뺌`:''}</small></div>`;
+ const cs=R.cust?`<div class="shc"><span>영향 추정 수용가 <b>${R.cust.n.toLocaleString()}</b>곳</span><span>🏭 대수용가 <b>${R.cust.big.length}</b></span><span>⭐ 중요 <b>${R.cust.imp.length}</b></span><small class="mute">${esc(R.cust.how)}</small></div>`:'<p class="shh mute">수용가: 결과(①) 또는 부과량 자료가 없어 확인 필요</p>';
+ const it=`<details class="emd" open><summary>🔎 우선 점검 ${done}/${R.I.length}</summary><table class="sht emt"><tr><th>#</th><th>점검할 곳</th><th></th></tr>${R.I.map((x,j)=>`<tr class="${EM.chk[x.key]?'done':''}"><td><b>${x.no}</b></td><td><b>${esc(x.t)}</b> ${esc(x.id)}<div class="sts">${esc(x.d)}</div></td><td class="emb">${x.ll?`<button type="button" class="btn ol shbr" data-a="go" data-j="${j}" title="지도에서 보기">📍</button>`:''}<button type="button" class="btn ${EM.chk[x.key]?'':'ol '}shbr" data-a="ck" data-j="${j}" title="확인함 표시">${EM.chk[x.key]?'✓ '+stHM(EM.chk[x.key]):'확인'}</button></td></tr>`).join('')||'<tr><td colspan="3" class="mute">찾은 점검 대상이 없습니다 — 상류 거리·범위를 늘려 보세요</td></tr>'}</table></details>`;
+ const ac=`<details class="emd" open><summary>${T.ic} 대처 카드 — ${esc(T.n)}</summary><ol class="emact">${EM_ACT[ty].map(([h,d,a])=>`<li><b>${esc(h)}</b> ${esc(d)}${a?` <button type="button" class="btn ol shbr" data-a="act" data-w="${a}">${a==='shut'?'💧 단수구역·안내문':a==='tb'?'🟤 혼탁수 구간':'🔔 기록'}</button>`:''}</li>`).join('')}</ol></details>`;
+ const big=R.cust&&(R.cust.big.length||R.cust.imp.length)?`<details class="emd"><summary>🏭 대수용가·⭐ 중요 수용가 (관리번호)</summary><p class="shh">${[...R.cust.imp.map(a=>'⭐'+esc(a.mg)+(a.u?' ('+esc(a.u)+')':'')),...R.cust.big.filter(a=>!a.imp).map(a=>'🏭'+esc(a.mg))].slice(0,40).join(', ')}${R.cust.big.length+R.cust.imp.length>40?' 외':''}</p><small class="mute">대수용가 = 월평균 ${R.cust.bq}㎥ 이상 · 중요 = 업종에 병원·학교·요양·어린이집 등</small></details>`:'';
+ const cf=`<details class="emd"><summary>⚙ 판정 기준 (확인 필요)</summary><div class="g2" style="gap:4px"><label class="f">상류 찾기 거리(m)<input type="number" data-a="cf" data-w="up" value="${EM.c.up}" min="200" step="100"></label><label class="f">경로 둘레(m)<input type="number" data-a="cf" data-w="R" value="${EM.c.R}" min="10" step="10"></label><label class="f">최근 변경(일)<input type="number" data-a="cf" data-w="days" value="${EM.c.days}" min="1" step="1"></label><label class="f">본관 관경(mm)<input type="number" data-a="cf" data-w="main" value="${EM.c.main}" min="50" step="50"></label></div><small class="mute">바꾼 뒤 🔎 다시 판정을 누르세요.</small></details>`;
+ p.innerHTML=hd+top+jd+cs+it+ac+big+cf+`<label class="stnt">메모<input data-a="nt" value="${esc(EM.nt||'')}" placeholder="조치 내용·특이사항"></label>
+ <div class="shb"><button type="button" class="btn ol" data-a="hw">📝 한글 보고서</button><button type="button" class="btn ol" data-a="rep">📄 보고서·PDF</button><button type="button" class="btn ol" data-a="xl">⬇ 엑셀</button><button type="button" class="btn ol" data-a="log">🔔 기록 남기기</button></div>
+ <p class="shh mute">판정은 관로 연결·흐름 방향·자료 기록으로 낸 참고 순서입니다. 현장 확인이 우선이며, 확인 표시·메모는 이 기기에만 저장됩니다.</p>`}
+/* ── 보고서 (HWPX·인쇄) · 엑셀 ── */
+function emRows(R){return{
+ pts:R.P.map(p=>({'신고':'🚨'+(p.k+1),'관리번호':p.mg||'','소블록':p.bk||'확인 필요','가까운 관로(m)':p.d!=null?p.d:'60m 안 없음','넣은 방법':p.src||'','시각':fmtDT(p.t),'위도':+p.la.toFixed(6),'경도':+p.ln.toFixed(6)})),
+ items:R.I.map(x=>({'순서':x.no,'구분':x.t,'대상':x.id,'점검 내용':x.d,'확인':EM.chk[x.key]?fmtDT(EM.chk[x.key]):'','위도':x.ll?+(+x.ll[0]).toFixed(6):'','경도':x.ll?+(+x.ll[1]).toFixed(6):''})),
+ act:EM_ACT[R.ty].map(([h,d],k)=>({'단계':k+1,'할 일':h,'내용':d})),
+ cust:R.cust?R.cust.all.filter(a=>a.big||a.imp).map(a=>({'관리번호':a.mg,'소블록':a.bk,'대수용가':a.big?'Y':'','월평균(㎥)':a.q!=null?a.q:'','중요 수용가':a.imp?'Y':'','업종':a.u})):[]}}
+function emInfo(R){return[['상황',EM_TY[R.ty].n+' — '+EM_TY[R.ty].d],['접수',EM.t0?fmtDT(EM.t0):'확인 필요'],['신고 지점',`${R.P.length}곳 (관로 연결 ${R.ok.length}곳)`],['소블록',R.blocks.join(', ')||'확인 필요'],['원인 범위',EM_LV[R.lv].n],['판정 근거',R.why.join(' · ')],['상류 찾기',R.trust+` · 최대 ${R.lim.toLocaleString()}m`],
+ ['공통 상류',R.cA?`${R.cA.id||'관리번호 없음'} · ${R.cA.use||''} ${R.cA.mat||''} ⌀${R.cA.dia||'?'}mm${R.cA.year?' · '+R.cA.year+'년':''}`:(R.ok.length>1?'찾지 못함':'신고 1곳 (해당 없음)')],
+ ['영향 추정 수용가',R.cust?`${R.cust.n.toLocaleString()}곳 · 대수용가 ${R.cust.big.length} · 중요 ${R.cust.imp.length} (${R.cust.how})`:'확인 필요'],['메모',EM.nt||''],['작성',`${fmtDT(Date.now())} · 만든이: 구병순`]]}
+async function emReport(mode){const R=EM.res;if(!R){alert('먼저 🔎 점검 순서 만들기를 누르세요.');return}const hw=mode==='hwpx',e=esc,SITEN=(typeof SITE!=='undefined'&&SITE.name)||'',D=emRows(R);
+ const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${e(String(c??''))}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${h.length}">없음</td></tr>`}</tbody></table>`;
+ const title=`${SITEN} 긴급상황(${EM_TY[R.ty].n}) 우선점검·대처 보고서`,fn=`긴급점검_${EM_TY[R.ty].n.replace(/\s/g,'')}_${(R.blocks[0]||'').replace(/[\\/:*?"<>|]/g,'')}_${fmtD(Date.now()).replace(/-/g,'')}`;
+ const sec=[`<h2>1. 상황 개요</h2>${T(['항목','내용'],emInfo(R))}`,
+  `<h2>2. 원인 범위 판정</h2><p><b>${e(EM_LV[R.lv].n)}</b> — ${e(EM_LV[R.lv].d)}</p><p class="n">판정은 관로 연결·흐름 방향(관망해석)·시설물 기록으로 낸 참고값입니다. 현장 확인이 우선입니다.</p>`,
+  `<h2>3. 우선 점검 순서</h2>${T(['순서','구분','대상(관리번호)','점검 내용','확인 시각'],D.items.map(r=>[r['순서'],r['구분'],r['대상'],r['점검 내용'],r['확인']]))}`,
+  `<h2>4. 대처 방안 — ${e(EM_TY[R.ty].n)}</h2>${T(['단계','할 일','내용'],D.act.map(r=>[r['단계'],r['할 일'],r['내용']]))}`,
+  `<h2>5. 영향 범위 · 중요 수용가</h2>${R.cust?`<p>영향 추정 수용가 ${R.cust.n.toLocaleString()}곳 (${e(R.cust.how)}) · 대수용가(월평균 ${R.cust.bq}㎥ 이상) ${R.cust.big.length}곳 · 중요 수용가 ${R.cust.imp.length}곳</p>`+T(['관리번호','소블록','대수용가','월평균(㎥)','중요','업종'],D.cust.slice(0,80).map(r=>[r['관리번호'],r['소블록'],r['대수용가'],r['월평균(㎥)'],r['중요 수용가'],r['업종']]))+(D.cust.length>80?`<p class="n">외 ${D.cust.length-80}곳은 엑셀 참고</p>`:''):'<p>수용가 자료가 없어 확인 필요</p>'}`,
+  `<h2>6. 신고 지점</h2>${T(['신고','관리번호','소블록','가까운 관로(m)','넣은 방법','시각'],D.pts.map(r=>[r['신고'],r['관리번호'],r['소블록'],r['가까운 관로(m)'],r['넣은 방법'],r['시각']]))}<p class="n">지도는 앱의 📷 지도 캡처로 붙이세요. 위경도는 엑셀에 있습니다.</p>`];
+ const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
+.pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 10mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:14px 18px;-webkit-print-color-adjust:exact;print-color-adjust:exact}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.9;font-size:11.5px}
+main{padding:4px 16px}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:16px 0 6px;break-after:avoid}thead{display:table-header-group}
+table{border-collapse:collapse;width:100%;font-size:10.5px;margin:3px 0}th{background:#eef2ff;color:#3730a3;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact}th,td{border:1px solid #e2e8f0;padding:3px 5px;vertical-align:top}tr{break-inside:avoid}
+.n{color:#64748b;font-size:10px;margin:3px 0}footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px;display:flex;justify-content:space-between}.bar{position:sticky;top:0;background:#1e293b;padding:8px;text-align:center}.bar button{font:inherit;font-weight:700;padding:6px 14px;border-radius:8px;border:0;background:#4f46e5;color:#fff;cursor:pointer;margin:0 4px}
+@media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}}</style></head><body>
+<div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${HWPX_BTN(fn+'.hwpx')}<button onclick="close()">닫기</button></div>
+<div class="pg"><header><h1>🚨 ${e(title)}</h1><p>스마트 물길주소 · 작성 ${fmtDT(Date.now())} · 만든이: 구병순</p></header><main>${sec.map(x=>`<section>${x}</section>`).join('\n')}
+<p class="n" style="margin-top:12px">관리번호·소블록만 씁니다(고객 이름·주소·연락처 없음). 밸브 위치·개폐 상태는 시설물 자료 기준이며 현장 확인이 필요합니다. 거리·관경 기준은 확인 필요.</p></main>
+<footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
+ if(hw){await hwpxFromHtml(html,fn+'.hwpx');return}
+ const w=window.open('','emReport','width=900,height=1000');if(!w){alert('팝업이 막혀 보고서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}w.document.open();w.document.write(html);w.document.close()}
+function emXl(){const R=EM.res;if(!R){alert('먼저 🔎 점검 순서 만들기를 누르세요.');return}const D=emRows(R),wb=XLSX.utils.book_new(),A=(r,n,w)=>{const ws=XLSX.utils.json_to_sheet(r.length?r:[{'내용':'없음'}]);if(w)ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)};
+ A(D.items,'우선 점검',[6,20,28,50,16,11,11]);A(D.act,'대처 방안',[6,20,70]);A(D.cust,'대수용가·중요 수용가',[14,10,8,10,8,16]);A(D.pts,'신고 지점',[6,14,10,12,12,16,11,11]);A(emInfo(R).map(([k,v])=>({'항목':k,'내용':v})),'개요',[16,80]);
+ XLSX.writeFile(wb,`긴급점검_${EM_TY[R.ty].n.replace(/\s/g,'')}_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
+/* ── 칩·초기화 ── */
+function emInit(){const go=()=>{if(!map){setTimeout(go,500);return}if($('emA'))return;map.on('click',emMapClick);
+  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn embtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='em';
+   a.href='#';a.id='emA';a.textContent='🚨';a.title='🚨 긴급 점검 — 출수불량·누수·가압장 정지 등 우선 점검 순서와 대처 카드';a.setAttribute('role','button');a.setAttribute('aria-label','긴급 점검');
+   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);emToggle()});return d}});
+  map.addControl(new Ctl());if(EM.pts.length)emDraw(false)};go()}
+try{emInit()}catch(e){console.warn('긴급 점검',e)}
+
 
 
 try{rsInit()}catch(e){console.warn('적정 관경',e)}
