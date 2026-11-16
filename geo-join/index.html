@@ -9,8 +9,8 @@
  /* 본부 서버 웹 앱 주소: 배포한 뒤 HQ0에 넣음. ⚙ 설정 › 👑 현장 관리에서 이 기기만 바꿀 수도 있음(geo-hq) */
  var HQ0='https://script.google.com/macros/s/AKfycby05kTLdPdAwoLLyt7zKNKEIXqHBHGK-M-Z0MwrRy_13_A7SjyE-VpE7YKHdEwY0uPv_w/exec';
  var BI={
-  phg:{id:'phg',name:'포항시',short:'포항',tag:'포항이',col:'#4f46e5',region:'경북 포항시',c:[36.019,129.343],crs:'5179',url:'https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec',alias:'BV01,BV02,BV02-1=블루밸리',gc:'경북 포항시 남구 시청로 1',cw:'YD,YG'},
-  uis:{id:'uis',name:'의성군',short:'의성',tag:'의성군',col:'#059669',region:'경북 의성군',c:[36.362,128.592],crs:'5187',url:'https://script.google.com/macros/s/AKfycbxNJqm6z9eGflo86sVdHB6qxrPoRmBnwZTeJsIejIJ5teMjMVXY3YW9JAHWUOUpzIg-vA/exec',alias:'',gc:'경북 의성군 의성읍 군청길 31',cw:''},
+  phg:{id:'phg',name:'포항시',short:'포항',tag:'포항이',col:'#4f46e5',region:'경북 포항시',c:[36.019,129.343],crs:'5179',url:'https://script.google.com/macros/s/AKfycbyUIzPpq825EGqTFd5G_JcnLsTKOhLS4aB943vld26_W097IUV--frsjU7njABsCURL/exec',old:'AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw',/* 2026-11-16 새 배포 주소로 바꿈 — 옛 주소를 저장한 기기는 shUrlFix가 새 주소로 옮김 */alias:'BV01,BV02,BV02-1=블루밸리',gc:'경북 포항시 남구 시청로 1',cw:'YD,YG'},
+  uis:{id:'uis',name:'의성군',short:'의성',tag:'의성군',col:'#059669',region:'경북 의성군',c:[36.362,128.592],crs:'5187',url:'https://script.google.com/macros/s/AKfycbx_CijK7sJe3zXSBXbnlEAy6NyjZQ6Spy67WWzur0W5ZQ4rB4kKETeN7nQPBXosjQa1TQ/exec',old:'AKfycbxNJqm6z9eGflo86sVdHB6qxrPoRmBnwZTeJsIejIJ5teMjMVXY3YW9JAHWUOUpzIg-vA',/* 2026-11-16 새 배포 주소 */alias:'',gc:'경북 의성군 의성읍 군청길 31',cw:''},
   /* 안동시: 본부 서버에 등록한 현장(코드 andong) — 본부가 멈추거나 주소가 빠져도 공유 서버 주소가 비지 않게 앱 기본값으로도 둠. 공유 키는 넣지 않음 */
   andong:{id:'andong',name:'안동시',short:'안동',tag:'안동시',col:'#0d9488',region:'경북 안동시',c:[36.5665,128.7152],crs:'5187',url:'https://script.google.com/macros/s/AKfycbzl1YDQwBeNmg26dv7-mgazC_9vSUmd1RBL6A4VqfQ7Um6vT3tvAlf4OYhUOepRhy4xFg/exec',alias:'',gc:'경북 안동시 퇴계로 115',cw:''}};
  var LS0=null;try{LS0=window.localStorage}catch(e){}
@@ -18,7 +18,7 @@
  var HQS={};try{HQS=JSON.parse(rd('geo-sites')||'{}')||{}}catch(e){HQS={}}
  window.SITE_BI=BI;window.SITE_HQ=HQS;window.HQ_URL0=HQ0;window.HQ_URL=rd('geo-hq')||HQ0;
  /* 현장 코드 → 현장 정보 (본부 값이 앱 기본값보다 앞섬, 빈 값은 기본값 유지) */
- window.siteMake=function(id){var b=BI[id]||{},h=HQS[id]||{},o={},k;for(k in b)o[k]=b[k];for(k in h)if(k!=='h'&&k!=='k'&&h[k]!==''&&h[k]!=null)o[k]=h[k];
+ window.siteMake=function(id){var b=BI[id]||{},h=HQS[id]||{},o={},k;for(k in b)o[k]=b[k];for(k in h)if(k!=='h'&&k!=='k'&&h[k]!==''&&h[k]!=null&&!(k==='url'&&b.old&&String(h[k]).indexOf(b.old)>=0))o[k]=h[k];/* 본부에 옛 주소가 남아 있어도 새 기본 주소를 씀 */
   o.id=id;o.name=o.name||id;o.idb=id==='phg'?'geo-addr-app':id+'-addr-app';o.pre=id==='phg'?'geo-':id+'-';o.tag=o.tag||o.name;o.short=o.short||String(o.name).replace(/(시|군|구)$/,'');o.col=o.col||'#0d9488';
   o.region=o.region||o.name;o.c=(o.c&&o.c.length===2&&isFinite(o.c[0])&&isFinite(o.c[1]))?[+o.c[0],+o.c[1]]:[36.2,128.9];if(o.alias==null)o.alias='';if(o.cw==null)o.cw='';o.gc=o.gc||o.region;o.url=o.url||'';
   o.crsO=o.crs==='5187'?['EPSG:5187','EPSG:5179','EPSG:5186']:o.crs==='5186'?['EPSG:5186','EPSG:5179','EPSG:5187']:o.crs==='5185'?['EPSG:5185','EPSG:5179','EPSG:5186','EPSG:5187']:['EPSG:5179','EPSG:5186','EPSG:5187'];
@@ -916,6 +916,12 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .hlpw .hcf{display:flex;gap:6px;margin:6px 0 4px}.hlpw .hcf input{flex:1;min-width:0;font:inherit;font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--bg,#fff);color:var(--ink)}.hlpw .hcf .btn{flex:0 0 auto;width:auto;min-width:64px;padding:0 14px;margin:0}
 .hlpw .hcex{display:flex;flex-wrap:wrap;gap:4px}.hlpw .hce{font:inherit;font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--ink);cursor:pointer}.hlpw .hce:hover{background:#eef2ff;color:#312e81}
 .hlpw .hcn{margin:4px 0 0;font-size:11.5px;color:var(--mute,#64748b)}
+.hlpw .hctab{display:inline-flex;gap:2px;margin-left:6px;padding:2px;border-radius:999px;background:var(--line2,#e2e8f0)}.hlpw .hctab button{font:inherit;font-size:12px;font-weight:700;border:0;border-radius:999px;padding:3px 10px;background:transparent;color:var(--mute,#64748b);cursor:pointer}.hlpw .hctab button{white-space:nowrap}@media (max-width:480px){.hlpw .hct{display:none}.hlpw .hcclr{white-space:nowrap}}.hlpw .hctab button.on{background:var(--card,#fff);color:#4338ca;box-shadow:0 1px 3px #0f172a33}
+.hlpw .hcbox.kbm{border-color:#5eead4;background:linear-gradient(#ccfbf180,transparent 60px)}.hlpw .kbc>b{font-size:12.5px;color:#0f766e}html.dark .hlpw .kbc>b{color:#5eead4}.hlpw .kbs{font-size:12.5px;color:var(--ink)}
+.hlpw .kbfull{margin-top:6px;border:1px solid var(--line2);border-radius:10px;padding:6px 8px;background:var(--card)}.hlpw .kbt{max-height:240px;overflow:auto;font-size:12.5px;line-height:1.6;white-space:normal}
+.hlpw .kbn{font:inherit;font-size:10.5px;font-weight:800;border:0;border-radius:6px;background:#ccfbf1;color:#115e59;padding:0 5px;margin:0 1px;cursor:pointer;vertical-align:super;line-height:1.3}.hlpw .kbcite{margin:2px 0 0;padding-left:20px;font-size:12px}.hlpw .kbsrc{font:inherit;border:0;background:none;padding:0;color:#0f766e;text-decoration:underline;cursor:pointer;text-align:left}html.dark .hlpw .kbsrc{color:#5eead4}
+.kbw{width:min(760px,calc(100vw - 24px))}.kbw .kbtb{overflow:auto;max-height:46vh}.kbw table{border-collapse:collapse;width:100%;font-size:12.5px}.kbw th,.kbw td{border-bottom:1px solid var(--line2);padding:4px 5px;vertical-align:top;text-align:left}.kbw th{position:sticky;top:0;background:var(--card);font-size:11.5px;color:var(--mute,#64748b)}.kbw tr.off td{opacity:.55}
+.kbw td input:not([type]),.kbw td input[type=text]{width:100%;min-width:110px;font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--bg,#fff);color:var(--ink);box-sizing:border-box}.kbw .kbup{display:inline-flex;align-items:center;width:auto;margin:0;padding:3px 12px;font-size:12px;min-height:30px;cursor:pointer}.kbw .hcb .btn{flex:0 0 auto;width:auto;margin:0;padding:3px 10px;font-size:12px;min-height:30px}.kbw td .btn{width:auto;margin:0;padding:2px 6px;min-height:26px}
 .hlpw .hclog{max-height:min(46vh,380px);overflow:auto;display:flex;flex-direction:column;gap:6px;padding:4px 2px;margin-bottom:4px}.hlpw .hclog[hidden]{display:none}
 .hlpw .hcm{max-width:94%;padding:6px 9px;border-radius:12px;font-size:13px;line-height:1.55}.hlpw .hcm.me{align-self:flex-end;background:#4f46e5;color:#fff;border-bottom-right-radius:4px}
 .hlpw .hcm.bot{align-self:flex-start;background:var(--bg,#f8fafc);border:1px solid var(--line2);border-bottom-left-radius:4px;width:94%}.hlpw .hcm.ai{border-color:#a5b4fc}
@@ -8824,7 +8830,7 @@ try{Object.assign(SH.cfg,JSON.parse(localStorage.getItem('geo-share')||'{}'))}ca
 /* 회사 공유 서버 주소를 기본값으로 넣음 (직원은 공유 키만 입력). 공유 키는 앱에 넣지 않음. 직원이 따로 넣은 주소가 있으면 그것을 우선 */
 const SH_URL0=SITE.url||'';/* 현장 공유 서버 주소: 포항·의성은 앱 기본값, 새 현장은 본부 서버에서 받음 */
 /* 주소 정리: 앞뒤 글자·/u/0/·/dev·?뒤 글자를 정리하고, 비었거나 틀린 주소면 회사 기본 주소로 되돌림 */
-function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);if(m)return `https://script.google.com/macros/s/${m[1]}/exec`;
+function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);if(m){if(SITE.old&&SH_URL0&&String(SITE.old).split(',').includes(m[1]))return SH_URL0;return `https://script.google.com/macros/s/${m[1]}/exec`}
  const c=u.match(/^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\/[^\s?#]*)?/);return c&&!/^https:\/\/script\.google\.com/i.test(c[0])?c[0].replace(/\/+$/,''):SH_URL0}
 SH.cfg.url=shUrlFix(SH.cfg.url);
 setTimeout(()=>{if(!SH.cfg.url){const m=document.getElementById('shMsg');if(m&&!m.textContent)m.textContent='⚠ '+SITE.name+' 공유 서버 주소가 아직 없습니다. 관리자가 👑 현장 관리에 이 현장의 공유 서버 주소를 저장하면 앱을 열 때 자동으로 채워집니다.'}},0);
@@ -9105,7 +9111,7 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
 
 /* ===================== 🗺️ 기준자료 공유: 사진 공유 서버(공유 키)에 소블록 경계·상수관로·시설물을 올리고, 다른 기기는 열 때 새 버전만 받음 ===================== */
 /* 버전 = 기준자료의 저장 시각(at). 서버 버전이 이 기기 것보다 새것일 때만 받고, 이 기기 것이 더 새것이면 받지 않고 '올리기 필요'로 알림 */
-const REF={busy:false,PART:3e6,L:[['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['pedit','상수관로 현장 수정',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0],['vids','동영상 연결',v=>v&&Array.isArray(v.list)?v.list.length:0],['marks','지도 그리기',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0],['trkp','팀 탐사 관로',v=>v&&Array.isArray(v.list)?v.list.length:0]]};
+const REF={busy:false,PART:3e6,L:[['kb','📚 백과사전 자료실',v=>v&&Array.isArray(v.ch)?v.ch.length:0],['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['pedit','상수관로 현장 수정',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0],['vids','동영상 연결',v=>v&&Array.isArray(v.list)?v.list.length:0],['marks','지도 그리기',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0],['trkp','팀 탐사 관로',v=>v&&Array.isArray(v.list)?v.list.length:0]]};
 const refMB=b=>(b/1048576).toFixed(1)+'MB';
 function refSay(t){const m=$('shRefMsg');if(m)m.innerHTML=t}
 async function refLocal(){const o={};for(const [n] of REF.L){try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
@@ -9128,7 +9134,7 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    try{for(let p=0;p<parts;p++){refSay(`⏫ ${t} 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);
     await shReq('refput',{name:n,v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}}
-   catch(e){if((n==='elev'||n==='phref')&&/알 수 없는 기준자료/.test(String(e&&e.message))){(REF.oldN=REF.oldN||[]).push(t);REF.old=true;continue}throw e}up++}
+   catch(e){if((n==='elev'||n==='phref'||n==='kb')&&/알 수 없는 기준자료/.test(String(e&&e.message))){(REF.oldN=REF.oldN||[]).push(t);REF.old=true;continue}throw e}up++}
   const info2=(await shReq('refinfo')).ref||{};refSay((REF.old?`<span class="c-am">${esc(REF.oldN.join('·'))}은(는) 공유 서버가 예전 판이라 올리지 못했습니다. 공유 서버 Code.gs를 최신 판으로 바꾸고 새 버전으로 배포해 주세요.</span><br>`:'')+(up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
  catch(e){refSay('<span class="c-rd">⚠️ 기준자료 올리기 실패: '+esc((e&&e.message)||e)+'</span>'+(/알 수 없는 요청/.test(String(e&&e.message))?'<br><small>공유 서버 Code.gs를 2026-10-13 판으로 바꾸고 새 버전으로 다시 배포해 주세요.</small>':''))}
  finally{REF.busy=false}}
@@ -9212,6 +9218,7 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
    const bufs=[];for(let p=0;p<s.parts;p++){refSay(`⬇️ ${t} 받는 중… ${p+1}/${s.parts} (${refMB(s.size)})`);const r=await shReq('refget',{name:n,v:s.v,part:p});bufs.push(shBlob(r.data))}
    refSay(`${t} 푸는 중…`);const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error(t+' 압축 파일이 비었습니다.');
    const v=JSON.parse(await e.async('string'));if(cnt(v)!==s.cnt||v.at!==s.v)throw new Error(t+' 받은 자료 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');
+   if(n==='kb'){await IDB.set('kb',v);kbSet(v);stoKeep();got.push(`${t} 자료 ${v.docs.length}종`);continue}
    if(n==='blocks'){const p=await blkSnap();if(p)try{await IDB.set('blocks_prev',p)}catch(_){}await IDB.set('blocks',v);rawFC=null;BLK_HIST=[];await blkRestore()}
    else if(n==='pipes'){if(l)try{await IDB.set('pipes_prev',l)}catch(_){}await IDB.set('pipes',v);await pipeRestore(true)}
    else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}{const h=!v.hyd&&hydKeep(l);if(h)v.hyd=h}await IDB.set('elev',v);await elevRestore(true)}
@@ -12553,10 +12560,10 @@ function hlpUrl(h){const web=/^https?:$/.test(location.protocol)&&!/script\.goog
 function hlpOpen(){let w=$('hlpW');
  if(!w){w=document.createElement('div');w.id='hlpW';w.className='hlpw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','사용법');
   const Q=[['c1','🔑 처음: 공유 키 설정'],['c2','🗺️ 화면 익히기'],['c4','🔍 블록·주소 찾기'],['c5','📷 사진 올리기'],['c6','💧 단수구역'],['c7','👆 길게 눌러 주소'],['c8','🖼️ 화면 캡처'],['c9','🔔 변경 기록'],['c12','🛠 시설물 편집'],['c13','🛠 관로 편집'],['c19','⛰️ 표고·수압 보기'],['c26','🖥️ PC 작업 화면'],['c27','🗂️ 레이어 창'],['c28','🟤 혼탁수 주의'],['c29','⚠️ 가압장·감압밸브 주의'],['c30','📝 단수 안내문'],['c31','🔍 시설물 찾기'],['c32','📷 사진 올리기 결과'],['c33','📊 변경 주간 집계'],['c34','💾 저장 항목 고르기'],['c35','📑 자료 양식(FRD)'],['c99','🛠️ 안 될 때']];
-  w.innerHTML=`<div class="hh"><b>📖 사용법 · 💬 묻기</b><button type="button" class="hlpx" id="hlpX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
-<div class="hbx hcbox" id="hcBox"><h4>💬 궁금한 것·안 되는 것 물어보세요 <button type="button" class="hcclr" id="hcClr" title="대화 지우기">지우기</button></h4><div id="hcLog" class="hclog" hidden aria-live="polite"></div>
+  w.innerHTML=`<div class="hh"><b>📖 사용법 · 💬 묻기 · 📚 백과사전</b><button type="button" class="hlpx" id="hlpX" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
+<div class="hbx hcbox" id="hcBox"><h4>💬<span class="hct"> 물어보세요</span> <span class="hctab" role="tablist"><button type="button" data-hm="app" class="on" role="tab">📘 앱 사용법</button><button type="button" data-hm="kb" role="tab">📚 백과사전</button></span><button type="button" class="hcclr" id="hcClr" title="대화 지우기">지우기</button></h4><div id="hcLog" class="hclog" hidden aria-live="polite"></div>
 <form id="hcF" class="hcf" autocomplete="off"><input id="hcQ" type="search" enterkeyhint="send" maxlength="300" placeholder="예: 단수구역은 어떻게 봐요? / 사진이 안 올라가요"><button type="submit" class="btn em">묻기</button></form>
-<div class="hcex"></div><p class="hcn">매뉴얼에서 먼저 찾고, 공유 키가 있으면 🤖 AI에게도 물을 수 있습니다. 고객 이름·주소·전화는 적지 마세요.</p></div>
+<div class="hcex"></div><p class="hcn hcnote">매뉴얼에서 먼저 찾고, 공유 키가 있으면 🤖 AI에게도 물을 수 있습니다. 고객 이름·주소·전화는 적지 마세요.</p></div>
 <a class="hman" href="${hlpUrl()}" target="_blank" rel="noopener">📘 사용 매뉴얼 열기 (새 탭)</a>
 <div class="hrow"><button type="button" class="btn ol" id="hlpVd">🎬 사용법 영상</button> <button type="button" class="btn ol" id="hlpFrd" title="다듬지 않은 기초자료를 클로드로 정리해 넣기">📑 자료 양식(FRD)</button></div>
 <div class="hbx"><h4>화면 구성</h4><ol><li><b>위쪽 칩 줄</b>: 🔍 주소찾기 · ⬇️ 지금 받기 · 👣 탐사기록(누르면 기록 창: ▶ 시작·■ 끝내기·기록 목록·팀 탐사) · 📂 파일 넣기 · 🔔 변경 기록 · 💧 단수구역 · 🖍 그리기 · ✏️ 사진 편집 · 🛠 편집 · 🔒 화면 고정 · ⚙️ 설정 … 손가락으로 옆으로 밀면 더 나옵니다.</li><li><b>오른쪽 아래</b>: <span class="hfb hfb-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></span> 화면 캡처 · <span class="hfb hfb-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span> 내 위치 · <span class="hfb hfb-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></span> 사진 찍기.</li><li><b>왼쪽 아래 범례</b>: 관로 색 · 촬영 연도 · 블록 탭, 누르면 펼치고 다시 누르면 접힘.</li><li><b>지도</b>: 관로·시설물·사진을 누르면 정보창, 빈 곳을 길게 누르면 그 자리 주소.</li><li><b>☑ 관로 선택</b>: PC는 <b>Shift+클릭</b>으로 관로 더하기·빼기, <b>Shift+끌기</b> 네모로 더하기(Ctrl+Shift+끌기 빼기). 폰은 칩 ☑ › <b>☝ 눌러 고르기</b>. 네모·다각형·손 그리기·지금 화면으로도 고르고, 고른 관로는 ✏ 속성 한꺼번에 · ✅ 교체 완료 · ⬚ 개략공사비·SHP · 📊 엑셀로 넘김(작업 화면 리본 <b>선택</b> 탭).</li><li>PC는 <b>작업 화면</b>: 위 리본 탭(파일·자료·지도…) · 왼쪽 <b>레이어/속성 창</b>(▸ 펼쳐 항목별 켜고 끄기·심볼 크기, 가장자리 끌어 폭 조절) · 아래 상태줄. 📋 보고서형 화면으로 바꿀 수 있습니다.</li></ol></div>
@@ -12608,6 +12615,7 @@ async function hcDiag(){const R=[],add=(k,v,ok,tip)=>R.push({k,v:String(v),ok,ti
  add('현장 사진',n(nph)+'장',null);
  add('주소 변환 키',(ls('geo-kjs')||ls('geo-keys').length>4)?'있음':'없음',null,'');
  add('🤖 AI',typeof aiOn==='function'&&aiOn()?'쓸 수 있음':'안 됨 (공유 키 필요)',null);
+ try{const k=await kbLoad();add('📚 백과사전 자료실',k?`자료 ${k.docs.length}종 · 조각 ${k.ch.length.toLocaleString()}개`:'비어 있음',null)}catch(_){}
  try{if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate();if(e&&e.quota){const p=Math.round(e.usage/e.quota*100);add('저장 공간',`${p}% 사용 (${(e.usage/1048576).toFixed(0)}MB)`,p<85,'저장 공간이 거의 찼습니다. 오래된 백업·사진을 정리하세요.')}}}catch(_){}
  try{if(navigator.permissions){const p=await navigator.permissions.query({name:'geolocation'});add('위치 권한',{granted:'허용',denied:'막힘',prompt:'아직 안 물음'}[p.state]||p.state,p.state==='denied'?false:null,'휴대폰·브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.')}}catch(_){}
  const fs=!!(document.fullscreenElement||document.webkitFullscreenElement),ph=matchMedia('(pointer:coarse)').matches;
@@ -12661,16 +12669,260 @@ async function hcAI(m,btn){if(HC.busy)return;const q=m._q;HC.busy=true;btn.disab
 function hcInit(w){const box=w.querySelector('#hcBox');if(!box||box._ok)return;box._ok=1;
  const EX=['처음에 뭘 해야 해요?','단수구역 어떻게 봐요?','사진이 안 올라가요','관로가 안 보여요','백업은 어떻게 해요?','현장 바꾸기'];
  box.querySelector('.hcex').innerHTML=EX.map(t=>`<button type="button" class="hce">${esc(t)}</button>`).join('')+'<button type="button" class="hce" data-hdx="1">🩺 앱 점검</button>';
- box.querySelector('#hcF').onsubmit=e=>{e.preventDefault();hcAsk($('hcQ').value)};
+ box.querySelector('#hcF').onsubmit=e=>{e.preventDefault();(HC.mode==='kb'?kbAsk:hcAsk)($('hcQ').value)};
+ let md='app';try{md=localStorage.getItem('geo-hcmode')==='kb'?'kb':'app'}catch(_){}kbLoad().then(()=>hcMode(w,HC.mode||md));hcMode(w,md);
  const qi=box.querySelector('#hcQ');qi.addEventListener('keydown',e=>{if(e.key!=='Escape'&&e.key!=='F1')e.stopPropagation()});
  box.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.hm)return hcMode(w,b.dataset.hm);
+  if(b.dataset.kbm){w.hidden=true;return kbAdmin()}
+  if(b.dataset.kbo||b.dataset.kbo2){const i=+(b.dataset.kbo||b.dataset.kbo2),m=b.closest('.hcm');if(!m)return;if(b.dataset.kbo2){const o=m.querySelector('.kbfull');if(o)o.remove()}kbOpenCh(i,m);const f=m.querySelector('.kbfull');if(f)f.scrollIntoView({block:'nearest'});return}
+  if(b.dataset.kcp){const c=KB.d&&KB.d.ch[+b.dataset.kcp];if(c)aiCopy(c[4]+'\n\n[출처] '+kbSrc(KB.d,c),b);return}
+  if(b.dataset.kai){const m=b.closest('.hcm');if(m)kbAI(m,b);return}
+  if(b.dataset.kca){const m=b.closest('.hcm');if(m&&m._cp)aiCopy(m._cp,b);return}
   if(b.dataset.hg)return hcGo(b.dataset.hg);
   if(b.dataset.hdx){const D=await hcDiag();hcAdd('bot',hcDiagHtml(D,false)+`<div class="hcb"><button type="button" class="btn ol" data-hcp="1">📋 점검 결과 복사</button></div>`)._D=D;return}
   if(b.dataset.hcp){const m=b.closest('.hcm');aiCopy('[스마트 물길주소 앱 점검] '+new Date().toLocaleString('ko-KR')+'\n'+hcDiagTxt(m._D||[]),b);return}
   if(b.dataset.hai){const m=b.closest('.hcm');if(m)hcAI(m,b);return}
   if(b.dataset.hs){const e2=hcKB().find(x=>x.id===b.dataset.hs);if(e2)hcAdd('bot',hcCard(e2,true));return}
-  if(b.classList.contains('hce'))hcAsk(b.textContent)});
+  if(b.classList.contains('hce'))(HC.mode==='kb'?kbAsk:hcAsk)(b.textContent)});
  box.querySelector('#hcClr').onclick=()=>{const lg=$('hcLog');lg.innerHTML='';lg.hidden=true;HC.log=[]}}
+
+/* ---------- 📚 백과사전 핵심(글 자르기·찾기) — 앱과 PC 묶음 만들기 도구가 같은 코드를 씀 ---------- */
+const KB_SYN=[[/수압|압력/g,' 수압 동수압 압력 '],[/관경|구경/g,' 관경 구경 '],[/블럭|블록/g,' 블록 블럭 '],[/밸브|제수변/g,' 밸브 제수밸브 '],[/누수/g,' 누수 누수량 '],[/유수율/g,' 유수율 유효율 '],[/배수지/g,' 배수지 '],[/관말|이토/g,' 관말 이토 '],[/매설|토피/g,' 매설 토피 '],[/세척|플러싱/g,' 세척 플러싱 '],[/점검|순찰/g,' 점검 순찰 '],[/맞춤법|용어/g,' 맞춤법 용어 표기 ']];
+const KB_STOP=/(어떻게|어디서|어디에|어디|얼마나|얼마|몇|하나요|하나|하는|하면|해야|할까요|있나요|있어요|되나요|돼요|되는|인가요|인가|인지|이야|이에요|예요|알려줘|알려|주세요|줘요|줘|좀|뭐예요|뭔가요|무엇|뭘|뭐|해요|대해|대한|관련|관해|\?)/g;
+const KB_JOS=/(은|는|이|가|을|를|의|에|에서|으로|로|와|과|도|만|이란|란|하고|부터|까지)$/;
+/* 글 정리: 겹친 빈칸 줄이기, 목차 점선 없애기 */
+function kbClean(s){return String(s||'').replace(/\r/g,'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/[·…‥.]{5,}/g,' … ').replace(/[ \t　]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{3,}/g,'\n\n').trim()}
+const KB_HD=/^(제\s?\d+\s?[편장절]\s?.{0,50}|\d{1,2}(\.\d{1,2}){1,3}\.?\s+\S.{0,50}|[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]+\.?\s+\S.{0,40}|[A-Z]\d{1,2}\.\s+\S.{0,40}|KDS\s?\d{2}\s?\d{2}\s?\d{2}\s?.{0,40}|[□■◆◇]\s?\S.{0,40})$/;
+const kbIsHd=s=>s.length<=42&&KB_HD.test(s)&&!/^\d+(\.\d+)*\s*[%㎜㎝㎞m㎥]/.test(s)&&!/[,，)」』]|[다며고][.\s]*$|참조|에서$/.test(s.replace(/^\(?\d+\)/,''));
+const KB_PG=/^[-–(\s]*([A-Za-z가-힣]{0,3}\s?[-–]?\s?\d{1,4})[\s)–-]*$/;
+/* pages: [{p:PDF 쪽(없으면 0), x:글}] → 조각 [{p, lp:인쇄 쪽, h:장·조항, t:글}] · 한 조각은 한 쪽 안(출처 쪽이 정확하도록) */
+function kbChunk(pages,o){o=o||{};const MAX=o.max||1100,out=[];let chap='',sec='';
+ for(const pg of pages){const L=kbClean(pg.x).split('\n').map(s=>s.trim()).filter(Boolean);if(!L.length)continue;
+  let lp='';/* 인쇄된 쪽 번호: 맨 끝(또는 맨 앞) 줄이 숫자만이면 */
+  for(const i of [L.length-1,0]){const m=L[i]&&L[i].length<=12&&L[i].match(KB_PG);if(m){lp=m[1].replace(/\s/g,'');L.splice(i,1);break}}
+  if(L.length&&/^제\s?\d+\s?[편장]/.test(L[0])&&L[0].length<60){chap=L[0].replace(/\s+/g,' ');L.shift()}/* 머리말(장 이름) */
+  let buf=[],len=0,h=sec;
+  const flush=()=>{const t=buf.join('\n').trim();if(t.replace(/\s/g,'').length>=15)out.push({p:pg.p||0,lp,h:[chap,h].filter(Boolean).join(' › ').slice(0,120),t});buf=[];len=0};
+  for(const s of L){if(kbIsHd(s)){if(len>200)flush();sec=s.replace(/\s+/g,' ');if(!len)h=sec;if(/^제\s?\d+\s?[편장]/.test(s))chap=sec}
+   if(len+s.length>MAX&&len>200){flush();h=sec}buf.push(s);len+=s.length+1}
+  flush()}
+ return out}
+/* 낱말별 두 글자 조각 (조사 떼기) */
+function kbGrams(q){let s=' '+q+' ';KB_SYN.forEach(([r,v])=>{if(r.test(s))s+=v;r.lastIndex=0});s=s.replace(KB_STOP,' ');
+ const G=new Set();s.toLowerCase().split(/[^\p{L}\p{N}.]+/u).forEach(w=>{w=w.replace(/^\.+|\.+$/g,'');if(!w)return;if(w.length>2)w=w.replace(KB_JOS,'');
+  if(/^\d+(\.\d+)+$/.test(w)){G.add(w);return}/* 조항 번호 4.2.3 */
+  if(w.length<2){if(/[가-힣a-z]/.test(w))return;G.add(w);return}for(let i=0;i<w.length-1;i++)G.add(w.slice(i,i+2))});return [...G]}
+/* kb={docs:[{id,n,...}], ch:[[doc번호,p,lp,h,t]]} · 쓰는 문서만(use) · 결과 [{i,sc}] */
+function kbFind(kb,q,n,use){const G=kbGrams(q);if(!G.length||!kb||!kb.ch)return [];const C=kb.ch,N=C.length,df=new Array(G.length).fill(0),hit=[];
+ const low=kb._low||(kb._low=C.map(c=>(c[3]+'\n'+c[4]).toLowerCase())),hl=kb._hl||(kb._hl=C.map(c=>(String(kb.docs[c[0]]&&kb.docs[c[0]].n||'')+' '+c[3]).toLowerCase()));
+ for(let i=0;i<N;i++){if(use&&!use(C[i][0]))continue;const t=low[i];let m=0,a=null;for(let g=0;g<G.length;g++)if(t.includes(G[g])){df[g]++;(a||(a=[])).push(g);m++}if(m)hit.push([i,a])}
+ const idf=df.map(d=>Math.log(1+N/(1+d)));const tot=idf.reduce((s,v)=>s+v,0)||1;
+ const R=hit.map(([i,a])=>{let s=0,hs=0;const t=low[i],h=hl[i];for(const g of a){s+=idf[g];if(h.includes(G[g]))hs+=idf[g]}
+  /* 낱말이 붙어서 나오면(구절) 덤 */
+  const cov=s/tot;let ph=0;const qs=q.toLowerCase().replace(KB_STOP,' ').split(/\s+/).filter(w=>w.length>=3);for(const w of qs){const w2=w.replace(KB_JOS,'');if(w2.length>=3&&t.includes(w2))ph+=.15}
+  return {i,sc:cov*cov*2+hs/tot*.6+ph}}).sort((x,y)=>y.sc-x.sc);
+ return R.slice(0,n||5)}
+/* 찾은 낱말 둘레 글(미리보기) */
+function kbSnip(t,q,len){len=len||220;const G=kbGrams(q).filter(g=>g.length>=2),lo=t.toLowerCase();let best=0,bi=0;
+ for(let i=0;i<lo.length;i+=40){const w=lo.slice(i,i+len);let s=0;for(const g of G)if(w.includes(g))s++;if(s>best){best=s;bi=i}}
+ const st=Math.max(0,bi-20);return (st?'…':'')+t.slice(st,st+len).replace(/\n/g,' ')+(st+len<t.length?'…':'')}
+/* 출처 글: 문서 · 장/조항 · 쪽 */
+function kbPg(c){const lp=String(c[2]||''),p=c[1];if(/^[A-Za-z가-힣]{0,3}-?\d+$/.test(lp))return `${lp}쪽`+(p&&lp!==String(p)?` (PDF ${p}쪽)`:'');if(lp)return lp;return p?`PDF ${p}쪽`:'쪽 정보 없음'}
+function kbSrc(kb,c){const d=kb.docs[c[0]]||{};return [d.n+(d.ver?` (${d.ver})`:''),c[3],kbPg(c)].filter(Boolean).join(' · ')}
+/* ---------- 📚 백과사전 (2026-11-16 B안): 💬 묻기 창의 [📚 백과사전] 갈래.
+   자료실 = 관리자가 넣은 기준·매뉴얼·회사 기준 글을 조항·쪽 단위 조각으로 자른 것(IDB 'kb' {at, docs, ch:[[문서, PDF쪽, 인쇄쪽, 장·조항, 글]]}).
+   공유는 기준자료와 같은 방식(공유 서버 'kb' 조각) — 관리자가 ⏫ 올리면 직원 기기는 열 때 새 판만 받음. 원본 파일은 올리지 않고 글 조각만.
+   찾기는 이 기기 안에서, 🤖 AI는 찾은 조각(최대 8개, 'AI 보내기' 켠 문서만)만 근거로 답(서버 task 'kb') · 답마다 출처(문서·조항·쪽) · 근거에 없으면 "확인 필요" ---------- */
+const KB={d:null,p:null,busy:false};
+/* 기준 글은 '관로 2', '거리 30' 같은 말이 많아 aiScrub(주소 모양 가림)를 쓰면 내용이 망가짐 → 전화번호·○○씨/님만 가림 */
+const kbScrub=t=>String(t??'').replace(/(\+?82[-\s]?)?0\d{1,2}[-.)\s]?\d{3,4}[-.\s]?\d{4}/g,'(전화)').replace(/[가-힣]{2,4}\s?(씨|님|고객님|사장님|어르신)(?=[\s,.]|$)/g,'○○○ $1');
+function kbLoad(){return KB.p||(KB.p=(async()=>{try{const v=await IDB.get('kb');KB.d=v&&Array.isArray(v.ch)?v:null}catch(_){KB.d=null}return KB.d})())}
+async function kbSave(v){v.at=Date.now();await IDB.set('kb',v);KB.d=v;KB.p=Promise.resolve(v);stoKeep&&stoKeep()}
+function kbSet(v){KB.d=v&&Array.isArray(v.ch)?v:null;KB.p=Promise.resolve(KB.d)}
+const kbUse=d=>i=>{const x=d.docs[i];return x&&!x.off};
+/* 문서 날짜(판·개정 칸에서 2025.09 · 2025-12 · 25.09.29 꼴) → 202509 같은 숫자. 겹치는 내용은 최근 자료를 먼저 (2026-11-16 사용자) */
+function kbDt(x){const v=String(x&&x.ver||'');let m=v.match(/(19|20)(\d{2})\s*[.\-년/]?\s*(\d{1,2})?/);if(m)return +(m[1]+m[2])*100+(+m[3]||0);m=v.match(/\b(\d{2})[.\-](\d{1,2})/);return m?(2000+ +m[1])*100+ +m[2]:0}
+/* 점수가 비슷한(맨 앞의 85% 이상) 곳끼리는 최근 문서를 앞으로 */
+function kbRecent(d,R){if(!R.length)return R;const top=R[0].sc,near=R.filter(r=>r.sc>=top*.85),rest=R.filter(r=>r.sc<top*.85);
+ near.sort((a,b)=>(kbDt(d.docs[d.ch[b.i][0]])-kbDt(d.docs[d.ch[a.i][0]]))||(b.sc-a.sc));return near.concat(rest)}
+async function kbAsk(q){q=String(q||'').trim();if(!q||HC.busy)return;const inp=$('hcQ');if(inp)inp.value='';
+ hcAdd('me',hcTx(q));const d=await kbLoad();
+ if(!d||!d.ch.length){hcAdd('bot',`<p style="margin:0">📚 이 기기 자료실이 비어 있습니다.</p><p class="hcn">⬇️ 지금 받기(공유 서버)로 받거나, 관리자가 <b>📚 자료실 관리</b>에서 기준·매뉴얼 파일을 넣어야 합니다.</p><div class="hcb"><button type="button" class="btn ol" data-kbm="1">📚 자료실 관리</button></div>`);return}
+ const R=kbRecent(d,kbFind(d,q,8,kbUse(d)).filter(r=>r.sc>=.12)),top=R.slice(0,3);
+ let h='';if(top.length){h+=`<div class="hcl">📚 자료실에서 찾은 곳 <small>(이 기기 안에서 찾음 · ${R.length}곳)</small></div>`+top.map((r,k)=>kbCard(d,r.i,q,k+1)).join('')}
+ else h+=`<div class="hcl">자료실(${d.docs.length}종)에서 맞는 곳을 찾지 못했습니다 — <b>확인 필요</b>. 다른 낱말(예: 조항 이름·단위)로 다시 물어보세요.</div>`;
+ const ai=typeof aiOn==='function'&&aiOn(),sendable=R.filter(r=>d.docs[d.ch[r.i][0]].ai!==false);
+ if(top.length)h+=`<div class="hcb">${ai&&sendable.length?'<button type="button" class="btn em" data-kai="1">🤖 찾은 곳만 근거로 AI 답 받기</button>':''}</div>`+(ai?(sendable.length<R.length?`<p class="hcn">'AI 보내기'를 끈 문서 ${R.length-sendable.length}곳은 AI에게 보내지 않았습니다.</p>`:''):'<p class="hcn">☁️ 직원 공유(공유 키)를 설정하면 🤖 AI가 찾은 곳을 근거로 정리해 줍니다.</p>');
+ const m=hcAdd('bot',h);if(m){m._q=q;m._R=sendable.slice(0,8)}
+ HC.log.push({q,a:top.length?kbSrc(d,d.ch[top[0].i]):'(못 찾음)'});if(HC.log.length>20)HC.log.shift();
+ if(ai&&sendable.length&&m){const b=m.querySelector('[data-kai]');if(b)kbAI(m,b)}}
+function kbCard(d,i,q,n){const c=d.ch[i];return `<div class="hca kbc"><b>${n?`[${n}] `:''}📄 ${esc(kbSrc(d,c))}</b><div class="hcx kbs">${esc(kbSnip(c[4],q,230))}</div><div class="hcb"><button type="button" class="btn ol" data-kbo="${i}">원문 조각 보기</button></div></div>`}
+function kbOpenCh(i,box){const d=KB.d;if(!d||!d.ch[i])return;const c=d.ch[i],o=box.querySelector('.kbfull');if(o){o.remove();return}
+ const x=document.createElement('div');x.className='kbfull';x.innerHTML=`<div class="hcl">${esc(kbSrc(d,c))}${kbIsOcr(d,c)?' <span class="c-am">· 글자 인식(OCR) 본 — 숫자는 원본과 맞춰 보세요</span>':''}</div><div class="kbt">${hcTx(c[4])}</div><div class="hcb">${d.ch[i-1]&&d.ch[i-1][0]===c[0]?`<button type="button" class="btn ol" data-kbo2="${i-1}">◀ 앞 조각</button>`:''}${d.ch[i+1]&&d.ch[i+1][0]===c[0]?`<button type="button" class="btn ol" data-kbo2="${i+1}">다음 조각 ▶</button>`:''}<button type="button" class="btn ol" data-kcp="${i}">📋 출처와 함께 복사</button></div>`;box.appendChild(x)}
+/* 글자 인식(OCR)으로 만든 조각인지: 문서 전체(ocr) 또는 쪽 범위(ocrP [첫 쪽, 끝 쪽]) */
+function kbIsOcr(d,c){const x=d.docs[c[0]]||{};return !!(x.ocr||(Array.isArray(x.ocrP)&&c[1]>=x.ocrP[0]&&c[1]<=x.ocrP[1]))}
+/* 숫자 대조: AI 답 속 숫자 중 근거 조각에 없는 것 */
+function kbNums(ans,src){const A=new Set((String(src).match(/\d+(?:\.\d+)?/g)||[]));return [...new Set((String(ans).replace(/\[\d+\]/g,'').match(/\d+(?:\.\d+)?/g)||[]).filter(v=>!A.has(v)))]}
+const kbNz=s=>String(s||'').replace(/[\s·･・.,，"'“”‘’()（）\[\]<>「」『』｢｣-]/g,'');
+async function kbAI(m,btn){if(HC.busy)return;HC.busy=true;btn.disabled=true;const o=btn.innerHTML;btn.innerHTML='🤖 근거 읽는 중…';const d=KB.d;
+ try{const R=m._R||[],refs=R.map((r,k)=>{const c=d.ch[r.i],dt=kbDt(d.docs[c[0]]);return {n:k+1,src:kbSrc(d,c),dt:dt?String(dt).slice(0,4)+'.'+String(dt).slice(4):'날짜 모름',x:kbScrub(c[4]).slice(0,1500)}});
+  let r;try{r=await aiAsk('kb',{q:kbScrub(m._q).slice(0,500),refs,site:(window.SITE&&SITE.name)||'포항시'})}
+  catch(e){if(/알 수 없는 AI 작업/.test(e.message))throw new Error('공유 서버 코드가 예전 판이라 📚 백과사전 AI를 모릅니다. 2026-11-16 판 Code.gs로 바꾸고 [배포 관리]에서 새 버전으로 배포해 주세요.');throw e}
+  /* 인용 확인: 받은 조각 번호이고, 옮긴 구절이 그 조각에 실제로 있어야 출처로 인정 */
+  const C=(r.cites||[]).map(c=>{const k=Number(c.n)-1,ref=R[k];if(!ref)return null;const ok=!c.quote||kbNz(d.ch[ref.i][4]).includes(kbNz(c.quote));return {n:k+1,i:ref.i,q:String(c.quote||''),ok}}).filter(Boolean);
+  const good=C.filter(c=>c.ok),used=new Set(good.map(c=>c.n));
+  const srcTx=good.map(c=>d.ch[c.i][4]).join('\n'),bad=kbNums(r.answer||'',srcTx+'\n'+m._q),sure=r.sure!==false&&good.length>0;
+  const ans=esc(kbScrub(r.answer||'')).replace(/\n/g,'<br>').replace(/\[(\d+)\]/g,(a,n)=>used.has(+n)?`<button type="button" class="kbn" data-kbo="${R[n-1].i}" title="${esc(kbSrc(d,d.ch[R[n-1].i]))}">${n}</button>`:`<sup class="c-am" title="확인 안 된 출처">[${n}?]</sup>`);
+  const inf=AI.info&&AI.info.limit?` · 오늘 AI ${AI.info.used}/${AI.info.limit}회`:'';
+  hcAdd('bot ai',`<div class="hcl">🤖 AI 답 <small>(자료실에서 찾은 곳만 근거)</small></div><div class="hcx">${ans}</div>`+
+   (!sure?'<p class="hcn c-am">⚠️ <b>확인 필요</b> — 자료실 근거로 다 확인되지 않은 답입니다. 원문을 직접 보거나 담당자에게 확인하세요.</p>':'')+
+   (bad.length?`<p class="hcn c-am">⚠️ 근거 조각에 없는 숫자: ${esc(bad.slice(0,8).join(', '))} — 원문과 맞춰 보세요.</p>`:'')+
+   (good.length?`<div class="hcl">출처</div><ol class="kbcite">${good.map(c=>`<li value="${c.n}"><button type="button" class="kbsrc" data-kbo="${c.i}">${esc(kbSrc(d,d.ch[c.i]))}</button>${c.q?`<br><small>“${esc(c.q.slice(0,90))}”</small>`:''}</li>`).join('')}</ol>`:'')+
+   `<div class="hcb"><button type="button" class="btn ol" data-kca="1">📋 답·출처 복사</button></div><p class="hcn">AI 답은 참고용입니다. 공문·보고서에는 원문 조항을 확인해 쓰세요${inf}</p>`)._cp=
+   kbScrub(r.answer||'')+'\n\n[출처]\n'+good.map(c=>`[${c.n}] ${kbSrc(d,d.ch[c.i])}`).join('\n')+(sure?'':'\n※ 확인 필요');
+  btn.remove()}
+ catch(e){btn.disabled=false;btn.innerHTML=o;hcAdd('bot',`<p class="hcn c-rd">🤖 ${esc(e&&e.message||e)}</p>`)}finally{HC.busy=false}}
+/* 💬 묻기 창 갈래 바꾸기: app(📘 앱 사용법) · kb(📚 백과사전) */
+const KB_EX=['배수관 최소 동수압','제수밸브 설치 간격','관로 매설 깊이(토피)','관망 유지관리 점검 주기','상수도관망 기술진단 항목','보고서 용어 누수혐의'];
+function hcMode(w,md){HC.mode=md;try{localStorage.setItem('geo-hcmode',md)}catch(_){}
+ const box=w.querySelector('#hcBox');box.querySelectorAll('[data-hm]').forEach(b=>b.classList.toggle('on',b.dataset.hm===md));box.classList.toggle('kbm',md==='kb');
+ const q=box.querySelector('#hcQ');q.placeholder=md==='kb'?'예: 배수관 최소 동수압은? / 누수혐의 대신 쓰는 말은?':'예: 단수구역은 어떻게 봐요? / 사진이 안 올라가요';
+ const ex=box.querySelector('.hcex');ex.innerHTML=md==='kb'?KB_EX.map(t=>`<button type="button" class="hce">${esc(t)}</button>`).join('')+'<button type="button" class="hce" data-kbm="1">📚 자료실 관리</button>'
+  :['처음에 뭘 해야 해요?','단수구역 어떻게 봐요?','사진이 안 올라가요','관로가 안 보여요','백업은 어떻게 해요?','현장 바꾸기'].map(t=>`<button type="button" class="hce">${esc(t)}</button>`).join('')+'<button type="button" class="hce" data-hdx="1">🩺 앱 점검</button>';
+ const n=box.querySelector('.hcn.hcnote');if(n)n.innerHTML=md==='kb'?'상수도설계기준·관망 매뉴얼·회사 기준 등 자료실 문서에서 찾고, 답마다 출처(문서·조항·쪽)를 답니다. 자료에 없으면 <b>확인 필요</b>로 답합니다.'+(KB.d?` <small>(자료 ${KB.d.docs.filter(x=>!x.off).length}종 · ${KB.d.ch.length.toLocaleString()}조각)</small>`:''):'매뉴얼에서 먼저 찾고, 공유 키가 있으면 🤖 AI에게도 물을 수 있습니다. 고객 이름·주소·전화는 적지 마세요.'}
+
+/* ===== 📚 자료실 관리: 파일 → 글 → 조각 ===== */
+const PDFJS_V='3.11.174',PDFJS_URLS=[['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/'+PDFJS_V+'/','pdf.min.js','pdf.worker.min.js','https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/cmaps/'],['https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/build/','pdf.min.js','pdf.worker.min.js','https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/cmaps/'],['https://unpkg.com/pdfjs-dist@'+PDFJS_V+'/build/','pdf.min.js','pdf.worker.min.js','https://unpkg.com/pdfjs-dist@'+PDFJS_V+'/cmaps/']];
+let PDFJS_P=null;
+function needPdf(){if(window.pdfjsLib&&KB.cmap)return Promise.resolve(true);if(PDFJS_P)return PDFJS_P;
+ PDFJS_P=(async()=>{for(const [b,f,w,cm] of PDFJS_URLS){const ok=await new Promise(r=>{const s=document.createElement('script');s.src=b+f;const t=setTimeout(()=>r(false),15000);s.onload=()=>{clearTimeout(t);r(!!window.pdfjsLib)};s.onerror=()=>{clearTimeout(t);r(false)};document.head.appendChild(s)});
+  if(ok){pdfjsLib.GlobalWorkerOptions.workerSrc=b+w;KB.cmap=cm;return true}}PDFJS_P=null;return false})();return PDFJS_P}
+const kbTick=()=>new Promise(r=>setTimeout(r,0));
+async function kbPdf(buf,say){if(!await needPdf())throw new Error('PDF 읽기 프로그램(pdf.js)을 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+ const doc=await pdfjsLib.getDocument({data:buf,cMapUrl:KB.cmap,cMapPacked:true,isEvalSupported:false}).promise,P=[];let empty=0;
+ for(let i=1;i<=doc.numPages;i++){const pg=await doc.getPage(i),tc=await pg.getTextContent();let s='',lastY=null;
+  for(const it of tc.items){if(!('str' in it))continue;const y=it.transform?Math.round(it.transform[5]):null;if(lastY!=null&&y!=null&&Math.abs(y-lastY)>2&&!s.endsWith('\n'))s+='\n';s+=it.str+(it.hasEOL?'\n':'');if(y!=null)lastY=y}
+  if((s.match(/[가-힣A-Za-z0-9]/g)||[]).length<15)empty++;P.push({p:i,x:s});pg.cleanup&&pg.cleanup();if(i%10===0){say&&say(`PDF 글 뽑는 중… ${i}/${doc.numPages}쪽`);await kbTick()}}
+ try{doc.destroy()}catch(_){}return {pages:P,empty}}
+const kbXmlTx=s=>s.replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(a,n)=>String.fromCharCode(+n)).replace(/&amp;/g,'&');
+async function kbHwpx(buf){const z=await JSZip.loadAsync(buf),F=Object.keys(z.files).filter(n=>/^Contents\/section\d+\.xml$/i.test(n)).sort((a,b)=>parseInt(a.match(/\d+/))-parseInt(b.match(/\d+/)));
+ if(!F.length)throw new Error('한글(HWPX) 본문을 찾지 못했습니다.');let T='';
+ for(const f of F){const x=await z.file(f).async('string');T+=x.split(/<\/hp:p>/).map(p=>{const m=p.match(/<hp:t(?:\s[^>]*)?>[\s\S]*?<\/hp:t>/g);return m?m.map(t=>kbXmlTx(t.replace(/<hp:tab[^>]*\/>/g,' '))).join(''):''}).filter(Boolean).join('\n')+'\n'}
+ return {pages:[{p:0,x:T}],empty:0}}
+async function kbDocx(buf){const z=await JSZip.loadAsync(buf),e=z.file('word/document.xml');if(!e)throw new Error('워드(DOCX) 본문을 찾지 못했습니다.');const x=await e.async('string');
+ const T=x.split(/<\/w:p>/).map(p=>{const m=p.replace(/<w:tab\/>/g,'<w:t> </w:t>').match(/<w:t(?:\s[^>]*)?>[\s\S]*?<\/w:t>/g);return m?m.map(kbXmlTx).join(''):''}).filter(Boolean).join('\n');return {pages:[{p:0,x:T}],empty:0}}
+/* 옛 한글(.hwp, OLE 복합 파일) — 본문 PARA_TEXT만 */
+function kbCfb(u8){const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);if(dv.getUint32(0,true)!==0xE011CFD0)throw new Error('한글(.hwp) 파일 모양이 아닙니다.');
+ const ss=1<<dv.getUint16(30,true),mss=1<<dv.getUint16(32,true),nFat=dv.getUint32(44,true),dir0=dv.getUint32(48,true),mcut=dv.getUint32(56,true),mf0=dv.getUint32(60,true),nMf=dv.getUint32(64,true),df0=dv.getUint32(68,true);
+ const off=s=>(s+1)*ss,fatS=[];for(let i=0;i<109&&fatS.length<nFat;i++)fatS.push(dv.getUint32(76+i*4,true));
+ let d=df0;while(fatS.length<nFat&&d<0xFFFFFFFA){for(let i=0;i<ss/4-1&&fatS.length<nFat;i++)fatS.push(dv.getUint32(off(d)+i*4,true));d=dv.getUint32(off(d)+ss-4,true)}
+ const fat=[];for(const s of fatS)for(let i=0;i<ss/4;i++)fat.push(dv.getUint32(off(s)+i*4,true));
+ const chain=(s,F)=>{const a=[];let g=0;while(s<0xFFFFFFFA&&g++<1e6){a.push(s);s=F[s]}return a};
+ const read=(s,size)=>{const o=new Uint8Array(size);let p=0;for(const c of chain(s,fat)){const n=Math.min(ss,size-p);if(n<=0)break;o.set(u8.subarray(off(c),off(c)+n),p);p+=n}return o};
+ const dirB=read(dir0,chain(dir0,fat).length*ss),E=[];for(let i=0;i<dirB.length/128;i++){const b=dirB.subarray(i*128,i*128+128),bv=new DataView(b.buffer,b.byteOffset,128),nl=bv.getUint16(64,true);
+  let nm='';for(let k=0;k<Math.max(0,nl/2-1);k++)nm+=String.fromCharCode(bv.getUint16(k*2,true));E.push({nm,t:b[66],l:bv.getUint32(68,true),r:bv.getUint32(72,true),c:bv.getUint32(76,true),s:bv.getUint32(116,true),z:bv.getUint32(120,true)})}
+ const root=E[0],mini=root?read(root.s,root.z):new Uint8Array(0),mfat=[];if(nMf)for(const c of chain(mf0,fat))for(let i=0;i<ss/4;i++)mfat.push(dv.getUint32(off(c)+i*4,true));
+ const readMini=(s,size)=>{const o=new Uint8Array(size);let p=0;for(const c of chain(s,mfat)){const n=Math.min(mss,size-p);if(n<=0)break;o.set(mini.subarray(c*mss,c*mss+n),p);p+=n}return o};
+ const out=new Map(),walk=(i,path)=>{if(i>=E.length||i===0xFFFFFFFF)return;const e=E[i];walk(e.l,path);walk(e.r,path);const p=path?path+'/'+e.nm:e.nm;
+  if(e.t===2)out.set(p,e.z<mcut?readMini(e.s,e.z):read(e.s,e.z));else if(e.t===1)walk(e.c,p)};if(root)walk(root.c,'');return out}
+/* 작은 inflate(raw deflate 풀기) — 옛 한글(.hwp) 본문용. 압축 끝 뒤에 남은 바이트는 무시 */
+function kbRawInflate(src){let pos=0,bit=0,cnt=0,out=new Uint8Array(Math.max(1024,src.length*4)),op=0;
+ const need=n=>{if(op+n<=out.length)return;let m=out.length*2;while(m<op+n)m*=2;const o2=new Uint8Array(m);o2.set(out.subarray(0,op));out=o2};
+ const bits=n=>{while(cnt<n){if(pos>=src.length)throw new Error('압축 자료가 중간에 끊겼습니다.');bit|=src[pos++]<<cnt;cnt+=8}const v=bit&((1<<n)-1);bit>>>=n;cnt-=n;return v};
+ const build=L=>{const c=new Uint16Array(16),o=new Uint16Array(16),s=new Uint16Array(L.length);for(const l of L)c[l]++;c[0]=0;for(let i=1;i<16;i++)o[i]=o[i-1]+c[i-1];for(let i=0;i<L.length;i++)if(L[i])s[o[L[i]]++]=i;return {c,s}};
+ const dec=h=>{let code=0,first=0,idx=0;for(let l=1;l<16;l++){code|=bits(1);const n=h.c[l];if(code-n<first)return h.s[idx+(code-first)];idx+=n;first+=n;first<<=1;code<<=1}throw new Error('압축 자료가 잘못되었습니다.')};
+ const LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],
+  DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+ let FL=null,FD=null;
+ for(;;){const last=bits(1),type=bits(2);
+  if(type===0){bit=0;cnt=0;if(pos+4>src.length)break;const len=src[pos]|src[pos+1]<<8;pos+=4;need(len);out.set(src.subarray(pos,pos+len),op);op+=len;pos+=len}
+  else if(type===1||type===2){let hl,hd;
+   if(type===1){if(!FL){const l=new Uint8Array(288);l.fill(8,0,144);l.fill(9,144,256);l.fill(7,256,280);l.fill(8,280,288);FL=build(l);FD=build(new Uint8Array(30).fill(5))}hl=FL;hd=FD}
+   else{const nl=bits(5)+257,nd=bits(5)+1,nc=bits(4)+4,ORD=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=new Uint8Array(19);for(let i=0;i<nc;i++)cl[ORD[i]]=bits(3);
+    const ch=build(cl),L=new Uint8Array(nl+nd);for(let i=0;i<nl+nd;){const s=dec(ch);if(s<16)L[i++]=s;else if(s===16){const p=L[i-1];let r=3+bits(2);while(r--)L[i++]=p}else if(s===17){let r=3+bits(3);while(r--)L[i++]=0}else{let r=11+bits(7);while(r--)L[i++]=0}}
+    hl=build(L.subarray(0,nl));hd=build(L.subarray(nl))}
+   for(;;){const s=dec(hl);if(s<256){need(1);out[op++]=s}else if(s===256)break;else{const k=s-257,len=LB[k]+bits(LE[k]),d=dec(hd),dist=DB[d]+bits(DE[d]);need(len);for(let i=0;i<len;i++,op++)out[op]=out[op-dist]}}}
+  else throw new Error('압축 자료가 잘못되었습니다.');
+  if(last)break}
+ return out.subarray(0,op)}
+async function kbHwp(buf){const S=kbCfb(new Uint8Array(buf)),fh=S.get('FileHeader');if(!fh)throw new Error('한글(.hwp) 머리 정보가 없습니다.');
+ const flag=new DataView(fh.buffer,fh.byteOffset).getUint32(36,true);if(flag&2)throw new Error('암호가 걸린 한글 파일입니다. 암호를 풀고 다시 저장해 넣어 주세요.');if(flag&4)throw new Error('배포용 한글 문서라 글을 꺼낼 수 없습니다. PDF로 저장해 넣어 주세요.');
+ const secs=[...S.keys()].filter(k=>/^BodyText\/Section\d+$/.test(k)).sort((a,b)=>parseInt(a.slice(16))-parseInt(b.slice(16)));let T='';
+ for(const k of secs){let b=S.get(k);if(flag&1)b=kbRawInflate(b);const dv=new DataView(b.buffer,b.byteOffset,b.byteLength);let i=0;
+  while(i+4<=b.length){const h=dv.getUint32(i,true),tag=h&0x3ff;let sz=h>>>20;i+=4;if(sz===0xfff){sz=dv.getUint32(i,true);i+=4}
+   if(tag===67){let s='';for(let j=0;j+1<sz;){const c=dv.getUint16(i+j,true);if(c<32){if(c===10||c===13){s+='\n';j+=2}else if([0,24,25,26,27,28,29,30,31].includes(c)){if(c===30||c===31)s+=' ';j+=2}else{if(c===9)s+=' ';j+=16}}else{s+=String.fromCharCode(c);j+=2}}T+=s.replace(/\n+$/,'')+'\n'}
+   i+=sz}}
+ return {pages:[{p:0,x:T}],empty:0}}
+/* 엑셀: 시트마다 '머리글: 값' 줄로, 행 범위를 쪽 대신 */
+function kbXlsx(buf){const wb=XLSX.read(buf,{type:'array'}),out=[];for(const sn of wb.SheetNames){const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false});
+  const hi=A.findIndex(r=>r.filter(v=>String(v).trim()).length>=2);if(hi<0)continue;const H=A[hi].map(v=>String(v).trim());let buf2=[],r0=hi+2,len=0;
+  const fl=r=>{if(buf2.length)out.push({p:0,lp:`${sn} ${r0}~${r}행`,h:sn,t:buf2.join('\n')});buf2=[];len=0;r0=r+1};
+  for(let r=hi+1;r<A.length;r++){const L=A[r].map((v,c)=>String(v).trim()?`${H[c]||('열'+(c+1))}: ${String(v).trim()}`:'').filter(Boolean).join(' · ');if(!L)continue;if(len+L.length>1000&&buf2.length)fl(r);buf2.push(L);len+=L.length}
+  fl(A.length)}return out}
+async function kbRead(f,say){const nm=f.name,ext=(nm.match(/\.([a-z0-9]+)$/i)||[])[1]||'';const e=ext.toLowerCase(),buf=await f.arrayBuffer();
+ if(e==='pdf'){const r=await kbPdf(buf,say);return {kind:'PDF',ch:kbChunk(r.pages),pages:r.pages.length,empty:r.empty}}
+ if(e==='hwpx'){const r=await kbHwpx(buf);return {kind:'HWPX',ch:kbChunk(r.pages)}}
+ if(e==='hwp'){const r=await kbHwp(buf);return {kind:'HWP',ch:kbChunk(r.pages)}}
+ if(e==='docx'){const r=await kbDocx(buf);return {kind:'DOCX',ch:kbChunk(r.pages)}}
+ if(e==='xlsx'||e==='xls'){if(typeof XLSX==='undefined')throw new Error('엑셀 읽기 프로그램을 불러오지 못했습니다.');return {kind:'엑셀',ch:kbXlsx(buf)}}
+ if(e==='txt'||e==='md'){return {kind:e.toUpperCase(),ch:kbChunk([{p:0,x:new TextDecoder().decode(buf)}])}}
+ throw new Error(`${nm}: 넣을 수 없는 형식입니다 (PDF·HWPX·HWP·DOCX·XLSX·TXT·MD).`)}
+/* 자료실 묶음(.json 또는 .zip 안 kb.json) 넣기: 같은 이름 문서는 바꾸고 나머지는 더함 */
+function kbMerge(base,add){const v={docs:(base&&base.docs||[]).map(x=>Object.assign({},x)),ch:(base&&base.ch||[]).slice()};
+ for(let k=0;k<add.docs.length;k++){const nd=Object.assign({},add.docs[k]),old=v.docs.findIndex(x=>x.n===nd.n&&(x.ver||'')===(nd.ver||''));
+  if(old>=0)kbDrop(v,old);const di=v.docs.length;v.docs.push(nd);add.ch.forEach(c=>{if(c[0]===k)v.ch.push([di,c[1],c[2],c[3],c[4]])})}return v}
+function kbDrop(v,di){v.ch=v.ch.filter(c=>c[0]!==di).map(c=>c[0]>di?[c[0]-1,c[1],c[2],c[3],c[4]]:c);v.docs.splice(di,1)}
+async function kbPack(f){let t;if(/\.zip$/i.test(f.name)){const z=await JSZip.loadAsync(await f.arrayBuffer()),e=z.file(/kb\.json$|d\.json$/)[0];if(!e)throw new Error('묶음 zip 안에 kb.json이 없습니다.');t=await e.async('string')}else t=await f.text();
+ const v=JSON.parse(t);if(!v||!Array.isArray(v.docs)||!Array.isArray(v.ch))throw new Error('자료실 묶음 파일 모양이 아닙니다.');return v}
+function kbAdmin(){let w=$('kbW');
+ if(!w){w=document.createElement('div');w.id='kbW';w.className='hlpw np kbw';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','자료실 관리');document.body.appendChild(w);
+  w.addEventListener('click',kbAdmClick);w.addEventListener('change',kbAdmChange);w.addEventListener('keydown',e=>{if(e.key==='Escape'){w.hidden=true;e.stopPropagation()}else if(e.target.matches('input'))e.stopPropagation()});
+  L.DomEvent&&L.DomEvent.disableClickPropagation(w)}
+ const fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(w.parentNode!==fe)fe.appendChild(w);
+ w.hidden=false;kbAdmDraw()}
+function kbSay(t){const m=$('kbMsg');if(m)m.innerHTML=t}
+async function kbAdmDraw(msg){const w=$('kbW');if(!w)return;const d=await kbLoad(),D=d?d.docs:[],cnt=i=>d.ch.reduce((s,c)=>s+(c[0]===i),0);
+ w.innerHTML=`<div class="hh"><b>📚 백과사전 자료실 관리</b><button type="button" class="hlpx" data-ka="x" title="닫기 (Esc)" aria-label="닫기">✕</button></div>
+<p style="margin:0 0 6px"><b>판·개정 칸에 발행 연월(예: 2025.12)</b>을 꼭 적어 주세요. 자료끼리 내용이 겹치면 <b>최근 자료</b>를 기준으로 답합니다. 기준·매뉴얼·회사 기준 파일을 넣으면 앱이 글을 뽑아 <b>조항·쪽 단위 조각</b>으로 자릅니다. 원본 파일은 이 기기·서버에 남기지 않고 글 조각만 둡니다. <b>쪽 번호를 출처로 달려면 PDF</b>로 넣으세요(HWPX·HWP·DOCX는 장·조항까지만).</p>
+<div class="hbx"><h4>자료 ${D.length}종 · 조각 ${d?d.ch.length.toLocaleString():0}개${d&&d.at?` <small class="mute" style="font-weight:400">· ${esc(fmtDT(d.at))} 저장</small>`:''}</h4>
+${D.length?`<div class="kbtb"><table><thead><tr><th>문서</th><th>판·개정</th><th>형식</th><th>조각</th><th title="AI에게 보내도 되는 문서">AI</th><th title="끄면 찾기에서 빠짐">쓰기</th><th></th></tr></thead><tbody>${D.map((x,i)=>`<tr${x.off?' class="off"':''}><td><input data-kd="${i}" data-f="n" value="${esc(x.n)}" aria-label="문서 이름">${x.empty?`<br><small class="c-am">글자 없는 쪽 ${x.empty}개(찾기에서 빠짐)${x.ocr?'':' — 스캔본이면 글자 인식 필요'}</small>`:''}${x.ocr?'<br><small class="mute">글자 인식(OCR) 본</small>':x.ocrP?`<br><small class="mute">${x.ocrP[0]}~${x.ocrP[1]}쪽 글자 인식(OCR)</small>`:''}</td><td><input data-kd="${i}" data-f="ver" value="${esc(x.ver||'')}" placeholder="예: 2025.09" title="발행·개정 연월 — 겹치는 내용은 최근 자료를 먼저 씁니다" aria-label="판·개정 연월"></td><td>${esc(x.kind||'')}${x.pages?`<br><small>${x.pages}쪽</small>`:''}</td><td style="text-align:right">${cnt(i).toLocaleString()}</td><td><input type="checkbox" data-kd="${i}" data-f="ai"${x.ai!==false?' checked':''} aria-label="AI 보내기"></td><td><input type="checkbox" data-kd="${i}" data-f="on"${x.off?'':' checked'} aria-label="찾기에 쓰기"></td><td><button type="button" class="btn ol" data-ka="del" data-i="${i}" title="이 문서 지우기">🗑</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="mute" style="margin:0">아직 넣은 자료가 없습니다.</p>'}
+<div class="hcb" style="margin-top:6px"><label class="btn em kbup">＋ 파일 넣기<input type="file" id="kbFile" multiple accept=".pdf,.hwpx,.hwp,.docx,.xlsx,.xls,.txt,.md" hidden></label><label class="btn ol kbup">📥 묶음 넣기<input type="file" id="kbPackIn" accept=".json,.zip" hidden></label>${D.length?'<button type="button" class="btn ol" data-ka="exp">⬇ 묶음 내보내기</button>':''}</div></div>
+<div class="hbx"><h4>☁️ 직원 기기로 나누기</h4><p style="margin:0 0 6px">⏫ 올리면 직원 기기는 앱을 열 때(또는 ⬇️ 지금 받기) 새 자료실을 받습니다. 현장(포항·의성)마다 서버가 따로라 현장마다 한 번씩 올려야 합니다.</p>
+<div class="hcb"><button type="button" class="btn em" data-ka="up"${D.length?'':' disabled'}>⏫ 공유 서버에 올리기</button><button type="button" class="btn ol" data-ka="dn">⬇️ 서버에서 받기</button></div></div>
+<p id="kbMsg" class="hcn" aria-live="polite">${msg||''}</p>
+<p class="hcn">AI 체크를 끈 문서(대외비 등)는 이 기기 찾기에만 쓰고 🤖 AI 서버로 보내지 않습니다. 고객 이름·주소·전화가 든 문서는 넣지 마세요. · 만든이: 구병순</p>`}
+async function kbAdmChange(e){const t=e.target;
+ if(t.id==='kbFile'||t.id==='kbPackIn'){const F=[...t.files];t.value='';if(!F.length||KB.busy)return;KB.busy=true;let d=await kbLoad();d=d?{docs:d.docs.map(x=>Object.assign({},x)),ch:d.ch.slice()}:{docs:[],ch:[]};const done=[],fail=[];
+  try{for(const f of F){try{
+    if(t.id==='kbPackIn'){kbSay(`📥 ${esc(f.name)} 읽는 중…`);const p=await kbPack(f);d=kbMerge(d,p);done.push(`${f.name} (자료 ${p.docs.length}종)`);continue}
+    kbSay(`📄 ${esc(f.name)} 글 뽑는 중…`);const r=await kbRead(f,s=>kbSay(`📄 ${esc(f.name)} — ${s}`));
+    if(!r.ch.length)throw new Error('뽑은 글이 없습니다'+(r.empty?' (스캔본 — 글자 인식 필요)':''));
+    const nd={id:'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),n:f.name.replace(/\.[^.]+$/,''),ver:'',kind:r.kind,pages:r.pages||0,empty:r.empty||0,ai:true,at:Date.now(),by:(SH&&SH.cfg&&SH.cfg.by)||''};
+    d=kbMerge(d,{docs:[nd],ch:r.ch.map(c=>[0,c.p,c.lp,c.h,c.t])});done.push(`${f.name} (조각 ${r.ch.length.toLocaleString()}개${r.empty?`, 글자 없는 쪽 ${r.empty}개`:''})`)}
+   catch(er){fail.push(`${f.name}: ${er&&er.message||er}`)}await kbTick()}
+   if(done.length)await kbSave(d)}
+  finally{KB.busy=false}
+  kbAdmDraw((done.length?'✅ 넣었습니다: '+esc(done.join(' · '))+'<br>문서 이름·판을 확인하고 ⏫ 공유 서버에 올려 주세요.':'')+(fail.length?'<br><span class="c-rd">⚠️ '+esc(fail.join(' / '))+'</span>':''));return}
+ if(t.dataset.kd!=null){const d=await kbLoad();if(!d)return;const x=d.docs[+t.dataset.kd];if(!x)return;const f=t.dataset.f;
+  if(f==='ai')x.ai=t.checked;else if(f==='on')x.off=!t.checked;else x[f]=String(t.value||'').trim().slice(0,80);
+  if(f==='n'&&!x.n)x.n='(이름 없음)';d._low=d._hl=null;await kbSave(d);if(f==='on')kbAdmDraw('✅ 바꿨습니다. ⏫ 올려야 직원 기기에도 바뀝니다.');else kbSay('✅ 저장했습니다. ⏫ 올려야 직원 기기에도 바뀝니다.')}}
+async function kbAdmClick(e){const b=e.target.closest('button[data-ka]');if(!b)return;const a=b.dataset.ka,w=$('kbW');
+ if(a==='x'){w.hidden=true;return}
+ if(a==='del'){const d=await kbLoad(),i=+b.dataset.i;if(!d||!d.docs[i]||!confirm(`'${d.docs[i].n}' 문서를 자료실에서 지울까요?\n(⏫ 올리기 전까지는 이 기기에서만 지워집니다)`))return;const v={docs:d.docs.slice(),ch:d.ch.slice()};kbDrop(v,i);await kbSave(v);kbAdmDraw('🗑 지웠습니다.');return}
+ if(a==='exp'){const d=await kbLoad();if(!d)return;if(typeof JSZip==='undefined'){alert('ZIP 라이브러리를 불러오지 못했습니다.');return}
+  const z=new JSZip();z.file('kb.json',JSON.stringify({v:1,at:d.at,docs:d.docs,ch:d.ch}));dlBlob(await z.generateAsync({type:'blob',compression:'DEFLATE'}),`백과사전_자료실_${(window.SITE&&SITE.name)||'포항시'}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.zip`);return}
+ if(a==='up'){const r=await kbUp();kbAdmDraw(r);return}
+ if(a==='dn'){if(!SH.on()){kbSay('⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}kbSay('⬇️ 공유 서버 확인 중…');await refDown(false);KB.p=null;await kbLoad();kbAdmDraw($('shRefMsg')?$('shRefMsg').innerHTML:'');return}}
+async function kbUp(){if(!SH.on())return '⚙️ 설정 › 🔑 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.';if(REF.busy)return '다른 기준자료를 주고받는 중입니다. 잠시 뒤 다시 눌러 주세요.';
+ const d=await kbLoad();if(!d||!d.ch.length)return '올릴 자료가 없습니다.';if(!confirm(`📚 자료실(자료 ${d.docs.length}종 · 조각 ${d.ch.length.toLocaleString()}개)을 ${(window.SITE&&SITE.name)||''} 공유 서버에 올릴까요?\n서버에 있던 자료실은 이 판으로 바뀝니다.`))return '';
+ REF.busy=true;try{if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
+  const v={at:d.at||Date.now(),docs:d.docs,ch:d.ch},z=new JSZip();z.file('d.json',JSON.stringify(v));
+  const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+  for(let p=0;p<parts;p++){kbSay(`⏫ 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);await shReq('refput',{name:'kb',v:v.at,part:p,parts,size:u8.length,cnt:v.ch.length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}
+  return `✅ 공유 서버에 올렸습니다 (${refMB(u8.length)}). 직원 기기는 앱을 열 때 자동으로 받습니다.`}
+ catch(e){const m=String(e&&e.message||e);return '<span class="c-rd">⚠️ 올리기 실패: '+esc(m)+'</span>'+(/알 수 없는 기준자료/.test(m)?'<br><small>공유 서버 Code.gs가 예전 판입니다. 2026-11-16 판으로 바꾸고 [배포 관리]에서 새 버전으로 배포해 주세요.</small>':'')}
+ finally{REF.busy=false}}
 
 /* 📑 자료 양식(FRD): 처음 쓰는 분이 다듬지 않은 기초자료를 클로드로 정리해 넣도록 — 안내 창 · 요청문 복사 · FRD 묶음(zip) 받기 · 📥 파일 넣기로 (2026-11-02 B안)
    묶음: 00_먼저읽기.md · 01_FRD_자료양식.md · 02_클로드_요청문.txt · 03_부과량_빈양식.xlsx · 04_민원리스트_빈양식.xlsx · 05_사진기준위치_빈양식.xlsx (고객 자료는 넣지 않음) */
@@ -15787,6 +16039,8 @@ window.__APP_OK=1;
  *    [프로젝트 설정] › [스크립트 속성]에 AI_KEY 로 넣습니다. 하루 한도 AI_DAY(기본 300회), 모델 AI_MODEL(기본 claude-opus-5-5).
  *    서버가 정해 둔 작업만 받고(아무 질문이나 받지 않음), 기록 시트 'AI기록'에는 시각·사람·작업·토큰 수만 남깁니다(내용은 남기지 않음).
  *  · 2026-11-14 판: 💬 사용법 묻기(help) 작업 추가 — 앱이 찾은 매뉴얼 내용·앱 점검(개수·켜짐 여부)만 근거로 답합니다.
+ *  · 2026-11-16 판: 📚 백과사전 — 자료실(기준·매뉴얼·회사 기준 글 조각, 'kb')을 기준자료처럼 나누고, AI 작업 kb는 앱이 찾은 조각만 근거로
+ *    출처 번호를 달아 답합니다(근거에 없으면 "확인 필요"). 원본 파일은 서버에 올리지 않습니다.
  *  · 코드를 고친 뒤에는 [배포] › [배포 관리] › 수정(연필) › 버전: 새 버전 으로 다시 배포해야 반영됩니다.
  */
 const COLS = ['id','code','name','dt','ts','lat','lng','dir','alt','src','acc','memo','memoSrc','w','h','map','dot','big','th','by','at','up','del'];
@@ -15934,7 +16188,7 @@ function meta(items, by) {
 // ---------- 기준자료 공유 (소블록 경계·상수관로·상수관로 현장 수정·상수도 시설물·표고·사진 기준 위치) ----------
 // 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
 // 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
-const REF_NAMES = ['blocks', 'pipes', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp'];
+const REF_NAMES = ['blocks', 'pipes', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp', 'kb'];
 function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
 function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
 function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
@@ -16033,6 +16287,21 @@ const AI_T = {
       ((q.hist || []).length ? '\n\n앞 대화(질문 → 찾은 장):\n' + (q.hist || []).slice(0, 3).map(h => '- ' + String(h.q || '').slice(0, 200) + ' → ' + String(h.a || '').slice(0, 80)).join('\n') : '') +
       '\n\n질문: ' + String(q.q || '').slice(0, 500) }]
   },
+  kb: {
+    tok: 8000, eff: 'medium',
+    sys: '📚 백과사전(2026-11-16): 상수도 기준·매뉴얼·회사 기준 질문에 답한다. 받은 "자료 조각" 안의 내용만 근거로 쓰고 일반 지식·기억으로 보충하지 않는다. ' +
+      '문장마다 끝에 근거 조각 번호를 [1]처럼 붙인다. 수치·단위·조항 번호·용어는 조각에 적힌 그대로 옮긴다(바꾸거나 환산하지 않음). ' +
+      '조각에 답이 없거나 일부만 있으면 없는 부분은 "확인 필요(자료실에 없음)"이라고 쓰고 sure를 false로 한다. ' +
+      '조각끼리 내용이 겹치거나 다르면 발행일(날짜)이 가장 최근인 자료를 기준으로 답하고, 옛 자료가 다르게 적었으면 "옛 자료(문서·날짜)는 …"으로 한 줄 덧붙인다. ' +
+      '설계기준의 권장·원칙(예: ~하는 것이 바람직하다)과 의무를 구분해 쓴다. 3~8문장, 쉬운 한국어. ' +
+      'cites에는 답에 실제로 쓴 조각 번호 n과, 그 조각에서 글자 그대로 옮긴 짧은 구절 quote(15~60자)를 넣는다.',
+    schema: { type: 'object', additionalProperties: false, required: ['answer', 'cites', 'sure'], properties: {
+      answer: { type: 'string' }, sure: { type: 'boolean' },
+      cites: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['n', 'quote'], properties: { n: { type: 'integer' }, quote: { type: 'string' } } } } } },
+    user: q => [{ type: 'text', text: '현장: ' + String(q.site || '').slice(0, 20) +
+      '\n\n자료 조각:\n' + (q.refs || []).slice(0, 8).map(r => '[' + (Number(r.n) || 0) + '] 출처: ' + String(r.src || '').slice(0, 160) + ' · 발행 ' + String(r.dt || '날짜 모름').slice(0, 12) + '\n' + String(r.x || '').slice(0, 1600)).join('\n\n') +
+      '\n\n질문: ' + String(q.q || '').slice(0, 500) }]
+  },
   cls: {
     tok: 12000,
     sys: '누수 민원 현장내용을 받은 분류 중 하나로 나눈다. 애매하면 "기타". 각 항목의 i를 그대로 돌려준다.',
@@ -16063,7 +16332,7 @@ function aiRun(q) {
   if (n < 0) throw new Error('오늘 AI 사용 한도(' + lim + '회)를 넘었습니다. 내일 다시 쓰거나 관리자가 AI_DAY를 늘려 주세요.');
   const model = p.getProperty('AI_MODEL') || 'claude-opus-5-5';
   const body = { model: model, max_tokens: T.tok, system: AI_SYS + '\n' + T.sys,
-    output_config: { effort: 'low', format: { type: 'json_schema', schema: T.schema } },
+    output_config: { effort: T.eff || 'low', format: { type: 'json_schema', schema: T.schema } },
     messages: [{ role: 'user', content: T.user(q) }] };
   const headers = { 'x-api-key': key, 'anthropic-version': '2026-10-21' };
   // 안전 분류기가 거절하면 같은 요청을 Anthropic 권장 모델로 다시 돌림 (Opus 5.5·Opus 5·Sonnet 5.5·Fable만 지원)
