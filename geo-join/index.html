@@ -2870,16 +2870,17 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
  const cover=document.createElement('div');cover.className='vpcov';cover.innerHTML='<div>🗺 소블록 현황도 만드는 중…</div>';document.body.appendChild(cover);
  BP.el.style.visibility='hidden';const pv=BP.lay;if(pv)m.removeLayer(pv);if(hl&&m.hasLayer(hl))m.removeLayer(hl);
  const ps=bpPipeStats(),cnt=new Map();(G('out')||[]).forEach(o=>{const k=o['_결합블록'];if(k)cnt.set(k,(cnt.get(k)||0)+1)});const hasOut=(G('out')||[]).length>0;
- const pages=[],zip=kind==='png'?new JSZip():null,D=kind==='hwpx'?F('hwpxNew','소블록 현황도'):null;let done=0,masked=0,note='';
- try{for(const b of list){if(BP.stop)break;cover.firstChild.textContent=`🗺 ${b.n} 현황도 만드는 중… (${done+1}/${list.length})`;st(`${b.n} (${done+1}/${list.length}) 지도 다시 그리는 중…`);
-   const info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0)}:null,lk:bpLeaks(b),cu:hasOut?cnt.get(b.n)||0:null,nrw:bpNrwOf(b.n)};
+ const pages=[],zip=kind==='png'?new JSZip():null,D=kind==='hwpx'?F('hwpxNew','소블록 현황도'):null;let done=0,masked=0,note='';const fail=[];
+ try{for(const b of list){if(BP.stop)break;cover.firstChild.textContent=`🗺 ${b.n} 현황도 만드는 중… (${done+fail.length+1}/${list.length})`;st(`${b.n} (${done+fail.length+1}/${list.length}) 지도 다시 그리는 중…`);
+   /* 한 블록이 실패해도 나머지는 계속 만듦(2026-11-16: 여러 개 고르면 한 블록 오류로 전체가 멈춰 하나씩만 되던 것) */
+   try{const info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0)}:null,lk:bpLeaks(b),cu:hasOut?cnt.get(b.n)||0:null,nrw:bpNrwOf(b.n)};
    info.mo=info.lk?info.lk.mo:null;info.cs=BP.o.cu!==0?bpCust(b.n):null;info.sy=BP.o.sys!==0?bpSysOf(b):null;const S=await bpShot(b,M.map,dpm,info,M.s);masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
    if(kind==='pdf'){const bl=await new Promise(r=>cv.toBlob(r,'image/jpeg',.9));pages.push(URL.createObjectURL(bl))}
    else if(kind==='png'){const bl=await new Promise(r=>cv.toBlob(r,'image/png'));zip.file(`${String(no).padStart(3,'0')}_${b.n.replace(/[\\/:*?"<>|]/g,'_')}_현황도.png`,bl)}
    else if(kind==='hwpx'){const u=cv.toDataURL('image/jpeg',.9),bb=F('hwpxB64',u);if(!bb)throw new Error('그림 변환 실패');if(done){D.xs.push(`<hp:p id="${D.id++}" paraPrIDRef="20" styleIDRef="0" pageBreak="1" columnBreak="0" merged="0"><hp:run charPrIDRef="7"><hp:t></hp:t></hp:run></hp:p>`)}
     if(!done)F('hwpxTitle',D,`${b.n} 블록 현황도`);else F('hwpxP',D,`${b.n} 블록 현황도`,{c:9,pp:21});F('hwpxImg',D,bb.bytes,'jpg',cv.width,cv.height,170)}
-   done++}
-  if(!done)throw new Error('멈췄습니다');const extra=(BP.stop?` · 멈춤(${done}/${list.length}장까지)`:'')+(masked?` · 고객 정보 ${masked}곳 가림`:'')+(note?' · '+note:'');
+   done++}catch(err){console.error('현황도',b.n,err);fail.push(`${b.n}: ${(err&&err.message)||err}`)}}
+  if(!done)throw new Error(fail.length?'모두 실패 — '+fail.join(' / '):'멈췄습니다');const extra=(BP.stop?` · 멈춤(${done}/${list.length}장까지)`:'')+(fail.length?` · ⚠ 못 만든 소블록 ${fail.length}개(${fail.join(' / ')})`:'')+(masked?` · 고객 정보 ${masked}곳 가림`:'')+(note?' · '+note:'');
   if(kind==='pdf'){if(w.closed)throw new Error('인쇄 창이 닫혔습니다');const ori=BP.o.ori==='p'?'portrait':'landscape';
    w.document.open();w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${base}</title><style>@page{size:${BP.o.p} ${ori};margin:0}html,body{margin:0;background:#e5e7eb}img{display:block;width:${M.pw}mm;height:${M.ph}mm;margin:0 auto 8px;background:#fff}.bar{position:sticky;top:0;padding:8px;background:#1f2937;color:#fff;font:13px sans-serif;display:flex;gap:8px;align-items:center}.bar button{font:inherit;padding:4px 10px;cursor:pointer}@media print{.bar{display:none}html,body{background:#fff}img{margin:0;width:auto;height:auto;max-width:${M.pw}mm;max-height:${M.ph-.8}mm;page-break-after:always;break-after:page}img:last-child{page-break-after:auto;break-after:auto}}</style></head><body><div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button><span>${done}쪽 · 용지 ${BP.o.p} ${BP.o.ori==='p'?'세로':'가로'} · 여백 없음 · 인쇄 창에서 'PDF로 저장'을 고르면 PDF 파일이 됩니다</span></div>${pages.map((u,i)=>`<img src="${u}" alt="소블록 현황도 ${i+1}">`).join('')}</body></html>`);w.document.close();
    const ims=[...w.document.querySelectorAll('img')];await Promise.all(ims.map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r})));setTimeout(()=>{try{w.focus();w.print()}catch(_){}},300);st(`🖨 인쇄 창을 열었습니다 (${done}쪽)`+extra)}
