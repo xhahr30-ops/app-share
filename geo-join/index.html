@@ -57,7 +57,7 @@
   {k:'hx',n:'수리 계산',d:'📏 길이·면적 재기 · 💧 사용량 적정 구경 · 📟 유량계 · 🔻 감압밸브 · ⛽ 가압장',css:['[data-ck="hx"]','#hxBox'],a:['hx:ms','hx:dia','hx:fm','hx:prv','hx:bp']},
   {k:'works',n:'공사 검토',d:'🏗 공사 추천 · ⬚ 개략공사비 · 📐 적정 관경 · 🔀 메인관',css:['#cwSec','#rsSec','#sbSec','[data-ck="ax"]'],a:['win:cw','win:rs','win:sb','ax','sel:ax'],lay:['cw','sb','rs']},
   {k:'pg',n:'관망도 점검',d:'🧭 관망도 업데이트 구간 · 현장 확인 기록 · 소블록별 보고서',css:['#pgSec'],a:['win:pg'],lay:['pg']},
-  {k:'rp',n:'노후관 교체',d:'✅ 교체 완료 관로',css:['#rpSec'],a:['win:rp','sel:rp'],lay:['rp']},
+  {k:'rp',n:'노후관 교체',d:'✅ 교체 완료 관로',css:['#rpSec','[data-ck="rp"]'],a:['win:rp','sel:rp'],lay:['rp']},
   {k:'chg',n:'변경 기록',d:'🔔 변경 기록',css:['[data-ck="chg"]'],a:['ck:chg']},
   {k:'ex',n:'내보내기',d:'결과 엑셀 · SHP · 내보내기 창',css:['#exBtn'],a:['ex','xl','lkXl','phZip','sel:xl']},
   {k:'prt',n:'인쇄·현황도',d:'🖨 PDF · 지금 화면 출력 · 소블록별 현황도',css:['#hpr','.hlab:has(#po)'],a:['vp','bp','pdf','po']},
@@ -4444,7 +4444,7 @@ function uiInit(){if(!map)return;plblInit();
  try{zoomMoveInit()}catch(e){console.warn('zoomMoveInit',e)}
  uiPanelSync()}
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
-const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','em','hx','step','mk','ax','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
+const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','em','hx','step','mk','ax','rp','sel','phed','fe','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
 function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
@@ -4467,7 +4467,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
  L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
- const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
+ const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',rp:'교체 완료',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
   if(k==='ui'){const as=el.querySelectorAll('a');if(as[0])as[0].dataset.lb='설정';const h=el.querySelector('#uiAllBtn');if(h)h.dataset.lb='표시 끄기'}
   else{const a=el.querySelector('a');if(a)a.dataset.lb=LB[k]}
@@ -4477,7 +4477,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
   place(el)}};
  scan();new MutationObserver(scan).observe(C.topleft,{childList:true});legBoxInit(C);
  /* 칩 글자(이모지)를 리본과 같은 색 선 아이콘으로 바꿈. 버튼 상태가 바뀌어 글자가 다시 들어오면(🔓↔🔒 등) 그때도 바꿈 */
- const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🚨':'warn','🖍':'draw','⬚':'crop','☑':'sel','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag','📏':'ruler'};
+ const GI=window.GICO,EM={'🔍':'srch','⬇':'dl','⬆':'up','👣':'steps','📂':'open','🔔':'bell','💧':'drop','🚨':'warn','🖍':'draw','⬚':'crop','☑':'sel','✏':'phed','🛠':'tool','🔓':'unlock','🔒':'lock','⚙':'gear','🙈':'eyeoff','👁':'eye','🗺':'map','⬜':'mapoff','⛶':'full','✕':'fullx','📖':'book','🏷':'tag','📏':'ruler','✅':'rep'};
  const icoFix=()=>{if(!GI)return;const w=document.createTreeWalker(bar,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
   for(const t of ns){const k=EM[(t.nodeValue||'').replace(/[\uFE0F\s]/g,'')];if(!k||!GI.I[k])continue;const c=GI.col(k),v=document.createElementNS('http://www.w3.org/2000/svg','svg');
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
@@ -4552,7 +4552,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
  chipVApply()}
-function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
+function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',rp:'교체 완료',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
@@ -16261,7 +16261,7 @@ function rpDraw(force){if(!map||!PIPE.feats)return;if(!RP.ev){RP.ev=1;map.on('mo
 const RP_WS=[.3,.5,.7,1,1.3,1.6,2,2.5];
 function rpWSet(v){RP.w=Math.max(.2,Math.min(3,+v||1));rpSaveCfg();const e=$('rpW');if(e)e.value=Math.round(RP.w*100);const t=$('rpWv');if(t)t.textContent=Math.round(RP.w*100)+'%';rpDraw(true)}
 function rpWStep(d){if(!d)return rpWSet(1);let i=RP_WS.findIndex(v=>v>=RP.w-.001);if(i<0)i=RP_WS.length-1;if(d>0&&RP_WS[i]<=RP.w+.001)i++;else if(d<0)i--;rpWSet(RP_WS[Math.max(0,Math.min(RP_WS.length-1,i))])}
-function rpSetOn(o){RP.on=!!o;rpSaveCfg();const e=$('rpOn');if(e)e.checked=RP.on;rpDraw(true)}
+function rpSetOn(o){RP.on=!!o;rpSaveCfg();const e=$('rpOn');if(e)e.checked=RP.on;rpDraw(true);const a=$('rpA');if(a)a.classList.toggle('on',RP.on)}
 {const o=renderPipes;renderPipes=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
 {const o=pipeRecolor;pipeRecolor=function(){const r=o.apply(this,arguments);try{rpDraw(true)}catch(_){}return r}}
 {const o=pipeShow;pipeShow=function(){const r=o.apply(this,arguments);try{rpDraw()}catch(_){}return r}}
@@ -16344,6 +16344,14 @@ function rpInit(){if(!$('rpSec'))return;$('rpOn').checked=RP.on;$('rpW').value=M
  $('rpTbl').addEventListener('click',e=>{const a=e.target.closest('.rpGo,.rpBGo');if(!a)return;e.preventDefault();
   if(a.classList.contains('rpGo')){const f=PIPE.feats[+a.dataset.i];if(f)rpFit([f])}else rpFit(rpRows().filter(r=>(r.b||'(소블록 밖)')===a.dataset.b).map(r=>r.f))});
  $('rpSec').addEventListener('focusin',()=>{rpUiCnt();rpListShow()},{once:true});rpUiCnt()}
+/* 폰·태블릿 칩 줄 ✅ 교체 완료 (2026-11-16 사용자 '폰에도 넣어'): 누르면 '지도에 보이기' 켜고 끄기 = 카드 체크와 같은 값 */
+function rpChipInit(){const go=()=>{if(!map){setTimeout(go,500);return}if($('rpA'))return;
+  const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='rp';
+   a.href='#';a.id='rpA';a.textContent='✅';a.title='✅ 교체 완료 관로 — 지도에 초록 테두리로 보이기·숨기기';a.setAttribute('role','button');a.setAttribute('aria-label','교체 완료 관로 보이기');if(RP.on)a.classList.add('on');
+   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(!PIPE.feats||!PIPE.feats.length){try{phToast('②-1 상수관로를 먼저 넣어야 합니다')}catch(_){}return}rpSetOn(!RP.on);rpUiCnt();
+    try{phToast(RP.on?`✅ 교체 완료 관로 보이기 (${($('rpCnt')||{}).textContent||''}) · 관로 하나씩은 관로를 눌러 정보창에서 저장`:'✅ 교체 완료 관로 숨김',{ms:3500})}catch(_){}});return d}});
+  map.addControl(new Ctl())};go()}
+try{rpChipInit()}catch(e){console.warn('교체 완료 칩',e)}
 try{rpInit()}catch(e){console.warn('교체 완료',e)}
 /* ===================== ☑ 관로 선택 (2026-11-12): Shift+클릭 더하기·빼기 · 그려서 고르기 · 선택 메뉴 =====================
    - PC: Shift+클릭 = 그 관로를 선택에 더하기(이미 고른 관로면 빼기), Shift+끌기 = 네모 안 관로 더하기, Ctrl(Alt)+Shift+끌기 = 네모 안 관로 빼기
