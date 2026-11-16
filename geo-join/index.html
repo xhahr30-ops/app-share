@@ -1589,9 +1589,9 @@ html.dark svg.ri{color:var(--cd)!important}
  <div class="sec">
   <h4>②-2 상수도 시설물 (SHP ZIP) <small style="font-weight:400;color:var(--mute)">선택 · 밸브·소화전·유량계 등</small></h4>
   <div id="fSaveBox" class="savebox" hidden><div id="fSaved" class="hint"></div>
-   <div class="sbtns"><label class="btn ol" title="바뀐 시설만 들어 있는 SHP(.zip)를 올리면 관리번호·위치 기준으로 추가·변경합니다">➕ 변경분 반영<input type="file" id="fUpd" accept=".zip" hidden></label><button id="fUndo" type="button" class="btn ol" hidden>↩ 되돌리기</button><button id="fHistBtn" type="button" class="btn ol">📜 이력</button><button id="fForget" type="button" class="btn ol">🗑 저장 지우기</button></div>
+   <div class="sbtns"><label class="btn ol" title="바뀐 시설만 들어 있는 SHP(.zip)를 올리면 관리번호·위치 기준으로 추가·변경합니다">➕ 변경분 반영<input type="file" id="fUpd" accept=".zip,.shp,.dbf,.shx,.prj,.cpg" multiple hidden></label><button id="fUndo" type="button" class="btn ol" hidden>↩ 되돌리기</button><button id="fHistBtn" type="button" class="btn ol">📜 이력</button><button id="fForget" type="button" class="btn ol">🗑 저장 지우기</button></div>
    <div id="fHistBox" class="hint histbox" hidden></div></div>
-  <label class="drop"><input type="file" id="f4" accept=".zip"><div class="ic">🔧</div><b id="fDropT">상수도 시설물 SHP 압축파일(.zip)</b><span>여러 레이어 한 번에 · 파일명의 지물부호(SA200 등)로 종류 자동 분류 · 한 번 올리면 이 PC에 저장</span></label>
+  <label class="drop"><input type="file" id="f4" accept=".zip,.shp,.dbf,.shx,.prj,.cpg" multiple><div class="ic">🔧</div><b id="fDropT">상수도 시설물 SHP 압축파일(.zip)</b><span>여러 레이어 한 번에 · 파일명의 지물부호(SA200 등)로 종류 자동 분류 · 한 번 올리면 이 PC에 저장</span></label>
   <label class="f">원본 좌표계 <small style="font-weight:400">(.prj가 없는 레이어에 사용)</small><select id="fCrs"><option>EPSG:5187</option><option>EPSG:5183</option><option>EPSG:5186</option><option>EPSG:5185</option><option>EPSG:5179</option><option>EPSG:4326</option></select></label>
   <p class="hint" id="fMsg">정수장·배수지·가압장은 항상, 유량계는 줌 13, 소화전·밸브류는 줌 15, 제수밸브는 줌 16부터 지도에 보입니다. 밸브는 올려주신 나비 모양 심볼을 관로 방향으로 돌려 그리고(닫힌 제수밸브는 검은 심볼), 소화전·유량계·정수장·배수지·가압장·관말은 색 원 배지 아이콘으로 그립니다.</p>
   <div id="fPanel" hidden>
@@ -2603,7 +2603,12 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  if(cs&&cs.qm&&cs.qm.size&&PT&&PT.n){const o=G('out')||[],[q1,q2]=(()=>{try{const a=F('ptQB');return[a[0]||20,a[1]||100]}catch(_){return[20,100]}})();
   for(let i=0;i<PT.n;i++){const r=o[i];if(!r)continue;const a=cs.qm.get(String(r['관리번호']??''));if(a==null)continue;ptOld.push([i,PT.fill[i]]);PT.fill[i]=a<=q1?'#bbf7d0':a<=q2?'#4ade80':'#15803d'}
   if(ptOld.length)try{F('ptDraw')}catch(_){}}
- const FA=G('FAC'),cl=BP.o.cl!==0;const PHg=G('PH');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}
+ const FA=G('FAC'),cl=BP.o.cl!==0;
+ /* 경계밸브 자동(2026-11-16): 경계밸브로 표시된 밸브가 없는 블록이 많아(포항 WD1~3 등 0개), 경계선 15m 안의 닫힌 제수밸브를 이 출력에서만 경계밸브로 그림. 끝나면 되돌림 */
+ const bAuto=[],mt=[];if(FA&&FA.n){for(const i of F('facQuery',bxs.reduce((a,z)=>Math.min(a,z[0]),180)-E,bxs.reduce((a,z)=>Math.min(a,z[1]),90)-E,bxs.reduce((a,z)=>Math.max(a,z[2]),-180)+E,bxs.reduce((a,z)=>Math.max(a,z[3]),-90)+E)||[])if(FA.sk[i]==='meter'&&!FA.dl[i]&&inF(FA.x[i],FA.y[i]))mt.push(F('facLblText',i)||'이름 없음')}
+ if(FA&&FA.n&&BP.o.bav!==0){const q=F('facQuery',bxs.reduce((a,z)=>Math.min(a,z[0]),180)-E,bxs.reduce((a,z)=>Math.min(a,z[1]),90)-E,bxs.reduce((a,z)=>Math.max(a,z[2]),-180)+E,bxs.reduce((a,z)=>Math.max(a,z[3]),-90)+E)||[];
+  for(const i of q){if(FA.sk[i]!=='gateC'||FA.dl[i])continue;const pt=turf.point([FA.x[i],FA.y[i]]);if(lns.some(l=>{try{return turf.pointToLineDistance(pt,l,{units:'meters'})<=15}catch(_){return false}})){bAuto.push(i);FA.sk[i]='bndC'}}}
+ const PHg=G('PH');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}
  if(FA){FA.bndAll=true;FA.bpLbl=1.35;FA.bpSm=BP_SYM;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
  try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
   const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(8,fw*.025);
@@ -2639,9 +2644,10 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
   const c=m.containerPointToLatLng([px+fw/2,py+fh/2]),scale=fw*vpMpp(m.getZoom(),c.lat)/(mm.w/1000);
   const P=G('PIPE'),secret=pOn||(!!P&&[P.layer,P.layerS].some(l=>l&&m.hasLayer(l)));
   let leg=[];if(BP.o.leg){const q=bb;
-   leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}
-  return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,ptC:ptOld.length>0}}
- finally{if(zs0!==undefined)m.options.zoomSnap=zs0;const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+   leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF});
+   if(bAuto.length)leg.forEach(x=>{if(x.t==='경계밸브')x.t='경계밸브 (경계 위)'})}
+  return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,mt:FA&&FA.n?mt:null,bA:bAuto.length,ptC:ptOld.length>0}}
+ finally{if(zs0!==undefined)m.options.zoomSnap=zs0;if(bAuto.length){bAuto.forEach(i=>{if(FA.sk[i]==='bndC')FA.sk[i]='gateC'})}const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
 function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,nr=!!BP.o.nrw,cu=BP.o.cu!==0,tH=nr?(l?(cu?50:40)*s:(cu?46*s+gap+44*s:46*s)):cu?(l?44:50)*s:0;
  const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}},sy=BP.o.sys!==0?11*s:0;L0.syH=sy;
@@ -2762,7 +2768,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  /* 현황표 + 관경·재질 100% 막대 */
  if(sb){const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
   const rows=[['관로연장',ps?`${f2(ps.km)} km  (급수관 ${f2(ps.svc)} km 별도)`:need],['노후관 30년 초과',ps?(ps.known?`${f2(ps.old)} km (${Math.round(ps.old/ps.known*100)}%)${ps.known<ps.km*.98?' · 연도 모름 '+f2(ps.km-ps.known)+' km':''}`:'설치연도 없음 · '+need):need],
-   ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
+   ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['유량계 · 경계밸브',(S.mt==null?need:S.mt.length?`유량계 ${S.mt.length}개 (${[...new Set(S.mt)].slice(0,3).join(', ')})`:'유량계 없음 (시설물 자료) — 확인 필요')+(S.bA?` · 경계 위 닫힌 밸브 ${S.bA}개`:'')],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
   const lh=X(3.9*s),kw=r.w*.3;let y=r.y+X(7.5*s);
   rows.forEach(([a,v])=>{txt(a,r.x+X(2.5*s),y+lh/2,kw-X(3*s),{w:600,pt:6.2,c:mute});txt(v,r.x+kw,y+lh/2,r.w-kw-X(2.5*s),{pt:6.4,c:/확인 필요/.test(v)?'#b45309':ink});g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(r.x+X(2*s),y+lh);g.lineTo(r.x+r.w-X(2*s),y+lh);g.stroke();y+=lh});
   const bars=[];if(ps){const DB=G('DIA_BANDS')||[],DC=['#bae6fd','#7dd3fc','#3b82f6','#1d4ed8','#1e3a8a'];bars.push(['관경별',DB.map((d,i)=>[d[1].replace(' 이하','↓').replace(' 이상','↑'),ps.band[i],DC[i]||'#64748b'])]);
@@ -7452,8 +7458,17 @@ async function facUndo(){let p=null,cur=null;try{p=await IDB.get('facs_prev');cu
  p.hist=((cur&&cur.hist)||p.hist||[]).concat([{at:Date.now(),kind:'되돌리기',file:'',n:p.feats.length}]);p.at=Date.now();
  try{await IDB.set('facs',p);await IDB.del('facs_prev')}catch(e){alert('되돌리지 못했습니다: '+((e&&e.message)||e));return}
  await facRestore(true);facSyncMark('되돌리기');$('fMsg').innerHTML='↩ 이전 버전으로 되돌렸습니다. '+$('fMsg').innerHTML}
-const facFile=(fn,label)=>e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(typeof shp==='undefined'){$('fMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다.';return}
- const r=new FileReader();r.onload=ev=>fn(ev.target.result,f.name).catch(err=>{console.error(label,err);$('fMsg').textContent=label+' 실패: '+((err&&err.message)||err)});r.readAsArrayBuffer(f)};
+/* SHP를 압축하지 않고 .shp·.dbf·.prj·.cpg를 그대로 골라도 되게(2026-11-16: 유량계 SA117추가 .shp 바로 넣으면 'zip 아님'으로 실패하던 것) — 이름별로 묶어 zip으로 만들어 넘김 */
+async function facLoose(fs){if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다. 인터넷 연결 후 새로 고침하세요.');
+ const shps=fs.filter(f=>/\.shp$/i.test(f.name));if(!shps.length)throw new Error('.shp 파일이 없습니다. 같은 이름의 .shp·.dbf·.prj(·.cpg)를 함께 고르거나 .zip으로 넣어 주세요.');
+ const base=n=>n.replace(/\.[^.]+$/,'').toLowerCase(),miss=[];shps.forEach(s=>{const b=base(s.name);['dbf','prj'].forEach(x=>{if(!fs.some(f=>base(f.name)===b&&new RegExp('\\.'+x+'$','i').test(f.name)))miss.push(s.name.replace(/\.shp$/i,'.'+x))})});
+ if(miss.some(m=>/\.dbf$/i.test(m)))throw new Error('같이 골라야 할 파일이 빠졌습니다: '+miss.join(', '));
+ const z=new JSZip();for(const f of fs)if(!/\.zip$/i.test(f.name))z.file(f.name,await f.arrayBuffer());
+ return{buf:await z.generateAsync({type:'arraybuffer'}),name:shps.length===1?shps[0].name.replace(/\.shp$/i,'.zip'):shps.length+'개 레이어.zip',miss}}
+const facFile=(fn,label)=>async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length)return;if(typeof shp==='undefined'){$('fMsg').textContent='shpjs 라이브러리를 불러오지 못했습니다.';return}
+ try{if(fs.length===1&&/\.zip$/i.test(fs[0].name)){await fn(await fs[0].arrayBuffer(),fs[0].name);return}
+  const L=await facLoose(fs);if(L.miss.length)phToast('⚠ .prj가 없어 좌표계를 추정합니다: '+L.miss.join(', '),{ms:6000});await fn(L.buf,L.name)}
+ catch(err){console.error(label,err);$('fMsg').textContent=label+' 실패: '+((err&&err.message)||err)}};
 $('f4').onchange=facFile(facLoad,'시설물 읽기');$('fUpd').onchange=facFile(facUpdate,'변경분 반영');
 $('fUndo').onclick=facUndo;$('fEdGo').onclick=()=>{if(typeof feSet==='function'){feSet(true);const mb=$('map');if(mb&&mb.scrollIntoView)mb.scrollIntoView({block:'nearest'})}};$('fChgX').onclick=()=>facChgXlsx();$('fRotFill').onclick=()=>facRotFill();$('fHistBtn').onclick=()=>{$('fHistBox').hidden=!$('fHistBox').hidden};
 $('fForget').onclick=async()=>{if(!confirm('이 PC에 저장된 상수도 시설물 기준자료(이전 버전 포함)를 지울까요? 지금 지도의 시설물은 그대로 남습니다.'))return;try{await IDB.del('facs');await IDB.del('facs_prev')}catch(_){}facSavedShow(null)};
