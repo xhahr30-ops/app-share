@@ -10,7 +10,9 @@
  var HQ0='https://script.google.com/macros/s/AKfycby05kTLdPdAwoLLyt7zKNKEIXqHBHGK-M-Z0MwrRy_13_A7SjyE-VpE7YKHdEwY0uPv_w/exec';
  var BI={
   phg:{id:'phg',name:'포항시',short:'포항',tag:'포항이',col:'#4f46e5',region:'경북 포항시',c:[36.019,129.343],crs:'5179',url:'https://script.google.com/macros/s/AKfycbwrwmkNjAs8ewr5J_7FOfvMLqZUdgszQCqp6z-4_OpdXdPZVhQDHXoR5QMo-3SrQMUw/exec',alias:'BV01,BV02,BV02-1=블루밸리',gc:'경북 포항시 남구 시청로 1',cw:'YD,YG'},
-  uis:{id:'uis',name:'의성군',short:'의성',tag:'의성군',col:'#059669',region:'경북 의성군',c:[36.362,128.592],crs:'5187',url:'https://script.google.com/macros/s/AKfycbxNJqm6z9eGflo86sVdHB6qxrPoRmBnwZTeJsIejIJ5teMjMVXY3YW9JAHWUOUpzIg-vA/exec',alias:'',gc:'경북 의성군 의성읍 군청길 31',cw:''}};
+  uis:{id:'uis',name:'의성군',short:'의성',tag:'의성군',col:'#059669',region:'경북 의성군',c:[36.362,128.592],crs:'5187',url:'https://script.google.com/macros/s/AKfycbxNJqm6z9eGflo86sVdHB6qxrPoRmBnwZTeJsIejIJ5teMjMVXY3YW9JAHWUOUpzIg-vA/exec',alias:'',gc:'경북 의성군 의성읍 군청길 31',cw:''},
+  /* 안동시: 본부 서버에 등록한 현장(코드 andong) — 본부가 멈추거나 주소가 빠져도 공유 서버 주소가 비지 않게 앱 기본값으로도 둠. 공유 키는 넣지 않음 */
+  andong:{id:'andong',name:'안동시',short:'안동',tag:'안동시',col:'#0d9488',region:'경북 안동시',c:[36.5665,128.7152],crs:'5187',url:'https://script.google.com/macros/s/AKfycbzl1YDQwBeNmg26dv7-mgazC_9vSUmd1RBL6A4VqfQ7Um6vT3tvAlf4OYhUOepRhy4xFg/exec',alias:'',gc:'경북 안동시 퇴계로 115',cw:''}};
  var LS0=null;try{LS0=window.localStorage}catch(e){}
  function rd(k){try{return LS0?LS0.getItem(k):null}catch(e){return null}}
  var HQS={};try{HQS=JSON.parse(rd('geo-sites')||'{}')||{}}catch(e){HQS={}}
@@ -1421,7 +1423,7 @@ html.dark svg.ri{color:var(--cd)!important}
   <label class="f">주소 변환 방식<select id="gcMode"><option value="gas">카카오 REST · Apps Script 서버 경유 (하루 약 2만 건)</option><option value="sdk">카카오 JS SDK · 브라우저 직접 (하루 30만 건, 대량 변환 권장)</option><option value="rest">카카오 REST (REST 키)</option><option value="osm">OSM (키 없음, 정확도 낮음)</option></select></label>
   <label class="f">검색 실패 시 인근 주소로 대체<select id="nearLv"><option value="all">인근 번지 → 단지·지구 → 리·동 중심 (권장)</option><option value="lot">인근 번지 · 단지·지구까지만</option><option value="off">사용 안 함</option></select></label>
   <label class="f">기본 지역 <small style="font-weight:400;color:var(--mute)">(시·도 없는 주소 앞에 자동으로 붙임)</small><input id="region" placeholder="예: 경남 의령군 의령읍"></label>
-  <label class="f" id="keyBox"><span id="keyLb">카카오 JavaScript 키</span><input id="kakao" type="password" autocomplete="off"></label>
+  <label class="f" id="keyBox"><span id="keyLb">카카오 JavaScript 키</span><input id="kakao" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore spellcheck="false"></label>
   <button id="gcTest" type="button" class="btn ol">🔌 연결 테스트</button>
   <details class="x"><summary>🩺 실패 주소 검색 진단</summary>
    <input id="dq" placeholder="진단할 주소 (비우면 첫 실패 행)" style="margin-top:6px">
@@ -5073,7 +5075,7 @@ async function pool(items,conc,fn,onTick){let i=0,err=null;
  const w=async()=>{while(!err&&!runStop&&i<items.length){const it=items[i++];try{await fn(it)}catch(e){err=e}onTick&&onTick()}};
  await Promise.all(Array.from({length:Math.min(conc,items.length)},w));if(err)throw err}
 let runStop=false;
-try{$('region').value=localStorage.getItem('geo-region')||''}catch(_){}
+try{$('region').value=localStorage.getItem('geo-region')||SITE.region||''}catch(_){}/* 비었으면 현장 지역(👑 현장 관리 › 지역) */
 try{const v=localStorage.getItem('geo-near');if(v)$('nearLv').value=v}catch(_){}
 $('nearLv').onchange=()=>{try{localStorage.setItem('geo-near',$('nearLv').value)}catch(_){}};
 $('region').oninput=()=>{try{localStorage.setItem('geo-region',$('region').value)}catch(_){}};
@@ -5092,7 +5094,7 @@ $('kakao').onchange=()=>{const m=$('gcMode').value;if(m==='osm')return;KEYS[m]=$
  if(m==='gas')try{localStorage.setItem('geo-keys',JSON.stringify({gas:KEYS.gas}))}catch(_){}
  if(m==='gas')gasPing()};
 if(location.protocol==='file:'){const w=$('fileWarn');w.innerHTML='파일로 직접 열었습니다. <b>Apps Script 서버 경유</b> 방식을 고르고 웹앱 주소를 넣으면 그대로 쓸 수 있습니다. JS SDK·REST를 직접 쓰려면 카카오 인증은 <b>등록된 웹 도메인</b>에서만 동작합니다. 함께 제공한 <b>실행.bat</b>으로 열거나 <code>python -m http.server 8000</code> 실행 후 <b>http://localhost:8000</b>으로 접속하고, Kakao Developers의 플랫폼(Web)에 같은 주소를 등록하세요. 키 없이 시험하려면 OSM을 선택하세요.'}
-{let m0='gas';try{m0=localStorage.getItem('geo-mode')||'gas'}catch(_){}if(![...$('gcMode').options].some(o=>o.value===m0))m0='gas';$('gcMode').value=m0;$('gcMode').onchange()}
+{let m0='gas';try{m0=localStorage.getItem('geo-mode')||(localStorage.getItem('geo-kjs')?'sdk':'gas')}catch(_){}/* 처음 쓰는 기기: 본부에서 카카오 JS 키를 받았으면 JS SDK 방식으로 */if(![...$('gcMode').options].some(o=>o.value===m0))m0='gas';$('gcMode').value=m0;$('gcMode').onchange()}
 $('dqBtn').onclick=async()=>{const o=$('dqOut'),key=$('kakao').value.trim(),mode=$('gcMode').value;
  const f=out.find(x=>x['_방식']==='실패'),raw=$('dq').value.trim()||(f?f['_검색주소']:'');
  if(!raw){o.textContent='진단할 주소를 입력하세요.';return}
@@ -16002,7 +16004,7 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   if(j.keys&&keyApply(id,j.keys,false)){/* 새 키를 지금 쓰는 화면에도 바로 넣음 */
    const K=j.keys,got=[];
    try{if(K.sk||SITE.url){if(K.sk)SH.cfg.key=K.sk;if(SITE.url)SH.cfg.url=SITE.url;if(!SH.cfg.by&&un)SH.cfg.by=un;const e1=document.getElementById('shKey'),e2=document.getElementById('shUrl'),e3=document.getElementById('shBy');if(e1)e1.value=SH.cfg.key||'';if(e2)e2.value=SH.cfg.url||'';if(e3&&!e3.value)e3.value=SH.cfg.by||'';if(K.sk)got.push('직원 공유 키')}}catch(_){}
-   try{if(K.kjs){KEYS.sdk=K.kjs;sdkP=null;const e=document.getElementById('kvKey');if(e)e.value=K.kjs;got.push('카카오 JavaScript 키')}}catch(_){}
+   try{if(K.kjs){KEYS.sdk=K.kjs;sdkP=null;if(!LSg('geo-mode')){const g=document.getElementById('gcMode');if(g&&g.value==='gas'){g.value='sdk';if(g.onchange)g.onchange()}}const e=document.getElementById('kvKey');if(e)e.value=K.kjs;got.push('카카오 JavaScript 키')}}catch(_){}
    try{if(K.vw){const e=document.getElementById('vwKey');if(e){e.value=K.vw;const d=document.getElementById('vwDom');if(d&&!d.value)d.value=location.origin;if(typeof setupVworld==='function')setupVworld()}got.push('브이월드 키')}}catch(_){}
    if(got.length)toast('🔑 관리자가 보낸 API 키를 넣었습니다: '+got.join(' · ')+'\n카카오 지도·로드뷰는 앱을 다시 열면 확실히 반영됩니다.')}
 
@@ -16106,8 +16108,13 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   if(isNew&&(SITE_BI[o.id]||A.sites.some(x=>x.id===o.id)))return m('같은 코드('+o.id+')의 현장이 이미 있습니다.');
   if(!o.name)return m('현장 이름을 넣어 주세요.');
   if(!(o.c[0]>32&&o.c[0]<39.5&&o.c[1]>124&&o.c[1]<132))return m('지도 시작 위치(위도·경도)가 우리나라 범위가 아닙니다. 📍 지금 지도 가운데를 눌러도 됩니다.');
+  /* 공유 서버 주소 정리: 빈칸·줄바꿈 지움, /u/0/·/dev·?뒤 글자 정리. 브라우저 주소창에서 복사한 googleusercontent(echo) 주소는 쓸 수 없음 */
+  {const u=o.url.replace(/\s+/g,''),mm=u.match(/https?:\/\/script\.google\.com\/macros\/(?:u\/\d+\/)?s\/([A-Za-z0-9_-]{20,})\/(?:exec|dev)/);o.url=mm?`https://script.google.com/macros/s/${mm[1]}/exec`:u.replace(/[?#].*$/,'').replace(/\/+$/,'');
+   const e=document.getElementById('hqUrlS');if(e)e.value=o.url;
+   if(/googleusercontent\.com/i.test(u))return m('이 주소(script.googleusercontent.com/…)는 웹 앱 주소를 브라우저로 열었을 때 바뀐 임시 주소라 쓸 수 없습니다. Apps Script › 배포 › 배포 관리에 나오는 "웹 앱 URL"(https://script.google.com/macros/s/…/exec)을 복사해 넣어 주세요.')}
   if(o.url&&!/^https:\/\/(script\.google\.com\/macros\/s\/[^/]+\/exec|[^/]+\.workers\.dev)(\/.*)?$/.test(o.url))return m('공유 서버 주소는 https://script.google.com/macros/s/…/exec 또는 https://…workers.dev 이어야 합니다.');
   if(!bi&&!pw&&!s.hasPw)return m('새 현장은 시작 비밀번호를 정해야 합니다.');
+  if(bi&&!pw&&!s.hasPw&&KF.some(([k])=>keys[k]))return m('이 현장은 아직 앱 기본 비밀번호(공개 소스에 암호 값이 있음)라 API 키를 직원 기기로 보내지 않습니다. 위 "시작 비밀번호" 칸에 새 비밀번호를 같이 정한 뒤 저장해 주세요. 새 비밀번호를 넣은 기기는 키를 자동으로 받습니다.');
   if(pw&&pw.length<4)return m('비밀번호는 4자 이상으로 해 주세요.');
   const h=pw?window.__lockHash(pw):'';
   const BIP={phg:'PH2026',uis:'US2026'};
