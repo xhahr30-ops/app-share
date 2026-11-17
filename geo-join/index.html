@@ -1827,6 +1827,16 @@ html.dark svg.ri{color:var(--cd)!important}
   <div style="font-size:12.5px;margin:2px 0"><label><input type="checkbox" id="wrCkTxt" checked> 포항(서용) 전주 결과(D25) 문장 바꾸기</label> · <label><input type="checkbox" id="wrCkSum" checked> 총괄 포항 줄 바꾸기</label> · <label><input type="checkbox" id="wrCkDt" checked> 전주·금주 기간 바꾸기</label></div>
   <div class="sbtns"><button id="wrXl" type="button" class="btn">⬇ 결과 주 칸 채운 엑셀 받기</button></div>
   <div id="wrOut"></div></div>
+  <details id="wrMailBox" style="margin:6px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">📧 메일 예약 보내기 <small style="font-weight:400">(공유 서버가 정한 시각에 보냄 · 앱이 꺼져 있어도)</small></summary>
+   <label class="f">받는 사람 <small style="font-weight:400">(쉼표로 여러 명, 최대 10명)</small><input id="wrTo" type="email" multiple placeholder="예: team@example.com" style="width:100%"></label>
+   <label class="f">제목<input id="wrSubj" style="width:100%"></label>
+   <div class="g2"><label class="f">보낼 날짜<input id="wrAtD" type="date" style="width:100%"></label><label class="f">보낼 시각<input id="wrAtT" type="time" style="width:100%"></label></div>
+   <div style="font-size:12.5px;margin:2px 0"><label><input type="checkbox" id="wrRep"> 매주 같은 요일·시각에 되풀이</label></div>
+   <p class="hint" id="wrAtt" style="margin:2px 0"></p>
+   <div class="sbtns"><button id="wrMail" type="button" class="btn">📧 예약하기</button><button id="wrMl" type="button" class="btn ol">🔄 예약 목록</button></div>
+   <p class="hint" id="wrMMsg"></p><div id="wrMList"></div>
+   <p class="hint">본문은 위 ✏️ 결과 문장, 첨부는 주간이면 ⬇ 받은 채운 엑셀(없으면 공종 실적 표 엑셀), 월간이면 당월·누계 표 엑셀입니다. 예약할 때의 내용이 그대로 나가며, 되풀이 예약은 목록의 <b>내용 바꾸기</b>로 새 보고서로 바꿉니다. 정한 시각부터 5분 안에 나갑니다. 고객 이름·주소·연락처는 넣지 않습니다.</p>
+  </details>
   <p class="hint">숫자는 이 기기에 있는 자료로만 셉니다: 📒 누수탐사·민원 대장(②-4), 📷 현장 사진 종류(누수탐사·경계밸브), 👣 탐사기록·👥 팀 탐사 관로, 🪜 단계시험 현장 기록, 🔧 시설물 유지관리 기록, 🛠 관로 편집 기록. 자료가 없는 공종은 <b>확인 필요</b>로 두고 엑셀 칸도 바꾸지 않습니다. <b>자동</b> 줄은 처음부터 엑셀에 넣고, <b>확인</b> 줄은 숫자를 보고 체크하면 넣습니다. 칸의 숫자는 고쳐 쓸 수 있습니다.</p>
  </div>
 
@@ -15895,7 +15905,7 @@ function wrRun(){const r=wrRange();if(!r){$('wrMsg').textContent='⚠ 날짜를 
  $('wrTbl').innerHTML=`<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:12.5px"><tr><th>No</th><th>세부공종(단위)</th><th class="r">${m?'당월':'그 주 실적'}</th>${m?`<th class="r">누계<br><small>${esc(WR.c.s||'')}~</small></th>`:''}<th>가져온 곳</th>${m?'':'<th>엑셀에<br>넣기</th>'}</tr>${rows}</table></div>`+
   (m&&R.S.tam?`<p class="hint" style="margin:4px 0">누수확인 조사 현황 · 당월 적출 ${R.S.tam.ok} · 정탐 ${R.S.tam.rep} · 오탐 ${R.S.tam.fp} · 미수리 ${R.S.tam.un}${C&&C.S.tam?` (누계 정탐 ${C.S.tam.rep} · 오탐 ${C.S.tam.fp} · 미수리 ${C.S.tam.un})`:''}</p>`:'')+
   (m&&R.S.mwc?`<p class="hint" style="margin:4px 0">민원 · 당월 ${R.S.mwc.n}건${C&&C.S.mwc?`, 누계 ${C.S.mwc.n}건`:''}</p>`:'');
- $('wrTxt').value=wrText(R);$('wrSum').value=wrSumLine(R);
+ $('wrTxt').value=wrText(R);$('wrSum').value=wrSumLine(R);try{if($('wrSubj'))$('wrSubj').value='';wrMailDef()}catch(_){}
  const nA=WR_IT.filter(it=>R.V[it.k]!=null).length;$('wrMsg').textContent=`${r.lb} · 앱 자료로 센 공종 ${nA}개 / ${WR_IT.length}개 · 나머지는 확인 필요`+(m?' · 월간 한글 양식 채우기는 다음 단계(지금은 📋 표 복사)':'')}
 function wrVals(){const R=WR.res;if(!R)return null;const o={};$('wrTbl').querySelectorAll('.wrCk').forEach(c=>{if(!c.checked)return;const k=c.dataset.k,inp=$('wrTbl').querySelector(`.wrV[data-k="${k}"]`);let v=R.V[k];if(inp){const n=parseFloat(String(inp.value).replace(/,/g,''));if(!isFinite(n))return;v=n}if(v!=null)o[k]=v});return o}
 function wrCopy(){const R=WR.res;if(!R){wrRun();if(!WR.res)return}const m=WR.c.mode==='m',C=WR.cum,L=[['No','세부공종','단위',m?'당월':'실적',...(m?['누계']:[]),'근거'].join('\t')];
@@ -15949,7 +15959,7 @@ async function wrXl(){const f=$('wrF').files&&$('wrF').files[0],out=$('wrOut');i
  let wb2=/<calcPr\b/.test(wbx)?wbx.replace(/<calcPr\b([^>]*?)\s*(\/?)>/,(s,a,c)=>`<calcPr${a.replace(/\sfullCalcOnLoad="[^"]*"/,'')} fullCalcOnLoad="1"${c?'/':''}>`):wbx.replace('</workbook>','<calcPr fullCalcOnLoad="1"/></workbook>');z.file('xl/workbook.xml',wb2);
  if(z.file('xl/calcChain.xml')){z.remove('xl/calcChain.xml');z.file('xl/_rels/workbook.xml.rels',rlx.replace(/<Relationship\b[^>]*calcChain[^>]*\/>/,''));const ct=await z.file('[Content_Types].xml').async('string');z.file('[Content_Types].xml',ct.replace(/<Override\b[^>]*calcChain[^>]*\/>/,''))}
  Object.keys(z.files).forEach(k=>{if(z.files[k].dir)delete z.files[k]});/* 원본에 없던 폴더 항목 빼기 */
- const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),nm=`경북팀_주간공정보고_${r.a}주_${(typeof SITE==='object'&&SITE.name)||'포항'}.xlsx`;dlBlob(blob,nm);
+ const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),nm=`경북팀_주간공정보고_${r.a}주_${(typeof SITE==='object'&&SITE.name)||'포항'}.xlsx`;dlBlob(blob,nm);WR.lastX={blob,name:nm,a:r.a};try{wrAttTxt()}catch(_){}
  const sv=v=>{const t=String(v??'');return esc(t.length>40?t.slice(0,40)+'…':t)};
  out.innerHTML=`<p class="hint">⬇ ${esc(nm)} · 바꾼 칸 ${log.length}개${ch?` · ${ch.n}차분 ${wk}주차`:''}</p><div style="overflow:auto;max-height:240px"><table class="tbl" style="width:100%;font-size:12px"><tr><th>시트</th><th>칸</th><th>내용</th><th>전</th><th>후</th></tr>${log.map(l=>`<tr><td>${esc(l[0])}</td><td>${l[1]}</td><td>${esc(l[2])}</td><td>${sv(l[3])}</td><td>${sv(l[4])}</td></tr>`).join('')}</table></div>`+(warn.length?`<p class="hint">⚠ ${warn.map(esc).join('<br>⚠ ')}</p>`:'')+'<p class="hint">엑셀에서 열면 공정률·인원 비율이 다시 계산됩니다. 인원투입 실시 인·일, 금주 계획, 지시사항, TBM 내용은 손으로 채우세요.</p>';}
 function wrInit(){if(!$('wrSec'))return;wrLoad();wrDefault();wrUi();
@@ -15959,6 +15969,42 @@ function wrInit(){if(!$('wrSec'))return;wrLoad();wrDefault();wrUi();
  $('wrTbl').addEventListener('change',e=>{const c=e.target.closest('.wrCk');if(c){WR.c.ck[c.dataset.k]=c.checked;wrSave()}})}
 window.wrSetMode=m=>{if(!$('wrSec'))return;WR.c.mode=m;wrSave();wrUi()};
 try{wrInit()}catch(e){console.warn('공정보고',e)}
+/* ── 📧 공정보고 메일 예약 (2026-11-18 B안): 공유 서버(Code.gs 2026-11-18 판) 시트 '메일예약' + 5분 트리거가 보냄 ── */
+function wrMailDef(){const c=WR.c.mail||(WR.c.mail={});const r=wrRange(),site=(typeof SITE==='object'&&SITE.name)||'';
+ if($('wrTo')&&!$('wrTo').value)$('wrTo').value=c.to||'';if($('wrAtT')&&!$('wrAtT').value)$('wrAtT').value=c.t||'08:30';
+ if($('wrAtD')&&!$('wrAtD').value){const d=new Date();d.setDate(d.getDate()+1);$('wrAtD').value=wrYmd(d)}
+ if($('wrSubj')&&r)$('wrSubj').value=`[${site||'현장'}] ${WR.c.mode==='m'?'월간공정보고 '+r.lb:'주간공정보고 '+r.a+' 주'}`;wrAttTxt()}
+function wrAttTxt(){const el=$('wrAtt');if(!el)return;const r=wrRange(),x=WR.lastX&&r&&WR.lastX.a===r.a&&WR.c.mode==='w'?WR.lastX:null;
+ el.textContent='📎 첨부: '+(x?x.name+' (⬇ 채운 엑셀)':WR.res?'공종 실적 표 엑셀 (예약할 때 만듦)':'먼저 📊 실적 집계를 누르세요')}
+async function wrTblXlsx(){const R=WR.res,C=WR.cum,m=WR.c.mode==='m';if(typeof XLSX==='undefined')throw new Error('엑셀 도구를 못 불러왔습니다(인터넷 확인).');
+ const A=[[`${R.lb} ${m?'월간':'주간'}공정보고 · 공종 실적 (스마트 물길주소, 만든이: 구병순)`],[],['No','세부공종','단위',m?'당월':'실적',...(m?['누계']:[]),'가져온 곳']];
+ WR_IT.forEach((it,i)=>{const v=R.V[it.k],n=v==null?'확인 필요':v==='prev'?'앞 주와 같게':v,cv=C?C.V[it.k]:null;A.push([i+1,it.n,it.u,n,...(m?[cv==null||cv==='prev'?'':cv]:[]),R.src[it.k]||''])});
+ A.push([],['결과 문장']);$('wrTxt').value.split('\n').forEach(l=>A.push([l]));
+ const ws=XLSX.utils.aoa_to_sheet(A);ws['!cols']=[{wch:5},{wch:24},{wch:8},{wch:10},{wch:10},{wch:40}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'공정보고');
+ const buf=XLSX.write(wb,{type:'array',bookType:'xlsx'}),r=wrRange();return{blob:new Blob([buf]),name:`${m?'월간':'주간'}공정보고_${m?WR.c.m:r.a+'주'}_실적표.xlsx`}}
+const wrB64=b=>new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(String(f.result).split(',')[1]||'');f.onerror=()=>rej(f.error);f.readAsDataURL(b)});
+function wrMailErr(e){const m=String(e&&e.message||e);return /알 수 없는 요청/.test(m)?'공유 서버 Code.gs가 예전 판입니다. 2026-11-18 판으로 바꾸고 mailSetup 실행 → [배포 관리] ✏️ 새 버전으로 배포하세요(새 배포 아님).':m}
+function wrShOk(){if(typeof SH!=='object'||!SH.cfg||!SH.cfg.url){$('wrMMsg').textContent='⚠ 📷 현장 사진 › ☁️ 직원 공유에 공유 서버 주소·공유 키를 먼저 넣어 주세요.';return false}
+ if(typeof shIsCF==='function'&&shIsCF(SH.cfg.url)){$('wrMMsg').textContent='⚠ 클라우드플레어 공유 서버는 아직 메일 예약을 못 합니다(구글 Apps Script 서버만).';return false}return true}
+async function wrMailPut(id){const msg=$('wrMMsg');if(!wrShOk())return;if(!WR.res){wrRun();if(!WR.res)return}
+ const to=$('wrTo').value.trim(),d=$('wrAtD').value,t=$('wrAtT').value,subj=$('wrSubj').value.trim();
+ if(!id){if(!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}if(!d||!t){msg.textContent='⚠ 보낼 날짜·시각을 정해 주세요.';return}}
+ const at=d&&t?new Date(d+'T'+t+':00').getTime():0;if(!id&&at<Date.now()-60000){msg.textContent='⚠ 보낼 시각이 이미 지났습니다.';return}
+ const r=wrRange(),x=WR.lastX&&r&&WR.lastX.a===r.a&&WR.c.mode==='w'?WR.lastX:await wrTblXlsx();msg.textContent='⏳ 공유 서버에 맡기는 중…';
+ const q={kind:WR.c.mode,subj,body:$('wrTxt').value,file:await wrB64(x.blob),fname:x.name,site:(typeof SITE==='object'&&SITE.name)||''};
+ if(id){const o=(WR.ml||[]).find(z=>z.id===id);if(!o){msg.textContent='예약을 찾지 못했습니다.';return}Object.assign(q,{id,to:o.to,at:Math.max(o.at,Date.now()),rep:o.rep});if(!subj)q.subj=o.subj}else Object.assign(q,{to,at,rep:$('wrRep').checked?'w':''});
+ try{const j=await shReq('mailput',q);WR.c.mail={to:q.to,t:t||WR.c.mail&&WR.c.mail.t};wrSave();
+  msg.textContent=`✅ ${id?'내용을 바꿨습니다':'예약했습니다'} · ${fmtDT(j.item.at)}${j.item.rep==='w'?' (매주 되풀이)':''} · ${j.item.to}`+(j.quota!=null?` · 오늘 더 보낼 수 있는 메일 ${j.quota}통`:'');await wrMailList()}catch(e){msg.textContent='⚠ '+wrMailErr(e)}}
+async function wrMailList(){const box=$('wrMList');if(!wrShOk())return;try{const j=await shReq('maillist');WR.ml=j.items||[];
+  box.innerHTML=(j.trig===false?'<p class="hint">⚠ 서버 트리거가 없습니다 — Apps Script에서 mailSetup을 한 번 실행하세요.</p>':'')+(WR.ml.length?`<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:12px"><tr><th>보낼 시각</th><th>제목</th><th>받는 사람</th><th>상태</th><th></th></tr>${WR.ml.map(o=>`<tr><td>${esc(fmtDT(o.at))}${o.rep==='w'?' <small>매주</small>':''}</td><td>${esc(o.subj.replace(/^'/,''))}<br><small>${esc(o.fname||'')}${o.by?' · '+esc(o.by):''}</small></td><td><small>${esc(o.to)}</small></td><td>${esc(o.st)}${o.sent?'<br><small>보냄 '+esc(fmtDT(o.sent))+'</small>':''}${o.err?'<br><small style="color:#dc2626">'+esc(o.err)+'</small>':''}</td><td>${o.st!=='보냄'?`<button type="button" class="btn ol" data-mu="${esc(o.id)}" title="지금 만든 보고서(본문·첨부)로 바꿈">내용 바꾸기</button> <button type="button" class="btn ol" data-md="${esc(o.id)}">취소</button>`:''}</td></tr>`).join('')}</table></div>`:'<p class="hint">예약이 없습니다.</p>')+(j.quota!=null?`<p class="hint">오늘 더 보낼 수 있는 메일 ${j.quota}통</p>`:'')}
+ catch(e){box.innerHTML='';$('wrMMsg').textContent='⚠ '+wrMailErr(e)}}
+function wrMailInit(){if(!$('wrMailBox'))return;
+ $('wrMailBox').addEventListener('toggle',()=>{if($('wrMailBox').open){wrMailDef();if(typeof SH==='object'&&SH.cfg&&SH.cfg.url)wrMailList()}});
+ $('wrMail').onclick=()=>wrMailPut().catch(e=>$('wrMMsg').textContent='⚠ '+wrMailErr(e));$('wrMl').onclick=wrMailList;
+ $('wrMList').addEventListener('click',async e=>{const u=e.target.closest('[data-mu]'),d=e.target.closest('[data-md]');
+  if(u)wrMailPut(u.dataset.mu).catch(er=>$('wrMMsg').textContent='⚠ '+wrMailErr(er));
+  else if(d){if(!confirm('이 메일 예약을 취소할까요?'))return;try{await shReq('maildel',{id:d.dataset.md});$('wrMMsg').textContent='예약을 취소했습니다.';wrMailList()}catch(er){$('wrMMsg').textContent='⚠ '+wrMailErr(er)}}})}
+try{wrMailInit()}catch(e){console.warn('공정보고 메일',e)}
 /* ===== 🚨 긴급 점검 (2026-11-15 B안) =====
    긴급상황(출수불량·대형 누수·관 파손·가압장 정지·수질사고) 신고 지점을 넣으면
    ① 💧 단수구역 연결표(shutNet)에서 신고 지점 관로를 찾고, 관망해석 흐름 방향(faDir) → 없으면 굵은 관 쪽으로 상류를 거슬러 올라감
