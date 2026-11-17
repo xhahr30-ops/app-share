@@ -399,10 +399,15 @@ html.dark .gsrch .gsi:hover,html.dark .gsrch .gsi.on{background:#312e81}
 .gsrch .gsm .gsvok{margin-top:6px;border:0;border-radius:6px;background:#4f46e5;color:#fff;font-weight:700;font-size:12px;padding:6px 10px;cursor:pointer;font-family:inherit}
 .gsrch .gst{border:0;background:none;font-size:15px;cursor:pointer;padding:3px 5px;color:var(--ink)}
 .gs-pin{background:none;border:0}
-/* 🔍 찾은 자리 깜빡이(2026-11-17 A안): 퍼지는 링 3번(약 3초) 뒤 저절로 지움 */
-.gsfl{background:none;border:0;pointer-events:none}.gsfl::before,.gsfl::after{content:'';position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;border:4px solid var(--c,#dc2626);box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.3);box-sizing:border-box;animation:gsflr 1s ease-out 3 both}.gsfl::after{animation-delay:.45s}
-@keyframes gsflr{0%{transform:scale(.5);opacity:1}100%{transform:scale(2.4);opacity:0}}
-@media (prefers-reduced-motion:reduce){.gsfl::before{animation:none;transform:scale(1.4);opacity:1}.gsfl::after{display:none}}
+/* 🔍 찾은 자리 깜빡이(2026-11-17 B안): ✕·다른 검색·핀 지우기 전까지 계속 — 큰 링 두 겹이 퍼지고 가운데 점이 깜빡, 위에 이름표.
+   블록은 SVG 층(캔버스 아님)이라 CSS로 경계 굵기·안쪽 채움을 계속 깜빡 */
+.gsfl{background:none;border:0;pointer-events:none}.gsfl::before,.gsfl::after{content:'';position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;border:5px solid var(--c,#dc2626);box-shadow:0 0 0 2px #fff,0 0 8px 3px rgba(0,0,0,.35);box-sizing:border-box;animation:gsflr 1.2s ease-out infinite}.gsfl::after{animation-delay:.6s}
+.gsfl i{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--c,#dc2626);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.4);box-sizing:border-box;animation:gsfld .6s ease-in-out infinite alternate}
+@keyframes gsflr{0%{transform:scale(.35);opacity:1}100%{transform:scale(1.6);opacity:0}}@keyframes gsfld{to{opacity:.15;transform:scale(.6)}}
+.leaflet-tooltip.gsflb{background:var(--c,#dc2626);color:#fff;border:2px solid #fff;border-radius:8px;font:700 13px/1.3 'Noto Sans KR',sans-serif;padding:3px 9px;box-shadow:0 2px 8px rgba(0,0,0,.45);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:gsflt 1.2s ease-in-out infinite}.leaflet-tooltip.gsflb::before{display:none}
+@keyframes gsflt{50%{box-shadow:0 0 0 5px rgba(255,255,255,.85),0 0 14px 6px var(--c,#dc2626)}} /* Leaflet이 transform으로 자리를 잡으므로 transform은 안 씀 */
+path.gsblk{animation:gsblk 1s ease-in-out infinite}@keyframes gsblk{0%,100%{stroke-width:4px;fill-opacity:.08}50%{stroke-width:11px;fill-opacity:.4}}
+@media (prefers-reduced-motion:reduce){.gsfl::before,.gsfl i,.leaflet-tooltip.gsflb,path.gsblk{animation:none}.gsfl::before{transform:scale(1.1)}.gsfl::after{display:none}path.gsblk{stroke-width:9px;fill-opacity:.3}}
 .gs-pin span{display:block;width:22px;height:22px;border-radius:50% 50% 50% 0;background:#dc2626;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 .fs{position:fixed!important;inset:8px!important;margin:0!important;z-index:2000;border-radius:16px;box-shadow:0 0 0 100vmax rgba(15,23,42,.6)!important;overflow:auto;display:flex!important;flex-direction:column}
 .fs .scr{max-height:none!important;flex:1;min-height:0}
@@ -4807,21 +4812,25 @@ function vCands(alts){/* 인식 후보마다: 원문 뗀 것, 말 맞춤, 한 �
   if(/^[A-Z]+[0-9]/.test(c)){add(c.replace(/^([A-Z]+)([0-9])(?![0-9])/,'$10$2'));const m=n.match(/^([A-Z]+[0-9]+)\s+([0-9])$/);if(m){add(m[1]+'-'+m[2]);add(m[1].replace(/^([A-Z]+)([0-9])$/,'$10$2')+'-'+m[2])}}
   add(String(a||'').trim().replace(/[.,?!。]+$/,''))});
  return cs}
-/* 🔍 찾은 자리 깜빡이(2026-11-17 A안): 이동이 끝난 뒤 그 자리에 퍼지는 링 3번(주소·자료 빨강, 시설물 노랑, 사진 보라),
-   블록은 경계선을 굵게 3번. 약 3초 뒤 저절로 지우고 지금 표시(핀·노란 원·주황 점선)만 남음. 지도를 끌거나 다른 걸 찾으면 바로 멈춤 */
-const GSF={m:null,t:0,b:0,bl:null};
-function gsFlashStop(){clearTimeout(GSF.t);clearInterval(GSF.b);GSF.t=GSF.b=0;if(GSF.m&&map){map.removeLayer(GSF.m)}GSF.m=null;if(GSF.bl){try{GSF.bl.setStyle({weight:4})}catch(_){}GSF.bl=null}}
-function gsFlashRun(fn){if(!map)return;gsFlashStop();let done=false;const go=()=>{if(done)return;done=true;clearTimeout(t0);fn()};
- const t0=setTimeout(go,700);map.once('moveend',()=>setTimeout(go,60))}
-function gsFlash(ll,c){if(!map||!ll)return;gsFlashRun(()=>{
- GSF.m=L.marker(ll,{interactive:false,keyboard:false,zIndexOffset:900,icon:L.divIcon({className:'gsfl',html:'',iconSize:[46,46],iconAnchor:[23,23]})}).addTo(map);
- const e=GSF.m.getElement();if(e)e.style.setProperty('--c',c||'#dc2626');GSF.t=setTimeout(gsFlashStop,3300)})}
-function gsFlashBlk(){if(!map)return;gsFlashRun(()=>{if(typeof hlL==='undefined'||!hlL)return;GSF.bl=hlL;let n=0;
- const rm=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
- if(rm){hlL.setStyle({weight:9});GSF.t=setTimeout(gsFlashStop,3000);return}
- GSF.b=setInterval(()=>{if(!GSF.bl||!GSF.bl._map){gsFlashStop();return}n++;GSF.bl.setStyle({weight:n%2?10:4});if(n>=6)gsFlashStop()},450)})}
+/* 🔍 찾은 자리 깜빡이(2026-11-17 B안): 이동이 끝난 뒤 그 자리에 계속 깜빡이는 링+가운데 점+이름표
+   (주소·자료 빨강, 시설물 주황, 사진 보라), 블록은 경계 굵기·안쪽 채움 깜빡+가운데 이름표.
+   ✕ 지우기·다른 검색·📍 핀 지우기에서만 멈춤 (지도를 끌어도 계속 — 돌아와서도 찾게) */
+const GSF={m:null,tt:null,bl:null,t0:0,svg:null};
+function gsFlashStop(){clearTimeout(GSF.t0);GSF.t0=0;if(map)[GSF.m,GSF.tt,GSF.bl].forEach(l=>{if(l)map.removeLayer(l)});GSF.m=GSF.tt=GSF.bl=null}
+function gsFlashRun(fn){if(!map)return;gsFlashStop();let done=false;const go=()=>{if(done)return;done=true;clearTimeout(GSF.t0);fn()};
+ GSF.t0=setTimeout(go,700);map.once('moveend',()=>setTimeout(go,60))}
+function gsTip(ll,txt,c,ctr){if(!txt)return;txt=String(txt);if(txt.length>26)txt=txt.slice(0,25)+'…';
+ GSF.tt=L.tooltip({permanent:true,interactive:false,direction:ctr?'center':'bottom',offset:ctr?[0,0]:[0,30],className:'gsflb'}).setLatLng(ll).setContent(esc(txt)).addTo(map);
+ const e=GSF.tt.getElement();if(e)e.style.setProperty('--c',c)}
+function gsFlash(ll,c,txt){if(!map||!ll)return;c=c||'#dc2626';gsFlashRun(()=>{
+ GSF.m=L.marker(ll,{interactive:false,keyboard:false,zIndexOffset:900,icon:L.divIcon({className:'gsfl',html:'<i></i>',iconSize:[72,72],iconAnchor:[36,36]})}).addTo(map);
+ const e=GSF.m.getElement();if(e)e.style.setProperty('--c',c);gsTip(ll,txt,c)})}
+function gsFlashBlk(txt){if(!map)return;gsFlashRun(()=>{if(typeof hlL==='undefined'||!hlL)return;
+ if(!GSF.svg)GSF.svg=L.svg({padding:.5});
+ GSF.bl=L.geoJSON(hlL.toGeoJSON(),{interactive:false,renderer:GSF.svg,className:'gsblk',style:{color:'#f59e0b',weight:4,fill:true,fillColor:'#f59e0b',fillOpacity:.08}}).addTo(map);
+ try{gsTip(GSF.bl.getBounds().getCenter(),txt?'🔲 '+txt:'','#d97706',1)}catch(_){}})}
 function initSearch(){
- map.on('dragstart',gsFlashStop);
+ window.__gsFlashStop=gsFlashStop;
  let pin=null,list=[],sel=-1,busy=false;
  const Ctl=L.Control.extend({options:{position:'topright'},onAdd(){
   const d=L.DomUtil.create('div','leaflet-control gsrch');
@@ -4862,16 +4871,16 @@ function initSearch(){
   else if(e.key==='Enter'&&sel>=0){e.preventDefault();go(list[sel]);gsAfterPick()}
   else if(e.key==='Escape'){lst.innerHTML='';list=[]}};
  function go(r){if(!r)return;sel=list.indexOf(r);show();
-  if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);gsFlashBlk();return}
+  if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);gsFlashBlk(r.t);return}
   if(r.k==='fac'){if(pin){map.removeLayer(pin);pin=null}const i=r.i,ll=L.latLng(FAC.y[i],FAC.x[i]);map.setView(ll,Math.max(map.getZoom(),17));
-   setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);gsFlash(ll,'#eab308');return}
-  if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}if(r.gid){phFind(r.gid);const g=PH.gById&&PH.gById.get(r.gid);if(g&&g.lat!=null)gsFlash([g.lat,g.lng],'#7c3aed')}else phGalOpen(r.pid);return}
-  if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);gsFlash([r.lat,r.lng],'#dc2626');return}
+   setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);gsFlash(ll,'#ea580c','🔧 '+r.t);return}
+  if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}if(r.gid){phFind(r.gid);const g=PH.gById&&PH.gById.get(r.gid);if(g&&g.lat!=null)gsFlash([g.lat,g.lng],'#7c3aed','📷 '+r.t)}else phGalOpen(r.pid);return}
+  if(r.k==='row'){if(pin){map.removeLayer(pin);pin=null}map.setView([r.lat,r.lng],Math.max(map.getZoom(),18));setTimeout(()=>{ptPick(r.i)},250);gsFlash([r.lat,r.lng],'#dc2626','📍 '+r.t);return}
   if(pin)map.removeLayer(pin);
   const blk=typeof blkAt==='function'?blkAt(r.lng,r.lat):'',xy=r.lat.toFixed(6)+', '+r.lng.toFixed(6);
   pin=L.marker([r.lat,r.lng],{icon:L.divIcon({className:'gs-pin',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,26],popupAnchor:[0,-24]}),zIndexOffset:1000}).addTo(map);
   pin.bindPopup(`<div style="font-size:12.5px;line-height:1.5"><b>📍 ${esc(r.t)}</b>${r.s?`<br><span style="color:#64748b">${esc(r.s)}</span>`:''}<br>소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy} <a href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${xy}');this.textContent='복사됨';return false">복사</a><div class="acts" style="margin-top:6px">${navBtn(r.lat,r.lng,r.t)}</div><a href="#" onclick="window.__gsClear&&window.__gsClear();return false">핀 지우기</a></div>`,{maxWidth:300}).openPopup();
-  map.setView([r.lat,r.lng],Math.max(map.getZoom(),17));gsFlash([r.lat,r.lng],'#dc2626')}
+  map.setView([r.lat,r.lng],Math.max(map.getZoom(),17));gsFlash([r.lat,r.lng],'#dc2626','📍 '+r.t)}
 
  /* 말로 찾기(2026-11-06, A안): 브라우저 음성 인식(크롬·엣지 = 말소리를 구글·MS로 보내 글자로 바꿈, 인터넷 필요).
     앱은 소리를 저장·전송하지 않고, 바뀐 글자만 검색칸에 넣는다. 인식 후보 5개를 말 맞춤(vNorm)해서
@@ -4905,7 +4914,7 @@ function initSearch(){
   if(part){inp.value=part.c;inp.dataset.q=part.c;clr.hidden=false;list=part.l;sel=-1;show();return}
   const q=cs[0]||'';inp.value=q;clr.hidden=!q;if(!q){msg('🎤 알아듣지 못했습니다. 다시 말해 주세요.');return}inp.dataset.q=q;run()}
  window.__vNorm=vNorm;window.__vCands=vCands;
- window.__gsClear=()=>{if(pin){map.removeLayer(pin);pin=null}};
+ window.__gsClear=()=>{gsFlashStop();if(pin){map.removeLayer(pin);pin=null}};
  /* 고른 뒤: 목록을 접어 📍 정보창을 가리지 않게(입력칸을 누르거나 고치면 다시 펼침). 폰 가로(높이 낮음)는 검색 창도 칩으로 접음 */
  function gsAfterPick(){lst.classList.add('fold');
   let lo=false;try{lo=matchMedia('(orientation:landscape) and (max-height:520px)').matches}catch(_){}
