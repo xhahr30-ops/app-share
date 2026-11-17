@@ -376,7 +376,7 @@ html.dark .hxp .hxref{background:#312e81;color:#c7d2fe}html.dark .hxp .hxck{back
 @media (max-width:640px){.uiset.shutp.fold{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}}
 .fsbtn a{display:flex!important;align-items:center;justify-content:center;font-size:15px;color:#1e293b;cursor:pointer;text-decoration:none}
 /* 지도 주소찾기 (오른쪽 위) */
-.gsrch{background:var(--card);border-radius:10px!important;box-shadow:0 2px 10px rgba(15,23,42,.18);border:1px solid var(--line2)!important;width:300px;max-width:calc(100vw - 90px);font-family:inherit;color:var(--ink)}
+.gsrch{background:var(--card);border-radius:10px!important;box-shadow:0 2px 10px rgba(15,23,42,.18);border:1px solid var(--line2)!important;width:440px;max-width:calc(100vw - 90px);font-family:inherit;color:var(--ink)}
 .gsrch form{display:flex;align-items:center;gap:4px;padding:4px}
 .gsrch input{flex:1;min-width:0;border:1px solid var(--line);border-radius:7px;padding:6px 26px 6px 9px;font-size:13px;background:var(--sub);color:var(--ink);font-family:inherit}
 .gsrch input:focus{outline:2px solid #6366f1;outline-offset:-1px;background:var(--card)}
@@ -460,7 +460,7 @@ body.touch .leaflet-bar a{width:40px!important;height:40px!important;line-height
  body.touch .leaflet-bar a{width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
  body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{gap:6px}.fmctl button{width:42px;height:42px;font-size:19px}.fmctl button.loc,.fmctl button.shot{font-size:18px}
  .leaflet-bottom .pleg{font-size:10.5px;line-height:1.4;padding:4px 8px;max-height:calc(50vh - 16px);overflow:auto}
- .gsrch{width:230px}.gsrch .gsb{padding:6px 8px}
+ .gsrch{width:320px}.gsrch .gsb{padding:6px 8px}
 }
 /* 가로 모드: 단수구역 창은 오른쪽 세로 칸(검색창 아래~바닥), ⚙️ 설정 창은 두 줄 버튼 오른쪽에서 시작 */
 @media (orientation:landscape) and (max-height:520px) and (min-width:641px){
@@ -482,8 +482,23 @@ html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
 html.chipOn .gsrch{max-width:calc(100vw - 24px)}
 /* 🔍 주소찾기 창: 칩 줄이 있으면 지도 가운데 위쪽(칩 줄 바로 아래). 왼쪽 세로 줄이면 줄 폭(--chw)만큼 뺀 가운데 (gsctr) */
+/* 작업 화면(메뉴 모드): 메뉴 줄(탭) 오른쪽 끝 칸 — 어느 탭에서든 씀. 목록은 메뉴 밖(지도 위)으로 fixed로 띄움(lstPos) */
+.gw-ss{display:flex;align-items:center;align-self:center;margin-left:auto;flex:none}
+#gwSrchSlot>.gsrch.gsrib{position:relative;float:none;clear:none;margin:0!important;width:440px;max-width:40vw;box-shadow:none;border-radius:6px!important}
+#gwSrchSlot>.gsrch.gsrib form{padding:1px 3px;gap:3px}#gwSrchSlot>.gsrch.gsrib input{padding:3px 24px 3px 8px;font-size:12.5px}
+#gw .gsrch .gsb,#gwMenu .gsrch .gsb{padding:4px 10px!important}
+#gwSrchSlot>.gsrch.gsrib .gst{pointer-events:none}
+.gsrch.gsrib .gsl{background:var(--card);border:1px solid var(--line2);border-radius:0 0 10px 10px;box-shadow:0 8px 20px rgba(15,23,42,.22)}
+.gsrch .gsl.fold{display:none}
+/* 리본 단추 공통 규칙(#gwRibW button: 배경·글자 없앰)이 검색 칸 단추를 덮지 않게 다시 줌 */
+#gw .gsrch .gsb{background:#4f46e5;color:#fff;font-weight:700;font-size:12.5px;padding:7px 11px;border-radius:7px}#gw .gsrch .gsb:hover{background:#4338ca}
+#gw .gsrch .gsx{color:var(--mute);font-size:13px;padding:2px 4px}#gw .gsrch .gsv{font-size:15px;padding:3px 4px;border-radius:7px}#gw .gsrch .gst{font-size:15px;padding:3px 5px;color:var(--ink)}
+#gw .gsrch .gsi{color:var(--ink);font-size:12.5px;padding:7px 10px;border-bottom:1px solid var(--line)!important}#gw .gsrch .gsi:hover,#gw .gsrch .gsi.on{background:#eef2ff}html.dark #gw .gsrch .gsi:hover,html.dark #gw .gsrch .gsi.on{background:#312e81}
+#gw .gsrch .gsm .gsvok{background:#4f46e5;color:#fff;font-weight:700;font-size:12px;padding:6px 10px;border-radius:6px}
 html.chipOn .leaflet-control-container>.gsrch.gsctr{position:absolute;top:52px;left:calc(50% + var(--chw,0px) / 2);transform:translateX(-50%);float:none;clear:none;margin:0!important;z-index:1000;max-width:calc(100% - var(--chw,0px) - 112px)}
 html.chipOn.chipV .leaflet-control-container>.gsrch.gsctr{top:10px}
+/* 전체화면: 주소찾기 창은 왼쪽 위(＋/− 버튼 오른쪽). 왼쪽 세로 칩 줄이면 줄 폭(--chw)만큼 더 오른쪽 */
+html.chipOn body.fsOn .leaflet-control-container>.gsrch.gsctr{left:calc(var(--chw,0px) + 62px);transform:none;max-width:calc(100% - var(--chw,0px) - 130px)}
 html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
 html.chipPh .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipPh .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
@@ -1278,7 +1293,7 @@ html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
 /* 작업 화면에서 띄우는 헤더 창(주소찾기설정·내보내기)은 리본 아래에 */
 html.gwOn .afp{top:150px}
 @media(max-width:900px){
- #gwSearch,#gwTitle .tt small,#gwStat .f{display:none!important}
+ #gwSearch,#gwSrchSlot,#gwTitle .tt small,#gwStat .f{display:none!important}
  #gwTitle .tt{text-align:left;padding-left:4px}
  #gwTitle .hs,#gwStat .hs{display:none!important}
  #gwRib{min-height:0;padding:3px 22px 0 4px}
@@ -1892,7 +1907,7 @@ html.dark svg.ri{color:var(--cd)!important}
    <img class="gwm" id="gwmR" alt="서용이">
   </div>
  </div>
- <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 탐사·민원 번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label></div>
+ <div id="gwMenu"><div id="gwTabs" role="tablist"></div><label id="gwSearch"><svg class="gi" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6"/></svg><input id="gwQ" type="search" placeholder="주소 · 장소 · 시설물명 · 관리번호 · 탐사·민원 번호 · 좌표 검색" aria-label="지도에서 찾기" autocomplete="off"></label><div id="gwSrchSlot" class="gw-ss"></div></div>
  <div id="gwRibW"><div id="gwRib"></div><button type="button" id="gwRibX" title="리본 접기·펴기">︿</button></div>
  <div id="gwBody">
   <aside id="gwLeft"><div id="gwLRs" role="separator" aria-orientation="vertical" tabindex="0" title="끌어서 레이어 창 폭 조절 · 두 번 누르면 처음 폭 (← → 키로도)"></div>
@@ -4469,8 +4484,8 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
  const bar=L.DomUtil.create('div','chipbar',root);L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
  const sd=L.DomUtil.create('div','leaflet-bar leaflet-control chsrch',bar),sa=L.DomUtil.create('a','',sd);sd.dataset.ck='srch';
  sa.href='#';sa.textContent='🔍';sa.dataset.lb='주소찾기';sa.title='주소찾기';sa.setAttribute('role','button');
- const gs=()=>root.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
- L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);const t=root.querySelector('.gsrch .gst');if(t)t.click();sSync()});
+ const gs=()=>document.querySelector('.gsrch'),sSync=()=>{const g=gs();sa.classList.toggle('on',!!g&&!g.classList.contains('min'))};
+ L.DomEvent.on(sa,'click',e=>{L.DomEvent.preventDefault(e);if(window.__gsRib&&window.__gsRib()){sSync();return}const t=document.querySelector('.gsrch .gst');if(t)t.click();sSync()});
  const g0=gs();if(g0)new MutationObserver(sSync).observe(g0,{attributes:true,attributeFilter:['class']});sSync();
  const LB={ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',rp:'교체 완료',sel:'관로 선택',phed:'사진 편집',fe:'편집',lock:'화면 고정',lbl:'라벨',bg:'배경',fs:'전체화면',help:'사용법'};
  const place=el=>{const k=chipKey(el);if(!k)return;el.dataset.ck=k;
@@ -4823,10 +4838,10 @@ function initSearch(){
  box.querySelector('.gsc').onclick=()=>{if(lst.querySelector('.gscf'))lst.innerHTML='';else cfgShow('')};
  const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
  function show(){const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
- lst.onclick=e=>{const b=e.target.closest('.gsi');if(!b)return;L.DomEvent.stop(e);go(list[+b.dataset.k])}; // 목록을 다시 그리면 누른 줄이 문서에서 빠져 Leaflet이 지도 클릭으로 보고 관로 정보창을 열던 것 막음
+ lst.onclick=e=>{const b=e.target.closest('.gsi');if(!b)return;L.DomEvent.stop(e);go(list[+b.dataset.k]);gsAfterPick()}; // 목록을 다시 그리면 누른 줄이 문서에서 빠져 Leaflet이 지도 클릭으로 보고 관로 정보창을 열던 것 막음
  inp.onkeydown=e=>{if(!list.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+list.length)%list.length;show();const o=lst.querySelector('.on');o&&o.scrollIntoView({block:'nearest'})}
-  else if(e.key==='Enter'&&sel>=0){e.preventDefault();go(list[sel])}
+  else if(e.key==='Enter'&&sel>=0){e.preventDefault();go(list[sel]);gsAfterPick()}
   else if(e.key==='Escape'){lst.innerHTML='';list=[]}};
  function go(r){if(!r)return;sel=list.indexOf(r);show();
   if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);return}
@@ -4873,6 +4888,33 @@ function initSearch(){
   const q=cs[0]||'';inp.value=q;clr.hidden=!q;if(!q){msg('🎤 알아듣지 못했습니다. 다시 말해 주세요.');return}inp.dataset.q=q;run()}
  window.__vNorm=vNorm;window.__vCands=vCands;
  window.__gsClear=()=>{if(pin){map.removeLayer(pin);pin=null}};
+ /* 고른 뒤: 목록을 접어 📍 정보창을 가리지 않게(입력칸을 누르거나 고치면 다시 펼침). 폰 가로(높이 낮음)는 검색 창도 칩으로 접음 */
+ function gsAfterPick(){lst.classList.add('fold');
+  let lo=false;try{lo=matchMedia('(orientation:landscape) and (max-height:520px)').matches}catch(_){}
+  if(lo&&!box.classList.contains('gsrib')){box.classList.add('min');btn.hidden=true}}
+ inp.addEventListener('focus',()=>lst.classList.remove('fold'));inp.addEventListener('input',()=>lst.classList.remove('fold'));
+ /* 목록 자리: 리본 안이면 리본(가로 스크롤 칸) 밖으로 잘리지 않게 fixed로 검색 칸 바로 아래 */
+ const lstPos=()=>{if(box.classList.contains('gsrib')){const r=box.getBoundingClientRect();Object.assign(lst.style,{position:'fixed',left:r.left+'px',top:(r.bottom-1)+'px',width:r.width+'px',zIndex:3000})}else if(lst.getAttribute('style'))lst.removeAttribute('style')};
+ new MutationObserver(lstPos).observe(lst,{childList:true});window.addEventListener('resize',lstPos);
+ /* ⚙️ 설정 창이 열려 가운데 검색 창과 겹치면(태블릿 세로·폰 가로) 설정 창 오른쪽에 남은 칸 가운데로 비킴 */
+ const setDodge=()=>{const u=document.getElementById('uiSet');box.style.left='';box.style.maxWidth='';
+  if(!box.classList.contains('gsctr')||!u||u.hidden||u.classList.contains('shutp')||!u.offsetWidth||document.body.classList.contains('fsOn'))return;
+  const c=map._container.getBoundingClientRect(),r=u.getBoundingClientRect(),b=box.getBoundingClientRect();if(r.bottom<=b.top||r.right<=b.left||r.left>=c.left+c.width/2)return;
+  const x0=r.right-c.left+8,w=c.width-x0-8;if(w<200)return;box.style.left=(x0+w/2)+'px';box.style.maxWidth=Math.min(w-8,440)+'px'};
+ /* 작업 화면(메뉴 모드)에서는 메뉴 줄 오른쪽 칸(어느 탭이든)으로 — 그때는 옛 '주소·장소' 칸을 숨김. 전체화면·좁은 화면·폰에서는 지도 위로 */
+ const dock=()=>{const H=document.documentElement,sl=document.getElementById('gwSrchSlot'),fs=document.body.classList.contains('fsOn');
+  const rib=H.classList.contains('gwOn')&&!fs&&sl&&getComputedStyle(sl).display!=='none'&&sl.closest('#gw')&&getComputedStyle(document.getElementById('gw')).display!=='none',gq=document.getElementById('gwSearch');if(gq)gq.style.display=rib?'none':'';
+  if(rib){if(box.parentNode!==sl)sl.appendChild(box);if(!box.classList.contains('gsrib')){box.classList.add('gsrib');box.classList.remove('gsctr','min');btn.hidden=false}}
+  else{const root=map._controlContainer;if(H.classList.contains('chipOn')&&root&&box.parentNode!==root){root.appendChild(box);box.classList.add('gsctr')}
+   if(box.classList.contains('gsrib')){box.classList.remove('gsrib');let m=false;try{m=localStorage.getItem('geo-gsmin')==='1'}catch(_){}box.classList.toggle('min',m);btn.hidden=m}}
+  lstPos();setDodge()};
+ window.__gsDock=dock;
+ /* 🔍 칩: 작업 화면이면 메뉴 줄 검색 칸에 커서 */
+ window.__gsRib=()=>{const H=document.documentElement;if(!H.classList.contains('gwOn')||document.body.classList.contains('fsOn'))return false;
+  dock();if(!box.classList.contains('gsrib'))return false;inp.focus();inp.select();return true};
+ {const mo=new MutationObserver(dock);mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});mo.observe(document.body,{attributes:true,attributeFilter:['class']});
+  const g=document.getElementById('gw');if(g)mo.observe(g,{attributes:true,attributeFilter:['class']});const u=document.getElementById('uiSet');if(u)new MutationObserver(setDodge).observe(u,{attributes:true,attributeFilter:['hidden']});
+  const rb=document.getElementById('gwRib');if(rb)rb.addEventListener('scroll',lstPos,{passive:true});map.on('resize',setDodge);setTimeout(dock,0)}
  /* 블록명 찾기: 소블록 SHP 이름 + 별칭표(BV01,BV02=블루밸리) + 중블록·대블록 이름. 띄어쓰기·대소문자 무시, 같음 > 앞부분 > 포함 */
  function inBlocks(q){const n=nsp(q).toUpperCase();if(!n||!poly)return [];const fld=$('blkField').value,K=v=>nsp(v).toUpperCase();
   const names=new Map(),grp=new Map();poly.features.forEach(g=>{const P=g.properties,nm=String(P[fld]??'').trim();if(!nm)return;names.set(K(nm),nm);
