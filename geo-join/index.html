@@ -1287,6 +1287,16 @@ html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
 .gw-wb>.sec>h4{display:none}
 .gw-help{display:flex;flex-direction:column;gap:8px;line-height:1.6}.gw-help h5{margin:6px 0 0;font-size:12.5px}.gw-help ul{margin:0;padding-left:18px}
 .gw-help kbd{border:1px solid var(--gw-bd);border-bottom-width:2px;border-radius:3px;padding:0 4px;font-size:11px;background:var(--gw-ch2)}
+#gwTip{position:fixed;z-index:4000;max-width:300px;background:#1e293b;color:#f8fafc;border-radius:6px;padding:5px 9px;font:12px/1.45 'Noto Sans KR',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.28);pointer-events:none}
+#gwTip .tk{display:inline-block;margin-left:4px;padding:0 5px;border:1px solid #64748b;border-bottom-width:2px;border-radius:4px;background:#334155;font:600 11px/16px ui-monospace,Consolas,monospace;color:#fde68a}
+#gwTip .tp{color:#94a3b8;font-size:11px;margin-top:1px}
+#gwKt{position:fixed;inset:0;z-index:3900;pointer-events:none}
+#gwKt .ktb{position:fixed;transform:translate(-50%,-30%);min-width:17px;padding:0 4px;border-radius:4px;background:#1e3a8a;color:#fff;font:700 11.5px/17px ui-monospace,Consolas,monospace;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35);border:1px solid #fff}
+#gwKt .ktb.tab{background:#f59e0b;color:#111827}#gwKt .ktb.off{opacity:.45}
+#gwKt .kth{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:#1e293b;color:#f8fafc;border-radius:16px;padding:5px 14px;font:12px 'Noto Sans KR',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.gw-keys .gwk{border-collapse:collapse;font-size:12px;margin:2px 0 8px}#gwWinB .gw-keys .gwk td{text-align:left;padding:2px 6px;border-bottom:1px solid var(--gw-bd);vertical-align:top}.gw-keys .gwk td:first-child{white-space:nowrap}
+.gw-keys .gwk small{color:var(--gw-tx2)}.gwk-t{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px 12px}.gwk-t b{font-size:12.5px}
+@media (hover:none),(pointer:coarse){#gwTip,#gwKt{display:none!important}}
 /* 아래 결과 표 (GIS 속성 테이블 자리) */
 #gwDock{flex:none;display:flex;flex-direction:column;border-top:1px solid var(--gw-bd);background:var(--gw-pn);min-height:0}
 .gw-dt{display:flex;align-items:center;gap:2px;padding:0 4px;height:28px;background:var(--gw-ch2);flex:none;overflow-x:auto;scrollbar-width:none}
@@ -2046,11 +2056,11 @@ const TABS=[
   {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
   {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
  {k:'help',n:'도움말',g:[
-  {n:'안내',b:[['ck:help','book','사용법 · 묻기',1],['win:help','help','작업 화면 안내',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
+  {n:'안내',b:[['ck:help','book','사용법 · 묻기',1],['win:help','help','작업 화면 안내',1],['win:keys','key','단축키 목록',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
 const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),pg:()=>$('pgRun'),sb:()=>$('sbRun'),st:()=>$('stRun'),rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',pg:'🧭 관망도 업데이트 구간 (점검 · 현장 확인 · 보고서)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',pg:'🧭 관망도 업데이트 구간 (점검 · 현장 확인 · 보고서)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',keys:'⌨ 단축키 목록',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -2090,7 +2100,7 @@ function isOn(h,v){const html=R.classList;
 
 window.__ribRe=()=>{try{if(S.on)ribBuild()}catch(_){}};
 function ribBuild(){const TB=window.FEAT?FEAT.ribTabs(TABS):TABS;/* 2026-11-14 관리자가 이 현장에서 끈 기능은 리본에서 뺌 */
- $('gwTabs').innerHTML=TB.map(t=>`<button type="button" role="tab" data-t="${t.k}">${t.n}</button>`).join('');
+ $('gwTabs').innerHTML=TB.map((t,i)=>`<button type="button" role="tab" data-t="${t.k}" title="${t.n} 탭">${t.n}</button>`).join('');
  const t=TB.find(x=>x.k===S.tab)||TB[0];S.tab=t.k;
  $('gwTabs').querySelectorAll('button').forEach(b=>{const on=b.dataset.t===t.k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
  const btn=([k,i,n,big,cls])=>`<button type="button" class="gw-b${big?' big':''}${cls?' '+cls:''}" data-a="${k}" title="${n}">${ic(i)}<span>${n}</span></button>`;
@@ -2259,7 +2269,7 @@ function propCopy(pp){setTimeout(()=>{const el=pp&&pp.getElement&&pp.getElement(
 function winBack(){if(S.winEl&&S.winPh&&S.winPh.parentNode){S.winPh.parentNode.replaceChild(S.winEl,S.winPh)}S.winEl=S.winPh=null}
 function winClose(){winBack();S.win=null;$('gwWin').hidden=true;$('gwWinB').replaceChildren();sync()}
 function winOpen(k){if(S.win===k&&!$('gwWin').hidden)return winClose();winBack();const B=$('gwWinB');B.replaceChildren();
- if(k==='help'){B.innerHTML=HELP}else{const f=WIN[k]&&WIN[k](),el=f&&(f.id==='vdSec'?f:f.closest('.sec'));if(!el){msg('이 자료 칸을 찾지 못했습니다.');return}
+ if(k==='help'){B.innerHTML=HELP}else if(k==='keys'){B.innerHTML=keysHtml()}else{const f=WIN[k]&&WIN[k](),el=f&&(f.id==='vdSec'?f:f.closest('.sec'));if(!el){msg('이 자료 칸을 찾지 못했습니다.');return}
   S.winPh=document.createComment('gw-win');el.parentNode.replaceChild(S.winPh,el);S.winEl=el;el.classList.remove('col');B.appendChild(el)}
  S.win=k;$('gwWinT').textContent=WT[k]||'';$('gwWin').hidden=false;B.scrollTop=0;sync()}
 $('gwWinX').onclick=winClose;
@@ -2267,7 +2277,7 @@ const HELP=`<div class="gw-help"><p><b>BsstGis 작업 화면</b>은 웹 관망�
 <h5>① 위쪽 리본 메뉴</h5><ul><li><b>파일</b>: 백업 만들기·불러오기, 결과 엑셀·PDF·사진 내보내기</li><li><b>자료</b>: 주소·소블록·관로·시설물·표고·부과량 올리기, 주소찾기 설정과 변환 시작 (초록 점 = 자료 있음)</li><li><b>지도</b>: 지도 설정, 표시 모두 끄기, 배경 끄기, 단수구역, 편집, 로드뷰, 지도 캡처</li><li><b>현장</b>: 현장 사진·동영상·현장 모드</li><li><b>표</b>: 아래 결과 창(상세 결과·블록별 현황·요약 지표)</li></ul>
 <h5>② 왼쪽 레이어 창</h5><ul><li>☑로 레이어를 켜고 끕니다. <b>속성</b> 탭에는 지도에서 누른 점·관로·시설물 정보가 나옵니다.</li></ul>
 <h5>③ 아래 결과 창 · 상태줄</h5><ul><li>결과 창은 ⇕로 크게, ▾로 접습니다. 표의 행을 누르면 지도가 그 위치로 갑니다.</li><li>상태줄: 누른 곳의 소블록, 마우스 좌표(위경도), 축척, 자료 개수</li></ul>
-<h5>단축키</h5><ul><li><kbd>Alt</kbd>+<kbd>W</kbd> 작업 화면 ↔ 보고서형 화면 · <kbd>Esc</kbd> 오른쪽 창 닫기</li><li>그 밖의 단축키(Alt+U 수용가, Alt+P 사진, Alt+H 표시 끄기)는 그대로입니다.</li></ul>
+<h5>단축키</h5><ul><li><kbd>Alt</kbd>+<kbd>W</kbd> 작업 화면 ↔ 보고서형 화면 · <kbd>Esc</kbd> 오른쪽 창 닫기</li><li><kbd>Alt</kbd>+<kbd>1</kbd>~<kbd>9</kbd> 리본 탭 · <kbd>Alt</kbd>를 한 번 눌렀다 떼면 단추마다 글자가 떠서 그 글자로 바로 누름 · <kbd>Ctrl</kbd>+<kbd>K</kbd> 검색 칸</li><li>단추에 마우스를 올리면 단축키가 나옵니다. 전체 목록은 <kbd>?</kbd> 또는 도움말 › 단축키 목록.</li></ul>
 <p class="hint">PDF 인쇄는 보고서형 화면 양식으로 나갑니다(인쇄하는 동안만 잠깐 전환).</p></div>`;
 
 /* ── 아래 결과 창 ── */
@@ -2319,6 +2329,66 @@ $('gwQ').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefau
  if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true}))});
 document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='w'||e.key==='W'||e.code==='KeyW')){e.preventDefault();set(!S.on)}
  else if(e.key==='Escape'&&S.on&&!$('gwWin').hidden){const t=e.target;if(t&&t.closest&&t.closest('.afp,.pcm,.uiset'))return;winClose()}});
+/* ===== ⌨ 단축키 · 마우스 올림 안내 (2026-11-17) =====
+   Alt+1~9 리본 탭 · Alt 한 번 눌렀다 떼면 탭 숫자·단추 글자 표시(그 키를 누르면 실행) · Ctrl+K 또는 / 검색 칸 · ? 단축키 목록
+   마우스를 올리면 브라우저 기본 말풍선 대신 이름 + 단축키 배지를 0.4초 뒤에 보여 줌(마우스 있는 PC만). 한글 자판은 e.code로 받음 */
+const KEYS={report:'Alt+W',allOff:'Alt+H',pt:'Alt+U',af:'Alt+F',ex:'Alt+E',dw:'Alt+D','win:keys':'?'};
+const KT_L='ABCDEFGHIJKLMNOPQRSTUVWXYZ',KT={on:false,els:[],tap:false,box:null};
+const ribTabs=()=>window.FEAT?FEAT.ribTabs(TABS):TABS;
+/* 탭 하나의 글자 순서 = 리본에 그려지는 순서(묶음마다 고르기 칸 → 큰 단추 → 작은 단추) */
+function ktItems(t){const r=[];t.g.forEach(g=>{(g.x||[]).forEach(([id,n])=>r.push({lm:id,n:g.n+' · '+n}));const gb=g.b||[];gb.filter(b=>b[3]).concat(gb.filter(b=>!b[3])).forEach(b=>r.push({a:b[0],n:b[2],g:g.n}))});return r.slice(0,26)}
+const typing=e=>{const t=e.target;return !!t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)};
+function tabGo(i){const t=ribTabs()[i];if(!t)return false;S.tab=t.k;LS.set('geo-gwT',S.tab);gw.classList.remove('rc');ribBuild();return true}
+function ktHide(){KT.on=false;KT.els=[];if(KT.box)KT.box.remove();KT.box=null}
+function ktShow(){if(!S.on)return;ktHide();KT.on=true;tipHide();const b=document.createElement('div');b.id='gwKt';b.setAttribute('aria-hidden','true');
+ const put=(el,txt,cls)=>{const r=el.getBoundingClientRect();if(!r.width)return;const s=document.createElement('span');s.className='ktb'+(cls?' '+cls:'');s.textContent=txt;s.style.left=Math.round(r.left+r.width/2)+'px';s.style.top=Math.round(r.bottom-9)+'px';b.appendChild(s)};
+ $('gwTabs').querySelectorAll('button').forEach((t,i)=>{if(i<9)put(t,String(i+1),'tab')});
+ KT.els=[...$('gwRib').querySelectorAll('button[data-a],select[data-lm]')].slice(0,26);KT.els.forEach((e,i)=>put(e,KT_L[i],e.disabled?'off':''));
+ const h=document.createElement('div');h.className='kth';h.textContent='숫자 = 탭 바꾸기 · 글자 = 그 단추 누르기 · Esc = 닫기';b.appendChild(h);
+ document.body.appendChild(b);KT.box=b}
+function ktKey(e){if(e.key==='Alt'||e.key==='Shift'||e.key==='Control'||e.key==='Meta')return;e.preventDefault();e.stopPropagation();
+ if(e.key==='Escape')return ktHide();let m=/^Digit([1-9])$/.exec(e.code);if(m){if(tabGo(+m[1]-1))ktShow();return}
+ m=/^Key([A-Z])$/.exec(e.code);const el=m&&KT.els[KT_L.indexOf(m[1])];ktHide();if(!el)return;
+ if(el.tagName==='SELECT'){el.focus();try{el.showPicker()}catch(_){}}else if(!el.disabled)el.click()}
+function srchGo(){if(window.__gsRib&&window.__gsRib())return;const box=document.querySelector('.gsrch'),i=box&&box.querySelector('form input');
+ if(S.on&&$('gwQ')&&$('gwQ').offsetParent){$('gwQ').focus();$('gwQ').select();return}if(!i)return;if(box.classList.contains('min')){const t=box.querySelector('button[hidden]');box.classList.remove('min');if(t)t.hidden=false}i.focus();try{i.select()}catch(_){}}
+const locked=()=>!!document.getElementById('lockBox');/* 잠금 화면에서는 단축키 안 받음 */
+document.addEventListener('keydown',e=>{if(locked())return;
+ if(KT.on){ktKey(e);return}
+ if(e.key==='Alt'){KT.tap=!e.repeat&&!e.ctrlKey&&!e.shiftKey&&!e.metaKey;return}KT.tap=false;
+ const ctl=e.ctrlKey||e.metaKey;
+ if(e.altKey&&!ctl&&!e.shiftKey&&S.on){const m=/^Digit([1-9])$/.exec(e.code);if(m){e.preventDefault();if(tabGo(+m[1]-1))ktShow();return}}
+ if(ctl&&!e.altKey&&!e.shiftKey&&e.code==='KeyK'){e.preventDefault();srchGo();return}
+ if(!ctl&&!e.altKey&&e.code==='Slash'&&!typing(e)){e.preventDefault();if(e.shiftKey){if(S.on)winOpen('keys')}else srchGo();return}},true);
+document.addEventListener('keyup',e=>{if(e.key!=='Alt'||locked())return;const t=KT.tap;KT.tap=false;if(!t||!S.on)return;e.preventDefault();KT.on?ktHide():ktShow()},true);
+addEventListener('blur',()=>{KT.tap=false;ktHide()});addEventListener('resize',()=>{if(KT.on)ktShow()});
+document.addEventListener('mousedown',e=>{KT.tap=false;if(KT.on)ktHide()},true);
+/* 단축키 목록 창(? 키 · 도움말 탭) */
+function keysHtml(){const kb=s=>s.split('+').map(x=>`<kbd>${x}</kbd>`).join('+'),TB=ribTabs();
+ const fix=[['Alt+W','작업 화면 ↔ 보고서형 화면'],['Alt+1~9','리본 탭 바꾸기 (바꾼 뒤 글자 표시)'],['Alt','한 번 눌렀다 떼면 탭 숫자·단추 글자 표시'],['Ctrl+K','검색 칸으로 (또는 /)'],['?','이 단축키 목록'],['Alt+H','표시 모두 끄기 · 다시 켜기'],['Alt+U','수용가 점 끄기 · 켜기'],['Alt+P','현장 사진 끄기 · 켜기'],['Alt+F','주소찾기 설정'],['Alt+E','결과 내보내기'],['Alt+D','대시보드 새 창'],['Ctrl+B','왼쪽 설정 창 (보고서형 화면)'],['Ctrl+Z','편집 되돌리기'],['Delete','고른 것 지우기 (편집 중)'],['Esc','창 닫기 · 글자 표시 닫기']];
+ return `<div class="gw-help gw-keys"><p><b>Alt</b>를 한 번 눌렀다 떼면 리본 탭 위에 숫자, 단추 위에 글자가 뜹니다. 숫자로 탭을 고르고 글자를 누르면 그 단추가 눌립니다. 예: <kbd>Alt</kbd> → <kbd>4</kbd> → <kbd>A</kbd> = 검토 › 단수구역. 한글 자판 상태에서도 됩니다.</p>
+<h5>바로 쓰는 키</h5><table class="gwk">${fix.map(([k,n])=>`<tr><td>${k==='Alt+1~9'?'<kbd>Alt</kbd>+<kbd>1</kbd>~<kbd>9</kbd>':kb(k)}</td><td>${n}</td></tr>`).join('')}</table>
+<h5>리본 메뉴 (Alt → 숫자 → 글자)</h5><div class="gwk-t">${TB.map((t,i)=>`<div><b>${i<9?`<kbd>${i+1}</kbd> `:''}${t.n}</b><table class="gwk">${ktItems(t).map((x,j)=>`<tr><td><kbd>${KT_L[j]}</kbd></td><td>${x.n}${x.a&&KEYS[x.a]?` <small>${KEYS[x.a]}</small>`:''}</td></tr>`).join('')}</table></div>`).join('')}</div></div>`}
+/* 마우스 올림 안내: title을 data-tip으로 옮겨 기본 말풍선을 막고, 이름 + 단축키 배지 + 메뉴 키를 보여 줌 */
+const TIP={el:null,t:0,cur:null},tipOK=matchMedia('(hover:hover) and (pointer:fine)');
+function tipHide(){clearTimeout(TIP.t);TIP.cur=null;if(TIP.el)TIP.el.hidden=true}
+function tipKeys(el){const r=[],a=el.dataset.a,tt=el.dataset.tip||'';const m=tt.match(/\((?:(Alt|Ctrl)\+([A-Z0-9]))\)/);if(m)r.push(m[1]+'+'+m[2]);if(a&&KEYS[a]&&!r.includes(KEYS[a]))r.push(KEYS[a]);
+ if(el.closest('#gwTabs')){const i=[...$('gwTabs').children].indexOf(el);if(i>=0&&i<9)r.push('Alt+'+(i+1))}
+ let path='';if(el.closest('#gwRib')){const els=[...$('gwRib').querySelectorAll('button[data-a],select[data-lm]')],j=els.indexOf(el),ti=ribTabs().findIndex(t=>t.k===S.tab);if(j>=0&&j<26&&ti>=0&&ti<9)path='Alt → '+(ti+1)+' → '+KT_L[j]}
+ return{r,path}}
+function tipShow(el){if(!TIP.el){TIP.el=document.createElement('div');TIP.el.id='gwTip';TIP.el.setAttribute('role','tooltip');document.body.appendChild(TIP.el)}
+ const {r,path}=tipKeys(el),raw=(el.dataset.tip||'').replace(/\s*\((?:Alt|Ctrl)\+[A-Z0-9]\)/,'').trim(),lab=(el.querySelector('span')||el).textContent.trim();
+ const nm=raw||lab;
+ TIP.el.innerHTML=`<div class="tn">${esc(nm)}${r.map(k=>` <span class="tk">${esc(k)}</span>`).join('')}</div>${path?`<div class="tp">메뉴 키 ${esc(path)}</div>`:''}`;
+ TIP.el.hidden=false;const b=el.getBoundingClientRect(),w=TIP.el.offsetWidth,h=TIP.el.offsetHeight;let x=Math.min(innerWidth-w-6,Math.max(6,b.left+b.width/2-w/2)),y=b.bottom+6;if(y+h>innerHeight-4)y=b.top-h-6;
+ TIP.el.style.left=x+'px';TIP.el.style.top=y+'px'}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+gw.addEventListener('mouseover',e=>{if(!tipOK.matches||KT.on)return;const el=e.target.closest('[title],[data-tip]');if(!el||!gw.contains(el)||el===TIP.cur)return;
+ if(el.closest('#gwMapSlot,#gwDockB,#gwWinB,#gwLay,#gwProp,#gwLblB'))return;/* 지도·표·창 안은 원래 말풍선 그대로 */
+ if(el.hasAttribute('title')){el.dataset.tip=el.title;if(!el.getAttribute('aria-label'))el.setAttribute('aria-label',el.title);el.removeAttribute('title')}
+ tipHide();TIP.cur=el;TIP.t=setTimeout(()=>{if(TIP.cur===el&&el.isConnected)tipShow(el)},400)});
+gw.addEventListener('mouseout',e=>{if(TIP.cur&&!TIP.cur.contains(e.relatedTarget))tipHide()});
+gw.addEventListener('mousedown',tipHide,true);addEventListener('scroll',tipHide,true);
 /* 인쇄는 보고서형 양식으로: 인쇄하는 동안만 제자리로 */
 let prW=false;addEventListener('beforeprint',()=>{if(S.on){prW=true;set(false,true)}});addEventListener('afterprint',()=>{if(prW){prW=false;set(true,true)}});
 /* 머리글 전환 버튼 */
