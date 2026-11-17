@@ -6814,7 +6814,7 @@ function bkErr(e){const m=String((e&&e.message)||e||'');
  return m}
 async function bkZip(z,msg,label){return z.generateAsync({type:'blob',streamFiles:true},md=>{msg.textContent=`${label} 파일로 묶는 중… ${Math.floor(md.percent)}%`})}
 async function bkSave(sel){const C=id=>sel?!!sel[id]:!!($(id)&&$(id).checked);const msg=$('bkMsg'),btn=$('bkSave');if(btn.disabled)return;btn.disabled=true;msg.textContent='백업 파일 만드는 중… (관로가 많으면 10~30초)';await sleep(30);
- const o={app:SITE.idb,site:SITE.name,ver:1,at:new Date().toISOString()},parts=[],day=fmtD(Date.now()).replace(/-/g,'');
+ const o={app:SITE.idb,site:SITE.name,ver:1,at:new Date().toISOString()},parts=[],day=fmtD(Date.now()).replace(/-/g,''),bkNow=new Date(),bkP2=v=>String(v).padStart(2,'0'),bkNm='스마트물길주소_'+String(SITE.short||SITE.name||'현장').replace(/[\\/:*?"<>|\s]+/g,'')+'_'+day+'_'+bkP2(bkNow.getHours())+bkP2(bkNow.getMinutes());/* 2026-11-17 백업 파일 이름: 스마트물길주소_현장명_날짜_시분 (불러오기는 이름과 관계없이 zip 안 backup.json을 읽음) */
  try{if(C('bkB')){o.blocks=await blkSnap();if(o.blocks)parts.push('소블록 경계 '+o.blocks.fc.features.length+'개')}
   if(C('bkP')){let p=null;try{p=await IDB.get('pipes')}catch(_){}if(!p&&PIPE.raw.length)p={v:1,name:'상수관로',base:fmtD(Date.now()),at:Date.now(),layers:PIPE.layers||[],feats:PIPE.raw.map(f=>({type:'Feature',properties:slimProps(f.properties),geometry:f.geometry})),hist:[]};
    if(p){o.pipes=p;parts.push('상수관로 '+p.feats.length.toLocaleString()+'개')}
@@ -6849,7 +6849,7 @@ async function bkSave(sel){const C=id=>sel?!!sel[id]:!!($(id)&&$(id).checked);co
     const sl=gp.slice(a,a+100),bb=await idbMany(sl.flatMap(m=>['ph:'+m.id,'pt:'+m.id]));
     sl.forEach((m,k)=>{if(bb[2*k])z.file('ph/'+m.id+'.jpg',bb[2*k],{compression:'STORE'});if(bb[2*k+1])z.file('pt/'+m.id+'.jpg',bb[2*k+1],{compression:'STORE'})})}
    const blob=await bkZip(z,msg,lb);
-   dlBlob(blob,`주소좌표앱_기준자료_${day}${N>1?`_${g+1}of${N}`:''}.zip`);made.push(bkMB(blob.size));
+   dlBlob(blob,`${bkNm}${N>1?`_${g+1}of${N}`:''}.zip`);made.push(bkMB(blob.size));
    if(N>1&&g<N-1)await sleep(1200)}
   try{localStorage.setItem('geo-bkat',String(Date.now()))}catch(_){}
   msg.innerHTML=`✅ 백업 파일을 만들었습니다${N>1?` (${N}개로 나눔: ${made.join(' · ')})`:` (${made[0]})`}: ${parts.join(' · ')}${C('bkK')?'<br><small class="c-am">API 키가 들어 있으니 외부에 보낼 때는 "🔑 API 키"를 끄고 만드세요.</small>':''}${N>1?'<br><small>불러올 때는 나눠진 파일을 <b>한꺼번에 모두 선택</b>하세요.</small>':''}`}
