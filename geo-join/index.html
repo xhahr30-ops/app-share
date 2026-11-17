@@ -2315,7 +2315,9 @@ function vpDraw(){const m=G('map');if(!m||!VP.fr||VP.el.hidden)return;const r=vp
  Object.assign(f.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px'});f.classList.toggle('big',!r.fit);
  f.querySelector('b').textContent=`${VP.o.p} ${VP.o.ori==='p'?'세로':'가로'} · ${VP.o.sc?'1:'+vpFmt(VP.o.sc):'약 1:'+vpFmt(vpScaleOf(r))}`+(r.fit?'':' · 틀이 화면보다 큼 → 찍을 때 지도를 줄여 찍음');
  const t=VP.el.querySelector('[data-vp-ttl]');if(t&&!VP.ttlEd)t.value=vpTtlAuto()}
-function vpTtlAuto(){const m=G('map');let b='';try{const c=m.getCenter();b=F('blkAt',c.lng,c.lat)||''}catch(_){}return (b?b+' 일대 ':'')+'상수도 현황도'}
+/* 제목 소블록 = 오른쪽 위 '소블록'과 같은 기준: 파란 틀(종이에 들어가는 곳) 가운데가 속한 소블록 (2026-11-17 사용자 '제목 맞추기' — 예전엔 지도 칸 가운데라 창에 가린 만큼 어긋남) */
+function vpCtrBlk(){const m=G('map');try{const r=vpRect(),c=m.containerPointToLatLng([r.x+r.w/2,r.y+r.h/2]);return F('blkAt',c.lng,c.lat)||''}catch(_){return ''}}
+function vpTtlAuto(b){if(b==null)b=vpCtrBlk();return (b?b+' 일대 ':'')+'상수도 현황도'}
 function vpSave(){LS.set('geo-vp',JSON.stringify(VP.o))}
 function vpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않았습니다.');return}const mc=m.getContainer();
  if(!VP.el){const p=document.createElement('div');p.className='uiset np vpset';p.id='vpDlg';p.setAttribute('role','dialog');p.setAttribute('aria-label','지금 화면 출력');p.hidden=true;
@@ -2384,7 +2386,7 @@ function vpCompose(B,src,o){const {M,dpm}=o,X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  g.fillStyle='#fff';g.fillRect(0,0,W,H);
  const mx=X(M.mx),my=X(M.my),mw=X(M.mw),mh=X(M.mh);
  /* 제목 줄 */
- const ttl=(VP.el.querySelector('[data-vp-ttl]').value||vpTtlAuto()).trim(),memo=(VP.el.querySelector('[data-vp-memo]').value||'').trim();
+ const ttl=((VP.ttlEd&&VP.el.querySelector('[data-vp-ttl]').value)||vpTtlAuto(o.blk)).trim(),memo=(VP.el.querySelector('[data-vp-memo]').value||'').trim();
  g.textBaseline='middle';g.textAlign='left';g.fillStyle=ink;g.font=FT(800,16);g.fillText(ttl,mx,X(M.m+M.th*.45),mw*.66);
  g.textAlign='right';g.fillStyle=mute;g.font=FT(500,9);g.fillText(fmtDTv(Date.now())+(o.blk?' · 소블록 '+o.blk:''),mx+mw,X(M.m+M.th*.3),mw*.33);
  if(memo){g.fillText('비고: '+memo,mx+mw,X(M.m+M.th*.65),mw*.33)}
