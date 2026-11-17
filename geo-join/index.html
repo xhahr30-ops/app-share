@@ -469,7 +469,7 @@ body.touch .leaflet-bar a{width:40px!important;height:40px!important;line-height
  body.touch .leaflet-bar a{width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
  body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{gap:6px}.fmctl button{width:42px;height:42px;font-size:19px}.fmctl button.loc,.fmctl button.shot{font-size:18px}
  .leaflet-bottom .pleg{font-size:10.5px;line-height:1.4;padding:4px 8px;max-height:calc(50vh - 16px);overflow:auto}
- .gsrch{width:320px}.gsrch .gsb{padding:6px 8px}
+ .gsrch{width:420px}.gsrch .gsb{padding:6px 8px}
 }
 /* 가로 모드: 단수구역 창은 오른쪽 세로 칸(검색창 아래~바닥), ⚙️ 설정 창은 두 줄 버튼 오른쪽에서 시작 */
 @media (orientation:landscape) and (max-height:520px) and (min-width:641px){
@@ -508,6 +508,16 @@ html.chipOn .leaflet-control-container>.gsrch.gsctr{position:absolute;top:52px;l
 html.chipOn.chipV .leaflet-control-container>.gsrch.gsctr{top:10px}
 /* 전체화면: 주소찾기 창은 왼쪽 위(＋/− 버튼 오른쪽). 왼쪽 세로 칩 줄이면 줄 폭(--chw)만큼 더 오른쪽 */
 html.chipOn body.fsOn .leaflet-control-container>.gsrch.gsctr{left:calc(var(--chw,0px) + 62px);transform:none;max-width:calc(100% - var(--chw,0px) - 130px)}
+/* 폰 세로(폭 600 이하): 입력칸이 좁던 것 → 검색 창이 화면 폭을 꽉 채우고, 그동안 왼쪽 ＋/−와 오른쪽 레이어 버튼은 검색 창 아래로 비킴(gsOpen). 고르면 창이 접혀 제자리로 */
+@media (max-width:600px){
+ html.chipOn .leaflet-control-container>.gsrch.gsctr{left:8px!important;right:8px;width:auto;max-width:none!important;transform:none}
+ html.chipOn.chipV .leaflet-control-container>.gsrch.gsctr{left:calc(var(--chw,0px) + 8px)!important}
+ .leaflet-container.gsOpen .leaflet-top.leaflet-left,.leaflet-container.gsOpen .leaflet-top.leaflet-right{transform:translateY(var(--gsH,60px))}
+ .leaflet-top.leaflet-left,.leaflet-top.leaflet-right{transition:transform .2s ease}
+}
+/* 폰(세로·가로): 🔍(칩과 같은 일) 숨기고 '주소찾기' 단추는 '찾기'로 줄여 입력칸을 넓힘 */
+html.chipPh .gsrch.gsctr .gst{display:none}
+html.chipPh .gsrch.gsctr .gsb{font-size:0!important;padding:7px 12px}html.chipPh .gsrch.gsctr .gsb::after{content:'찾기';font-size:13.5px}
 html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
 html.chipPh .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipPh .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
@@ -4918,7 +4928,8 @@ function initSearch(){
  /* 고른 뒤: 목록을 접어 📍 정보창을 가리지 않게(입력칸을 누르거나 고치면 다시 펼침). 폰 가로(높이 낮음)는 검색 창도 칩으로 접음 */
  function gsAfterPick(){lst.classList.add('fold');
   let lo=false;try{lo=matchMedia('(orientation:landscape) and (max-height:520px)').matches}catch(_){}
-  if(lo&&!box.classList.contains('gsrib')){box.classList.add('min');btn.hidden=true}}
+  let pt=false;try{pt=matchMedia('(max-width:600px)').matches}catch(_){}
+  if((lo||pt)&&!box.classList.contains('gsrib')){box.classList.add('min');btn.hidden=true}}
  inp.addEventListener('focus',()=>lst.classList.remove('fold'));inp.addEventListener('input',()=>lst.classList.remove('fold'));
  /* 목록 자리: 리본 안이면 리본(가로 스크롤 칸) 밖으로 잘리지 않게 fixed로 검색 칸 바로 아래 */
  const lstPos=()=>{if(box.classList.contains('gsrib')){const r=box.getBoundingClientRect();Object.assign(lst.style,{position:'fixed',left:r.left+'px',top:(r.bottom-1)+'px',width:r.width+'px',zIndex:3000})}else if(lst.getAttribute('style'))lst.removeAttribute('style')};
@@ -4936,6 +4947,9 @@ function initSearch(){
    if(box.classList.contains('gsrib')){box.classList.remove('gsrib');let m=false;try{m=localStorage.getItem('geo-gsmin')==='1'}catch(_){}box.classList.toggle('min',m);btn.hidden=m}}
   lstPos();setDodge()};
  window.__gsDock=dock;
+ /* 폰 세로: 검색 창(+목록)이 열린 높이만큼 ＋/−·레이어 버튼을 내림(--gsH), 접으면 제자리 */
+ const gsOpenSync=()=>{const c=map._container;if(!c)return;const on=box.classList.contains('gsctr')&&!box.classList.contains('min');c.classList.toggle('gsOpen',on);if(on){const r=box.getBoundingClientRect(),t=c.getBoundingClientRect();c.style.setProperty('--gsH',Math.max(0,Math.round(r.bottom-t.top-52+6))+'px')}};
+ new MutationObserver(gsOpenSync).observe(box,{attributes:true,attributeFilter:['class']});new MutationObserver(()=>requestAnimationFrame(gsOpenSync)).observe(lst,{childList:true,attributes:true,attributeFilter:['class']});gsOpenSync();
  /* 🔍 칩: 작업 화면이면 메뉴 줄 검색 칸에 커서 */
  window.__gsRib=()=>{const H=document.documentElement;if(!H.classList.contains('gwOn')||document.body.classList.contains('fsOn'))return false;
   dock();if(!box.classList.contains('gsrib'))return false;inp.focus();inp.select();return true};
