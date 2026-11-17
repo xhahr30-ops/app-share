@@ -4823,7 +4823,7 @@ function initSearch(){
  box.querySelector('.gsc').onclick=()=>{if(lst.querySelector('.gscf'))lst.innerHTML='';else cfgShow('')};
  const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
  function show(){const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
- lst.onclick=e=>{const b=e.target.closest('.gsi');if(b)go(list[+b.dataset.k])};
+ lst.onclick=e=>{const b=e.target.closest('.gsi');if(!b)return;L.DomEvent.stop(e);go(list[+b.dataset.k])}; // 목록을 다시 그리면 누른 줄이 문서에서 빠져 Leaflet이 지도 클릭으로 보고 관로 정보창을 열던 것 막음
  inp.onkeydown=e=>{if(!list.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+list.length)%list.length;show();const o=lst.querySelector('.on');o&&o.scrollIntoView({block:'nearest'})}
   else if(e.key==='Enter'&&sel>=0){e.preventDefault();go(list[sel])}
