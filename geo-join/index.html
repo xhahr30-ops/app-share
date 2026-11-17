@@ -481,6 +481,9 @@ html.chipOn .chipbar .chsrch a.on{background:#e0e7ff}
 html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
 html.chipOn .gsrch{max-width:calc(100vw - 24px)}
+/* 🔍 주소찾기 창: 칩 줄이 있으면 지도 가운데 위쪽(칩 줄 바로 아래). 왼쪽 세로 줄이면 줄 폭(--chw)만큼 뺀 가운데 (gsctr) */
+html.chipOn .leaflet-control-container>.gsrch.gsctr{position:absolute;top:52px;left:calc(50% + var(--chw,0px) / 2);transform:translateX(-50%);float:none;clear:none;margin:0!important;z-index:1000;max-width:calc(100% - var(--chw,0px) - 112px)}
+html.chipOn.chipV .leaflet-control-container>.gsrch.gsctr{top:10px}
 html.chipOn .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
 html.chipPh .uiset.shutp{max-height:min(48%,calc(100% - 66px))}html.chipPh .uiset.shutp.fold{max-height:none}
 html.chipOn .shdraw .shdt{top:58px}
@@ -4791,6 +4794,7 @@ function initSearch(){
   L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});
  const ctl=new Ctl();map.addControl(ctl);
  const box=ctl.getContainer(),corner=box.parentNode;corner.insertBefore(box,corner.firstChild); // 레이어 아이콘보다 위
+ if(document.documentElement.classList.contains('chipOn')&&map._controlContainer){map._controlContainer.appendChild(box);box.classList.add('gsctr')} // 칩 줄이 있으면 가운데 위쪽
  const f=box.querySelector('form'),inp=box.querySelector('input'),btn=box.querySelector('.gsb'),lst=box.querySelector('.gsl'),clr=box.querySelector('.gsx'),tog=box.querySelector('.gst'),mic=box.querySelector('.gsv');
  const setMin=m=>{box.classList.toggle('min',m);btn.hidden=m;try{localStorage.setItem('geo-gsmin',m?'1':'0')}catch(_){}};
  let m0=false;try{m0=localStorage.getItem('geo-gsmin')==='1'}catch(_){}try{if(window.innerWidth<600&&localStorage.getItem('geo-gsmin')===null)m0=true}catch(_){}setMin(m0);
