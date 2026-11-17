@@ -6781,7 +6781,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|site|sites|hq|user|uid|keyv|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
+const BK_SKIP=/^geo-(lock|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -8943,9 +8943,20 @@ async function shCfReq(op,data){const base=()=>Object.assign({op,key:SH.cfg.key,
  let r=await shCfPost(base()),items=r.items||[];const now=r.now;
  for(let k=0;r.more&&k<1000;k++){r=await shCfPost(Object.assign(base(),{now0:now,cu:r.cu,ci:r.ci}));items=items.concat(r.items||[])}
  return{now,items}}
-/* 공유 키가 바뀌었을 때만 다시 묻기 (2026-11-11): 서버가 '공유 키가 맞지 않습니다'로 거절하면 이 화면에서 한 번 물음 */
-function shKeyBad(){if(shKeyBad.asked)return;shKeyBad.asked=true;setTimeout(()=>{const k=prompt('🔑 공유 키가 바뀌었습니다 ('+SITE.name+' 서버).\n관리자에게 받은 새 공유 키를 넣으세요. 한 번 넣으면 키가 다시 바뀌기 전까지 묻지 않습니다.','');
- if(!k||!k.trim())return;$('shKey').value=k.trim();$('shKey').dispatchEvent(new Event('change'));SH.err='';shKeyBad.asked=false;try{shSync(true)}catch(_){}try{refDown(true)}catch(_){}},300)}
+/* 공유 키가 바뀌었을 때만 다시 묻기 (2026-11-11): 서버가 '공유 키가 맞지 않습니다'로 거절하면 이 화면에서 한 번 물음
+   2026-11-17: 같은 키·같은 서버로 거절돼 이미 물었으면(취소했거나 3번 틀림) 앱을 열 때마다 또 묻지 않음 → ☁️ 상태 줄에만 알림.
+   넣은 키도 거절되면 '이 키도 안 됨'으로 다시 묻되 한 번 열 때 3번까지. 키나 서버 주소를 바꾸면 다시 물음 */
+function shKeySig(){const t=(SH.cfg.url||'')+'|'+(SH.cfg.key||'');let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))>>>0;return h.toString(36)+'.'+t.length}
+function shKeyBad(){if(shKeyBad.asked)return;shKeyBad.asked=true;
+ const sig=shKeySig(),stop=t=>{try{localStorage.setItem('geo-skbad',shKeySig())}catch(_){}SH.err=t;try{shStatus()}catch(_){}const m=$('shMsg');if(m)m.textContent='⚠️ '+t};
+ let bad='';try{bad=localStorage.getItem('geo-skbad')||''}catch(_){}
+ if(bad===sig){SH.err='공유 키가 맞지 않습니다. ⚙️ 설정 › 🔑 앱 설정에서 '+SITE.name+' 공유 키를 확인해 주세요.';try{shStatus()}catch(_){}return}
+ const n=shKeyBad.n=(shKeyBad.n||0)+1,tail=(SH.cfg.url||'').replace(/\/exec$/,'').slice(-6);
+ setTimeout(()=>{const k=prompt((n>1?'❌ 방금 넣은 키도 '+SITE.name+' 서버가 받지 않았습니다 ('+n+'/3).\n':'🔑 공유 키가 맞지 않습니다 ('+SITE.name+' 서버'+(tail?' …'+tail:'')+').\n')+'관리자에게 받은 공유 키를 넣으세요. 맞는 키를 한 번 넣으면 키가 다시 바뀌기 전까지 묻지 않습니다.\n취소하면 이 키로는 다시 묻지 않습니다.','');
+  if(!k||!k.trim())return stop('공유 키가 맞지 않아 공유를 멈췄습니다. ⚙️ 설정 › 🔑 앱 설정에서 '+SITE.name+' 공유 키를 고치면 다시 이어집니다.');
+  $('shKey').value=k.trim();$('shKey').dispatchEvent(new Event('change'));SH.err='';
+  if(n>=3)stop('공유 키를 3번 넣었지만 '+SITE.name+' 서버가 받지 않았습니다. 관리자에게 서버 공유 키(👑 직원 공유 키와 서버 SHARE_KEY가 같은지)를 확인해 주세요.');
+  shKeyBad.asked=n>=3;try{shSync(true)}catch(_){}try{refDown(true)}catch(_){}},300)}
 async function shReq(op,data){if(shIsCF(SH.cfg.url))return shCfReq(op,data);if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(SH.cfg.url))throw new Error('공유 서버 주소(클라우드플레어 https://…workers.dev 또는 https://script.google.com/macros/s/…/exec)를 넣어 주세요.');
  let r;try{r=await fetch(SH.cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({op,key:SH.cfg.key,by:SH.cfg.by},data||{}))})}
  catch(_){throw new Error('공유 서버에 연결할 수 없습니다. 인터넷 연결과 배포 설정(액세스: 모든 사용자)을 확인하세요.')}
