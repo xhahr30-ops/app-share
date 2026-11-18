@@ -4338,7 +4338,7 @@ function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i
 window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout(()=>{if(pp.isOpen())hitShow(h,k)},0)};
 function hitInit(){if(HIT.on)return;HIT.on=true;
  map.on('preclick',e=>{const t=e.originalEvent&&e.originalEvent.target;PT.hit=-1;
-  if((typeof PH!=='undefined'&&(PH.place||(PH.ed&&PH.ed.on&&PH.ed.mode==='add')))||(typeof shutEat==='function'&&shutEat(e)))return;
+  if((typeof PH!=='undefined'&&(PH.place||(PH.ed&&PH.ed.on&&PH.ed.mode==='add')))||(typeof shutEat==='function'&&shutEat(e))||(typeof EM!=='undefined'&&EM.pick))return;
   if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;
   if(typeof selMapTap==='function'&&selMapTap(e))return;/* ☑ Shift+클릭·눌러 고르기 = 관로 더하기·빼기 *//* 사진·밸브 번호 같은 마커는 자기 팝업 */
   const H=hitCollect(e);if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk')return;
@@ -10816,7 +10816,7 @@ if(map){
  const LockCtl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn uibtn np'),a=L.DomUtil.create('a','',d);a.href='#';a.id='lockBtn';a.setAttribute('role','button');L.DomEvent.disableClickPropagation(d);
   L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);MLOCK.user=!MLOCK.user;mapLockSync()});return d}});
  map.addControl(new LockCtl());mapLockSync();
- map.on('preclick',e=>{if(!shutEat(e))return;PT.hit=-1;const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest('.shvi'))return;setTimeout(()=>map.closePopup(),0);shutTap(e.latlng)});
+ map.on('preclick',e=>{if(typeof EM!=='undefined'&&EM.pick)return;if(!shutEat(e))return;PT.hit=-1;const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest('.shvi'))return;setTimeout(()=>map.closePopup(),0);shutTap(e.latlng)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(SHUT.pick||SHUT.mode)){SHUT.pick=false;SHUT.mode='';shutRender()}});
  const q=id=>document.getElementById(id),bind=(id,k,re)=>{const el=q(id);if(!el)return;el.value=String(SHUT.opt[k]);if(el.value!==String(SHUT.opt[k]))el.value=el.options[0].value;
   el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(k==='bigQ')ptBigReset();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
@@ -16300,7 +16300,7 @@ const EM_ACT={
   ['배수','우선 점검 목록의 이토밸브·소화전으로 배수합니다.'],
   ['안내','학교·병원 등 중요 수용가와 대수용가에 먼저 알립니다.'],
   ['재측정·기록','배수 뒤 다시 재고 🔔 기록을 남깁니다.','chg']]};
-const EM_VUP=8,EM_VDN=12,EM_IMP=/병원|의원|요양|투석|학교|유치원|어린이집|보육|복지|경로당|소방|경찰|정수|식품|급식/;
+const EM_SNAP=150,EM_VUP=8,EM_VDN=12,EM_IMP=/병원|의원|요양|투석|학교|유치원|어린이집|보육|복지|경로당|소방|경찰|정수|식품|급식/;
 const emLL=p=>[p.la,p.ln];
 function emDia(e){const f=PIPE.feats[SHUT.net.ef[e]],a=f?attrOf(f):null;return a&&a.dia>0?a.dia:0}
 function emDir(e){const f=PIPE.feats[SHUT.net.ef[e]];try{return f?faDir(f):0}catch(_){return 0}}
@@ -16336,8 +16336,8 @@ async function emRun(){if(EM.busy)return;if(!EM.pts.length){EM.msg='신고 지�
  catch(e){console.warn('긴급 점검',e);EM.msg='⚠ 점검 순서를 만들지 못했습니다: '+esc(e&&e.message||e)}finally{EM.busy=false;emRender()}}
 async function emCalc(){const N=SHUT.net,C=EM.c,ty=C.ty,lim=Math.max(200,+C.up||2000),R=Math.max(10,+C.R||100),now=Date.now();
  /* 신고 지점 → 관로 토막 */
- const P=EM.pts.map((p,k)=>{const h=nearestPipe(p.ln,p.la,60);let e=-1,d=null;if(h){const m=toM(p.ln,p.la);e=shutEdgeOfF(h.fi,m[0],m[1]);d=Math.round(h.d)}let bk='';try{bk=blkAt(p.ln,p.la)||''}catch(_){}return{...p,k,e,d,bk}});
- const ok=P.filter(p=>p.e>=0);if(!ok.length)throw new Error('신고 지점 60m 안에 상수관로가 없습니다.');
+ const P=EM.pts.map((p,k)=>{const h=PIPE.segs&&PIPE.grid?nearestPipe(p.ln,p.la,EM_SNAP):null;let e=-1,d=null;if(h){const m=toM(p.ln,p.la);e=shutEdgeOfF(h.fi,m[0],m[1]);d=Math.round(h.d)}let bk='';try{bk=blkAt(p.ln,p.la)||''}catch(_){}return{...p,k,e,d,bk}});
+ const ok=P.filter(p=>p.e>=0);if(!ok.length)throw new Error(!PIPE.segs||!PIPE.feats.length?'상수관로 자료가 없습니다(②-1 상수관로를 먼저 넣으세요).':`신고 지점 ${EM_SNAP}m 안에 상수관로가 없습니다. 관로가 지나가는 쪽을 다시 찍어 주세요.`);
  const T=ok.map(p=>emTrace(p.e,lim));
  /* 공통 상류: 첫 신고 경로를 따라 올라가며 모든 경로에 든 첫 관로 */
  let ci=-1,ce=-1;if(T.length>1){for(let i=0;i<T[0].path.length;i++){const e=T[0].path[i].e;if(T.every(t=>t.set.has(e))){ci=i;ce=e;break}}}
@@ -16415,7 +16415,7 @@ async function emFind(q){q=String(q||'').trim();if(!q)return;
  EM.msg='주소를 찾는 중…';emRender();
  try{const key=$('kakao')?$('kakao').value.trim():'',rg=($('region')&&$('region').value.trim())||(typeof SITE!=='undefined'&&SITE.region)||'',q2=/[가-힣](시|군)\b/.test(q)||!rg?q:rg+' '+q;const p=await geocode(q2,key);
   if(p){EM.msg='';emAddPt(p.lat,p.lng,'','주소 검색');return}EM.msg='찾은 결과가 없습니다. 📍 지도에서 찍어 주세요.'}catch(e){EM.msg='주소 검색 실패: '+esc(e&&e.message||e)+' — 📍 지도에서 찍어 주세요.'}emRender()}
-function emMapClick(e){if(!EM.pick)return;EM.pick=false;emAddPt(e.latlng.lat,e.latlng.lng,'','지도에서 찍음')}
+function emMapClick(e){if(!EM.pick||!e||!e.latlng)return;EM.pick=false;if(typeof PT!=='undefined')PT.hit=-1;setTimeout(()=>{try{map.closePopup()}catch(_){}},0);emAddPt(e.latlng.lat,e.latlng.lng,'','지도에서 찍음')}
 /* ── 대처 단추 ── */
 async function emAct(a){const R=EM.res,ll=R?(R.cll||emLL(R.ok[0])):EM.pts[0]&&emLL(EM.pts[0]);
  if(a==='shut'||a==='tb'){if(!ll){alert('신고 지점을 먼저 넣으세요.');return}let at=ll;if(EM.c.ty==='pump'&&R){const p=R.I.find(x=>x.t==='가압장'&&x.ll);if(p)at=p.ll}else if((EM.c.ty==='leak'||EM.c.ty==='burst')&&EM.pts[0])at=emLL(EM.pts[0]);
@@ -16454,7 +16454,7 @@ function emRender(){const p=EM.box;if(!p||p.hidden)return;const R=EM.res,ty=EM.c
  <div class="shb"><button type="button" class="btn" data-a="run"${EM.busy||!EM.pts.length?' disabled':''}>🔎 ${R?'다시 판정':'점검 순서 만들기'}</button></div>${EM.msg?`<p class="shh">${EM.msg}</p>`:''}`;
  if(!R){p.innerHTML=hd+top+'<p class="shh mute">같은 시간대 신고를 모두 넣을수록 원인 범위를 잘 가립니다. 입력한 주소 글자는 저장하지 않고 좌표·관리번호만 씁니다.</p>';return}
  const V=EM_LV[R.lv],done=R.I.filter(x=>EM.chk[x.key]).length;
- const jd=`<div class="emlv" style="border-color:${V.c}"><b style="color:${V.c}">원인 범위: ${esc(V.n)}</b><div>${esc(V.d)}</div><small>근거: ${esc(R.why.join(' · '))} · 상류 찾기: ${esc(R.trust)}${R.ok.length<R.P.length?` · 관로 60m 밖 신고 ${R.P.length-R.ok.length}곳 뺌`:''}</small></div>`;
+ const jd=`<div class="emlv" style="border-color:${V.c}"><b style="color:${V.c}">원인 범위: ${esc(V.n)}</b><div>${esc(V.d)}</div><small>근거: ${esc(R.why.join(' · '))} · 상류 찾기: ${esc(R.trust)}${R.ok.length<R.P.length?` · 관로 ${EM_SNAP}m 밖 신고 ${R.P.length-R.ok.length}곳 뺌`:''}${R.ok.some(p=>p.d>60)?` · 관로에서 60m 넘게 떨어진 신고 있음(위치 확인 필요)`:''}</small></div>`;
  const cs=R.cust?`<div class="shc"><span>영향 추정 수용가 <b>${R.cust.n.toLocaleString()}</b>곳</span><span>🏭 대수용가 <b>${R.cust.big.length}</b></span><span>⭐ 중요 <b>${R.cust.imp.length}</b></span><small class="mute">${esc(R.cust.how)}</small></div>`:'<p class="shh mute">수용가: 결과(①) 또는 부과량 자료가 없어 확인 필요</p>';
  const it=`<details class="emd" open><summary>🔎 우선 점검 ${done}/${R.I.length}</summary><table class="sht emt"><tr><th>#</th><th>점검할 곳</th><th></th></tr>${R.I.map((x,j)=>`<tr class="${EM.chk[x.key]?'done':''}"><td><b>${x.no}</b></td><td><b>${esc(x.t)}</b> ${esc(x.id)}<div class="sts">${esc(x.d)}</div></td><td class="emb">${x.ll?`<button type="button" class="btn ol shbr" data-a="go" data-j="${j}" title="지도에서 보기">📍</button>`:''}<button type="button" class="btn ${EM.chk[x.key]?'':'ol '}shbr" data-a="ck" data-j="${j}" title="확인함 표시">${EM.chk[x.key]?'✓ '+stHM(EM.chk[x.key]):'확인'}</button></td></tr>`).join('')||'<tr><td colspan="3" class="mute">찾은 점검 대상이 없습니다 — 상류 거리·범위를 늘려 보세요</td></tr>'}</table></details>`;
  const ac=`<details class="emd" open><summary>${T.ic} 대처 카드 — ${esc(T.n)}</summary><ol class="emact">${EM_ACT[ty].map(([h,d,a])=>`<li><b>${esc(h)}</b> ${esc(d)}${a?` <button type="button" class="btn ol shbr" data-a="act" data-w="${a}">${a==='shut'?'💧 단수구역·안내문':a==='tb'?'🟤 혼탁수 구간':'🔔 기록'}</button>`:''}</li>`).join('')}</ol></details>`;
@@ -16465,7 +16465,7 @@ function emRender(){const p=EM.box;if(!p||p.hidden)return;const R=EM.res,ty=EM.c
  <p class="shh mute">판정은 관로 연결·흐름 방향·자료 기록으로 낸 참고 순서입니다. 현장 확인이 우선이며, 확인 표시·메모는 이 기기에만 저장됩니다.</p>`}
 /* ── 보고서 (HWPX·인쇄) · 엑셀 ── */
 function emRows(R){return{
- pts:R.P.map(p=>({'신고':'🚨'+(p.k+1),'관리번호':p.mg||'','소블록':p.bk||'확인 필요','가까운 관로(m)':p.d!=null?p.d:'60m 안 없음','넣은 방법':p.src||'','시각':fmtDT(p.t),'위도':+p.la.toFixed(6),'경도':+p.ln.toFixed(6)})),
+ pts:R.P.map(p=>({'신고':'🚨'+(p.k+1),'관리번호':p.mg||'','소블록':p.bk||'확인 필요','가까운 관로(m)':p.d!=null?p.d:EM_SNAP+'m 안 없음','넣은 방법':p.src||'','시각':fmtDT(p.t),'위도':+p.la.toFixed(6),'경도':+p.ln.toFixed(6)})),
  items:R.I.map(x=>({'순서':x.no,'구분':x.t,'대상':x.id,'점검 내용':x.d,'확인':EM.chk[x.key]?fmtDT(EM.chk[x.key]):'','위도':x.ll?+(+x.ll[0]).toFixed(6):'','경도':x.ll?+(+x.ll[1]).toFixed(6):''})),
  act:EM_ACT[R.ty].map(([h,d],k)=>({'단계':k+1,'할 일':h,'내용':d})),
  cust:R.cust?R.cust.all.filter(a=>a.big||a.imp).map(a=>({'관리번호':a.mg,'소블록':a.bk,'대수용가':a.big?'Y':'','월평균(㎥)':a.q!=null?a.q:'','중요 수용가':a.imp?'Y':'','업종':a.u})):[]}}
@@ -16499,7 +16499,7 @@ function emXl(){const R=EM.res;if(!R){alert('먼저 🔎 점검 순서 만들기
  A(D.items,'우선 점검',[6,20,28,50,16,11,11]);A(D.act,'대처 방안',[6,20,70]);A(D.cust,'대수용가·중요 수용가',[14,10,8,10,8,16]);A(D.pts,'신고 지점',[6,14,10,12,12,16,11,11]);A(emInfo(R).map(([k,v])=>({'항목':k,'내용':v})),'개요',[16,80]);
  XLSX.writeFile(wb,`긴급점검_${EM_TY[R.ty].n.replace(/\s/g,'')}_${fmtD(Date.now()).replace(/-/g,'')}.xlsx`,{compression:true})}
 /* ── 칩·초기화 ── */
-function emInit(){const go=()=>{if(!map){setTimeout(go,500);return}if($('emA'))return;map.on('click',emMapClick);
+function emInit(){const go=()=>{if(!map){setTimeout(go,500);return}if($('emA'))return;map.on('preclick',emMapClick);
   const Ctl=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-bar leaflet-control fsbtn embtn np'),a=L.DomUtil.create('a','',d);d.dataset.ck='em';
    a.href='#';a.id='emA';a.textContent='🚨';a.title='🚨 긴급 점검 — 출수불량·누수·가압장 정지 등 우선 점검 순서와 대처 카드';a.setAttribute('role','button');a.setAttribute('aria-label','긴급 점검');
    L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);emToggle()});return d}});
