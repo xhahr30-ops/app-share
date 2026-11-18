@@ -450,7 +450,15 @@ html.dark .ubbar{background:rgba(124,58,237,.12);border-color:rgba(167,139,250,.
 .fmctl{display:none!important}
 body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{display:flex!important;flex-direction:column;gap:8px;background:none;border:0;box-shadow:none}
 .fmctl button{width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:#0f766e;color:#fff;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button.tcam{background:#b45309}.fmctl button.shot{background:#7c3aed;font-size:20px}
+.fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button.fld{background:#be123c}
+#fldW{position:fixed;inset:0;z-index:2147482000;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(10px,env(safe-area-inset-top)) 8px 8px}#fldW[hidden]{display:none}
+.fldBox{background:var(--card,#fff);color:var(--ink,#0f172a);width:min(560px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:14px;box-shadow:0 12px 40px #0006;font-family:'Noto Sans KR',sans-serif}
+.fldHd{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(90deg,#4f46e5,#2563eb);color:#fff;border-radius:14px 14px 0 0}.fldHd small{opacity:.85;font-size:11px;flex:1}.fldX{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:2px 6px}
+.fldBd{padding:10px 12px 14px;font-size:13px}.fldBd .sm{padding:4px 10px;font-size:12px;min-height:30px}.fldBd .f{display:block;font-size:12px;margin:4px 0}.fldBd .f input,.fldBd .f select,.fldBd .f textarea{width:100%;box-sizing:border-box;font-size:15px;padding:6px;margin-top:2px}
+.fldList{display:flex;flex-direction:column;gap:6px;margin:8px 0}.fldIt{display:flex;gap:8px;align-items:flex-start;text-align:left;border:1px solid var(--line,#e5e7eb);background:var(--bg,#f8fafc);color:inherit;border-radius:10px;padding:8px;cursor:pointer;font-size:13px;line-height:1.45}
+.fldBg{flex:0 0 auto;color:#fff;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;margin-top:1px}
+.fldTm{display:flex;align-items:center;gap:6px;margin:5px 0}.fldTm span{width:60px;font-weight:700;font-size:13px}.fldTm input{flex:1 1 auto;font-size:16px;padding:6px;min-width:0;width:auto}.fldTm .btn{flex:0 0 auto;width:auto;min-width:76px}
+.fldLoc{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:8px 0;padding:6px 8px;background:var(--bg,#f1f5f9);border-radius:8px;font-size:12.5px}.fmctl button.tcam{background:#b45309}.fmctl button.shot{background:#7c3aed;font-size:20px}
 #mshot{position:fixed;inset:0;z-index:10100;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:12px}#mshot[hidden]{display:none}
 #mshot .ms{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;padding:10px;width:min(96vw,720px);max-height:96vh;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 #mshot img{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}
@@ -1841,9 +1849,9 @@ html.dark svg.ri{color:var(--cd)!important}
    <div style="font-size:12.5px;margin:4px 0"><label><input type="checkbox" id="wdOn"> 매일 보내기 켜기</label></div>
    <div class="g2"><label class="f">받는 사람 <small style="font-weight:400">(쉼표로 여러 명, 최대 10명)</small><input id="wdTo" type="email" multiple placeholder="예: me@example.com" style="width:100%"></label><label class="f">보낼 시각 (매일)<input id="wdT" type="time" value="17:00" style="width:100%"></label></div>
    <div style="font-size:12.5px;margin:2px 0"><label><input type="checkbox" id="wdWk" checked> 토·일요일은 건너뛰기</label> · <label><input type="checkbox" id="wdEmp"> 오늘 자료가 하나도 없으면 건너뛰기</label></div>
-   <div class="sbtns"><button id="wdSave" type="button" class="btn">💾 저장</button><button id="wdTest" type="button" class="btn ol" title="오늘 자료로 지금 바로 한 통 보냄">📨 지금 시험 보내기</button><button id="wdLdg" type="button" class="btn ol" title="이 기기 ②-4 민원 대장 줄(주소·이름·연락처 뺌)을 서버에 올림">⬆ 민원 대장 올리기</button></div>
+   <div class="sbtns"><button id="wdSave" type="button" class="btn">💾 저장</button><button id="wdTest" type="button" class="btn ol" title="오늘(또는 옆 날짜) 자료로 지금 바로 한 통 보냄">📨 지금 시험 보내기</button><label style="font-size:12px;display:inline-flex;align-items:center;gap:4px">시험 날짜<input id="wdDay" type="date" title="비우면 오늘 · 지난날 대장으로 모양을 볼 때"></label><button id="wdLdg" type="button" class="btn ol" title="이 기기 ②-4 민원·누수 대장 줄(주소·직원 이름·연락처 뺌)을 서버에 올림">⬆ 대장 올리기</button></div>
    <p class="hint" id="wdMsg"></p><div id="wdSt" style="font-size:12.5px"></div>
-   <p class="hint">메일 내용: ① 오늘 올라온 📷 현장 사진(종류별 건수·올린 사람·썸네일 30장·메모·원본/위치 링크) ② 📒 민원 대장 가운데 접수날짜가 오늘인 민원 ③ 오늘 서버에 새로 올라온 관로·시설물 등 기준자료. 첨부 엑셀 = <b>민원</b> 시트 + <b>사진 목록</b> 시트. 민원은 ②-4에서 대장을 넣으면 서버에 자동으로 올라가고(주소·이름·연락처는 빼고), 메일에 <b>대장 최신 반영일</b>이 적힙니다. 메모 속 전화번호 모양 숫자는 가립니다. 저장한 시각이 오늘 이미 지났으면 내일부터 나갑니다.</p>
+   <p class="hint">메일 내용: ① <b>처리 현황</b> — 오늘 민원 접수·평균 접수→도착 시간·준공, 오늘 누수탐사(정탐·오탐)·수리 완료, 남은 일(준공 빈 민원·공사 대기 탐사), 블록별 건수 ② 오늘 올라온 📷 현장 사진(썸네일·메모) ③ 오늘 바뀐 기준자료. 첨부 = 엑셀(<b>민원</b>·<b>누수탐사</b>·<b>남은 일</b>·<b>사진 목록</b> 시트, 대장 칸 순서) + 오늘 사진 원본 <b>ZIP</b>(메일 한도 20MB를 넘는 사진은 드라이브 링크). <b>대장은 매일 넣지 않아도 됩니다</b>: 구글 드라이브 사진 폴더 안 <b>일일보고_대장</b> 폴더(위 링크)에 민원 대장·누수 대장 엑셀(파일 이름에 '민원'·'누수')을 저장해 두면, 보낼 때마다 서버가 가장 최근 파일을 직접 읽습니다(PC 구글 드라이브 앱으로 그 폴더에 저장하면 자동). 폴더에 파일이 없을 때만 ②-4에서 넣은 대장(⬆ 대장 올리기)을 씁니다. 현장에서 폰으로 넣은 <b>📋 현장 일지</b>(지도 왼쪽 빨간 단추·리본 공정보고 › 현장 일지)도 함께 들어갑니다. 어느 쪽이든 주소·대리인·탐사자 이름·연락처는 빼고, 메일에 <b>대장 최신 반영일</b>이 적힙니다. 메모 속 전화번호 모양 숫자는 가립니다. 저장한 시각이 오늘 이미 지났으면 내일부터 나갑니다.</p>
   </details>
   <p class="hint">숫자는 이 기기에 있는 자료로만 셉니다: 📒 누수탐사·민원 대장(②-4), 📷 현장 사진 종류(누수탐사·경계밸브), 👣 탐사기록·👥 팀 탐사 관로, 🪜 단계시험 현장 기록, 🔧 시설물 유지관리 기록, 🛠 관로 편집 기록. 자료가 없는 공종은 <b>확인 필요</b>로 두고 엑셀 칸도 바꾸지 않습니다. <b>자동</b> 줄은 처음부터 엑셀에 넣고, <b>확인</b> 줄은 숫자를 보고 체크하면 넣습니다. 칸의 숫자는 고쳐 쓸 수 있습니다.</p>
  </div>
@@ -2102,7 +2110,7 @@ const TABS=[
   {n:'현장 모드',b:[['fm','phone','현장 모드',1]]}]},
  /* 2026-11-17 공정보고 탭: 주간·월간 공정보고 (앱 자료로 공종 실적 집계·엑셀 칸 채우기) */
  {k:'prog',n:'공정보고',g:[
-  {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1],['win:wrd','bell','일일보고',1]]}]},
+  {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1],['win:wrd','bell','일일보고',1],['fld','pen','현장 일지',1]]}]},
  {k:'table',n:'표',g:[
   {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
   {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
@@ -2130,7 +2138,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
   /* 검토 탭: 경계밸브 추적 = ②-4 창 열고 🔴 버튼, 혼탁수 주의 = 레이어 창 '혼탁수 주의 (평소 표시)'와 같은 값 */
   lqBv:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const b=$('lqBvBtn');if(b){try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}b.click()}},80)},
   tb:()=>{const t=LAY.find(x=>x.k==='tb');if(!t)return;if(!t.ok()){msg('혼탁수 주의는 ②-1 관로를 먼저 넣어야 합니다');return}const o=!t.on();t.set(o);try{layKey='';layRender()}catch(_){}msg(o?'혼탁수 주의 구간 표시 켬 (관망해석 유속이 있어야 보입니다)':'혼탁수 주의 구간 표시 끔');setTimeout(sync,0)},
-  bp:()=>bpOpen(),
+  bp:()=>bpOpen(),fld:()=>F('fldOpen'),
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   lblW:()=>{if(window.LBLM)LBLM.open()},lblOff:()=>{if(window.LBLM)LBLM.off()},
@@ -9054,8 +9062,8 @@ function fmLocate(btn){if(!navigator.geolocation){alert('이 브라우저는 위
   e=>{btn.disabled=false;alert(location.protocol==='file:'?'파일로 연 앱(file://)에서는 위치를 쓸 수 없습니다. 깃허브 페이지(https) 주소로 여세요.':e&&e.code===1?'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.':'현재 위치를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요.')},
   {enableHighAccuracy:true,timeout:15000,maximumAge:10000})}
 if(map){const C=L.Control.extend({options:{position:'topleft'},onAdd(){const d=L.DomUtil.create('div','leaflet-control fmctl');
-  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></button><button type="button" class="tcam" title="글자 넣어 찍기 (사진명·날짜·용역명·회사명·설명·로고)" aria-label="글자 넣어 찍기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><path d="M8.5 11h7M12 11v5.5"/></svg></button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button type="button" class="shot" title="지금 보이는 지도 화면을 사진 한 장으로 (공유·저장)" aria-label="지도 화면 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></button>';
-  L.DomEvent.disableClickPropagation(d);d.querySelector('.cam').onclick=()=>$('phFile').click();d.querySelector('.tcam').onclick=()=>tcStart();d.querySelector('.loc').onclick=e=>fmLocate(e.currentTarget);d.querySelector('.shot').onclick=e=>mapShot(e.currentTarget);return d}});
+  d.innerHTML='<button type="button" class="cam" title="현장 사진 찍기·올리기" aria-label="현장 사진 찍기·올리기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg></button><button type="button" class="tcam" title="글자 넣어 찍기 (사진명·날짜·용역명·회사명·설명·로고)" aria-label="글자 넣어 찍기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.6l1.6-2.2h6.6L16.9 7h2.6A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/><path d="M8.5 11h7M12 11v5.5"/></svg></button><button type="button" class="loc" title="내 위치로 이동" aria-label="내 위치로 이동"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button><button type="button" class="shot" title="지금 보이는 지도 화면을 사진 한 장으로 (공유·저장)" aria-label="지도 화면 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.6"/></svg></button><button type="button" class="fld" title="📋 현장 일지 (민원·누수탐사 바로 넣기)" aria-label="현장 일지"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5M8.5 10h7M8.5 13.5h7M8.5 17h4"/></svg></button>';
+  L.DomEvent.disableClickPropagation(d);d.querySelector('.cam').onclick=()=>$('phFile').click();d.querySelector('.tcam').onclick=()=>tcStart();d.querySelector('.loc').onclick=e=>fmLocate(e.currentTarget);d.querySelector('.shot').onclick=e=>mapShot(e.currentTarget);d.querySelector('.fld').onclick=()=>{if(typeof fldOpen==='function')fldOpen()};return d}});
  map.addControl(new C())}
 fmApply();
 
@@ -14312,24 +14320,27 @@ const LR={recs:[],names:[],at:'',idx:null,st:null};
 const lrNormA=a=>String(a??'').replace(/\(.*?\)/g,'').replace(/번지/g,'').replace(/^.*?\S+(?:시|군)\s+/,'').replace(/^\S+구\s+/,'').replace(/\s+/g,'');
 function lrGeoIdx(){const n=typeof gcStore==='object'&&gcStore?Object.keys(gcStore).length:0;if(LR.idx&&LR.idx.n===n)return LR.idx.m;const m=new Map();
  if(n)for(const k in gcStore){const v=gcStore[k];if(!Array.isArray(v))continue;const p=k.indexOf('|',k.indexOf('|')+1);const a=lrNormA(p>0?k.slice(p+1):k);if(a&&!m.has(a))m.set(a,v)}LR.idx={n,m};return m}
-function lrDate(v){if(v instanceof Date)return fmtD(v.getTime());if(typeof v==='number'&&v>20000&&v<80000)return fmtD(Math.round((v-25569)*864e5));const s=String(v??'').trim();return /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(s)?s.slice(0,10).replace(/[./]/g,'-'):''}
+function lrDate(v){if(v instanceof Date)return fmtD(Math.round(v.getTime()/36e5)*36e5); /* 엑셀 읽기 도구가 한국 시간에서 날짜를 52초 이르게 줘 하루 앞날로 보이던 것 고침(2026-11-18) */if(typeof v==='number'&&v>20000&&v<80000)return fmtD(Math.round((v-25569)*864e5));const s=String(v??'').trim();return /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(s)?s.slice(0,10).replace(/[./]/g,'-'):''}
+/* 대장 칸 글자·시각 (2026-11-18 일일 보고 B안) */
+const lrTx=(r,i)=>i>=0&&r[i]!=null?String(r[i]).trim().slice(0,120):'';
+function lrTm(v){if(v==null||v==='')return '';if(v instanceof Date){const m=Math.round((v.getTime()-new Date(v.getFullYear(),v.getMonth(),v.getDate()).getTime())/6e4);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}if(typeof v==='number'&&v>=0&&v<1){const m=Math.round(v*1440);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}const t=String(v).trim(),k=t.match(/^(\d{1,2}):(\d{2})/);return k?k[1].padStart(2,'0')+':'+k[2]:t.slice(0,8)}
 function lrParse(O,fname){const out=[],hi=(A,re)=>A.findIndex(r=>r&&re.every(x=>r.some(c=>x.test(String(c??'').trim()))));
  const col=(H,re)=>H.findIndex(c=>re.test(String(c??'').replace(/\s/g,'')));
  for(const sn in O){const A=O[sn];
-  if(/총괄표/.test(sn)){const h=hi(A,[/^탐사연번$/,/^복구결과$/]);if(h<0)continue;const H=A[h],c={no:col(H,/^탐사연번$/),blk:col(H,/^블록명$/),d:col(H,/^탐사일자$/),res:col(H,/^복구결과$/),addr:col(H,/^주소$/),dia:col(H,/^구경$/),mat:col(H,/^관종$/),cause:col(H,/^누수원인$/),x:col(H,/^X$/i),y:col(H,/^Y$/i)};
+  if(/총괄표/.test(sn)){const h=hi(A,[/^탐사연번$/,/^복구결과$/]);if(h<0)continue;const H=A[h],c={no:col(H,/^탐사연번$/),blk:col(H,/^블록명$/),d:col(H,/^탐사일자$/),res:col(H,/^복구결과$/),addr:col(H,/^주소$/),dia:col(H,/^구경$/),mat:col(H,/^관종$/),cause:col(H,/^누수원인$/),x:col(H,/^X$/i),y:col(H,/^Y$/i),cd:col(H,/^공사일자$/),edia:col(H,/^추정관경$/),part:col(H,/^누수부위$/),fixd:col(H,/^수선내용$/),co:col(H,/^공사업체$/),memo:col(H,/^현장내용$/),note:col(H,/^비고/)};
    const xy=new Map(),S1=Object.keys(O).find(n=>/sheet\s*1/i.test(n));if(S1){const B=O[S1],h1=hi(B,[/^누수번호$/,/^X$/]);if(h1>=0){const H1=B[h1],jn=col(H1,/^누수번호$/),jx=col(H1,/^X$/i),jy=col(H1,/^Y$/i);for(const r of B.slice(h1+1)){const x=+r[jx],y=+r[jy];if(r[jn]!=null&&isFinite(x)&&isFinite(y)&&x>100)xy.set(String(r[jn]).trim(),[y,x])}}}
    for(const r of A.slice(h+1)){if(!r||r[c.no]==null||String(r[c.no]).trim()==='')continue;const res=String(r[c.res]??'').trim();
     let ll=c.x>=0&&isFinite(+r[c.x])&&+r[c.x]>100?[+r[c.y],+r[c.x]]:xy.get(String(r[c.no]).trim())||null;
-    out.push({src:'탐사',no:String(r[c.no]).trim(),blk:String(r[c.blk]??'').trim(),d:lrDate(r[c.d]),res,ok:/정탐|미수리|수리불가/.test(res),rep:/정탐/.test(res),addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll})}}
-  else if(/리스트/.test(sn)){const h=hi(A,[/^현장주소$/,/^민원원인$/]);if(h<0)continue;const H=A[h],c={no:col(H,/^(접수번호|민원번호)$/),d:col(H,/^접수날짜$/),addr:col(H,/^현장주소$/),kind:col(H,/^민원원인$/),mat:col(H,/^누수관종$/),dia:col(H,/^누수관경$/),cause:col(H,/^누수원인$/)};
-   for(const r of A.slice(h+1)){if(!r||r[c.d]==null)continue;const k=String(r[c.kind]??'').trim();out.push({src:'민원',blk:'',no:c.no>=0?String(r[c.no]??'').trim():'',d:lrDate(r[c.d]),res:k,ok:/^(누수|돌발)$/.test(k),rep:true,addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll:null})}}}
+    out.push({src:'탐사',cd:c.cd>=0?lrDate(r[c.cd]):'',edia:c.edia>=0?parseDia(r[c.edia]):null,part:lrTx(r,c.part),fixd:lrTx(r,c.fixd),co:lrTx(r,c.co),memo:lrTx(r,c.memo),note:lrTx(r,c.note),no:String(r[c.no]).trim(),blk:String(r[c.blk]??'').trim(),d:lrDate(r[c.d]),res,ok:/정탐|미수리|수리불가/.test(res),rep:/정탐/.test(res),addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll})}}
+  else if(/리스트/.test(sn)){const h=hi(A,[/^현장주소$/,/^민원원인$/]);if(h<0)continue;const H=A[h],U=h>0?A[h-1]||[]:[],tc=k=>{let i=H.findIndex((v,j)=>new RegExp('^'+k+'(시간|시각)?$').test(String(v??'').replace(/\s/g,''))||(/^시간$/.test(String(v??'').trim())&&new RegExp('^'+k).test(String(U[j]??'').replace(/\s/g,''))));return i},c={tA:tc('접수'),tB:tc('도착'),tC:tc('착공'),tD:tc('준공'),co:col(H,/^공사업체$/)>=0?col(H,/^공사업체$/):col(U,/^공사업체$/),part:col(H,/^누수부위$/),fix:col(H,/^관정비여부$/),memo:col(H,/^현장내용$/),no:col(H,/^(접수번호|민원번호)$/)>=0?col(H,/^(접수번호|민원번호)$/):col(U,/^(접수번호|민원번호)$/),d:col(H,/^접수날짜$/),addr:col(H,/^현장주소$/),kind:col(H,/^민원원인$/),mat:col(H,/^누수관종$/),dia:col(H,/^누수관경$/),cause:col(H,/^누수원인$/)};
+   for(const r of A.slice(h+1)){if(!r||r[c.d]==null)continue;const k=String(r[c.kind]??'').trim();out.push({src:'민원',blk:'',tA:lrTm(r[c.tA]),tB:lrTm(r[c.tB]),tC:lrTm(r[c.tC]),tD:lrTm(r[c.tD]),co:lrTx(r,c.co),part:lrTx(r,c.part),fix:lrTx(r,c.fix),memo:lrTx(r,c.memo),no:c.no>=0?String(r[c.no]??'').trim():'',d:lrDate(r[c.d]),res:k,ok:/^(누수|돌발)$/.test(k),rep:true,addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll:null})}}}
  out.forEach(o=>o.f=fname);return out}
 function lrLocate(){const m=lrGeoIdx();let n=0;for(const o of LR.recs){if(!o.ll&&o.addr){const v=m.get(lrNormA(o.addr));if(v)o.ll=[+v[0],+v[1]]}if(o.ll)n++}return n}
 async function lrLoad(files){const msg=$('lqLrMsg');if(typeof XLSX==='undefined'){msg.textContent='엑셀 읽기 도구를 못 불러왔습니다(인터넷 확인).';return}let add=[];
  for(const f of files){try{msg.textContent=f.name+' 읽는 중…';const buf=await f.arrayBuffer(),R=await lrLrSafe(buf,p=>msg.textContent=f.name+' · '+p);const r=lrParse(R.O||{},f.name);if(!r.length){msg.textContent=f.name+': 누수탐사총괄표나 민원 리스트(매크로용) 시트를 못 찾았습니다.';continue}
   LR.recs=LR.recs.filter(o=>o.f!==f.name);add.push(...r);LR.names=[...new Set([...LR.names.filter(n=>n!==f.name),f.name])]}catch(e){msg.textContent=f.name+' 읽기 실패: '+(e&&e.message||e)}}
  if(!add.length)return;LR.recs.push(...add);LR.at=new Date().toISOString();lrLocate();LR.st=null;try{await IDB.set('leak_ledger',{recs:LR.recs,names:LR.names,at:LR.at})}catch(_){}
- if(add.some(o=>o.src==='민원')&&typeof wdLdgPush==='function')wdLdgPush(true).catch(_=>{});
+ if(add.length&&typeof wdLdgPush==='function')wdLdgPush(true).catch(_=>{});
  LQ.rkKey='';lrShow();try{lqRenderTbl();if(LQ.sel)lqShow(LQ.sel);if($('pBy')&&$('pBy').value==='risk'&&PIPE.fc)renderPipes()}catch(_){}}
 const lrLrSafe=(buf,cb)=>lqLrRead(buf,cb);
 /* 발생율: 재질(앱 재질 분류)·관경·경과연수(가까운 관로 설치연도)·소블록. 분모 = 지금 올린 상수관로 길이 */
@@ -16102,7 +16113,7 @@ function wrMailInit(){if(!$('wrMailBox'))return;
   if(u)wrMailPut(u.dataset.mu).catch(er=>$('wrMMsg').textContent='⚠ '+wrMailErr(er));
   else if(d){if(!confirm('이 메일 예약을 취소할까요?'))return;try{await shReq('maildel',{id:d.dataset.md});$('wrMMsg').textContent='예약을 취소했습니다.';wrMailList()}catch(er){$('wrMMsg').textContent='⚠ '+wrMailErr(er)}}})}
 try{wrMailInit()}catch(e){console.warn('공정보고 메일',e)}
-/* ── 📅 일일 보고 메일 (2026-11-18 B안): 서버(Code.gs 2026-11-18 판 ②)가 매일 정한 시각에 오늘 자료를 모아 보냄 ── */
+/* ── 📅 일일 보고 메일 (2026-11-18 B안): 서버(Code.gs 2026-11-18 판 ②~④, ④=드라이브 일일보고_대장 폴더 직접 읽기)가 매일 정한 시각에 오늘 자료를 모아 보냄 ── */
 function wdOk(){if(typeof SH!=='object'||!SH.cfg||!SH.cfg.url){$('wdMsg').textContent='⚠ 📷 현장 사진 › ☁️ 직원 공유에 공유 서버 주소·공유 키를 먼저 넣어 주세요.';return false}
  if(typeof shIsCF==='function'&&shIsCF(SH.cfg.url)){$('wdMsg').textContent='⚠ 클라우드플레어 공유 서버는 아직 일일 보고를 못 합니다(구글 Apps Script 서버만).';return false}return true}
 function wdErr(e){const m=String(e&&e.message||e);return /알 수 없는 요청/.test(m)?'공유 서버 Code.gs가 예전 판입니다. 2026-11-18 판 ②(일일 보고)로 바꾸고 mailSetup 실행 → [배포 관리] ✏️ 새 버전으로 배포하세요(새 배포 아님).':m}
@@ -16110,26 +16121,131 @@ function wdShow(j){const c=j.cfg||{},L=j.ldg;$('wdOn').checked=!!c.on;if(c.to)$(
  const lt=LR&&LR.recs?LR.recs.filter(o=>o.src==='민원').length:0;
  $('wdSt').innerHTML=`<div>상태: <b>${c.on?'켜짐 · 매일 '+esc(c.t||'17:00')+(c.wk!==false?' (평일)':''):'꺼짐'}</b>${c.to?' · 받는 사람 '+esc(c.to):''}</div>`+
   `<div>마지막 처리: ${j.last?esc(j.last)+(j.lastAt?' '+esc(fmtDT(j.lastAt)):''):'아직 없음'}${j.err?' · <span style="color:#b45309">'+esc(j.err)+'</span>':''}</div>`+
-  `<div>민원 대장(서버): ${L?esc(L.n+'줄 · 최신 반영 '+fmtDT(L.at)+(L.by?' · '+L.by:'')+' · 마지막 접수일 '+(L.last||'-')):'<span style="color:#b45309">없음 — ⬆ 민원 대장 올리기</span>'} · 이 기기 대장 민원 ${lt}줄</div>`+
+  `<div>대장(서버): ${L?esc(L.n+'줄'+(L.nm!=null?' (민원 '+L.nm+'·누수탐사 '+L.nt+')':'')+' · 최신 반영 '+fmtDT(L.at)+(L.by?' · '+L.by:'')+' · 민원 마지막 접수일 '+(L.last||'-')+(L.lastT?' · 탐사 마지막 '+L.lastT:'')):'<span style="color:#b45309">없음 — ⬆ 대장 올리기</span>'} · 이 기기 대장 민원 ${lt}줄·누수탐사 ${LR&&LR.recs?LR.recs.filter(o=>o.src==='탐사').length:0}줄</div>`+
+  (()=>{const D=j.drv;if(!D)return '<div style="color:var(--mute)">📂 드라이브 대장: 서버 Code.gs를 2026-11-18 판 ④로 바꾸면 드라이브 폴더에서 직접 읽습니다.</div>';const f=o=>o?esc(o.name)+' ('+fmtDT(o.at)+' 저장)':'<span style="color:#b45309">없음</span>';
+   return `<div>📂 드라이브 대장 ${D.folder?`<a href="${esc(D.folder)}" target="_blank" rel="noopener">일일보고_대장 폴더 열기</a>`:''}: 민원 ${f(D.m)} · 누수 ${f(D.t)}${D.used?' · <b>메일은 이 파일로 만듦</b>':' · 파일이 없어 앱에서 올린 대장을 씀'}${D.err?' · <span style="color:#dc2626">'+esc(D.err)+'</span>':''}</div>`})()+
   (j.trig===false?'<div style="color:#dc2626">⚠ 서버 트리거가 없습니다 — Apps Script에서 mailSetup을 한 번 실행하세요.</div>':'')+(j.quota!=null?`<div style="color:var(--mute)">오늘 더 보낼 수 있는 메일 ${j.quota}통</div>`:'')}
 async function wdLoad(){if(!wdOk())return;try{wdShow(await shReq('dailyget'))}catch(e){$('wdMsg').textContent='⚠ '+wdErr(e)}}
 async function wdSave(){if(!wdOk())return;const msg=$('wdMsg'),on=$('wdOn').checked,to=$('wdTo').value.trim();if(on&&!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}
  msg.textContent='⏳ 저장 중…';try{const j=await shReq('dailyset',{on,to,t:$('wdT').value||'17:00',wk:$('wdWk').checked,emp:$('wdEmp').checked,site:(typeof SITE==='object'&&SITE.name)||''});wdShow(j);
   const now=new Date(),hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');msg.textContent=on?`✅ 저장했습니다 · ${(j.cfg.t<=hm)?'내일':'오늘'} ${j.cfg.t}부터 매일 보냅니다(정한 시각부터 5분 안).`:'✅ 저장했습니다 · 일일 보고를 껐습니다.'}catch(e){msg.textContent='⚠ '+wdErr(e)}}
 async function wdTest(){if(!wdOk())return;const msg=$('wdMsg'),to=$('wdTo').value.trim();if(!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}
- msg.textContent='⏳ 오늘 자료를 모아 보내는 중… (사진이 많으면 30초쯤)';try{const j=await shReq('dailytest',{to,site:(typeof SITE==='object'&&SITE.name)||''});msg.textContent=`✅ 시험 메일을 보냈습니다 · ${j.to} · 사진 ${j.ph}장 · 민원 ${j.mw}건 · 기준자료 ${j.ref}종 · 첨부 ${j.fname}`+(j.quota!=null?` · 오늘 남은 메일 ${j.quota}통`:'');wdLoad()}catch(e){msg.textContent='⚠ '+wdErr(e)}}
+ msg.textContent='⏳ 오늘 자료를 모아 보내는 중… (사진이 많으면 30초쯤)';try{const j=await shReq('dailytest',{to,day:$('wdDay').value||'',site:(typeof SITE==='object'&&SITE.name)||''});msg.textContent=`✅ 시험 메일을 보냈습니다 · ${j.to} · ${j.day||''} · 민원 ${j.mw}건 · 누수탐사 ${j.ts!=null?j.ts:'-'}건 · 남은 일 ${j.pend!=null?j.pend:'-'}건 · 사진 ${j.ph}장${j.zip!=null?' (ZIP '+j.zip+'장)':''} · 기준자료 ${j.ref}종 · 첨부 ${j.fname}`+(j.quota!=null?` · 오늘 남은 메일 ${j.quota}통`:'');wdLoad()}catch(e){msg.textContent='⚠ '+wdErr(e)}}
 /* 민원 대장 줄을 서버에 올림: 날짜·접수번호·민원원인·관종·관경·누수원인·소블록·좌표만 (주소·이름·연락처 없음), 최근 400일 */
 async function wdLdgPush(auto){if(auto&&(typeof SH!=='object'||!SH.cfg||!SH.cfg.url||(typeof shIsCF==='function'&&shIsCF(SH.cfg.url))))return;if(!auto&&!wdOk())return;
- const msg=$('wdMsg'),lim=fmtD(Date.now()-400*864e5),R=(LR&&LR.recs||[]).filter(o=>o.src==='민원'&&o.d&&o.d>=lim);
- if(!R.length){if(!auto)msg.textContent='⚠ 이 기기에 민원 대장이 없습니다 — ②-4 누수 예측 › 📒 누수·민원 대장 넣기에서 민원 대장(xlsm)을 먼저 넣어 주세요.';return}
- const rows=R.map(o=>{const ll=o.ll||null;let blk='';try{if(ll&&typeof blkAt==='function')blk=blkAt(ll[1],ll[0])||''}catch(_){}return{d:o.d,no:o.no||'',res:o.res||'',mat:o.mat||'',dia:o.dia||'',cause:o.cause||'',blk,lat:ll?+(+ll[0]).toFixed(6):'',lng:ll?+(+ll[1]).toFixed(6):''}});
+ const msg=$('wdMsg'),lim=fmtD(Date.now()-400*864e5),R=(LR&&LR.recs||[]).filter(o=>(o.src==='민원'||o.src==='탐사')&&((o.d&&o.d>=lim)||(o.cd&&o.cd>=lim)));
+ if(!R.length){if(!auto)msg.textContent='⚠ 이 기기에 민원·누수 대장이 없습니다 — ②-4 누수 예측 › 📒 누수·민원 대장 넣기에서 대장(xlsm)을 먼저 넣어 주세요.';return}
+ if(!auto&&!R.some(o=>'tA' in o||'cd' in o))msg.textContent='ℹ 대장을 예전 판에서 넣어 접수·도착 시각 등 새 칸이 없습니다 — ②-4에서 대장을 한 번 다시 넣으면 채워집니다. ';
+ const rows=R.map(o=>{const ll=o.ll||null;let blk='';try{if(ll&&typeof blkAt==='function')blk=blkAt(ll[1],ll[0])||''}catch(_){}if(o.src==='탐사'&&o.blk)blk=o.blk;return{src:o.src,d:o.d,no:o.no||'',res:o.res||'',mat:o.mat||'',dia:o.dia||'',cause:o.cause||'',part:o.part||'',memo:o.memo||'',co:o.co||'',tA:o.tA||'',tB:o.tB||'',tC:o.tC||'',tD:o.tD||'',fix:o.fix||'',cd:o.cd||'',edia:o.edia||'',fixd:o.fixd||'',note:o.note||'',blk,lat:ll?+(+ll[0]).toFixed(6):'',lng:ll?+(+ll[1]).toFixed(6):''}});
  if(!auto)msg.textContent='⏳ 민원 대장 올리는 중…';
- try{const j=await shReq('ldgput',{rows,fname:(LR.names||[]).join(', ')});const L=j.ldg;(auto?phToast||console.log:t=>msg.textContent=t)(`✅ 민원 대장 ${L?L.n:rows.length}줄을 공유 서버에 올렸습니다(일일 보고용 · 주소·이름·연락처 없음)`);if(!auto)wdLoad()}
+ try{const j=await shReq('ldgput',{rows,fname:(LR.names||[]).join(', ')});const L=j.ldg;(auto?phToast||console.log:t=>msg.textContent=t)(`✅ 대장 ${L?L.n:rows.length}줄(민원 ${rows.filter(r=>r.src==='민원').length}·누수탐사 ${rows.filter(r=>r.src==='탐사').length})을 공유 서버에 올렸습니다(일일 보고용 · 주소·직원 이름·연락처 없음)`);if(!auto)wdLoad()}
  catch(e){if(!auto)msg.textContent='⚠ '+wdErr(e);else console.warn('민원 대장 올리기',e)}}
 function wdInit(){if(!$('wrDayBox'))return;
  $('wrDayBox').addEventListener('toggle',()=>{if($('wrDayBox').open){if(!$('wdTo').value&&WR.c.mail&&WR.c.mail.to)$('wdTo').value=WR.c.mail.to;if(typeof SH==='object'&&SH.cfg&&SH.cfg.url)wdLoad()}});
  $('wdSave').onclick=wdSave;$('wdTest').onclick=wdTest;$('wdLdg').onclick=()=>wdLdgPush(false)}
 try{wdInit()}catch(e){console.warn('일일 보고',e)}
+/* ── 📋 현장 일지 (2026-11-18 B안): 현장에서 폰으로 민원·누수탐사 건을 바로 넣음 → 공유 서버 현장기록 → 📅 일일 보고에 대장과 합쳐 나감 ──
+   도착·착공·준공 [지금] 단추 = 그 시각 + GPS(소블록 자동). 고르기 목록 = 대장 '유효성검사(삭제X)' 시트 + 이 기기 ②-4 대장에 실제로 쓴 값.
+   주소·대리인·탐사자 이름·연락처 칸은 없음. 서버에 못 보낸 건은 이 기기에 모아 두었다가 다음에 다시 보냄(geo-fldq). */
+const FLD={recs:[],q:[],cur:null,flt:'open',busy:false};
+const FLD_L={mat:['PE','SP','HI-VP','PVC','PFP','DCIP','CIP','STS'],dia:[13,16,20,25,32,40,50,65,75,80,100,125,150,200,250,300],part:['직관부','접합부(연결부)','분기부(세들분기)','분기부(소켓부)','곡관부','수도미터'],
+ cause:['관노후','노후','충격','손괴','파손','하자','전식','심도부족','불용관 미폐쇄'],res:['누수','미누수','돌발'],tres:['정탐','오탐','미수리','수리불가'],gl:['지상','지하'],pave:['아스팔트','콘크리트','보도블럭','비포장']};
+const fldNow=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const fldToday=()=>fmtD(Date.now());
+function fldQLoad(){try{FLD.q=JSON.parse(localStorage.getItem('geo-fldq')||'[]')||[]}catch(_){FLD.q=[]}}
+function fldQSave(){try{localStorage.setItem('geo-fldq',JSON.stringify(FLD.q.slice(-200)))}catch(_){}}
+function fldSrvOk(){return typeof SH==='object'&&SH.cfg&&SH.cfg.url&&!(typeof shIsCF==='function'&&shIsCF(SH.cfg.url))}
+/* 고르기 목록: 기본 + 이 기기 대장에서 자주 쓴 값 */
+function fldOpts(k){const base=FLD_L[k]||[],seen=new Map();const fld={mat:'mat',part:'part',cause:'cause',co:'co'}[k];
+ if(fld&&typeof LR==='object'&&LR&&LR.recs)LR.recs.forEach(r=>{const v=String(r[fld]==null?'':r[fld]).trim();if(v&&v!=='-'&&v.length<=20)seen.set(v,(seen.get(v)||0)+1)});
+ const extra=[...seen].sort((a,b)=>b[1]-a[1]).slice(0,15).map(x=>x[0]).filter(v=>!base.includes(v));return base.concat(extra)}
+function fldGps(){return new Promise(res=>{if(!navigator.geolocation||location.protocol==='file:')return res(null);
+ navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(7),lng:+p.coords.longitude.toFixed(7),acc:Math.round(p.coords.accuracy)}),()=>res(null),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
+const fldBlk=(lat,lng)=>{try{return typeof blkAt==='function'&&lat&&lng?blkAt(lng,lat)||'':''}catch(_){return ''}};
+function fldStage(r){if(r.src==='탐사')return r.cd?['공사 완료','#15803d']:[r.res||'탐사','#b45309'];return r.tD?['준공','#15803d']:r.tC?['착공','#2563eb']:r.tB?['도착','#7c3aed']:['접수','#b45309']}
+function fldWin(){let w=$('fldW');if(w)return w;w=document.createElement('div');w.id='fldW';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','현장 일지');
+ w.innerHTML=`<div class="fldBox"><div class="fldHd"><b>📋 현장 일지</b><small>민원·누수탐사를 현장에서 바로 · 만든이: 구병순</small><button type="button" class="fldX" aria-label="닫기">✕</button></div><div class="fldBd"></div></div>`;
+ document.body.appendChild(w);w.querySelector('.fldX').onclick=fldClose;w.addEventListener('click',e=>{if(e.target===w)fldClose()});return w}
+function fldClose(){const w=$('fldW');if(w)w.hidden=true;FLD.cur=null}
+async function fldOpen(){fldQLoad();const w=fldWin();w.hidden=false;FLD.cur=null;fldList();await fldFlush();await fldLoad()}
+async function fldLoad(){if(!fldSrvOk()){FLD.msg='⚠ 📷 현장 사진 › ☁️ 직원 공유에 공유 서버 주소·공유 키를 먼저 넣어 주세요(구글 Apps Script 서버). 넣기 전에는 이 기기에만 모아 둡니다.';if(!FLD.cur)fldList();return}
+ try{const j=await shReq('fldlist',{days:60});FLD.recs=j.recs||[];FLD.msg='';FLD.at=Date.now()}catch(e){const m=String(e&&e.message||e);FLD.msg='⚠ '+(/알 수 없는 요청/.test(m)?'공유 서버 Code.gs가 예전 판입니다. 2026-11-18 판 ⑤(현장 일지)로 바꾸고 [배포 관리] ✏️ 새 버전으로 배포하세요. 그 전에는 이 기기에만 모아 둡니다.':'서버 목록을 받지 못했습니다: '+m)}
+ if(!FLD.cur)fldList()}
+async function fldFlush(){if(!FLD.q.length||!fldSrvOk())return;const left=[];for(const it of FLD.q){try{await shReq('fldput',it)}catch(e){left.push(it);if(/알 수 없는 요청|key|키/.test(String(e&&e.message||e)))break}}
+ if(left.length<FLD.q.length&&typeof phToast==='function')phToast(`📋 현장 일지 ${FLD.q.length-left.length}건을 서버에 보냈습니다.`);FLD.q=left;fldQSave()}
+/* 서버 목록 + 아직 못 보낸 것 */
+function fldAll(){const m=new Map();FLD.recs.forEach(r=>m.set(r.id,r));FLD.q.forEach(it=>{if(it.del)m.delete(it.rec.id);else m.set(it.rec.id,Object.assign({},it.rec,{_q:1}))});return [...m.values()]}
+function fldList(){const w=fldWin(),bd=w.querySelector('.fldBd'),t=fldToday();
+ let A=fldAll();const f=FLD.flt;A=A.filter(r=>f==='today'?(r.d===t||r.cd===t||fmtD(r.at||0)===t):f==='open'?(r.src==='탐사'?!r.cd&&/정탐|미수리/.test(r.res||''):!r.tD&&r.res!=='미누수')||r.d===t:true);
+ A.sort((a,b)=>(b.d||'').localeCompare(a.d||'')||(b.at||0)-(a.at||0));
+ const fb=(k,n)=>`<button type="button" class="btn ${FLD.flt===k?'':'ol'} sm" data-flt="${k}">${n}</button>`;
+ bd.innerHTML=`<div class="sbtns"><button type="button" class="btn" data-new="민원">＋ 민원</button><button type="button" class="btn" data-new="탐사" style="background:#b45309">＋ 누수탐사</button><button type="button" class="btn ol" data-rl="1" title="서버에서 다시 받기">🔄</button><button type="button" class="btn ol" data-xl="1" title="대장(리스트·누수탐사총괄표) 칸 순서 그대로 · 주소·이름 칸은 빈칸">📊 대장 칸 엑셀</button></div>
+ <div class="sbtns" style="margin-top:2px">${fb('open','진행 중')}${fb('today','오늘')}${fb('all','최근 60일')}</div>
+ ${FLD.msg?`<p class="hint" style="color:#b45309">${esc(FLD.msg)}</p>`:''}${FLD.q.length?`<p class="hint" style="color:#b45309">📴 서버에 아직 못 보낸 건 ${FLD.q.length}개 — 연결되면 열 때 다시 보냅니다.</p>`:''}
+ <div class="fldList">${A.length?A.map(r=>{const [s,c]=fldStage(r);const tl=r.src==='탐사'?`탐사 ${esc(r.d||'')}${r.cd?' · 공사 '+esc(r.cd):''}`:[['접수',r.tA],['도착',r.tB],['착공',r.tC],['준공',r.tD]].map(([n,v])=>`${n} <b>${esc(v||'–')}</b>`).join(' → ');
+  return `<button type="button" class="fldIt" data-id="${esc(r.id)}"><span class="fldBg" style="background:${c}">${s}</span><span><b>${r.src==='탐사'?'💧 탐사':'📞 민원'} ${esc(r.no||'(번호 없음)')}</b> · ${esc(r.d||'')}${r.blk?' · '+esc(r.blk):''}${r.res&&r.src!=='탐사'?' · '+esc(r.res):''}${r._q?' · 📴':''}<br><small>${tl}${r.memo?' · '+esc(String(r.memo).slice(0,40)):''}</small></span></button>`}).join(''):'<p class="hint">해당하는 건이 없습니다. ＋ 단추로 새 건을 넣으세요.</p>'}</div>
+ <p class="hint">넣은 건은 공유 서버에 모여 📅 일일 보고 메일(민원·누수탐사 시트, "입력" 칸 = 현장)에 들어가고, 대장에 같은 번호가 있으면 대장 칸이 우선이며 빈칸만 현장 값으로 채웁니다. 사무실에서는 📊 대장 칸 엑셀을 내려받아 대장(xlsm)에 붙여 넣으세요. 고객 주소·이름·연락처는 넣지 않습니다(위치는 GPS·소블록).</p>`;
+ bd.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.flt){FLD.flt=b.dataset.flt;fldList()}else if(b.dataset.new)fldEdit({src:b.dataset.new});else if(b.dataset.rl)fldLoad();else if(b.dataset.xl)fldXl();else if(b.dataset.id){const r=fldAll().find(x=>x.id===b.dataset.id);if(r)fldEdit(r)}}}
+function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id,r=Object.assign({d:fldToday(),gps:{}},r0,{});if(isN&&r.src!=='탐사')r.tA=fldNow();if(!r.gps)r.gps={};FLD.cur=r;
+ const T=r.src==='탐사',dl=(id,k)=>`<datalist id="${id}">${fldOpts(k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
+ const inp=(k,n,o={})=>`<label class="f">${n}<input data-k="${k}" ${o.type?`type="${o.type}"`:''} ${o.list?`list="${o.list}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''} ${o.im?`inputmode="${o.im}"`:''} value="${esc(r[k]??'')}"></label>`;
+ const sel=(k,n,a)=>`<label class="f">${n}<select data-k="${k}"><option value=""></option>${a.map(v=>`<option${String(r[k]??'')===String(v)?' selected':''}>${esc(v)}</option>`).join('')}${r[k]&&!a.map(String).includes(String(r[k]))?`<option selected>${esc(r[k])}</option>`:''}</select></label>`;
+ const tmr=(k,n,g)=>`<div class="fldTm"><span>${n}</span><input type="time" data-k="${k}" value="${esc(r[k]||'')}"><button type="button" class="btn sm" data-now="${k}" data-g="${g||''}">지금${g?' 📍':''}</button></div>`;
+ const loc=()=>r.lat&&r.lng?`📍 ${(+r.lat).toFixed(5)}, ${(+r.lng).toFixed(5)}${r.blk?' · 소블록 <b>'+esc(r.blk)+'</b>':''}`:'📍 위치 없음';
+ bd.innerHTML=`<div class="sbtns"><button type="button" class="btn ol sm" data-back="1">← 목록</button><b style="align-self:center">${T?'💧 누수탐사':'📞 민원'} ${isN?'새 건':esc(r.no||'')}</b></div>
+ ${dl('fldDlMat','mat')}${dl('fldDlDia','dia')}${dl('fldDlCause','cause')}${dl('fldDlPart','part')}${dl('fldDlCo','co')}${dl('fldDlPave','pave')}
+ ${T?`<div class="g2">${inp('d',T?'탐사일자':'접수날짜',{type:'date'})}${inp('no','탐사연번',{im:'numeric'})}</div>
+  <div class="g2">${sel('res','복구결과',FLD_L.tres)}${inp('blk','블록명',{ph:'GPS로 자동'})}</div>
+  <div class="g2">${inp('edia','추정관경(mm)',{list:'fldDlDia',im:'numeric'})}${inp('dia','구경(mm)',{list:'fldDlDia',im:'numeric'})}</div>
+  <div class="g2">${inp('mat','관종',{list:'fldDlMat'})}${inp('road','도로폭(m)',{im:'decimal'})}</div>
+  <div class="g2">${inp('pave','포장종류',{list:'fldDlPave'})}${inp('cause','누수원인',{list:'fldDlCause'})}</div>
+  <div class="g2">${inp('part','누수부위',{list:'fldDlPart'})}${inp('co','공사업체',{list:'fldDlCo'})}</div>
+  ${inp('fixd','수선내용',{ph:'예: PE20mm 직관 교체'})}
+  <div class="fldTm"><span>공사일자</span><input type="date" data-k="cd" value="${esc(r.cd||'')}"><button type="button" class="btn sm" data-today="cd">오늘</button></div>
+  <label class="f">현장내용<textarea data-k="memo" rows="2">${esc(r.memo||'')}</textarea></label>${inp('note','비고(조치계획)')}`
+ :`<div class="g2">${inp('d','접수날짜',{type:'date'})}${inp('no','접수번호',{im:'numeric'})}</div>
+  ${tmr('tA','접수')}${tmr('tB','도착','B')}${tmr('tC','착공','C')}${tmr('tD','준공','D')}
+  <div class="g2">${sel('res','민원원인',FLD_L.res)}${inp('co','공사업체',{list:'fldDlCo'})}</div>
+  <div class="g2">${inp('mat','누수관종',{list:'fldDlMat'})}${inp('dia','누수관경(mm)',{list:'fldDlDia',im:'numeric'})}</div>
+  <div class="g2">${inp('cause','누수원인',{list:'fldDlCause'})}${inp('part','누수부위',{list:'fldDlPart'})}</div>
+  <div class="g2">${sel('gl','누수구분',FLD_L.gl)}${inp('fix','관정비여부')}</div>
+  <label class="f">현장내용<textarea data-k="memo" rows="2" placeholder="예: PE25mm 새들 누수, 새들 교체">${esc(r.memo||'')}</textarea></label>`}
+ <div class="fldLoc"><span>${loc()}</span><button type="button" class="btn ol sm" data-loc="1">📍 지금 위치로</button></div>
+ <p class="hint fldMsg"></p>
+ <div class="sbtns"><button type="button" class="btn" data-save="1">💾 저장 (서버로)</button>${isN?'':'<button type="button" class="btn ol" data-del="1" style="color:#dc2626">🗑 지우기</button>'}</div>
+ <p class="hint">고객 이름·주소·연락처는 쓰지 마세요(현장내용 속 전화번호 모양 숫자는 서버에서 가림). ${T?'':'[지금 📍]은 그 시각과 함께 폰 위치를 남겨 소블록을 자동으로 채웁니다.'}</p>`;
+ const msg=t=>{const m=bd.querySelector('.fldMsg');if(m)m.textContent=t};
+ const setLoc=async(k)=>{msg('📍 위치 받는 중…');const p=await fldGps();if(!p){msg(location.protocol==='file:'?'파일로 연 앱에서는 위치를 못 씁니다(https 주소로 여세요).':'위치를 받지 못했습니다(권한·GPS 확인) — 시각만 넣었습니다.');return}
+  if(k)r.gps[k]=[p.lat,p.lng];if(!r.lat||!k||k==='B'){r.lat=p.lat;r.lng=p.lng}const b=fldBlk(r.lat,r.lng);if(b){r.blk=b;const bi=bd.querySelector('[data-k="blk"]');if(bi)bi.value=b}
+  bd.querySelector('.fldLoc span').innerHTML=loc();msg(`📍 위치 넣음 (오차 약 ${p.acc}m)${b?' · 소블록 '+b:''}`)};
+ bd.onclick=async e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.back){FLD.cur=null;fldList()}
+  else if(b.dataset.now){const i=bd.querySelector(`[data-k="${b.dataset.now}"]`);i.value=fldNow();r[b.dataset.now]=i.value;if(b.dataset.g)setLoc(b.dataset.g)}
+  else if(b.dataset.today){const i=bd.querySelector(`[data-k="${b.dataset.today}"]`);i.value=fldToday();r[b.dataset.today]=i.value}
+  else if(b.dataset.loc)setLoc('')
+  else if(b.dataset.save)fldSave(r,false,msg);
+  else if(b.dataset.del){if(confirm('이 건을 지울까요? (서버에서도 지워집니다)'))fldSave(r,true,msg)}};
+ bd.oninput=e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)r[k]=e.target.value.trim()};bd.onchange=bd.oninput;
+ if(isN&&T)setLoc('');try{bd.parentElement.scrollTop=0}catch(_){}}
+async function fldSave(r,del,msg){if(FLD.busy)return;if(!r.d){msg('⚠ 날짜를 넣어 주세요.');return}
+ if(!del&&!r.no&&!confirm((r.src==='탐사'?'탐사연번':'접수번호')+'이 비어 있습니다. 번호 없이 저장할까요? (대장과 맞출 수 없어 따로 한 줄로 나갑니다)'))return;
+ if(!r.id)r.id='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ const rec={};['id','src','d','no','res','mat','dia','cause','part','memo','co','blk','lat','lng','tA','tB','tC','tD','fix','gl','cd','edia','fixd','note','road','pave','gps'].forEach(k=>{if(r[k]!=null&&r[k]!=='')rec[k]=r[k]});
+ const it={rec,base:r.at||0};if(del)it.del=true;FLD.busy=true;msg('⏳ 서버로 보내는 중…');
+ try{if(!fldSrvOk())throw new Error('nosrv');const j=await shReq('fldput',it);const n=j.rec||rec;FLD.recs=FLD.recs.filter(x=>x.id!==n.id);if(!del)FLD.recs.push(n);FLD.q=FLD.q.filter(x=>x.rec.id!==rec.id);fldQSave();
+  if(typeof phToast==='function')phToast(del?'🗑 현장 일지를 지웠습니다.':`💾 현장 일지 저장${n.warn?' · ⚠ '+n.warn:''}`)}
+ catch(e){FLD.q=FLD.q.filter(x=>x.rec.id!==rec.id);FLD.q.push(it);fldQSave();if(typeof phToast==='function')phToast('📴 서버에 못 보내 이 기기에 모아 두었습니다 — 연결되면 📋 현장 일지를 열 때 다시 보냅니다.',{ms:7000})}
+ finally{FLD.busy=false}FLD.cur=null;fldList()}
+/* 📊 대장 칸 순서 엑셀: 민원 = '리스트(매크로용)' 순서(대리인·현장주소 빈칸), 누수탐사 = '누수탐사총괄표' 순서(주소·탐사자 빈칸) + 위치 시트 */
+function fldXl(){if(typeof XLSX==='undefined'){alert('엑셀 도구(XLSX)를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
+ const A=fldAll().filter(r=>FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())),M=A.filter(r=>r.src!=='탐사').sort((a,b)=>(a.d+a.tA).localeCompare(b.d+b.tA)),T=A.filter(r=>r.src==='탐사').sort((a,b)=>(a.d||'').localeCompare(b.d||''));
+ const nm=v=>v===''||v==null?'':(isNaN(+v)?v:+v);
+ const m=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(M.map((r,i)=>[i+1,r.d,nm(r.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'','','',r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',r.d?+r.d.slice(5,7):'',r.d?+r.d.slice(0,4):'']));
+ const t=[['탐사연번','블록명','탐사일자','공사일자','복구결과','주소','도로폭','추정관경','포장종류','현장내용','구경','관종','누수원인','누수부위','수선내용','공사업체','비고(조치계획)','탐사자','공사업체']].concat(T.map(r=>[nm(r.no),r.blk||'',r.d||'',r.cd||'',r.res||'','',nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'']));
+ const p=[['구분','날짜','번호','소블록','위도','경도','도착 위치','착공 위치','준공 위치']].concat(A.map(r=>[r.src,r.d,r.no||'',r.blk||'',nm(r.lat),nm(r.lng)].concat(['B','C','D'].map(k=>r.gps&&r.gps[k]?r.gps[k].join(', '):''))));
+ try{const wb=XLSX.utils.book_new();[['민원(리스트 칸)',m,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['누수탐사(총괄표 칸)',t,[9,9,11,11,9,10,7,9,9,30,7,8,10,12,24,12,20,8,12]],['위치',p,[8,11,9,9,11,11,22,22,22]]].forEach(([n,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)});
+  XLSX.writeFile(wb,`현장일지_대장칸_${(typeof SITE==='object'&&SITE.name)||'현장'}_${fldToday().replace(/-/g,'')}.xlsx`,{compression:true})}catch(e){alert('엑셀 만들기 실패: '+((e&&e.message)||e))}}
+
 /* ===== 🚨 긴급 점검 (2026-11-15 B안) =====
    긴급상황(출수불량·대형 누수·관 파손·가압장 정지·수질사고) 신고 지점을 넣으면
    ① 💧 단수구역 연결표(shutNet)에서 신고 지점 관로를 찾고, 관망해석 흐름 방향(faDir) → 없으면 굵은 관 쪽으로 상류를 거슬러 올라감
