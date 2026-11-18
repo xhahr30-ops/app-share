@@ -1837,6 +1837,14 @@ html.dark svg.ri{color:var(--cd)!important}
    <p class="hint" id="wrMMsg"></p><div id="wrMList"></div>
    <p class="hint">본문은 위 ✏️ 결과 문장, 첨부는 주간이면 ⬇ 받은 채운 엑셀(없으면 공종 실적 표 엑셀), 월간이면 당월·누계 표 엑셀입니다. 예약할 때의 내용이 그대로 나가며, 되풀이 예약은 목록의 <b>내용 바꾸기</b>로 새 보고서로 바꿉니다. 정한 시각부터 5분 안에 나갑니다. 고객 이름·주소·연락처는 넣지 않습니다.</p>
   </details>
+  <details id="wrDayBox" style="margin:6px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">📅 일일 보고 메일 <small style="font-weight:400">(매일 정한 시각에 서버가 오늘 사진·민원·기준자료 변경을 모아 보냄 · 앱이 꺼져 있어도)</small></summary>
+   <div style="font-size:12.5px;margin:4px 0"><label><input type="checkbox" id="wdOn"> 매일 보내기 켜기</label></div>
+   <div class="g2"><label class="f">받는 사람 <small style="font-weight:400">(쉼표로 여러 명, 최대 10명)</small><input id="wdTo" type="email" multiple placeholder="예: me@example.com" style="width:100%"></label><label class="f">보낼 시각 (매일)<input id="wdT" type="time" value="17:00" style="width:100%"></label></div>
+   <div style="font-size:12.5px;margin:2px 0"><label><input type="checkbox" id="wdWk" checked> 토·일요일은 건너뛰기</label> · <label><input type="checkbox" id="wdEmp"> 오늘 자료가 하나도 없으면 건너뛰기</label></div>
+   <div class="sbtns"><button id="wdSave" type="button" class="btn">💾 저장</button><button id="wdTest" type="button" class="btn ol" title="오늘 자료로 지금 바로 한 통 보냄">📨 지금 시험 보내기</button><button id="wdLdg" type="button" class="btn ol" title="이 기기 ②-4 민원 대장 줄(주소·이름·연락처 뺌)을 서버에 올림">⬆ 민원 대장 올리기</button></div>
+   <p class="hint" id="wdMsg"></p><div id="wdSt" style="font-size:12.5px"></div>
+   <p class="hint">메일 내용: ① 오늘 올라온 📷 현장 사진(종류별 건수·올린 사람·썸네일 30장·메모·원본/위치 링크) ② 📒 민원 대장 가운데 접수날짜가 오늘인 민원 ③ 오늘 서버에 새로 올라온 관로·시설물 등 기준자료. 첨부 엑셀 = <b>민원</b> 시트 + <b>사진 목록</b> 시트. 민원은 ②-4에서 대장을 넣으면 서버에 자동으로 올라가고(주소·이름·연락처는 빼고), 메일에 <b>대장 최신 반영일</b>이 적힙니다. 메모 속 전화번호 모양 숫자는 가립니다. 저장한 시각이 오늘 이미 지났으면 내일부터 나갑니다.</p>
+  </details>
   <p class="hint">숫자는 이 기기에 있는 자료로만 셉니다: 📒 누수탐사·민원 대장(②-4), 📷 현장 사진 종류(누수탐사·경계밸브), 👣 탐사기록·👥 팀 탐사 관로, 🪜 단계시험 현장 기록, 🔧 시설물 유지관리 기록, 🛠 관로 편집 기록. 자료가 없는 공종은 <b>확인 필요</b>로 두고 엑셀 칸도 바꾸지 않습니다. <b>자동</b> 줄은 처음부터 엑셀에 넣고, <b>확인</b> 줄은 숫자를 보고 체크하면 넣습니다. 칸의 숫자는 고쳐 쓸 수 있습니다.</p>
  </div>
 
@@ -9047,7 +9055,7 @@ $('phStop').onclick=()=>{PH.stop=true};
 /* ===== 📝 글자 넣은 현장 사진 (B안, 2026-11-17): 폰 기본 카메라로 찍은 뒤 사진명·날짜·시간·용역명·회사명·설명·로고를 사진에 입혀 저장
    · 원본 화질 그대로(설정 크기까지) · 촬영 시각·GPS·방향은 새 사진의 EXIF에 다시 써 넣음(앱·다른 프로그램이 위치를 읽음)
    · 용역명·회사명·로고는 직접 넣는 설정 칸(지어내지 않음) · 인터넷 없어도 됨(소블록은 이 기기 경계 자료로) */
-const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1},pos:'lb',fs:'m',sc:100,sty:'dark',max:4000,dl:1,kd:'',recent:[]};
+const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1},pos:'lb',lgp:'t',fs:'m',sc:100,sty:'dark',max:4000,dl:1,kd:'',recent:[]};
 const TCM={f:null,ex:null,bmp:null,here:null,pv:null,busy:false};
 function tcCfg(){let o={};try{o=JSON.parse(localStorage.getItem('geo-tcam')||'{}')||{}}catch(_){}const c=Object.assign({},TC_DEF,o);c.show=Object.assign({},TC_DEF.show,o.show||{});if(!Array.isArray(c.recent))c.recent=[];if(o.sc==null&&o.fs)c.sc={s:75,m:100,l:130}[o.fs]||100;c.sc=Math.min(250,Math.max(40,+c.sc||100));return c}
 function tcSave(c){try{localStorage.setItem('geo-tcam',JSON.stringify(c))}catch(e){alert('글자 사진 설정을 저장하지 못했습니다(로고가 너무 클 수 있음): '+((e&&e.message)||e))}}
@@ -9068,22 +9076,27 @@ function tcLines(c,v){const s=c.show,L=[];
 /* 사진 위에 글자 상자 그리기 (미리보기·저장 같은 함수, 크기는 사진 짧은 변 기준 비율) */
 function tcDraw(x,W,H,src,c,v,logo){x.drawImage(src,0,0,W,H);const L=tcLines(c,v);const lg=c.show.logo&&logo?logo:null;if(!L.length&&!lg)return;
  const S=Math.min(W,H),K=(+c.sc||100)/100,fs=Math.max(8,Math.round(S*.031*K)),pad=Math.round(fs*.6),lh=Math.round(fs*1.38),maxW=Math.round(W*Math.min(.94,.66*Math.max(1,K))),F="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif";
- const kw=Math.round(fs*3.6),rows=[];
- for(const l of L){x.font=`${l.b?800:500} ${l.b?Math.round(fs*1.1):fs}px ${F}`;const avail=maxW-pad*2-(l.k?kw:0);let cur='';const parts=[];
+ const kw=Math.round(fs*3.6),rows=[],LP=c.lgp||'t',side=!!lg&&L.length>0&&/[lr]/.test(LP),gap=Math.round(pad*.8); /* 로고 위치: t 위 · b 아래 · l 왼쪽 · r 오른쪽 (정보 상자 안) */
+ let lgH=lg?Math.round(lh*(side?2.6:1.7)):0,lgW=lg?Math.round(lgH*lg.width/Math.max(1,lg.height)):0;
+ if(lg&&lgW>maxW*(side?.5:1)-pad*2){const k=Math.max(1,maxW*(side?.5:1)-pad*2)/lgW;lgW=Math.round(lgW*k);lgH=Math.round(lgH*k)}
+ const sw=side?lgW+gap:0,MW=side?Math.min(Math.round(W*.94),maxW+sw):maxW; /* 옆 로고는 상자를 그만큼 넓혀 글자가 줄바꿈되지 않게 */
+ for(const l of L){x.font=`${l.b?800:500} ${l.b?Math.round(fs*1.1):fs}px ${F}`;const avail=MW-pad*2-sw-(l.k?kw:0);let cur='';const parts=[];
   for(const ch of String(l.t)){if(x.measureText(cur+ch).width>avail&&cur){parts.push(cur);cur=ch}else cur+=ch}if(cur)parts.push(cur);
   parts.slice(0,3).forEach((p,i)=>rows.push({k:i?'':l.k,t:p,b:l.b,ind:!!l.k}))}
  let tw=0;rows.forEach(r=>{x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;tw=Math.max(tw,x.measureText(r.t).width+(r.ind?kw:0))});
- const lgH=lg?Math.round(lh*1.7):0,lgW=lg?Math.round(lgH*lg.width/Math.max(1,lg.height)):0;
- const bw=Math.min(maxW,Math.max(tw,lgW)+pad*2),bh=rows.length*lh+pad*2+(lg?lgH+Math.round(pad*.6):0),m=Math.round(S*.025);
+ const th=rows.length*lh,lgs=lg&&!side?lgH+(rows.length?Math.round(pad*.6):0):0;
+ const bw=Math.min(MW,(side?tw+sw:Math.max(tw,lgW))+pad*2),bh=(side?Math.max(th,lgH):th+lgs)+pad*2,m=Math.round(S*.025);
  const bx=/r/.test(c.pos)?W-bw-m:m,by=/t/.test(c.pos)?m:H-bh-m,board=c.sty==='board';
  x.save();x.fillStyle=board?'rgba(255,255,255,.93)':'rgba(0,0,0,.58)';const rr=Math.round(fs*.35);x.beginPath();if(x.roundRect)x.roundRect(bx,by,bw,bh,rr);else x.rect(bx,by,bw,bh);x.fill();
  if(board){x.strokeStyle='#1e293b';x.lineWidth=Math.max(1,Math.round(fs*.08));x.stroke()}
- let y=by+pad;if(lg){x.drawImage(lg,bx+pad,y,lgW,lgH);y+=lgH+Math.round(pad*.6)}
+ let y=by+pad,tx=bx+pad,tr=bx+bw-pad;
+ if(lg){if(side){const ly=by+Math.round((bh-lgH)/2);if(LP==='l'){x.drawImage(lg,bx+pad,ly,lgW,lgH);tx+=sw}else{x.drawImage(lg,bx+bw-pad-lgW,ly,lgW,lgH);tr-=sw}y=by+Math.round((bh-th)/2)}
+  else if(LP==='b')x.drawImage(lg,bx+pad,by+bh-pad-lgH,lgW,lgH);else{x.drawImage(lg,bx+pad,y,lgW,lgH);y+=lgs}}
  x.textBaseline='middle';const ink=board?'#0f172a':'#fff',sub=board?'#334155':'rgba(255,255,255,.82)';
  if(!board){x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=Math.round(fs*.15)}
- rows.forEach((r,i)=>{const cy=y+i*lh+lh/2;if(board&&i>0){x.save();x.shadowBlur=0;x.strokeStyle='rgba(30,41,59,.25)';x.lineWidth=1;x.beginPath();x.moveTo(bx+pad*.5,y+i*lh);x.lineTo(bx+bw-pad*.5,y+i*lh);x.stroke();x.restore()}
-  if(r.k){x.font=`700 ${fs}px ${F}`;x.fillStyle=sub;x.fillText(r.k,bx+pad,cy)}
-  x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;x.fillStyle=r.b&&!board?'#fde68a':ink;x.fillText(r.t,bx+pad+(r.ind?kw:0),cy)});
+ rows.forEach((r,i)=>{const cy=y+i*lh+lh/2;if(board&&i>0){x.save();x.shadowBlur=0;x.strokeStyle='rgba(30,41,59,.25)';x.lineWidth=1;x.beginPath();x.moveTo(tx-pad*.5,y+i*lh);x.lineTo(tr+pad*.5,y+i*lh);x.stroke();x.restore()}
+  if(r.k){x.font=`700 ${fs}px ${F}`;x.fillStyle=sub;x.fillText(r.k,tx,cy)}
+  x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;x.fillStyle=r.b&&!board?'#fde68a':ink;x.fillText(r.t,tx+(r.ind?kw:0),cy)});
  x.restore()}
 /* EXIF 새로 쓰기 (빅엔디언): 방향=1(이미 바로 세워 그림), 촬영 시각, GPS·고도·방향 — 앱 exifRead가 그대로 읽음 */
 function tcExif(o){const IFD=[],asc=s=>{const a=[...String(s)].map(ch=>ch.charCodeAt(0)&0x7f);a.push(0);return a},rat=v=>{const d=1e6;return [Math.round(v*d),d]};
@@ -9130,8 +9143,9 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
 <div class="g2"><label class="f">🏷️ 사진명<input data-c="nm" autocomplete="off"></label><label class="f">📁 사진 종류<select data-c="kd"></select></label></div>
 <label class="f">✏️ 사진 설명<input data-c="ds" list="tcRecent" autocomplete="off" placeholder="예: 제수밸브 보수 전 (자주 쓴 말은 목록에서)"><datalist id="tcRecent"></datalist></label>
 <div class="tcck">${ck('nm','사진명')}${ck('dt','날짜·시간')}${ck('svc','용역명')}${ck('co','회사명')}${ck('ds','설명')}${ck('blk','소블록')}${ck('ll','좌표')}${ck('logo','로고')}</div>
-<div class="g2"><label class="f">위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
-<label class="f">모양<select data-c="sty"><option value="dark">어두운 상자</option><option value="board">흰 보드판</option></select></label></div>
+<div class="g3"><label class="f">상자 위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
+<label class="f">모양<select data-c="sty"><option value="dark">어두운 상자</option><option value="board">흰 보드판</option></select></label>
+<label class="f">로고 위치<select data-c="lgp"><option value="t">위</option><option value="b">아래</option><option value="l">왼쪽</option><option value="r">오른쪽</option></select></label></div>
 <label class="f tcsc">📏 정보 상자 크기 <small>(글자·로고·상자가 함께 커지고 작아짐)</small><span><button type="button" class="btn ol" data-t="scm" aria-label="작게">－</button><input type="range" data-c="sc" min="40" max="250" step="5" aria-label="정보 상자 크기"><button type="button" class="btn ol" data-t="scp" aria-label="크게">＋</button><b data-t="scv">100%</b><button type="button" class="btn ol" data-t="sc0" title="처음 크기(100%)로">↺</button></span></label>
 <details data-t="set"><summary>⚙ 고정 글자 설정 <small>(용역명·회사명·로고·사진명 번호 — 한 번 넣으면 기억)</small></summary>
 <label class="f">용역명<input data-c="svc" autocomplete="off" placeholder="직접 넣기"></label><label class="f">회사명<input data-c="co" autocomplete="off" placeholder="직접 넣기"></label>
@@ -9151,7 +9165,7 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
  return w}
 function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
  if(!keep){q('nm').value=tcName(c);q('ds').value=''}
- ['svc','co','pre','no','pos','sty','sc'].forEach(k=>{q(k).value=c[k]??''});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
+ ['svc','co','pre','no','pos','sty','lgp','sc'].forEach(k=>{q(k).value=c[k]??''});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
  q('kd').innerHTML=phKdOpts(phKdOf(c.kd)||phKdUp());
  w.querySelectorAll('[data-s]').forEach(i=>{i.checked=!!c.show[i.dataset.s]});
  w.querySelector('#tcRecent').innerHTML=c.recent.map(s=>`<option value="${esc(s)}">`).join('');
@@ -9159,7 +9173,7 @@ function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
  if(!c.svc&&!c.co)w.querySelector('[data-t="set"]').open=true;
  w.querySelector('[data-t="msg"]').textContent=''}
 function tcRead(w){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`),oldNm=tcName(c);
- ['svc','co','pre','pos','sty'].forEach(k=>{c[k]=q(k).value});c.sc=Math.min(250,Math.max(40,+q('sc').value||100));w.querySelector('[data-t="scv"]').textContent=c.sc+'%';c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
+ ['svc','co','pre','pos','sty','lgp'].forEach(k=>{c[k]=q(k).value});c.sc=Math.min(250,Math.max(40,+q('sc').value||100));w.querySelector('[data-t="scv"]').textContent=c.sc+'%';c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
  w.querySelectorAll('[data-s]').forEach(i=>{c.show[i.dataset.s]=i.checked?1:0});
  if(q('nm').value===oldNm)q('nm').value=tcName(c); /* 사진명을 손대지 않았으면 앞글자·번호 바꾼 대로 따라감 */
  tcSave(c);return c}
@@ -14226,14 +14240,15 @@ function lrParse(O,fname){const out=[],hi=(A,re)=>A.findIndex(r=>r&&re.every(x=>
    for(const r of A.slice(h+1)){if(!r||r[c.no]==null||String(r[c.no]).trim()==='')continue;const res=String(r[c.res]??'').trim();
     let ll=c.x>=0&&isFinite(+r[c.x])&&+r[c.x]>100?[+r[c.y],+r[c.x]]:xy.get(String(r[c.no]).trim())||null;
     out.push({src:'탐사',no:String(r[c.no]).trim(),blk:String(r[c.blk]??'').trim(),d:lrDate(r[c.d]),res,ok:/정탐|미수리|수리불가/.test(res),rep:/정탐/.test(res),addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll})}}
-  else if(/리스트/.test(sn)){const h=hi(A,[/^현장주소$/,/^민원원인$/]);if(h<0)continue;const H=A[h],c={d:col(H,/^접수날짜$/),addr:col(H,/^현장주소$/),kind:col(H,/^민원원인$/),mat:col(H,/^누수관종$/),dia:col(H,/^누수관경$/),cause:col(H,/^누수원인$/)};
-   for(const r of A.slice(h+1)){if(!r||r[c.d]==null)continue;const k=String(r[c.kind]??'').trim();out.push({src:'민원',blk:'',d:lrDate(r[c.d]),res:k,ok:/^(누수|돌발)$/.test(k),rep:true,addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll:null})}}}
+  else if(/리스트/.test(sn)){const h=hi(A,[/^현장주소$/,/^민원원인$/]);if(h<0)continue;const H=A[h],c={no:col(H,/^(접수번호|민원번호)$/),d:col(H,/^접수날짜$/),addr:col(H,/^현장주소$/),kind:col(H,/^민원원인$/),mat:col(H,/^누수관종$/),dia:col(H,/^누수관경$/),cause:col(H,/^누수원인$/)};
+   for(const r of A.slice(h+1)){if(!r||r[c.d]==null)continue;const k=String(r[c.kind]??'').trim();out.push({src:'민원',blk:'',no:c.no>=0?String(r[c.no]??'').trim():'',d:lrDate(r[c.d]),res:k,ok:/^(누수|돌발)$/.test(k),rep:true,addr:String(r[c.addr]??'').trim(),dia:parseDia(r[c.dia]),mat:String(r[c.mat]??'').trim(),cause:String(r[c.cause]??'').trim(),ll:null})}}}
  out.forEach(o=>o.f=fname);return out}
 function lrLocate(){const m=lrGeoIdx();let n=0;for(const o of LR.recs){if(!o.ll&&o.addr){const v=m.get(lrNormA(o.addr));if(v)o.ll=[+v[0],+v[1]]}if(o.ll)n++}return n}
 async function lrLoad(files){const msg=$('lqLrMsg');if(typeof XLSX==='undefined'){msg.textContent='엑셀 읽기 도구를 못 불러왔습니다(인터넷 확인).';return}let add=[];
  for(const f of files){try{msg.textContent=f.name+' 읽는 중…';const buf=await f.arrayBuffer(),R=await lrLrSafe(buf,p=>msg.textContent=f.name+' · '+p);const r=lrParse(R.O||{},f.name);if(!r.length){msg.textContent=f.name+': 누수탐사총괄표나 민원 리스트(매크로용) 시트를 못 찾았습니다.';continue}
   LR.recs=LR.recs.filter(o=>o.f!==f.name);add.push(...r);LR.names=[...new Set([...LR.names.filter(n=>n!==f.name),f.name])]}catch(e){msg.textContent=f.name+' 읽기 실패: '+(e&&e.message||e)}}
  if(!add.length)return;LR.recs.push(...add);LR.at=new Date().toISOString();lrLocate();LR.st=null;try{await IDB.set('leak_ledger',{recs:LR.recs,names:LR.names,at:LR.at})}catch(_){}
+ if(add.some(o=>o.src==='민원')&&typeof wdLdgPush==='function')wdLdgPush(true).catch(_=>{});
  LQ.rkKey='';lrShow();try{lqRenderTbl();if(LQ.sel)lqShow(LQ.sel);if($('pBy')&&$('pBy').value==='risk'&&PIPE.fc)renderPipes()}catch(_){}}
 const lrLrSafe=(buf,cb)=>lqLrRead(buf,cb);
 /* 발생율: 재질(앱 재질 분류)·관경·경과연수(가까운 관로 설치연도)·소블록. 분모 = 지금 올린 상수관로 길이 */
@@ -16006,6 +16021,34 @@ function wrMailInit(){if(!$('wrMailBox'))return;
   if(u)wrMailPut(u.dataset.mu).catch(er=>$('wrMMsg').textContent='⚠ '+wrMailErr(er));
   else if(d){if(!confirm('이 메일 예약을 취소할까요?'))return;try{await shReq('maildel',{id:d.dataset.md});$('wrMMsg').textContent='예약을 취소했습니다.';wrMailList()}catch(er){$('wrMMsg').textContent='⚠ '+wrMailErr(er)}}})}
 try{wrMailInit()}catch(e){console.warn('공정보고 메일',e)}
+/* ── 📅 일일 보고 메일 (2026-11-18 B안): 서버(Code.gs 2026-11-18 판 ②)가 매일 정한 시각에 오늘 자료를 모아 보냄 ── */
+function wdOk(){if(typeof SH!=='object'||!SH.cfg||!SH.cfg.url){$('wdMsg').textContent='⚠ 📷 현장 사진 › ☁️ 직원 공유에 공유 서버 주소·공유 키를 먼저 넣어 주세요.';return false}
+ if(typeof shIsCF==='function'&&shIsCF(SH.cfg.url)){$('wdMsg').textContent='⚠ 클라우드플레어 공유 서버는 아직 일일 보고를 못 합니다(구글 Apps Script 서버만).';return false}return true}
+function wdErr(e){const m=String(e&&e.message||e);return /알 수 없는 요청/.test(m)?'공유 서버 Code.gs가 예전 판입니다. 2026-11-18 판 ②(일일 보고)로 바꾸고 mailSetup 실행 → [배포 관리] ✏️ 새 버전으로 배포하세요(새 배포 아님).':m}
+function wdShow(j){const c=j.cfg||{},L=j.ldg;$('wdOn').checked=!!c.on;if(c.to)$('wdTo').value=c.to;$('wdT').value=c.t||'17:00';$('wdWk').checked=c.wk!==false;$('wdEmp').checked=!!c.emp;
+ const lt=LR&&LR.recs?LR.recs.filter(o=>o.src==='민원').length:0;
+ $('wdSt').innerHTML=`<div>상태: <b>${c.on?'켜짐 · 매일 '+esc(c.t||'17:00')+(c.wk!==false?' (평일)':''):'꺼짐'}</b>${c.to?' · 받는 사람 '+esc(c.to):''}</div>`+
+  `<div>마지막 처리: ${j.last?esc(j.last)+(j.lastAt?' '+esc(fmtDT(j.lastAt)):''):'아직 없음'}${j.err?' · <span style="color:#b45309">'+esc(j.err)+'</span>':''}</div>`+
+  `<div>민원 대장(서버): ${L?esc(L.n+'줄 · 최신 반영 '+fmtDT(L.at)+(L.by?' · '+L.by:'')+' · 마지막 접수일 '+(L.last||'-')):'<span style="color:#b45309">없음 — ⬆ 민원 대장 올리기</span>'} · 이 기기 대장 민원 ${lt}줄</div>`+
+  (j.trig===false?'<div style="color:#dc2626">⚠ 서버 트리거가 없습니다 — Apps Script에서 mailSetup을 한 번 실행하세요.</div>':'')+(j.quota!=null?`<div style="color:var(--mute)">오늘 더 보낼 수 있는 메일 ${j.quota}통</div>`:'')}
+async function wdLoad(){if(!wdOk())return;try{wdShow(await shReq('dailyget'))}catch(e){$('wdMsg').textContent='⚠ '+wdErr(e)}}
+async function wdSave(){if(!wdOk())return;const msg=$('wdMsg'),on=$('wdOn').checked,to=$('wdTo').value.trim();if(on&&!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}
+ msg.textContent='⏳ 저장 중…';try{const j=await shReq('dailyset',{on,to,t:$('wdT').value||'17:00',wk:$('wdWk').checked,emp:$('wdEmp').checked,site:(typeof SITE==='object'&&SITE.name)||''});wdShow(j);
+  const now=new Date(),hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');msg.textContent=on?`✅ 저장했습니다 · ${(j.cfg.t<=hm)?'내일':'오늘'} ${j.cfg.t}부터 매일 보냅니다(정한 시각부터 5분 안).`:'✅ 저장했습니다 · 일일 보고를 껐습니다.'}catch(e){msg.textContent='⚠ '+wdErr(e)}}
+async function wdTest(){if(!wdOk())return;const msg=$('wdMsg'),to=$('wdTo').value.trim();if(!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}
+ msg.textContent='⏳ 오늘 자료를 모아 보내는 중… (사진이 많으면 30초쯤)';try{const j=await shReq('dailytest',{to,site:(typeof SITE==='object'&&SITE.name)||''});msg.textContent=`✅ 시험 메일을 보냈습니다 · ${j.to} · 사진 ${j.ph}장 · 민원 ${j.mw}건 · 기준자료 ${j.ref}종 · 첨부 ${j.fname}`+(j.quota!=null?` · 오늘 남은 메일 ${j.quota}통`:'');wdLoad()}catch(e){msg.textContent='⚠ '+wdErr(e)}}
+/* 민원 대장 줄을 서버에 올림: 날짜·접수번호·민원원인·관종·관경·누수원인·소블록·좌표만 (주소·이름·연락처 없음), 최근 400일 */
+async function wdLdgPush(auto){if(auto&&(typeof SH!=='object'||!SH.cfg||!SH.cfg.url||(typeof shIsCF==='function'&&shIsCF(SH.cfg.url))))return;if(!auto&&!wdOk())return;
+ const msg=$('wdMsg'),lim=fmtD(Date.now()-400*864e5),R=(LR&&LR.recs||[]).filter(o=>o.src==='민원'&&o.d&&o.d>=lim);
+ if(!R.length){if(!auto)msg.textContent='⚠ 이 기기에 민원 대장이 없습니다 — ②-4 누수 예측 › 📒 누수·민원 대장 넣기에서 민원 대장(xlsm)을 먼저 넣어 주세요.';return}
+ const rows=R.map(o=>{const ll=o.ll||null;let blk='';try{if(ll&&typeof blkAt==='function')blk=blkAt(ll[1],ll[0])||''}catch(_){}return{d:o.d,no:o.no||'',res:o.res||'',mat:o.mat||'',dia:o.dia||'',cause:o.cause||'',blk,lat:ll?+(+ll[0]).toFixed(6):'',lng:ll?+(+ll[1]).toFixed(6):''}});
+ if(!auto)msg.textContent='⏳ 민원 대장 올리는 중…';
+ try{const j=await shReq('ldgput',{rows,fname:(LR.names||[]).join(', ')});const L=j.ldg;(auto?phToast||console.log:t=>msg.textContent=t)(`✅ 민원 대장 ${L?L.n:rows.length}줄을 공유 서버에 올렸습니다(일일 보고용 · 주소·이름·연락처 없음)`);if(!auto)wdLoad()}
+ catch(e){if(!auto)msg.textContent='⚠ '+wdErr(e);else console.warn('민원 대장 올리기',e)}}
+function wdInit(){if(!$('wrDayBox'))return;
+ $('wrDayBox').addEventListener('toggle',()=>{if($('wrDayBox').open){if(!$('wdTo').value&&WR.c.mail&&WR.c.mail.to)$('wdTo').value=WR.c.mail.to;if(typeof SH==='object'&&SH.cfg&&SH.cfg.url)wdLoad()}});
+ $('wdSave').onclick=wdSave;$('wdTest').onclick=wdTest;$('wdLdg').onclick=()=>wdLdgPush(false)}
+try{wdInit()}catch(e){console.warn('일일 보고',e)}
 /* ===== 🚨 긴급 점검 (2026-11-15 B안) =====
    긴급상황(출수불량·대형 누수·관 파손·가압장 정지·수질사고) 신고 지점을 넣으면
    ① 💧 단수구역 연결표(shutNet)에서 신고 지점 관로를 찾고, 관망해석 흐름 방향(faDir) → 없으면 굵은 관 쪽으로 상류를 거슬러 올라감
