@@ -927,7 +927,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 #tcWin .tcpv{background:#0f172a;border-radius:10px;display:flex;justify-content:center;align-items:center;min-height:120px}#tcWin .tcpv canvas{max-width:100%;max-height:42dvh;display:block;border-radius:6px}
 #tcWin .f{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700}#tcWin .f input,#tcWin .f select{width:100%;font-weight:400;min-height:32px}
 #tcWin .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}#tcWin .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-#tcWin .tcsc>span{display:flex;align-items:center;gap:6px}#tcWin .tcsc input[type=range]{flex:1;min-height:28px}#tcWin .tcsc b{min-width:44px;text-align:right}#tcWin .tcsc .btn{width:auto;min-height:30px;padding:2px 10px;font-size:14px}#tcWin .tcck{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}#tcWin .tcck label{display:flex;gap:3px;align-items:center;cursor:pointer}
+#tcWin .tcsc>span{display:flex;align-items:center;gap:6px}#tcWin .tcsc input[type=range]{flex:1;min-height:28px}#tcWin .tcsc b{min-width:44px;text-align:right}#tcWin .tcsc .btn{width:auto;min-height:30px;padding:2px 10px;font-size:14px}#tcWin .f input[type=checkbox]{width:auto;min-height:0}#tcWin .tclg{border-top:1px dashed var(--line2);padding-top:6px;margin-top:4px}#tcWin .tclg>b{font-size:12.5px}#tcWin .tcr{display:flex;align-items:center;gap:6px;font-weight:400}#tcWin .tcr input{flex:1}#tcWin .tcr b{min-width:44px;text-align:right}#tcWin .tcck{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}#tcWin .tcck label{display:flex;gap:3px;align-items:center;cursor:pointer}
 #tcWin details{border:1px solid var(--line2);border-radius:8px;padding:6px 8px}#tcWin details>summary{cursor:pointer;font-weight:700;font-size:12.5px}#tcWin details>summary small{font-weight:400;color:var(--mute)}#tcWin details[open]>summary{margin-bottom:6px}#tcWin details .f{margin-bottom:4px}
 #tcWin .tcbt{border-top:1px solid var(--line2);border-bottom:0}#tcWin .tcbt .btn{font-size:13px;padding:7px 12px}#tcWin .hint{margin:0;font-size:12px}
 .tcrow{margin:4px 0 6px}.tcrow .btn{flex:1 1 auto}
@@ -9063,7 +9063,7 @@ $('phStop').onclick=()=>{PH.stop=true};
 /* ===== 📝 글자 넣은 현장 사진 (B안, 2026-11-17): 폰 기본 카메라로 찍은 뒤 사진명·날짜·시간·용역명·회사명·설명·로고를 사진에 입혀 저장
    · 원본 화질 그대로(설정 크기까지) · 촬영 시각·GPS·방향은 새 사진의 EXIF에 다시 써 넣음(앱·다른 프로그램이 위치를 읽음)
    · 용역명·회사명·로고는 직접 넣는 설정 칸(지어내지 않음) · 인터넷 없어도 됨(소블록은 이 기기 경계 자료로) */
-const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1},pos:'lb',lgp:'t',fs:'m',sc:100,sty:'dark',max:4000,dl:1,kd:'',recent:[]};
+const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,logo2:'',show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1,logo2:1},pos:'lb',lgp:'t',lgp2:'crt',lgs:100,lgs2:100,lgbg:1,fs:'m',sc:100,sty:'dark',max:4000,dl:1,kd:'',recent:[]};
 const TCM={f:null,ex:null,bmp:null,here:null,pv:null,busy:false};
 function tcCfg(){let o={};try{o=JSON.parse(localStorage.getItem('geo-tcam')||'{}')||{}}catch(_){}const c=Object.assign({},TC_DEF,o);c.show=Object.assign({},TC_DEF.show,o.show||{});if(!Array.isArray(c.recent))c.recent=[];if(o.sc==null&&o.fs)c.sc={s:75,m:100,l:130}[o.fs]||100;c.sc=Math.min(250,Math.max(40,+c.sc||100));return c}
 function tcSave(c){try{localStorage.setItem('geo-tcam',JSON.stringify(c))}catch(e){alert('글자 사진 설정을 저장하지 못했습니다(로고가 너무 클 수 있음): '+((e&&e.message)||e))}}
@@ -9082,30 +9082,43 @@ function tcLines(c,v){const s=c.show,L=[];
  if(s.ll&&v.lat!=null)L.push({k:'위치',t:`${v.lat.toFixed(6)}, ${v.lng.toFixed(6)}`});
  return L}
 /* 사진 위에 글자 상자 그리기 (미리보기·저장 같은 함수, 크기는 사진 짧은 변 기준 비율) */
-function tcDraw(x,W,H,src,c,v,logo){x.drawImage(src,0,0,W,H);const L=tcLines(c,v);const lg=c.show.logo&&logo?logo:null;if(!L.length&&!lg)return;
- const S=Math.min(W,H),K=(+c.sc||100)/100,fs=Math.max(8,Math.round(S*.031*K)),pad=Math.round(fs*.6),lh=Math.round(fs*1.38),maxW=Math.round(W*Math.min(.94,.66*Math.max(1,K))),F="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif";
- const kw=Math.round(fs*3.6),rows=[],LP=c.lgp||'t',side=!!lg&&L.length>0&&/[lr]/.test(LP),gap=Math.round(pad*.8); /* 로고 위치: t 위 · b 아래 · l 왼쪽 · r 오른쪽 (정보 상자 안) */
- let lgH=lg?Math.round(lh*(side?2.6:1.7)):0,lgW=lg?Math.round(lgH*lg.width/Math.max(1,lg.height)):0;
- if(lg&&lgW>maxW*(side?.5:1)-pad*2){const k=Math.max(1,maxW*(side?.5:1)-pad*2)/lgW;lgW=Math.round(lgW*k);lgH=Math.round(lgH*k)}
- const sw=side?lgW+gap:0,MW=side?Math.min(Math.round(W*.94),maxW+sw):maxW; /* 옆 로고는 상자를 그만큼 넓혀 글자가 줄바꿈되지 않게 */
- for(const l of L){x.font=`${l.b?800:500} ${l.b?Math.round(fs*1.1):fs}px ${F}`;const avail=MW-pad*2-sw-(l.k?kw:0);let cur='';const parts=[];
-  for(const ch of String(l.t)){if(x.measureText(cur+ch).width>avail&&cur){parts.push(cur);cur=ch}else cur+=ch}if(cur)parts.push(cur);
-  parts.slice(0,3).forEach((p,i)=>rows.push({k:i?'':l.k,t:p,b:l.b,ind:!!l.k}))}
- let tw=0;rows.forEach(r=>{x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;tw=Math.max(tw,x.measureText(r.t).width+(r.ind?kw:0))});
- const th=rows.length*lh,lgs=lg&&!side?lgH+(rows.length?Math.round(pad*.6):0):0;
- const bw=Math.min(MW,(side?tw+sw:Math.max(tw,lgW))+pad*2),bh=(side?Math.max(th,lgH):th+lgs)+pad*2,m=Math.round(S*.025);
- const bx=/r/.test(c.pos)?W-bw-m:m,by=/t/.test(c.pos)?m:H-bh-m,board=c.sty==='board';
- x.save();x.fillStyle=board?'rgba(255,255,255,.93)':'rgba(0,0,0,.58)';const rr=Math.round(fs*.35);x.beginPath();if(x.roundRect)x.roundRect(bx,by,bw,bh,rr);else x.rect(bx,by,bw,bh);x.fill();
- if(board){x.strokeStyle='#1e293b';x.lineWidth=Math.max(1,Math.round(fs*.08));x.stroke()}
- let y=by+pad,tx=bx+pad,tr=bx+bw-pad;
- if(lg){if(side){const ly=by+Math.round((bh-lgH)/2);if(LP==='l'){x.drawImage(lg,bx+pad,ly,lgW,lgH);tx+=sw}else{x.drawImage(lg,bx+bw-pad-lgW,ly,lgW,lgH);tr-=sw}y=by+Math.round((bh-th)/2)}
-  else if(LP==='b')x.drawImage(lg,bx+pad,by+bh-pad-lgH,lgW,lgH);else{x.drawImage(lg,bx+pad,y,lgW,lgH);y+=lgs}}
- x.textBaseline='middle';const ink=board?'#0f172a':'#fff',sub=board?'#334155':'rgba(255,255,255,.82)';
- if(!board){x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=Math.round(fs*.15)}
- rows.forEach((r,i)=>{const cy=y+i*lh+lh/2;if(board&&i>0){x.save();x.shadowBlur=0;x.strokeStyle='rgba(30,41,59,.25)';x.lineWidth=1;x.beginPath();x.moveTo(tx-pad*.5,y+i*lh);x.lineTo(tr+pad*.5,y+i*lh);x.stroke();x.restore()}
-  if(r.k){x.font=`700 ${fs}px ${F}`;x.fillStyle=sub;x.fillText(r.k,tx,cy)}
-  x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;x.fillStyle=r.b&&!board?'#fde68a':ink;x.fillText(r.t,tx+(r.ind?kw:0),cy)});
- x.restore()}
+function tcDraw(x,W,H,src,c,v,LG){x.drawImage(src,0,0,W,H);const L=tcLines(c,v);LG=LG||{};
+ /* 로고 2개(회사·발주처): 위치는 정보 상자 안(t 위·b 아래·l 왼쪽·r 오른쪽) 또는 사진 모서리(clt·crt·clb·crb) — 글자 상자와 따로 고름 */
+ const LGS=[[LG.a,c.lgp||'t',+c.lgs||100,c.show.logo],[LG.b,c.lgp2||'crt',+c.lgs2||100,c.show.logo2]].filter(z=>z[0]&&z[3]).map(([im,p,s])=>({im,p,k:Math.min(2.5,Math.max(.4,s/100))}));
+ const inB=k=>LGS.filter(z=>z.p===k),cor=LGS.filter(z=>/^c/.test(z.p)),boxL={t:inB('t'),b:inB('b'),l:inB('l'),r:inB('r')},anyBox=LGS.some(z=>!/^c/.test(z.p));
+ const S=Math.min(W,H),K=(+c.sc||100)/100,fs=Math.max(8,Math.round(S*.031*K)),pad=Math.round(fs*.6),lh=Math.round(fs*1.38),maxW=Math.round(W*Math.min(.94,.66*Math.max(1,K))),F="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif",m=Math.round(S*.025),gap=Math.round(pad*.8);
+ const ar=im=>(im.width||im.naturalWidth||1)/Math.max(1,im.height||im.naturalHeight||1);
+ /* 로고 묶음 크기: 위·아래는 가로로 나란히, 왼쪽·오른쪽은 세로로 쌓음 */
+ const strip=(arr,dir,uh,capW)=>{if(!arr.length)return null;let it=arr.map(z=>{const h=Math.round(uh*z.k/(dir==='v'?arr.length:1));return{im:z.im,h,w:Math.round(h*ar(z.im))}});
+  let w=dir==='h'?it.reduce((a,b)=>a+b.w,0)+gap*(it.length-1):Math.max(...it.map(z=>z.w)),h=dir==='h'?Math.max(...it.map(z=>z.h)):it.reduce((a,b)=>a+b.h,0)+gap*(it.length-1);
+  if(capW&&w>capW){const f=capW/w;it=it.map(z=>({im:z.im,h:Math.round(z.h*f),w:Math.round(z.w*f)}));w=Math.round(w*f);h=Math.round(h*f)}return{it,w,h,dir}};
+ const putS=(s,X,Y)=>{if(!s)return;let o=0;s.it.forEach(z=>{if(s.dir==='h'){x.drawImage(z.im,X+o,Y+Math.round((s.h-z.h)/2),z.w,z.h);o+=z.w+gap}else{x.drawImage(z.im,X+Math.round((s.w-z.w)/2),Y+o,z.w,z.h);o+=z.h+gap}})};
+ let bx=0,by=0,bw=0,bh=0,hasBox=L.length>0||anyBox;
+ if(hasBox){const kw=Math.round(fs*3.6),rows=[];
+  const two=boxL.l.length&&boxL.r.length,sL=strip(boxL.l,'v',lh*2.6,maxW*(two?.3:.45)),sR=strip(boxL.r,'v',lh*2.6,maxW*(two?.3:.45)),swL=sL?sL.w+gap:0,swR=sR?sR.w+gap:0,MW=Math.min(Math.round(W*.94),maxW+swL+swR); /* 옆 로고는 상자를 그만큼 넓혀 글자가 줄바꿈되지 않게 */
+  for(const l of L){x.font=`${l.b?800:500} ${l.b?Math.round(fs*1.1):fs}px ${F}`;const avail=MW-pad*2-swL-swR-(l.k?kw:0);let cur='';const parts=[];
+   for(const ch of String(l.t)){if(x.measureText(cur+ch).width>avail&&cur){parts.push(cur);cur=ch}else cur+=ch}if(cur)parts.push(cur);
+   parts.slice(0,3).forEach((p,i)=>rows.push({k:i?'':l.k,t:p,b:l.b,ind:!!l.k}))}
+  let tw=0;rows.forEach(r=>{x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;tw=Math.max(tw,x.measureText(r.t).width+(r.ind?kw:0))});
+  const sT=strip(boxL.t,'h',lh*1.7,MW-pad*2),sB=strip(boxL.b,'h',lh*1.7,MW-pad*2),th=rows.length*lh,mid=Math.max(th,sL?sL.h:0,sR?sR.h:0),g6=Math.round(pad*.6);
+  bw=Math.min(MW,Math.max(tw+swL+swR,sT?sT.w:0,sB?sB.w:0)+pad*2);bh=mid+(sT?sT.h+(mid?g6:0):0)+(sB?sB.h+(mid?g6:0):0)+pad*2;
+  bx=/r/.test(c.pos)?W-bw-m:m;by=/t/.test(c.pos)?m:H-bh-m;const board=c.sty==='board';
+  x.save();x.fillStyle=board?'rgba(255,255,255,.93)':'rgba(0,0,0,.58)';const rr=Math.round(fs*.35);x.beginPath();if(x.roundRect)x.roundRect(bx,by,bw,bh,rr);else x.rect(bx,by,bw,bh);x.fill();
+  if(board){x.strokeStyle='#1e293b';x.lineWidth=Math.max(1,Math.round(fs*.08));x.stroke()}
+  let y0=by+pad;if(sT){putS(sT,bx+pad,y0);y0+=sT.h+(mid?g6:0)}
+  if(sL)putS(sL,bx+pad,y0+Math.round((mid-sL.h)/2));if(sR)putS(sR,bx+bw-pad-sR.w,y0+Math.round((mid-sR.h)/2));if(sB)putS(sB,bx+pad,y0+mid+(mid?g6:0));
+  const y=y0+Math.round((mid-th)/2),tx=bx+pad+swL,tr=bx+bw-pad-swR;
+  x.textBaseline='middle';const ink=board?'#0f172a':'#fff',sub=board?'#334155':'rgba(255,255,255,.82)';
+  if(!board){x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=Math.round(fs*.15)}
+  rows.forEach((r,i)=>{const cy=y+i*lh+lh/2;if(board&&i>0){x.save();x.shadowBlur=0;x.strokeStyle='rgba(30,41,59,.25)';x.lineWidth=1;x.beginPath();x.moveTo(tx-pad*.5,y+i*lh);x.lineTo(tr+pad*.5,y+i*lh);x.stroke();x.restore()}
+   if(r.k){x.font=`700 ${fs}px ${F}`;x.fillStyle=sub;x.fillText(r.k,tx,cy)}
+   x.font=`${r.b?800:500} ${r.b?Math.round(fs*1.1):fs}px ${F}`;x.fillStyle=r.b&&!board?'#fde68a':ink;x.fillText(r.t,tx+(r.ind?kw:0),cy)});
+  x.restore()}
+ /* 사진 모서리 로고: 같은 모서리면 나란히, 정보 상자와 같은 모서리면 상자 바깥(위·아래)으로 비킴 */
+ for(const k of ['clt','crt','clb','crb']){const arr=cor.filter(z=>z.p===k);if(!arr.length)continue;const s=strip(arr,'h',S*.075,W*.6);if(!s)continue;
+  const bp=Math.round(S*.008),wb=s.w+bp*2,hb=s.h+bp*2,R=k[1]==='r',T=k[2]==='t';let X=R?W-wb-m:m,Y=T?m:H-hb-m;
+  if(hasBox&&c.pos===(k[1]==='r'?'r':'l')+(k[2]==='t'?'t':'b'))Y=T?by+bh+Math.round(m*.5):by-hb-Math.round(m*.5);
+  x.save();if(c.lgbg!==0){x.fillStyle='rgba(255,255,255,.88)';x.beginPath();if(x.roundRect)x.roundRect(X,Y,wb,hb,Math.round(bp*1.5));else x.rect(X,Y,wb,hb);x.fill()}putS(s,X+bp,Y+bp);x.restore()}}
 /* EXIF 새로 쓰기 (빅엔디언): 방향=1(이미 바로 세워 그림), 촬영 시각, GPS·고도·방향 — 앱 exifRead가 그대로 읽음 */
 function tcExif(o){const IFD=[],asc=s=>{const a=[...String(s)].map(ch=>ch.charCodeAt(0)&0x7f);a.push(0);return a},rat=v=>{const d=1e6;return [Math.round(v*d),d]};
  const dms=v=>{v=Math.abs(v);const D=Math.floor(v),Mf=(v-D)*60,M=Math.floor(Mf),S=(Mf-M)*60;return [[D,1],[M,1],[Math.round(S*1e4),1e4]]};
@@ -9126,7 +9139,8 @@ function tcExif(o){const IFD=[],asc=s=>{const a=[...String(s)].map(ch=>ch.charCo
 /* 캔버스 JPEG의 JFIF(APP0)를 빼고 EXIF(APP1)를 SOI 바로 뒤에 넣기 */
 async function tcWithExif(blob,o){const b=new Uint8Array(await blob.arrayBuffer());if(b[0]!==0xFF||b[1]!==0xD8)return blob;let s=2;
  if(b[2]===0xFF&&b[3]===0xE0)s=4+((b[4]<<8)|b[5]);const ex=tcExif(o);return new Blob([b.subarray(0,2),ex,b.subarray(s)],{type:'image/jpeg'})}
-async function tcLogo(c){if(!c.logo||!c.show.logo)return null;try{const im=await loadImg(c.logo,false,8000);return im&&im.naturalWidth?im:null}catch(_){return null}}
+async function tcLogo(u){if(!u)return null;try{const im=await loadImg(u,false,8000);return im&&im.naturalWidth?im:null}catch(_){return null}}
+async function tcLogos(c){return{a:c.show.logo?await tcLogo(c.logo):null,b:c.show.logo2?await tcLogo(c.logo2):null}}
 /* 시작: 카메라(또는 앨범) 열기 */
 function tcStart(alb){if(TCM.busy)return;let inp=document.getElementById(alb?'tcAlbIn':'tcCamIn');
  if(!inp){inp=document.createElement('input');inp.type='file';inp.id=alb?'tcAlbIn':'tcCamIn';inp.hidden=true;inp.accept='image/jpeg,image/png,image/*';if(!alb)inp.setAttribute('capture','environment');document.body.appendChild(inp);
@@ -9150,53 +9164,57 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
 <div class="tcpv"><canvas aria-label="글자 넣은 사진 미리보기"></canvas></div><p class="hint" data-t="gps"></p>
 <div class="g2"><label class="f">🏷️ 사진명<input data-c="nm" autocomplete="off"></label><label class="f">📁 사진 종류<select data-c="kd"></select></label></div>
 <label class="f">✏️ 사진 설명<input data-c="ds" list="tcRecent" autocomplete="off" placeholder="예: 제수밸브 보수 전 (자주 쓴 말은 목록에서)"><datalist id="tcRecent"></datalist></label>
-<div class="tcck">${ck('nm','사진명')}${ck('dt','날짜·시간')}${ck('svc','용역명')}${ck('co','회사명')}${ck('ds','설명')}${ck('blk','소블록')}${ck('ll','좌표')}${ck('logo','로고')}</div>
-<div class="g3"><label class="f">상자 위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
-<label class="f">모양<select data-c="sty"><option value="dark">어두운 상자</option><option value="board">흰 보드판</option></select></label>
-<label class="f">로고 위치<select data-c="lgp"><option value="t">위</option><option value="b">아래</option><option value="l">왼쪽</option><option value="r">오른쪽</option></select></label></div>
+<div class="tcck">${ck('nm','사진명')}${ck('dt','날짜·시간')}${ck('svc','용역명')}${ck('co','회사명')}${ck('ds','설명')}${ck('blk','소블록')}${ck('ll','좌표')}${ck('logo','회사 로고')}${ck('logo2','발주처 로고')}</div>
+<div class="g2"><label class="f">상자 위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
+<label class="f">모양<select data-c="sty"><option value="dark">어두운 상자</option><option value="board">흰 보드판</option></select></label></div>
+<div class="g2"><label class="f">🏢 회사 로고 위치<select data-c="lgp"><optgroup label="정보 상자 안"><option value="t">상자 안 위</option><option value="b">상자 안 아래</option><option value="l">상자 안 왼쪽</option><option value="r">상자 안 오른쪽</option></optgroup><optgroup label="사진 모서리 (상자와 따로)"><option value="clt">사진 왼쪽 위</option><option value="crt">사진 오른쪽 위</option><option value="clb">사진 왼쪽 아래</option><option value="crb">사진 오른쪽 아래</option></optgroup></select></label><label class="f">🏛 발주처 로고 위치<select data-c="lgp2"><optgroup label="정보 상자 안"><option value="t">상자 안 위</option><option value="b">상자 안 아래</option><option value="l">상자 안 왼쪽</option><option value="r">상자 안 오른쪽</option></optgroup><optgroup label="사진 모서리 (상자와 따로)"><option value="clt">사진 왼쪽 위</option><option value="crt">사진 오른쪽 위</option><option value="clb">사진 왼쪽 아래</option><option value="crb">사진 오른쪽 아래</option></optgroup></select></label></div>
 <label class="f tcsc">📏 정보 상자 크기 <small>(글자·로고·상자가 함께 커지고 작아짐)</small><span><button type="button" class="btn ol" data-t="scm" aria-label="작게">－</button><input type="range" data-c="sc" min="40" max="250" step="5" aria-label="정보 상자 크기"><button type="button" class="btn ol" data-t="scp" aria-label="크게">＋</button><b data-t="scv">100%</b><button type="button" class="btn ol" data-t="sc0" title="처음 크기(100%)로">↺</button></span></label>
-<details data-t="set"><summary>⚙ 고정 글자 설정 <small>(용역명·회사명·로고·사진명 번호 — 한 번 넣으면 기억)</small></summary>
+<details data-t="set"><summary>⚙ 고정 글자 설정 <small>(용역명·회사명·회사 로고·발주처 로고·사진명 번호 — 한 번 넣으면 기억)</small></summary>
 <label class="f">용역명<input data-c="svc" autocomplete="off" placeholder="직접 넣기"></label><label class="f">회사명<input data-c="co" autocomplete="off" placeholder="직접 넣기"></label>
 <div class="g3"><label class="f">사진명 앞글자<input data-c="pre" autocomplete="off"></label><label class="f">다음 번호<input data-c="no" type="number" min="1" step="1"></label><label class="f">자릿수<select data-c="dig"><option value="2">2 (01)</option><option value="3">3 (001)</option><option value="4">4 (0001)</option></select></label></div>
-<div class="sbtns"><label class="btn ol">🖼 로고 그림 고르기<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-t="logoF" hidden></label><button type="button" class="btn ol" data-t="logoX">로고 지우기</button><small data-t="logoS"></small></div>
+<div class="tclg"><b>🏢 회사 로고</b><div class="sbtns"><label class="btn ol">🖼 고르기<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-t="logoF" data-k="logo" hidden></label><button type="button" class="btn ol" data-t="logoX" data-k="logo">지우기</button><small data-t="logoS" data-k="logo"></small></div>
+<label class="f">크기 <span class="tcr"><input type="range" data-c="lgs" min="40" max="250" step="5"><b data-v="lgs"></b></span></label></div>
+<div class="tclg"><b>🏛 발주처 로고</b><div class="sbtns"><label class="btn ol">🖼 고르기<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-t="logoF" data-k="logo2" hidden></label><button type="button" class="btn ol" data-t="logoX" data-k="logo2">지우기</button><small data-t="logoS" data-k="logo2"></small></div>
+<label class="f">크기 <span class="tcr"><input type="range" data-c="lgs2" min="40" max="250" step="5"><b data-v="lgs2"></b></span></label></div>
+<label style="font-size:12px"><input type="checkbox" data-c="lgbg"> 사진 모서리에 둔 로고는 흰 바탕 깔기</label>
 <div class="g2"><label class="f">저장 크기 (긴 변)<select data-c="max"><option value="2400">2400px (가볍게)</option><option value="4000">4000px (보통·기본)</option><option value="0">원본 그대로</option></select></label>
 <label class="f" style="justify-content:flex-end"><span><input type="checkbox" data-c="dl"> 저장할 때 폰에도 내려받기</span></label></div></details>
 </div><div class="tb tcbt"><button type="button" class="btn em" data-t="ok">✔ 글자 넣어 저장</button><button type="button" class="btn ol" data-t="re">📸 다시 찍기</button><button type="button" class="btn ol" data-t="x">취소</button></div><p class="hint" data-t="msg" style="margin:0 14px 10px"></p></div>`;
  document.body.appendChild(w);let T=0;const later=()=>{clearTimeout(T);T=setTimeout(()=>tcPrev(w),120)};
  w.addEventListener('input',e=>{const t=e.target;if(t.dataset.c&&t.dataset.c!=='kd'){tcRead(w);later()}else if(t.dataset.s){tcRead(w);later()}});
- w.addEventListener('change',e=>{const t=e.target;if(t.dataset.t==='logoF'){const f=t.files&&t.files[0];t.value='';if(f)tcLogoSet(w,f);return}if(t.dataset.c||t.dataset.s){tcRead(w);later()}});
+ w.addEventListener('change',e=>{const t=e.target;if(t.dataset.t==='logoF'){const f=t.files&&t.files[0];t.value='';if(f)tcLogoSet(w,f,t.dataset.k||'logo');return}if(t.dataset.c||t.dataset.s){tcRead(w);later()}});
  w.addEventListener('keydown',e=>{if(e.key==='Escape'){tcClose();return}e.stopPropagation()});
  w.onclick=e=>{if(e.target===w){tcClose();return}const b=e.target.closest('button[data-t]');if(!b)return;const t=b.dataset.t;
   if(t==='x')tcClose();else if(t==='re'){tcClose();tcStart()}else if(t==='ok')tcOk(w,b);
   else if(t==='scm'||t==='scp'||t==='sc0'){const r=w.querySelector('[data-c="sc"]');r.value=t==='sc0'?100:Math.min(250,Math.max(40,+r.value+(t==='scp'?10:-10)));tcRead(w);tcPrev(w)}
-  else if(t==='logoX'){const c=tcCfg();c.logo='';tcSave(c);tcFill(w,1);tcPrev(w)}};
+  else if(t==='logoX'){const c=tcCfg();c[b.dataset.k||'logo']='';tcSave(c);tcFill(w,1);tcPrev(w)}};
  return w}
 function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
  if(!keep){q('nm').value=tcName(c);q('ds').value=''}
- ['svc','co','pre','no','pos','sty','lgp','sc'].forEach(k=>{q(k).value=c[k]??''});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
+ ['svc','co','pre','no','pos','sty','lgp','lgp2','sc','lgs','lgs2'].forEach(k=>{q(k).value=c[k]??''});q('lgbg').checked=c.lgbg!==0;['lgs','lgs2'].forEach(k=>{w.querySelector(`[data-v="${k}"]`).textContent=(c[k]||100)+'%'});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
  q('kd').innerHTML=phKdOpts(phKdOf(c.kd)||phKdUp());
  w.querySelectorAll('[data-s]').forEach(i=>{i.checked=!!c.show[i.dataset.s]});
  w.querySelector('#tcRecent').innerHTML=c.recent.map(s=>`<option value="${esc(s)}">`).join('');
- w.querySelector('[data-t="logoS"]').textContent=c.logo?'로고 있음':'로고 없음';
+ w.querySelectorAll('[data-t="logoS"]').forEach(e=>{e.textContent=c[e.dataset.k]?'있음':'없음'});
  if(!c.svc&&!c.co)w.querySelector('[data-t="set"]').open=true;
  w.querySelector('[data-t="msg"]').textContent=''}
 function tcRead(w){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`),oldNm=tcName(c);
- ['svc','co','pre','pos','sty','lgp'].forEach(k=>{c[k]=q(k).value});c.sc=Math.min(250,Math.max(40,+q('sc').value||100));w.querySelector('[data-t="scv"]').textContent=c.sc+'%';c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
+ ['svc','co','pre','pos','sty','lgp','lgp2'].forEach(k=>{c[k]=q(k).value});['lgs','lgs2'].forEach(k=>{c[k]=Math.min(250,Math.max(40,+q(k).value||100));w.querySelector(`[data-v="${k}"]`).textContent=c[k]+'%'});c.lgbg=q('lgbg').checked?1:0;c.sc=Math.min(250,Math.max(40,+q('sc').value||100));w.querySelector('[data-t="scv"]').textContent=c.sc+'%';c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
  w.querySelectorAll('[data-s]').forEach(i=>{c.show[i.dataset.s]=i.checked?1:0});
  if(q('nm').value===oldNm)q('nm').value=tcName(c); /* 사진명을 손대지 않았으면 앞글자·번호 바꾼 대로 따라감 */
  tcSave(c);return c}
-async function tcLogoSet(w,f){try{const u=URL.createObjectURL(f),im=await loadImg(u,false,15000);URL.revokeObjectURL(u);if(!im||!im.naturalWidth)throw new Error('그림을 열 수 없습니다');
-  const s=Math.min(1,360/Math.max(im.naturalWidth,im.naturalHeight)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*s));cv.height=Math.max(1,Math.round(im.naturalHeight*s));cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
-  const c=tcCfg();c.logo=cv.toDataURL('image/png');c.show.logo=1;tcSave(c);tcFill(w,1);tcPrev(w)}catch(e){alert('로고를 넣지 못했습니다: '+((e&&e.message)||e))}}
+async function tcLogoSet(w,f,key){try{const u=URL.createObjectURL(f),im=await loadImg(u,false,15000);URL.revokeObjectURL(u);if(!im||!im.naturalWidth)throw new Error('그림을 열 수 없습니다');
+  const s=Math.min(1,600/Math.max(im.naturalWidth,im.naturalHeight)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*s));cv.height=Math.max(1,Math.round(im.naturalHeight*s));cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  const c=tcCfg();c[key]=cv.toDataURL('image/png');c.show[key]=1;tcSave(c);tcFill(w,1);tcPrev(w)}catch(e){alert('로고를 넣지 못했습니다: '+((e&&e.message)||e))}}
 function tcVals(w){const q=k=>w.querySelector(`[data-c="${k}"]`),P=tcPos();return{nm:q('nm').value.trim(),ds:q('ds').value.trim(),d:TCM.d,lat:P.lat,lng:P.lng,blk:P.lat!=null?phBlkAt(P.lat,P.lng):'',P}}
 async function tcPrev(w){if(!TCM.pv)return;if(TCM.hereP&&!TCM.here){TCM.hereP.then(h=>{if(h&&!document.getElementById('tcWin').hidden)tcPrev(w)});TCM.hereP=null}
- const c=tcCfg(),v=tcVals(w),lg=await tcLogo(c),cv=w.querySelector('.tcpv canvas');cv.width=TCM.pv.width;cv.height=TCM.pv.height;tcDraw(cv.getContext('2d'),cv.width,cv.height,TCM.pv,c,v,lg);
+ const c=tcCfg(),v=tcVals(w),lg=await tcLogos(c),cv=w.querySelector('.tcpv canvas');cv.width=TCM.pv.width;cv.height=TCM.pv.height;tcDraw(cv.getContext('2d'),cv.width,cv.height,TCM.pv,c,v,lg);
  const g=w.querySelector('[data-t="gps"]'),P=v.P;g.innerHTML=(P.src==='gps'?'📍 사진에 GPS 있음':P.src==='here'?`📍 사진에 GPS가 없어 <b>폰 현재 위치</b>를 씁니다 (오차 약 ${P.acc||'?'}m)`:'⚠ 위치 없음 — 저장 뒤 지도에서 위치를 정해 주세요 (폰 카메라 설정 › 위치 태그 켜기 권장)')+` · 촬영 ${esc(tcDtTxt(TCM.d))} · ${TCM.W}×${TCM.H}`}
 function tcClose(){const w=document.getElementById('tcWin');if(w)w.hidden=true;try{TCM.bmp&&TCM.bmp.close&&TCM.bmp.close()}catch(_){}TCM.bmp=null;TCM.pv=null;TCM.f=null;TCM.busy=false}
 async function tcOk(w,btn){if(!TCM.bmp)return;const c=tcRead(w),v=tcVals(w),msg=w.querySelector('[data-t="msg"]'),t0=btn.textContent;
  if(!v.nm){alert('사진명을 넣어 주세요.');return}btn.disabled=true;btn.textContent='⏳ 저장 중…';
  try{const s=c.max>0?Math.min(1,c.max/Math.max(TCM.W,TCM.H)):1,W=Math.round(TCM.W*s),H=Math.round(TCM.H*s),cv=document.createElement('canvas');cv.width=W;cv.height=H;
-  tcDraw(cv.getContext('2d'),W,H,TCM.bmp,c,v,await tcLogo(c));let blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));cv.width=cv.height=1;if(!blob)throw new Error('사진을 만들지 못했습니다(메모리 부족일 수 있음 — 저장 크기를 줄여 보세요)');
+  tcDraw(cv.getContext('2d'),W,H,TCM.bmp,c,v,await tcLogos(c));let blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));cv.width=cv.height=1;if(!blob)throw new Error('사진을 만들지 못했습니다(메모리 부족일 수 있음 — 저장 크기를 줄여 보세요)');
   blob=await tcWithExif(blob,{d:v.d,lat:v.lat,lng:v.lng,alt:v.P.alt,dir:v.P.dir});
   const nm=v.nm.replace(/[\\/:*?"<>|]/g,'_')+'.jpg',file=new File([blob],nm,{type:'image/jpeg',lastModified:Date.now()}),id='p'+phHash(file.name+'|'+file.size+'|'+file.lastModified),kd=w.querySelector('[data-c="kd"]').value;
   const n0=PH.list.length;await phAdd([file],null,{all:true,kd});const m=PH.byId.get(id);
