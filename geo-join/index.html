@@ -2102,7 +2102,7 @@ const TABS=[
   {n:'현장 모드',b:[['fm','phone','현장 모드',1]]}]},
  /* 2026-11-17 공정보고 탭: 주간·월간 공정보고 (앱 자료로 공종 실적 집계·엑셀 칸 채우기) */
  {k:'prog',n:'공정보고',g:[
-  {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1]]}]},
+  {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1],['win:wrd','bell','일일보고',1]]}]},
  {k:'table',n:'표',g:[
   {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
   {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
@@ -2110,8 +2110,8 @@ const TABS=[
   {n:'안내',b:[['ck:help','book','사용법 · 묻기',1],['win:help','help','작업 화면 안내',1],['win:keys','key','단축키 목록',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
 const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',tcam:'tcBtn',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
-const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),pg:()=>$('pgRun'),sb:()=>$('sbRun'),st:()=>$('stRun'),wr:()=>{window.wrSetMode&&wrSetMode('w');return $('wrRun')},wrm:()=>{window.wrSetMode&&wrSetMode('m');return $('wrRun')},rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
-const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',pg:'🧭 관망도 업데이트 구간 (점검 · 현장 확인 · 보고서)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',wr:'📋 주간공정보고',wrm:'📋 월간공정보고',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',keys:'⌨ 단축키 목록',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
+const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),pg:()=>$('pgRun'),sb:()=>$('sbRun'),st:()=>$('stRun'),wr:()=>{window.wrSetMode&&wrSetMode('w');return $('wrRun')},wrd:()=>{window.wrSetMode&&wrSetMode('w');const b=$('wrDayBox');if(b&&!b.open)b.open=true;return b},wrm:()=>{window.wrSetMode&&wrSetMode('m');return $('wrRun')},rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
+const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',pg:'🧭 관망도 업데이트 구간 (점검 · 현장 확인 · 보고서)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',wr:'📋 주간공정보고',wrm:'📋 월간공정보고',wrd:'📅 일일 보고 메일',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',keys:'⌨ 단축키 목록',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
 if(S.dock==null)S.dock='';
 
@@ -2322,7 +2322,7 @@ function winClose(){winBack();S.win=null;$('gwWin').hidden=true;$('gwWinB').repl
 function winOpen(k){if(S.win===k&&!$('gwWin').hidden)return winClose();winBack();const B=$('gwWinB');B.replaceChildren();
  if(k==='help'){B.innerHTML=HELP}else if(k==='keys'){B.innerHTML=keysHtml()}else{const f=WIN[k]&&WIN[k](),el=f&&(f.id==='vdSec'?f:f.closest('.sec'));if(!el){msg('이 자료 칸을 찾지 못했습니다.');return}
   S.winPh=document.createComment('gw-win');el.parentNode.replaceChild(S.winPh,el);S.winEl=el;el.classList.remove('col');B.appendChild(el)}
- S.win=k;$('gwWinT').textContent=WT[k]||'';$('gwWin').hidden=false;B.scrollTop=0;sync()}
+ S.win=k;$('gwWinT').textContent=WT[k]||'';$('gwWin').hidden=false;B.scrollTop=0;if(k==='wrd'){const d=$('wrDayBox');if(d)setTimeout(()=>{try{d.scrollIntoView({block:'start'})}catch(_){}},60)}sync()}
 $('gwWinX').onclick=winClose;
 const HELP=`<div class="gw-help"><p><b>BsstGis 작업 화면</b>은 웹 관망해석기의 작업 화면과 같은 배치입니다. 자료·저장 위치·공유는 보고서형 화면과 같고, 화면 배치만 다릅니다.</p>
 <h5>① 위쪽 리본 메뉴</h5><ul><li><b>파일</b>: 백업 만들기·불러오기, 결과 엑셀·PDF·사진 내보내기</li><li><b>자료</b>: 주소·소블록·관로·시설물·표고·부과량 올리기, 주소찾기 설정과 변환 시작 (초록 점 = 자료 있음)</li><li><b>지도</b>: 지도 설정, 표시 모두 끄기, 배경 끄기, 단수구역, 편집, 로드뷰, 지도 캡처</li><li><b>현장</b>: 현장 사진·동영상·현장 모드</li><li><b>표</b>: 아래 결과 창(상세 결과·블록별 현황·요약 지표)</li></ul>
