@@ -927,7 +927,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 #tcWin .tcpv{background:#0f172a;border-radius:10px;display:flex;justify-content:center;align-items:center;min-height:120px}#tcWin .tcpv canvas{max-width:100%;max-height:42dvh;display:block;border-radius:6px}
 #tcWin .f{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700}#tcWin .f input,#tcWin .f select{width:100%;font-weight:400;min-height:32px}
 #tcWin .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}#tcWin .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-#tcWin .tcck{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}#tcWin .tcck label{display:flex;gap:3px;align-items:center;cursor:pointer}
+#tcWin .tcsc>span{display:flex;align-items:center;gap:6px}#tcWin .tcsc input[type=range]{flex:1;min-height:28px}#tcWin .tcsc b{min-width:44px;text-align:right}#tcWin .tcsc .btn{width:auto;min-height:30px;padding:2px 10px;font-size:14px}#tcWin .tcck{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}#tcWin .tcck label{display:flex;gap:3px;align-items:center;cursor:pointer}
 #tcWin details{border:1px solid var(--line2);border-radius:8px;padding:6px 8px}#tcWin details>summary{cursor:pointer;font-weight:700;font-size:12.5px}#tcWin details>summary small{font-weight:400;color:var(--mute)}#tcWin details[open]>summary{margin-bottom:6px}#tcWin details .f{margin-bottom:4px}
 #tcWin .tcbt{border-top:1px solid var(--line2);border-bottom:0}#tcWin .tcbt .btn{font-size:13px;padding:7px 12px}#tcWin .hint{margin:0;font-size:12px}
 .tcrow{margin:4px 0 6px}.tcrow .btn{flex:1 1 auto}
@@ -9047,9 +9047,9 @@ $('phStop').onclick=()=>{PH.stop=true};
 /* ===== 📝 글자 넣은 현장 사진 (B안, 2026-11-17): 폰 기본 카메라로 찍은 뒤 사진명·날짜·시간·용역명·회사명·설명·로고를 사진에 입혀 저장
    · 원본 화질 그대로(설정 크기까지) · 촬영 시각·GPS·방향은 새 사진의 EXIF에 다시 써 넣음(앱·다른 프로그램이 위치를 읽음)
    · 용역명·회사명·로고는 직접 넣는 설정 칸(지어내지 않음) · 인터넷 없어도 됨(소블록은 이 기기 경계 자료로) */
-const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1},pos:'lb',fs:'m',sty:'dark',max:4000,dl:1,kd:'',recent:[]};
+const TC_DEF={svc:'',co:'',logo:'',pre:'현장',no:1,dig:3,show:{nm:1,dt:1,svc:1,co:1,ds:1,blk:1,ll:0,logo:1},pos:'lb',fs:'m',sc:100,sty:'dark',max:4000,dl:1,kd:'',recent:[]};
 const TCM={f:null,ex:null,bmp:null,here:null,pv:null,busy:false};
-function tcCfg(){let o={};try{o=JSON.parse(localStorage.getItem('geo-tcam')||'{}')||{}}catch(_){}const c=Object.assign({},TC_DEF,o);c.show=Object.assign({},TC_DEF.show,o.show||{});if(!Array.isArray(c.recent))c.recent=[];return c}
+function tcCfg(){let o={};try{o=JSON.parse(localStorage.getItem('geo-tcam')||'{}')||{}}catch(_){}const c=Object.assign({},TC_DEF,o);c.show=Object.assign({},TC_DEF.show,o.show||{});if(!Array.isArray(c.recent))c.recent=[];if(o.sc==null&&o.fs)c.sc={s:75,m:100,l:130}[o.fs]||100;c.sc=Math.min(250,Math.max(40,+c.sc||100));return c}
 function tcSave(c){try{localStorage.setItem('geo-tcam',JSON.stringify(c))}catch(e){alert('글자 사진 설정을 저장하지 못했습니다(로고가 너무 클 수 있음): '+((e&&e.message)||e))}}
 const tcName=c=>String(c.pre||'').trim()+(String(c.pre||'').trim()?'-':'')+String(Math.max(1,+c.no||1)).padStart(Math.max(1,+c.dig||3),'0');
 const TC_WD='일월화수목금토';
@@ -9067,7 +9067,7 @@ function tcLines(c,v){const s=c.show,L=[];
  return L}
 /* 사진 위에 글자 상자 그리기 (미리보기·저장 같은 함수, 크기는 사진 짧은 변 기준 비율) */
 function tcDraw(x,W,H,src,c,v,logo){x.drawImage(src,0,0,W,H);const L=tcLines(c,v);const lg=c.show.logo&&logo?logo:null;if(!L.length&&!lg)return;
- const S=Math.min(W,H),fs=Math.max(9,Math.round(S*({s:.024,m:.031,l:.04}[c.fs]||.031))),pad=Math.round(fs*.6),lh=Math.round(fs*1.38),maxW=Math.round(W*.66),F="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+ const S=Math.min(W,H),K=(+c.sc||100)/100,fs=Math.max(8,Math.round(S*.031*K)),pad=Math.round(fs*.6),lh=Math.round(fs*1.38),maxW=Math.round(W*Math.min(.94,.66*Math.max(1,K))),F="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif";
  const kw=Math.round(fs*3.6),rows=[];
  for(const l of L){x.font=`${l.b?800:500} ${l.b?Math.round(fs*1.1):fs}px ${F}`;const avail=maxW-pad*2-(l.k?kw:0);let cur='';const parts=[];
   for(const ch of String(l.t)){if(x.measureText(cur+ch).width>avail&&cur){parts.push(cur);cur=ch}else cur+=ch}if(cur)parts.push(cur);
@@ -9130,9 +9130,9 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
 <div class="g2"><label class="f">🏷️ 사진명<input data-c="nm" autocomplete="off"></label><label class="f">📁 사진 종류<select data-c="kd"></select></label></div>
 <label class="f">✏️ 사진 설명<input data-c="ds" list="tcRecent" autocomplete="off" placeholder="예: 제수밸브 보수 전 (자주 쓴 말은 목록에서)"><datalist id="tcRecent"></datalist></label>
 <div class="tcck">${ck('nm','사진명')}${ck('dt','날짜·시간')}${ck('svc','용역명')}${ck('co','회사명')}${ck('ds','설명')}${ck('blk','소블록')}${ck('ll','좌표')}${ck('logo','로고')}</div>
-<div class="g3"><label class="f">위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
-<label class="f">글자 크기<select data-c="fs"><option value="s">작게</option><option value="m">보통</option><option value="l">크게</option></select></label>
+<div class="g2"><label class="f">위치<select data-c="pos"><option value="lb">왼쪽 아래</option><option value="rb">오른쪽 아래</option><option value="lt">왼쪽 위</option><option value="rt">오른쪽 위</option></select></label>
 <label class="f">모양<select data-c="sty"><option value="dark">어두운 상자</option><option value="board">흰 보드판</option></select></label></div>
+<label class="f tcsc">📏 정보 상자 크기 <small>(글자·로고·상자가 함께 커지고 작아짐)</small><span><button type="button" class="btn ol" data-t="scm" aria-label="작게">－</button><input type="range" data-c="sc" min="40" max="250" step="5" aria-label="정보 상자 크기"><button type="button" class="btn ol" data-t="scp" aria-label="크게">＋</button><b data-t="scv">100%</b><button type="button" class="btn ol" data-t="sc0" title="처음 크기(100%)로">↺</button></span></label>
 <details data-t="set"><summary>⚙ 고정 글자 설정 <small>(용역명·회사명·로고·사진명 번호 — 한 번 넣으면 기억)</small></summary>
 <label class="f">용역명<input data-c="svc" autocomplete="off" placeholder="직접 넣기"></label><label class="f">회사명<input data-c="co" autocomplete="off" placeholder="직접 넣기"></label>
 <div class="g3"><label class="f">사진명 앞글자<input data-c="pre" autocomplete="off"></label><label class="f">다음 번호<input data-c="no" type="number" min="1" step="1"></label><label class="f">자릿수<select data-c="dig"><option value="2">2 (01)</option><option value="3">3 (001)</option><option value="4">4 (0001)</option></select></label></div>
@@ -9146,11 +9146,12 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
  w.addEventListener('keydown',e=>{if(e.key==='Escape'){tcClose();return}e.stopPropagation()});
  w.onclick=e=>{if(e.target===w){tcClose();return}const b=e.target.closest('button[data-t]');if(!b)return;const t=b.dataset.t;
   if(t==='x')tcClose();else if(t==='re'){tcClose();tcStart()}else if(t==='ok')tcOk(w,b);
+  else if(t==='scm'||t==='scp'||t==='sc0'){const r=w.querySelector('[data-c="sc"]');r.value=t==='sc0'?100:Math.min(250,Math.max(40,+r.value+(t==='scp'?10:-10)));tcRead(w);tcPrev(w)}
   else if(t==='logoX'){const c=tcCfg();c.logo='';tcSave(c);tcFill(w,1);tcPrev(w)}};
  return w}
 function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
  if(!keep){q('nm').value=tcName(c);q('ds').value=''}
- ['svc','co','pre','no','pos','fs','sty'].forEach(k=>{q(k).value=c[k]??''});q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
+ ['svc','co','pre','no','pos','sty','sc'].forEach(k=>{q(k).value=c[k]??''});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
  q('kd').innerHTML=phKdOpts(phKdOf(c.kd)||phKdUp());
  w.querySelectorAll('[data-s]').forEach(i=>{i.checked=!!c.show[i.dataset.s]});
  w.querySelector('#tcRecent').innerHTML=c.recent.map(s=>`<option value="${esc(s)}">`).join('');
@@ -9158,7 +9159,7 @@ function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
  if(!c.svc&&!c.co)w.querySelector('[data-t="set"]').open=true;
  w.querySelector('[data-t="msg"]').textContent=''}
 function tcRead(w){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`),oldNm=tcName(c);
- ['svc','co','pre','pos','fs','sty'].forEach(k=>{c[k]=q(k).value});c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
+ ['svc','co','pre','pos','sty'].forEach(k=>{c[k]=q(k).value});c.sc=Math.min(250,Math.max(40,+q('sc').value||100));w.querySelector('[data-t="scv"]').textContent=c.sc+'%';c.no=Math.max(1,parseInt(q('no').value,10)||1);c.dig=+q('dig').value||3;c.max=+q('max').value;c.dl=q('dl').checked?1:0;
  w.querySelectorAll('[data-s]').forEach(i=>{c.show[i.dataset.s]=i.checked?1:0});
  if(q('nm').value===oldNm)q('nm').value=tcName(c); /* 사진명을 손대지 않았으면 앞글자·번호 바꾼 대로 따라감 */
  tcSave(c);return c}
