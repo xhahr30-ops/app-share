@@ -921,6 +921,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phaddpop button{font:700 12.5px 'Noto Sans KR',sans-serif;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
 .phaddpop button.hl{background:#0f766e;border-color:#0f766e;color:#fff}.phaddpop small{color:var(--mute)}
 .phaddpop .f{display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:700}.phaddpop .f input,.phaddpop .f select{flex:1;min-width:0;font:600 12.5px 'Noto Sans KR',sans-serif;padding:6px 8px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink)}.phaddpop .pv{color:#0f766e;font-weight:700}
+#lmBox{position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:12px}#lmBox .lmw{background:var(--card,#fff);color:var(--ink,#111);border-radius:14px;max-width:min(960px,100%);width:100%;max-height:calc(100% - 8px);overflow:auto;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:8px;font-size:13px}#lmBox .lmh{display:flex;justify-content:space-between;align-items:center;gap:8px}#lmBox .lmh button{border:0;background:none;font-size:18px;cursor:pointer;color:inherit}#lmBox .lmi{min-height:120px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;border-radius:8px}#lmBox .lmi img{width:100%;height:auto;border-radius:6px;border:1px solid var(--line,#e5e7eb)}#lmBox .lmn{color:#b45309;font-size:12px}#lmBox .lmn:empty{display:none}#lmBox .lmb{display:flex;flex-wrap:wrap;gap:6px}#lmBox .lmb .btn{width:auto;flex:1 1 auto}#lmBox .lmo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12.5px}#lmBox .lmo select{font:inherit;padding:2px 4px;border:1px solid var(--line,#cbd5e1);border-radius:6px;background:var(--card,#fff);color:inherit}
 #phToast{position:fixed;z-index:100002;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;background:#111827;color:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 6px 20px rgba(0,0,0,.35);font:600 12.5px/1.4 'Noto Sans KR',sans-serif}
 #phKdAsk{position:fixed;z-index:100003;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(320px,calc(100% - 32px));display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}#phKdAsk>b{grid-column:1/-1;font-size:13px}#phKdAsk button{border:1px solid var(--line);border-radius:8px;padding:8px 6px;background:var(--bg,#f8fafc);color:inherit;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}#phKdAsk .x{grid-column:1/-1;font-weight:400}#phKdAsk[hidden]{display:none}
 .mtw{margin-top:6px;padding:4px 6px;border:1px solid #c7d2fe;border-radius:7px;background:#eef2ff;font-size:12px;color:#1e293b}.mtw>summary{cursor:pointer;font-weight:700;color:#3730a3}.mtw>summary small{font-weight:500;color:#475569}
@@ -8583,14 +8584,14 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   const on=strip.querySelector('img.on');if(on)strip.scrollLeft=on.offsetLeft-strip.clientWidth/2+27;
   const loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?{lat:m.lat,lng:m.lng}:g&&g.lat!=null?{lat:g.lat,lng:g.lng}:null,blk=g?phGBlk(g):'';
   inf.innerHTML=`<b>${esc(m.name)}</b><br>${m.dt?'📅 '+esc(m.dt):'📅 촬영시각 없음'}${m.dir!=null?` · 🧭 ${m.dir}°`:''}${m.alt!=null?` · ⛰ ${m.alt}m`:''}<br>`+
-   (m.map&&m.lat!=null?`🎯 위치도 빨간 점: ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='수동'?'직접 찍음':'월드 파일 '+esc(m.crs||'')})</small>`:m.map?`<span class="w">🎯 위치도 사진 — 좌표 없음. 월드 파일(.pgw)을 함께 올리거나 📍 위치 찍기로 빨간 점 자리를 지정하세요</span>`:how?`<span class="w">📍 ${m.lat!=null?'사진 GPS 대신 ':'위치 추정 — '}${how} 사용</span>`:m.lat!=null?`📍 ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'})</small>`:cd?`<span class="w">📍 위치 없음 — ${esc(cd)}: 위치도 사진이나 기준 위치 파일을 넣거나, 사진 하나에 위치를 찍으면 같은 번호 전체에 적용</span>`:'<span class="w">📍 위치 없음 — 아래 📍 위치 찍기로 지정하세요</span>')+(cd?`<br>🏷️ 분류 <b>${esc(cd)}</b>`+(m.cd||m.yr?` <small>(직접 정함${m.yr?' · '+m.yr+'년':''})</small>`:''):'')+
+   (m.map&&m.lat!=null?`🎯 위치도 빨간 점: ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='위치도'?'앱이 만든 위치도':m.src==='수동'?'직접 찍음':'월드 파일 '+esc(m.crs||'')})</small>`:m.map?`<span class="w">🎯 위치도 사진 — 좌표 없음. 월드 파일(.pgw)을 함께 올리거나 📍 위치 찍기로 빨간 점 자리를 지정하세요</span>`:how?`<span class="w">📍 ${m.lat!=null?'사진 GPS 대신 ':'위치 추정 — '}${how} 사용</span>`:m.lat!=null?`📍 ${m.lat.toFixed(6)}, ${m.lng.toFixed(6)} <small>(${m.src==='수동'?'직접 찍음':m.src==='현위치'?'휴대폰 현재 위치':'사진 GPS'})</small>`:cd?`<span class="w">📍 위치 없음 — ${esc(cd)}: 위치도 사진이나 기준 위치 파일을 넣거나, 사진 하나에 위치를 찍으면 같은 번호 전체에 적용</span>`:'<span class="w">📍 위치 없음 — 아래 📍 위치 찍기로 지정하세요</span>')+(cd?`<br>🏷️ 분류 <b>${esc(cd)}</b>`+(m.cd||m.yr?` <small>(직접 정함${m.yr?' · '+m.yr+'년':''})</small>`:''):'')+
    `<br>📁 종류 <select class="kdS" aria-label="사진 종류" style="font:inherit;padding:0 2px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)">${phKdOpts(phKd(m))}</select>`+(phKd(m)==='ts'?(phLrG(g&&g.kd==='ts'?g:{kd:'ts',ids:[m.id]})?' · <b style="color:#dc2626">🔴 미수리</b>':' · <span style="color:#16a34a">✅ 수리 완료</span>'):'')+
    (phFcKd(m)?(L1=>L1?`<br>🔧 시설물 <b>${esc(facName(L1.i))}</b> <small>(${L1.man?'직접 연결':'자동 연결 · '+PH_FC_R+'m 안 가장 가까움'})</small>`:PH.fcAmb.has(m.id)?`<br><span class="w">🔧 시설물 연결 확인 필요 — 가까운 시설물이 여러 개입니다. 아래 🔧 시설물에서 고르세요</span>`:m.fc==='-'?'<br><small>🔧 시설물 연결 안 함(직접 풂)</small>':FAC.n?'<br><small>🔧 15m 안에 붙일 시설물 없음</small>':'')(PH.fcL.get(m.id)):'')+
    (blk?`<br>🗺️ 위치상 블록 <b>${esc(blk)}</b>`:'')+(g&&g.n>1?`<br>📚 묶음: ${esc(phGLabel(g))} · ${g.n}장 · ${esc(phGTime(g))}`:'')+(m.solo?'<br><small>✂️ 묶음에서 따로 뺀 사진</small>':'')+(m.note?`<br><span style="color:#dc2626">${esc(m.note)}</span>`:'');
   ta.value=m.memo||'';
   acts.innerHTML=(opts.compact?`<button type="button" class="hl" data-a="gal">🖼️ 크게 보기</button>`:loc&&g&&g.lat!=null?`<button type="button" class="hl" data-a="map">🗺️ 지도에서 보기</button>`:'')+
    (loc?(doc===document&&kvKey()?`<button type="button" data-a="rv" title="이 사진 자리 카카오 로드뷰 (화면 옆 패널)">🚶 로드뷰</button>`:`<a href="https://map.kakao.com/link/roadview/${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}" target="_blank" rel="noopener">🚶 로드뷰</a>`):'')+
-   (phKd(m)==='ts'?(lr=>`<button type="button" data-a="lr" title="누수탐사 수리 여부 — 미수리는 지도 아이콘이 빨강"${lr?'':' class="del"'}>${lr?'✅ 수리 완료로 바꾸기':'🔴 미수리로 표시'}</button>`)(phLrG(g&&g.kd==='ts'?g:{kd:'ts',ids:[m.id]})):'')+`<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+(phFcKd(m)&&FAC.n?`<button type="button" data-a="fcl" title="이 사진을 붙일 시설물(경계밸브·시설물) 고르기">🔧 시설물</button>`:'')+
+   (phKd(m)==='ts'?(lr=>`<button type="button" data-a="lr" title="누수탐사 수리 여부 — 미수리는 지도 아이콘이 빨강"${lr?'':' class="del"'}>${lr?'✅ 수리 완료로 바꾸기':'🔴 미수리로 표시'}</button>`)(phLrG(g&&g.kd==='ts'?g:{kd:'ts',ids:[m.id]})):'')+`<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+(loc&&doc===document?`<button type="button" data-a="lm" title="이 사진 자리 위치도(배경지도·관로 라벨·빨간 점·번호 상자) 만들기 — 사진과 같이 공유하거나 묶음에 넣어 일일 보고 메일에 같이 보냄">🗺 위치도</button>`:'')+(phFcKd(m)&&FAC.n?`<button type="button" data-a="fcl" title="이 사진을 붙일 시설물(경계밸브·시설물) 고르기">🔧 시설물</button>`:'')+
    ((g&&g.n>1)||m.solo?`<button type="button" data-a="solo">${m.solo?'🔗 다시 묶기':'✂️ 묶음에서 빼기'}</button>`:'')+
    (doc===document?(n=>`<button type="button" data-a="vid" title="이 사진 묶음에 연결한 유튜브 영상 보기·붙이기">🎬 ${n?'영상 '+n:'영상 붙이기'}</button>`)(vidFind(phVidT(g,m)).length):'')+(doc===document&&aiOn()?`<button type="button" data-a="ai" title="AI가 사진을 보고 종류를 추천하고, 사진 속 글자와 한 줄 설명을 메모 초안으로 만듭니다 (GPS·촬영 정보는 빼고 보냄)">🤖 사진 읽기</button><button type="button" data-a="air" title="이 사진 묶음의 종류·일시·소블록·메모로 현장 보고 초안을 만듭니다">🤖 보고 초안</button>`:'')+`<button type="button" data-a="dl">⬇ 저장</button><button type="button" class="del" data-a="del">🗑 삭제</button>`+(g&&g.n>1?`<button type="button" class="del" data-a="delg">🗑 이 묶음 ${g.n}장 모두</button>`:'')};
  q('.nav.p').onclick=e=>{e.stopPropagation();v.go(v.i-1)};q('.nav.n').onclick=e=>{e.stopPropagation();v.go(v.i+1)};
@@ -8607,6 +8608,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   if(a==='ai'||a==='air'){const g=OF().get(m.id);aiRunBtn(b,()=>a==='ai'?aiPhoto(m,g,ta,W):aiReport(m,g));return}
   if(a==='gal')phGalOpen(m.id);else if(a==='map'){phGoMap(m.id);try{window.focus()}catch(_){}}
   else if(a==='place')phPlace(m.id,doc);
+  else if(a==='lm'){const g=OF().get(m.id);lmOpen(g&&g.lat!=null?g:m.lat!=null?{id:'g'+m.id,ids:[m.id],lat:m.lat,lng:m.lng,code:PH.code.get(m.id)||'',kc:'',kd:phKd(m)}:g)}
   else if(a==='vid')vidOpen(phVidT(OF().get(v.pid),m));
   else if(a==='rv'){const g=OF().get(v.pid),loc=m.lat!=null&&!(g&&g.src==='map'&&!m.map)?{lat:m.lat,lng:m.lng}:g&&g.lat!=null?{lat:g.lat,lng:g.lng}:null;if(loc)kvGoAt(loc.lat,loc.lng,'📷 '+(g?phGLabel(g):m.name),g?phGBlk(g):'')}
   else if(a==='goto'){const g=OF().get(m.id),n=g?g.n:1;
@@ -8631,6 +8633,113 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
   else if(a==='del'){if(!W.confirm((m.shUp&&SH.on()?`사진 "${m.name}"은(는) 직원 공유 중입니다.\n지우면 모든 직원의 화면과 공유 드라이브(휴지통으로 이동)에서도 지워집니다. 지울까요?`:`사진 "${m.name}"을(를) 이 PC에서 지울까요?`)+'\n\n지운 사진은 🗂️ 휴지통에서 7일 안에 되살릴 수 있습니다.'))return;await phDelete([m.id]);phEdUndoDel([m.id])}
   else if(a==='delg'){const g=OF().get(m.id);if(!g)return;if(!phEdConfirmDel(g.ids,W))return;const ids=g.ids.slice();await phDelete(ids);phEdUndoDel(ids)}};
  return v}
+/* ===== 🗺 사진 위치도 (2026-11-19 B안) =====
+   사진 묶음 자리를 A4 가로 한 장(2339×1654)으로 그림: 지금 켠 배경지도 + 관로(배수 파랑·급수 주황, '설치년도/재질/Ø관경/L연장' 라벨) + 큰 빨간 점 + 오른쪽 위 번호 상자 + 방위·축척·대외비 + 아래 띠.
+   이름 = 번호.jpg (민원번호 1000 → 1000.jpg, 사진은 1000-1·1000-2…). 묶음에 '위치도 사진'(map:true, src '위치도')으로 넣으면
+   직원 공유로 서버에 올라가고 일일 보고 메일 ZIP·사진 목록에서 1000.jpg → 1000-1.jpg 순서가 됨(서버는 이름순 정렬).
+   지도 화면은 움직이지 않고 따로 그림. 수용가 점·고객 정보는 그리지 않음 */
+const LM={W:2339,H:1654,band:96,busy:false,bb:null,bbAt:0};
+function lmCfg(){let c={};try{c=JSON.parse(localStorage.getItem('geo-lm')||'{}')||{}}catch(_){}return{auto:c.auto!==false,m:[60,100,130,200,300].includes(+c.m)?+c.m:130}}
+function lmCfgSet(o){try{localStorage.setItem('geo-lm',JSON.stringify(Object.assign(lmCfg(),o)))}catch(_){}}
+const lmNo=g=>String(g.code||g.kc||'');
+const lmSafe=s=>String(s).replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').trim();
+function lmName(g){const n=lmNo(g);if(n)return lmSafe(n)+'.jpg';const m=PH.byId.get(g.ids[0]);return '위치도_'+lmSafe(m?m.name:'사진').replace(/\.[^.]+$/,'')+'.jpg'}
+/* 묶음에 이미 있는 위치도(앱이 만든 것 또는 직접 올린 빨간 점 위치도) */
+function lmHas(g){return (g.ids||[]).map(id=>PH.byId.get(id)).find(m=>m&&m.map)||null}
+function lmLbl(g){const n=lmNo(g);return g.fac?(g.facLb||'시설물'):g.code?phRcpLbl(g.code):g.kc?(PH_KD[g.kd]||PH_KD.mw).n+' '+g.kc:'사진 묶음'}
+function lmPipeBB(){const fs=(typeof PIPE!=='undefined'&&PIPE.feats)||[];if(LM.bb&&LM.bbF===fs&&LM.bbN===fs.length&&Date.now()-LM.bbAt<15000)return LM.bb;
+ const bb=new Float64Array(fs.length*4);fs.forEach((f,i)=>{let a=1e9,b=1e9,c=-1e9,d=-1e9;try{lineParts(f.geometry).forEach(p=>p.forEach(q=>{if(q[0]<a)a=q[0];if(q[0]>c)c=q[0];if(q[1]<b)b=q[1];if(q[1]>d)d=q[1]}))}catch(_){}bb[i*4]=a;bb[i*4+1]=b;bb[i*4+2]=c;bb[i*4+3]=d});
+ LM.bb=bb;LM.bbF=fs;LM.bbN=fs.length;LM.bbAt=Date.now();return bb}
+const lmNum=v=>{const x=parseFloat(String(v??'').replace(/,/g,''));return isFinite(x)?x:null};
+/* 관로 라벨: 2000/PVC/Ø75/L17.17 (값이 없으면 ?) */
+function lmPipeTxt(f,lenM){const P=f.properties||{},a=attrOf(f),L1=lmNum(P['연장'])??lmNum(P['관연장'])??lenM;
+ return `${a.year!=null?a.year:'?'}/${String(a.matRaw||a.mat||'?').trim()||'?'}/Ø${a.dia!=null?a.dia:'?'}/L${L1!=null?(+L1).toFixed(2):'?'}`}
+/* 배경 칸 하나를 원하는 자리·축척으로 (화면 줌과 상관없이). getTileUrl은 _tileZoom을 보므로 잠깐 바꿨다 되돌림 */
+async function lmTiles(g,l,ctr,Zo,W,Hm){const o=l.options||{},mx=Math.min(o.maxNativeZoom!=null?o.maxNativeZoom:o.maxZoom!=null?o.maxZoom:19,19),mn=o.minZoom||0;
+ const Zt=Math.max(mn,Math.min(mx,Math.round(Zo))),sc=2**(Zo-Zt),ts=l.getTileSize(),c=map.project(ctr,Zt),ox=c.x-W/2/sc,oy=c.y-Hm/2/sc,tiles=[];
+ for(let ty=Math.floor(oy/ts.y);ty<=Math.floor((oy+Hm/sc)/ts.y);ty++)for(let tx=Math.floor(ox/ts.x);tx<=Math.floor((ox+W/sc)/ts.x);tx++){const p=L.point(tx,ty);p.z=Zt;tiles.push(p)}
+ if(!tiles.length||tiles.length>150)return 0;const z0=l._tileZoom,us=tiles.map(p=>{try{l._tileZoom=Zt;return l.getTileUrl(p)}catch(_){return null}finally{l._tileZoom=z0}});
+ const ims=await Promise.all(us.map(u=>{if(!u)return null;const hit=TILE_CACHE.get(u);if(hit)return hit;return loadImg(u,true,15000).then(im=>{if(im){TILE_CACHE.set(u,im);if(TILE_CACHE.size>600)TILE_CACHE.delete(TILE_CACHE.keys().next().value)}return im})}));
+ const ok=ims.filter(Boolean).length;if(ok<tiles.length*.6)return ok/tiles.length;
+ g.save();g.globalAlpha=o.opacity==null?1:+o.opacity;g.imageSmoothingQuality='high';tiles.forEach((p,i)=>{if(ims[i])try{g.drawImage(ims[i],(p.x*ts.x-ox)*sc,(p.y*ts.y-oy)*sc,ts.x*sc+.8,ts.y*sc+.8)}catch(_){}});g.restore();return ok/tiles.length}
+async function lmMake(g,opt){opt=opt||{};if(!map||!g||g.lat==null)throw new Error('위치가 없는 사진 묶음입니다.');
+ const cf=lmCfg(),M=opt.m||cf.m,W=LM.W,H=LM.H,band=LM.band,Hm=H-band,ctr=L.latLng(g.lat,g.lng),cos=Math.cos(g.lat*Math.PI/180),mpp=M/W,Zo=Math.log2(156543.03392*cos/mpp);
+ const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d'),F='"Noto Sans KR","Malgun Gothic",sans-serif';
+ x.fillStyle='#f3f2ef';x.fillRect(0,0,W,Hm);let note='';const at=new Set();
+ /* 1) 배경지도: 지금 켠 배경 그대로 */
+ if(typeof BG!=='undefined'&&BG.off){x.fillStyle=BG_FILL();x.fillRect(0,0,W,Hm)}
+ else{let ok=0;for(const l of mapShotLayers()){let r=0;try{r=await lmTiles(x,l,ctr,Zo,W,Hm)}catch(_){r=0}if(r>=.6){ok++;const a=(l.options.attribution||'').replace(/<[^>]*>/g,'').trim();if(a)at.add(a)}}
+  if(!ok)note='배경지도를 이미지로 받지 못해 바탕 없이 만들었습니다 (관로·빨간 점은 그대로).'}
+ /* 2) 관로 — 화면에서 끈 항목(색 기준별 끄기)은 빼고, 관로 칸이 꺼져 있어도 위치도에는 그림 */
+ const c0=map.project(ctr,Zo),pp=(q)=>{const p=map.project(L.latLng(q[1],q[0]),Zo);return [p.x-c0.x+W/2,p.y-c0.y+Hm/2]};
+ const fs=(typeof PIPE!=='undefined'&&PIPE.feats)||[],bb=fs.length?lmPipeBB():null,dl=M/111320/cos*0.75,dt=Hm*mpp/110574*0.75,lab=[],sv=[],mn=[];
+ for(let i=0;i<fs.length;i++){if(bb[i*4+2]<g.lng-dl||bb[i*4]>g.lng+dl||bb[i*4+3]<g.lat-dt||bb[i*4+1]>g.lat+dt)continue;if(PIPE.hm&&PIPE.hm[i])continue;const f=fs[i];if(!f.properties||f.properties._빈)continue;
+  const a=attrOf(f);(a.use==='급수관'?sv:mn).push(f)}
+ const drawSet=(arr,col,lw)=>{x.strokeStyle=col;x.lineWidth=lw;x.lineCap='round';x.lineJoin='round';arr.forEach(f=>{let lenM=0,best=null;lineParts(f.geometry).forEach(part=>{const P=part.map(pp);x.beginPath();P.forEach((p,j)=>j?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();
+   for(let j=1;j<P.length;j++){const d=Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]);lenM+=d*mpp;if(!best||d>best.d)best={d,a:P[j-1],b:P[j]}}});if(best)lab.push({f,best,lenM,col})})};
+ drawSet(sv,'#f08a24',3.2);drawSet(mn,'#1f6fb2',4.2);
+ /* 라벨: 가장 긴 마디 가운데, 글자보다 짧은 마디·화면 밖·겹치는 것은 뺌 (본관 먼저) */
+ x.font=`500 24px ${F}`;x.textAlign='center';x.textBaseline='middle';const boxes=[],cx=W/2,cy=Hm/2;
+ const hit=(r)=>boxes.some(b=>!(r[2]<b[0]||r[0]>b[2]||r[3]<b[1]||r[1]>b[3]));
+ lab.sort((p,q)=>(p.col==='#1f6fb2'?0:1)-(q.col==='#1f6fb2'?0:1)||q.best.d-p.best.d).forEach(o=>{const t=lmPipeTxt(o.f,o.lenM),tw=x.measureText(t).width;if(o.best.d<tw+24)return;
+  let [ax,ay]=o.best.a,[bx,by]=o.best.b;let ang=Math.atan2(by-ay,bx-ax);if(ang>Math.PI/2)ang-=Math.PI;if(ang<-Math.PI/2)ang+=Math.PI;
+  const mx=(ax+bx)/2+Math.sin(ang)*16,my=(ay+by)/2-Math.cos(ang)*16,hw=Math.abs(Math.cos(ang))*tw/2+Math.abs(Math.sin(ang))*14,hh=Math.abs(Math.sin(ang))*tw/2+Math.abs(Math.cos(ang))*14,r=[mx-hw,my-hh,mx+hw,my+hh];
+  if(r[0]<10||r[1]<10||r[2]>W-10||r[3]>Hm-10||hit(r)||(Math.abs(mx-cx)<hw+50&&Math.abs(my-cy)<hh+50))return;boxes.push(r);
+  x.save();x.translate(mx,my);x.rotate(ang);x.lineWidth=5;x.strokeStyle='rgba(255,255,255,.95)';x.strokeText(t,0,0);x.fillStyle='#1f2937';x.fillText(t,0,0);x.restore()});
+ /* 3) 사진 자리 큰 빨간 점 */
+ x.beginPath();x.arc(cx,cy,34,0,7);x.fillStyle='#ff0000';x.fill();x.lineWidth=3;x.strokeStyle='#7f1d1d';x.stroke();
+ /* 4) 오른쪽 위 번호 상자 · 방위 · 왼쪽 위 대외비 */
+ const no=lmNo(g)||'',bx=W-4;if(no){x.font=`500 96px ${F}`;let fz=96;while(fz>40&&x.measureText(no).width>820){fz-=8;x.font=`500 ${fz}px ${F}`}const bw=Math.max(520,x.measureText(no).width+120),bh=150;
+  x.fillStyle='#fff';x.fillRect(bx-bw,4,bw,bh);x.lineWidth=4;x.strokeStyle='#000';x.strokeRect(bx-bw,4,bw,bh);x.fillStyle='#000';x.textAlign='center';x.fillText(no,bx-bw/2,4+bh/2+4)}
+ const ay0=no?250:80;x.save();x.translate(W-90,ay0);x.fillStyle='rgba(15,23,42,.8)';x.beginPath();x.arc(0,0,50,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.moveTo(0,-36);x.lineTo(18,16);x.lineTo(0,5);x.lineTo(-18,16);x.closePath();x.fill();
+ x.font=`700 22px ${F}`;x.textAlign='center';x.fillText('N',0,34);x.restore();
+ if(sv.length||mn.length){x.font=`800 32px ${F}`;x.textAlign='left';const t='대외비 (상수관로 포함)',w=x.measureText(t).width+32;x.fillStyle='rgba(255,255,255,.92)';x.fillRect(18,18,w,54);x.fillStyle='#dc2626';x.fillText(t,34,46)}
+ /* 5) 축척 · 배경 출처 */
+ const len=niceLen(mpp*300),px=len/mpp,sy=Hm-50;x.fillStyle='rgba(255,255,255,.92)';x.fillRect(24,sy-38,px+150,66);x.fillStyle='#000';x.fillRect(40,sy-6,px,12);x.fillRect(40,sy-22,5,28);x.fillRect(40+px-5,sy-22,5,28);
+ x.font=`500 28px ${F}`;x.textAlign='left';x.fillText(len+'m',56+px,sy);
+ const atx=[...at].join(' · ')||(typeof BG!=='undefined'&&BG.off?'배경지도 끔':'배경지도 없음');x.font=`400 20px ${F}`;const aw=x.measureText(atx).width+20;x.fillStyle='rgba(255,255,255,.85)';x.fillRect(W-aw-8,Hm-34,aw,28);x.fillStyle='#111';x.textAlign='right';x.fillText(atx,W-18,Hm-20);
+ /* 6) 아래 띠: 위치도 · 접수 1000 · 사진 n장 · 촬영 · 소블록 | 만든 앱 */
+ const ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map),dts=ms.map(m=>m.dt).filter(Boolean).sort(),blk=(()=>{try{return phGBlk(g)}catch(_){return ''}})();
+ const parts=['위치도',lmLbl(g),ms.length?'사진 '+ms.length+'장':'',dts.length?'촬영 '+String(dts[0]).slice(0,16):'',blk?'소블록 '+blk:''].filter(Boolean);
+ x.fillStyle='#1e293b';x.fillRect(0,Hm,W,band);x.textBaseline='middle';x.textAlign='right';x.font=`400 28px ${F}`;x.fillStyle='#cbd5e1';const rt='스마트 물길주소 · 만든이: 구병순';x.fillText(rt,W-30,Hm+band/2);
+ const rw=x.measureText(rt).width;x.textAlign='left';x.font=`700 34px ${F}`;x.fillStyle='#fff';let lt=parts.join('  ·  ');while(lt.length>8&&x.measureText(lt).width>W-rw-100)lt=lt.slice(0,-2);x.fillText(lt,30,Hm+band/2);
+ const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.88));const tc=document.createElement('canvas'),tw=220,th=Math.round(220*H/W);tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(cv,0,0,tw,th);
+ const thb=await new Promise(r=>tc.toBlob(r,'image/jpeg',.7));
+ return{blob,th:thb,name:lmName(g),url:URL.createObjectURL(blob),note,dot:[cx/W,cy/H],w:W,h:H,m:M,np:sv.length+mn.length}}
+/* 묶음에 위치도 사진으로 넣기 — 앱이 예전에 만든 위치도가 있으면 바꿈(지운 것은 🗂 휴지통 7일) */
+async function lmAdd(g,r){const old=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&m.map&&m.src==='위치도');
+ const ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map),m0=ms.slice().sort((a,b)=>(a.ts||0)-(b.ts||0))[0]||{};
+ const id='p'+phHash('lm|'+r.name+'|'+g.lat+'|'+Date.now()),m={id,name:r.name,dt:m0.dt||'',ts:m0.ts||null,lat:+(+g.lat).toFixed(7),lng:+(+g.lng).toFixed(7),dir:null,alt:null,src:'위치도',memo:'',w:r.w,h:r.h,at:Date.now(),map:true,dot:r.dot};
+ const kd=g.kd||phKd(m0);if(kd&&kd!=='mw')m.kd=kd;if(m0.fc)m.fc=m0.fc;if(m0.cd)m.cd=m0.cd;if(m0.yr)m.yr=m0.yr;
+ await idbPut([['ph:'+id,r.blob],['pt:'+id,r.th]]);if(old.length)try{await phDelete(old.map(o=>o.id))}catch(_){}
+ PH.list.push(m);PH.byId.set(id,m);await phSaveMeta(true);phRefresh();try{chgPhMine([id])}catch(_){}return m}
+/* 미리보기 창: 공유(위치도+사진)·저장·묶음에 넣기·범위·자동 켜기 */
+async function lmOpen(g){if(!g||g.lat==null){alert('위치가 없는 사진 묶음이라 위치도를 만들 수 없습니다. 📍 위치 찍기나 🔢 번호·주소로 먼저 위치를 넣어 주세요.');return}
+ let o=document.getElementById('lmBox');if(o)o.remove();o=document.createElement('div');o.id='lmBox';(document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(o);
+ const cf=lmCfg(),sh=!!navigator.canShare;let R=null;
+ o.innerHTML=`<div class="lmw"><div class="lmh"><b>🗺 위치도 · ${esc(lmLbl(g))}</b><button type="button" data-a="x" aria-label="닫기">✕</button></div><div class="lmi"><span>위치도 만드는 중…</span></div><div class="lmn"></div>
+  <div class="lmb"><button type="button" class="btn" data-a="sh" disabled>${sh?'📤 위치도+사진 공유':'💾 위치도 저장'}</button>${sh?'<button type="button" class="btn ol" data-a="dl" disabled>💾 위치도만 저장</button>':''}<button type="button" class="btn ol" data-a="add" disabled>📎 묶음에 넣기</button></div>
+  <div class="lmo"><label>범위 <select data-a="m">${[60,100,130,200,300].map(v=>`<option value="${v}"${v===cf.m?' selected':''}>가로 ${v}m</option>`).join('')}</select></label><label><input type="checkbox" data-a="auto"${cf.auto?' checked':''}> 사진 올릴 때 번호 있는 묶음은 위치도 자동으로 넣기</label></div>
+  <small class="mute">파일 이름은 번호 그대로(${esc(lmName(g))}) · 사진은 번호-1, 번호-2… 순서. 묶음에 넣으면 직원 공유로 올라가 일일 보고 메일 ZIP에서 사진 앞에 놓입니다. 관로 위치는 자료상 위치(현장 확인).</small></div>`;
+ const q=s=>o.querySelector(s),img=q('.lmi'),nt=q('.lmn');
+ const has=()=>lmHas(g),setAdd=()=>{const h=has(),b=q('[data-a="add"]');b.textContent=h?(h.src==='위치도'?'🔁 묶음 위치도 바꾸기':'📎 묶음에 넣기 (직접 올린 위치도 있음)'):'📎 묶음에 넣기';b.disabled=!R};
+ const make=async()=>{o.querySelectorAll('.lmb button').forEach(b=>b.disabled=true);img.innerHTML='<span>위치도 만드는 중…</span>';try{if(R)URL.revokeObjectURL(R.url);R=await lmMake(g,{m:+q('[data-a="m"]').value});img.innerHTML=`<img src="${R.url}" alt="위치도 미리보기">`;
+  nt.textContent=[R.note,R.np?'':'이 범위에 관로 자료가 없습니다.'].filter(Boolean).join(' ');o.querySelectorAll('.lmb button').forEach(b=>b.disabled=false);setAdd()}catch(e){img.innerHTML=`<span class="c-rd">위치도를 만들지 못했습니다: ${esc((e&&e.message)||e)}</span>`}};
+ o.onclick=async e=>{const b=e.target.closest('button[data-a]');if(e.target===o){o.remove();return}if(!b)return;const a=b.dataset.a;
+  if(a==='x'){if(R)URL.revokeObjectURL(R.url);o.remove();return}if(!R)return;
+  if(a==='dl')dlBlob(R.blob,R.name);
+  else if(a==='add'){b.disabled=true;try{await lmAdd(g,R);phToast(`🗺 위치도 ${R.name}을(를) 묶음에 넣었습니다 — 직원 공유로 같이 올라갑니다.`)}catch(err){alert('묶음에 넣지 못했습니다: '+((err&&err.message)||err))}b.disabled=false;setAdd()}
+  else if(a==='sh'){if(!sh){dlBlob(R.blob,R.name);return}b.disabled=true;const fl=[new File([R.blob],R.name,{type:'image/jpeg'})],ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map).sort((p,q2)=>String(p.name).localeCompare(String(q2.name),'ko',{numeric:true})).slice(0,9);
+   for(const m of ms){let bl=null;try{bl=await IDB.get('ph:'+m.id)}catch(_){}if(!bl&&typeof shFetchBig==='function')try{bl=await shFetchBig(m.id)}catch(_){}if(bl)fl.push(new File([bl],/\.(jpe?g|png)$/i.test(m.name)?m.name:m.name+'.jpg',{type:bl.type||'image/jpeg'}))}
+   let fs2=fl;if(!navigator.canShare({files:fs2}))fs2=[fl[0]];
+   try{await navigator.share({files:fs2,title:'위치도 '+lmLbl(g),text:`${lmLbl(g)} 위치도${fs2.length>1?' + 사진 '+(fs2.length-1)+'장':''}`})}catch(err){if(err&&err.name!=='AbortError')dlBlob(R.blob,R.name)}b.disabled=false}};
+ o.onchange=e=>{const a=e.target.dataset.a;if(a==='m'){lmCfgSet({m:+e.target.value});make()}else if(a==='auto')lmCfgSet({auto:e.target.checked})};
+ make()}
+/* 사진 올린 뒤(📷·글자 사진·파일 올리기) 번호 있는 묶음에 위치도가 없으면 자동으로 만들어 넣음 — 다른 직원에게서 받은 사진에는 하지 않음 */
+function lmAutoSoon(ids){if(!lmCfg().auto||!ids||!ids.length)return;setTimeout(()=>lmAuto(ids).catch(e=>console.warn('위치도 자동',e)),1500)}
+async function lmAuto(ids){if(LM.busy||!map)return;const G=new Map();ids.forEach(id=>{const m=PH.byId.get(id);if(!m||m.map)return;const g=(PH.V&&PH.V.gOf&&PH.V.gOf.get(id))||null;if(g&&g.lat!=null&&!g.fac&&lmNo(g)&&!lmHas(g))G.set(g.id,g)});
+ if(!G.size)return;LM.busy=true;let n=0;const nm=[];try{for(const g of [...G.values()].slice(0,40)){const g2=(PH.V.gOf.get(g.ids[0]))||g;if(lmHas(g2))continue;try{const r=await lmMake(g2);await lmAdd(g2,r);URL.revokeObjectURL(r.url);n++;nm.push(r.name)}catch(e){console.warn('위치도',e)}}}finally{LM.busy=false}
+ if(n)phToast(`🗺 위치도 ${n}장을 만들어 묶음에 넣었습니다 (${nm.slice(0,3).join(', ')}${n>3?' …':''}) — 사진 정보창 🗺 위치도에서 다시 만들거나 끌 수 있습니다.`)}
 /* 🔢 번호·주소로 옮기기 — 접수번호면 그 번호(촬영 연도)의 기준 위치(민원지점) 묶음에 넣고, 주소·좌표면 그 자리로 옮김(직접 옮긴 위치).
    all=true 묶음 전체 / false 이 사진만. 바꾼 내용은 ↩ 되돌리기 가능. 넣은 주소는 저장하지 않음 */
 const PH_FXK=['cd','yr','solo','refOff','lat','lng','src','note','acc','kd'];
@@ -8831,6 +8940,7 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
   if(keep.size){await phSaveMeta(true);phRefresh(true)}}
  if(WF.size)phWorldApply(WF,true);
  if(add)try{chgPhMine(PH.list.slice(chgN0).map(m=>m.id))}catch(_){}
+ if(add)try{lmAutoSoon(PH.list.slice(chgN0).map(m=>m.id))}catch(_){}
  let upOpen=false;if(N>=2){const res={at:Date.now(),sec:Math.round((Date.now()-t0)/1000),N,R,kd:!!(opt&&opt.kd)};phUpCls(res);PH.upLast=res;try{IDB.set('phuplast',res).catch(()=>{})}catch(_){}$('phUpBtn').hidden=false;
   const c=res.c;upOpen=N>=10||!!(c.mis||c.nog||c.dup||c.fail||c.stop);if(upOpen)phUpOpen(res)}
  if(add&&!(opt&&opt.kd)&&!upOpen){const nid=PH.list.slice(chgN0).map(m=>m.id);phToast(`📷 사진 ${add.toLocaleString()}장 · `+[...KC].map(([k,n])=>PH_KD[k].ic+' '+PH_KD[k].n+(KC.size>1?' '+n:'')).join(' · '),{btn:'📁 종류 바꾸기',fn:()=>phKdAsk(nid)})} /* 폰 지도 📷 버튼으로 올린 사진도 바로 종류를 고칠 수 있게 */
