@@ -463,6 +463,7 @@ body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{display:flex!important;flex-di
 #mshot .ms{background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;padding:10px;width:min(96vw,720px);max-height:96vh;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 #mshot img{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}
 #mshot .mb{display:flex;gap:6px;flex-wrap:wrap}#mshot .mb .btn{flex:1 1 auto}#mshot small{display:block;font-size:12px;line-height:1.45}.fmctl button:disabled{opacity:.6}
+#pcpRun{position:fixed;left:62px;top:calc(58px + env(safe-area-inset-top));z-index:10040;display:flex;align-items:center;gap:6px;max-width:calc(100vw - 72px);background:#fff;color:#1e293b;border:2px solid #e11d48;border-radius:999px;padding:4px 6px 4px 12px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 13px 'Noto Sans KR',sans-serif;white-space:nowrap}#pcpRun span{overflow:hidden;text-overflow:ellipsis}#pcpRun b{color:#e11d48}#pcpRun button{border:1px solid #cbd5e1;background:#f8fafc;color:#1e293b;border-radius:999px;padding:4px 10px;font:600 12.5px inherit;cursor:pointer}html.pcpOn #pcpRun{display:none}html.dark #pcpRun{background:#1e293b;color:#e2e8f0}html.dark #pcpRun button{background:#334155;color:#e2e8f0;border-color:#475569}
 #pcpBox{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:10050;width:min(94vw,440px);background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-size:13px;max-height:80vh;overflow:auto}#pcpBox .pch{display:flex;justify-content:space-between;align-items:center;gap:8px}#pcpBox .pch b{font-size:14.5px}#pcpBox .pch button{border:0;background:none;font-size:18px;cursor:pointer;color:inherit;padding:2px 6px}#pcpBox .pcs{line-height:1.45}#pcpBox .pcb{display:flex;gap:6px}#pcpBox .pcb .btn{flex:1 1 0;margin:0}#pcpBox .pck{font-size:12px;color:var(--mute,#64748b);display:flex;gap:6px;align-items:center}
 #pcpBox .pc43 select{font-size:12px;padding:2px 4px;max-width:62%;flex:1}#pcpBox .pcmore summary{font-size:12.5px;color:var(--mute,#64748b);cursor:pointer;padding:2px 0}#pcpBox .pcmore[open]{display:flex;flex-direction:column;gap:6px}#pcpBox{gap:5px!important;padding:8px 10px!important}#pcpBox .pcs{font-size:12.5px}#pcpBox .pcb .btn{padding-top:7px;padding-bottom:7px}#pcpBox .pcno{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px}#pcpBox .pcno input{flex:1;min-width:0;font-size:16px;padding:8px 10px;border:2px solid #e11d48;border-radius:8px;background:var(--card,#fff);color:inherit}#pcpBox .pcz{flex:0 0 46px!important;font-size:19px;font-weight:700}#pcpBox .pczr{align-items:stretch}#pcpBox .pczt{flex:1 1 auto;display:flex;align-items:center;font-weight:700;font-size:13px}#pcpBox .pczl{flex:0 0 auto;min-width:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;border:1px solid var(--line2,#cbd5e1);border-radius:8px;padding:2px 6px}#pcpBox .pczl b{font-size:17px;color:#e11d48}#pcpBox .pczl small{font-size:10.5px;color:var(--mute,#64748b)}#pcpBox .pci{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}.pcpX{display:none;position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;z-index:700;pointer-events:none}.pcpX svg{width:100%;height:100%;display:block}html.pcpOn .pcpX{display:block}.fm-me{background:none;border:0}.fm-me span{display:block;width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 2px #2563eb55,0 1px 4px #0006}
 #fmBtn.on{background:#0f766e;color:#fff}
@@ -8454,6 +8455,15 @@ function phWorld(txt){const v=String(txt).trim().split(/\s+/).map(Number);return
 function phWorldLL(wf,px,py){const [A,D,B,E,C,F]=wf,X=A*px+B*py+C,Y=D*px+E*py+F,cr=[$('phRefCrs').value,...SITE.crsO.filter(c=>c!=='EPSG:5179'),'EPSG:5185','EPSG:5179'];
  if(Math.abs(X)<=180&&Math.abs(Y)<=90)return inKR([X,Y])?{lat:Y,lng:X,crs:'EPSG:4326'}:null;
  for(const c of cr){if(c==='EPSG:4326')continue;try{const [ln,la]=proj4(c,'EPSG:4326',[X,Y]);if(inKR([ln,la]))return{lat:+la.toFixed(7),lng:+ln.toFixed(7),crs:c}}catch(_){}}return null}
+/* 🌐 위치 캡처·위치도 → 월드 파일(.jgw/.pgw) 쓰기: m.geo={lat,lng(빨간 점),z(그림 1px = 웹메르카토르 z 단계 1px),cx,cy(빨간 점 픽셀)} */
+function phGeoOf(m){const g=m&&m.geo;return g&&isFinite(g.z)&&isFinite(g.cx)&&isFinite(g.cy)&&isFinite(g.lat)&&isFinite(g.lng)?g:null}
+function phWorldTxt(m,crs,iw){const g=phGeoOf(m);if(!g)return '';const s=iw&&m.w?m.w/iw:1,C3=L.CRS.EPSG3857,c=C3.latLngToPoint(L.latLng(g.lat,g.lng),g.z);
+ const at=(px,py)=>{const ll=C3.pointToLatLng(L.point(c.x+(px*s-g.cx),c.y+(py*s-g.cy)),g.z);return crs==='EPSG:4326'?[ll.lng,ll.lat]:proj4('EPSG:4326',crs,[ll.lng,ll.lat])};
+ const W=(m.w||2000)/s,H=(m.h||1500)/s,p0=at(.5,.5),px=at(W-.5,.5),py=at(.5,H-.5),A=(px[0]-p0[0])/(W-1),D=(px[1]-p0[1])/(W-1),B=(py[0]-p0[0])/(H-1),E=(py[1]-p0[1])/(H-1),dg=crs==='EPSG:4326'?12:6;
+ return [A,D,B,E].map(v=>v.toFixed(dg+4)).concat([p0[0].toFixed(dg),p0[1].toFixed(dg)]).join('\r\n')+'\r\n'}
+async function phImgW(b){try{const bm=await createImageBitmap(b);const w=bm.width;bm.close&&bm.close();return w}catch(_){return 0}}
+function phWorldExt(name,type){return /png/i.test(type||'')||/\.png$/i.test(name||'')?'.pgw':'.jgw'}
+async function phWorldFiles(m,b,crs,base){if(!phGeoOf(m)||!b)return [];const w=phWorldTxt(m,crs,await phImgW(b));if(!w)return [];return [[base+phWorldExt(base,b.type),w],[base+'.prj',PRJ[crs]]]}
 async function phWorldApply(WF,quiet){let n=0;for(const m of PH.list){if(!m.map||!m.dot||(m.lat!=null&&m.src==='수동'))continue;const w=WF.get(String(m.name).replace(/\.[^.]+$/,'').normalize('NFC').toLowerCase());if(!w)continue;
   const ll=phWorldLL(w,m.dot[0]*m.w,m.dot[1]*m.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도';n++}}
  if(n){await phSaveMeta(true);phRefresh(true)}if(!quiet)$('phMsg').textContent=n?`🎯 월드 파일로 위치도 ${n}장의 빨간 점 좌표를 넣었습니다.`:'월드 파일과 이름이 같은 위치도(빨간 점) 사진을 찾지 못했습니다.'}
@@ -8710,11 +8720,11 @@ async function lmMake(g,opt){opt=opt||{};if(!map||!g||g.lat==null)throw new Erro
  const rw=x.measureText(rt).width;x.textAlign='left';x.font=`700 34px ${F}`;x.fillStyle='#fff';let lt=parts.join('  ·  ');while(lt.length>8&&x.measureText(lt).width>W-rw-100)lt=lt.slice(0,-2);x.fillText(lt,30,Hm+band/2);
  const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.88));const tc=document.createElement('canvas'),tw=220,th=Math.round(220*H/W);tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(cv,0,0,tw,th);
  const thb=await new Promise(r=>tc.toBlob(r,'image/jpeg',.7));
- return{blob,th:thb,name:lmName(g),url:URL.createObjectURL(blob),note,dot:[cx/W,cy/H],w:W,h:H,m:M,np:sv.length+mn.length}}
+ return{blob,th:thb,name:lmName(g),url:URL.createObjectURL(blob),note,dot:[cx/W,cy/H],w:W,h:H,m:M,np:sv.length+mn.length,geo:{lat:+ctr.lat.toFixed(8),lng:+ctr.lng.toFixed(8),z:+Zo.toFixed(6),cx:W/2,cy:Hm/2}}}
 /* 묶음에 위치도 사진으로 넣기 — 앱이 예전에 만든 위치도가 있으면 바꿈(지운 것은 🗂 휴지통 7일) */
 async function lmAdd(g,r){const old=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&m.map&&m.src==='위치도');
  const ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map),m0=ms.slice().sort((a,b)=>(a.ts||0)-(b.ts||0))[0]||{};
- const id='p'+phHash('lm|'+r.name+'|'+g.lat+'|'+Date.now()),m={id,name:r.name,dt:m0.dt||'',ts:m0.ts||null,lat:+(+g.lat).toFixed(7),lng:+(+g.lng).toFixed(7),dir:null,alt:null,src:'위치도',memo:'',w:r.w,h:r.h,at:Date.now(),map:true,dot:r.dot};
+ const id='p'+phHash('lm|'+r.name+'|'+g.lat+'|'+Date.now()),m={id,name:r.name,dt:m0.dt||'',ts:m0.ts||null,lat:+(+g.lat).toFixed(7),lng:+(+g.lng).toFixed(7),dir:null,alt:null,src:'위치도',memo:'',w:r.w,h:r.h,at:Date.now(),map:true,dot:r.dot};if(r.geo)m.geo=r.geo;
  const kd=g.kd||phKd(m0);if(kd&&kd!=='mw')m.kd=kd;if(m0.fc)m.fc=m0.fc;if(m0.cd)m.cd=m0.cd;if(m0.yr)m.yr=m0.yr;
  await idbPut([['ph:'+id,r.blob],['pt:'+id,r.th]]);if(old.length)try{await phDelete(old.map(o=>o.id))}catch(_){}
  PH.list.push(m);PH.byId.set(id,m);await phSaveMeta(true);phRefresh();try{chgPhMine([id])}catch(_){}return m}
@@ -8732,7 +8742,7 @@ async function lmOpen(g){if(!g||g.lat==null){alert('위치가 없는 사진 묶�
   nt.textContent=[R.note,R.np?'':'이 범위에 관로 자료가 없습니다.'].filter(Boolean).join(' ');o.querySelectorAll('.lmb button').forEach(b=>b.disabled=false);setAdd()}catch(e){img.innerHTML=`<span class="c-rd">위치도를 만들지 못했습니다: ${esc((e&&e.message)||e)}</span>`}};
  o.onclick=async e=>{const b=e.target.closest('button[data-a]');if(e.target===o){o.remove();return}if(!b)return;const a=b.dataset.a;
   if(a==='x'){if(R)URL.revokeObjectURL(R.url);o.remove();return}if(!R)return;
-  if(a==='dl')dlBlob(R.blob,R.name);
+  if(a==='dl'){dlBlob(R.blob,R.name);const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186';for(const [n,t] of await phWorldFiles({geo:R.geo,w:R.w,h:R.h},R.blob,crs,R.name.replace(/\.[^.]+$/,'')))dlBlob(new Blob([t],{type:'text/plain'}),n)}
   else if(a==='add'){b.disabled=true;try{await lmAdd(g,R);phToast(`🗺 위치도 ${R.name}을(를) 묶음에 넣었습니다 — 직원 공유로 같이 올라갑니다.`)}catch(err){alert('묶음에 넣지 못했습니다: '+((err&&err.message)||err))}b.disabled=false;setAdd()}
   else if(a==='sh'){if(!sh){dlBlob(R.blob,R.name);return}b.disabled=true;const fl=[new File([R.blob],R.name,{type:'image/jpeg'})],ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map).sort((p,q2)=>String(p.name).localeCompare(String(q2.name),'ko',{numeric:true})).slice(0,9);
    for(const m of ms){let bl=null;try{bl=await IDB.get('ph:'+m.id)}catch(_){}if(!bl&&typeof shFetchBig==='function')try{bl=await shFetchBig(m.id)}catch(_){}if(bl)fl.push(new File([bl],/\.(jpe?g|png)$/i.test(m.name)?m.name:m.name+'.jpg',{type:bl.type||'image/jpeg'}))}
@@ -9104,7 +9114,7 @@ async function phExport(ids,btn,W){W=W||window;if(!ids||!ids.length){W.alert('�
    z0.file('SHP/photo_groups.shp',gsh.shp);z0.file('SHP/photo_groups.shx',gsh.shx);z0.file('SHP/photo_groups.dbf',buildDbf(GF,GI.map(i=>grows[i]).map(r=>[r['묶음 번호'],r['이름'],r['사진 수'],r['첫 촬영'],r['마지막 촬영'],r['위치상 소블록'],r['위치 추정 포함']])));z0.file('SHP/photo_groups.prj',PRJ[crs]);z0.file('SHP/photo_groups.cpg','UTF-8')}
   const day=fmtD(Date.now()).replace(/-/g,''),P=parts.length;
   for(let pi=0;pi<(withImg?P:1);pi++){const z=pi===0?z0:new JSZip();
-   if(withImg)for(const k of parts[pi]){const b=blobs[k];if(b)z.file('사진/'+rows[k]['사진 파일'],b)}
+   if(withImg)for(const k of parts[pi]){const b=blobs[k];if(b){z.file('사진/'+rows[k]['사진 파일'],b);for(const [n,t] of await phWorldFiles(PH.byId.get(order[k]),b,crs,'사진/'+rows[k]['사진 파일'].replace(/\.[^.]+$/,'')))z.file(n,t)}}
    btn.textContent=`⏳ ZIP 묶는 중${P>1&&withImg?` ${pi+1}/${P}`:''}…`;
    const blob=await z.generateAsync({type:'blob',compression:'STORE'});dlBlob(blob,`현장사진_${day}${withImg?'':'_목록'}${withImg&&P>1?`_${pi+1}of${P}`:''}.zip`);
    if(pi+1<P)await new Promise(r=>setTimeout(r,1200))}
@@ -9191,13 +9201,21 @@ const PCP={o:null,next:'cam',wid:null,me:null,ll:null,acc:null,fix:false,snap:nu
 function pcpWide(){try{return localStorage.getItem('geo-pcpw')!=='0'}catch(_){return true}}
 function pcpOn(){try{return localStorage.getItem('geo-pcp')!=='0'}catch(_){return true}}
 function pcpOnSet(v){try{localStorage.setItem('geo-pcp',v?'1':'0')}catch(_){}const c=$('pcpOnCk');if(c)c.checked=!!v}
-/* 🔢 사진 번호(접수번호 등): 위치 캡처 = 번호.jpg, 이어 찍는 사진 = 번호-1, 번호-2… (1시간, 새 위치 캡처를 열면 끝) */
+/* 🔢 사진 번호(접수번호 등): 위치 캡처 = 번호.jpg, 이어 찍는 사진 = 번호-1, 번호-2… (새 번호로 위치 캡처하거나 끝을 누를 때까지 계속, 앱을 다시 열어도 이어짐) */
 function pcpNoNorm(v){return String(v||'').normalize('NFC').replace(/\s+/g,'').replace(/[\\/:*?"<>|]/g,'')}
 function pcpNo(){const i=PCP.o&&PCP.o.querySelector('[data-a="no"]');return i?pcpNoNorm(i.value):''}
-function pcpRunSet(no){PCP.run=no?{no,until:Date.now()+3600e3}:null}
-function pcpRunNo(){return PCP.run&&Date.now()<PCP.run.until?PCP.run.no:''}
+function pcpRunSet(no){PCP.run=no?{no}:null;try{no?localStorage.setItem('geo-pcprun',JSON.stringify({no})):localStorage.removeItem('geo-pcprun')}catch(_){}pcpRunBar()}
+function pcpRunBar(){let el=document.getElementById('pcpRun');const no=pcpRunNo();
+ if(!no){if(el)el.remove();return}
+ if(!el){el=document.createElement('div');el.id='pcpRun';el.setAttribute('role','status');
+  el.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='new')pcpStart(PCP.next||'cam',true);else{pcpRunSet('');phToast&&phToast('🔢 번호 이어 찍기를 끝냈습니다.')}}}
+ const par=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(el.parentNode!==par)par.appendChild(el);
+ el.innerHTML=`<span title="${esc(no)} 번호 이어 찍기 (새 위치 캡처 때까지)">🔢 다음 사진 <b>${esc(no)}-${pcpNextSeq(no)}</b></span><button type="button" data-a="new">📍 새 위치</button><button type="button" data-a="end" aria-label="번호 이어 찍기 끝">끝</button>`;
+}
+function pcpRunNo(){return PCP.run&&PCP.run.no||''}
+try{const j=JSON.parse(localStorage.getItem('geo-pcprun')||'null');if(j&&j.no)PCP.run={no:String(j.no)}}catch(_){}setTimeout(()=>{try{pcpRunBar()}catch(_){}},1500);
 function pcpNextSeq(no){let k=0;const re=new RegExp('^'+no.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*-\\s*(\\d{1,3})(?:\\.[^.]+)?$','i');for(const m of PH.list){const x=re.exec(String(m.name||'').normalize('NFC'));if(x&&+x[1]>k)k=+x[1]}return k+1}
-async function pcpNumber(n0,no){if(!no)return;let k=pcpNextSeq(no),n=0;for(const m of PH.list.slice(n0)){if(m.map)continue;const ext=((/\.(jpe?g|png)$/i.exec(m.name)||['.jpg'])[0]).toLowerCase();m.name=`${no}-${k++}${ext}`;m.cd=no;n++}
+async function pcpNumber(n0,no){if(!no)return;let k=pcpNextSeq(no),n=0;for(const m of PH.list.slice(n0)){if(m.map)continue;const ext=((/\.(jpe?g|png)$/i.exec(m.name)||['.jpg'])[0]).toLowerCase();m.name=`${no}-${k++}${ext}`;m.cd=no;n++}if(n)setTimeout(pcpRunBar,0);
  if(n){await phSaveMeta(true);try{phRefresh()}catch(_){}phToast(`🔢 사진 ${n}장을 ${no} 묶음에 넣었습니다 (${no}-${k-n}${n>1?' ~ '+no+'-'+(k-1):''}).`,{ms:5000})}}
 function pcpGo(next){if(next==='tcam')tcStart();else{PCP.camAt=Date.now();$('phFile').click()}}
 /* 📐 세로로 찍은 사진 → 가로 4:3 (대장용). 폰 기본 카메라는 비율을 정해 열 수 없어 찍은 뒤 바꿈.
@@ -9221,8 +9239,9 @@ async function ph43File(f){const mode=ph43Mode();if(mode==='off'||/heic|heif/i.t
   return new File([b],f.name.replace(/\.(png|jpe?g)$/i,'')+'.jpg',{type:'image/jpeg',lastModified:f.lastModified})}
  catch(e){console.warn('가로 4:3',e);return f}finally{try{bmp.close()}catch(_){}}}
 try{const q=$('ph43Sel');q.innerHTML=ph43Opts(ph43Mode());q.onchange=ev=>ph43Set(ev.target.value)}catch(_){}
-function pcpStart(next){if(!map||!pcpOn()){pcpGo(next);return}
- PCP.next=next;PCP.fix=false;PCP.cap=null;PCP.snap=null;PCP.run=null;pcpClose(true);
+function pcpStart(next,force){if(!map||!pcpOn()){pcpGo(next);return}
+ if(!force&&pcpRunNo()){PCP.next=next;pcpRunBar();pcpGo(next);return}
+ PCP.next=next;PCP.fix=false;PCP.cap=null;PCP.snap=null;pcpClose(true);
  const o=document.createElement('div');o.id='pcpBox';o.setAttribute('role','dialog');o.setAttribute('aria-label','찍기 전 현장 위치 캡처');PCP.o=o;
  o.innerHTML=`<div class="pch"><b>📍 찍기 전에 현장 위치 캡처</b><button type="button" data-a="x" aria-label="닫기">✕</button></div>
   <div class="pcs" data-t="gps">📡 내 위치 받는 중…</div><div class="pcs" data-t="pipe"></div>
@@ -9284,7 +9303,7 @@ async function pcpShot(ctr,z,lb,s,bh){const mc=map.getContainer(),wide=pcpWide()
  g.fillStyle='#64748b';g.font=F(400,10.5);g.fillText(`${ctr.lat.toFixed(6)}, ${ctr.lng.toFixed(6)}`,10*k,Hm+48*k,W*.45);g.textAlign='right';g.fillText('스마트 물길주소 · '+SITE.tag+' · 만든이: 구병순',W-10*k,Hm+48*k,W*.5);
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
  const tc=document.createElement('canvas'),tw2=220,th=Math.round(220*B.cv.height/B.cv.width);tc.width=tw2;tc.height=th;tc.getContext('2d').drawImage(B.cv,0,0,tw2,th);const thb=await new Promise(r=>tc.toBlob(r,'image/jpeg',.7));
- return{blob,thb,w:B.cv.width,h:B.cv.height,dot:[.5,cy/B.cv.height],note:B.note,masked:B.masked}}
+ return{blob,thb,w:B.cv.width,h:B.cv.height,dot:[.5,cy/B.cv.height],note:B.note,masked:B.masked,geo:{lat:+ctr.lat.toFixed(8),lng:+ctr.lng.toFixed(8),z:+(z+Math.log2(k)).toFixed(6),cx,cy}}}
 async function pcpCapture(btn){if(PCP.busy||!map)return;PCP.busy=true;const t0=btn.textContent;btn.disabled=true;btn.textContent='⏳ 캡처 중…';
  try{const ctr=pcpCtr(),z=map.getZoom(),s=PCP.snap&&PCP.snap.d<.3?PCP.snap:null,bh=62;
   const L2=[{lb:'현장 위치',z,sf:''}];
@@ -9292,7 +9311,7 @@ async function pcpCapture(btn){if(PCP.busy||!map)return;PCP.busy=true;const t0=b
   const now=Date.now(),d=new Date(now),p=v=>String(v).padStart(2,'0'),dt=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`,base=`현장위치_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
   const kd=PCP.next==='tcam'?(phKdOf(tcCfg().kd)||phKdUp()):phKdUp(),caps=[];
   for(let i=0;i<R.length;i++){const r=R[i],no=pcpNo(),name=no?no+(r.sf?'_'+r.sf:'')+'.jpg':base+(r.sf?'_'+r.sf:'')+'.jpg',id='p'+phHash('pcp|'+name+'|'+now);
-   const m={id,name,dt,ts:now-(R.length-i)*1000,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:['🔴 현장 위치 캡처'+(no?' · 번호 '+no:''),s?'관로 위 '+pcpPipeTxt(s):'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · '),w:r.w,h:r.h,at:now,map:true,dot:r.dot};
+   const m={id,name,dt,ts:now-(R.length-i)*1000,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:['🔴 현장 위치 캡처'+(no?' · 번호 '+no:''),s?'관로 위 '+pcpPipeTxt(s):'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · '),w:r.w,h:r.h,at:now,map:true,dot:r.dot};if(r.geo)m.geo=r.geo;
    if(kd&&kd!=='mw')m.kd=kd;if(no)m.cd=no;if(PCP.acc!=null)m.acc=PCP.acc;await idbPut([['ph:'+id,r.blob],['pt:'+id,r.thb]]);PH.list.push(m);PH.byId.set(id,m);caps.push({id,name,lb:r.lb,url:URL.createObjectURL(r.blob)})}
   pcpRunSet(pcpNo());await phSaveMeta(true);phRefresh();try{chgPhMine(caps.map(c=>c.id))}catch(_){}
   PCP.cap={caps,note:R.map(r=>r.note).find(Boolean)||'',masked:R.some(r=>r.masked)};pcpForm()}
@@ -9475,7 +9494,7 @@ async function tcOk(w,btn){if(!TCM.bmp)return;const c=tcRead(w),v=tcVals(w),msg=
   blob=await tcWithExif(blob,{d:v.d,lat:v.lat,lng:v.lng,alt:v.P.alt,dir:v.P.dir});
   const nm=v.nm.replace(/[\\/:*?"<>|]/g,'_')+'.jpg',file=new File([blob],nm,{type:'image/jpeg',lastModified:Date.now()}),id='p'+phHash(file.name+'|'+file.size+'|'+file.lastModified),kd=w.querySelector('[data-c="kd"]').value;
   const n0=PH.list.length;await phAdd([file],null,{all:true,kd});const m=PH.byId.get(id);
-  {const rn=pcpRunNo();if(m&&rn&&v.nm.normalize('NFC').startsWith(rn+'-')){m.cd=rn;phSaveMeta();try{phRefresh()}catch(_){}}}
+  {const rn=pcpRunNo();if(m&&rn&&v.nm.normalize('NFC').startsWith(rn+'-')){m.cd=rn;phSaveMeta();try{phRefresh()}catch(_){}pcpRunBar()}}
   if(m&&v.ds){m.memo=v.ds;delete m.memoSrc;phSaveMeta();try{phRefresh()}catch(_){}}
   if(c.dl)tcDown(file);
   const c2=tcCfg();if(v.nm===tcName(c2))c2.no=(+c2.no||1)+1;c2.kd=kd;if(v.ds)c2.recent=[v.ds,...c2.recent.filter(x=>x!==v.ds)].slice(0,15);tcSave(c2);
@@ -9753,7 +9772,7 @@ async function aiRcp(btn){if(!PH.rcp.size)throw new Error('먼저 [📋 민원 �
 const AI_ACT={chg:()=>aiChgBlk(),chgsum:()=>aiChgSum(),hyd:()=>aiHyd(),alias:()=>aiAlias(),rcp:b=>aiRcp(b),nt:()=>aiNotice()};
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ai]');if(!b||!AI_ACT[b.dataset.ai])return;e.preventDefault();e.stopPropagation();aiRunBtn(b,()=>AI_ACT[b.dataset.ai](b))},true);
 setTimeout(aiUi,0);
-const shPick=m=>{const o={};['id','name','dt','ts','lat','lng','dir','alt','src','acc','memo','memoSrc','w','h','map','dot'].forEach(k=>{if(m[k]!==undefined&&m[k]!==null&&m[k]!=='')o[k]=m[k]});o.code=shCode(m);return o};
+const shPick=m=>{const o={};['id','name','dt','ts','lat','lng','dir','alt','src','acc','memo','memoSrc','w','h','map','dot'].forEach(k=>{if(m[k]!==undefined&&m[k]!==null&&m[k]!=='')o[k]=m[k]});if(o.dot&&m.geo)o.dot=[m.dot[0],m.dot[1],m.geo];/* 월드 파일용 geo는 서버 dot 칸에 같이(서버 수정 없음) */o.code=shCode(m);return o};
 /* 사진에 직접 정한 것(번호 cd·연도 yr·묶음에서 빼기 solo·사진 GPS 쓰기 refOff) → 서버 code 칸에 '!cd=긴급88;yr=2026;solo;off' 로 */
 const shFx=m=>{const a=[m.cd&&'cd='+m.cd,m.yr&&'yr='+m.yr,m.solo&&'solo',m.refOff&&'off',PH_KD[m.kd]&&m.kd!=='mw'&&'k='+m.kd,m.fc&&'fc='+m.fc,m.vr&&'vr='+m.vr,m.lr&&'lr'].filter(Boolean);return a.length?'!'+a.join(';'):''};
 /* 서버 code 칸: '!…' = 직접 정한 것('!'만 있으면 모두 풀림), 그 밖은 파일명에서 읽은 번호(예전 판 서버는 meta로 code를 못 바꿈 → 그때는 이 기기 것을 그대로 둠) */
@@ -9798,7 +9817,7 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();r
       if(shFxSet(m,o.code))d=true;
       if(d){SH.act=Date.now();modIds.push(m.id)}if(o.by&&!m.by)m.by=o.by;m.shUp=1;m.shSig=shSig(m);changed=true}continue}
    const n={id:o.id,name:o.name||o.id,dt:o.dt||'',ts:o.ts||phTs(o.dt||''),lat:o.lat??null,lng:o.lng??null,dir:o.dir??null,alt:o.alt??null,src:o.src||(o.lat!=null?'GPS':'없음'),
-    memo:o.memo||'',w:o.w||0,h:o.h||0,at:o.at||Date.now(),by:o.by||'',shUp:1};if(o.memoSrc)n.memoSrc=o.memoSrc;if(o.acc!=null)n.acc=o.acc;if(o.map){n.map=true;if(o.dot)n.dot=o.dot}shFxSet(n,o.code);
+    memo:o.memo||'',w:o.w||0,h:o.h||0,at:o.at||Date.now(),by:o.by||'',shUp:1};if(o.memoSrc)n.memoSrc=o.memoSrc;if(o.acc!=null)n.acc=o.acc;if(o.map){n.map=true;if(Array.isArray(o.dot)){n.dot=[o.dot[0],o.dot[1]];if(o.dot[2]&&typeof o.dot[2]==='object')n.geo=o.dot[2]}}shFxSet(n,o.code);
    n.shSig=shSig(n);add.push(n)}
   // 사진 목록(위치·메모)만 먼저 넣고, 작은 사진은 화면에 보일 때 받음 (shThumbGet)
   const addG=[];add.forEach(n=>{if(!PH.byId.has(n.id)){PH.list.push(n);PH.byId.set(n.id,n);dnN++;addG.push(n)}});if(add.length)changed=true;
