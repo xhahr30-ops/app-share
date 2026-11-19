@@ -1830,7 +1830,11 @@ html.dark svg.ri{color:var(--cd)!important}
   <div id="wrTbl"></div>
   <details id="wrTxtBox" open style="margin:6px 0"><summary style="cursor:pointer;font-size:12.5px;font-weight:700">✏️ 결과 문장 초안 <small style="font-weight:400">(고쳐 쓸 수 있음 · 고객 이름·주소·연락처 없음)</small></summary>
    <textarea id="wrTxt" style="width:100%;height:150px;margin-top:4px;font:inherit;font-size:12.5px"></textarea>
-   <label class="f">총괄 시트 포항 한 줄<input id="wrSum" style="width:100%"></label></details>
+   <label class="f">총괄 시트 포항 한 줄<input id="wrSum" style="width:100%"></label>
+   <div style="font-size:12.5px;font-weight:700;margin-top:6px">🎤 발표 대본 <small style="font-weight:400;color:var(--mute)">(월요 화상회의 발표자 매뉴얼 3원칙: 총 몇 개 중 몇 개 · 결과와 다음 일정 · 원인과 대책 → "이상입니다" · <b>[ ]</b>는 발표 전에 채울 곳 · 📧 예약 메일에 함께 나감)</small></div>
+   <textarea id="wrSpk" style="width:100%;height:140px;margin-top:4px;font:inherit;font-size:12.5px"></textarea>
+   <div class="sbtns"><button type="button" id="wrSpkCp" class="btn ol">📋 발표 대본 복사</button></div>
+   <p class="hint">머리기호는 <b>1.</b> 큰 항목 · <b>-</b> 세부 · <b>※</b> 참고·주의, 한 줄에 한 내용·명사형으로 씁니다. 용어는 📚 백과사전(상수도설계기준·관망진단 매뉴얼·노후상수도 정비사업 지침 등)과 발표자 매뉴얼에 맞춰 바꿉니다(예: 대수용가 → 다량수용가, 제수변 → 제수밸브, 최소야간유량 → 야간최소유량). 대책·예정일처럼 앱 자료에 없는 것은 지어내지 않고 <b>확인 필요</b>로 둡니다.</p></details>
   <div id="wrXlBox">
   <label class="drop"><input type="file" id="wrF" accept=".xlsx"><div class="ic">📗</div><b>지난주 주간공정보고 엑셀 (.xlsx)</b><span>넣으면 결과 주 칸(간트 실적·포항(서용) 기간·전주 결과·총괄 포항 줄)만 바꾼 새 파일을 내려받습니다 · 수식·서식은 그대로</span></label>
   <div style="font-size:12.5px;margin:2px 0"><label><input type="checkbox" id="wrCkTxt" checked> 포항(서용) 전주 결과(D25) 문장 바꾸기</label> · <label><input type="checkbox" id="wrCkSum" checked> 총괄 포항 줄 바꾸기</label> · <label><input type="checkbox" id="wrCkDt" checked> 전주·금주 기간 바꾸기</label></div>
@@ -16100,17 +16104,54 @@ function wrCalc(a,b){const V={},S={},src={};const set=(k,v,s,txt)=>{V[k]=v;src[k
  WR_IT.forEach(it=>{if(!(it.k in V)){V[it.k]=null;src[it.k]='앱 자료 없음'}});
  return{a,b,V,S,src}}
 const wrNum=v=>v==null?'':v==='prev'?'앞 주와 같게':String(v);
-/* ── 결과 문장 (양식 포항(서용) D25 모양) ── */
-function wrText(R){const S=R.S,L=[],m=WR.c.mode==='m';
- if(S.mwc){const k=S.mwc.k,kk=Object.keys(k).sort((x,y)=>k[y]-k[x]).map(x=>`${x} ${k[x]}건`).join(', ');L.push('ᆞ민원관리 ',m?`   ${R.lb} ${S.mwc.n}건${kk?' ('+kk+')':''}`:`   평일 ${S.mwc.wd}건, 주말 ${S.mwc.we}건 총 ${S.mwc.n}건${kk?' ('+kk+')':''}`,'')}else L.push('ᆞ민원관리 ','   확인 필요 (②-4 📒 민원 대장 없음)','');
- L.push('ᆞ누수탐사 ');
- if(S.tam){if(!S.tam.n)L.push('   적출 없음');S.tam.blk.forEach((A,b)=>{const ok=A.filter(o=>o.ok),ds=ok.map(o=>[o.dia?'D'+o.dia+'mm':'',o.cause||o.res].filter(Boolean).join(' ')).filter(Boolean);L.push(ok.length?`   ${b}블록 누수탐사 결과 ${ok.length}건 적출${ds.length?' ('+ds.slice(0,6).join(', ')+')':''}`:`   ${b}블록 누수탐사 결과 적출 없음 (확인 ${A.length}곳)`)})}
- else if(S.tsg){S.tsg.forEach((n,b)=>L.push(`   ${b}블록 누수탐사 ${n}개소 (사진 기준 · 적출 여부 확인 필요)`))}else L.push('   확인 필요 (누수탐사 대장·사진 없음)');
- if(R.V.road!=null)L.push(`   노면음청조사 ${R.V.road}km${S.road.length?' ('+S.road.slice(0,6).join(', ')+')':''}`);
- if(S.step.length)L.push('','ᆞ단계시험 ',`   ${S.step.join(', ')} 블록 단계시험 실시`);
- const mt=S.mt,mtT=[mt.vlv.size&&`밸브 ${mt.vlv.size}개소`,mt.gauge.size&&`계측설비 ${mt.gauge.size}개소`,mt.cal.size&&`유량계 검교정 ${mt.cal.size}개소`].filter(Boolean);if(mtT.length)L.push('','ᆞ시설물 유지관리 ','   '+mtT.join(', '));
- if(R.V.map!=null)L.push('','ᆞ관망도 보완 ',`   관로 ${R.V.map}km 수정`);
- L.push('','ᆞ누수음 수집  확인 필요');return L.join('\n')}
+/* ── 결과 문장 (2026-11-19 발표자 매뉴얼 B안): 머리기호 1. / - / ※, 한 줄 한 내용·명사형, 총 N 중 M, 원인·다음 일정, 대책은 지어내지 않고 '확인 필요' ──
+   용어는 📚 백과사전 6종(상수도설계기준·관망진단 매뉴얼·노후상수도 정비사업 지침 등)에서 쓰는 말 + 발표자 매뉴얼 통일 용어로 맞춤(WR_TERM) */
+const WR_TERM=[[/대형수용가|대수용가|대량수용가/g,'다량수용가'],[/노후(?:관망|관로|상수관망)\s*정비사업/g,'노후상수도 정비사업'],[/최소야간유량/g,'야간최소유량'],[/제수변/g,'제수밸브'],[/공기변/g,'공기밸브'],[/감압변/g,'감압밸브'],[/이토변|배니밸브/g,'이토밸브'],[/소블럭/g,'소블록'],[/(^|[^가-힣])블럭/g,'$1블록'],[/누수탐지/g,'누수탐사'],[/닥타일주철관/g,'덕타일주철관'],[/아연도금강관/g,'아연도강관'],[/노면청음/g,'노면음청'],[/(\d)\s*(mm|km|m|개소|건)(?![a-z가-힣])/g,'$1$2'],[/([A-Z]{2,5})(\d{2,4}mm)/g,'$1 $2']];
+const wrTerm=t=>WR_TERM.reduce((s,[re,to])=>s.replace(re,to),String(t||''));
+const wrTop=(arr,f,n)=>{const o={};arr.forEach(x=>{const k=f(x);if(k)o[k]=(o[k]||0)+1});return Object.keys(o).sort((a,b)=>o[b]-o[a]).slice(0,n||5).map(k=>[k,o[k]])};
+const wrPipe=o=>[o.mat&&o.mat!=='-'?o.mat:'',(o.dia||o.edia)?(o.dia||o.edia)+'mm':'',o.part&&o.part!=='-'?o.part:''].filter(Boolean).join(' ');
+function wrBlkTot(){try{return typeof poly==='object'&&poly&&poly.features?poly.features.length:0}catch(_){return 0}}
+function wrText(R){const S=R.S,L=[],m=WR.c.mode==='m',C=WR.cum&&WR.cum.S,per=m?(R.lb||'당월'):'지난주';let n=0;const H=t=>L.push(`${++n}. ${t}`),D=t=>L.push(`- ${t}`),N=t=>L.push(`※ ${t}`);
+ const LRr=(typeof LR==='object'&&LR.recs)||[],rg=wrRange(),civ=rg?LRr.filter(o=>o.src==='민원'&&wrIn(o.d,rg.a,rg.b)):[];
+ if(S.mwc){H(`민원대응 ${S.mwc.n}건 (${per} 처리 건수)`);const k=S.mwc.k,kk=Object.keys(k).sort((x,y)=>k[y]-k[x]).map(x=>`${x} ${k[x]}건`).join(', ');
+  if(kk)D(`구분: ${kk}${m?'':` (평일 ${S.mwc.wd}건, 주말 ${S.mwc.we}건)`}`);
+  const lk=civ.filter(o=>/^(누수|돌발)$/.test(String(o.res||'').trim()));const ca=wrTop(lk,o=>o.cause&&o.cause!=='-'?o.cause:'',4),pp=wrTop(lk,wrPipe,4);
+  if(ca.length)D('원인: '+ca.map(([a,b])=>`${a} ${b}건`).join(', '));if(pp.length)D('누수 부위: '+pp.map(([a,b])=>`${a} ${b}건`).join(', '));
+  const dn=lk.filter(o=>/^\d{1,2}:\d{2}/.test(String(o.tD||''))).length,un=lk.length-dn;if(lk.length)D(`처리: 누수·돌발 ${lk.length}건 중 준공 ${dn}건 완료`);if(un)N(`미준공 ${un}건: 처리 예정일 확인 필요`);if(lk.length)N('재발 방지 대책: 확인 필요')}
+ else{H('민원대응');D('확인 필요 (②-4 📒 민원 대장 없음)')}
+ if(S.tam){const ok=S.tam.ok;H(`누수탐사 ${S.tam.n}개소 확인, 적출 ${ok}건`);const bt=wrBlkTot(),bn=S.tam.blk.size;
+  S.tam.blk.forEach((A,b)=>{const o=A.filter(x=>x.ok),ds=wrTop(o,wrPipe,4).map(([a,c])=>a+(c>1?' '+c+'건':''));D(o.length?`${b}블록: 적출 ${o.length}건${ds.length?' ('+ds.join(', ')+')':''}`:`${b}블록: 적출 없음 (확인 ${A.length}개소)`)});
+  if(C&&C.tam&&bt)D(`탐사 블록 누계 ${C.tam.blk.size}블록 / 총 ${bt}블록`);else if(bt)D(`탐사 블록 ${bn}블록 / 총 ${bt}블록`);
+  if(R.V.road!=null)D(`노면음청 ${R.V.road}km${S.road.length?' ('+S.road.slice(0,6).join(', ')+')':''}`);
+  if(S.tam.un)N(`미수리 ${S.tam.un}건: 복구 예정일 확인 필요`);if(ok)N('누수 원인별 정비 건의(노후관 등): 확인 필요')}
+ else if(S.tsg){H('누수탐사');S.tsg.forEach((c,b)=>D(`${b}블록: ${c}개소 (사진 기준)`));N('적출 여부·결과: 확인 필요')}
+ else{H('누수탐사');D('확인 필요 (누수탐사 대장·사진 없음)');if(R.V.road!=null)D(`노면음청 ${R.V.road}km`)}
+ if(S.step.length){const bt=wrBlkTot(),cn=C&&C.step?C.step.length:null;H(`단계시험 ${S.step.length}블록 완료${cn!=null&&bt?` (누계 ${cn}블록 / 총 ${bt}블록)`:bt?` (총 ${bt}블록 중)`:''}`);D('블록: '+S.step.join(', '))}
+ const mt=S.mt,mtT=[mt.vlv.size&&['제수밸브 기능진단',mt.vlv.size],mt.gauge.size&&['계측설비 유지관리',mt.gauge.size],mt.cal.size&&['유량계 현장 검교정',mt.cal.size]].filter(Boolean);
+ if(mtT.length){H('시설물 유지관리');mtT.forEach(([a,b])=>{const c=C&&C.mt&&C.mt[{'제수밸브 기능진단':'vlv','계측설비 유지관리':'gauge','유량계 현장 검교정':'cal'}[a]];D(`${a} ${b}개소 완료${c&&c.size?` (누계 ${c.size}개소)`:''}`)});N('총 대상 개소: 확인 필요')}
+ if(R.V.map!=null){H(`관망도 보완 ${R.V.map}km 수정 완료`)}
+ H('누수음 수집');D('확인 필요');
+ return wrTerm(L.join('\n'))}
+/* 🎤 발표 대본: 결과 문장을 매뉴얼 3원칙(총 몇 개 중 몇 개 · 결과와 다음 일정 · 원인과 대책) 문장으로. [ ]는 발표 전에 채울 곳 */
+function wrScript(R){const S=R.S,m=WR.c.mode==='m',per=m?((R.lb||'당월')+' '):'지난주 ',P=[],C=WR.cum&&WR.cum.S,bt=wrBlkTot();
+ const LRr=(typeof LR==='object'&&LR.recs)||[],rg=wrRange(),civ=rg?LRr.filter(o=>o.src==='민원'&&wrIn(o.d,rg.a,rg.b)):[];
+ P.push((m?'지난달':'지난주')+' 경영진 지시사항부터 말씀드리겠습니다. [지시사항 결과 확인 필요]');
+ if(S.mwc){const k=S.mwc.k,kk=Object.keys(k).sort((x,y)=>k[y]-k[x]).map(x=>`${x} ${k[x]}건`).join(', ');const lk=civ.filter(o=>/^(누수|돌발)$/.test(String(o.res||'').trim())),dn=lk.filter(o=>/^\d{1,2}:\d{2}/.test(String(o.tD||''))).length,ca=wrTop(lk,o=>o.cause&&o.cause!=='-'?o.cause:'',2),pp=wrTop(lk,wrPipe,2);
+  let s=`${per}처리한 민원은 ${S.mwc.n}건${kk?'으로, '+kk+'입니다':'입니다'}.`;
+  if(lk.length)s+=` 누수·돌발 ${lk.length}건의 주요 원인은 ${ca.length?ca.map(([a,b])=>`${a} ${b}건`).join(', '):'[원인 확인 필요]'}${pp.length?'이고, '+pp.map(([a,b])=>`${a} ${b}건`).join(', ')+'을 수리했습니다':'입니다'}.`;
+  if(lk.length)s+=` 이 중 ${dn}건은 준공을 마쳤고${lk.length-dn?`, 남은 ${lk.length-dn}건은 [처리 예정일]까지 마무리하겠습니다`:''}. 재발 방지를 위해 [대책 확인 필요]하겠습니다.`;P.push(s)}
+ else P.push('민원은 [민원 대장 확인 필요]입니다.');
+ if(S.tam){const ok=S.tam.ok;let s=`누수탐사는 ${[...S.tam.blk.keys()].slice(0,4).join(', ')}블록${S.tam.blk.size>4?' 등':''} ${S.tam.n}개소를 확인해 ${ok}건을 적출했습니다.`;
+  const all=[];S.tam.blk.forEach(A=>A.filter(x=>x.ok).forEach(x=>all.push(x)));const pp=wrTop(all,wrPipe,2);if(pp.length)s+=` 주요 부위는 ${pp.map(([a,b])=>`${a} ${b}건`).join(', ')}입니다.`;
+  if(bt)s+=` 탐사 블록은 ${C&&C.tam?'누계 '+C.tam.blk.size:'이번 '+S.tam.blk.size}블록으로 총 ${bt}블록 중입니다.`;
+  if(R.V.road!=null)s+=` 노면음청은 ${R.V.road}km를 마쳤습니다.`;
+  if(S.tam.un)s+=` 미수리 ${S.tam.un}건은 감독관과 협의해 [복구 예정일]까지 복구하겠습니다.`;if(ok)s+=' 노후관 등 반복 누수 구간은 [정비 건의 여부 확인 필요]하겠습니다.';P.push(s)}
+ else if(S.tsg)P.push(`누수탐사는 ${[...S.tsg.keys()].join(', ')}블록을 진행했고, 적출 결과는 [확인 필요]입니다.`);
+ if(S.step.length)P.push(`단계시험은 ${S.step.join(', ')} ${S.step.length}블록을 완료했습니다${C&&C.step&&bt?`. 누계 ${C.step.length}블록으로 총 ${bt}블록 중입니다`:''}. 다음 주는 [다음 블록·일정 확인 필요]를 진행하겠습니다.`);
+ const mt=S.mt,mtT=[mt.vlv.size&&`제수밸브 기능진단 ${mt.vlv.size}개소`,mt.gauge.size&&`계측설비 유지관리 ${mt.gauge.size}개소`,mt.cal.size&&`유량계 현장 검교정 ${mt.cal.size}개소`].filter(Boolean);
+ if(mtT.length)P.push(`시설물은 ${mtT.join(', ')}를 완료했고, 총 [대상 개소 확인 필요] 중 남은 곳은 [일정]까지 마치겠습니다.`);
+ if(R.V.map!=null)P.push(`관망도는 관로 ${R.V.map}km를 보완했습니다.`);
+ P.push('이상입니다.');return wrTerm(P.join('\n\n'))}
 function wrSumLine(R){const S=R.S;const nT=S.tam?[...S.tam.blk.values()].reduce((s,A)=>s+A.filter(o=>o.ok).length,0):S.tsg?[...S.tsg.values()].reduce((s,n)=>s+n,0):null;
  const bl=S.tam?[...S.tam.blk.keys()]:S.tsg?[...S.tsg.keys()]:[];return `ᆞ포항현장 : 누수탐사${bl.length?' '+bl.slice(0,4).join(','):''} (누수혐의 ${nT==null?'확인 필요':nT+'개소'}),민원대응(${S.mwc?S.mwc.n+'건':'확인 필요'})`}
 /* ── 화면 ── */
@@ -16123,7 +16164,7 @@ function wrRun(){const r=wrRange();if(!r){$('wrMsg').textContent='⚠ 날짜를 
  $('wrTbl').innerHTML=`<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:12.5px"><tr><th>No</th><th>세부공종(단위)</th><th class="r">${m?'당월':'그 주 실적'}</th>${m?`<th class="r">누계<br><small>${esc(WR.c.s||'')}~</small></th>`:''}<th>가져온 곳</th>${m?'':'<th>엑셀에<br>넣기</th>'}</tr>${rows}</table></div>`+
   (m&&R.S.tam?`<p class="hint" style="margin:4px 0">누수확인 조사 현황 · 당월 적출 ${R.S.tam.ok} · 정탐 ${R.S.tam.rep} · 오탐 ${R.S.tam.fp} · 미수리 ${R.S.tam.un}${C&&C.S.tam?` (누계 정탐 ${C.S.tam.rep} · 오탐 ${C.S.tam.fp} · 미수리 ${C.S.tam.un})`:''}</p>`:'')+
   (m&&R.S.mwc?`<p class="hint" style="margin:4px 0">민원 · 당월 ${R.S.mwc.n}건${C&&C.S.mwc?`, 누계 ${C.S.mwc.n}건`:''}</p>`:'');
- $('wrTxt').value=wrText(R);$('wrSum').value=wrSumLine(R);try{if($('wrSubj'))$('wrSubj').value='';wrMailDef()}catch(_){}
+ $('wrTxt').value=wrText(R);$('wrSum').value=wrTerm(wrSumLine(R));try{$('wrSpk').value=wrScript(R)}catch(e){console.warn('발표 대본',e)}try{if($('wrSubj'))$('wrSubj').value='';wrMailDef()}catch(_){}
  const nA=WR_IT.filter(it=>R.V[it.k]!=null).length;$('wrMsg').textContent=`${r.lb} · 앱 자료로 센 공종 ${nA}개 / ${WR_IT.length}개 · 나머지는 확인 필요`+(m?' · 월간 한글 양식 채우기는 다음 단계(지금은 📋 표 복사)':'')}
 function wrVals(){const R=WR.res;if(!R)return null;const o={};$('wrTbl').querySelectorAll('.wrCk').forEach(c=>{if(!c.checked)return;const k=c.dataset.k,inp=$('wrTbl').querySelector(`.wrV[data-k="${k}"]`);let v=R.V[k];if(inp){const n=parseFloat(String(inp.value).replace(/,/g,''));if(!isFinite(n))return;v=n}if(v!=null)o[k]=v});return o}
 function wrCopy(){const R=WR.res;if(!R){wrRun();if(!WR.res)return}const m=WR.c.mode==='m',C=WR.cum,L=[['No','세부공종','단위',m?'당월':'실적',...(m?['누계']:[]),'근거'].join('\t')];
@@ -16181,6 +16222,7 @@ async function wrXl(){const f=$('wrF').files&&$('wrF').files[0],out=$('wrOut');i
  const sv=v=>{const t=String(v??'');return esc(t.length>40?t.slice(0,40)+'…':t)};
  out.innerHTML=`<p class="hint">⬇ ${esc(nm)} · 바꾼 칸 ${log.length}개${ch?` · ${ch.n}차분 ${wk}주차`:''}</p><div style="overflow:auto;max-height:240px"><table class="tbl" style="width:100%;font-size:12px"><tr><th>시트</th><th>칸</th><th>내용</th><th>전</th><th>후</th></tr>${log.map(l=>`<tr><td>${esc(l[0])}</td><td>${l[1]}</td><td>${esc(l[2])}</td><td>${sv(l[3])}</td><td>${sv(l[4])}</td></tr>`).join('')}</table></div>`+(warn.length?`<p class="hint">⚠ ${warn.map(esc).join('<br>⚠ ')}</p>`:'')+'<p class="hint">엑셀에서 열면 공정률·인원 비율이 다시 계산됩니다. 인원투입 실시 인·일, 금주 계획, 지시사항, TBM 내용은 손으로 채우세요.</p>';}
 function wrInit(){if(!$('wrSec'))return;wrLoad();wrDefault();wrUi();
+ $('wrSpkCp').onclick=()=>{const t=$('wrSpk').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>$('wrMsg').textContent='📋 발표 대본을 복사했습니다.').catch(()=>{$('wrSpk').select();$('wrMsg').textContent='Ctrl+C로 복사하세요.'})};
  $('wrMode').onchange=()=>{WR.c.mode=$('wrMode').value;wrSave();wrUi();WR.res=null;$('wrTbl').innerHTML='';$('wrMsg').textContent=''};
  $('wrD').onchange=()=>{WR.c.d=$('wrD').value;wrSave();wrRg()};$('wrM').onchange=()=>{WR.c.m=$('wrM').value;wrSave();wrRg()};$('wrS').onchange=()=>{WR.c.s=$('wrS').value;wrSave()};
  $('wrRun').onclick=wrRun;$('wrCopy').onclick=wrCopy;$('wrXl').onclick=()=>wrXl().catch(e=>{$('wrOut').textContent='엑셀 만들기 실패: '+(e&&e.message||e)});
@@ -16197,7 +16239,7 @@ function wrAttTxt(){const el=$('wrAtt');if(!el)return;const r=wrRange(),x=WR.las
 async function wrTblXlsx(){const R=WR.res,C=WR.cum,m=WR.c.mode==='m';if(typeof XLSX==='undefined')throw new Error('엑셀 도구를 못 불러왔습니다(인터넷 확인).');
  const A=[[`${R.lb} ${m?'월간':'주간'}공정보고 · 공종 실적 (스마트 물길주소, 만든이: 구병순)`],[],['No','세부공종','단위',m?'당월':'실적',...(m?['누계']:[]),'가져온 곳']];
  WR_IT.forEach((it,i)=>{const v=R.V[it.k],n=v==null?'확인 필요':v==='prev'?'앞 주와 같게':v,cv=C?C.V[it.k]:null;A.push([i+1,it.n,it.u,n,...(m?[cv==null||cv==='prev'?'':cv]:[]),R.src[it.k]||''])});
- A.push([],['결과 문장']);$('wrTxt').value.split('\n').forEach(l=>A.push([l]));
+ A.push([],['결과 문장']);$('wrTxt').value.split('\n').forEach(l=>A.push([l]));{const sp=($('wrSpk')&&$('wrSpk').value.trim())||'';if(sp){A.push([],['🎤 발표 대본']);sp.split('\n').forEach(l=>A.push([l]))}}
  const ws=XLSX.utils.aoa_to_sheet(A);ws['!cols']=[{wch:5},{wch:24},{wch:8},{wch:10},{wch:10},{wch:40}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'공정보고');
  const buf=XLSX.write(wb,{type:'array',bookType:'xlsx'}),r=wrRange();return{blob:new Blob([buf]),name:`${m?'월간':'주간'}공정보고_${m?WR.c.m:r.a+'주'}_실적표.xlsx`}}
 const wrB64=b=>new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(String(f.result).split(',')[1]||'');f.onerror=()=>rej(f.error);f.readAsDataURL(b)});
@@ -16209,7 +16251,7 @@ async function wrMailPut(id){const msg=$('wrMMsg');if(!wrShOk())return;if(!WR.re
  if(!id){if(!to){msg.textContent='⚠ 받는 사람 메일 주소를 넣어 주세요.';return}if(!d||!t){msg.textContent='⚠ 보낼 날짜·시각을 정해 주세요.';return}}
  const at=d&&t?new Date(d+'T'+t+':00').getTime():0;if(!id&&at<Date.now()-60000){msg.textContent='⚠ 보낼 시각이 이미 지났습니다.';return}
  const r=wrRange(),x=WR.lastX&&r&&WR.lastX.a===r.a&&WR.c.mode==='w'?WR.lastX:await wrTblXlsx();msg.textContent='⏳ 공유 서버에 맡기는 중…';
- const q={kind:WR.c.mode,subj,body:$('wrTxt').value,file:await wrB64(x.blob),fname:x.name,site:(typeof SITE==='object'&&SITE.name)||''};
+ const sp=($('wrSpk')&&$('wrSpk').value.trim())||'';const q={kind:WR.c.mode,subj,body:wrTerm($('wrTxt').value)+(sp?'\n\n──────────\n🎤 발표 대본\n\n'+wrTerm(sp):''),file:await wrB64(x.blob),fname:x.name,site:(typeof SITE==='object'&&SITE.name)||''};
  if(id){const o=(WR.ml||[]).find(z=>z.id===id);if(!o){msg.textContent='예약을 찾지 못했습니다.';return}Object.assign(q,{id,to:o.to,at:Math.max(o.at,Date.now()),rep:o.rep});if(!subj)q.subj=o.subj}else Object.assign(q,{to,at,rep:$('wrRep').checked?'w':''});
  try{const j=await shReq('mailput',q);WR.c.mail={to:q.to,t:t||WR.c.mail&&WR.c.mail.t};wrSave();
   msg.textContent=`✅ ${id?'내용을 바꿨습니다':'예약했습니다'} · ${fmtDT(j.item.at)}${j.item.rep==='w'?' (매주 되풀이)':''} · ${j.item.to}`+(j.quota!=null?` · 오늘 더 보낼 수 있는 메일 ${j.quota}통`:'');await wrMailList()}catch(e){msg.textContent='⚠ '+wrMailErr(e)}}
