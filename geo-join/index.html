@@ -464,7 +464,7 @@ body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{display:flex!important;flex-di
 #mshot img{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}
 #mshot .mb{display:flex;gap:6px;flex-wrap:wrap}#mshot .mb .btn{flex:1 1 auto}#mshot small{display:block;font-size:12px;line-height:1.45}.fmctl button:disabled{opacity:.6}
 #pcpBox{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:10050;width:min(94vw,440px);background:var(--card,#fff);color:var(--ink,#1e293b);border-radius:14px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-size:13px;max-height:80vh;overflow:auto}#pcpBox .pch{display:flex;justify-content:space-between;align-items:center;gap:8px}#pcpBox .pch b{font-size:14.5px}#pcpBox .pch button{border:0;background:none;font-size:18px;cursor:pointer;color:inherit;padding:2px 6px}#pcpBox .pcs{line-height:1.45}#pcpBox .pcb{display:flex;gap:6px}#pcpBox .pcb .btn{flex:1 1 0;margin:0}#pcpBox .pck{font-size:12px;color:var(--mute,#64748b);display:flex;gap:6px;align-items:center}
-#pcpBox .pc43 select{font-size:12px;padding:2px 4px;max-width:62%;flex:1}#pcpBox .pcz{flex:0 0 46px!important;font-size:19px;font-weight:700}#pcpBox .pczr{align-items:stretch}#pcpBox .pczt{flex:1 1 auto;display:flex;align-items:center;font-weight:700;font-size:13px}#pcpBox .pczl{flex:0 0 auto;min-width:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;border:1px solid var(--line2,#cbd5e1);border-radius:8px;padding:2px 6px}#pcpBox .pczl b{font-size:17px;color:#e11d48}#pcpBox .pczl small{font-size:10.5px;color:var(--mute,#64748b)}#pcpBox .pci{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}.pcpX{display:none;position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;z-index:700;pointer-events:none}.pcpX svg{width:100%;height:100%;display:block}html.pcpOn .pcpX{display:block}.fm-me{background:none;border:0}.fm-me span{display:block;width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 2px #2563eb55,0 1px 4px #0006}
+#pcpBox .pc43 select{font-size:12px;padding:2px 4px;max-width:62%;flex:1}#pcpBox .pcno{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px}#pcpBox .pcno input{flex:1;min-width:0;font-size:16px;padding:8px 10px;border:2px solid #e11d48;border-radius:8px;background:var(--card,#fff);color:inherit}#pcpBox .pcz{flex:0 0 46px!important;font-size:19px;font-weight:700}#pcpBox .pczr{align-items:stretch}#pcpBox .pczt{flex:1 1 auto;display:flex;align-items:center;font-weight:700;font-size:13px}#pcpBox .pczl{flex:0 0 auto;min-width:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;border:1px solid var(--line2,#cbd5e1);border-radius:8px;padding:2px 6px}#pcpBox .pczl b{font-size:17px;color:#e11d48}#pcpBox .pczl small{font-size:10.5px;color:var(--mute,#64748b)}#pcpBox .pci{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:8px;border:1px solid var(--line2,#cbd5e1);background:#e5e7eb}.pcpX{display:none;position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;z-index:700;pointer-events:none}.pcpX svg{width:100%;height:100%;display:block}html.pcpOn .pcpX{display:block}.fm-me{background:none;border:0}.fm-me span{display:block;width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 2px #2563eb55,0 1px 4px #0006}
 #fmBtn.on{background:#0f766e;color:#fff}
 body.touch .btn,body.touch .hbtn,body.touch select:not(.msel),body.touch input[type=text],body.touch input[type=search],body.touch input[type=password],body.touch input[type=number],body.touch input:not([type]),body.touch textarea{min-height:40px}
 body.touch select,body.touch input[type=text],body.touch input[type=search],body.touch input[type=password],body.touch input[type=number],body.touch input:not([type]),body.touch textarea{font-size:16px!important}
@@ -9145,7 +9145,7 @@ async function phMwExport(ids,btn){
   $('phMsg').textContent=`📤 민원대장용 사진 묶음: 접수번호 ${seq.size.toLocaleString()}건 · 사진 ${(L.length-miss).toLocaleString()}장${part>1?` (ZIP ${part}개로 나눔)`:''}${miss?` · 원본이 없어 뺀 사진 ${miss}장`:''}. 민원대장관리 앱 🗒️ 대응관리 일지에서 📥 사진 묶음 불러오기로 넣으세요.`}
  catch(e){alert('민원대장용 내보내기 실패: '+((e&&e.message)||e))}finally{btn.textContent=t0;btn.disabled=false}}
 /* ---------- 이벤트 연결 ---------- */
-$('phFile').onchange=e=>{const f=e.target.files;if(f&&f.length){if(Date.now()-(PCP.camAt||0)<600e3)phCamMark(f,true);PCP.camAt=0;phAdd(f).finally(()=>{e.target.value=''})}}; /* 📷(현장 지도)로 연 경우 막 찍은 사진만 가로 4:3 */
+$('phFile').onchange=e=>{const f=e.target.files;if(f&&f.length){const cam=Date.now()-(PCP.camAt||0)<600e3,rn=cam?pcpRunNo():'',n0=PH.list.length;if(cam)phCamMark(f,true);PCP.camAt=0;phAdd(f).then(()=>pcpNumber(n0,rn)).finally(()=>{e.target.value=''})}}; /* 📷(현장 지도)로 연 경우 막 찍은 사진만 가로 4:3 */
 /* ===== 현장 모드: 휴대폰·태블릿 자동 (헤더 📱 버튼으로 켜고 끄기, 기억함) ===== */
 const FM_TOUCH=matchMedia('(pointer:coarse)'),FM_NARROW=matchMedia('(max-width:1023px)');
 function fmPref(){try{return localStorage.getItem('geo-fm')||'auto'}catch(_){return 'auto'}}
@@ -9191,6 +9191,14 @@ const PCP={o:null,next:'cam',wid:null,me:null,ll:null,acc:null,fix:false,snap:nu
 function pcpWide(){try{return localStorage.getItem('geo-pcpw')!=='0'}catch(_){return true}}
 function pcpOn(){try{return localStorage.getItem('geo-pcp')!=='0'}catch(_){return true}}
 function pcpOnSet(v){try{localStorage.setItem('geo-pcp',v?'1':'0')}catch(_){}const c=$('pcpOnCk');if(c)c.checked=!!v}
+/* 🔢 사진 번호(접수번호 등): 위치 캡처 = 번호.jpg, 이어 찍는 사진 = 번호-1, 번호-2… (1시간, 새 위치 캡처를 열면 끝) */
+function pcpNoNorm(v){return String(v||'').normalize('NFC').replace(/\s+/g,'').replace(/[\\/:*?"<>|]/g,'')}
+function pcpNo(){const i=PCP.o&&PCP.o.querySelector('[data-a="no"]');return i?pcpNoNorm(i.value):''}
+function pcpRunSet(no){PCP.run=no?{no,until:Date.now()+3600e3}:null}
+function pcpRunNo(){return PCP.run&&Date.now()<PCP.run.until?PCP.run.no:''}
+function pcpNextSeq(no){let k=0;const re=new RegExp('^'+no.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*-\\s*(\\d{1,3})(?:\\.[^.]+)?$','i');for(const m of PH.list){const x=re.exec(String(m.name||'').normalize('NFC'));if(x&&+x[1]>k)k=+x[1]}return k+1}
+async function pcpNumber(n0,no){if(!no)return;let k=pcpNextSeq(no),n=0;for(const m of PH.list.slice(n0)){if(m.map)continue;const ext=((/\.(jpe?g|png)$/i.exec(m.name)||['.jpg'])[0]).toLowerCase();m.name=`${no}-${k++}${ext}`;m.cd=no;n++}
+ if(n){await phSaveMeta(true);try{phRefresh()}catch(_){}phToast(`🔢 사진 ${n}장을 ${no} 묶음에 넣었습니다 (${no}-${k-n}${n>1?' ~ '+no+'-'+(k-1):''}).`,{ms:5000})}}
 function pcpGo(next){if(next==='tcam')tcStart();else{PCP.camAt=Date.now();$('phFile').click()}}
 /* 📐 세로로 찍은 사진 → 가로 4:3 (대장용). 폰 기본 카메라는 비율을 정해 열 수 없어 찍은 뒤 바꿈.
    crop = 가운데 가로 4:3 잘라 냄(기본, 위아래가 잘림) · pad = 사진 전체를 살리고 양옆을 흐린 여백으로 채움 · off = 그대로.
@@ -9214,13 +9222,15 @@ async function ph43File(f){const mode=ph43Mode();if(mode==='off'||/heic|heif/i.t
  catch(e){console.warn('가로 4:3',e);return f}finally{try{bmp.close()}catch(_){}}}
 try{const q=$('ph43Sel');q.innerHTML=ph43Opts(ph43Mode());q.onchange=ev=>ph43Set(ev.target.value)}catch(_){}
 function pcpStart(next){if(!map||!pcpOn()){pcpGo(next);return}
- PCP.next=next;PCP.fix=false;PCP.cap=null;PCP.snap=null;pcpClose(true);
+ PCP.next=next;PCP.fix=false;PCP.cap=null;PCP.snap=null;PCP.run=null;pcpClose(true);
  const o=document.createElement('div');o.id='pcpBox';o.setAttribute('role','dialog');o.setAttribute('aria-label','찍기 전 현장 위치 캡처');PCP.o=o;
  o.innerHTML=`<div class="pch"><b>📍 찍기 전에 현장 위치 캡처</b><button type="button" data-a="x" aria-label="닫기">✕</button></div>
   <div class="pcs" data-t="gps">📡 내 위치 받는 중…</div><div class="pcs" data-t="pipe"></div>
   <small class="mute" data-t="tip">지도를 끌어 가운데 <b class="c-rd">🔴 빨간 점</b>을 정확한 자리(관 위)에 맞추고, ＋/−로 위치도 축척을 맞추세요.</small>
   <div class="pcb pczr"><span class="pczt">🔍 위치도 확대</span><button type="button" class="btn ol pcz" data-a="zo" aria-label="축소">−</button><span class="pczl" data-t="z" aria-live="polite"></span><button type="button" class="btn ol pcz" data-a="zi" aria-label="확대">＋</button></div>
   <div class="pcb"><button type="button" class="btn ol" data-a="me">🎯 내 위치로</button><button type="button" class="btn ol" data-a="snap" disabled>🧲 관로에 붙이기</button></div>
+  <label class="pcno">🔢 사진 번호 <input data-a="no" type="text" inputmode="text" autocomplete="off" placeholder="접수번호 예: 1956 · 긴급159 (없으면 비움)"></label>
+  <small class="mute" data-t="nohint">번호를 넣으면 위치 캡처는 <b>번호.jpg</b>, 이어 찍는 사진은 <b>번호-1, 번호-2…</b> 이름으로 같은 묶음에 들어갑니다.</small>
   <div class="pcb"><button type="button" class="btn" data-a="cap">📸 위치 캡처</button><button type="button" class="btn ol" data-a="skip">${next==='tcam'?'📝':'📷'} 캡처 없이 찍기</button></div>
   <label class="pck"><input type="checkbox" data-a="wide"${pcpWide()?' checked':''}> 🖼 가로 사진으로 캡처 (대장용 4:3 · 폰을 세로로 들어도)</label>
   <label class="pck pc43">📐 세로로 찍은 사진 <select class="ph43s" data-a="p43" aria-label="세로로 찍은 사진">${ph43Opts(ph43Mode())}</select></label>
@@ -9231,7 +9241,7 @@ function pcpStart(next){if(!map||!pcpOn()){pcpGo(next);return}
  o.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='x')pcpClose();else if(a==='zi')map.zoomIn(1);else if(a==='zo')map.zoomOut(1);else if(a==='me'){if(PCP.ll)map.setView(PCP.ll,Math.max(map.getZoom(),19))}
   else if(a==='snap'){if(PCP.snap)map.panTo([PCP.snap.lat,PCP.snap.lng])}
-  else if(a==='skip'){pcpClose();pcpGo(next)}
+  else if(a==='skip'){pcpRunSet(pcpNo());pcpClose();pcpGo(next)}
   else if(a==='cap')pcpCapture(b);
   else if(a==='go'){pcpClose();pcpGo(next)}
   else if(a==='re'){const c=PCP.cap;PCP.cap=null;if(c){c.caps.forEach(x=>{try{URL.revokeObjectURL(x.url)}catch(_){}});try{phDelete(c.caps.map(x=>x.id)).catch(()=>{})}catch(_){}}pcpForm()}};
@@ -9256,6 +9266,7 @@ async function pcpShot(ctr,z,lb,s,bh){const mc=map.getContainer(),wide=pcpWide()
   map.invalidateSize(false);map.setView(ctr,z,{animate:false});await new Promise(r=>setTimeout(r,wide||z!==z0?900:200));B=await mapShotBase([],k=>Math.round(bh*k),null,wide?1.5:null,{dom:true})}
  finally{if(wide)mc.style.cssText=cs;map.invalidateSize(false);map.setView(c0,z0,{animate:false})}
  const {g,k,W,Hm}=B,secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));mapShotDeco(B,secret);const cx=W/2,cy=Hm/2;pcpDot(g,cx,cy,k);
+ {const no=pcpNo();if(no){g.save();g.font=`700 ${30*k}px "Noto Sans KR",sans-serif`;let fz=30;while(fz>14&&g.measureText(no).width>W*.4){fz-=2;g.font=`700 ${fz*k}px "Noto Sans KR",sans-serif`}const bw=Math.max(110*k,g.measureText(no).width+36*k),bh2=48*k,bx=W-64*k-bw;g.fillStyle='#fff';g.fillRect(bx,8*k,bw,bh2);g.lineWidth=2.5*k;g.strokeStyle='#000';g.strokeRect(bx,8*k,bw,bh2);g.fillStyle='#000';g.textAlign='center';g.textBaseline='middle';g.fillText(no,bx+bw/2,8*k+bh2/2+1*k);g.restore()}} /* 오른쪽 위 번호 상자(위치도와 같은 모양) */
 
  const F=(w,sz)=>`${w} ${sz*k}px "Noto Sans KR","Malgun Gothic",sans-serif`,now=Date.now(),blk=PCP.blk||'',pt=s?pcpPipeTxt(s):'';
  g.fillStyle='#fff';g.fillRect(0,Hm,W,g.canvas.height-Hm);g.fillStyle='#e11d48';g.fillRect(0,Hm,W,3*k);g.textBaseline='middle';
@@ -9271,10 +9282,10 @@ async function pcpCapture(btn){if(PCP.busy||!map)return;PCP.busy=true;const t0=b
   PCP.o.style.visibility='hidden';const R=[];try{for(const it of L2){R.push(Object.assign(await pcpShot(ctr,it.z,it.lb,s,bh),it))}}finally{if(PCP.o)PCP.o.style.visibility=''}
   const now=Date.now(),d=new Date(now),p=v=>String(v).padStart(2,'0'),dt=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`,base=`현장위치_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
   const kd=PCP.next==='tcam'?(phKdOf(tcCfg().kd)||phKdUp()):phKdUp(),caps=[];
-  for(let i=0;i<R.length;i++){const r=R[i],name=base+(r.sf?'_'+r.sf:'')+'.jpg',id='p'+phHash('pcp|'+name+'|'+now);
-   const m={id,name,dt,ts:now-(R.length-i)*1000,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:['🔴 현장 위치 캡처',s?'관로 위 '+pcpPipeTxt(s):'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · '),w:r.w,h:r.h,at:now,map:true,dot:r.dot};
-   if(kd&&kd!=='mw')m.kd=kd;if(PCP.acc!=null)m.acc=PCP.acc;await idbPut([['ph:'+id,r.blob],['pt:'+id,r.thb]]);PH.list.push(m);PH.byId.set(id,m);caps.push({id,name,lb:r.lb,url:URL.createObjectURL(r.blob)})}
-  await phSaveMeta(true);phRefresh();try{chgPhMine(caps.map(c=>c.id))}catch(_){}
+  for(let i=0;i<R.length;i++){const r=R[i],no=pcpNo(),name=no?no+(r.sf?'_'+r.sf:'')+'.jpg':base+(r.sf?'_'+r.sf:'')+'.jpg',id='p'+phHash('pcp|'+name+'|'+now);
+   const m={id,name,dt,ts:now-(R.length-i)*1000,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:['🔴 현장 위치 캡처'+(no?' · 번호 '+no:''),s?'관로 위 '+pcpPipeTxt(s):'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · '),w:r.w,h:r.h,at:now,map:true,dot:r.dot};
+   if(kd&&kd!=='mw')m.kd=kd;if(no)m.cd=no;if(PCP.acc!=null)m.acc=PCP.acc;await idbPut([['ph:'+id,r.blob],['pt:'+id,r.thb]]);PH.list.push(m);PH.byId.set(id,m);caps.push({id,name,lb:r.lb,url:URL.createObjectURL(r.blob)})}
+  pcpRunSet(pcpNo());await phSaveMeta(true);phRefresh();try{chgPhMine(caps.map(c=>c.id))}catch(_){}
   PCP.cap={caps,note:R.map(r=>r.note).find(Boolean)||'',masked:R.some(r=>r.masked)};pcpForm()}
  catch(e){alert('현장 위치를 캡처하지 못했습니다: '+((e&&e.message)||e));btn.disabled=false;btn.textContent=t0}
  finally{PCP.busy=false}}
@@ -9283,7 +9294,7 @@ function pcpForm(){const o=PCP.o;if(!o)return;const c=PCP.cap;
  if(!c){pcpStart(PCP.next);return}
  document.documentElement.classList.remove('pcpOn');
  o.innerHTML=`<div class="pch"><b>✅ 현장 위치를 캡처했습니다</b><button type="button" data-a="x" aria-label="닫기">✕</button></div>
-  ${c.caps.map(x=>`<img class="pci" src="${x.url}" alt="현장 위치 캡처">`).join('')}<small class="mute">${esc(c.caps.map(x=>x.name).join(', '))} · 사진 묶음 맨 앞에 넣었습니다. 이제 찍은 사진은 이 자리 묶음으로 들어갑니다.${c.masked?' 고객 정보 창은 가렸습니다.':''}${c.note?' '+esc(c.note):''}</small>
+  ${c.caps.map(x=>`<img class="pci" src="${x.url}" alt="현장 위치 캡처">`).join('')}<small class="mute">${esc(c.caps.map(x=>x.name).join(', '))} · 사진 묶음 맨 앞에 넣었습니다. ${pcpRunNo()?`이제 찍는 사진은 <b>${esc(pcpRunNo())}-${pcpNextSeq(pcpRunNo())}</b>부터 번호가 붙어 같은 묶음에 들어갑니다.`:'이제 찍은 사진은 이 자리 묶음으로 들어갑니다.'}${c.masked?' 고객 정보 창은 가렸습니다.':''}${c.note?' '+esc(c.note):''}</small>
   <div class="pcb"><button type="button" class="btn" data-a="go">${PCP.next==='tcam'?'📝 이제 글자 사진 찍기':'📷 이제 사진 찍기'}</button><button type="button" class="btn ol" data-a="re">↺ 다시 맞추기</button></div>`}
 function pcpClose(keep){map&&map.off('move zoomend',pcpMove);if(PCP.wid!=null)try{navigator.geolocation.clearWatch(PCP.wid)}catch(_){}PCP.wid=null;
  if(PCP.me){try{map.removeLayer(PCP.me)}catch(_){}PCP.me=null}document.documentElement.classList.remove('pcpOn');
@@ -9427,7 +9438,7 @@ function tcWin(){let w=document.getElementById('tcWin');if(w){w.hidden=false;ret
   else if(t==='logoX'){const c=tcCfg();c[b.dataset.k||'logo']='';tcSave(c);tcFill(w,1);tcPrev(w)}};
  return w}
 function tcFill(w,keep){const c=tcCfg(),q=k=>w.querySelector(`[data-c="${k}"]`);
- if(!keep){q('nm').value=tcName(c);q('ds').value=''}
+ if(!keep){q('nm').value=tcName(c);q('ds').value='';const rn=pcpRunNo();if(rn)q('nm').value=rn+'-'+pcpNextSeq(rn)}
  ['svc','co','pre','no','pos','sty','lgp','lgp2','sc','lgs','lgs2'].forEach(k=>{q(k).value=c[k]??''});q('lgbg').checked=c.lgbg!==0;['lgs','lgs2'].forEach(k=>{w.querySelector(`[data-v="${k}"]`).textContent=(c[k]||100)+'%'});w.querySelector('[data-t="scv"]').textContent=c.sc+'%';q('dig').value=String(c.dig||3);q('max').value=String(c.max);q('dl').checked=!!c.dl;
  q('kd').innerHTML=phKdOpts(phKdOf(c.kd)||phKdUp());
  w.querySelectorAll('[data-s]').forEach(i=>{i.checked=!!c.show[i.dataset.s]});
@@ -9455,6 +9466,7 @@ async function tcOk(w,btn){if(!TCM.bmp)return;const c=tcRead(w),v=tcVals(w),msg=
   blob=await tcWithExif(blob,{d:v.d,lat:v.lat,lng:v.lng,alt:v.P.alt,dir:v.P.dir});
   const nm=v.nm.replace(/[\\/:*?"<>|]/g,'_')+'.jpg',file=new File([blob],nm,{type:'image/jpeg',lastModified:Date.now()}),id='p'+phHash(file.name+'|'+file.size+'|'+file.lastModified),kd=w.querySelector('[data-c="kd"]').value;
   const n0=PH.list.length;await phAdd([file],null,{all:true,kd});const m=PH.byId.get(id);
+  {const rn=pcpRunNo();if(m&&rn&&v.nm.normalize('NFC').startsWith(rn+'-')){m.cd=rn;phSaveMeta();try{phRefresh()}catch(_){}}}
   if(m&&v.ds){m.memo=v.ds;delete m.memoSrc;phSaveMeta();try{phRefresh()}catch(_){}}
   if(c.dl)tcDown(file);
   const c2=tcCfg();if(v.nm===tcName(c2))c2.no=(+c2.no||1)+1;c2.kd=kd;if(v.ds)c2.recent=[v.ds,...c2.recent.filter(x=>x!==v.ds)].slice(0,15);tcSave(c2);
