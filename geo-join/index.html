@@ -9208,7 +9208,7 @@ function pcpOn(){try{return localStorage.getItem('geo-pcp')!=='0'}catch(_){retur
 function pcpOnSet(v){try{localStorage.setItem('geo-pcp',v?'1':'0')}catch(_){}const c=$('pcpOnCk');if(c)c.checked=!!v}
 /* 🔢 사진 번호(접수번호 등): 위치 캡처 = 번호.jpg, 이어 찍는 사진 = 번호-1, 번호-2… (새 번호로 위치 캡처하거나 끝을 누를 때까지 계속, 앱을 다시 열어도 이어짐) */
 function pcpNoNorm(v){return String(v||'').normalize('NFC').replace(/\s+/g,'').replace(/[\\/:*?"<>|]/g,'')}
-function pcpNo(){const i=PCP.o&&PCP.o.querySelector('[data-a="no"]');return i?pcpNoNorm(i.value):''}
+function pcpNo(){if(PCP.noOv)return PCP.noOv;const i=PCP.o&&PCP.o.querySelector('[data-a="no"]');return i?pcpNoNorm(i.value):''}
 function pcpRunSet(no){PCP.run=no?{no}:null;try{no?localStorage.setItem('geo-pcprun',JSON.stringify({no})):localStorage.removeItem('geo-pcprun')}catch(_){}pcpRunBar()}
 function pcpRunBar(){let el=document.getElementById('pcpRun');const no=pcpRunNo();
  if(!no){if(el)el.remove();return}
@@ -16583,6 +16583,7 @@ async function ldgPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='un
  const ans=prompt('대장 묶음에 넣을 접수번호 (쉼표로 여럿)\n지금 목록의 민원 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
+ for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
   const blobs=await ldgBlobs(items.map(o=>o.m),btn);
   const z=new JSZip(),miss=[];let n=0;
@@ -16712,11 +16713,30 @@ async function ldvOpen(no,ty){const w=ldvWin();w.hidden=false;try{if(typeof fldQ
 function ldvChkList(ns){const el=$('ldvW')&&$('ldvW').querySelector('.ldvList');if(!el)return;if(!ns.length){el.innerHTML='<p class="hint">최근 60일 번호가 없습니다(📋 현장 일지 민원 번호·🔢 사진 번호).</p>';return}
  const T=LDV.ty==='lk',need=T?8:4;el.innerHTML=ns.map(no=>{const p=ldgPhotos(no),r=ldvRecOf(no),bad=[!p.loc?'위치도 없음':'',p.nPh<need?`사진 ${p.nPh}/${need}`:'',!r?'일지 없음':T?(!r.res?'복구결과 없음':''):(!r.tD?'준공 시각 없음':'')].filter(Boolean);
   return `<button type="button" class="ldvIt" data-no="${esc(no)}"><b>${esc(no)}</b><span>${p.loc?'🗺✓':'🗺✗'} · 📷 ${Math.min(p.nPh,need)}/${need} · ${r?'📋✓':'📋✗'}</span><small style="color:${bad.length?'#b45309':'#15803d'}">${bad.length?esc(bad.join(' · ')):'OK'}</small></button>`}).join('')}
+/* 2026-11-19 위치도 없으면 자동 캡처: 대장 미리보기·묶음 때 번호에 위치 캡처(번호.jpg)가 없으면 그 번호 사진의 GPS 자리(없으면 현장 일지 위치)를 빨간 점으로 📸 위치 캡처와 같은 모양으로 찍어 묶음 맨 앞에 넣음 */
+const LDA={tried:new Set()};
+function ldgLocSrc(no){const P=ldgPhotos(no),ph=P.out.filter(o=>o.kind==='현장사진'&&o.m.lat!=null&&isFinite(+o.m.lat)&&+o.m.lat!==0).sort((a,b)=>(a.k||99)-(b.k||99))[0];
+ if(ph)return{ll:L.latLng(+ph.m.lat,+ph.m.lng),from:'사진 '+ph.fn+' GPS',acc:ph.m.acc!=null?ph.m.acc:null,ref:ph.m};
+ const r=fldAll().filter(x=>String(x.no||'').trim().normalize('NFC')===no&&x.lat&&x.lng).sort((a,b)=>(b.d||'').localeCompare(a.d||''))[0];
+ return r?{ll:L.latLng(+r.lat,+r.lng),from:'현장 일지 위치',acc:null,ref:null}:null}
+async function ldgAutoLoc(no,force){if(!no||!map||PCP.busy)return false;if(ldgPhotos(no).loc)return true;if(!force&&LDA.tried.has(no))return false;LDA.tried.add(no);
+ const src=ldgLocSrc(no);if(!src)return false;PCP.busy=true;const ws=['ldvW','fldW'].map(id=>$(id)).filter(w=>w&&!w.hidden);ws.forEach(w=>w.style.visibility='hidden');
+ const sv={no:PCP.noOv,blk:PCP.blk,acc:PCP.acc};
+ try{PCP.noOv=no;try{PCP.blk=blkAt(src.ll.lng,src.ll.lat)||''}catch(_){PCP.blk=''}PCP.acc=src.acc;
+  const z=Math.max(18,Math.min(19,map.getZoom())),r=await pcpShot(src.ll,z,'현장 위치 · '+src.from,null,62);
+  const ref=src.ref,now=Date.now(),t0=ref&&ref.ts?ref.ts-1000:now,d=new Date(ref&&ref.ts?ref.ts-1000:now),p=v=>String(v).padStart(2,'0'),dt=ref&&ref.dt?ref.dt:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const name=no+'.jpg',id='p'+phHash('pcp|'+name+'|'+now),ctr=src.ll;
+  const m={id,name,dt,ts:t0,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:`🔴 위치 캡처(자동) · 번호 ${no} · ${src.from} 자리`,w:r.w,h:r.h,at:now,map:true,dot:r.dot,cd:no};if(r.geo)m.geo=r.geo;if(ref&&ref.kd)m.kd=ref.kd;
+  await idbPut([['ph:'+id,r.blob],['pt:'+id,r.thb]]);PH.list.push(m);PH.byId.set(id,m);try{pcpAddrSave(no,ctr)}catch(_){}
+  await phSaveMeta(true);phRefresh();try{chgPhMine([id])}catch(_){}try{phToast(`📸 ${no} 위치도가 없어 ${src.from} 자리로 위치 캡처를 만들었습니다.`)}catch(_){}return true}
+ catch(e){console.warn('ldgAutoLoc',e);return false}
+ finally{PCP.noOv=sv.no;PCP.blk=sv.blk;PCP.acc=sv.acc;PCP.busy=false;ws.forEach(w=>w.style.visibility='')}}
 function ldvImgOf(b){return new Promise(r=>{if(!b){r(null);return}const u=URL.createObjectURL(b),im=new Image();im.onload=()=>{r(im);setTimeout(()=>URL.revokeObjectURL(u),3000)};im.onerror=()=>{URL.revokeObjectURL(u);r(null)};im.src=u})}
 async function ldvShow(no){const w=ldvWin(),pv=w.querySelector('.ldvPv');const nw=LDV.no!==no;LDV.no=no;LDV.cv=null;{const x=ldxOf(no);w.querySelector('[data-x="addr"]').value=x.addr;w.querySelector('[data-x="agent"]').value=x.agent;if(nw&&!x.addr)setTimeout(()=>ldvAddr(no,null,false),0)}w.querySelectorAll('.ldvOut [data-a="pr"],.ldvOut [data-a="hw"],.ldvOut [data-a="im"]').forEach(b=>b.disabled=true);
  pv.innerHTML='<p class="hint">⏳ 대장 그리는 중…</p>';
+ if(!ldgPhotos(no).loc&&ldgLocSrc(no)&&!LDA.tried.has(no)){pv.innerHTML='<p class="hint">📸 위치도가 없어 사진 위치로 위치 캡처를 만드는 중…</p>';const ok=await ldgAutoLoc(no);if(ok)try{ldvFill()}catch(_){}if(LDV.no!==no)return;if(ok&&!ldxOf(no).addr)setTimeout(()=>ldvAddr(no,null,false),1500);pv.innerHTML='<p class="hint">⏳ 대장 그리는 중…</p>'}
  try{const T=LDV.ty==='lk',cvs=await (T?lkDraw:ldvDraw)(no);if(LDV.no!==no)return;LDV.cvs=cvs;LDV.cv=cvs[0];pv.innerHTML='';cvs.forEach((c,i)=>{const im=new Image();im.alt=`${T?'누수탐사 대장':'민원 대응관리 일지'} ${no} ${i+1}쪽`;im.src=c.toDataURL('image/jpeg',.85);pv.appendChild(im)});
-  const p=LDV.info||{},nd=T?8:4,t=[p.loc?'':'위치도(📸 위치 캡처) 없음',p.nPh<nd?`${T?'원경·근경·누수사진':'현장사진'} ${p.nPh}/${nd}장`:'',p.rec?'':(T?'📋 현장 일지(💧 누수탐사) 없음 → 블록명·관종·원인 빈칸':'📋 현장 일지 없음 → 시각·원인 빈칸')].filter(Boolean);if(p.ext)pv.insertAdjacentHTML('beforeend',`<p class="hint">📎 추가사진 ${p.ext}장 → ${cvs.length-1}쪽 더 (모두 ${cvs.length}쪽)</p>`);
+  const p=LDV.info||{},nd=T?8:4,t=[p.loc?'':(ldgLocSrc(no)?'위치도 자동 캡처 실패 → 📸 위치 캡처로 직접':'위치도 없음(사진에 GPS도 없음) → 📸 위치 캡처'),p.nPh<nd?`${T?'원경·근경·누수사진':'현장사진'} ${p.nPh}/${nd}장`:'',p.rec?'':(T?'📋 현장 일지(💧 누수탐사) 없음 → 블록명·관종·원인 빈칸':'📋 현장 일지 없음 → 시각·원인 빈칸')].filter(Boolean);if(p.ext)pv.insertAdjacentHTML('beforeend',`<p class="hint">📎 추가사진 ${p.ext}장 → ${cvs.length-1}쪽 더 (모두 ${cvs.length}쪽)</p>`);
   pv.insertAdjacentHTML('beforeend',`<p class="hint" style="color:${t.length?'#b45309':'#15803d'}">${t.length?'⚠ '+esc(t.join(' · ')):'✓ 칸이 모두 찼습니다.'}</p>`);
   w.querySelectorAll('.ldvOut [data-a]').forEach(b=>b.disabled=false)}
  catch(e){pv.innerHTML=`<p class="hint" style="color:#b91c1c">대장을 그리지 못했습니다: ${esc((e&&e.message)||String(e))}</p>`}}
@@ -16742,12 +16762,12 @@ async function ldvDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no)||{},W=1240,H=1
  hd.forEach((h,i)=>{box(M+i*cw,y,cw,44,i<5?'#eef2ff':'#e0f2fe');txt(h,M+i*cw,y,cw,44,{b:1,sz:19})});y+=44;vv.forEach((v,i)=>{box(M+i*cw,y,cw,rh);txt(v,M+i*cw,y,cw,rh,{sz:21})});y+=rh;
  box(M,y,lw,rh*1.4,'#eef2ff');txt('현장내용',M,y,lw,rh*1.4,{b:1,sz:20});box(M+lw,y,IW-lw,rh*1.4);txt(rec.memo||'',M+lw,y,IW-lw,rh*1.4,{al:'left',sz:20});y+=rh*1.4+14;
  /* 그림 칸 */
- const pic=(m,x,y0,w,h,lab,fn,fit)=>{box(x,y0,w,h,'#f8fafc');const im=m&&img.get(m.id);if(im){const r=fit==='contain'?Math.min((w-6)/im.width,(h-6)/im.height):Math.max((w-6)/im.width,(h-6)/im.height),dw=im.width*r,dh=im.height*r;g.save();g.beginPath();g.rect(x+3,y0+3,w-6,h-6);g.clip();g.drawImage(im,x+(w-dw)/2,y0+(h-dh)/2,dw,dh);g.restore()}
+ const pic=(m,x,y0,w,h,lab,fn,fit)=>{box(x,y0,w,h,'#f8fafc');const im=m&&img.get(m.id);if(im){const r=fit==='contain'?Math.min((w-6)/im.width,(h-6)/im.height):Math.max((w-6)/im.width,(h-6)/im.height),dw=im.width*r,dh=im.height*r,dt=fit==='dot'&&Array.isArray(m.dot)?m.dot:[.5,.5],cl=(v,a,b)=>Math.max(a,Math.min(b,v)),ox=fit==='dot'?cl(x+w/2-dt[0]*dw,x+w-3-dw,x+3):x+(w-dw)/2,oy=fit==='dot'?cl(y0+h/2-dt[1]*dh,y0+h-3-dh,y0+3):y0+(h-dh)/2;g.save();g.beginPath();g.rect(x+3,y0+3,w-6,h-6);g.clip();g.drawImage(im,ox,oy,dw,dh);g.restore()}
   else{g.fillStyle='#94a3b8';g.font=FN(400,18);g.textAlign='center';g.fillText('(없음) '+fn,x+w/2,y0+h/2)}
   if(lab){g.font=FN(700,16);const tw=g.measureText(lab).width+16;g.fillStyle='rgba(15,23,42,.72)';g.fillRect(x+3,y0+3,tw,26);g.fillStyle='#fff';g.textAlign='left';g.fillText(lab,x+11,y0+16)}};
  const lw2=44,mapW=Math.round((IW-lw2)*.64),mapH=Math.round(mapW/1.4),dW=IW-lw2-mapW,dH=mapH/2;
  box(M,y,lw2,mapH,'#eef2ff');g.save();g.translate(M+lw2/2,y+mapH/2);g.fillStyle='#0f172a';g.font=FN(700,20);g.textAlign='center';['위','치','도'].forEach((c,i)=>g.fillText(c,0,(i-1)*30));g.restore();
- pic(loc,M+lw2,y,mapW,mapH,'',no+'.png','contain');
+ pic(loc,M+lw2,y,mapW,mapH,'',no+'.png','dot');
  for(let i=0;i<4;i++){const o=det.find(d=>d.fn===`${no}-6-${i+1}.png`);pic(o&&o.m,M+lw2+mapW+(i%2)*dW/2,y+Math.floor(i/2)*dH,dW/2,dH,`단수밸브 상세도 ${i+1}`,`${no}-6-${i+1}.png`,'contain')}
  y+=mapH+14;
  const pH=Math.round(Math.min((IW-lw2)/2/1.6,(H-M-40-64-y)/2));box(M,y,lw2,pH*2,'#eef2ff');g.save();g.translate(M+lw2/2,y+pH);g.fillStyle='#0f172a';g.font=FN(700,20);g.textAlign='center';['현','장','사','진'].forEach((c,i)=>g.fillText(c,0,(i-1.5)*30));g.restore();
@@ -16777,7 +16797,7 @@ async function lkDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no,'lk')||{},W=1754
  const box=(x,y,w,h,fill)=>{if(fill){g.fillStyle=fill;g.fillRect(x,y,w,h)}g.strokeStyle=ln;g.lineWidth=1.5;g.strokeRect(x,y,w,h)};
  const txt=(t,x,y,w,h,o={})=>{t=String(t??'');g.fillStyle=o.c||'#0f172a';let sz=o.sz||20;g.font=FN(o.b?700:400,sz);while(sz>10&&g.measureText(t).width>w-12){sz--;g.font=FN(o.b?700:400,sz)}g.textAlign=o.al||'center';g.fillText(t,o.al==='left'?x+9:x+w/2,y+h/2+1,w-10)};
  const cell=(lb,v,x,y,w1,w2,h)=>{box(x,y,w1,h,LB);txt(lb,x,y,w1,h,{b:1,sz:18});box(x+w1,y,w2,h);txt(v,x+w1,y,w2,h,{sz:19,al:o2(v)})},o2=v=>String(v??'').length>14?'left':'center';
- const pic=(m,x,y0,w,h,fn,fit)=>{box(x,y0,w,h,'#f8fafc');const im=m&&img.get(m.id);if(im){const r=fit==='contain'?Math.min((w-6)/im.width,(h-6)/im.height):Math.max((w-6)/im.width,(h-6)/im.height),dw=im.width*r,dh=im.height*r;g.save();g.beginPath();g.rect(x+3,y0+3,w-6,h-6);g.clip();g.drawImage(im,x+(w-dw)/2,y0+(h-dh)/2,dw,dh);g.restore()}
+ const pic=(m,x,y0,w,h,fn,fit)=>{box(x,y0,w,h,'#f8fafc');const im=m&&img.get(m.id);if(im){const r=fit==='contain'?Math.min((w-6)/im.width,(h-6)/im.height):Math.max((w-6)/im.width,(h-6)/im.height),dw=im.width*r,dh=im.height*r,dt=fit==='dot'&&Array.isArray(m.dot)?m.dot:[.5,.5],cl=(v,a,b)=>Math.max(a,Math.min(b,v)),ox=fit==='dot'?cl(x+w/2-dt[0]*dw,x+w-3-dw,x+3):x+(w-dw)/2,oy=fit==='dot'?cl(y0+h/2-dt[1]*dh,y0+h-3-dh,y0+3):y0+(h-dh)/2;g.save();g.beginPath();g.rect(x+3,y0+3,w-6,h-6);g.clip();g.drawImage(im,ox,oy,dw,dh);g.restore()}
   else{g.fillStyle='#94a3b8';g.font=FN(400,17);g.textAlign='center';g.fillText('(없음) '+fn,x+w/2,y0+h/2)}};
  const sec=(t,x,y,w,h)=>{g.fillStyle='#1e1b4b';g.font=FN(700,19);g.textAlign='center';g.fillText(t,x+w/2,y+h/2+1)};
  const ymd=v=>v?String(v).slice(0,10):'',mm=v=>v===''||v==null?'':String(v)+(/mm|㎜/.test(String(v))||isNaN(+v)?'':'mm'),HW=(W-2*M-28)/2,xL=M,xR=M+HW+28,c6=HW/6,rh=40;
@@ -16790,7 +16810,7 @@ async function lkDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no,'lk')||{},W=1754
  cell('도로폭',rec.road!=null&&rec.road!==''?rec.road+(isNaN(+rec.road)?'':'m'):'',xL,y,c6,2*c6,rh);cell('추정관경',mm(rec.edia),xL+3*c6,y,c6,2*c6,rh);y+=rh;
  box(xL,y,c6,rh*1.3,LB);txt('현장내용',xL,y,c6,rh*1.3,{b:1,sz:18});box(xL+c6,y,5*c6,rh*1.3);txt(rec.memo||'',xL+c6,y,5*c6,rh*1.3,{al:'left',sz:19});y+=rh*1.3;
  const bot=H-M-26,low=34+3*rh,fix=34+34+30+low,av=bot-y-fix,phH=Math.round(Math.min(HW/2/1.25,av*.5)),mapH=Math.round(av-phH);
- sec('《 누 수 위 치 도 》',xL,y,HW,34);y+=34;pic(loc,xL,y,HW,mapH,no+'.png','contain');y+=mapH;
+ sec('《 누 수 위 치 도 》',xL,y,HW,34);y+=34;pic(loc,xL,y,HW,mapH,no+'.png','dot');y+=mapH;
  sec('《 누 수 전 경 사 진 》',xL,y,HW,34);y+=34;
  [1,2].forEach((k,i)=>{const x=xL+i*HW/2;box(x,y,HW/2,30,LB);txt(LK_LAB(k),x,y,HW/2,30,{b:1,sz:18});const o=phs.find(q=>q.k===k);pic(o&&o.m,x,y+30,HW/2,phH,`${no}-${k}.jpg`,'cover')});y+=30+phH;
  sec('《 누 수 수 선 내 역 》',xL,y,HW,34);y+=34;
@@ -16819,6 +16839,7 @@ async function lkPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='und
  const ans=prompt('누수 대장 묶음에 넣을 탐사연번 (쉼표로 여럿)\n지금 목록의 누수탐사 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
+ for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
   const blobs=await ldgBlobs(items.map(o=>o.m),btn);const z=new JSZip(),miss=[];let n=0;
   for(let i=0;i<items.length;i++){const o=items[i],b=blobs[i];if(!b){miss.push(o.fn);continue}if(btn)btn.textContent=`⏳ 이름 맞추는 중… ${i+1}/${items.length}`;
