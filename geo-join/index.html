@@ -452,6 +452,7 @@ body.touch .fmctl,body.fm .fmctl,body.tdev .fmctl{display:flex!important;flex-di
 .fmctl button{width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:#0f766e;color:#fff;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .fmctl button.loc{background:#2563eb;font-size:20px}.fmctl button.fld{background:#be123c}
 #fldW{position:fixed;inset:0;z-index:2147482000;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(10px,env(safe-area-inset-top)) 8px 8px}#fldW[hidden]{display:none}
+html.vcShotOn .ph-ic{display:none!important}.ldvBox{width:min(760px,100%)}.ldvX{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:6px 0;font-size:12.5px;font-weight:700}.ldvX label{display:flex;align-items:center;gap:4px;flex:1 1 220px}.ldvX input{flex:1;min-width:0;font:inherit;font-weight:400;padding:4px 8px;border:1px solid #94a3b8;border-radius:7px}.ldvAg textarea{width:100%;box-sizing:border-box;font:12.5px inherit;margin-top:4px}.ldvAg summary{cursor:pointer;font-weight:700;font-size:13px;margin-top:6px}#vcW{position:fixed;inset:0;z-index:2147482000;background:rgba(15,23,42,.35);display:flex;align-items:flex-end;justify-content:center;padding:8px}#vcW[hidden]{display:none}#vcW .fldBox{max-height:70dvh}.vcL{display:flex;flex-direction:column;gap:4px;max-height:38dvh;overflow:auto}.vcIt{display:flex;align-items:center;gap:8px;border:1px solid #cbd5e1;border-radius:8px;padding:4px 8px;font-size:12.5px}.vcIt.off{opacity:.55}.vcIt label{white-space:nowrap}.vcIt span{flex:1;min-width:0}.vcIt .vcB{flex:none;display:flex;gap:2px}.vcIt .vcB button{border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:2px 7px;cursor:pointer;font:inherit}.ldvRow{align-items:center}.ldvNo{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}.ldvNo input{width:9em;font:inherit;padding:5px 8px;border:1.5px solid #6366f1;border-radius:8px}.ldvPv{margin:8px 0;text-align:center}.ldvPv img{max-width:100%;border:1px solid #cbd5e1;box-shadow:0 2px 10px #0002;background:#fff}.ldvList{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;margin-top:6px}.ldvIt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid #cbd5e1;border-radius:10px;padding:6px 10px;background:var(--card,#fff);color:inherit;font:inherit;cursor:pointer}.ldvIt b{color:#4338ca}.ldvChk summary{cursor:pointer;font-weight:700;font-size:13px;margin-top:6px}#ldvW{position:fixed;inset:0;z-index:2147482000;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(10px,env(safe-area-inset-top)) 8px 8px}#ldvW[hidden]{display:none}
 .fldBox{background:var(--card,#fff);color:var(--ink,#0f172a);width:min(560px,100%);max-height:calc(100dvh - 20px);overflow:auto;border-radius:14px;box-shadow:0 12px 40px #0006;font-family:'Noto Sans KR',sans-serif}
 .fldHd{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(90deg,#4f46e5,#2563eb);color:#fff;border-radius:14px 14px 0 0}.fldHd small{opacity:.85;font-size:11px;flex:1}.fldX{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:2px 6px}
 .fldBd{padding:10px 12px 14px;font-size:13px}.fldBd .sm{padding:4px 10px;font-size:12px;min-height:30px}.fldBd .f{display:block;font-size:12px;margin:4px 0}.fldBd .f input,.fldBd .f select,.fldBd .f textarea{width:100%;box-sizing:border-box;font-size:15px;padding:6px;margin-top:2px}
@@ -2118,6 +2119,9 @@ const TABS=[
  /* 2026-11-17 공정보고 탭: 주간·월간 공정보고 (앱 자료로 공종 실적 집계·엑셀 칸 채우기) */
  {k:'prog',n:'공정보고',g:[
   {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1],['win:wrd','bell','일일보고',1],['fld','pen','현장 일지',1]]}]},
+ {k:'ldg',n:'대장작성',g:[
+  {n:'입력',b:[['fld','pen','현장 일지',1]]},
+  {n:'민원 대장',b:[['ldv','doc','대장 미리보기 · 출력',1],['ldgPk','list','대장 묶음 (엑셀 대장용)',1],['ldvChk','tbl','빠진 사진 점검',1]]}]},
  {k:'table',n:'표',g:[
   {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
   {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
@@ -2145,7 +2149,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
   /* 검토 탭: 경계밸브 추적 = ②-4 창 열고 🔴 버튼, 혼탁수 주의 = 레이어 창 '혼탁수 주의 (평소 표시)'와 같은 값 */
   lqBv:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const b=$('lqBvBtn');if(b){try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}b.click()}},80)},
   tb:()=>{const t=LAY.find(x=>x.k==='tb');if(!t)return;if(!t.ok()){msg('혼탁수 주의는 ②-1 관로를 먼저 넣어야 합니다');return}const o=!t.on();t.set(o);try{layKey='';layRender()}catch(_){}msg(o?'혼탁수 주의 구간 표시 켬 (관망해석 유속이 있어야 보입니다)':'혼탁수 주의 구간 표시 끔');setTimeout(sync,0)},
-  bp:()=>bpOpen(),fld:()=>F('fldOpen'),
+  bp:()=>bpOpen(),fld:()=>F('fldOpen'),ldv:()=>F('ldvOpen'),ldgPk:()=>F('ldgPack',null),ldvChk:()=>{F('ldvOpen');setTimeout(()=>{const d=document.querySelector('#ldvW .ldvChk');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},150)},
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   lblW:()=>{if(window.LBLM)LBLM.open()},lblOff:()=>{if(window.LBLM)LBLM.off()},
@@ -8716,7 +8720,7 @@ async function lmMake(g,opt){opt=opt||{};if(!map||!g||g.lat==null)throw new Erro
  /* 6) 아래 띠: 위치도 · 접수 1000 · 사진 n장 · 촬영 · 소블록 | 만든 앱 */
  const ms=(g.ids||[]).map(id=>PH.byId.get(id)).filter(m=>m&&!m.map),dts=ms.map(m=>m.dt).filter(Boolean).sort(),blk=(()=>{try{return phGBlk(g)}catch(_){return ''}})();
  const parts=['위치도',lmLbl(g),ms.length?'사진 '+ms.length+'장':'',dts.length?'촬영 '+String(dts[0]).slice(0,16):'',blk?'소블록 '+blk:''].filter(Boolean);
- x.fillStyle='#1e293b';x.fillRect(0,Hm,W,band);x.textBaseline='middle';x.textAlign='right';x.font=`400 28px ${F}`;x.fillStyle='#cbd5e1';const rt='스마트 물길주소 · 만든이: 구병순';x.fillText(rt,W-30,Hm+band/2);
+ x.fillStyle='#1e293b';x.fillRect(0,Hm,W,band);x.textBaseline='middle';x.textAlign='right';x.font=`400 28px ${F}`;x.fillStyle='#cbd5e1';const rt='';x.fillText(rt,W-30,Hm+band/2);
  const rw=x.measureText(rt).width;x.textAlign='left';x.font=`700 34px ${F}`;x.fillStyle='#fff';let lt=parts.join('  ·  ');while(lt.length>8&&x.measureText(lt).width>W-rw-100)lt=lt.slice(0,-2);x.fillText(lt,30,Hm+band/2);
  const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.88));const tc=document.createElement('canvas'),tw=220,th=Math.round(220*H/W);tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(cv,0,0,tw,th);
  const thb=await new Promise(r=>tc.toBlob(r,'image/jpeg',.7));
@@ -9300,7 +9304,7 @@ async function pcpShot(ctr,z,lb,s,bh){const mc=map.getContainer(),wide=pcpWide()
  g.fillStyle='#fff';g.fillRect(0,Hm,W,g.canvas.height-Hm);g.fillStyle='#e11d48';g.fillRect(0,Hm,W,3*k);g.textBaseline='middle';
  g.textAlign='left';g.fillStyle='#111827';g.font=F(700,13);g.fillText(`🔴 ${lb} · ${fmtDT(now)} · 확대 ${Math.round(z*10)/10}${blk?' · 소블록 '+blk:''}`,10*k,Hm+15*k,W-20*k);
  g.font=F(400,11.5);g.fillStyle='#334155';g.fillText([s?'관로 위 '+pt:'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · ')||'관로에 붙이지 않음 (빨간 점 자리)',10*k,Hm+32*k,W-20*k);
- g.fillStyle='#64748b';g.font=F(400,10.5);g.fillText(`${ctr.lat.toFixed(6)}, ${ctr.lng.toFixed(6)}`,10*k,Hm+48*k,W*.45);g.textAlign='right';g.fillText('스마트 물길주소 · '+SITE.tag+' · 만든이: 구병순',W-10*k,Hm+48*k,W*.5);
+ g.fillStyle='#64748b';g.font=F(400,10.5);g.fillText(`${ctr.lat.toFixed(6)}, ${ctr.lng.toFixed(6)}`,10*k,Hm+48*k,W-20*k);
  const blob=await new Promise(r=>B.cv.toBlob(r,'image/jpeg',.9));if(!blob)throw new Error('이미지를 만들지 못했습니다.');
  const tc=document.createElement('canvas'),tw2=220,th=Math.round(220*B.cv.height/B.cv.width);tc.width=tw2;tc.height=th;tc.getContext('2d').drawImage(B.cv,0,0,tw2,th);const thb=await new Promise(r=>tc.toBlob(r,'image/jpeg',.7));
  return{blob,thb,w:B.cv.width,h:B.cv.height,dot:[.5,cy/B.cv.height],note:B.note,masked:B.masked,geo:{lat:+ctr.lat.toFixed(8),lng:+ctr.lng.toFixed(8),z:+(z+Math.log2(k)).toFixed(6),cx,cy}}}
@@ -9313,7 +9317,7 @@ async function pcpCapture(btn){if(PCP.busy||!map)return;PCP.busy=true;const t0=b
   for(let i=0;i<R.length;i++){const r=R[i],no=pcpNo(),name=no?no+(r.sf?'_'+r.sf:'')+'.jpg':base+(r.sf?'_'+r.sf:'')+'.jpg',id='p'+phHash('pcp|'+name+'|'+now);
    const m={id,name,dt,ts:now-(R.length-i)*1000,lat:+ctr.lat.toFixed(7),lng:+ctr.lng.toFixed(7),dir:null,alt:null,src:'위치캡처',memo:['🔴 현장 위치 캡처'+(no?' · 번호 '+no:''),s?'관로 위 '+pcpPipeTxt(s):'',PCP.acc!=null?'휴대폰 오차 약 '+PCP.acc+'m':''].filter(Boolean).join(' · '),w:r.w,h:r.h,at:now,map:true,dot:r.dot};if(r.geo)m.geo=r.geo;
    if(kd&&kd!=='mw')m.kd=kd;if(no)m.cd=no;if(PCP.acc!=null)m.acc=PCP.acc;await idbPut([['ph:'+id,r.blob],['pt:'+id,r.thb]]);PH.list.push(m);PH.byId.set(id,m);caps.push({id,name,lb:r.lb,url:URL.createObjectURL(r.blob)})}
-  pcpRunSet(pcpNo());await phSaveMeta(true);phRefresh();try{chgPhMine(caps.map(c=>c.id))}catch(_){}
+  pcpRunSet(pcpNo());try{pcpAddrSave(pcpNo(),ctr)}catch(_){}await phSaveMeta(true);phRefresh();try{chgPhMine(caps.map(c=>c.id))}catch(_){}
   PCP.cap={caps,note:R.map(r=>r.note).find(Boolean)||'',masked:R.some(r=>r.masked)};pcpForm()}
  catch(e){alert('현장 위치를 캡처하지 못했습니다: '+((e&&e.message)||e));btn.disabled=false;btn.textContent=t0}
  finally{PCP.busy=false}}
@@ -10834,6 +10838,7 @@ function shutUi(){if(SHUT.box||!map)return;const p=L.DomUtil.create('div','uiset
   else if(a==='dex'){const n=+b.dataset.n,B=SHUT.de&&SHUT.de.B.find(x=>x.v===n);if(B){const st=B.big?SHUT.deF:SHUT.deX;if(st.has(n))st.delete(n);else st.add(n);shutUpdate()}}
   else if(a==='dfit')shutDeFit(+b.dataset.k);
   else if(a==='more'){SHUT.bigAll=!SHUT.bigAll;shutRender()}
+  else if(a==='vcap')vcOpen();
   else if(a==='shot'){b.disabled=true;b.textContent='📷 만드는 중…';shutShot().catch(e=>{alert('캡처를 만들지 못했습니다: '+(e&&e.message||e));shutRender()})}
   else if(a==='shotfit'){const bb=shutBounds();if(!bb)return;b.disabled=true;b.textContent='🔍 맞추는 중…';let done=false;const go=()=>{if(done)return;done=true;shutShot().catch(e=>{alert('캡처를 만들지 못했습니다: '+(e&&e.message||e));shutRender()})};
    map.once('moveend',()=>setTimeout(go,700));setTimeout(go,2000);map.fitBounds(bb,{maxZoom:18,padding:[30,30]})}
@@ -10883,7 +10888,7 @@ function shutRender(){const p=SHUT.box;if(!p)return;p.hidden=!SHUT.on&&!SHUT.pic
   if(SHUT.area){const am=shutAMode();h+=`<div class="shm" role="group" aria-label="그린 범위 계산 방법"><button type="button" data-a="am" data-m="valve" class="${am==='valve'?'on':''}" title="범위 안 관로에서 제수밸브까지 따라간 실제 단수 범위">💧 밸브까지</button><button type="button" data-a="am" data-m="area" class="${am==='area'?'on':''}" title="그린 범위 안 관로·수용가만 단수구역으로 셈">✏️ 범위대로</button></div>`+
    `<p class="shh" style="margin-top:2px">${am==='valve'?(R.ovl>=1?`밸브 위치 때문에 <b class="c-am">범위 밖으로 ${km(R.ovl)}</b> 넘칩니다(주황). 이 범위만 끊으려면 밸브가 부족합니다.`:'그린 범위 안에서 밸브로 끊깁니다(범위 밖으로 넘친 관로 없음).'):'지도·관로 길이·수용가는 <b>그린 범위 안</b>만 셉니다. 닫을 밸브는 밸브까지 따라간 기준(범위 밖 밸브 포함)입니다.'}</p>`}
   h+=shutDeHtml(V);
-  h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol${SHUT.drawing?' on':''}" data-a="draw" title="손가락(마우스)으로 단수할 범위를 둘러 그림">✏️ 범위 그리기</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button></div>`;
+  h+=`<div class="shb"><button type="button" class="btn ol${SHUT.mode==='add'?' on':''}" data-a="add" title="누른 관로 조각을 단수구역에 넣음">＋ 관로 넣기</button><button type="button" class="btn ol${SHUT.mode==='del'?' on':''}" data-a="del" title="누른 관로 조각을 단수구역에서 뺌">－ 관로 빼기</button><button type="button" class="btn ol" data-a="reset" title="넣기·빼기·못 닫음을 모두 지우고 처음 추적 결과로">↺ 처음대로</button><button type="button" class="btn ol" data-a="fit">🔍 구역 보기</button><button type="button" class="btn ol${SHUT.pick?' on':''}" data-a="pick">📍 다른 관로</button><button type="button" class="btn ol${SHUT.drawing?' on':''}" data-a="draw" title="손가락(마우스)으로 단수할 범위를 둘러 그림">✏️ 범위 그리기</button><button type="button" class="btn ol" data-a="shot" title="지금 지도 화면(배경·관로·단수구역·밸브 번호)과 요약을 사진 한 장으로">📷 화면 캡처</button>${SHUT.res&&SHUT.res.V.length?'<button type="button" class="btn ol" data-a="vcap" title="닫을 밸브마다 상세도 그림(대장 번호-6-1~4)을 만들어 사진 묶음에 넣음">🔧 밸브 상세도 캡처</button>':''}</div>`;
   if(SHUT.shot)h+=`<div class="shshot"><img src="${SHUT.shot.url}" alt="단수구역 캡처" data-a="shotv"><div class="shedb"><button type="button" class="btn" data-a="shots">${navigator.canShare?'📤 공유 (카톡 등)':'💾 저장'}</button>${navigator.canShare?'<button type="button" class="btn ol" data-a="shotd">💾 저장</button>':''}<button type="button" class="btn ol" data-a="shotx">✕</button></div>${SHUT.shot.note?`<small class="c-am">${esc(SHUT.shot.note)}</small>`:''}${SHUT.shot.clip?'<small class="c-am">⚠️ 단수구역 일부가 사진 밖에 있습니다. <button type="button" class="btn ol" data-a="shotfit">🔍 구역에 맞춰 다시 찍기</button></small>':''}<small class="mute">공유할 때 밸브 위치 카카오맵 링크 글도 함께 복사됩니다.</small></div>`;
   h+=`<p class="shh">${SHUT.mode==='loc'?'📍 위치 바꾸기: 지도에서 <b>기준 위치(누수 지점 등)</b>를 누르세요.':SHUT.mode==='add'?'＋ 넣기: 지도에서 <b>넣을 관로</b>를 누르세요 (다시 누르면 끝).':SHUT.mode==='del'?'－ 빼기: 지도에서 <b>뺄 관로</b>를 누르세요 (다시 누르면 끝).':'밸브 번호를 누르면 <b>못 닫음</b>(고장·찾지 못함)으로 바뀌고 그 너머까지 구역이 넓어집니다.'}${SHUT.add.size||SHUT.del.size?` <small>직접 넣음 ${SHUT.add.size} · 뺌 ${SHUT.del.size}</small>`:''}</p>`;
   {const I=SHUT.info||{},ll=shutRefLL(),tm=I.tm||(ll&&shutTM(ll));
@@ -16486,13 +16491,13 @@ function fldList(){const w=fldWin(),bd=w.querySelector('.fldBd'),t=fldToday();
  let A=fldAll();const f=FLD.flt;A=A.filter(r=>f==='today'?(r.d===t||r.cd===t||fmtD(r.at||0)===t):f==='open'?(r.src==='탐사'?!r.cd&&/정탐|미수리/.test(r.res||''):!r.tD&&r.res!=='미누수')||r.d===t:true);
  A.sort((a,b)=>(b.d||'').localeCompare(a.d||'')||(b.at||0)-(a.at||0));
  const fb=(k,n)=>`<button type="button" class="btn ${FLD.flt===k?'':'ol'} sm" data-flt="${k}">${n}</button>`;
- bd.innerHTML=`<div class="sbtns"><button type="button" class="btn" data-new="민원">＋ 민원</button><button type="button" class="btn" data-new="탐사" style="background:#b45309">＋ 누수탐사</button><button type="button" class="btn ol" data-rl="1" title="서버에서 다시 받기">🔄</button><button type="button" class="btn ol" data-xl="1" title="대장(리스트·누수탐사총괄표) 칸 순서 그대로 · 주소·이름 칸은 빈칸">📊 대장 칸 엑셀</button></div>
+ bd.innerHTML=`<div class="sbtns"><button type="button" class="btn" data-new="민원">＋ 민원</button><button type="button" class="btn" data-new="탐사" style="background:#b45309">＋ 누수탐사</button><button type="button" class="btn ol" data-rl="1" title="서버에서 다시 받기">🔄</button><button type="button" class="btn ol" data-xl="1" title="대장(리스트·누수탐사총괄표) 칸 순서 그대로 · 주소·이름 칸은 빈칸">📊 대장 칸 엑셀</button><button type="button" class="btn ol" data-ldv="1" title="민원 대응관리 일지 한 장 미리보기·인쇄·한글 (대장작성)">📄 대장</button></div>
  <div class="sbtns" style="margin-top:2px">${fb('open','진행 중')}${fb('today','오늘')}${fb('all','최근 60일')}</div>
  ${FLD.msg?`<p class="hint" style="color:#b45309">${esc(FLD.msg)}</p>`:''}${FLD.q.length?`<p class="hint" style="color:#b45309">📴 서버에 아직 못 보낸 건 ${FLD.q.length}개 — 연결되면 열 때 다시 보냅니다.</p>`:''}
  <div class="fldList">${A.length?A.map(r=>{const [s,c]=fldStage(r);const tl=r.src==='탐사'?`탐사 ${esc(r.d||'')}${r.cd?' · 공사 '+esc(r.cd):''}`:[['접수',r.tA],['도착',r.tB],['착공',r.tC],['준공',r.tD]].map(([n,v])=>`${n} <b>${esc(v||'–')}</b>`).join(' → ');
   return `<button type="button" class="fldIt" data-id="${esc(r.id)}"><span class="fldBg" style="background:${c}">${s}</span><span><b>${r.src==='탐사'?'💧 탐사':'📞 민원'} ${esc(r.no||'(번호 없음)')}</b> · ${esc(r.d||'')}${r.blk?' · '+esc(r.blk):''}${r.res&&r.src!=='탐사'?' · '+esc(r.res):''}${r._q?' · 📴':''}<br><small>${tl}${r.memo?' · '+esc(String(r.memo).slice(0,40)):''}</small></span></button>`}).join(''):'<p class="hint">해당하는 건이 없습니다. ＋ 단추로 새 건을 넣으세요.</p>'}</div>
  <p class="hint">넣은 건은 공유 서버에 모여 📅 일일 보고 메일(민원·누수탐사 시트, "입력" 칸 = 현장)에 들어가고, 대장에 같은 번호가 있으면 대장 칸이 우선이며 빈칸만 현장 값으로 채웁니다. 사무실에서는 📊 대장 칸 엑셀을 내려받아 대장(xlsm)에 붙여 넣으세요. 고객 주소·이름·연락처는 넣지 않습니다(위치는 GPS·소블록).</p>`;
- bd.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.flt){FLD.flt=b.dataset.flt;fldList()}else if(b.dataset.new)fldEdit({src:b.dataset.new});else if(b.dataset.rl)fldLoad();else if(b.dataset.xl)fldXl();else if(b.dataset.id){const r=fldAll().find(x=>x.id===b.dataset.id);if(r)fldEdit(r)}}}
+ bd.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.flt){FLD.flt=b.dataset.flt;fldList()}else if(b.dataset.new)fldEdit({src:b.dataset.new});else if(b.dataset.rl)fldLoad();else if(b.dataset.xl)fldXl();else if(b.dataset.ldv){fldClose();ldvOpen()}else if(b.dataset.id){const r=fldAll().find(x=>x.id===b.dataset.id);if(r)fldEdit(r)}}}
 function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id,r=Object.assign({d:fldToday(),gps:{}},r0,{});if(isN&&r.src!=='탐사')r.tA=fldNow();if(!r.gps)r.gps={};FLD.cur=r;
  const T=r.src==='탐사',dl=(id,k)=>`<datalist id="${id}">${fldOpts(k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
  const inp=(k,n,o={})=>`<label class="f">${n}<input data-k="${k}" ${o.type?`type="${o.type}"`:''} ${o.list?`list="${o.list}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''} ${o.im?`inputmode="${o.im}"`:''} value="${esc(r[k]??'')}"></label>`;
@@ -16543,6 +16548,206 @@ async function fldSave(r,del,msg){if(FLD.busy)return;if(!r.d){msg('⚠ 날짜를
   if(typeof phToast==='function')phToast(del?'🗑 현장 일지를 지웠습니다.':`💾 현장 일지 저장${n.warn?' · ⚠ '+n.warn:''}`)}
  catch(e){FLD.q=FLD.q.filter(x=>x.rec.id!==rec.id);FLD.q.push(it);fldQSave();if(typeof phToast==='function')phToast('📴 서버에 못 보내 이 기기에 모아 두었습니다 — 연결되면 📋 현장 일지를 열 때 다시 보냅니다.',{ms:7000})}
  finally{FLD.busy=false}FLD.cur=null;fldList()}
+/* 📒 대장 묶음 (2026-11-19 B안): 민원 대장(xlsm) 매크로는 엑셀 옆 '사진' 폴더에서 셀 값 이름 그대로 그림을 넣음
+   위치도 = 번호.png(BB) · 누수사진 = 번호-1~4.jpg(BC~BF) · 상세도·추가사진 = 번호-6-1~12.png(BG~BR, 앱이 만들지 않음, 같은 이름 사진이 있으면 그대로)
+   → ZIP: 사진/(이 이름들 + 위치도 월드 파일 .pgw·.prj) + 리스트 줄 엑셀(리스트(매크로용) A~S 칸, 주소·대리인 빈칸) + 읽어보기 */
+function ldgPhotos(no){const re=s=>new RegExp('^'+no.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+s,'i'),r6=re('-6-(\\d{1,2})\\.(jpe?g|png)$'),rk=re('-(\\d{1,3})\\.(jpe?g|png|heic)$');
+ const all=PH.list.filter(m=>m&&!m.del&&(m.cd===no||(PH.code&&PH.code.get(m.id)===no)||r6.test(String(m.name||'').normalize('NFC'))||rk.test(String(m.name||'').normalize('NFC'))));
+ const maps=all.filter(m=>m.map&&m.src!=='단수밸브').sort((a,b)=>(b.src==='위치캡처')-(a.src==='위치캡처')||(b.at||0)-(a.at||0)),loc=maps[0]||null;
+ const out=[],used=new Set(),rest=[];if(loc)out.push({m:loc,fn:no+'.png',as:'png',kind:'위치도'});
+ const ph=all.filter(m=>!m.map).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ko',{numeric:true}));
+ for(const m of ph){const nm=String(m.name||'').normalize('NFC');let x=r6.exec(nm);if(x){out.push({m,fn:`${no}-6-${+x[1]}.png`,as:'png',kind:+x[1]<=4?'상세도':'추가사진'});continue}
+  x=rk.exec(nm);if(x&&!used.has(+x[1])){used.add(+x[1]);out.push({m,fn:`${no}-${+x[1]}.jpg`,as:'jpg',kind:'현장사진',k:+x[1]});continue}rest.push(m)}
+ let k=1;for(const m of rest){while(used.has(k))k++;used.add(k);out.push({m,fn:`${no}-${k}.jpg`,as:'jpg',kind:'현장사진',k})}
+ return {loc,out,nPh:out.filter(o=>o.kind==='현장사진').length}}
+async function ldgConv(b,as){const want=as==='png'?'image/png':'image/jpeg';if(b.type===want)return b;
+ const bm=await createImageBitmap(b),c=document.createElement('canvas');c.width=bm.width;c.height=bm.height;const g=c.getContext('2d');if(as!=='png'){g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height)}g.drawImage(bm,0,0);bm.close&&bm.close();
+ return await new Promise(r=>c.toBlob(r,want,.92))}
+async function ldgBlobs(ms,btn){let bl=await idbMany(ms.map(m=>'ph:'+m.id));const need=ms.map((m,i)=>[m,i]).filter(([m,i])=>!bl[i]&&m.shUp);
+ if(need.length&&typeof shFetchMany==='function')for(let a=0;a<need.length;a+=5){if(btn)btn.textContent=`⏳ 서버에서 원본 받는 중… ${Math.min(a+5,need.length)}/${need.length}`;const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0].id),'big');sl.forEach(([m,i])=>{if(got[m.id])bl[i]=got[m.id]})}
+ return bl}
+async function ldgPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
+ const A=fldAll().filter(r=>r.src!=='탐사'&&r.no&&(FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())));
+ const def=pre||[...new Set(A.map(r=>String(r.no).trim()))].join(', ');
+ const ans=prompt('대장 묶음에 넣을 접수번호 (쉼표로 여럿)\n지금 목록의 민원 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
+ const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
+ const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
+ try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
+  const blobs=await ldgBlobs(items.map(o=>o.m),btn);
+  const z=new JSZip(),miss=[];let n=0;
+  for(let i=0;i<items.length;i++){const o=items[i],b=blobs[i];if(!b){miss.push(o.fn);continue}if(btn)btn.textContent=`⏳ 이름 맞추는 중… ${i+1}/${items.length}`;
+   const bb=await ldgConv(b,o.as);z.file('사진/'+o.fn,bb);n++;
+   if(o.kind==='위치도')for(const [fn,t] of await phWorldFiles(o.m,bb,crs,'사진/'+o.fn.replace(/\.png$/,'')))z.file(fn,t)}
+  const recOf=new Map();fldAll().filter(r=>r.src!=='탐사'&&r.no).forEach(r=>{const k=String(r.no).trim().normalize('NFC');const o=recOf.get(k);if(!o||(r.d||'')>(o.d||''))recOf.set(k,r)});
+  const nm=v=>v===''||v==null?'':(isNaN(+v)?v:+v),ymd=m=>m&&m.dt?String(m.dt).slice(0,10):'';
+  const L=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(P.map((p,i)=>{const r=recOf.get(p.no)||{},d=r.d||ymd(p.loc)||ymd((p.out.find(o=>o.kind==='현장사진')||{}).m);
+   const X=ldxOf(p.no);return [i+1,d,nm(p.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'',X.agent,X.addr,r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',d?+d.slice(5,7):'',d?+d.slice(0,4):'']}));
+  const C=[['접수번호','위치도(번호.png)','현장사진 수','넣은 파일','현장 일지','확인']].concat(P.map(p=>[nm(p.no),p.loc?'있음':'없음',p.nPh,p.out.map(o=>o.fn).join(', '),recOf.has(p.no)?'있음':'없음',[!p.loc?'위치 캡처 필요':'',p.nPh<4?`현장사진 ${4-p.nPh}장 모자람`:'',p.nPh>4?`대장 칸은 4장(-1~-4)만 씀`:'',!recOf.has(p.no)?'시각·원인은 대장에서 직접':''].filter(Boolean).join(' · ')||'OK']));
+  const wb=XLSX.utils.book_new();[['리스트 줄',L,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['사진 확인',C,[10,14,10,60,10,40]]].forEach(([nn,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,nn)});
+  z.file('리스트_붙여넣기.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
+  z.file('읽어보기.txt',['민원 대장 묶음','','1) 이 ZIP의 [사진] 폴더 안 파일을 민원 대장(xlsm)이 있는 폴더의 [사진] 폴더에 복사합니다(같은 이름은 덮어쓰기).','2) 리스트_붙여넣기.xlsx [리스트 줄] 시트의 줄을 대장 [리스트(매크로용)] 시트 A~S 칸에 값으로 붙여 넣습니다.','   대리인·현장주소 = 📄 대장 창 값(현장주소는 위치 캡처 빨간 점 자리 주소, 이 기기에만 저장). 비어 있으면 대장에서 직접 채우세요.','3) 대장 시트에서 조회번호를 바꾸면 매크로가 위치도(번호.png)·현장사진(번호-1~4.jpg)을 넣습니다.','','· 위치도 = 📸 위치 캡처(빨간 점), 없으면 앱 위치도. 번호.pgw·번호.prj = 월드 파일('+crs+', QGIS·캐드에서 제자리).','· 단수밸브 상세도·추가사진(번호-6-1~12.png)은 앱이 만들지 않습니다. 같은 이름 사진이 앱에 있으면 그대로 넣었습니다.','· [사진 확인] 시트에 번호별 빠진 사진을 적었습니다.'+(miss.length?'\n· 원본을 못 받은 파일: '+miss.join(', '):'')].join('\r\n'));
+  if(btn)btn.textContent='⏳ ZIP 묶는 중…';const blob=await z.generateAsync({type:'blob',compression:'STORE'});
+  dlBlob(blob,`대장묶음_${(typeof SITE==='object'&&SITE.name)||'현장'}_${fldToday().replace(/-/g,'')}.zip`);
+  const noLoc=P.filter(p=>!p.loc).map(p=>p.no);try{phToast(`📒 대장 묶음: 번호 ${P.length}개 · 사진 ${n}장${noLoc.length?' · 위치도 없음 '+noLoc.join(', '):''}${miss.length?' · 원본 못 받음 '+miss.length:''}`)}catch(_){}}
+ catch(e){alert('대장 묶음 만들기 실패: '+((e&&e.message)||e))}finally{if(btn){btn.disabled=false;btn.textContent=t0}}}
+/* ===== 📒 대장작성 (2026-11-19 B안): 리본 '대장작성' 탭 · 현장 일지 창 📄 대장 단추
+   📄 민원 대응관리 일지 한 장(대장 xlsm '대장' 시트 모양)을 앱이 그림: 접수·시각·관종·관경·원인·부위·현장내용 + 위치도(번호.png = 📸 위치 캡처 빨간 점) + 단수밸브 상세도 1~4(번호-6-1~4) + 현장사진 1~4(번호-1~4)
+   → 🖨 인쇄·PDF · 📝 한글(HWPX) · 🖼 그림 저장, 📒 대장 묶음(엑셀 대장용 사진 폴더+리스트 줄), 🔎 점검(번호별 위치도·사진 모자람)
+   주소·대리인 칸은 비움(앱은 고객·개인 정보를 넣지 않음, 위치는 소블록·좌표) */
+/* ===== 🔧 단수밸브 상세도 캡처 (2026-11-19 B안): 💧 단수구역의 닫을 밸브 → 대장 번호-6-1~ (PNG, 정사각, 밸브 가운데)
+   목록에서 틀린 밸브는 체크 풀기·↑↓ 순서·＋ 지도에서 밸브 고르기(단수구역 연결표의 밸브 노드), 못 닫은 밸브는 단수구역 '못 닫음'으로 다시 계산
+   같은 이름(번호-6-k)의 예전 밸브 캡처는 바꿈(🗂 휴지통 7일). 그림 정보 geo = 밸브 자리(월드 파일) */
+const VC={no:'',L:[],z:19,busy:false,pick:false};
+function vcRow(i){const P=(FAC.pt[i]&&FAC.pt[i].p)||{},v=SHUT.res&&SHUT.res.V.find(x=>x.i===i);return{i,no:v?v.no:'',st:v?v.st:0,mn:shutVE(P,'관리번호')?'확인 필요':String(P['관리번호']),dia:shutVE(P,'구경')?'':String(P['구경']),oc:shutVE(P,'개폐여부')?'':String(P['개폐여부'])}}
+function vcOpen(){if(!SHUT.res||!SHUT.res.V.length){alert('먼저 💧 단수구역을 구하세요.');return}
+ VC.no=(SHUT.info&&SHUT.info.no)||(typeof pcpRunNo==='function'&&pcpRunNo())||VC.no||'';
+ VC.L=SHUT.res.V.filter(v=>!v.de).map(v=>({i:v.i,on:v.st!==2}));VC.z=Math.max(17,Math.min(20,Math.round(map.getZoom())>=18?Math.round(map.getZoom()):19));vcRender()}
+function vcWin(){let w=$('vcW');if(w)return w;w=document.createElement('div');w.id='vcW';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','밸브 상세도 캡처');
+ w.innerHTML=`<div class="fldBox"><div class="fldHd"><b>🔧 단수밸브 상세도 캡처</b><small>대장 번호-6-1~4</small><button type="button" class="fldX" aria-label="닫기">✕</button></div><div class="fldBd"></div></div>`;
+ (document.fullscreenElement||document.body).appendChild(w);w.querySelector('.fldX').onclick=()=>{w.hidden=true};
+ w.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,k=+b.dataset.k;
+  if(a==='up'&&k>0){[VC.L[k-1],VC.L[k]]=[VC.L[k],VC.L[k-1]];vcRender()}else if(a==='dn'&&k<VC.L.length-1){[VC.L[k+1],VC.L[k]]=[VC.L[k],VC.L[k+1]];vcRender()}
+  else if(a==='go'){const i=VC.L[k].i;w.hidden=true;map.setView([FAC.y[i],FAC.x[i]],Math.max(map.getZoom(),18));setTimeout(()=>{w.hidden=false},2500)}
+  else if(a==='rm'){VC.L.splice(k,1);vcRender()}else if(a==='pick')vcPick();else if(a==='zi'||a==='zo'){VC.z=Math.max(16,Math.min(21,VC.z+(a==='zi'?1:-1)));vcRender()}
+  else if(a==='cap')vcCapture(b);else if(a==='ldv'){w.hidden=true;F('ldvOpen',VC.no)}};
+ w.onchange=e=>{const t=e.target;if(t.dataset.k!=null&&t.type==='checkbox'){VC.L[+t.dataset.k].on=t.checked;vcRender()}else if(t.dataset.a==='no')VC.no=t.value.trim().normalize('NFC')};
+ w.oninput=e=>{if(e.target.dataset.a==='no')VC.no=e.target.value.trim().normalize('NFC')};return w}
+function vcRender(msg){const w=vcWin(),bd=w.querySelector('.fldBd');w.hidden=false;let k=0;
+ const on=VC.L.filter(x=>x.on).length,mpp=156543.03392*Math.cos((map.getCenter().lat)*Math.PI/180)/2**VC.z;
+ bd.innerHTML=`<label class="ldvNo">🔢 접수번호 <input type="text" data-a="no" value="${esc(VC.no)}" placeholder="예: 1956" autocomplete="off"></label>
+ <p class="hint" style="margin:4px 0">단수구역이 추천한 밸브입니다. <b>틀린 밸브는 체크를 풀고</b>, ↑↓로 순서를 바꾸고, 빠진 밸브는 ＋로 지도에서 고르세요. 못 닫은 밸브는 단수구역 표의 못 닫음으로 다시 계산하세요.</p>
+ <div class="vcL">${VC.L.map((x,j)=>{const r=vcRow(x.i),kk=x.on?++k:0;return `<div class="vcIt${x.on?'':' off'}"><label><input type="checkbox" data-k="${j}"${x.on?' checked':''}> <b>${kk?esc(VC.no||'번호')+'-6-'+kk:'빼기'}</b></label><span>${r.no?'#'+r.no+' ':''}${esc(r.mn)}${r.dia?' · Φ'+esc(r.dia):''}${r.oc?' · '+esc(r.oc):''}${r.st===2?' · <b class="c-rd">못 닫음</b>':r.st===1?' · 닫힘 기록':''}</span><span class="vcB"><button type="button" data-a="go" data-k="${j}" title="지도에서 보기">🔍</button><button type="button" data-a="up" data-k="${j}" aria-label="위로">↑</button><button type="button" data-a="dn" data-k="${j}" aria-label="아래로">↓</button>${x.add?`<button type="button" data-a="rm" data-k="${j}" aria-label="빼기">✕</button>`:''}</span></div>`}).join('')}</div>
+ <div class="sbtns" style="margin-top:6px"><button type="button" class="btn ol" data-a="pick">＋ 지도에서 밸브 고르기</button><span class="pczr"><span class="pczt">🔍 확대</span><button type="button" class="btn ol pcz" data-a="zo" aria-label="축소">−</button><b class="pczl">${VC.z} · 가로 ${Math.round(mpp*800)}m</b><button type="button" class="btn ol pcz" data-a="zi" aria-label="확대">＋</button></span></div>
+ <div class="sbtns" style="margin-top:6px"><button type="button" class="btn" data-a="cap"${on&&VC.no?'':' disabled'}>📸 ${on}장 캡처 (${esc(VC.no||'번호')}-6-1${on>1?'~'+on:''}.png)</button><button type="button" class="btn ol" data-a="ldv">📄 대장 미리보기</button></div>
+ ${msg?`<p class="hint" style="color:#15803d">${msg}</p>`:''}${on>4?'<p class="hint">대장 상세도 칸은 4개입니다. 5번부터는 추가사진 칸(-6-5~12)에 들어갑니다.</p>':''}${VC.no?'':'<p class="hint" style="color:#b45309">접수번호를 넣어야 캡처할 수 있습니다(단수구역 📋 민원 칸과 같은 번호).</p>'}`}
+function vcPick(){const w=vcWin();w.hidden=true;VC.pick=true;try{phToast('🔧 지도에서 실제로 닫은 밸브를 누르세요 (가까운 밸브로 붙음)')}catch(_){}
+ map.once('click',e=>{VC.pick=false;const N=SHUT.net;let best=-1,bd=1e18;if(N){const [x,y]=toM(e.latlng.lng,e.latlng.lat);for(let n=0;n<N.nv.length;n++){if(N.nv[n]<0)continue;const d=(N.nx[n]-x)**2+(N.ny[n]-y)**2;if(d<bd){bd=d;best=n}}}
+  const lim=Math.max(8,map.getZoom()>=18?12:30);if(best<0||Math.sqrt(bd)>lim){vcRender('⚠ 누른 자리 가까이('+lim+'m)에 밸브가 없습니다. 밸브 아이콘을 눌러 주세요.');return}
+  const i=N.nv[best];if(VC.L.some(x=>x.i===i)){VC.L.find(x=>x.i===i).on=true;vcRender('이미 목록에 있는 밸브라 체크했습니다.');return}VC.L.push({i,on:true,add:true});vcRender('＋ 밸브를 목록 끝에 넣었습니다. ↑↓로 순서를 맞추세요.')})}
+async function vcShot(i,z,k,no){const ll=L.latLng(FAC.y[i],FAC.x[i]),z0=map.getZoom(),c0=map.getCenter(),r=vcRow(i);let B;
+ document.documentElement.classList.add('vcShotOn');try{map.setView(ll,z,{animate:false});await new Promise(res=>setTimeout(res,900));B=await mapShotBase([],kk=>Math.round(56*kk),null,null,{dom:true})}finally{document.documentElement.classList.remove('vcShotOn');map.setView(c0,z0,{animate:false})}
+ const secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l));mapShotDeco(B,secret);const {k:K,W,Hm}=B,S=Math.min(W,Hm),bh=Math.round(56*K),cv=document.createElement('canvas');cv.width=S;cv.height=S+bh;const g=cv.getContext('2d');
+ g.fillStyle='#fff';g.fillRect(0,0,S,S+bh);g.drawImage(B.cv,(W-S)/2,(Hm-S)/2,S,S,0,0,S,S);
+ const cx=S/2,cy=S/2;g.lineWidth=2.5*K;g.strokeStyle='#fff';g.beginPath();g.arc(cx,cy,34*K,0,7);g.stroke();g.lineWidth=4*K;g.strokeStyle='#e11d48';g.beginPath();g.arc(cx,cy,31*K,0,7);g.stroke();
+ const lab=`단수밸브 ${k}`;g.font=`800 ${22*K}px "Noto Sans KR",sans-serif`;const tw=g.measureText(lab).width+20*K;g.fillStyle='#e11d48';g.fillRect(cx-tw/2,cy-74*K,tw,30*K);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(lab,cx,cy-59*K);
+ g.font=`700 ${24*K}px "Noto Sans KR",sans-serif`;const nb=no,nw=Math.max(90*K,g.measureText(nb).width+28*K);g.fillStyle='#fff';g.fillRect(S-nw-10*K,10*K,nw,40*K);g.lineWidth=2*K;g.strokeStyle='#000';g.strokeRect(S-nw-10*K,10*K,nw,40*K);g.fillStyle='#000';g.fillText(nb,S-nw/2-10*K,30*K);
+ g.fillStyle='#e11d48';g.fillRect(0,S,S,3*K);g.textAlign='left';g.fillStyle='#111827';g.font=`700 ${15*K}px "Noto Sans KR",sans-serif`;g.fillText(`🔧 ${lab} · 관리번호 ${r.mn}${r.dia?' · Φ'+r.dia:''}${r.oc?' · '+r.oc:''}`,10*K,S+18*K,S-20*K);
+ g.font=`400 ${12*K}px "Noto Sans KR",sans-serif`;g.fillStyle='#64748b';g.fillText(`${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)} · 확대 ${z} · ${fmtDT(Date.now())}`,10*K,S+40*K,S-20*K);
+ const blob=await new Promise(res=>cv.toBlob(res,'image/png'));const tc=document.createElement('canvas');tc.width=220;tc.height=Math.round(220*cv.height/cv.width);tc.getContext('2d').drawImage(cv,0,0,tc.width,tc.height);const thb=await new Promise(res=>tc.toBlob(res,'image/jpeg',.7));
+ return{blob,thb,w:cv.width,h:cv.height,ll,geo:{lat:+ll.lat.toFixed(8),lng:+ll.lng.toFixed(8),z:+(z+Math.log2(K)).toFixed(6),cx,cy},r}}
+async function vcCapture(btn){if(VC.busy)return;const no=VC.no;if(!no){vcRender();return}const L2=VC.L.filter(x=>x.on);if(!L2.length)return;VC.busy=true;const w=vcWin(),t0=btn.textContent;btn.disabled=true;
+ const ids=[],del=[];try{w.style.visibility='hidden';
+  for(let k=1;k<=L2.length;k++){btn.textContent=`⏳ ${k}/${L2.length} 캡처 중…`;const R0=await vcShot(L2[k-1].i,VC.z,k,no),name=`${no}-6-${k}.png`;
+   PH.list.filter(m=>m&&m.src==='단수밸브'&&String(m.name).normalize('NFC')===name).forEach(m=>del.push(m.id));
+   const now=Date.now(),id='p'+phHash('vc|'+name+'|'+now),d=new Date(now),p=v=>String(v).padStart(2,'0');
+   const m={id,name,dt:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`,ts:now,lat:+R0.ll.lat.toFixed(7),lng:+R0.ll.lng.toFixed(7),dir:null,alt:null,src:'단수밸브',memo:`🔧 단수밸브 상세도 ${k} · 관리번호 ${R0.r.mn}${R0.r.dia?' · Φ'+R0.r.dia:''}`,w:R0.w,h:R0.h,at:now,cd:no,geo:R0.geo};
+   await idbPut([['ph:'+id,R0.blob],['pt:'+id,R0.thb]]);PH.list.push(m);PH.byId.set(id,m);ids.push(id)}
+  if(del.length)try{await phDelete(del)}catch(_){}
+  await phSaveMeta(true);phRefresh();try{chgPhMine(ids)}catch(_){}
+  vcRender(`✓ ${no}-6-1${ids.length>1?'~'+ids.length:''}.png ${ids.length}장을 ${esc(no)} 사진 묶음에 넣었습니다${del.length?` (예전 캡처 ${del.length}장 바꿈)`:''}. 📄 대장 미리보기에서 확인하세요.`)}
+ catch(e){alert('밸브 상세도를 만들지 못했습니다: '+((e&&e.message)||e));vcRender()}finally{VC.busy=false;w.style.visibility='';btn.disabled=false}}
+const LDV={no:'',cv:null,pk:null};
+/* 주소·대리인 (2026-11-19 사용자 요청): 이 기기에만 저장(geo-ldvx, 서버로 안 보냄). 주소 = 📸 위치 캡처 때 빨간 점 자리 주소(카카오 좌표→주소)·직접 입력, 대리인 = 직접 또는 공사업체 대리인 표 */
+function ldxGet(){try{const j=JSON.parse(localStorage.getItem('geo-ldvx')||'{}');j.nos=j.nos||{};j.ag=j.ag||{};return j}catch(_){return{nos:{},ag:{}}}}
+function ldxSet(j){try{localStorage.setItem('geo-ldvx',JSON.stringify(j))}catch(_){}}
+function ldxOf(no){const j=ldxGet(),x=j.nos[no]||{},r=ldvRecOf(no)||{},co=String(r.co||'').trim(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,'');let ag=x.agent||'';if(!ag&&co){const k=Object.keys(j.ag).find(a=>nz(a)===nz(co));if(k)ag=j.ag[k]}return{addr:x.addr||'',agent:ag}}
+function ldxPut(no,k,v){const j=ldxGet();j.nos[no]=Object.assign(j.nos[no]||{},{[k]:v});ldxSet(j)}
+function ldvRecOf(no){let o=null;fldAll().filter(r=>r.src!=='탐사'&&String(r.no||'').trim().normalize('NFC')===no).forEach(r=>{if(!o||(r.d||'')>(o.d||''))o=r});return o}
+function ldvNos(){const m=new Map(),now=Date.now(),D60=60*864e5;fldAll().filter(r=>r.src!=='탐사'&&r.no).forEach(r=>{const k=String(r.no).trim().normalize('NFC');m.set(k,Math.max(m.get(k)||0,Date.parse(r.d||'')||0))});
+ PH.list.forEach(x=>{if(!x||!x.cd)return;const t=x.ts||x.at||0;if(now-t<D60)m.set(String(x.cd).normalize('NFC'),Math.max(m.get(String(x.cd))||0,t))});
+ return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(e=>e[0]).slice(0,80)}
+function ldvWin(){let w=$('ldvW');if(w)return w;w=document.createElement('div');w.id='ldvW';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','대장작성');
+ w.innerHTML=`<div class="fldBox ldvBox"><div class="fldHd"><b>📒 대장작성</b><small>민원 대응관리 일지</small><button type="button" class="fldX" aria-label="닫기">✕</button></div><div class="fldBd">
+  <div class="sbtns ldvRow"><label class="ldvNo">접수번호 <input type="text" data-a="no" list="ldvNoL" autocomplete="off" placeholder="예: 1956"></label><datalist id="ldvNoL"></datalist><button type="button" class="btn" data-a="pv">📄 미리보기</button></div>
+  <div class="ldvX"><label>📍 주소 <input type="text" data-x="addr" autocomplete="off" placeholder="위치 캡처 주소(자동) · 직접 고쳐도 됨"></label><button type="button" class="btn ol sm" data-a="adr" title="위치 캡처 빨간 점 자리의 주소를 다시 찾기">↻ 캡처 주소</button><label>🧑‍🔧 대리인 <input type="text" data-x="agent" list="ldvAgL" autocomplete="off" placeholder="공사업체 대리인"></label><datalist id="ldvAgL"></datalist></div>
+  <div class="ldvPv"><p class="hint">접수번호를 넣고 📄 미리보기를 누르세요. 아래 점검 목록의 번호를 눌러도 됩니다.</p></div>
+  <div class="sbtns ldvOut"><button type="button" class="btn ol" data-a="pr" disabled>🖨 인쇄·PDF</button><button type="button" class="btn ol" data-a="hw" disabled>📝 한글</button><button type="button" class="btn ol" data-a="im" disabled>🖼 그림 저장</button><button type="button" class="btn ol" data-a="pk" title="민원 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 리스트 줄 엑셀">📒 대장 묶음</button><button type="button" class="btn ol" data-a="fld">📋 현장 일지</button></div>
+  <details class="ldvChk" open><summary>🔎 점검: 최근 60일 번호별 위치도·사진</summary><div class="ldvList"></div></details>
+  <details class="ldvAg"><summary>🧑‍🔧 공사업체 대리인 표 (업체=성함, 한 줄에 하나)</summary><textarea data-x="ag" rows="5" placeholder="아당건설㈜=홍길동"></textarea><small class="mute">복구팀(공사업체)이 같으면 대리인 칸을 자동으로 채웁니다. 이 기기에만 저장합니다.</small></details>
+  <p class="hint">대장 칸: 위치도 = 번호.png(📸 위치 캡처), 현장사진 = 번호-1~4, 단수밸브 상세도 = 번호-6-1~4(💧 단수구역 🔧 밸브 상세도 캡처). 시각·관종·원인은 📋 현장 일지 값. 주소는 위치 캡처 빨간 점 자리 주소. 주소·대리인은 이 기기에만 저장하고 서버로 보내지 않습니다.</p></div></div>`;
+ document.body.appendChild(w);w.querySelector('.fldX').onclick=()=>{w.hidden=true};w.addEventListener('click',e=>{if(e.target===w)w.hidden=true});
+ w.onclick=async e=>{const b=e.target.closest('button[data-a],button[data-no]');if(!b)return;if(b.dataset.no){w.querySelector('[data-a="no"]').value=b.dataset.no;ldvShow(b.dataset.no);return}
+  const a=b.dataset.a,no=w.querySelector('[data-a="no"]').value.trim().normalize('NFC');
+  if(a==='pv'){if(no)ldvShow(no)}else if(a==='pk')ldgPack(b,no);else if(a==='adr'){if(no)ldvAddr(no,b,true)}else if(a==='fld'){w.hidden=true;F('fldOpen')}
+  else if(LDV.cv&&LDV.no)ldvOut(a,b)};
+ w.querySelector('[data-a="no"]').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=e.target.value.trim().normalize('NFC');if(v)ldvShow(v)}});
+ w.addEventListener('change',e=>{const k=e.target.dataset.x;if(!k)return;if(k==='ag'){const j=ldxGet();j.ag={};e.target.value.split(/\r?\n/).forEach(l=>{const m=/^(.+?)\s*[=:,\t]\s*(.+)$/.exec(l.trim());if(m)j.ag[m[1].trim()]=m[2].trim()});ldxSet(j);ldvAgFill();if(LDV.no)ldvShow(LDV.no);return}
+  if(LDV.no){ldxPut(LDV.no,k,e.target.value.trim());ldvShow(LDV.no)}});
+ ldvAgFill();return w}
+function ldvAgFill(){const w=$('ldvW');if(!w)return;const j=ldxGet(),ta=w.querySelector('[data-x="ag"]');if(ta&&document.activeElement!==ta)ta.value=Object.entries(j.ag).map(([a,b])=>a+'='+b).join('\n');w.querySelector('#ldvAgL').innerHTML=[...new Set(Object.values(j.ag))].map(v=>`<option value="${esc(v)}">`).join('')}
+/* 캡처 주소: 📸 위치 캡처 때 빨간 점 자리 주소를 찾아 번호에 기억(pcpAddrSave), 없으면 대장 열 때 위치 캡처 좌표로 찾음 */
+async function ldvAddr(no,btn,force){const w=$('ldvW'),P=ldgPhotos(no),x=ldxOf(no);if(x.addr&&!force)return;let a='';
+ if(!force&&SHUT.info&&SHUT.info.no===no&&SHUT.info.addr)a=SHUT.info.addr;
+ if(!a&&P.loc&&P.loc.lat!=null){const t0=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='⏳'}try{a=await shutAddrOf(L.latLng(P.loc.lat,P.loc.lng))}catch(e){if(force)alert((e&&e.message)||e)}finally{if(btn){btn.disabled=false;btn.textContent=t0}}}
+ else if(!a&&force)alert('위치 캡처(빨간 점)가 없어 주소를 찾을 수 없습니다. 직접 입력해 주세요.');
+ if(a){ldxPut(no,'addr',a);if(w&&LDV.no===no){w.querySelector('[data-x="addr"]').value=a;ldvShow(no)}}}
+function pcpAddrSave(no,ll){if(!no||!ll)return;if(ldxOf(no).addr)return;shutAddrOf(ll).then(a=>{if(a)ldxPut(no,'addr',a)}).catch(()=>{})}
+async function ldvOpen(no){const w=ldvWin();w.hidden=false;try{if(typeof fldQLoad==='function')fldQLoad()}catch(_){}
+ const fill=()=>{const ns=ldvNos();w.querySelector('#ldvNoL').innerHTML=ns.map(n=>`<option value="${esc(n)}">`).join('');ldvChkList(ns)};fill();
+ try{if(fldSrvOk()&&(!FLD.at||Date.now()-FLD.at>120e3)){await fldLoad();fill()}}catch(_){}
+ if(no){w.querySelector('[data-a="no"]').value=no;ldvShow(no)}}
+function ldvChkList(ns){const el=$('ldvW')&&$('ldvW').querySelector('.ldvList');if(!el)return;if(!ns.length){el.innerHTML='<p class="hint">최근 60일 번호가 없습니다(📋 현장 일지 민원 번호·🔢 사진 번호).</p>';return}
+ el.innerHTML=ns.map(no=>{const p=ldgPhotos(no),r=ldvRecOf(no),bad=[!p.loc?'위치도 없음':'',p.nPh<4?`사진 ${p.nPh}/4`:'',!r?'일지 없음':(!r.tD?'준공 시각 없음':'')].filter(Boolean);
+  return `<button type="button" class="ldvIt" data-no="${esc(no)}"><b>${esc(no)}</b><span>${p.loc?'🗺✓':'🗺✗'} · 📷 ${Math.min(p.nPh,4)}/4 · ${r?'📋✓':'📋✗'}</span><small style="color:${bad.length?'#b45309':'#15803d'}">${bad.length?esc(bad.join(' · ')):'OK'}</small></button>`}).join('')}
+function ldvImgOf(b){return new Promise(r=>{if(!b){r(null);return}const u=URL.createObjectURL(b),im=new Image();im.onload=()=>{r(im);setTimeout(()=>URL.revokeObjectURL(u),3000)};im.onerror=()=>{URL.revokeObjectURL(u);r(null)};im.src=u})}
+async function ldvShow(no){const w=ldvWin(),pv=w.querySelector('.ldvPv');const nw=LDV.no!==no;LDV.no=no;LDV.cv=null;{const x=ldxOf(no);w.querySelector('[data-x="addr"]').value=x.addr;w.querySelector('[data-x="agent"]').value=x.agent;if(nw&&!x.addr)setTimeout(()=>ldvAddr(no,null,false),0)}w.querySelectorAll('.ldvOut [data-a="pr"],.ldvOut [data-a="hw"],.ldvOut [data-a="im"]').forEach(b=>b.disabled=true);
+ pv.innerHTML='<p class="hint">⏳ 대장 그리는 중…</p>';
+ try{const cvs=await ldvDraw(no);if(LDV.no!==no)return;LDV.cvs=cvs;LDV.cv=cvs[0];pv.innerHTML='';cvs.forEach((c,i)=>{const im=new Image();im.alt=`민원 대응관리 일지 ${no} ${i+1}쪽`;im.src=c.toDataURL('image/jpeg',.85);pv.appendChild(im)});
+  const p=LDV.info||{},t=[p.loc?'':'위치도(📸 위치 캡처) 없음',p.nPh<4?`현장사진 ${p.nPh}/4장`:'',p.rec?'':'📋 현장 일지 없음 → 시각·원인 빈칸'].filter(Boolean);if(p.ext)pv.insertAdjacentHTML('beforeend',`<p class="hint">📎 추가사진 ${p.ext}장 → ${cvs.length-1}쪽 더 (모두 ${cvs.length}쪽)</p>`);
+  pv.insertAdjacentHTML('beforeend',`<p class="hint" style="color:${t.length?'#b45309':'#15803d'}">${t.length?'⚠ '+esc(t.join(' · ')):'✓ 칸이 모두 찼습니다.'}</p>`);
+  w.querySelectorAll('.ldvOut [data-a]').forEach(b=>b.disabled=false)}
+ catch(e){pv.innerHTML=`<p class="hint" style="color:#b91c1c">대장을 그리지 못했습니다: ${esc((e&&e.message)||String(e))}</p>`}}
+async function ldvDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no)||{},W=1240,H=1754,M=56,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+ const loc=P.loc,phs=P.out.filter(o=>o.kind==='현장사진'&&o.k>=1&&o.k<=4),det=P.out.filter(o=>o.kind==='상세도'),ext=P.out.filter(o=>o.kind==='현장사진'&&o.k>4).sort((a,b)=>a.k-b.k).concat(P.out.filter(o=>o.kind==='추가사진')),ms=[loc,...phs.map(o=>o.m),...det.map(o=>o.m),...ext.map(o=>o.m)].filter(Boolean);
+ const bl=await ldgBlobs(ms),img=new Map();for(let i=0;i<ms.length;i++)img.set(ms[i].id,await ldvImgOf(bl[i]));
+ const blk=(()=>{try{const gg=loc&&PH.gOf.get(loc.id);return gg?phGBlk(gg):''}catch(_){return ''}})();
+ LDV.info={loc:!!loc,nPh:phs.length,rec:!!rec.no,ext:ext.length};
+ const FN=(w,sz)=>`${w} ${sz}px "Noto Sans KR","Malgun Gothic",sans-serif`,ln='#334155';g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textBaseline='middle';
+ const box=(x,y,w,h,fill)=>{if(fill){g.fillStyle=fill;g.fillRect(x,y,w,h)}g.strokeStyle=ln;g.lineWidth=1.5;g.strokeRect(x,y,w,h)};
+ const txt=(t,x,y,w,h,o={})=>{t=String(t??'');g.fillStyle=o.c||'#0f172a';let sz=o.sz||22;g.font=FN(o.b?700:400,sz);while(sz>11&&g.measureText(t).width>w-14){sz--;g.font=FN(o.b?700:400,sz)}g.textAlign=o.al||'center';g.fillText(t,o.al==='left'?x+10:x+w/2,y+h/2+1,w-12)};
+ const cell=(lb,v,x,y,w1,w2,h)=>{box(x,y,w1,h,'#eef2ff');txt(lb,x,y,w1,h,{b:1,sz:20});box(x+w1,y,w2,h);txt(v,x+w1,y,w2,h,{sz:21})};
+ /* 제목 */
+ g.fillStyle='#1e1b4b';g.font=FN(800,44);g.textAlign='center';g.fillText('민원 대응관리 일지',W/2,M+34);
+ g.font=FN(400,19);g.fillStyle='#475569';g.fillText(`${(typeof SITE==='object'&&SITE.name)||''} 상수도관망 유지관리`,W/2,M+76);
+ let y=M+104;const IW=W-2*M,rh=54;
+ /* 1~2줄: 접수번호·민원원인·위치 / 날짜·복구팀·대리인 */
+ const c3=IW/3,lw=130,X=ldxOf(no);cell('접수번호',no,M,y,lw,c3-lw,rh);cell('민원원인',rec.res||'',M+c3,y,lw,c3-lw,rh);cell('소블록',blk,M+2*c3,y,lw,c3-lw,rh);y+=rh;
+ cell('주소',X.addr,M,y,lw,IW-lw,rh);y+=rh;
+ cell('날짜',rec.d||(loc&&loc.dt?String(loc.dt).slice(0,10):''),M,y,lw,c3-lw,rh);cell('복구팀',rec.co||'',M+c3,y,lw,c3-lw,rh);cell('대리인',X.agent,M+2*c3,y,lw,c3-lw,rh);y+=rh+10;
+ /* 3~4줄: 민원 내용 + 시각 */
+ const hd=['관종','관경','누수원인','누수부위','관정비 여부','접수','도착','착공','준공'],vv=[rec.mat||'',rec.dia?rec.dia+(String(rec.dia).match(/mm/)?'':'mm'):'',rec.cause||'',rec.part||'',rec.fix||'',rec.tA||'',rec.tB||'',rec.tC||'',rec.tD||''],cw=IW/hd.length;
+ hd.forEach((h,i)=>{box(M+i*cw,y,cw,44,i<5?'#eef2ff':'#e0f2fe');txt(h,M+i*cw,y,cw,44,{b:1,sz:19})});y+=44;vv.forEach((v,i)=>{box(M+i*cw,y,cw,rh);txt(v,M+i*cw,y,cw,rh,{sz:21})});y+=rh;
+ box(M,y,lw,rh*1.4,'#eef2ff');txt('현장내용',M,y,lw,rh*1.4,{b:1,sz:20});box(M+lw,y,IW-lw,rh*1.4);txt(rec.memo||'',M+lw,y,IW-lw,rh*1.4,{al:'left',sz:20});y+=rh*1.4+14;
+ /* 그림 칸 */
+ const pic=(m,x,y0,w,h,lab,fn,fit)=>{box(x,y0,w,h,'#f8fafc');const im=m&&img.get(m.id);if(im){const r=fit==='contain'?Math.min((w-6)/im.width,(h-6)/im.height):Math.max((w-6)/im.width,(h-6)/im.height),dw=im.width*r,dh=im.height*r;g.save();g.beginPath();g.rect(x+3,y0+3,w-6,h-6);g.clip();g.drawImage(im,x+(w-dw)/2,y0+(h-dh)/2,dw,dh);g.restore()}
+  else{g.fillStyle='#94a3b8';g.font=FN(400,18);g.textAlign='center';g.fillText('(없음) '+fn,x+w/2,y0+h/2)}
+  if(lab){g.font=FN(700,16);const tw=g.measureText(lab).width+16;g.fillStyle='rgba(15,23,42,.72)';g.fillRect(x+3,y0+3,tw,26);g.fillStyle='#fff';g.textAlign='left';g.fillText(lab,x+11,y0+16)}};
+ const lw2=44,mapW=Math.round((IW-lw2)*.64),mapH=Math.round(mapW/1.4),dW=IW-lw2-mapW,dH=mapH/2;
+ box(M,y,lw2,mapH,'#eef2ff');g.save();g.translate(M+lw2/2,y+mapH/2);g.fillStyle='#0f172a';g.font=FN(700,20);g.textAlign='center';['위','치','도'].forEach((c,i)=>g.fillText(c,0,(i-1)*30));g.restore();
+ pic(loc,M+lw2,y,mapW,mapH,'',no+'.png','contain');
+ for(let i=0;i<4;i++){const o=det.find(d=>d.fn===`${no}-6-${i+1}.png`);pic(o&&o.m,M+lw2+mapW+(i%2)*dW/2,y+Math.floor(i/2)*dH,dW/2,dH,`단수밸브 상세도 ${i+1}`,`${no}-6-${i+1}.png`,'contain')}
+ y+=mapH+14;
+ const pH=Math.round(Math.min((IW-lw2)/2/1.6,(H-M-40-64-y)/2));box(M,y,lw2,pH*2,'#eef2ff');g.save();g.translate(M+lw2/2,y+pH);g.fillStyle='#0f172a';g.font=FN(700,20);g.textAlign='center';['현','장','사','진'].forEach((c,i)=>g.fillText(c,0,(i-1.5)*30));g.restore();
+ for(let k=1;k<=4;k++){const o=phs.find(x=>x.k===k);pic(o&&o.m,M+lw2+((k-1)%2)*(IW-lw2)/2,y+Math.floor((k-1)/2)*pH,(IW-lw2)/2,pH,`현장사진 ${k}`,`${no}-${k}.jpg`,'cover')}
+ y+=pH*2+10;
+ const bh=Math.max(46,H-M-y-24);box(M,y,lw,bh,'#eef2ff');txt('비고',M,y,lw,bh,{b:1,sz:20});box(M+lw,y,IW-lw,bh);
+ txt([loc&&loc.lat!=null?`현장 위치(빨간 점) ${(+loc.lat).toFixed(6)}, ${(+loc.lng).toFixed(6)}`:'',ext.length?`추가사진 ${ext.length}장 → 다음 장`:'' ].filter(Boolean).join(' · '),M+lw,y,IW-lw,bh,{al:'left',sz:18,c:'#334155'});
+ g.font=FN(400,15);g.fillStyle='#64748b';g.textAlign='right';g.fillText(`출력 ${fmtDT(Date.now())}`,W-M,H-M+10);
+ const cvs=[cv],PER=8,np=Math.ceil(ext.length/PER);
+ for(let pg=0;pg<np;pg++){const c2=document.createElement('canvas');c2.width=W;c2.height=H;const q=c2.getContext('2d');q.fillStyle='#fff';q.fillRect(0,0,W,H);q.textBaseline='middle';
+  q.fillStyle='#1e1b4b';q.font=FN(800,36);q.textAlign='center';q.fillText('민원 대응관리 일지 · 추가사진',W/2,M+28);q.font=FN(400,19);q.fillStyle='#475569';q.fillText(`접수번호 ${no} · ${pg+2}/${np+1}쪽`,W/2,M+66);
+  const top=M+92,gw=(W-2*M)/2,gh=(H-M-40-top)/4;
+  for(let j=0;j<PER;j++){const o=ext[pg*PER+j],x=M+(j%2)*gw,y0=top+Math.floor(j/2)*gh;q.strokeStyle=ln;q.lineWidth=1.5;q.fillStyle='#f8fafc';q.fillRect(x,y0,gw,gh);q.strokeRect(x,y0,gw,gh);if(!o)continue;
+   const im=img.get(o.m.id);if(im){const r=Math.min((gw-6)/im.width,(gh-6)/im.height),dw=im.width*r,dh=im.height*r;q.drawImage(im,x+(gw-dw)/2,y0+(gh-dh)/2,dw,dh)}else{q.fillStyle='#94a3b8';q.font=FN(400,18);q.textAlign='center';q.fillText('(원본 없음) '+o.fn,x+gw/2,y0+gh/2)}
+   const lab=`추가사진 ${pg*PER+j+1} · ${o.fn}`;q.font=FN(700,16);const tw=q.measureText(lab).width+16;q.fillStyle='rgba(15,23,42,.72)';q.fillRect(x+3,y0+3,tw,26);q.fillStyle='#fff';q.textAlign='left';q.fillText(lab,x+11,y0+16)}
+  q.font=FN(400,15);q.fillStyle='#64748b';q.textAlign='right';q.fillText(`출력 ${fmtDT(Date.now())}`,W-M,H-M+10);cvs.push(c2)}
+ return cvs}
+async function ldvOut(a,btn){const cv=LDV.cv,cvs=LDV.cvs||[cv],no=LDV.no,base=`민원대응관리일지_${fileSafe(no)}_${fldToday().replace(/-/g,'')}`;
+ if(a==='im'){for(let i=0;i<cvs.length;i++){const b=await new Promise(r=>cvs[i].toBlob(r,'image/png'));dlBlob(b,base+(cvs.length>1?`_${i+1}쪽`:'')+'.png');if(i+1<cvs.length)await new Promise(r=>setTimeout(r,600))}return}
+ if(a==='pr'){const w=window.open('','_blank');if(!w){alert('팝업이 막혔습니다. 이 사이트의 팝업을 허용해 주세요.');return}const us=cvs.map(c=>c.toDataURL('image/jpeg',.92));
+  w.document.open();w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(base)}</title><style>@page{size:A4 portrait;margin:0}html,body{margin:0;background:#e5e7eb}img{display:block;width:210mm;height:297mm;margin:0 auto 8px;background:#fff;page-break-after:always;break-after:page}img:last-child{page-break-after:auto;break-after:auto}.bar{position:sticky;top:0;padding:8px;background:#1f2937;color:#fff;font:13px sans-serif;display:flex;gap:8px;align-items:center}.bar button{font:inherit;padding:4px 10px;cursor:pointer}@media print{.bar{display:none}html,body{background:#fff}img{margin:0}}</style></head><body><div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button><span>대상 프린터에서 "PDF로 저장"을 고르면 PDF가 됩니다${us.length>1?' · '+us.length+'쪽':''}</span></div>${us.map((u,i)=>`<img src="${u}" alt="민원 대응관리 일지 ${i+1}쪽">`).join('')}</body></html>`);w.document.close();
+  const ims=[...w.document.querySelectorAll('img')],go=()=>{try{w.focus();w.print()}catch(_){}};Promise.all(ims.map(im=>im.complete?1:new Promise(r=>{im.onload=im.onerror=r}))).then(()=>setTimeout(go,300));return}
+ if(a==='hw'){const t0=btn.textContent;btn.disabled=true;btn.textContent='⏳ 한글 만드는 중…';try{const D=hwpxNew('민원 대응관리 일지 '+no);for(const c of cvs){const bb=hwpxB64(c.toDataURL('image/jpeg',.9));if(!bb)throw new Error('그림 변환 실패');hwpxImg(D,bb,'jpg',c.width,c.height,180)}await hwpxSave(D,base+'.hwpx')}catch(e){alert('한글 저장 실패: '+((e&&e.message)||e))}finally{btn.disabled=false;btn.textContent=t0}}}
 /* 📊 대장 칸 순서 엑셀: 민원 = '리스트(매크로용)' 순서(대리인·현장주소 빈칸), 누수탐사 = '누수탐사총괄표' 순서(주소·탐사자 빈칸) + 위치 시트 */
 function fldXl(){if(typeof XLSX==='undefined'){alert('엑셀 도구(XLSX)를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
  const A=fldAll().filter(r=>FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())),M=A.filter(r=>r.src!=='탐사').sort((a,b)=>(a.d+a.tA).localeCompare(b.d+b.tA)),T=A.filter(r=>r.src==='탐사').sort((a,b)=>(a.d||'').localeCompare(b.d||''));
