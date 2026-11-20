@@ -289,6 +289,8 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+.tdc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}.tdc h3{margin:0 0 4px;font-size:17px}.tdc .sc-btn{margin-top:6px}
+#calG .t[draggable=true]{cursor:grab}#calG .cd.dov{outline:3px dashed #4f46e5;outline-offset:-3px;background:var(--ind1)}
 .dba{position:absolute;z-index:905;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:#312e81;font-size:24px;font-weight:900;line-height:30px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;display:none}.dba.on{display:block}html.dark .dba{background:#162033;color:#c7d2fe}html.clean .dba{display:none!important}
 #cleanX{display:none}
 html.clean header,html.clean #side,html.clean .daybar,html.clean .fab,html.clean .mopt,html.clean #pwT,html.clean #pwR,html.clean #mTop,html.clean .nobase,html.clean .pickbar,html.clean .leaflet-control-container,html.clean #updB{display:none!important}
@@ -455,6 +457,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
   <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
   <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
+  <button class="btn" id="bToday" type="button"><i class="ii" data-i="flag"></i> 오늘 점검</button>
+  <button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button>
   <button class="btn" id="bRf" type="button"><i class="ii" data-i="loc"></i> 새로고침</button>
   <button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button>
   <button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button>
@@ -523,7 +527,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div class="card" id="panel">
    <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button><button data-t="act"><i class="ii" data-i="tool"></i> 후속 조치</button><button data-t="sum" class="adm"><i class="ii" data-i="chart"></i> 종합</button><button data-t="nw"><i class="ii" data-i="bell"></i> 소식 <span id="nwc" class="nwc"></span></button></div>
    <div class="flt np"><select id="fRg"></select><select id="fSt"></select><select id="fIn"></select></div>
-   <div class="scr" id="p-lst"><div class="lstb np"><button class="btn" id="nearB" type="button"><i class="ii" data-i="loc"></i> 가까운 현장 순</button><span class="mini" id="nearI"></span></div><table><thead id="lH"></thead><tbody id="lB"></tbody></table></div>
+   <div class="scr" id="p-lst"><div class="lstb np"><button class="btn" id="meB" type="button"><i class="ii" data-i="users"></i> <span id="meT">내 담당만</span></button><button class="btn" id="meE" type="button" title="내 이름 바꾸기" style="padding:4px 8px">✎</button><button class="btn" id="nearB" type="button"><i class="ii" data-i="loc"></i> 가까운 현장 순</button><span class="mini" id="nearI"></span></div><table><thead id="lH"></thead><tbody id="lB"></tbody></table></div>
    <div class="scr" id="p-cal" hidden><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><button class="btn" id="mPrev">◀</button><b id="mLbl"></b><button class="btn" id="mNext">▶</button></div><div class="cal" id="calG"></div><p class="mini">날짜를 누르면 지도에서 그날 현장만 봅니다.</p></div>
    <div class="scr" id="p-ins" hidden></div>
    <div class="scr" id="p-pin" hidden></div>
@@ -618,6 +622,17 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <div id="phv" class="np"><img alt="사진"><p></p></div>
 <button id="cleanX" class="np" type="button" title="지도만 보기 끝 (Esc)">✕ 지도만 보기 끝</button>
 <div id="updB" class="np"><span>새 판이 올라왔습니다.</span><button type="button" id="updGo">🔄 새로고침</button><button type="button" id="updX">✕</button></div>
+<div class="modal np" id="tdm"><div class="mbox" style="max-width:520px;margin-top:30px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b id="tdT"><i class="ii" data-i="flag"></i> 오늘 점검</b><button class="btn" id="tdX"><i class="ii" data-i="x"></i></button></div>
+ <div id="tdB"></div>
+ <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="tdAuto"> 앱을 열 때 오늘 점검이 있으면 이 화면을 먼저 보기</label>
+</div></div>
+<div class="modal np" id="mem"><div class="mbox" style="max-width:360px;margin-top:60px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b><i class="ii" data-i="users"></i> 내 이름 고르기</b><button class="btn" id="memX"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" style="margin:0 0 6px">점검자나 현장 인원 중 내 이름을 고르면 '내 담당만'으로 내 현장만 봅니다. 이 브라우저에만 기억됩니다.</p>
+ <select class="inp" id="memS"></select>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="memNo">취소</button><button class="btn pri" id="memOk">이 이름으로</button></div>
+</div></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
  <div style="display:flex;gap:6px"><input id="nvQ" class="inp" placeholder="주소나 장소 이름 (예: 포항시 북구 청하면 화두길 152)" enterkeyhint="go"><button class="btn" id="nvCp" type="button"><i class="ii" data-i="doc"></i> 복사</button></div>
@@ -742,8 +757,9 @@ function histHtml(r){const k=r.k||r.id;const L=ALL.filter(x=>(x.k||x.id)===k||(!
 $('evBody').addEventListener('click',e=>{const a=e.target.closest('[data-rd]');if(!a)return;e.preventDefault();const v=a.dataset.rd;if(v===RD)return;const k=(rows.find(x=>x.id===EVS.id)||{}).k;rdGo(v);const n=rows.find(x=>x.k===k);if(n)setTimeout(()=>openEv(n.id),50)});
 
 /* ── 필터 ── */
-let F={rg:'',st:'',in:'',q:'',day:''},tab='lst',sortK='pd',sortD=1,calM=null,selId=null;
-function filt(noDay){const q=F.q.trim();return rows.filter(r=>(!F.rg||r.rg===F.rg)&&(!F.st||stOf(r)===F.st)&&(!F.in||r.ins.includes(F.in))&&(noDay||!F.day||r.pd===F.day)&&(!q||[r.rg,r.tm,r.note,r.addr,...r.ins,...people(r)].join(' ').includes(q)))}
+let F={rg:'',st:'',in:'',q:'',day:'',me:0},tab='lst',sortK='pd',sortD=1,calM=null,selId=null;
+let MEN='';try{MEN=localStorage.getItem('mulgil-me')||'';F.me=MEN&&localStorage.getItem('mulgil-meon')==='1'?1:0}catch(e){}
+function filt(noDay){const q=F.q.trim();return rows.filter(r=>(!F.me||!MEN||r.ins.includes(MEN)||people(r).includes(MEN))&&(!F.rg||r.rg===F.rg)&&(!F.st||stOf(r)===F.st)&&(!F.in||r.ins.includes(F.in))&&(noDay||!F.day||r.pd===F.day)&&(!q||[r.rg,r.tm,r.note,r.addr,...r.ins,...people(r)].join(' ').includes(q)))}
 function fillSel(id,vals,all){const s=$(id),v=s.value;s.innerHTML=`<option value="">${all}</option>`+vals.map(x=>`<option>${esc(x)}</option>`).join('');s.value=vals.includes(v)?v:''}
 function refreshSel(){fillSel('fRg',[...new Set(rows.map(r=>r.rg).filter(Boolean))].sort(),'전체 지역');fillSel('fSt',['예정','지연','완료','연기','취소'],'전체 상태');fillSel('fIn',[...new Set(rows.flatMap(r=>r.ins).filter(real))].sort(),'전체 점검자');F.rg=$('fRg').value;F.st=$('fSt').value;F.in=$('fIn').value}
 ['fRg','fSt','fIn'].forEach(k=>$(k).onchange=()=>{F[{fRg:'rg',fSt:'st',fIn:'in'}[k]]=$(k).value;render(true)});
@@ -972,9 +988,15 @@ function rCal(){const L0=filt(true);if(!calM){const n=L0.map(r=>r.pd).filter(d=>
  const days=[...new Set(rows.map(r=>r.pd).filter(Boolean))].sort();const s=new Date(calM);s.setDate(1-calM.getDay());const t=ymd(today());
  let h=WD.map((w,i)=>`<div class="h" style="${i==0?'color:#dc2626':i==6?'color:#0284c7':''}">${w}</div>`).join('');
  for(let i=0;i<42;i++){const d=new Date(s);d.setDate(s.getDate()+i);const k=ymd(d),l=by[k]||[],out=d.getMonth()!==calM.getMonth();if(i===35&&out)break;const c=PAL[Math.max(0,days.indexOf(k))%PAL.length];
-  h+=`<div class="cd ${out?'out':''} ${k===t?'td':''} ${F.day===k?'on':''}" data-d="${l.length?k:''}"><div class="n"><span>${d.getDate()}</span>${l.length?`<span style="color:${c}">${l.length}</span>`:''}</div>${l.slice(0,3).map(r=>`<span class="t s-${stOf(r)}">${esc(r.tm)}</span>`).join('')}${l.length>3?`<span class="mini">+${l.length-3}</span>`:''}</div>`}
+  h+=`<div class="cd ${out?'out':''} ${k===t?'td':''} ${F.day===k?'on':''}" data-d="${l.length?k:''}" data-k="${k}"><div class="n"><span>${d.getDate()}</span>${l.length?`<span style="color:${c}">${l.length}</span>`:''}</div>${l.slice(0,3).map(r=>`<span class="t s-${stOf(r)}" draggable="true" data-id="${esc(r.id)}" title="끌어서 다른 날짜로 옮기기">${esc(r.tm)}</span>`).join('')}${l.length>3?`<span class="mini">+${l.length-3}</span>`:''}</div>`}
  $('calG').innerHTML=h}
 $('calG').onclick=e=>{const c=e.target.closest('.cd');if(!c||!c.dataset.d)return;F.day=F.day===c.dataset.d?'':c.dataset.d;render(true)};
+/* 📅 달력에서 현장을 끌어 다른 날짜로 (PC) */
+$('calG').addEventListener('dragstart',e=>{const t=e.target.closest('[data-id]');if(!t)return;e.dataTransfer.setData('text/plain',t.dataset.id);e.dataTransfer.effectAllowed='move'});
+$('calG').addEventListener('dragover',e=>{const c=e.target.closest('.cd');if(!c)return;e.preventDefault();document.querySelectorAll('#calG .dov').forEach(x=>x!==c&&x.classList.remove('dov'));c.classList.add('dov')});
+$('calG').addEventListener('dragleave',e=>{const c=e.target.closest('.cd');if(c&&!c.contains(e.relatedTarget))c.classList.remove('dov')});
+$('calG').addEventListener('drop',async e=>{const c=e.target.closest('.cd');document.querySelectorAll('#calG .dov').forEach(x=>x.classList.remove('dov'));if(!c)return;e.preventDefault();const id=e.dataTransfer.getData('text/plain'),k=c.dataset.k,r=rows.find(x=>x.id===id);if(!r||!k||r.pd===k)return;
+ if(mode==='db'&&RO)return toast('보기 권한이라 바꿀 수 없습니다');if(await ask(`${r.tm} 점검일을 ${dt(r.pd)} → ${dt(k)}로 바꿀까요?`)){if(await putRow({...r,pd:k}))toast(r.tm+' 점검일을 '+dt(k)+'로 바꿨습니다')}});
 $('mPrev').onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);rCal()};$('mNext').onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);rCal()};
 function rIns(L0){const P={},R=['기술','영업','관리'];L0.forEach(r=>r.ins.forEach((n,i)=>{if(!real(n))return;const p=P[n]=P[n]||{ro:new Set(),l:[]};p.ro.add(R[i]);if(!p.l.includes(r))p.l.push(r)}));
  $('p-ins').innerHTML=Object.entries(P).sort((a,b)=>b[1].l.length-a[1].l.length).map(([n,p])=>{const by={};p.l.forEach(r=>(by[r.pd]=by[r.pd]||[]).push(r));const ds=Object.keys(by).sort();const multi=ds.filter(d=>new Set(by[d].map(r=>r.rg)).size>1);
@@ -1287,11 +1309,39 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261120202010';
+const BUILD='20261120202148';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
 setTimeout(updCheck,5000);setInterval(updCheck,30*60e3);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updCheck()});
+
+/* ── 👤 내 담당만 ── */
+function meUI(){$('meT').textContent=F.me&&MEN?MEN+' 담당만 ✓':'내 담당만';$('meB').classList.toggle('on',!!(F.me&&MEN))}
+function meOpen(){const N=[...new Set(rows.flatMap(r=>[...r.ins,...people(r)]).filter(real))].sort((a,b)=>a.localeCompare(b,'ko'));$('memS').innerHTML=N.map(n=>`<option ${n===MEN?'selected':''}>${esc(n)}</option>`).join('');$('mem').classList.add('on')}
+$('meB').onclick=()=>{if(!MEN)return meOpen();F.me=F.me?0:1;try{localStorage.setItem('mulgil-meon',F.me?'1':'0')}catch(e){}meUI();render(true)};$('meE').onclick=meOpen;
+$('memX').onclick=$('memNo').onclick=()=>$('mem').classList.remove('on');
+$('memOk').onclick=()=>{MEN=$('memS').value;F.me=1;try{localStorage.setItem('mulgil-me',MEN);localStorage.setItem('mulgil-meon','1')}catch(e){}$('mem').classList.remove('on');meUI();render(true);toast(MEN+' 님 담당 현장만 봅니다')};
+/* ── 📆 휴대폰 달력에 넣기(.ics): 지금 목록(필터·내 담당 반영)의 점검일을 종일 일정으로, 전날 오전 9시 알림 ── */
+$('bIcs').onclick=()=>{$('tbar').classList.remove('open');const L=filt(true).filter(r=>pDate(r.pd));if(!L.length)return toast('달력에 넣을 일정이 없습니다');
+ const e=t=>String(t||'').replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n'),d8=x=>x.replace(/-/g,''),nx=x=>{const d=pDate(x);d.setDate(d.getDate()+1);return ymd(d).replace(/-/g,'')},now=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+ const V=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//seoyong//mulgil-insp//KO','CALSCALE:GREGORIAN','X-WR-CALNAME:스마트 물길점검'];
+ L.forEach(r=>V.push('BEGIN:VEVENT','UID:'+r.id+'-'+d8(r.pd)+'@mulgil-insp','DTSTAMP:'+now,'DTSTART;VALUE=DATE:'+d8(r.pd),'DTEND;VALUE=DATE:'+nx(r.pd),'SUMMARY:'+e('[물길점검] '+r.tm+' 현장점검'),'LOCATION:'+e(r.addr||''),'DESCRIPTION:'+e(`${rdName(r.rd||RD)} · ${r.rg} ${r.tm}\n점검자: 기술 ${r.ins[0]} · 영업 ${r.ins[1]} · 공통 ${r.ins[2]}\n수검 ${cnt(r)}명`),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+e('내일 '+r.tm+' 현장점검'),'TRIGGER:-PT15H','END:VALARM','END:VEVENT'));
+ V.push('END:VCALENDAR');saveFile(`물길점검_일정_${F.me&&MEN?MEN+'_':''}${L.length}건.ics`,new Blob([V.join('\r\n')],{type:'text/calendar'}));toast(L.length+'건 달력 파일을 만들었습니다. 열면 휴대폰 달력에 들어갑니다')};
+/* ── 📋 오늘 점검 화면 ── */
+function todayOpen(auto){const t=ymd(today());let L=filt(true).filter(r=>r.pd===t),T='오늘 점검';
+ if(!L.length){const nx=filt(true).filter(r=>r.pd>t&&r.st!=='완료').map(r=>r.pd).sort()[0];if(auto)return;if(nx){L=filt(true).filter(r=>r.pd===nx);T='다음 점검 · '+dt(nx)+' (D-'+ddays(nx)+')'}}
+ $('tdT').innerHTML=ic('flag')+' '+T+(F.me&&MEN?' · '+esc(MEN)+' 담당':'')+` <span class="mini">${L.length}곳</span>`;
+ $('tdB').innerHTML=L.length?L.sort((a,b)=>a.no-b.no).map(r=>{const c=ctOf(r).p||[];return `<div class="tdc" data-id="${esc(r.id)}"><h3>${esc(r.tm)} <span class="st s-${stOf(r)}" style="font-size:11px;vertical-align:middle">${stOf(r)}</span></h3>
+  <div class="mini">${esc(r.rg)} · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])} · 수검 ${cnt(r)}명</div><div style="font-size:13px;margin-top:3px">${r.addr?esc(r.addr):'<b class="warn">주소 확인 필요</b>'}</div>
+  ${c.length?`<div style="font-size:13px;margin-top:3px">${c.map(telA).join('<br>')}</div>`:''}
+  <div class="sc-btn"><button type="button" data-td="nav">${ic('compass')} 길안내</button>${ADM?`<button type="button" data-td="ev">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button type="button" data-td="map">${ic('pin')} 지도</button><button type="button" data-td="share">${ic('share')} 소식</button></div></div>`}).join(''):'<p class="mini">예정된 점검이 없습니다.</p>';
+ try{$('tdAuto').checked=localStorage.getItem('mulgil-tdauto')!=='0'}catch(e){}$('tbar').classList.remove('open');$('tdm').classList.add('on')}
+$('bToday').onclick=()=>todayOpen(false);$('tdX').onclick=()=>$('tdm').classList.remove('on');
+$('tdAuto').onchange=e=>{try{localStorage.setItem('mulgil-tdauto',e.target.checked?'1':'0')}catch(_){}};
+$('tdB').addEventListener('click',e=>{const b=e.target.closest('[data-td]');if(!b)return;const r=rows.find(x=>x.id===b.closest('.tdc').dataset.id);if(!r)return;const a=b.dataset.td;
+ if(a==='nav')openNav(r.addr||(r.rg+' '+r.tm));else if(a==='ev'){$('tdm').classList.remove('on');openEv(r.id)}else if(a==='share')shareSite(r.id);
+ else if(a==='map'){$('tdm').classList.remove('on');selId=r.id;if(isMob())showCard(r);else if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),13));drawPins()}}});
+setTimeout(()=>{try{const t=ymd(today());if(localStorage.getItem('mulgil-tdauto')==='0'||localStorage.getItem('mulgil-tdseen')===t)return;if(!filt(true).some(r=>r.pd===t))return;localStorage.setItem('mulgil-tdseen',t);todayOpen(true)}catch(e){}},2500);
 
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
@@ -1582,7 +1632,7 @@ $('mNav').onclick=()=>openNav($('mQ').value.trim());
 $('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('mQ').value.trim()&&!filt(true).length)openNav($('mQ').value.trim())});
 
 /* ── 시작 ── */
-initMap();fma();hh();startLocal();mobApply();kkStart();lyApply();if(LY.clean)cleanApply(true);
+meUI&&0;initMap();fma();hh();startLocal();mobApply();kkStart();lyApply();if(LY.clean)cleanApply(true);meUI();
 (function(){let P=null;const b=$('bInst');const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
  try{if(location.protocol==='https:'&&'serviceWorker' in navigator&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
  addEventListener('beforeinstallprompt',e=>{e.preventDefault();P=e;if(b)b.hidden=false});
