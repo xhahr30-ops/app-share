@@ -189,6 +189,7 @@ html.noadm .adm{display:none!important}
 .evp{border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px}.evp summary{cursor:pointer}
 .pulse{animation:pl 1.2s infinite}@keyframes pl{50%{box-shadow:0 0 0 4px rgba(99,102,241,.35)}}
 .ip.act{cursor:default}
+.tel{color:var(--ind6);font-weight:700;text-decoration:none;white-space:nowrap}html.dark .tel{color:#a5b4fc}
 @media (max-width:640px){#ev{padding:0}#ev .mbox{max-height:100dvh;height:100dvh;border-radius:0}.seg button{padding:6px 7px}}
 
 /* 현장 모드 꺼짐: 지도·목록 반반 */
@@ -322,7 +323,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <label>&nbsp;<button class="btn" id="mdPick" type="button" style="width:100%;justify-content:center"><i class="ii" data-i="pin"></i> 지도에서 찍기</button></label>
   <label>기술부문<input id="e_i0" class="inp"></label>
   <label>영업부문<input id="e_i1" class="inp"></label>
-  <label>관리부문<input id="e_i2" class="inp"></label>
+  <label>공통부문<input id="e_i2" class="inp"></label>
   <label>권역팀장<input id="e_lead" class="inp"></label>
   <label>단독팀장<input id="e_solo" class="inp"></label>
   <label>팀장<input id="e_tl" class="inp"></label>
@@ -360,6 +361,7 @@ const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',list:'slate',phone:'slate',moon:'
 const ic=k=>{const c=HU[IC_H[k]]||HU.slate;return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24" aria-hidden="true"><path d="'+(ICP[k]||ICP.pin)+'"/></svg>'};
 document.querySelectorAll('.ii[data-i]').forEach(e=>e.outerHTML=ic(e.dataset.i));
 const SEED=[];
+const CONT_SEED={};
 const $=id=>document.getElementById(id);
 const LS='bsst-insp-2026h2-map';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -391,7 +393,7 @@ function lsLoad(){try{const v=localStorage.getItem(LS);if(v)return JSON.parse(v)
 function lsSave(){try{localStorage.setItem(LS,JSON.stringify(rows))}catch(e){}}
 function withIds(list){const u={};return list.map(r=>{r=norm(r);let id=r.id||('s'+String(r.no).padStart(3,'0'));while(u[id])id+='x';u[id]=1;r.id=id;return r})}
 function startLocal(){mode='local';xLoad();rows=withIds(lsLoad()||SEED);setStatus('이 브라우저','#7dd3fc');render(true)}
-async function startDb(db){DB=db;mode='db';EV={};IV={};AC={};subX();setStatus('공유 연결 중…','#fcd34d');let got=false;const tm=setTimeout(()=>{if(!got)setStatus('공유 응답 지연','#fcd34d')},10000);
+async function startDb(db){DB=db;mode='db';EV={};IV={};AC={};CT={};subX();setStatus('공유 연결 중…','#fcd34d');let got=false;const tm=setTimeout(()=>{if(!got)setStatus('공유 응답 지연','#fcd34d')},10000);
  try{const u=await claude.use('user');if(u&&u.can){const w=await u.can('data.write');if(w===false)RO=true}}catch(e){}
  let first=true;
  DB.collection('sites').onSnapshot(s=>{got=true;clearTimeout(tm);rows=withIds(s.docs.map(d=>({...d.data(),id:d.id})));setStatus(s.metadata.fromCache?'공유(확인 중)':RO?'공유 · 보기 전용':'공유 · 실시간',s.metadata.fromCache?'#fcd34d':'#34d399');render(first);first=false},e=>{clearTimeout(tm);setStatus('공유 연결 끊김','#f87171')})}
@@ -445,10 +447,12 @@ function drawPins(fit){const L0=filt(),all=filt(true);
  if(fit&&pts.length)map.fitBounds(pts,{padding:[60,60],maxZoom:12})}
 function rDays(all,days){const by={};all.forEach(r=>{(by[r.pd]=by[r.pd]||[]).push(r)});
  $('daybar').innerHTML=`<button class="dc ${F.day?'':'on'}" data-d="">전체 <b>${all.length}</b></button>`+days.filter(d=>by[d]).map(d=>{const dd=ddays(d),l=by[d],dn=l.filter(r=>r.st==='완료').length;return `<button class="dc ${F.day===d?'on':''}" data-d="${d}"><i style="background:${$('colBy').value==='day'?PAL[days.indexOf(d)%PAL.length]:'#94a3b8'}"></i>${md(d)}(${wd(d)}) <b>${l.length}</b>${dd===0?' 오늘':dn===l.length?' '+ic('check'):''}</button>`}).join('')}
+const telA=p=>`${esc(p.n)} <span class="mini">${esc(p.role||'')}</span> <a href="tel:${esc(p.ph)}" class="tel">${esc(p.ph)}</a>`;
+const insPh=n=>(CT._ins?.p||[]).find(x=>x.n===n);
 function popHtml(r){const s=stOf(r),d=ddays(r.pd);return `<div class="ppt"><b>${esc(r.rg)} ${esc(r.tm)}</b> ${stB(s)}
  <div class="r"><span>점검일</span><b>${md(r.pd)}(${wd(r.pd)}) ${r.st==='완료'?'':d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</b></div>
- <div class="r"><span>기술</span>${esc(r.ins[0])}</div><div class="r"><span>영업</span>${esc(r.ins[1])}</div><div class="r"><span>관리</span>${esc(r.ins[2])}</div>
- <div class="r"><span>수검</span>${cnt(r)}명 ${esc([r.lead,r.solo,r.tl].filter(real).join(', '))}</div>
+ <div class="r"><span>기술</span>${esc(r.ins[0])}</div><div class="r"><span>영업</span>${esc(r.ins[1])}</div><div class="r"><span>공통</span>${esc(r.ins[2])}</div>
+ <div class="r"><span>수검</span>${cnt(r)}명</div>${(CT[r.id]?.p||[]).length?`<div class="r"><span>연락</span><div>${CT[r.id].p.map(telA).join('<br>')}</div></div>`:`<div class="r"><span>연락</span>${esc([r.lead,r.solo,r.tl].filter(real).join(', '))||'-'} ${Object.keys(CT).length?'<b class="warn">연락처 확인 필요</b>':''}</div>`}
  <div class="r"><span>주소</span>${r.addr?esc(r.addr):'<b class="warn">확인 필요</b>'}</div>${r.src?`<div class="r"><span>위치</span><span class="mini">${esc(r.src)}</span></div>`:''}
  <div class="bt"><button class="adm" onclick="openEv('${r.id}')" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button>${r.addr?`<a href="https://map.kakao.com/?q=${encodeURIComponent(r.addr)}" target="_blank" rel="noopener">${ic('map')} 카카오맵</a>`:''}</div></div>`}
 async function donePin(id){const r=rows.find(x=>x.id===id);if(!r)return;if(await putRow({...r,st:'완료',ad:r.ad||ymd(today())})){map&&map.closePopup();toast(r.tm+' 완료 처리')}}
@@ -490,7 +494,7 @@ function render(fit){refreshSel();const L0=filt();
  $('empty').classList.toggle('on',!rows.length);
  const np=rows.filter(r=>!hasPin(r)).length;$('npc').textContent=np?'('+np+')':'';
  rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();drawPins(fit)}
-const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/관리)'],['pp','인원'],['st','상태']];
+const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/공통)'],['pp','인원'],['st','상태']];
 function val(r,k){return k==='pp'?cnt(r):k==='st'?stOf(r):k==='ins'?r.ins.join():r[k]}
 function rLst(L0){$('lH').innerHTML='<tr>'+COLS.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
  const S=[...L0].sort((a,b)=>{const x=val(a,sortK),y=val(b,sortK);return (x<y?-1:x>y?1:a.no-b.no)*sortD});
@@ -510,7 +514,7 @@ $('calG').onclick=e=>{const c=e.target.closest('.cd');if(!c||!c.dataset.d)return
 $('mPrev').onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);rCal()};$('mNext').onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);rCal()};
 function rIns(L0){const P={},R=['기술','영업','관리'];L0.forEach(r=>r.ins.forEach((n,i)=>{if(!real(n))return;const p=P[n]=P[n]||{ro:new Set(),l:[]};p.ro.add(R[i]);if(!p.l.includes(r))p.l.push(r)}));
  $('p-ins').innerHTML=Object.entries(P).sort((a,b)=>b[1].l.length-a[1].l.length).map(([n,p])=>{const by={};p.l.forEach(r=>(by[r.pd]=by[r.pd]||[]).push(r));const ds=Object.keys(by).sort();const multi=ds.filter(d=>new Set(by[d].map(r=>r.rg)).size>1);
-  return `<div class="ip" data-in="${esc(n)}"><b>${esc(n)}</b> <span class="mini">${[...p.ro].join('·')} · ${p.l.length}곳 · ${ds.length}일</span>${multi.length?` <span class="st s-연기">${ic('warn')} 동선 확인 ${multi.length}일</span>`:''}<div class="w">${ds.map(d=>`<div class="${multi.includes(d)?'warn':''}">${md(d)}(${wd(d)}) ${by[d].map(r=>esc(r.tm)).join(', ')}</div>`).join('')}</div></div>`}).join('')||'<p class="mini">자료 없음</p>'}
+  return `<div class="ip" data-in="${esc(n)}"><b>${esc(n)}</b>${insPh(n)?` <a href="tel:${esc(insPh(n).ph)}" class="tel" onclick="event.stopPropagation()">${esc(insPh(n).ph)}</a>`:''} <span class="mini">${[...p.ro].join('·')} · ${p.l.length}곳 · ${ds.length}일</span>${multi.length?` <span class="st s-연기">${ic('warn')} 동선 확인 ${multi.length}일</span>`:''}<div class="w">${ds.map(d=>`<div class="${multi.includes(d)?'warn':''}">${md(d)}(${wd(d)}) ${by[d].map(r=>esc(r.tm)).join(', ')}</div>`).join('')}</div></div>`}).join('')||'<p class="mini">자료 없음</p>'}
 $('p-ins').onclick=e=>{const n=e.target.closest('.ip')?.dataset.in;if(!n)return;F.in=F.in===n?'':n;$('fIn').value=F.in;render(true)};
 function rPin(){const no=rows.filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no),yes=rows.filter(hasPin);
  $('p-pin').innerHTML=`<p class="mini">위치 있음 <b>${yes.length}</b>곳 · 없음 <b style="color:var(--am)">${no.length}</b>곳. 지도 오른쪽 아래 <b>빨간 위치 단추</b>를 누르면 위치 없는 현장을 차례로 찍습니다.</p>
@@ -591,7 +595,7 @@ const EVI={team:[
 const SCL=[[5,'우수'],[4,'양호'],[3,'보통'],[2,'미흡'],[1,'매우 미흡'],['na','해당없음']];
 const PST=['확인 중','이행 완료','일부 이행','미이행'];
 const AST=['조치 필요','조치 중','조치 완료','이행 확인'];
-let ADM=true,SMP=null,EV={},IV={},AC={};
+let ADM=true,SMP=null,EV={},IV={},AC={},CT=CONT_SEED;
 const LSX=LS+'-x';
 function xLoad(){try{const v=JSON.parse(localStorage.getItem(LSX)||'{}');EV=v.eval||{};IV=v.intv||{};AC=v.acts||{}}catch(e){}}
 function xSave(){try{localStorage.setItem(LSX,JSON.stringify({eval:EV,intv:IV,acts:AC}))}catch(e){}}
@@ -600,7 +604,7 @@ async function putX(col,id,data){data={...data,upd:new Date().toISOString()};
  if(mode==='db'){try{await DB.collection(col).doc(id).set(data);return true}catch(e){toast(e&&e.code==='invalid_argument'?'이 기록은 점검자(편집 권한)만 저장할 수 있습니다':'저장 실패: '+(e&&e.code||''));return false}}
  XC[col]()[id]=data;xSave();render();return true}
 async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id).delete()}catch(e){toast('삭제 실패')}return}delete XC[col]()[id];xSave();render()}
-function subX(){['eval','intv','acts'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
+function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
  document.documentElement.classList.toggle('noadm',!ADM);render()}
@@ -616,7 +620,7 @@ let EVS={id:null,t:'team',w:null,dirty:false};
 function openEv(id){if(!ADM)return toast('점검표는 점검자(편집 권한)만 볼 수 있습니다');const r=rows.find(x=>x.id===id);if(!r)return;map&&map.closePopup();
  EVS={id,t:EVS.t||'team',w:JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),dirty:false};
  const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)));
- $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${md(r.pd)}(${wd(r.pd)}) · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`;
+ $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${md(r.pd)}(${wd(r.pd)}) · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`+((CT[r.id]?.p||[]).length?`<div class="mini" style="font-weight:400;margin-top:2px">${ic('phone')} ${CT[r.id].p.map(telA).join(' · ')}</div>`:'');
  $('ev').classList.add('on');evTab(EVS.t)}
 function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));evPaneRefresh()}
 $('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab(t)};
