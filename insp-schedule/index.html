@@ -289,6 +289,7 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+.dba{position:absolute;z-index:905;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:#312e81;font-size:24px;font-weight:900;line-height:30px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;display:none}.dba.on{display:block}html.dark .dba{background:#162033;color:#c7d2fe}html.clean .dba{display:none!important}
 #cleanX{display:none}
 html.clean header,html.clean #side,html.clean .daybar,html.clean .fab,html.clean .mopt,html.clean #pwT,html.clean #pwR,html.clean #mTop,html.clean .nobase,html.clean .pickbar,html.clean .leaflet-control-container,html.clean #updB{display:none!important}
 html.clean #mapCard{position:fixed!important;inset:0!important;left:0!important;height:auto!important;padding:0!important;border:0!important;border-radius:0!important;z-index:5!important;display:flex!important}
@@ -486,6 +487,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
    <div id="map"></div>
    <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button><button id="mNav" type="button" aria-label="주소찾기·길안내"><i class="ii" data-i="compass"></i></button></div><button class="mbig" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i></button></div>
    <div class="daybar np" id="daybar"></div>
+   <button class="dba np" id="dbL" type="button" aria-label="왼쪽 날짜">‹</button><button class="dba np" id="dbR" type="button" aria-label="오른쪽 날짜">›</button>
    <div class="fab np">
     <button class="i" id="fFit" title="모든 현장 보기"><i class="ii" data-i="full"></i></button>
     <button id="fNext" title="다음 점검일로"><i class="ii" data-i="flag"></i></button>
@@ -891,6 +893,11 @@ $('fNext').onclick=()=>{const d=rows.filter(r=>r.st==='예정'&&ddays(r.pd)>=0).
 $('fLoc').onclick=()=>{if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,13);(KK?kkMarker({lat:ll[0],lng:ll[1]},'pin','<div class="d" style="background:#2563eb"></div>',{title:'내 위치',z:2000}).addTo(pinL):L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(pinL))},()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:8000})};
 $('bMove').onclick=()=>{moveOn=!moveOn;$('bMove').classList.toggle('on',moveOn);drawPins();toast(moveOn?'핀을 끌어서 옮길 수 있습니다':'핀 옮기기 꺼짐')};
 $('colBy').onchange=()=>drawPins();$('lblOn').onchange=()=>drawPins();
+function dbArrows(){const d=$('daybar'),w=$('mapWrap');if(!d||!w)return;const r=d.getBoundingClientRect(),q=w.getBoundingClientRect(),f=d.querySelector('.dc');const top=(f?f.getBoundingClientRect().top+f.offsetHeight/2:r.top+22)-q.top-17;
+ const can=d.scrollWidth>d.clientWidth+4;$('dbL').classList.toggle('on',can&&d.scrollLeft>4);$('dbR').classList.toggle('on',can&&d.scrollLeft<d.scrollWidth-d.clientWidth-4);
+ $('dbL').style.cssText=`left:${r.left-q.left+4}px;top:${top}px`;$('dbR').style.cssText=`left:${r.right-q.left-38}px;top:${top}px`}
+$('dbL').onclick=()=>$('daybar').scrollBy({left:-Math.max(200,$('daybar').clientWidth*.7),behavior:'smooth'});$('dbR').onclick=()=>$('daybar').scrollBy({left:Math.max(200,$('daybar').clientWidth*.7),behavior:'smooth'});
+$('daybar').addEventListener('scroll',dbArrows,{passive:true});addEventListener('resize',()=>setTimeout(dbArrows,100));$('daybar').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('daybar').scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
 $('daybar').onclick=e=>{const b=e.target.closest('.dc');if(!b)return;F.day=b.dataset.d;render(true)};
 
 /* ── 주소로 위치 찾기 (OSM Nominatim · 깃허브·파일 판에서 동작) ── */
@@ -916,7 +923,7 @@ function render(fit){if(SH==='mini')setTimeout(sumUp,0);refreshSel();const L0=fi
  $('kp').innerHTML=k('현장',L0.length+'곳',F.day?md(F.day)+'('+wd(F.day)+')':'지역 '+new Set(L0.map(r=>r.rg)).size+'곳','#4f46e5')+k('진행률',(L0.length?Math.round(done/L0.length*100):0)+'%','완료 '+done+'곳','#059669')+k('다음 점검',nx?(ddays(nx.pd)===0?'오늘':'D-'+ddays(nx.pd)):'-',nx?md(nx.pd)+'('+wd(nx.pd)+')':'없음','#0284c7')+k('지연 확인',late+'곳','예정일 지남',late?'#d97706':'');
  $('empty').classList.toggle('on',!rows.length);
  const np=rows.filter(r=>!hasPin(r)).length;$('npc').textContent=np?'('+np+')':'';
- rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();nwBadge();if(tab==='nw')rNews();drawPins(fit)}
+ rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();nwBadge();setTimeout(dbArrows,0);if(tab==='nw')rNews();drawPins(fit)}
 const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/공통)'],['pp','인원'],['st','상태']];
 function val(r,k){return k==='pp'?cnt(r):k==='st'?stOf(r):k==='ins'?r.ins.join():r[k]}
 function rLst(L0){$('lH').innerHTML='<tr>'+COLS.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
@@ -1246,7 +1253,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261120201357';
+const BUILD='20261120201510';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
