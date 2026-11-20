@@ -565,14 +565,14 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="pin"></i> 카카오 바탕지도</b><button class="btn" id="kkX"><i class="ii" data-i="x"></i></button></div>
  <p class="mini" id="kkSt" style="margin:0 0 6px"></p>
  <label class="mini">카카오 JavaScript 키</label><input id="kkIn" class="inp" placeholder="예: 1a2b3c… (32자리)" autocomplete="off" spellcheck="false">
- <p class="mini" style="margin:6px 0 0">키는 이 휴대폰·PC 브라우저에만 저장되고 앱 파일이나 공유 자료에는 들어가지 않습니다.</p>
+ <p class="mini" style="margin:6px 0 0">키는 이 휴대폰·PC 브라우저에만 저장되고 앱 파일이나 공유 자료에는 들어가지 않습니다. <b>팀원용 설정 링크</b>를 카톡으로 보내면 팀원이 한 번 눌러 같은 카카오 지도를 씁니다(링크를 받은 사람만).</p>
  <details style="margin-top:6px"><summary class="mini" style="cursor:pointer;font-weight:700">키 받는 방법 (처음 한 번)</summary><ol>
   <li><code>developers.kakao.com</code>에 카카오 계정으로 로그인 → <b>내 애플리케이션 → 애플리케이션 추가하기</b> (앱 이름: 스마트 물길점검)</li>
   <li>만든 앱 → <b>앱 설정 → 플랫폼 → Web 플랫폼 등록</b> → 사이트 도메인에 <code>https://xhahr30-ops.github.io</code> 입력·저장</li>
   <li><b>제품 설정 → 카카오맵</b>에서 사용 설정을 <b>켜기(ON)</b></li>
   <li><b>앱 키</b>의 <b>JavaScript 키</b>를 복사해 위 칸에 붙여 넣기</li></ol>
   <p class="mini" style="margin:0">REST API 키·Admin 키가 아니라 <b>JavaScript 키</b>입니다. 등록한 주소에서만 동작하므로 팀원에게 키를 알려 줘도 다른 곳에서 쓸 수 없습니다.</p></details>
- <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn rd" id="kkDel">키 지우기</button><button class="btn pri" id="kkOk"><i class="ii" data-i="save"></i> 저장하고 다시 열기</button></div>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="kkLink" type="button"><i class="ii" data-i="users"></i> 팀원용 설정 링크</button><button class="btn rd" id="kkDel">키 지우기</button><button class="btn pri" id="kkOk"><i class="ii" data-i="save"></i> 저장하고 다시 열기</button></div>
 </div></div>
 <div class="modal np" id="rp"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="prt"></i> 점검결과 출력</b><button class="btn" id="rpX"><i class="ii" data-i="x"></i></button></div>
@@ -728,6 +728,9 @@ const KKEY='mulgil-kakao-key';let KK=false;
 let LY={map:1,base:1,pin:1,kk:1};try{Object.assign(LY,JSON.parse(localStorage.getItem('mulgil-ly')||'{}'))}catch(e){}
 const lySave=()=>{try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}};
 const kkKey=()=>{if(!LY.kk)return '';try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
+/* B안: 팀원용 설정 링크(#kk=키) — 주소의 # 뒤는 서버로 가지 않음. 열면 이 브라우저에 키 저장 후 주소창에서 바로 지움 */
+(()=>{try{const m=/[#&]kk=([0-9a-f]{32})/i.exec(location.hash||'');if(!m)return;localStorage.setItem('mulgil-kakao-key',m[1]);LY.kk=1;localStorage.setItem('mulgil-ly',JSON.stringify(LY));
+ history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>toast('카카오 지도 설정을 받았습니다. 이제 바탕지도가 카카오 지도로 보입니다'),1500)}catch(e){}})();
 const kkKeyRaw=()=>{try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 const inClaude=()=>/claude|anthropic/.test(location.hostname);
 function kkLoad(key){return new Promise((ok,no)=>{if(window.kakao&&kakao.maps&&kakao.maps.load)return kakao.maps.load(ok);const sc=document.createElement('script');sc.src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey='+encodeURIComponent(key);const t=setTimeout(()=>no('timeout'),10000);
@@ -756,11 +759,15 @@ function kkMarker(r,cls,html,opt){const km=kakao.maps;const el=document.createEl
  el.addEventListener('click',e=>{e.stopPropagation();if(!opt.draggable)fire()});return W}
 async function kkStart(){const key=kkKey();if(!key||inClaude())return;$('mapInfo').textContent='카카오 지도 불러오는 중…';try{await kkLoad(key);const me=$('map');me.style.touchAction='none';map=kkMap();pinL=kkLayer();KK=true;tileOk=true;$('nobase').classList.remove('on');$('nobase').classList.add('hide');
  map.on('zoomend',lblZ);map.on('click',e=>{if(pickId)setPin(pickId,e.latlng,'지도에서 찍음')});drawPins(true)}
- catch(e){map=null;KK=false;initMap(true);lyApply();drawPins(true);toast('카카오 지도를 불러오지 못해 기본 지도를 씁니다. 메뉴의 \'카카오 지도 키\'에서 키와 등록 주소를 확인하세요')}}
+ catch(e){map=null;KK=false;initMap(true);lyApply();drawPins(true);toast('카카오 지도를 불러오지 못해 기본 지도를 씁니다. 키·등록 주소를 확인하거나 관리자(구병순)에게 문의하세요')}}
 function kkOpen(){if(inClaude())return toast('Claude 페이지에서는 바깥 지도가 막혀 카카오 지도를 쓸 수 없습니다. 깃허브 판(설치한 앱)에서 쓰세요');$('tbar').classList.remove('open');const k=kkKey();$('kkIn').value=k;
  $('kkSt').innerHTML=KK?'✔ 지금 카카오 지도로 보고 있습니다.':k?'⚠ 키가 저장돼 있지만 카카오 지도를 불러오지 못했습니다. 키와 등록 주소를 확인하세요.':'키를 넣으면 바탕지도가 카카오 지도로 바뀝니다. 키가 없으면 지금 지도를 씁니다.';$('kkm').classList.add('on')}
 $('bKey').onclick=kkOpen;$('kkX').onclick=()=>$('kkm').classList.remove('on');
 $('kkOk').onclick=()=>{const v=$('kkIn').value.trim();if(!/^[0-9a-f]{32}$/i.test(v))return toast('JavaScript 키는 영문·숫자 32자리입니다');try{localStorage.setItem(KKEY,v)}catch(e){return toast('이 브라우저에 저장할 수 없습니다')}location.reload()};
+$('kkLink').onclick=async()=>{const k=$('kkIn').value.trim()||kkKeyRaw();if(!/^[0-9a-f]{32}$/i.test(k))return toast('먼저 JavaScript 키(32자리)를 넣어 주세요');
+ const u=location.origin+location.pathname+'#kk='+k,t='스마트 물길점검 카카오 지도 설정 링크입니다. 휴대폰에서 한 번 눌러 주세요 (팀 내부용, 다른 곳에 올리지 마세요)';
+ try{if(navigator.share){await navigator.share({title:'스마트 물길점검',text:t,url:u});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(t+'\n'+u);toast('설정 링크를 복사했습니다. 카톡에 붙여 넣어 보내세요')}catch(e){prompt('이 링크를 복사해 보내세요',u)}};
 $('kkDel').onclick=()=>{try{localStorage.removeItem(KKEY)}catch(e){}location.reload()};
 if(inClaude())$('bKey').hidden=true;
 
