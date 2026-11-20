@@ -111,6 +111,10 @@ main{display:grid;gap:10px;padding:10px 12px;grid-template-columns:minmax(0,1fr)
 .pickbar button{background:#fff;color:#312e81;border:0;border-radius:8px;padding:5px 10px;font-weight:800;cursor:pointer}
 .nobase{position:absolute;left:58px;bottom:8px;z-index:880;background:rgba(255,255,255,.92);color:#334155;font-size:11px;border-radius:8px;padding:4px 8px;display:none;max-width:70%}
 .nobase.on{display:block}
+.kpop{position:relative;margin-bottom:46px;background:#fff;color:#1e293b;border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.35);padding:12px 14px;font-size:13px;line-height:1.45;min-width:220px;max-width:280px;text-align:left;white-space:normal;cursor:auto}
+.kpop:after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-8px;border:8px solid transparent;border-bottom:0;border-top-color:#fff}
+.kpx{position:absolute;top:2px;right:4px;width:26px;height:26px;border:0;background:none;font:18px/26px sans-serif;color:#64748b;cursor:pointer}
+.kkey ol{margin:6px 0;padding-left:18px;font-size:12.5px;line-height:1.6}.kkey code{background:var(--sub2);padding:0 4px;border-radius:4px;word-break:break-all}
 .pin{background:none;border:0}
 .pin .tp{position:absolute;left:-15px;top:-40px;width:30px;height:40px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
 .pin .tp svg{width:30px;height:40px;display:block}
@@ -340,6 +344,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
   <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
   <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
+  <button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button>
   <button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 위치 찾기</button>
   <span class="sep"></span>
   <label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label>
@@ -450,6 +455,19 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:4px"><input type="checkbox" id="rdM" checked> 지금 회차를 '마감'으로 표시</label>
  <p class="mini" style="margin:8px 0 0">현장·주소·위치·인원은 그대로 복사하고 점검예정일은 비웁니다. 새 일정 엑셀을 불러오면 같은 팀명끼리 이어집니다. 지금 회차 기록은 지워지지 않습니다.</p>
  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="rdNo">취소</button><button class="btn pri" id="rdOk"><i class="ii" data-i="plus"></i> 만들기</button></div>
+</div></div>
+<div class="modal np" id="kkm"><div class="mbox kkey" style="max-width:480px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="pin"></i> 카카오 바탕지도</b><button class="btn" id="kkX"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" id="kkSt" style="margin:0 0 6px"></p>
+ <label class="mini">카카오 JavaScript 키</label><input id="kkIn" class="inp" placeholder="예: 1a2b3c… (32자리)" autocomplete="off" spellcheck="false">
+ <p class="mini" style="margin:6px 0 0">키는 이 휴대폰·PC 브라우저에만 저장되고 앱 파일이나 공유 자료에는 들어가지 않습니다.</p>
+ <details style="margin-top:6px"><summary class="mini" style="cursor:pointer;font-weight:700">키 받는 방법 (처음 한 번)</summary><ol>
+  <li><code>developers.kakao.com</code>에 카카오 계정으로 로그인 → <b>내 애플리케이션 → 애플리케이션 추가하기</b> (앱 이름: 스마트 물길점검)</li>
+  <li>만든 앱 → <b>앱 설정 → 플랫폼 → Web 플랫폼 등록</b> → 사이트 도메인에 <code>https://xhahr30-ops.github.io</code> 입력·저장</li>
+  <li><b>제품 설정 → 카카오맵</b>에서 사용 설정을 <b>켜기(ON)</b></li>
+  <li><b>앱 키</b>의 <b>JavaScript 키</b>를 복사해 위 칸에 붙여 넣기</li></ol>
+  <p class="mini" style="margin:0">REST API 키·Admin 키가 아니라 <b>JavaScript 키</b>입니다. 등록한 주소에서만 동작하므로 팀원에게 키를 알려 줘도 다른 곳에서 쓸 수 없습니다.</p></details>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn rd" id="kkDel">키 지우기</button><button class="btn pri" id="kkOk"><i class="ii" data-i="save"></i> 저장하고 다시 열기</button></div>
 </div></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
@@ -581,10 +599,48 @@ function refreshSel(){fillSel('fRg',[...new Set(rows.map(r=>r.rg).filter(Boolean
 ['fRg','fSt','fIn'].forEach(k=>$(k).onchange=()=>{F[{fRg:'rg',fSt:'st',fIn:'in'}[k]]=$(k).value;render(true)});
 $('fQ').oninput=()=>{F.q=$('fQ').value;render()};
 
+/* ── 카카오 바탕지도 (깃허브 판 · 키는 이 브라우저에만 저장, 실패하면 기본 지도) ── */
+const KKEY='mulgil-kakao-key';let KK=false;
+const kkKey=()=>{try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
+const inClaude=()=>/claude|anthropic/.test(location.hostname);
+function kkLoad(key){return new Promise((ok,no)=>{if(window.kakao&&kakao.maps&&kakao.maps.load)return kakao.maps.load(ok);const sc=document.createElement('script');sc.src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey='+encodeURIComponent(key);const t=setTimeout(()=>no('timeout'),10000);
+ sc.onload=()=>{clearTimeout(t);if(window.kakao&&kakao.maps&&kakao.maps.load)kakao.maps.load(()=>{try{if(!kakao.maps.Map)throw 0;ok()}catch(e){no('nomap')}});else no('nokakao')};sc.onerror=()=>{clearTimeout(t);no('load')};document.head.appendChild(sc)})}
+const z2l=z=>Math.max(1,Math.min(14,19-Math.round(z))),l2z=l=>19-l;
+function kkMap(){const km=kakao.maps,el=$('map');const k=new km.Map(el,{center:new km.LatLng(36.2,127.9),level:12});
+ try{if(!(typeof isMob==='function'&&isMob()))k.addControl(new km.ZoomControl(),km.ControlPosition.BOTTOMLEFT)}catch(e){}
+ let pop=null;const zh=[],ch=[];km.event.addListener(k,'zoom_changed',()=>zh.forEach(f=>f()));
+ km.event.addListener(k,'click',e=>{const p=e.latLng;ch.forEach(f=>f({latlng:{lat:p.getLat(),lng:p.getLng()}}))});
+ const A={k,setView(ll,z){k.setLevel(z2l(z));k.setCenter(new km.LatLng(ll[0],ll[1]));return A},getZoom(){return l2z(k.getLevel())},
+  fitBounds(pts,o){if(!pts.length)return A;if(pts.length===1)return A.setView(pts[0],(o&&o.maxZoom)||12);const b=new km.LatLngBounds();pts.forEach(p=>b.extend(new km.LatLng(p[0],p[1])));const p=(o&&o.padding&&o.padding[0])||40;k.setBounds(b,p,p,p,p);if(o&&o.maxZoom&&A.getZoom()>o.maxZoom)k.setLevel(z2l(o.maxZoom));return A},
+  invalidateSize(){k.relayout()},closePopup(){if(pop){pop.setMap(null);pop=null}},
+  openPop(ll,html){A.closePopup();const d=document.createElement('div');d.className='kpop';d.innerHTML='<button class="kpx" aria-label="닫기">×</button>'+html;d.querySelector('.kpx').onclick=()=>A.closePopup();['mousedown','touchstart','pointerdown','wheel','dblclick'].forEach(v=>d.addEventListener(v,e=>e.stopPropagation()));
+   pop=new km.CustomOverlay({position:new km.LatLng(ll[0],ll[1]),content:d,xAnchor:.5,yAnchor:1,zIndex:3000,clickable:true});pop.setMap(k)},
+  latLngToContainerPoint(){return{x:0,y:0}},panBy(p){k.panBy(p[0],p[1])},on(v,f){(v==='zoomend'?zh:v==='click'?ch:[]).push(f);return A},
+  getCenter(){const c=k.getCenter();return{lat:c.getLat(),lng:c.getLng()}}};return A}
+function kkLayer(){const G=[];return{add(o){G.push(o);o.setMap(map.k)},clearLayers(){G.forEach(o=>o.setMap(null));G.length=0}}}
+function kkMarker(r,cls,html,opt){const km=kakao.maps;const el=document.createElement('div');el.className=cls;el.style.cssText='position:relative;width:0;height:0;cursor:pointer';el.title=opt.title||'';el.innerHTML=html;
+ let ll=[r.lat,r.lng];const ov=new km.CustomOverlay({position:new km.LatLng(ll[0],ll[1]),content:el,xAnchor:0,yAnchor:0,zIndex:opt.z||0,clickable:true});
+ const H={click:[],dragend:[]};let pf=null,dg=null;
+ const W={setMap:m=>ov.setMap(m),addTo(g){g.add(W);return W},bindPopup(f){pf=f;return W},openPopup(){if(pf)map.openPop(ll,pf())},on(v,f){(H[v]||(H[v]=[])).push(f);return W},getLatLng(){return{lat:ll[0],lng:ll[1]}}};
+ const fire=()=>{H.click.forEach(f=>f());if(pf)W.openPopup()};
+ el.addEventListener('pointerdown',e=>{if(!opt.draggable)return;e.stopPropagation();e.preventDefault();dg={x:e.clientX,y:e.clientY,mv:false};map.k.setDraggable(false);addEventListener('pointermove',mvF);addEventListener('pointerup',upF,{once:true});addEventListener('pointercancel',upF,{once:true})});
+ const mvF=e=>{if(!dg)return;if(Math.abs(e.clientX-dg.x)+Math.abs(e.clientY-dg.y)>4)dg.mv=true;if(!dg.mv)return;const b=$('map').getBoundingClientRect();const p=map.k.getProjection().coordsFromContainerPoint(new km.Point(e.clientX-b.left,e.clientY-b.top));ll=[p.getLat(),p.getLng()];ov.setPosition(p)};
+ const upF=()=>{removeEventListener('pointermove',mvF);removeEventListener('pointerup',upF);removeEventListener('pointercancel',upF);if(!dg)return;const mv=dg.mv;dg=null;map.k.setDraggable(true);if(mv)H.dragend.forEach(f=>f({target:W}));else fire()};
+ el.addEventListener('click',e=>{e.stopPropagation();if(!opt.draggable)fire()});return W}
+async function kkStart(){const key=kkKey();if(!key||inClaude())return;$('mapInfo').textContent='카카오 지도 불러오는 중…';try{await kkLoad(key);const me=$('map');me.style.touchAction='none';map=kkMap();pinL=kkLayer();KK=true;tileOk=true;$('nobase').classList.remove('on');$('nobase').classList.add('hide');
+ map.on('zoomend',lblZ);map.on('click',e=>{if(pickId)setPin(pickId,e.latlng,'지도에서 찍음')});drawPins(true)}
+ catch(e){map=null;KK=false;initMap(true);drawPins(true);toast('카카오 지도를 불러오지 못해 기본 지도를 씁니다. 메뉴의 \'카카오 지도 키\'에서 키와 등록 주소를 확인하세요')}}
+function kkOpen(){if(inClaude())return toast('Claude 페이지에서는 바깥 지도가 막혀 카카오 지도를 쓸 수 없습니다. 깃허브 판(설치한 앱)에서 쓰세요');$('tbar').classList.remove('open');const k=kkKey();$('kkIn').value=k;
+ $('kkSt').innerHTML=KK?'✔ 지금 카카오 지도로 보고 있습니다.':k?'⚠ 키가 저장돼 있지만 카카오 지도를 불러오지 못했습니다. 키와 등록 주소를 확인하세요.':'키를 넣으면 바탕지도가 카카오 지도로 바뀝니다. 키가 없으면 지금 지도를 씁니다.';$('kkm').classList.add('on')}
+$('bKey').onclick=kkOpen;$('kkX').onclick=()=>$('kkm').classList.remove('on');
+$('kkOk').onclick=()=>{const v=$('kkIn').value.trim();if(!/^[0-9a-f]{32}$/i.test(v))return toast('JavaScript 키는 영문·숫자 32자리입니다');try{localStorage.setItem(KKEY,v)}catch(e){return toast('이 브라우저에 저장할 수 없습니다')}location.reload()};
+$('kkDel').onclick=()=>{try{localStorage.removeItem(KKEY)}catch(e){}location.reload()};
+if(inClaude())$('bKey').hidden=true;
+
 /* ── 지도 ── */
 let map=null,pinL=null,mk={},tileOk=false,tileErr=0,moveOn=false,pickQ=[],pickId=null;
 const PROV=[['서울',37.56,126.98],['인천',37.46,126.62],['경기',37.55,127.42],['강원',37.72,128.35],['충북',36.78,127.78],['충남',36.55,126.8],['대전',36.35,127.39],['세종',36.52,127.25],['전북',35.73,127.12],['전남',34.88,126.95],['광주',35.16,126.85],['경북',36.38,128.78],['대구',35.86,128.58],['경남',35.33,128.25],['울산',35.55,129.25],['부산',35.18,129.06],['제주',33.38,126.55]];
-function initMap(){if(!window.L){$('map').innerHTML='<p style="padding:20px;text-align:center" class="mini">지도 도구(Leaflet)를 불러오지 못했습니다. 인터넷 연결을 확인하세요.</p>';return}
+function initMap(force){if(!force&&kkKey()&&!inClaude())return;if(!window.L){$('map').innerHTML='<p style="padding:20px;text-align:center" class="mini">지도 도구(Leaflet)를 불러오지 못했습니다. 인터넷 연결을 확인하세요.</p>';return}
  map=L.map('map',{zoomControl:true,attributionControl:true,minZoom:6,maxBounds:[[32,123],[39.5,132.5]]}).setView([36.2,127.9],7);
  map.zoomControl.setPosition('bottomleft');
  /* 내장 바탕지도: 통계청(2013) 시·군·구·시·도 경계 — Claude 페이지처럼 바깥 지도가 막혀도 보임 */
@@ -609,8 +665,8 @@ function drawPins(fit){const L0=filt(),all=filt(true);
  rDays(all,days);$('legend').innerHTML=legend(days,insL);if(!map){$('mapInfo').textContent=L0.length+'곳';return}pinL.clearLayers();mk={};
  const lb=$('lblOn').checked;const pts=[];const same={};
  L0.filter(hasPin).sort((a,b)=>a.no-b.no).forEach(r=>{const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const ik=r.st==='완료'?'M10 20.5l3.5 3.5l7-7.5':s==='지연'?'M15 12.5a6 6 0 1 1 0 12a6 6 0 0 1 0-12zM15 15.5v3.2l2.2 1.4':'M11 11.5h8v13h-8zM13 11.5v-1.5h4v1.5M13 18.5l1.6 1.6l2.8-3';
-  const pic=L.divIcon({className:'pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(lb?'':' nolbl'),html:`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp"><svg viewBox="0 0 30 40"><path class="b" d="M15 39C15 39 2 24.5 2 15A13 13 0 0 1 28 15C28 24.5 15 39 15 39Z" fill="${c}" stroke="#fff" stroke-width="2.2"/><path d="${ik}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${esc(r.tm)} · ${md(r.pd)}</div></div>`,iconSize:[0,0]});
-  const m=L.marker([r.lat,r.lng],{icon:pic,draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:k2*10}).addTo(pinL);
+  const pc='pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp"><svg viewBox="0 0 30 40"><path class="b" d="M15 39C15 39 2 24.5 2 15A13 13 0 0 1 28 15C28 24.5 15 39 15 39Z" fill="${c}" stroke="#fff" stroke-width="2.2"/><path d="${ik}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${esc(r.tm)} · ${md(r.pd)}</div></div>`;
+  const m=KK?kkMarker(r,pc,ph,{draggable:moveOn,title:r.rg+' '+r.tm,z:r.id===selId?1000:k2*10}).addTo(pinL):L.marker([r.lat,r.lng],{icon:L.divIcon({className:pc,html:ph,iconSize:[0,0]}),draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:k2*10}).addTo(pinL);
   if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280,offset:[0,-34]});
   m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
   m.on('dragend',async ev=>{const ll=ev.target.getLatLng();if(await ask(`${r.tm} 핀을 이 위치로 옮길까요?`))setPin(r.id,ll,'지도에서 옮김');else drawPins()});
@@ -639,7 +695,7 @@ $('pickSkip').onclick=nextPick;$('pickX').onclick=endPick;
 $('fPick').onclick=()=>{if(pickId)return endPick();const ids=filt().filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no).map(r=>r.id);if(!ids.length)return toast('모든 현장에 위치가 있습니다');startPick(ids)};
 $('fFit').onclick=()=>{const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(map&&p.length)map.fitBounds(p,{padding:[60,60],maxZoom:12});else if(map)map.setView([36.2,127.9],7)};
 $('fNext').onclick=()=>{const d=rows.filter(r=>r.st==='예정'&&ddays(r.pd)>=0).map(r=>r.pd).sort()[0];if(!d)return toast('남은 점검 일정이 없습니다');F.day=d;render(true);toast(md(d)+'('+wd(d)+') 점검 현장')};
-$('fLoc').onclick=()=>{if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,13);L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(pinL)},()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:8000})};
+$('fLoc').onclick=()=>{if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,13);(KK?kkMarker({lat:ll[0],lng:ll[1]},'pin','<div class="d" style="background:#2563eb"></div>',{title:'내 위치',z:2000}).addTo(pinL):L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(pinL))},()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:8000})};
 $('bMove').onclick=()=>{moveOn=!moveOn;$('bMove').classList.toggle('on',moveOn);drawPins();toast(moveOn?'핀을 끌어서 옮길 수 있습니다':'핀 옮기기 꺼짐')};
 $('colBy').onchange=()=>drawPins();$('lblOn').onchange=()=>drawPins();
 $('daybar').onclick=e=>{const b=e.target.closest('.dc');if(!b)return;F.day=b.dataset.d;render(true)};
@@ -992,7 +1048,7 @@ $('mNav').onclick=()=>openNav($('mQ').value.trim());
 $('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('mQ').value.trim()&&!filt(true).length)openNav($('mQ').value.trim())});
 
 /* ── 시작 ── */
-initMap();fma();hh();startLocal();mobApply();
+initMap();fma();hh();startLocal();mobApply();kkStart();
 (function(){let P=null;const b=$('bInst');const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
  try{if(location.protocol==='https:'&&'serviceWorker' in navigator&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
  addEventListener('beforeinstallprompt',e=>{e.preventDefault();P=e;if(b)b.hidden=false});
