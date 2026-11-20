@@ -103,6 +103,13 @@ main{display:grid;gap:10px;padding:10px 12px;grid-template-columns:minmax(0,1fr)
 .nobase{position:absolute;left:58px;bottom:8px;z-index:880;background:rgba(255,255,255,.92);color:#334155;font-size:11px;border-radius:8px;padding:4px 8px;display:none;max-width:70%}
 .nobase.on{display:block}
 .pin{background:none;border:0}
+.pin .tp{position:absolute;left:-15px;top:-40px;width:30px;height:40px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.pin .tp svg{width:30px;height:40px;display:block}
+.pin.sel .tp{left:-20px;top:-53px;width:40px;height:53px}.pin.sel .tp svg{width:40px;height:53px}
+.pin.sel .tp path.b{stroke:#f59e0b;stroke-width:3}
+.pin .l2{position:absolute;left:0;top:3px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:800;color:#0f172a;background:rgba(255,255,255,.95);border:1px solid #cbd5e1;border-radius:999px;padding:1px 7px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pin.done .tp{opacity:.75}.pin.done .l2{color:#64748b}
+.pin.nolbl .l2,#map.zlow .pin .l2{display:none}
 .pin .d{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .pin .l{position:absolute;left:12px;top:-10px;white-space:nowrap;font-size:11px;font-weight:800;color:#0f172a;background:rgba(255,255,255,.92);border-radius:6px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .pin.done .d{opacity:.55}.pin.done .l{text-decoration:line-through;opacity:.7}
@@ -508,9 +515,10 @@ function drawPins(fit){const L0=filt(),all=filt(true);
  const days=[...new Set(rows.map(r=>r.pd).filter(Boolean))].sort(),insL=[...new Set(rows.map(r=>r.ins[0]).filter(real))].sort();
  rDays(all,days);$('legend').innerHTML=legend(days,insL);if(!map){$('mapInfo').textContent=L0.length+'곳';return}pinL.clearLayers();mk={};
  const lb=$('lblOn').checked;const pts=[];const same={};
- L0.filter(hasPin).sort((a,b)=>a.no-b.no).forEach(r=>{const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const pic=L.divIcon({className:'pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(lb?'':' nolbl'),html:`<div class="d" style="background:${c};${k2?`transform:translate(${k2*6}px,${k2*6}px)`:''}"></div><div class="l" style="${k2?`top:${-10+k2*17}px`:''}">${esc(r.tm)} · ${md(r.pd)}${s==='지연'?' '+ic('clock'):''}</div>`,iconSize:[0,0]});
-  const m=L.marker([r.lat,r.lng],{icon:pic,draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:0}).addTo(pinL);
-  if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280});
+ L0.filter(hasPin).sort((a,b)=>a.no-b.no).forEach(r=>{const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const ik=r.st==='완료'?'M10 20.5l3.5 3.5l7-7.5':s==='지연'?'M15 12.5a6 6 0 1 1 0 12a6 6 0 0 1 0-12zM15 15.5v3.2l2.2 1.4':'M11 11.5h8v13h-8zM13 11.5v-1.5h4v1.5M13 18.5l1.6 1.6l2.8-3';
+  const pic=L.divIcon({className:'pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(lb?'':' nolbl'),html:`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp"><svg viewBox="0 0 30 40"><path class="b" d="M15 39C15 39 2 24.5 2 15A13 13 0 0 1 28 15C28 24.5 15 39 15 39Z" fill="${c}" stroke="#fff" stroke-width="2.2"/><path d="${ik}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${esc(r.tm)} · ${md(r.pd)}</div></div>`,iconSize:[0,0]});
+  const m=L.marker([r.lat,r.lng],{icon:pic,draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:k2*10}).addTo(pinL);
+  if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280,offset:[0,-34]});
   m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
   m.on('dragend',async ev=>{const ll=ev.target.getLatLng();if(await ask(`${r.tm} 핀을 이 위치로 옮길까요?`))setPin(r.id,ll,'지도에서 옮김');else drawPins()});
   mk[r.id]=m;pts.push([r.lat,r.lng])});
