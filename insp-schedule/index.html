@@ -329,6 +329,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="bXl"><i class="ii" data-i="xls"></i> 엑셀 저장 (주소·좌표 포함)</button>
     <button id="bJs"><i class="ii" data-i="save"></i> 백업 파일 만들기 (JSON)</button>
     <label><i class="ii" data-i="open"></i> 백업 불러오기<input id="fJs" type="file" accept=".json" hidden></label>
+    <label><i class="ii" data-i="pin"></i> 위치만 가져오기 (백업)<input id="fPos" type="file" accept=".json" hidden></label>
     <button id="bPr"><i class="ii" data-i="prt"></i> PDF 인쇄 (지도+목록)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
    </div></div>
@@ -589,9 +590,9 @@ function addrTry(a){/* 상세 주소(쉼표 뒤·괄호·층·호) → 도로명
  const t=base.split(/\s+/);const si=t.findIndex(w=>/(시|군)$/.test(w));if(si>=0)v.push(t.slice(0,si+1).join(' ')+' '+(t.slice(si+1).find(w=>/(읍|면|동|구)$/.test(w))||''));
  return [...new Set(v.map(x=>x.trim()).filter(Boolean))]}
 async function geoOne(a){const T=addrTry(a);for(const q of T){const g=await geocode(q);if(g)return{...g,q,rough:!/\d/.test(q)};await new Promise(r=>setTimeout(r,1100))}return null}
-$('bGeo').onclick=async()=>{const L0=rows.filter(r=>r.addr&&!hasPin(r));if(!L0.length)return toast('주소는 있고 위치가 없는 현장이 없습니다');
- if(!await ask(`주소가 있는 ${L0.length}곳의 위치를 주소로 찾을까요? (1곳에 1~3초)`))return;let ok=0,fail=[];
- for(const r of L0){setStatus('주소 찾는 중 '+(ok+fail.length+1)+'/'+L0.length,'#fcd34d');try{const g=await geoOne(r.addr);if(g){await putRow({...r,lat:+g.lat.toFixed(6),lng:+g.lng.toFixed(6),src:(g.rough?'대략 위치(읍·면·동 수준) — 지도에서 고쳐 주세요: ':'주소 검색(확인 필요): ')+g.q});ok++}else fail.push(r.tm)}catch(e){toast('주소 검색 서버에 연결할 수 없습니다 (Claude 페이지에서는 막힘 — 깃허브 판에서 하세요)');fail.push(r.tm);break}await new Promise(r=>setTimeout(r,1100))}
+$('bGeo').onclick=async()=>{$('tbar').classList.remove('open');const L0=rows.filter(r=>r.addr&&(!hasPin(r)||/^대략/.test(r.src||'')));if(!L0.length)return toast('다시 찾을 현장이 없습니다 (모두 정확한 위치)');
+ if(!await ask(`위치가 없거나 '대략 위치'인 ${L0.length}곳을 주소로 다시 찾을까요? (1곳에 1~3초 · 정확히 못 찾은 곳은 그대로 둠)`))return;let ok=0,fail=[];
+ for(const r of L0){setStatus('주소 찾는 중 '+(ok+fail.length+1)+'/'+L0.length,'#fcd34d');try{const g=await geoOne(r.addr);if(g&&(!g.rough||!hasPin(r))){await putRow({...r,lat:+g.lat.toFixed(6),lng:+g.lng.toFixed(6),src:(g.rough?'대략 위치(읍·면·동 수준) — 지도에서 고쳐 주세요: ':'주소 검색(확인 필요): ')+g.q});ok++}else fail.push(r.tm)}catch(e){toast('주소 검색 서버에 연결할 수 없습니다 (Claude 페이지에서는 막힘 — 깃허브 판에서 하세요)');fail.push(r.tm);break}await new Promise(r=>setTimeout(r,1100))}
  setStatus(mode==='db'?'공유 · 실시간':'이 브라우저',mode==='db'?'#34d399':'#7dd3fc');toast(`위치 찾음 ${ok}곳`+(fail.length?` · 못 찾음 ${fail.length}곳: 지도에서 직접 찍어 주세요`:''));render(true)};
 
 /* ── 오른쪽 칸 ── */
@@ -675,6 +676,9 @@ $('bXl').onclick=()=>{if(!window.XLSX)return toast('엑셀 도구를 불러오�
  const ws=XLSX.utils.aoa_to_sheet(A);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'현장별 점검담당');saveFile('현장점검일정_'+stamp()+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]));$('exMenu').classList.remove('on')};
 $('bJs').onclick=()=>{saveFile('현장점검일정_백업_'+stamp()+'.json',JSON.stringify({app:'insp-2026h2',saved:new Date().toISOString(),rows:rows.map(({id,...r})=>r)},null,1));$('exMenu').classList.remove('on')};
 $('fJs').onchange=async e=>{const f=e.target.files[0];e.target.value='';$('exMenu').classList.remove('on');if(!f)return;try{const j=JSON.parse(await f.text());const l=Array.isArray(j)?j:j.rows;if(!Array.isArray(l)||!l.length)throw 0;if(await ask(`백업의 ${l.length}개 현장(위치 ${l.filter(r=>r.lat!=null).length}곳)으로 지금 일정을 바꿀까요?`))await replaceAll(l)}catch(err){toast('백업 파일 형식이 아닙니다')}};
+$('fPos').onchange=async e=>{const f=e.target.files[0];e.target.value='';$('exMenu').classList.remove('on');$('tbar').classList.remove('open');if(!f)return;try{const j=JSON.parse(await f.text());const l=Array.isArray(j)?j:j.rows;if(!Array.isArray(l))throw 0;const P={};l.forEach(x=>{if(x&&x.tm&&x.lat!=null&&x.lng!=null)P[x.tm]=x});
+ const T=rows.filter(r=>{const p=P[r.tm];return p&&(!hasPin(r)||Math.abs(p.lat-r.lat)>1e-6||Math.abs(p.lng-r.lng)>1e-6)});if(!T.length)return toast('바뀔 위치가 없습니다');
+ if(!await ask(`백업에서 ${T.length}곳의 지도 위치만 가져올까요? (일정·점검 기록은 그대로)`))return;let n=0;for(const r of T){const p=P[r.tm];if(await putRow({...r,lat:+p.lat,lng:+p.lng,src:p.src||'백업에서 가져옴'},true))n++}derive();render();toast(n+'곳 위치를 가져왔습니다')}catch(err){toast('백업 파일 형식이 아닙니다')}};
 $('bRst').onclick=async()=>{$('exMenu').classList.remove('on');if(!SEED.length)return toast('이 판에는 기본 자료가 없습니다. 엑셀을 불러오세요.');if(await ask('처음 받은 엑셀 일정('+SEED.length+'곳)으로 되돌릴까요? 찍어 둔 위치는 같은 팀명이면 유지합니다.'))await replaceAll(SEED,true)};
 $('bPr').onclick=()=>{$('exMenu').classList.remove('on');setTab('lst');setTimeout(()=>{try{window.print()}catch(e){}},300)};
 $('exBtn').onclick=e=>{e.stopPropagation();$('exMenu').classList.toggle('on')};
@@ -883,7 +887,7 @@ function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd)
  <div class="sc-row">${ic('pin')}<div>${r.addr?esc(r.addr)+` <a class="cp" data-cp="${esc(r.addr)}">복사</a>`:'<b class="warn">주소 확인 필요</b>'}${r.src?`<div class="mini">${esc(r.src)}</div>`:''}</div></div>
  <div class="sc-row">${ic('users')}<div>기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}<div class="mini">수검 ${cnt(r)}명</div></div></div>
  ${c.length?`<div class="sc-row">${ic('phone')}<div>${c.map(telA).join('<br>')}</div></div>`:''}
- <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 위치 고치기</button></div>
+ <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 지도에서 고치기</button><button data-a="geo">${ic('compass')} 주소로 찾기</button></div>
  <div class="sc-go"><a href="#" data-a="nav">길안내</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">카카오맵 도착</a></div>
  <p class="mini" style="margin:0">길안내는 카카오맵·티맵 중에서 골라 이 현장 주소로 엽니다.</p>`;
  $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek')setSheet('half');drawPins();
@@ -892,7 +896,7 @@ function hideCard(){$('siteCard').hidden=true;$('side').classList.remove('card-o
 $('siteCard').addEventListener('click',async e=>{const r=rows.find(x=>x.id===selId);if(e.target.closest('#scX'))return hideCard();
  const cp=e.target.closest('[data-cp]');if(cp){try{await navigator.clipboard.writeText(cp.dataset.cp);toast('주소를 복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 주소를 길게 눌러 복사하세요')}return}
  const b=e.target.closest('[data-a]');if(!b||!r)return;const a=b.dataset.a;
- if(a==='nav'){e.preventDefault();openNav(r.addr||(r.rg+' '+r.tm));return}if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}});
+ if(a==='nav'){e.preventDefault();openNav(r.addr||(r.rg+' '+r.tm));return}if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}else if(a==='geo'){if(!r.addr)return toast('주소가 없습니다');toast('주소로 찾는 중…');try{const g=await geoOne(r.addr);if(g&&!g.rough){await putRow({...r,lat:+g.lat.toFixed(6),lng:+g.lng.toFixed(6),src:'주소 검색: '+g.q});toast('위치를 고쳤습니다');const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else toast('정확한 위치를 못 찾았습니다. 지도에서 고치기를 쓰세요')}catch(_){toast('주소 검색 서버에 연결할 수 없습니다(Claude 페이지에서는 막힘). 지도에서 고치기를 쓰세요')}}});
 
 
 /* ── 🧭 주소찾기 · 길안내 (주소를 내비 앱에 넘김 — 좌표 필요 없음) ── */
