@@ -10,7 +10,7 @@
 | 민원대장 관리 (긴급누수민원) | https://xhahr30-ops.github.io/app-share/minwon/ |
 | 포항시 유수율 분석 (자료 미포함 · 통합문서 첨부해 사용) | https://xhahr30-ops.github.io/app-share/nrw/ |
 | 스마트 식대정산 (법인·현장·예산 비움 · 자료는 각자 브라우저에 저장) | https://xhahr30-ops.github.io/app-share/meal-settlement/ |
-| 현장점검 일정 지도 (일정 57곳·사무실 주소·이름은 가운데 글자 가림(구*순) · 연락처 제외) | https://xhahr30-ops.github.io/app-share/insp-schedule/ |
+| 스마트 물길점검 (현장점검 일정 지도 · 일정 57곳·사무실 주소·이름은 가운데 글자 가림(구*순) · 연락처 제외) | https://xhahr30-ops.github.io/app-share/insp-schedule/ |
 
 최근 변경: 2026-11-18 스마트 물길주소 — 📋 공정보고 메일 예약 보내기(정한 시각에 공유 서버가 엑셀 첨부 발송)
 
