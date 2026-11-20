@@ -171,6 +171,25 @@ footer{font-size:11px;color:var(--mute);text-align:center;padding:2px 0 8px}
 .pin .l .gi{width:11px;height:11px;vertical-align:-1px;color:#dc2626}
 .empty .big .gi{width:40px;height:40px}
 .tabs .gi{width:15px;height:15px}
+.tabs{flex-wrap:wrap}.tabs button{flex:1 0 30%}
+html.noadm .adm{display:none!important}
+#ev .mbox{max-width:820px;padding:0;display:flex;flex-direction:column;max-height:calc(100dvh - 30px)}
+#ev .evhd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+#evTabs{margin:8px 14px 0}
+#evBody{padding:8px 14px;overflow:auto;flex:1;min-height:0}
+#ev .evft{padding:10px 14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.evh{margin:12px 0 6px;font-size:13.5px;display:flex;align-items:center;gap:6px}
+.evi{border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;background:var(--card)}
+.evl{font-size:13px;font-weight:700;margin-bottom:5px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.seg button{border:1px solid var(--line2);background:var(--sub);border-radius:7px;padding:5px 8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink2)}
+.seg button.on{color:#fff;border-color:transparent}
+.seg .s5{background:#059669}.seg .s4{background:#0d9488}.seg .s3{background:#0284c7}.seg .s2{background:#d97706}.seg .s1{background:#dc2626}.seg .sna{background:#64748b}
+.evm{display:flex;gap:6px;align-items:center}.evm .inp{flex:1}
+.evp{border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px}.evp summary{cursor:pointer}
+.pulse{animation:pl 1.2s infinite}@keyframes pl{50%{box-shadow:0 0 0 4px rgba(99,102,241,.35)}}
+.ip.act{cursor:default}
+@media (max-width:640px){#ev{padding:0}#ev .mbox{max-height:100dvh;height:100dvh;border-radius:0}.seg button{padding:6px 7px}}
 
 /* 현장 모드 꺼짐: 지도·목록 반반 */
 html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -270,12 +289,14 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <section id="side">
   <div class="kpis" id="kp"></div>
   <div class="card" id="panel">
-   <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button></div>
+   <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button><button data-t="act"><i class="ii" data-i="tool"></i> 후속 조치</button><button data-t="sum" class="adm"><i class="ii" data-i="chart"></i> 종합</button></div>
    <div class="flt np"><select id="fRg"></select><select id="fSt"></select><select id="fIn"></select></div>
    <div class="scr" id="p-lst"><table><thead id="lH"></thead><tbody id="lB"></tbody></table></div>
    <div class="scr" id="p-cal" hidden><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><button class="btn" id="mPrev">◀</button><b id="mLbl"></b><button class="btn" id="mNext">▶</button></div><div class="cal" id="calG"></div><p class="mini">날짜를 누르면 지도에서 그날 현장만 봅니다.</p></div>
    <div class="scr" id="p-ins" hidden></div>
    <div class="scr" id="p-pin" hidden></div>
+   <div class="scr" id="p-act" hidden></div>
+   <div class="scr" id="p-sum" hidden></div>
    <details class="mini np" style="margin-top:6px"><summary style="cursor:pointer;font-weight:700">산정 기준 보기</summary>
     <p>· 수검인원 = 권역팀장·단독팀장·팀장·팀원 칸의 이름 수. "-"는 빈칸으로 보고 세지 않습니다(원본 COUNTA와 다름).</p>
     <p>· 지연 = 예정일이 지났는데 상태가 '예정'인 현장. 현장 확인 대상이며 확정이 아닙니다.</p>
@@ -311,8 +332,14 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p id="mdMsg" class="mini" style="color:var(--rd)"></p>
  <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap">
   <button class="btn rd" id="mdDel"><i class="ii" data-i="trash"></i> 삭제</button>
-  <div style="display:flex;gap:6px"><button class="btn em" id="mdDone"><i class="ii" data-i="check"></i> 오늘 완료</button><button class="btn pri" id="mdSv"><i class="ii" data-i="save"></i> 저장</button></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn adm" id="mdEv" type="button"><i class="ii" data-i="clip"></i> 점검표</button><button class="btn em" id="mdDone"><i class="ii" data-i="check"></i> 오늘 완료</button><button class="btn pri" id="mdSv"><i class="ii" data-i="save"></i> 저장</button></div>
  </div>
+</div></div>
+<div class="modal np" id="ev"><div class="mbox">
+ <div class="evhd"><b id="evT"></b><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></div>
+ <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 상반기 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button></div>
+ <div id="evBody"></div>
+ <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
 </div></div>
 <div class="modal np" id="cf"><div class="mbox" style="max-width:360px;margin-top:60px"><p id="cfT" style="font-weight:700"></p><div style="display:flex;justify-content:flex-end;gap:6px"><button class="btn" id="cfN">취소</button><button class="btn pri" id="cfY">확인</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -327,9 +354,9 @@ const ICP={srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',dl:'M12 3v12M7
  full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',flag:'M5 21V4M5 4h11l-2 4 2 4H5',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',pen:'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',
  cal:'M4 5h16v16H4zM4 10h16M8 3v4M16 3v4',users:'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 13.6a6.5 6.5 0 0 1 3.5 6.4',
- check:'M5 12.5l4.5 4.5L19 7',x:'M6 6l12 12M18 6L6 18',pause:'M9 5v14M15 5v14',clock:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM12 7v5l3 2'};
+ check:'M5 12.5l4.5 4.5L19 7',clip:'M9 3h6v3H9zM9 5H6v16h12V5h-3M9 12l2 2 4-4M9 17h6',tool:'M15 4a5 5 0 0 0-5 6l-7 7 4 4 7-7a5 5 0 0 0 6-5l-3 3-3-1-1-3z',chart:'M4 20V10M10 20V4M16 20v-7M2 20h20',mic:'M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3M9 21h6',spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z',lock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',doc:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6',x:'M6 6l12 12M18 6L6 18',pause:'M9 5v14M15 5v14',clock:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM12 7v5l3 2'};
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8']};
-const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',list:'slate',phone:'slate',moon:'indigo',sun:'yellow',plus:'green',touch:'cyan',compass:'orange',inb:'amber',xls:'green',save:'blue',open:'amber',prt:'slate',trash:'red',map:'green',full:'teal',flag:'red',loc:'blue',pin:'red',pen:'pink',warn:'amber',cal:'indigo',users:'violet',check:'green',x:'slate',pause:'amber',clock:'red'};
+const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',list:'slate',phone:'slate',moon:'indigo',sun:'yellow',plus:'green',touch:'cyan',compass:'orange',inb:'amber',xls:'green',save:'blue',open:'amber',prt:'slate',trash:'red',map:'green',full:'teal',flag:'red',loc:'blue',pin:'red',pen:'pink',warn:'amber',cal:'indigo',users:'violet',check:'green',clip:'indigo',tool:'slate',chart:'green',mic:'red',spark:'violet',lock:'red',hist:'slate',doc:'slate',x:'slate',pause:'amber',clock:'red'};
 const ic=k=>{const c=HU[IC_H[k]]||HU.slate;return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24" aria-hidden="true"><path d="'+(ICP[k]||ICP.pin)+'"/></svg>'};
 document.querySelectorAll('.ii[data-i]').forEach(e=>e.outerHTML=ic(e.dataset.i));
 const SEED=[];
@@ -363,8 +390,8 @@ function setStatus(t,c){$('hStat').textContent=t;$('hDot').style.background=c;$(
 function lsLoad(){try{const v=localStorage.getItem(LS);if(v)return JSON.parse(v)}catch(e){}return null}
 function lsSave(){try{localStorage.setItem(LS,JSON.stringify(rows))}catch(e){}}
 function withIds(list){const u={};return list.map(r=>{r=norm(r);let id=r.id||('s'+String(r.no).padStart(3,'0'));while(u[id])id+='x';u[id]=1;r.id=id;return r})}
-function startLocal(){mode='local';rows=withIds(lsLoad()||SEED);setStatus('이 브라우저','#7dd3fc');render(true)}
-async function startDb(db){DB=db;mode='db';setStatus('공유 연결 중…','#fcd34d');let got=false;const tm=setTimeout(()=>{if(!got)setStatus('공유 응답 지연','#fcd34d')},10000);
+function startLocal(){mode='local';xLoad();rows=withIds(lsLoad()||SEED);setStatus('이 브라우저','#7dd3fc');render(true)}
+async function startDb(db){DB=db;mode='db';EV={};IV={};AC={};subX();setStatus('공유 연결 중…','#fcd34d');let got=false;const tm=setTimeout(()=>{if(!got)setStatus('공유 응답 지연','#fcd34d')},10000);
  try{const u=await claude.use('user');if(u&&u.can){const w=await u.can('data.write');if(w===false)RO=true}}catch(e){}
  let first=true;
  DB.collection('sites').onSnapshot(s=>{got=true;clearTimeout(tm);rows=withIds(s.docs.map(d=>({...d.data(),id:d.id})));setStatus(s.metadata.fromCache?'공유(확인 중)':RO?'공유 · 보기 전용':'공유 · 실시간',s.metadata.fromCache?'#fcd34d':'#34d399');render(first);first=false},e=>{clearTimeout(tm);setStatus('공유 연결 끊김','#f87171')})}
@@ -422,8 +449,8 @@ function popHtml(r){const s=stOf(r),d=ddays(r.pd);return `<div class="ppt"><b>${
  <div class="r"><span>점검일</span><b>${md(r.pd)}(${wd(r.pd)}) ${r.st==='완료'?'':d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</b></div>
  <div class="r"><span>기술</span>${esc(r.ins[0])}</div><div class="r"><span>영업</span>${esc(r.ins[1])}</div><div class="r"><span>관리</span>${esc(r.ins[2])}</div>
  <div class="r"><span>수검</span>${cnt(r)}명 ${esc([r.lead,r.solo,r.tl].filter(real).join(', '))}</div>
- ${r.addr?`<div class="r"><span>주소</span>${esc(r.addr)}</div>`:''}${r.src?`<div class="r"><span>위치</span><span class="mini">${esc(r.src)}</span></div>`:''}
- <div class="bt"><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button>${r.addr?`<a href="https://map.kakao.com/?q=${encodeURIComponent(r.addr)}" target="_blank" rel="noopener">${ic('map')} 카카오맵</a>`:''}</div></div>`}
+ <div class="r"><span>주소</span>${r.addr?esc(r.addr):'<b class="warn">확인 필요</b>'}</div>${r.src?`<div class="r"><span>위치</span><span class="mini">${esc(r.src)}</span></div>`:''}
+ <div class="bt"><button class="adm" onclick="openEv('${r.id}')" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button>${r.addr?`<a href="https://map.kakao.com/?q=${encodeURIComponent(r.addr)}" target="_blank" rel="noopener">${ic('map')} 카카오맵</a>`:''}</div></div>`}
 async function donePin(id){const r=rows.find(x=>x.id===id);if(!r)return;if(await putRow({...r,st:'완료',ad:r.ad||ymd(today())})){map&&map.closePopup();toast(r.tm+' 완료 처리')}}
 async function setPin(id,ll,src){const r=rows.find(x=>x.id===id);if(!r)return;const ok=await putRow({...r,lat:+ll.lat.toFixed(6),lng:+ll.lng.toFixed(6),src});if(ok){toast(r.tm+' 위치 저장');if(pickId===id)nextPick()}}
 function startPick(ids){ids=ids.filter(id=>rows.find(r=>r.id===id));if(!ids.length)return toast('위치를 찍을 현장이 없습니다');pickQ=ids.slice(1);pickId=ids[0];map&&map.closePopup();showPick()}
@@ -462,12 +489,12 @@ function render(fit){refreshSel();const L0=filt();
  $('kp').innerHTML=k('현장',L0.length+'곳',F.day?md(F.day)+'('+wd(F.day)+')':'지역 '+new Set(L0.map(r=>r.rg)).size+'곳','#4f46e5')+k('진행률',(L0.length?Math.round(done/L0.length*100):0)+'%','완료 '+done+'곳','#059669')+k('다음 점검',nx?(ddays(nx.pd)===0?'오늘':'D-'+ddays(nx.pd)):'-',nx?md(nx.pd)+'('+wd(nx.pd)+')':'없음','#0284c7')+k('지연 확인',late+'곳','예정일 지남',late?'#d97706':'');
  $('empty').classList.toggle('on',!rows.length);
  const np=rows.filter(r=>!hasPin(r)).length;$('npc').textContent=np?'('+np+')':'';
- rLst(L0);rCal();rIns(L0);rPin();drawPins(fit)}
+ rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();drawPins(fit)}
 const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/관리)'],['pp','인원'],['st','상태']];
 function val(r,k){return k==='pp'?cnt(r):k==='st'?stOf(r):k==='ins'?r.ins.join():r[k]}
 function rLst(L0){$('lH').innerHTML='<tr>'+COLS.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
  const S=[...L0].sort((a,b)=>{const x=val(a,sortK),y=val(b,sortK);return (x<y?-1:x>y?1:a.no-b.no)*sortD});
- $('lB').innerHTML=S.map(r=>{const d=ddays(r.pd);return `<tr class="r ${r.id===selId?'sel':''}" data-id="${esc(r.id)}"><td style="white-space:nowrap"><b>${md(r.pd)}</b>(${wd(r.pd)})<div class="mini">${r.st==='완료'?(r.ad?'실제 '+md(r.ad):''):d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</div></td><td><b>${esc(r.tm)}</b><div class="mini">${esc(r.rg)}${hasPin(r)?'':' · <span class="nopin">'+ic('pin')+'위치 없음</span>'}</div></td><td class="mini" style="color:var(--ink2)">${r.ins.map(esc).join(' / ')}</td><td>${cnt(r)}</td><td>${stB(stOf(r))}</td></tr>`}).join('')||'<tr><td colspan="5" class="mini" style="text-align:center;padding:20px">조건에 맞는 현장이 없습니다</td></tr>'}
+ $('lB').innerHTML=S.map(r=>{const d=ddays(r.pd);return `<tr class="r ${r.id===selId?'sel':''}" data-id="${esc(r.id)}"><td style="white-space:nowrap"><b>${md(r.pd)}</b>(${wd(r.pd)})<div class="mini">${r.st==='완료'?(r.ad?'실제 '+md(r.ad):''):d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</div></td><td><b>${esc(r.tm)}</b><div class="mini">${esc(r.rg)}${hasPin(r)?'':' · <span class="nopin">'+ic('pin')+'위치 없음</span>'}${ADM&&EV[r.id]?' · <span style="color:#4f46e5;font-weight:800">'+ic('clip')+'점검표</span>':''}</div></td><td class="mini" style="color:var(--ink2)">${r.ins.map(esc).join(' / ')}</td><td>${cnt(r)}</td><td>${stB(stOf(r))}</td></tr>`}).join('')||'<tr><td colspan="5" class="mini" style="text-align:center;padding:20px">조건에 맞는 현장이 없습니다</td></tr>'}
 $('lH').onclick=e=>{const k=e.target.closest('th')?.dataset.k;if(!k)return;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}rLst(filt())};
 $('lB').onclick=e=>{const tr=e.target.closest('tr.r');if(!tr)return;const r=rows.find(x=>x.id===tr.dataset.id);if(!r)return;
  if(selId===r.id){openEd(r.id);return}selId=r.id;hiRow();drawPins();if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));setTimeout(()=>mk[r.id]&&mk[r.id].openPopup(),250)}else toast(r.tm+': 위치가 없습니다. 한 번 더 누르면 수정, 위치 탭에서 찍기')};
@@ -488,10 +515,10 @@ $('p-ins').onclick=e=>{const n=e.target.closest('.ip')?.dataset.in;if(!n)return;
 function rPin(){const no=rows.filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no),yes=rows.filter(hasPin);
  $('p-pin').innerHTML=`<p class="mini">위치 있음 <b>${yes.length}</b>곳 · 없음 <b style="color:var(--am)">${no.length}</b>곳. 지도 오른쪽 아래 <b>빨간 위치 단추</b>를 누르면 위치 없는 현장을 차례로 찍습니다.</p>
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><button class="btn pri" onclick="$('fPick').click()">${ic('pin')} 차례로 찍기</button><button class="btn" onclick="$('bGeo').click()">${ic('compass')} 주소로 찾기</button></div>
- <table><tbody>${no.map(r=>`<tr class="r" onclick="startPick(['${r.id}'])"><td><b>${esc(r.tm)}</b> <span class="mini">${esc(r.rg)} · ${md(r.pd)}</span><div class="mini">${r.addr?esc(r.addr):'주소 없음'}</div></td><td style="text-align:right"><span class="btn">${ic('pin')} 찍기</span></td></tr>`).join('')}</tbody></table>`}
+ <table><tbody>${no.map(r=>`<tr class="r" onclick="startPick(['${r.id}'])"><td><b>${esc(r.tm)}</b> <span class="mini">${esc(r.rg)} · ${md(r.pd)}</span><div class="mini">${r.addr?esc(r.addr):'<b class="warn">주소 확인 필요</b>'}</div></td><td style="text-align:right"><span class="btn">${ic('pin')} 찍기</span></td></tr>`).join('')}</tbody></table>`}
 
 /* ── 탭 ── */
-function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin'].forEach(x=>$('p-'+x).hidden=x!==t);try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
+function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin','act','sum'].forEach(x=>$('p-'+x).hidden=x!==t);try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
 $('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)setTab(t)};
 try{const t=localStorage.getItem(LS+'-tab');if(t)setTab(t)}catch(e){}
 
@@ -509,6 +536,7 @@ $('mdDel').onclick=async()=>{if(await ask(cur.tm+' 현장을 삭제할까요?'))
 $('mdPick').onclick=async()=>{const r=readEd();if(!r.tm)return;if(await putRow(r)){$('md').classList.remove('on');startPick([r.id])}};
 $('mdGeo').onclick=async()=>{const a=$('e_addr').value.trim();if(!a)return $('mdMsg').textContent='주소를 먼저 넣어 주세요.';$('mdMsg').textContent='주소 찾는 중…';try{const g=await geoOne(a);if(g){$('e_lat').value=g.lat.toFixed(6);$('e_lng').value=g.lng.toFixed(6);$('mdMsg').textContent='찾음: '+g.name.slice(0,60)+' — 저장 후 지도에서 위치를 확인하세요.'}else $('mdMsg').textContent='주소로 찾지 못했습니다. 지도에서 찍기를 쓰세요.'}catch(e){$('mdMsg').textContent='주소 검색 서버에 연결할 수 없습니다(Claude 페이지에서는 막힘). 지도에서 찍기를 쓰세요.'}};
 $('bAdd').onclick=()=>openEd(null);
+$('mdEv').onclick=()=>{if(!cur||!cur.id)return toast('먼저 저장해 주세요');$('md').classList.remove('on');openEv(cur.id)};
 
 /* ── 엑셀 불러오기 (주소·위도·경도 열이 있으면 함께) ── */
 function cellDate(v){if(v instanceof Date)return ymd(new Date(v.getFullYear(),v.getMonth(),v.getDate()));if(typeof v==='number'&&window.XLSX){const o=XLSX.SSF.parse_date_code(v);return o?o.y+'-'+p2(o.m)+'-'+p2(o.d):''}const m=/(\d{4})[.\-\/년\s]+(\d{1,2})[.\-\/월\s]+(\d{1,2})/.exec(String(v||''));return m?m[1]+'-'+p2(m[2])+'-'+p2(m[3]):''}
@@ -553,9 +581,169 @@ function hh(){document.documentElement.style.setProperty('--hh',(document.queryS
 addEventListener('resize',hh);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('md').classList.remove('on');endPick()}});
 
+/* ════════ 📋 점검표 · 상반기 지적 · 개별평가 · 면담 · 후속 조치 (2026 하반기 현장점검 공문 기준) ════════ */
+const EVI={team:[
+ ['공통',[['c1','상반기 지적사항 시정조치 시행 여부'],['c2','시정조치 개선 효과 및 재발 방지 조치 이행'],['c3','안전관리 체계 및 현장 안전관리 수준'],['c4','현장 운영·관리 적정성 (비용·비품·장비·차량·인사)']]],
+ ['기술',[['t1','보고된 공정 대비 실제 현장 진행률'],['t2','투입인원 대비 공정 진행 적정성·업무 효율'],['t3','용역 수행성과 달성도·성과품 품질 완성도']]],
+ ['영업',[['s1','2026년 영업목표 대비 실적·성과'],['s2','단독 수행·추가 사업·물품 판매 영업성과']]]],
+ ppl:[['p1','근태 및 업무수행 태도'],['p2','회사 사규 준수'],['p3','개인역량 개발·자기계발 노력'],['p4','조직 기여도·구성원 협업']],
+ lead:[['q1','연계·추가 사업 발굴 추진 (팀장급 이상)'],['q2','영업활동 참여도·사업 확대 기여 (팀장급 이상)']]};
+const SCL=[[5,'우수'],[4,'양호'],[3,'보통'],[2,'미흡'],[1,'매우 미흡'],['na','해당없음']];
+const PST=['확인 중','이행 완료','일부 이행','미이행'];
+const AST=['조치 필요','조치 중','조치 완료','이행 확인'];
+let ADM=true,SMP=null,EV={},IV={},AC={};
+const LSX=LS+'-x';
+function xLoad(){try{const v=JSON.parse(localStorage.getItem(LSX)||'{}');EV=v.eval||{};IV=v.intv||{};AC=v.acts||{}}catch(e){}}
+function xSave(){try{localStorage.setItem(LSX,JSON.stringify({eval:EV,intv:IV,acts:AC}))}catch(e){}}
+const XC={eval:()=>EV,intv:()=>IV,acts:()=>AC};
+async function putX(col,id,data){data={...data,upd:new Date().toISOString()};
+ if(mode==='db'){try{await DB.collection(col).doc(id).set(data);return true}catch(e){toast(e&&e.code==='invalid_argument'?'이 기록은 점검자(편집 권한)만 저장할 수 있습니다':'저장 실패: '+(e&&e.code||''));return false}}
+ XC[col]()[id]=data;xSave();render();return true}
+async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id).delete()}catch(e){toast('삭제 실패')}return}delete XC[col]()[id];xSave();render()}
+function subX(){['eval','intv','acts'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
+async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
+ try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
+ document.documentElement.classList.toggle('noadm',!ADM);render()}
+const scoreAvg=o=>{const v=Object.values(o||{}).map(x=>x&&x.s).filter(x=>typeof x==='number');return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+const f1=v=>v==null?'-':v.toFixed(1);
+function evStat(id){const e=EV[id];if(!e)return null;const t=e.team||{},by={};EVI.team.forEach(([g,its])=>{const o={};its.forEach(([k])=>{if(t[k])o[k]=t[k]});by[g]=scoreAvg(o)});
+ const weak=Object.entries(t).filter(([k,v])=>typeof v.s==='number'&&v.s<=2).length;const pv=e.prev||[];const pd=pv.filter(p=>p.st==='이행 완료').length;
+ return{by,all:scoreAvg(t),weak,pv:pv.length,pd,pr:pv.length?Math.round(pd/pv.length*100):null,done:!!e.done}}
+const isLead=(r,n)=>[r.lead,r.solo,r.tl].includes(n);
+
+/* ── 점검표 창 ── */
+let EVS={id:null,t:'team',w:null,dirty:false};
+function openEv(id){if(!ADM)return toast('점검표는 점검자(편집 권한)만 볼 수 있습니다');const r=rows.find(x=>x.id===id);if(!r)return;map&&map.closePopup();
+ EVS={id,t:EVS.t||'team',w:JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),dirty:false};
+ const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)));
+ $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${md(r.pd)}(${wd(r.pd)}) · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`;
+ $('ev').classList.add('on');evTab(EVS.t)}
+function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));evPaneRefresh()}
+$('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab(t)};
+function setDirty(){EVS.dirty=true;$('evSv').classList.add('pulse');$('evMsg').textContent='저장하지 않은 변경이 있습니다'}
+function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-k="${key}" data-p="${path}"><div class="evl">${esc(label)}</div><div class="seg">${SCL.map(([s,n])=>`<button type="button" data-s="${s}" class="${String(v.s)===String(s)?'on s'+s:''}" title="${n}">${s==='na'?'해당없음':s+' '+n}</button>`).join('')}</div>
+ <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div></div>`}
+function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const w=EVS.w,b=$('evBody');
+ if(EVS.t==='team')b.innerHTML=EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
+ else if(EVS.t==='prev')b.innerHTML=`<p class="mini">2026년 상반기 현장점검 때 지적된 사항을 적고, 시정조치 이행 여부와 개선 효과를 확인합니다.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="상반기 지적사항" value="${esc(p.t||'')}"><button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}"></div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
+ else if(EVS.t==='ppl')b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+w.ppl.map((p,i)=>`<details class="evp" ${i===0?'open':''}><summary><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></summary>${EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}</details>`).join('')||'<p class="mini">수검 인원 명단이 없습니다.</p>';
+ else if(EVS.t==='intv')b.innerHTML=intvHtml(r);
+ else if(EVS.t==='res')b.innerHTML=resHtml(r);
+ $('evSv').style.display=['intv','res'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
+$('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
+ const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
+ const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
+ if(t.closest('[data-del]')&&it){w.prev.splice(+it.dataset.i,1);setDirty();evPaneRefresh();return}
+ if(t.closest('#pvAdd')){(w.prev=w.prev||[]).push({t:'',st:'확인 중',m:''});setDirty();evPaneRefresh();return}
+ if(t.closest('[data-act]')&&it){const k=it.dataset.k,lab=(EVI.team.flatMap(x=>x[1]).concat(EVI.ppl,EVI.lead).find(x=>x[0]===k)||[])[1];const o=objOf(it.dataset.p)[k]||{};addAct(EVS.id,it.dataset.p==='team'?(k[0]==='c'?'공통':k[0]==='t'?'기술':'영업'):'개별',lab,o.m||'');return}
+ if(t.closest('#ivSum'))return ivSummary();
+ if(t.closest('#ivSave'))return ivSave();
+ const dv=t.closest('[data-ivdel]');if(dv){if(await ask('이 면담 기록을 삭제할까요?')){const n=(IV[EVS.id]?.notes||[]).filter(x=>x.id!==dv.dataset.ivdel);await putX('intv',EVS.id,{notes:n});evPaneRefresh()}return}
+ if(t.closest('#rsGen'))return resGen();
+ if(t.closest('#rsCopy')){try{await navigator.clipboard.writeText($('rsTx').value);toast('복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 글을 길게 눌러 복사하세요')}}});
+$('evBody').addEventListener('input',e=>{const t=e.target,it=t.closest('.evi');if(!it)return;
+ if(t.hasAttribute('data-m')){const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),m:t.value};setDirty()}
+ else if(t.dataset.f){EVS.w.prev[+it.dataset.i][t.dataset.f]=t.value;setDirty()}});
+function objOf(p){if(p==='team')return EVS.w.team;const i=+p.split(':')[1];return EVS.w.ppl[i].it}
+$('evDone').onchange=()=>{EVS.w.done=$('evDone').checked;setDirty()};
+async function evSave(){const w=EVS.w;w.ppl=(w.ppl||[]).filter(p=>Object.keys(p.it||{}).length);w.prev=(w.prev||[]).filter(p=>p.t||p.m);
+ if(await putX('eval',EVS.id,w)){EVS.dirty=false;$('evSv').classList.remove('pulse');$('evMsg').textContent='저장했습니다';
+  const r=rows.find(x=>x.id===EVS.id);if(w.done&&r&&r.st!=='완료')await putRow({...r,st:'완료',ad:r.ad||ymd(today())});openEv(EVS.id)}}
+$('evSv').onclick=evSave;
+$('evX').onclick=async()=>{if(EVS.dirty&&!await ask('저장하지 않은 점검표 변경이 있습니다. 닫을까요?'))return;$('ev').classList.remove('on');EVS.id=null};
+
+/* ── 면담 (휴대폰 키보드 음성 입력 + Claude 요약) ── */
+function intvHtml(r){const notes=(IV[r.id]?.notes||[]).slice().sort((a,b)=>b.ts<a.ts?-1:1);
+ return `<div class="evi"><div class="g3" style="grid-template-columns:1fr 1fr">
+ <label>면담 대상<select class="inp" id="ivWho"><option value="">(팀 전체·선택 안 함)</option>${people(r).map(n=>`<option>${esc(n)}</option>`).join('')}</select></label>
+ <label>면담 일시<input class="inp" id="ivTs" type="datetime-local" value="${new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16)}"></label></div>
+ <label class="mini" style="display:flex;gap:6px;align-items:center;margin:6px 0"><input type="checkbox" id="ivOk"> <b>면담 내용을 기록·요약하는 데 면담자가 동의했습니다</b></label>
+ <textarea class="inp" id="ivTx" rows="7" placeholder="면담 내용을 말하거나 적어 주세요 (휴대폰: 키보드 마이크를 누르고 말하기)"></textarea>
+ <p class="mini">${ic('mic')} 휴대폰 키보드의 마이크(음성 입력)를 누르고 말하면 이 칸에 글자로 들어갑니다. PC에서는 직접 입력하거나 Windows 음성 입력(Win+H)을 쓰세요.</p>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><button type="button" class="btn pri" id="ivSum" ${SMP?'':'disabled title="Claude 페이지에서만 됩니다"'}>${ic('spark')} Claude로 요약</button><button type="button" class="btn em" id="ivSave">${ic('save')} 면담 저장</button></div>
+ <textarea class="inp" id="ivSm" rows="7" placeholder="요약 보고 (요약 버튼을 누르거나 직접 작성 · 고쳐서 저장 가능)"></textarea>
+ ${SMP?'':'<p class="mini warn">이 화면에서는 Claude 요약을 쓸 수 없습니다(깃허브·파일 판). Claude 페이지에서 요약하세요.</p>'}</div>
+ <h4 class="evh">${ic('hist')} 저장된 면담 ${notes.length}건</h4>`+notes.map(n=>`<details class="evp"><summary><b>${esc(n.who||'팀 면담')}</b> <span class="mini">${esc((n.ts||'').replace('T',' '))}</span></summary><div class="mini" style="white-space:pre-wrap;color:var(--ink)">${esc(n.sum||'(요약 없음)')}</div><details><summary class="mini">받아쓰기 원문</summary><div class="mini" style="white-space:pre-wrap">${esc(n.text)}</div></details><button type="button" class="btn rd" data-ivdel="${n.id}" style="margin-top:6px">${ic('trash')} 삭제</button></details>`).join('')}
+let ivAb=null;
+async function ivSummary(){const tx=$('ivTx').value.trim();if(!tx)return toast('면담 내용을 먼저 넣어 주세요');if(!$('ivOk').checked)return toast('면담자 동의를 먼저 확인해 주세요');if(!SMP)return toast('이 화면에서는 Claude 요약을 쓸 수 없습니다');
+ const r=rows.find(x=>x.id===EVS.id);const b=$('ivSum');b.disabled=true;b.innerHTML=ic('spark')+' 요약 중…';ivAb&&ivAb.abort();ivAb=new AbortController();
+ const prompt=`너는 (주)서용엔지니어링 2026년 하반기 현장점검의 직원면담 기록을 정리하는 비서다.
+아래 [원문]은 휴대폰 음성 받아쓰기라 오타·띄어쓰기 오류가 있을 수 있다. 뜻이 분명한 오타만 바로잡고, 원문에 없는 사실·숫자·이름은 절대 지어내지 마라. 불분명한 부분은 '확인 필요'에 적어라.
+현장점검 목적: 상반기 지적사항 시정조치 이행·개선 효과 확인, 하반기 현장 운영 실태·업무 성과 평가, 운영 문제점 개선.
+출력 형식(한국어 개조식, "~함/~임" 체, 제목 줄 포함, 마크다운 기호 없이):
+■ 면담 개요: 현장 ${r.rg} ${r.tm} / 대상 ${$('ivWho').value||'팀 전체'} / 일시 ${$('ivTs').value.replace('T',' ')}
+■ 주요 내용
+■ 애로·건의사항
+■ 상반기 지적사항 관련 의견 (원문에 있을 때만)
+■ 조치 필요 사항 (원문에 있을 때만)
+■ 확인 필요
+[원문]
+${tx}`;
+ try{const res=await SMP(prompt,{signal:ivAb.signal,modelTier:'default',cache:false,onText:({text})=>{$('ivSm').value=text}});$('ivSm').value=res.text}catch(e){toast(e&&e.code==='rate_limited'?'요청이 많습니다. 잠시 뒤 다시 누르세요':e&&e.code==='not_granted'?'Claude 요약 사용이 허용되지 않았습니다':'요약하지 못했습니다');if(e&&e.code==='not_granted')SMP=null}
+ b.disabled=!SMP;b.innerHTML=ic('spark')+' Claude로 요약'}
+async function ivSave(){const tx=$('ivTx').value.trim(),sm=$('ivSm').value.trim();if(!tx&&!sm)return toast('저장할 내용이 없습니다');if(!$('ivOk').checked)return toast('면담자 동의를 먼저 확인해 주세요');
+ const n=(IV[EVS.id]?.notes||[]).concat([{id:Date.now().toString(36),who:$('ivWho').value,ts:$('ivTs').value,ok:true,text:tx,sum:sm}]);if(await putX('intv',EVS.id,{notes:n})){toast('면담을 저장했습니다');evPaneRefresh()}}
+
+/* ── 결과 (점검 결과 보고) ── */
+function resHtml(r){const w=EVS.w,st={by:{},weak:0};EVI.team.forEach(([g,its])=>{st.by[g]=scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1])))});
+ const weak=EVI.team.flatMap(([g,its])=>its.filter(([k])=>typeof w.team[k]?.s==='number'&&w.team[k].s<=2).map(([k,l])=>`${g} · ${l} (${w.team[k].s}점)${w.team[k].m?' — '+w.team[k].m:''}`));
+ const pv=w.prev||[];const acts=Object.values(AC).filter(a=>a.site===r.id);const nIv=(IV[r.id]?.notes||[]).length;
+ return `<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">${['공통','기술','영업'].map(g=>k(g+' 팀평가',f1(st.by[g]),'평균 (5점 만점)','#4f46e5')).join('')}${k('상반기 지적',pv.length?Math.round(pv.filter(p=>p.st==='이행 완료').length/pv.length*100)+'%':'-','이행 완료 '+pv.filter(p=>p.st==='이행 완료').length+'/'+pv.length,'#059669')}</div>
+ <h4 class="evh">${ic('warn')} 미흡 항목 ${weak.length}건</h4><div class="mini">${weak.map(x=>'· '+esc(x)).join('<br>')||'없음'}</div>
+ <h4 class="evh">${ic('tool')} 후속 조치 ${acts.length}건 · ${ic('mic')} 면담 ${nIv}건</h4>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button type="button" class="btn pri" id="rsGen">${ic('spark')} ${SMP?'Claude로 결과 보고 작성':'결과 보고 초안 만들기'}</button><button type="button" class="btn" id="rsCopy">${ic('doc')} 복사</button></div>
+ <textarea class="inp" id="rsTx" rows="12" placeholder="점검 결과 보고 (저장한 점검표 기준)"></textarea><p class="mini">저장한 점검표 내용으로 만듭니다. 보고서는 점검자 검토용 초안이며 확정 결과가 아닙니다.</p>`}
+function resData(r){const w=EV[r.id]||EVS.w;const L=[];L.push(`현장: ${r.rg} ${r.tm} / 점검일 ${r.pd} / 점검자 기술 ${r.ins[0]}, 영업 ${r.ins[1]}, 공통 ${r.ins[2]} / 수검 ${cnt(r)}명`);
+ EVI.team.forEach(([g,its])=>its.forEach(([k,l])=>{const v=w.team?.[k];if(v)L.push(`[${g}] ${l}: ${v.s==='na'?'해당없음':v.s+'점'}${v.m?' / '+v.m:''}`)}));
+ (w.prev||[]).forEach(p=>L.push(`[상반기 지적] ${p.t}: ${p.st}${p.m?' / '+p.m:''}`));
+ Object.values(AC).filter(a=>a.site===r.id).forEach(a=>L.push(`[후속 조치] ${a.item||''} ${a.issue||''}: ${a.st}`));
+ (IV[r.id]?.notes||[]).forEach(n=>L.push(`[면담 요약 ${n.who||'팀'}] ${(n.sum||n.text||'').slice(0,800)}`));return L.join('\n')}
+async function resGen(){const r=rows.find(x=>x.id===EVS.id);if(EVS.dirty)return toast('점검표를 먼저 저장해 주세요');const d=resData(r);
+ if(!SMP){$('rsTx').value='■ 현장점검 결과 (초안)\n'+d;return}
+ const b=$('rsGen');b.disabled=true;
+ try{const res=await SMP(`아래 [기록]만 근거로 (주)서용엔지니어링 2026년 하반기 현장점검 '현장별 점검 결과 보고' 초안을 한국어 개조식("~함/~임")으로 써라. 마크다운 기호 없이 ■ 제목을 쓴다.
+구성: ■ 점검 개요 ■ 상반기 지적사항 시정조치 이행 및 개선 효과 ■ 공통부문(안전·운영 관리) ■ 기술부문(공정·성과품) ■ 영업부문 ■ 우수 사항 ■ 개선 필요 사항 및 후속 조치 ■ 확인 필요.
+기록에 없는 사실·숫자는 쓰지 말고 '확인 필요'로 남겨라. 개인 이름은 점검자 외에는 쓰지 말고 개별평가 내용은 넣지 마라.
+[기록]
+${d}`,{modelTier:'default',cache:false,onText:({text})=>{$('rsTx').value=text}});$('rsTx').value=res.text}catch(e){toast('작성하지 못했습니다');$('rsTx').value='■ 현장점검 결과 (초안)\n'+d}
+ b.disabled=false}
+
+/* ── 후속 조치 대장 ── */
+async function addAct(site,area,item,issue){const r=rows.find(x=>x.id===site);const id='a'+Date.now().toString(36);if(await putX('acts',id,{site,tm:r?r.tm:'',area,item,issue,action:'',due:'',st:'조치 필요'}))toast('후속 조치 대장에 등록했습니다')}
+function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries(AC).filter(([id,a])=>L0.has(a.site)||!rows.find(r=>r.id===a.site)).sort((a,b)=>(a[1].tm||'').localeCompare(b[1].tm||''));
+ $('p-act').innerHTML=`<p class="mini">점검에서 나온 개선 필요 사항을 현장팀이 조치하고 점검자가 이행을 확인합니다. 현장팀도 조치 내용·상태를 고칠 수 있습니다.</p>
+ <div style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap">${AST.map(s=>`<span class="st ${s==='조치 필요'?'s-지연':s==='조치 중'?'s-연기':s==='조치 완료'?'s-예정':'s-완료'}">${s} ${A.filter(([i,a])=>a.st===s).length}</span>`).join('')}</div>`+
+ (A.map(([id,a])=>`<div class="ip act" data-a="${id}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(a.tm)}</b><span class="mini">${esc(a.area||'')}</span></div><div class="mini">${esc(a.item||'')}${a.issue?' — '+esc(a.issue):''}</div>
+ <div class="g3" style="grid-template-columns:1fr 1fr;margin-top:4px"><select class="inp" data-af="st">${AST.map(s=>`<option ${a.st===s?'selected':''}>${s}</option>`).join('')}</select><input class="inp" type="date" data-af="due" value="${esc(a.due||'')}" title="조치 기한"></div>
+ <input class="inp" data-af="action" placeholder="조치 내용" value="${esc(a.action||'')}" style="margin-top:4px">${ADM?`<button class="btn rd" data-adel style="margin-top:4px">${ic('trash')}</button>`:''}</div>`).join('')||'<p class="mini">등록된 후속 조치가 없습니다. 점검표에서 2점 이하 항목의 "후속 조치 등록"으로 넣습니다.</p>')}
+$('p-act').addEventListener('change',async e=>{const c=e.target.closest('.act'),f=e.target.dataset.af;if(!c||!f)return;const a={...AC[c.dataset.a],[f]:e.target.value};delete a.upd;if(await putX('acts',c.dataset.a,a))toast('저장했습니다')});
+$('p-act').addEventListener('click',async e=>{const c=e.target.closest('.act');if(c&&e.target.closest('[data-adel]')&&await ask('이 후속 조치를 삭제할까요?'))delX('acts',c.dataset.a)});
+
+/* ── 종합 (부문별 우수팀 후보) ── */
+let sumK='all',sumD=-1;
+function rSum(){if(!ADM){$('p-sum').innerHTML='<p class="mini">종합은 점검자만 볼 수 있습니다.</p>';return}
+ const R=filt(true).map(r=>({r,s:evStat(r.id),iv:(IV[r.id]?.notes||[]).length,ac:Object.values(AC).filter(a=>a.site===r.id).length}));const done=R.filter(x=>x.s);
+ const top={};['공통','기술','영업'].forEach(g=>{top[g]=done.filter(x=>x.s.by[g]!=null).sort((a,b)=>b.s.by[g]-a.s.by[g]).slice(0,3).map(x=>x.r.id)});
+ const val=x=>!x.s?-1:sumK==='all'?(x.s.all??-1):sumK==='weak'?x.s.weak:sumK==='pr'?(x.s.pr??-1):(x.s.by[sumK]??-1);
+ R.sort((a,b)=>(val(a)-val(b))*sumD||a.r.no-b.r.no);
+ $('p-sum').innerHTML=`<p class="mini">점검표 작성 <b>${done.length}</b> / ${R.length}곳 · 부문별 평균 상위 3곳에 ★(우수팀 후보 — 종합 검토 전 참고용)</p><button class="btn am" id="sumXl" style="margin:4px 0">${ic('xls')} 점검 결과 엑셀 (팀·개별·상반기·조치·면담)</button>
+ <table><thead><tr><th>팀명</th>${[['all','전체'],['공통','공통'],['기술','기술'],['영업','영업'],['weak','미흡'],['pr','상반기']].map(([k,t])=>`<th data-sk="${k}">${t}${sumK===k?(sumD>0?'↑':'↓'):''}</th>`).join('')}<th>면담</th></tr></thead><tbody>${R.map(x=>`<tr class="r" data-ev="${x.r.id}"><td><b>${esc(x.r.tm)}</b><div class="mini">${md(x.r.pd)}${x.s?.done?' · 완료':''}</div></td><td><b>${x.s?f1(x.s.all):'-'}</b></td>${['공통','기술','영업'].map(g=>`<td>${x.s?f1(x.s.by[g]):'-'}${top[g].includes(x.r.id)?' <span style="color:#d97706">★</span>':''}</td>`).join('')}<td>${x.s?(x.s.weak?`<span class="warn">${x.s.weak}</span>`:0):'-'}</td><td>${x.s&&x.s.pr!=null?x.s.pr+'%':'-'}</td><td>${x.iv||''}</td></tr>`).join('')}</tbody></table>`}
+$('p-sum').addEventListener('click',e=>{const h=e.target.closest('[data-sk]');if(h){if(sumK===h.dataset.sk)sumD=-sumD;else{sumK=h.dataset.sk;sumD=-1}rSum();return}const tr=e.target.closest('[data-ev]');if(tr)openEv(tr.dataset.ev);if(e.target.closest('#sumXl'))resXl()});
+function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못했습니다');const wb=XLSX.utils.book_new();const sh=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),n);
+ const S=[...rows].sort((a,b)=>a.no-b.no);const sc=v=>!v?'':v.s==='na'?'해당없음':v.s;
+ const T=EVI.team.flatMap(([g,its])=>its.map(([k,l])=>[k,g+' · '+l]));
+ const t1=[['번호','지역','팀명','점검일','점검 완료',...T.map(x=>x[1]),...T.map(x=>x[1]+' 메모'),'공통 평균','기술 평균','영업 평균','전체 평균']];
+ S.filter(r=>EV[r.id]).forEach(r=>{const e=EV[r.id],st=evStat(r.id);t1.push([r.no,r.rg,r.tm,r.pd,e.done?'완료':'',...T.map(([k])=>sc(e.team?.[k])),...T.map(([k])=>e.team?.[k]?.m||''),f1(st.by['공통']),f1(st.by['기술']),f1(st.by['영업']),f1(st.all)])});sh('팀평가',t1);
+ const P=EVI.ppl.concat(EVI.lead);const t2=[['팀명','이름','팀장급',...P.map(x=>x[1]),'메모','평균']];
+ S.forEach(r=>(EV[r.id]?.ppl||[]).forEach(p=>t2.push([r.tm,p.n,isLead(r,p.n)?'예':'',...P.map(([k])=>sc(p.it[k])),P.map(([k,l])=>p.it[k]?.m?l+': '+p.it[k].m:'').filter(Boolean).join(' / '),f1(scoreAvg(p.it))])));sh('개별평가',t2);
+ const t3=[['팀명','상반기 지적사항','이행 상태','개선 효과·확인 내용']];S.forEach(r=>(EV[r.id]?.prev||[]).forEach(p=>t3.push([r.tm,p.t,p.st,p.m])));sh('상반기 지적',t3);
+ const t4=[['팀명','부문','항목','지적 내용','조치 내용','기한','상태']];Object.values(AC).forEach(a=>t4.push([a.tm,a.area,a.item,a.issue,a.action,a.due,a.st]));sh('후속 조치',t4);
+ const t5=[['팀명','대상','일시','요약','받아쓰기 원문']];S.forEach(r=>(IV[r.id]?.notes||[]).forEach(n=>t5.push([r.tm,n.who||'팀',(n.ts||'').replace('T',' '),n.sum,n.text])));sh('면담',t5);
+ saveFile('현장점검_결과_'+stamp()+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
+
 /* ── 시작 ── */
 initMap();fma();hh();startLocal();
-(async()=>{let db=null;try{if(window.claude&&claude.use)db=await claude.use('db')}catch(e){}if(db)startDb(db)})();
+(async()=>{let db=null;try{if(window.claude&&claude.use)db=await claude.use('db')}catch(e){}if(db)startDb(db);xInit()})();
 </script>
 </body>
 </html>
