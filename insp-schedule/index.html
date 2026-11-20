@@ -289,6 +289,8 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+#undoB{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:3100;background:#0f172a;color:#fff;border-radius:12px;padding:8px 8px 8px 14px;align-items:center;gap:10px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.35)}#undoB.on{display:flex}#undoGo{border:0;border-radius:8px;background:#fbbf24;color:#1e293b;font-weight:800;padding:6px 12px;cursor:pointer}
+#micB{display:none;position:fixed;z-index:3050;width:36px;height:36px;border-radius:50%;border:0;background:#4f46e5;color:#fff;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer}#micB.on{display:block}#micB.rec{background:#dc2626;animation:pblink .6s ease-in-out infinite alternate}
 .tdc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}.tdc h3{margin:0 0 4px;font-size:17px}.tdc .sc-btn{margin-top:6px}
 #calG .t[draggable=true]{cursor:grab}#calG .cd.dov{outline:3px dashed #4f46e5;outline-offset:-3px;background:var(--ind1)}
 .dba{position:absolute;z-index:905;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:#312e81;font-size:24px;font-weight:900;line-height:30px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;display:none}.dba.on{display:block}html.dark .dba{background:#162033;color:#c7d2fe}html.clean .dba{display:none!important}
@@ -633,6 +635,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <select class="inp" id="memS"></select>
  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="memNo">취소</button><button class="btn pri" id="memOk">이 이름으로</button></div>
 </div></div>
+<div id="undoB" class="np"><span id="undoT"></span><button type="button" id="undoGo">↶ 되돌리기</button></div>
+<button id="micB" class="np" type="button" title="말로 입력">🎤</button>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
  <div style="display:flex;gap:6px"><input id="nvQ" class="inp" placeholder="주소나 장소 이름 (예: 포항시 북구 청하면 화두길 152)" enterkeyhint="go"><button class="btn" id="nvCp" type="button"><i class="ii" data-i="doc"></i> 복사</button></div>
@@ -1118,10 +1122,10 @@ function openEv(id){if(!ADM)return toast('점검표는 점검자(편집 권한)�
  EVS={id,t:EVS.t||'team',w:JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),dirty:false};
  const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)));
  $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${dt(r.pd)} · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`+((ctOf(r).p||[]).length?`<div class="mini" style="font-weight:400;margin-top:2px">${ic('phone')} ${ctOf(r).p.map(telA).join(' · ')}</div>`:'');
- $('ev').classList.add('on');evTab(EVS.t)}
+ $('ev').classList.add('on');evTab(EVS.t);dfCheck(id)}
 function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));evPaneRefresh()}
 $('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab(t)};
-function setDirty(){EVS.dirty=true;$('evSv').classList.add('pulse');$('evMsg').textContent='저장하지 않은 변경이 있습니다'}
+function setDirty(){EVS.dirty=true;dfSave();$('evSv').classList.add('pulse');$('evMsg').textContent='저장하지 않은 변경이 있습니다'}
 function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-k="${key}" data-p="${path}"><div class="evl">${esc(label)}</div><div class="seg">${SCL.map(([s,n])=>`<button type="button" data-s="${s}" class="${String(v.s)===String(s)?'on s'+s:''}" title="${n}">${s==='na'?'해당없음':s+' '+n}</button>`).join('')}</div>
  <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div>${path==='team'&&EVS.id?phStrip(EVS.id,'team:'+key):''}</div>`}
 function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const w=EVS.w,b=$('evBody');
@@ -1151,7 +1155,7 @@ $('evBody').addEventListener('input',e=>{const t=e.target,it=t.closest('.evi');i
 function objOf(p){if(p==='team')return EVS.w.team;const i=+p.split(':')[1];return EVS.w.ppl[i].it}
 $('evDone').onchange=()=>{EVS.w.done=$('evDone').checked;setDirty()};
 async function evSave(){const w=EVS.w;w.ppl=(w.ppl||[]).filter(p=>Object.keys(p.it||{}).length);w.prev=(w.prev||[]).filter(p=>p.t||p.m);
- if(await putX('eval',EVS.id,w)){{const wk=EVI.team.flatMap(([g,its])=>its).filter(([k])=>typeof w.team?.[k]?.s==='number'&&w.team[k].s<=2).length,pv=w.prev||[];nwAdd(EVS.id,`점검표 저장 · 개선 필요 ${wk}건`+(pv.length?` · 이전 지적 이행 ${pv.filter(p=>p.st==='이행 완료').length}/${pv.length}`:''))}EVS.dirty=false;$('evSv').classList.remove('pulse');$('evMsg').textContent='저장했습니다';
+ if(await putX('eval',EVS.id,w)){dfClear(EVS.id);{const wk=EVI.team.flatMap(([g,its])=>its).filter(([k])=>typeof w.team?.[k]?.s==='number'&&w.team[k].s<=2).length,pv=w.prev||[];nwAdd(EVS.id,`점검표 저장 · 개선 필요 ${wk}건`+(pv.length?` · 이전 지적 이행 ${pv.filter(p=>p.st==='이행 완료').length}/${pv.length}`:''))}EVS.dirty=false;$('evSv').classList.remove('pulse');$('evMsg').textContent='저장했습니다';
   const r=rows.find(x=>x.id===EVS.id);if(w.done&&r&&r.st!=='완료')await putRow({...r,st:'완료',ad:r.ad||ymd(today())});openEv(EVS.id)}}
 $('evSv').onclick=evSave;
 $('evX').onclick=async()=>{if(EVS.dirty&&!await ask('저장하지 않은 점검표 변경이 있습니다. 닫을까요?'))return;$('ev').classList.remove('on');EVS.id=null};
@@ -1292,7 +1296,7 @@ function siteTxt(r){const e=EV[r.id],A=Object.values(AC).filter(a=>a.site===r.id
 function shareSite(id){const r=rows.find(x=>x.id===id);if(r)shareSend(siteTxt(r))}
 document.addEventListener('click',e=>{if(e.target.closest('[data-shs]')&&EVS.id){e.preventDefault();shareSite(EVS.id)}});
 /* 기록 연결 */
-{const _p=putRow;putRow=async function(r,q){const o=ALL.find(x=>x.id===r.id);const ok=await _p(r,q);if(ok&&o&&!q)nwRow(o,{...o,...r});return ok}}
+{const _p=putRow;putRow=async function(r,q){const o=ALL.find(x=>x.id===r.id);const ok=await _p(r,q);if(ok&&o&&!q){nwRow(o,{...o,...r});const c=[];if((o.st||'')!==(r.st||''))c.push('상태 '+(r.st||''));if((o.pd||'')!==(r.pd||''))c.push('점검일 '+dt(r.pd));if(c.length||JSON.stringify({...o,upd:0})!==JSON.stringify({...o,...r,upd:0}))undoShow(`${o.tm} ${c.join(' · ')||'수정'} 저장`,()=>putRow({...o}))}return ok}}
 {const _a=addAct;addAct=async function(site,area,item,issue){await _a(site,area,item,issue);nwAdd(site,`후속 조치 등록: ${[area,item].filter(Boolean).join(' · ')}`)}}
 
 /* ── 📦 최종 파일 받기·보관(C안): 파일만 받고 기록은 지우지 않음 · 회차 목록에서 숨김(보관 회차 보기로 다시 봄) ── */
@@ -1309,7 +1313,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261120202148';
+const BUILD='20261120202419';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -1342,6 +1346,31 @@ $('tdB').addEventListener('click',e=>{const b=e.target.closest('[data-td]');if(!
  if(a==='nav')openNav(r.addr||(r.rg+' '+r.tm));else if(a==='ev'){$('tdm').classList.remove('on');openEv(r.id)}else if(a==='share')shareSite(r.id);
  else if(a==='map'){$('tdm').classList.remove('on');selId=r.id;if(isMob())showCard(r);else if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),13));drawPins()}}});
 setTimeout(()=>{try{const t=ymd(today());if(localStorage.getItem('mulgil-tdauto')==='0'||localStorage.getItem('mulgil-tdseen')===t)return;if(!filt(true).some(r=>r.pd===t))return;localStorage.setItem('mulgil-tdseen',t);todayOpen(true)}catch(e){}},2500);
+
+/* ── 💾 점검표 임시 저장: 입력하는 동안 이 브라우저에 자동 보관 → 다시 열면 이어 쓰기 ── */
+let DFT=null;const dfK=id=>'mulgil-draft-'+id;
+function dfSave(){clearTimeout(DFT);DFT=setTimeout(()=>{if(!EVS.id||!EVS.w)return;try{localStorage.setItem(dfK(EVS.id),JSON.stringify({ts:new Date().toISOString(),w:EVS.w}))}catch(e){}},600)}
+function dfClear(id){clearTimeout(DFT);try{localStorage.removeItem(dfK(id))}catch(e){}}
+async function dfCheck(id){let d=null;try{d=JSON.parse(localStorage.getItem(dfK(id))||'null')}catch(e){}if(!d||!d.w)return;const sv=(EV[id]&&EV[id].upd)||'';if(sv&&sv>=d.ts){dfClear(id);return}
+ if(await ask(`저장하지 않고 닫힌 점검표가 있습니다 (${phT(d.ts)}). 이어서 쓸까요?`)){if(EVS.id!==id)return;EVS.w=d.w;const r=rows.find(x=>x.id===id);if(r){const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)))}EVS.dirty=true;$('evSv').classList.add('pulse');$('evMsg').textContent='임시 저장본을 불러왔습니다 · 점검표 저장을 눌러 주세요';evPaneRefresh()}else dfClear(id)}
+/* ── 🎤 말로 입력: 점검표·후속 조치 칸을 누르면 옆에 🎤 · Claude 페이지는 Claude 받아쓰기, 깃허브 판(크롬)은 브라우저 음성 인식 ── */
+let DICT=null,MIC={el:null,on:false,sr:null};(async()=>{try{DICT=window.claude&&claude.use?await claude.use('dictation'):null}catch(e){DICT=null}})();
+const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+function micOk(){return !!(DICT||SRC)}
+document.addEventListener('focusin',e=>{const t=e.target;if(!micOk()||!t.matches||!t.matches('#ev input.inp:not([type]),#ev input.inp[type=text],#ev textarea,#p-act input.inp[data-af=action]'))return;MIC.el=t;const r=t.getBoundingClientRect();const b=$('micB');b.style.left=Math.min(innerWidth-44,r.right-40)+'px';b.style.top=(r.top+(r.height-36)/2)+'px';b.classList.add('on')});
+document.addEventListener('focusout',e=>{setTimeout(()=>{if(!MIC.on&&document.activeElement!==$('micB')&&!(document.activeElement&&document.activeElement===MIC.el))$('micB').classList.remove('on')},200)});
+$('micB').addEventListener('mousedown',e=>e.preventDefault());
+function micPut(t){const el=MIC.el;if(!el||!t)return;const v=el.value;el.value=(v&&!/\s$/.test(v)?v+' ':v)+t.trim();el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}
+function micStop(){MIC.on=false;$('micB').classList.remove('rec');try{DICT&&DICT.stop()}catch(e){}try{MIC.sr&&MIC.sr.stop()}catch(e){}}
+$('micB').onclick=()=>{if(MIC.on)return micStop();if(!MIC.el)return;MIC.on=true;$('micB').classList.add('rec');
+ if(DICT){try{DICT.onFinal(({text})=>micPut(text));DICT.onState(({state})=>{if(state==='idle')micStop()});DICT.start().catch(err=>{micStop();toast(err&&err.code==='not_granted'?'마이크 사용이 허용되지 않았습니다':'말로 입력을 시작하지 못했습니다')})}catch(e){micStop()}return}
+ try{const sr=new SRC();sr.lang='ko-KR';sr.interimResults=false;sr.continuous=true;sr.onresult=ev=>{for(let i=ev.resultIndex;i<ev.results.length;i++)if(ev.results[i].isFinal)micPut(ev.results[i][0].transcript)};sr.onend=()=>micStop();sr.onerror=()=>{micStop();toast('음성 인식을 쓸 수 없습니다 (마이크 권한 확인)')};MIC.sr=sr;sr.start();toast('말씀하세요 · 🎤를 다시 누르면 끝')}catch(e){micStop();toast('이 브라우저는 말로 입력을 지원하지 않습니다')}};
+/* ── ↶ 되돌리기: 일정·상태 변경, 현장 삭제, 후속 조치 변경·삭제 직후 6초 ── */
+let UNDO=null,UNDOING=false;
+function undoShow(msg,fn){if(UNDOING)return;clearTimeout(UNDO&&UNDO.t);UNDO={fn,t:setTimeout(()=>{$('undoB').classList.remove('on');UNDO=null},6500)};$('undoT').textContent=msg;$('undoB').classList.add('on')}
+$('undoGo').onclick=async()=>{if(!UNDO)return;const f=UNDO.fn;clearTimeout(UNDO.t);UNDO=null;$('undoB').classList.remove('on');UNDOING=true;try{await f();toast('되돌렸습니다')}catch(e){toast('되돌리지 못했습니다')}finally{UNDOING=false}};
+{const _d=delRow;delRow=async function(id){const o=ALL.find(x=>x.id===id);await _d(id);if(o)undoShow(o.tm+' 현장을 삭제했습니다',()=>putRow({...o}))}}
+{const _x=delX;delX=async function(col,id){const o=XC[col]&&XC[col]()[id];await _x(col,id);if(o&&col==='acts'){const {upd,...b}=o;undoShow('후속 조치를 삭제했습니다',()=>putX('acts',id,b))}}}
 
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
@@ -1516,7 +1545,7 @@ function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries
  <div class="g3" style="grid-template-columns:1fr 1fr;margin-top:4px"><select class="inp" data-af="st">${AST.map(s=>`<option ${a.st===s?'selected':''}>${s}</option>`).join('')}</select><input class="inp" type="date" data-af="due" value="${esc(a.due||'')}" title="조치 기한"></div>
  <input class="inp" data-af="action" placeholder="조치 내용" value="${esc(a.action||'')}" style="margin-top:4px"><div class="phpair"><div><span class="mini">조치 전</span>${phStrip(a.site,'act:'+id,'before')}</div><div><span class="mini">조치 후</span>${phStrip(a.site,'act:'+id,'after')}</div></div>${ADM?`<button class="btn rd" data-adel style="margin-top:4px">${ic('trash')}</button>`:''}</div>`).join('')||'<p class="mini">등록된 후속 조치가 없습니다. 점검표에서 2점 이하 항목의 "후속 조치 등록"으로 넣습니다.</p>')}
 {const _ra=rAct;rAct=function(){_ra();phFill($('p-act'))}}
-$('p-act').addEventListener('change',async e=>{const c=e.target.closest('.act'),f=e.target.dataset.af;if(!c||!f)return;const a={...AC[c.dataset.a],[f]:e.target.value};delete a.upd;if(await putX('acts',c.dataset.a,a)){toast('저장했습니다');const lb=[a.area,a.item].filter(Boolean).join(' · ');nwAdd(a.site,f==='st'?`후속 조치 ${lb}: ${e.target.value}`:f==='due'?`후속 조치 ${lb}: 기한 ${e.target.value?md(e.target.value):'없음'}`:`후속 조치 ${lb}: 조치 내용 입력`)}});
+$('p-act').addEventListener('change',async e=>{const c=e.target.closest('.act'),f=e.target.dataset.af;if(!c||!f)return;const old0=(({upd,...b})=>b)(AC[c.dataset.a]||{});const a={...AC[c.dataset.a],[f]:e.target.value};delete a.upd;if(await putX('acts',c.dataset.a,a)){toast('저장했습니다');undoShow('후속 조치를 바꿨습니다',()=>putX('acts',c.dataset.a,old0));const lb=[a.area,a.item].filter(Boolean).join(' · ');nwAdd(a.site,f==='st'?`후속 조치 ${lb}: ${e.target.value}`:f==='due'?`후속 조치 ${lb}: 기한 ${e.target.value?md(e.target.value):'없음'}`:`후속 조치 ${lb}: 조치 내용 입력`)}});
 $('p-act').addEventListener('click',async e=>{const c=e.target.closest('.act');if(c&&e.target.closest('[data-adel]')&&await ask('이 후속 조치를 삭제할까요?'))delX('acts',c.dataset.a)});
 
 /* ── 종합 (부문별 우수팀 후보) ── */
