@@ -295,8 +295,8 @@ html.kk #fRf{font-size:22px;color:#4f46e5}
 .nwd{font-size:12px;font-weight:800;color:var(--ind6);margin:10px 0 4px}.nwi{display:flex;gap:8px;align-items:flex-start;padding:6px 4px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.nwi.new{background:var(--am1);border-radius:6px}.nwi input{margin-top:2px;flex:none}.nwi .t{color:var(--mute);font-size:11.5px;white-space:nowrap}
 .who{width:100%;font-size:12.5px;font-weight:700;color:var(--ink2);padding:2px 2px 4px}.who b{color:var(--ind6)}
 @media screen{
-html.kk{--pl:440px;--pw:440px}
-html.kk.kkc{--pw:0px}
+html.kk{--pl:440px;--pw:var(--pl)}
+html.kk.kkc{--pw:0px!important}
 html.kk body{overflow:hidden}
 html.kk header{position:fixed;left:0;top:0;width:var(--pl);background:linear-gradient(135deg,#4f46e5,#2563eb);border:0;z-index:1300;transition:transform .2s}
 html.kk.kkc header,html.kk.kkc #side{transform:translateX(-100%)}
@@ -330,7 +330,9 @@ html.kk .fab button{width:54px;height:56px;border-radius:0;border:0;border-botto
 html.kk .fab button:last-child{border-bottom:0}html.kk .fab .gi.cc{color:var(--c)!important}html.kk .fab button.on{background:var(--ind1)!important}
 html.kk .fab button::after{content:attr(data-l);font-size:10.5px;font-weight:700;color:var(--ink2)}
 html.kk .fab .kk-only{display:flex}html.kk #fSh{display:none!important}
-html.kk #pwT{display:flex;position:fixed;left:var(--pw);top:50%;transform:translateY(-50%);width:22px;height:58px;padding:0;background:var(--card);color:var(--ink2);border:1px solid var(--line);border-left:0;border-radius:0 8px 8px 0;z-index:1250;align-items:center;justify-content:center;cursor:pointer;box-shadow:2px 0 6px rgba(0,0,0,.15);font-size:11px;transition:left .2s}
+html.kk #pwR{display:block;position:fixed;left:calc(var(--pw) - 4px);top:0;bottom:0;width:8px;cursor:col-resize;z-index:1240;touch-action:none}html.kk #pwR:hover,html.kk #pwR.on{background:rgba(79,70,229,.35)}html.kk.kkc #pwR,html.kk.nomap #pwR{display:none}
+html.kk.pwd *{transition:none!important}html.kk.pwd{cursor:col-resize;user-select:none}
+html.kk #pwT{touch-action:none;cursor:ew-resize;display:flex;position:fixed;left:var(--pw);top:50%;transform:translateY(-50%);width:22px;height:58px;padding:0;background:var(--card);color:var(--ink2);border:1px solid var(--line);border-left:0;border-radius:0 8px 8px 0;z-index:1250;align-items:center;justify-content:center;cursor:pointer;box-shadow:2px 0 6px rgba(0,0,0,.15);font-size:11px;transition:left .2s}
 html.kk .pickbar{left:50%;transform:translateX(-50%);bottom:24px}
 html.kk .kkft{display:block;text-align:center;font-size:11px;color:var(--mute);padding-top:2px}
 html.dark.kk header{background:linear-gradient(135deg,#312e81,#1e3a8a)}
@@ -338,7 +340,7 @@ html.dark.kk header{background:linear-gradient(135deg,#312e81,#1e3a8a)}
 #mapOn{display:none;margin-bottom:2px}html.nomap #mapOn{display:inline-flex;justify-content:center}
 html.nomap #mapCard,html.nomap #pwT{display:none!important}
 html.nomap main{grid-template-columns:1fr!important}
-html.kk.nomap{--pl:100vw;--pw:100vw}
+html.kk.nomap{--pl:100vw!important;--pw:100vw!important}
 html.mob.nomap #side{top:0;height:100dvh!important;border-radius:0}html.mob.nomap #sheetH,html.mob.nomap #sheetSum{display:none!important}
 .lyl label{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-top:1px solid var(--line);font-size:14px;font-weight:700;cursor:pointer}
 .lyl label small{display:block;font-weight:400;color:var(--mute);font-size:11.5px}.lyl input{width:20px;height:20px;flex:none}.lyl label.off{opacity:.45;cursor:default}
@@ -491,7 +493,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="fRp" class="kk-only adm" title="점검결과 출력 (결과표·종합 보고서·한글)"><i class="ii" data-i="clip"></i></button>
     <button id="fDm" class="kk-only" title="다크 모드"><i class="ii" data-i="moon"></i></button>
    </div>
-   <button id="pwT" class="kk-only np" type="button" title="왼쪽 칸 접기·펴기">◀</button>
+   <button id="pwT" class="kk-only np" type="button" title="누르면 접기·펴기 · 좌우로 끌면 폭 조절">◀</button>
+   <div id="pwR" class="kk-only np" title="좌우로 끌어 폭 조절 (두 번 누르면 기본 폭)"></div>
    <div class="pickbar np" id="pickbar"><span id="pickTx"></span><button id="pickSkip">다음</button><button id="pickX">끝</button></div>
    <div class="nobase" id="nobase">바탕지도: 시·군·구 경계 (통계청 2013) · 도로·건물은 깃허브 판에서 보입니다</div>
    <div class="empty" id="empty"><div class="card"><div class="big"><i class="ii" data-i="inb"></i></div><b>아직 일정 자료가 없습니다</b><p class="mini">'현장별 점검담당' 시트가 있는 일정표 엑셀이나 백업 파일을 불러오세요.</p><label class="btn pri" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl2" type="file" accept=".xlsx,.xlsm,.xls" hidden></label></div></div>
@@ -1230,7 +1233,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261120201008';
+const BUILD='20261120201234';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -1455,7 +1458,18 @@ function kkLay(){const H=document.documentElement,on=!H.classList.contains('mob'
  else if(KKO.sr&&was){KKO.sr[0].insertBefore(sr,KKO.sr[1]);KKO.tb[0].insertBefore(tb,KKO.tb[1])}
  if(on)H.style.setProperty('--kh',document.querySelector('header').offsetHeight+'px');$('pwT').textContent=H.classList.contains('kkc')?'▶':'◀';
  if(was!==on)setTimeout(()=>{map&&map.invalidateSize();drawPins()},150)}
-$('pwT').onclick=()=>{document.documentElement.classList.toggle('kkc');kkLay();setTimeout(()=>map&&map.invalidateSize(),230)};
+function pwSet(w){const H=document.documentElement,mx=Math.round(innerWidth*.7);w=Math.max(320,Math.min(mx,Math.round(w)));H.style.setProperty('--pl',w+'px');return w}
+try{const w=+localStorage.getItem('mulgil-pw');if(w)pwSet(w)}catch(e){}
+function pwDrag(el,tap){let x0=0,w0=0,mv=false,on=false;
+ el.addEventListener('pointerdown',e=>{if(e.button)return;on=true;mv=false;x0=e.clientX;w0=$('side').getBoundingClientRect().width;try{el.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});
+ el.addEventListener('pointermove',e=>{if(!on)return;const dx=e.clientX-x0;if(!mv&&Math.abs(dx)<5)return;const H=document.documentElement;
+  if(!mv){mv=true;H.classList.add('pwd');el.classList.add('on');if(H.classList.contains('kkc')){H.classList.remove('kkc');w0=0}}pwSet(w0+dx)});
+ const up=()=>{if(!on)return;on=false;const H=document.documentElement;H.classList.remove('pwd');el.classList.remove('on');
+  if(mv){const w=parseInt(getComputedStyle(H).getPropertyValue('--pl'))||440;try{localStorage.setItem('mulgil-pw',w)}catch(_){}kkLay();setTimeout(()=>{map&&map.invalidateSize();drawPins()},60)}else if(tap)tap()};
+ el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
+pwDrag($('pwT'),()=>{document.documentElement.classList.toggle('kkc');kkLay();setTimeout(()=>map&&map.invalidateSize(),230)});
+pwDrag($('pwR'),null);
+$('pwR').ondblclick=()=>{pwSet(440);try{localStorage.removeItem('mulgil-pw')}catch(_){}kkLay();setTimeout(()=>map&&map.invalidateSize(),60)};
 [['fRf','새로'],['fLy','지도'],['fFit','전체'],['fNext','다음'],['fLoc','내 위치'],['fPick','찍기'],['fPr','인쇄'],['fRp','결과'],['fDm','다크']].forEach(([k,l])=>$(k).dataset.l=l);
 $('fPr').onclick=()=>$('bPr').click();$('fRp').onclick=()=>rpOpen('site');$('fDm').onclick=()=>$('dm').click();
 function mobApply(){const m=isMob();const was=document.documentElement.classList.contains('mob');document.documentElement.classList.toggle('mob',m);kkLay();if(m){setSheet(SH)}else{$('siteCard').hidden=true;$('side').classList.remove('card-on')}if(was!==m){setTimeout(()=>{map&&map.invalidateSize();drawPins()},120)}}
