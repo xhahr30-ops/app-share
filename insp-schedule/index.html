@@ -366,6 +366,14 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  .srch{flex:1 1 100%}
 }
 #rpt{display:none}
+.phs{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px}
+.phs img{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;background:var(--sub2)}
+.phb{height:34px;padding:0 10px;border-radius:8px;border:1px dashed var(--line2);background:var(--sub);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink2)}
+.phpair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.phg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.phc{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.phc img{width:100%;height:130px;object-fit:cover;display:block;cursor:zoom-in;background:var(--sub2)}.phc .pm{padding:6px;display:flex;flex-direction:column;gap:4px;font-size:11.5px}
+#phv{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:3000;display:none;align-items:center;justify-content:center}#phv.on{display:flex}#phv img{max-width:96vw;max-height:88vh}#phv p{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#fff;font-size:13px}
+.rp-ph{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:3px 0}.rp-ph div{break-inside:avoid;border:1px solid #cbd5e1;padding:3px}.rp-ph img{width:100%;height:58mm;object-fit:contain;display:block;background:#f8fafc}.rp-ph span{font-size:8.5pt;color:#334155}
 .rp-page{font-size:10pt;color:#0f172a;line-height:1.45}
 .rp-page+.rp-page{break-before:page}
 .rp-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
@@ -537,7 +545,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 </div></div>
 <div class="modal np" id="ev"><div class="mbox">
  <div class="evhd"><b id="evT"></b><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></div>
- <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
+ <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
  <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
 </div></div>
@@ -581,6 +589,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="lyl" id="lyL"></div>
  <p class="mini" style="margin:6px 0 0">설정은 이 휴대폰·PC 브라우저에 기억됩니다.</p>
 </div></div>
+<div id="phv" class="np"><img alt="사진"><p></p></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
  <div style="display:flex;gap:6px"><input id="nvQ" class="inp" placeholder="주소나 장소 이름 (예: 포항시 북구 청하면 화두길 152)" enterkeyhint="go"><button class="btn" id="nvCp" type="button"><i class="ii" data-i="doc"></i> 복사</button></div>
@@ -976,16 +985,16 @@ const EVI={team:[
 const SCL=[[5,'우수'],[4,'양호'],[3,'보통'],[2,'미흡'],[1,'매우 미흡'],['na','해당없음']];
 const PST=['확인 중','이행 완료','일부 이행','미이행'];
 const AST=['조치 필요','조치 중','조치 완료','이행 확인'];
-let ADM=true,SMP=null,EV={},IV={},AC={},CT=CONT_SEED;
+let ADM=true,SMP=null,EV={},IV={},AC={},PH={},CT=CONT_SEED;
 const LSX=LS+'-x';
-function xLoad(){try{const v=JSON.parse(localStorage.getItem(LSX)||'{}');EV=v.eval||{};IV=v.intv||{};AC=v.acts||{}}catch(e){}}
-function xSave(){try{localStorage.setItem(LSX,JSON.stringify({eval:EV,intv:IV,acts:AC}))}catch(e){}}
-const XC={eval:()=>EV,intv:()=>IV,acts:()=>AC};
+function xLoad(){try{const v=JSON.parse(localStorage.getItem(LSX)||'{}');EV=v.eval||{};IV=v.intv||{};AC=v.acts||{};PH=v.photos||{}}catch(e){}}
+function xSave(){try{localStorage.setItem(LSX,JSON.stringify({eval:EV,intv:IV,acts:AC,photos:PH}))}catch(e){}}
+const XC={eval:()=>EV,intv:()=>IV,acts:()=>AC,photos:()=>PH};
 async function putX(col,id,data){data={...data,upd:new Date().toISOString()};
  if(mode==='db'){try{await DB.collection(col).doc(id).set(data);return true}catch(e){toast(e&&e.code==='invalid_argument'?'이 기록은 점검자(편집 권한)만 저장할 수 있습니다':'저장 실패: '+(e&&e.code||''));return false}}
  XC[col]()[id]=data;xSave();render();return true}
 async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id).delete()}catch(e){toast('삭제 실패')}return}delete XC[col]()[id];xSave();render()}
-function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
+function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts','photos'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else if(c==='photos'){PH=o;if(EVS.id&&EVS.t==='ph')evPaneRefresh();phFill(document)}else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
  document.documentElement.classList.toggle('noadm',!ADM);rdUI();render()}
@@ -1007,15 +1016,16 @@ function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=
 $('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab(t)};
 function setDirty(){EVS.dirty=true;$('evSv').classList.add('pulse');$('evMsg').textContent='저장하지 않은 변경이 있습니다'}
 function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-k="${key}" data-p="${path}"><div class="evl">${esc(label)}</div><div class="seg">${SCL.map(([s,n])=>`<button type="button" data-s="${s}" class="${String(v.s)===String(s)?'on s'+s:''}" title="${n}">${s==='na'?'해당없음':s+' '+n}</button>`).join('')}</div>
- <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div></div>`}
+ <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div>${path==='team'&&EVS.id?phStrip(EVS.id,'team:'+key):''}</div>`}
 function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const w=EVS.w,b=$('evBody');
  if(EVS.t==='team')b.innerHTML=EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
- else if(EVS.t==='prev')b.innerHTML=`<p class="mini">이전 회차 점검에서 지적된 사항입니다. 새 회차를 만들 때 2점 이하 항목·미이행 지적이 자동으로 넘어옵니다. 시정조치 이행 여부와 개선 효과를 확인하세요.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="이전 지적사항" value="${esc(p.t||'')}">${p.from?`<span class="mini" style="white-space:nowrap;align-self:center">${esc(rdName(p.from))}</span>`:''}<button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}"></div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
+ else if(EVS.t==='prev')b.innerHTML=`<p class="mini">이전 회차 점검에서 지적된 사항입니다. 새 회차를 만들 때 2점 이하 항목·미이행 지적이 자동으로 넘어옵니다. 시정조치 이행 여부와 개선 효과를 확인하세요.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="이전 지적사항" value="${esc(p.t||'')}">${p.from?`<span class="mini" style="white-space:nowrap;align-self:center">${esc(rdName(p.from))}</span>`:''}<button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}">${phStrip(EVS.id,'prev:'+i)}</div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
  else if(EVS.t==='ppl')b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+w.ppl.map((p,i)=>`<details class="evp" ${i===0?'open':''}><summary><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></summary>${EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}</details>`).join('')||'<p class="mini">수검 인원 명단이 없습니다.</p>';
  else if(EVS.t==='intv')b.innerHTML=intvHtml(r);
  else if(EVS.t==='res')b.innerHTML=resHtml(r);
  else if(EVS.t==='hist')b.innerHTML=histHtml(r);
- $('evSv').style.display=['intv','hist'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
+ else if(EVS.t==='ph')b.innerHTML=phTab(r);
+ phFill(b);$('evSv').style.display=['intv','hist','ph'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
 $('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
  const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
  const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
@@ -1097,6 +1107,47 @@ async function resGen(){const r=rows.find(x=>x.id===EVS.id);if(EVS.dirty)return 
 ${d}`,{modelTier:'default',cache:false,onText:({text})=>{$('rsTx').value=text}});$('rsTx').value=res.text;rsSet()}catch(e){toast('작성하지 못했습니다');$('rsTx').value='■ 현장점검 결과 (초안)\n'+d;rsSet()}
  b.disabled=false}
 
+/* ── 📷 현장 사진 (B안: 항목별 사진 + 후속 조치 전·후) ──
+   Claude 페이지: assets 저장(팀 공유, 현장팀도 조치 후 사진 올림) · 깃허브 판: 이 브라우저(IndexedDB)에만 저장.
+   올리기 전 긴 변 1600px JPEG로 줄이고 위치정보(EXIF·GPS)는 다시 그리면서 지워짐. 공개용 출력에는 '공개'로 고른 사진만. */
+const IDB=(()=>{let P=null;const op=()=>P||(P=new Promise((ok,no)=>{const r=indexedDB.open('mulgil-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}));
+ const tx=(m,f)=>op().then(d=>new Promise((ok,no)=>{const t=d.transaction('p',m),q=f(t.objectStore('p'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)}));
+ return{put:(k,v)=>tx('readwrite',x=>x.put(v,k)),get:k=>tx('readonly',x=>x.get(k)),del:k=>tx('readwrite',x=>x.delete(k))}})();
+const phT=t=>{const d=new Date(t||0);return isNaN(d)?'':ymd(d)+' '+p2(d.getHours())+':'+p2(d.getMinutes())},phD=t=>{const d=new Date(t||0);return isNaN(d)?'':(d.getMonth()+1)+'/'+d.getDate()};
+const PURL={};const phSrc=p=>p.aid?'/_blob/'+p.aid:(PURL[p.id]||'');
+async function phLoad(L){for(const p of L){if(p.aid||PURL[p.id])continue;try{const b=await IDB.get(p.id);if(b)PURL[p.id]=URL.createObjectURL(b)}catch(e){}}}
+function phFill(root){(root||document).querySelectorAll('img[data-pid]').forEach(async im=>{const p=PH[im.dataset.pid];if(!p)return;if(!p.aid&&!PURL[p.id])await phLoad([{...p,id:im.dataset.pid}]);const u=phSrc({...p,id:im.dataset.pid});if(u&&im.src!==u)im.src=u})}
+const phOf=(site,at,k)=>Object.entries(PH).filter(([i,p])=>p.site===site&&(at==null||p.at===at)&&(k==null||(p.k||'')===k)).map(([i,p])=>({...p,id:i})).sort((a,b)=>a.ts<b.ts?-1:1);
+function phStrip(site,at,k){const L=phOf(site,at,k||'');return `<div class="phs">${L.map(p=>`<img data-pid="${p.id}" alt="사진" title="${esc(p.cap||'')}">`).join('')}<button type="button" class="phb" data-ph="${esc(at)}" data-pk="${k||''}" data-site="${esc(site)}">${ic('plus')} 사진${L.length?' '+L.length:''}</button></div>`}
+function phLabel(p){const[a,b]=String(p.at||'').split(':');if(a==='team'){const it=EVI.team.flatMap(([g,its])=>its.map(([k,l])=>[k,g+' · '+l])).find(x=>x[0]===b);return '팀평가 · '+(it?it[1]:b)}
+ if(a==='prev'){const pv=(EV[p.site]?.prev||[])[+b];return '이전 지적'+(pv?' · '+pv.t:'')}if(a==='act'){const x=AC[b];return '후속 조치'+(x?' · '+[x.area,x.item].filter(Boolean).join(' · '):'')+(p.k==='before'?' (조치 전)':p.k==='after'?' (조치 후)':'')}return '현장 일반'}
+async function phShrink(f){let bm;try{bm=await createImageBitmap(f,{imageOrientation:'from-image'})}catch(e){bm=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(f)})}
+ const W=bm.width,H=bm.height,k=Math.min(1,1600/Math.max(W,H)),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+ const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.82));return{blob,w:c.width,h:c.height}}
+const phIn=document.createElement('input');phIn.type='file';phIn.accept='image/*';phIn.multiple=true;let PHT=null;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ph]');if(b){e.preventDefault();e.stopPropagation();if(mode==='db'&&RO)return toast('보기 권한이라 사진을 올릴 수 없습니다');PHT={site:b.dataset.site,at:b.dataset.ph,k:b.dataset.pk||''};phIn.value='';phIn.click();return}
+ const im=e.target.closest('img[data-pid]');if(im&&!e.target.closest('#rpt')){e.preventDefault();e.stopPropagation();const p=PH[im.dataset.pid];$('phv').querySelector('img').src=im.src;$('phv').querySelector('p').textContent=p?[p.tm,phLabel(p),p.cap,phT(p.ts)].filter(Boolean).join(' · '):'';$('phv').classList.add('on')}},true);
+$('phv').onclick=()=>$('phv').classList.remove('on');
+phIn.onchange=async()=>{const fs=[...phIn.files];if(!fs.length||!PHT)return;const T=PHT,r=ALL.find(x=>x.id===T.site)||{};let n=0;toast('사진 올리는 중… ('+fs.length+'장)');
+ for(const f of fs){try{const {blob,w,h}=await phShrink(f);const id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);let aid='';
+  if(mode==='db'){const A=await claude.use('assets');if(!A)throw new Error('사진 저장 권한이 없습니다');const u=await A.upload(blob);aid=u.id}else await IDB.put(id,blob);
+  if(await putX('photos',id,{site:T.site,tm:r.tm||'',rd:r.rd||RD,at:T.at,k:T.k,ts:new Date().toISOString(),cap:'',pub:0,aid,w,h}))n++}catch(e){toast('사진을 올리지 못했습니다: '+(e&&e.message||e))}}
+ if(n){toast('사진 '+n+'장을 올렸습니다');if(EVS.id&&$('ev').classList.contains('on'))evPaneRefresh();if(tab==='act')rAct();phFill(document)}};
+function phTab(r){const L=phOf(r.id),G={};L.forEach(p=>{const g=phLabel(p);(G[g]=G[g]||[]).push(p)});
+ return `<p class="mini">점검표 각 항목·이전 지적·후속 조치(조치 전·후)의 사진을 모아 봅니다. 사진을 누르면 크게 보입니다. <b>공개</b>를 고른 사진만 공개용 결과표에 들어갑니다.${mode==='db'?'':' 이 판에서는 사진이 이 브라우저에만 저장됩니다.'}</p>
+ ${phStrip(r.id,'site')}`+(L.length?Object.entries(G).map(([g,ps])=>`<h4 class="evh">${esc(g)} <span class="mini">${ps.length}장</span></h4><div class="phg">${ps.map(p=>`<div class="phc"><img data-pid="${p.id}" alt="사진"><div class="pm"><input class="inp" data-pcap="${p.id}" placeholder="사진 설명" value="${esc(p.cap||'')}"><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-ppub="${p.id}" ${p.pub?'checked':''}> 공개용에 넣기</label><span class="rp-g">${esc(phT(p.ts))}</span>${ADM?`<button type="button" class="btn rd" data-pdel="${p.id}">${ic('trash')} 삭제</button>`:''}</div></div>`).join('')}</div>`).join(''):'<p class="mini">아직 사진이 없습니다.</p>')}
+document.addEventListener('change',async e=>{const c=e.target.dataset.pcap,u=e.target.dataset.ppub;if(!c&&!u)return;const id=c||u,p=PH[id];if(!p)return;const {upd,...b}=p;
+ if(await putX('photos',id,c?{...b,cap:e.target.value}:{...b,pub:e.target.checked?1:0}))toast('저장했습니다')});
+document.addEventListener('click',async e=>{const d=e.target.closest('[data-pdel]');if(!d)return;const id=d.dataset.pdel,p=PH[id];if(!p||!await ask('이 사진을 지울까요? (되살릴 수 없음)'))return;
+ try{if(p.aid){const A=await claude.use('assets');A&&await A.delete(p.aid)}else await IDB.del(id)}catch(_){}await delX('photos',id);if(EVS.id)evPaneRefresh()});
+function rpPhotos(r,pub){const L=phOf(r.id).filter(p=>!pub||p.pub);if(!L.length)return '';const cap=p=>`<span>${esc(phLabel(p))}${p.cap?' — '+esc(p.cap):''} · ${esc(phD(p.ts))}</span>`;
+ const acts=[...new Set(L.filter(p=>/^act:/.test(p.at)).map(p=>p.at))],used=new Set();let h='';
+ acts.forEach(at=>{const b=L.filter(p=>p.at===at&&p.k==='before'),a=L.filter(p=>p.at===at&&p.k==='after');if(!b.length||!a.length)return;[...b,...a].forEach(p=>used.add(p.id));
+  h+=`<div class="rp-ph"><div><img src="${phSrc(b[b.length-1])}">${cap(b[b.length-1])}</div><div><img src="${phSrc(a[a.length-1])}">${cap(a[a.length-1])}</div></div>`});
+ const R0=L.filter(p=>!used.has(p.id));for(let i=0;i<R0.length;i+=2)h+=`<div class="rp-ph">${R0.slice(i,i+2).map(p=>`<div><img src="${phSrc(p)}">${cap(p)}</div>`).join('')}</div>`;
+ return h}
+async function phBytes(p){try{const u=phSrc(p);if(!u)return null;const b=await (await fetch(u)).arrayBuffer();return new Uint8Array(b)}catch(e){return null}}
+
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
 const RPS={p1:'근태·태도',p2:'사규 준수',p3:'자기계발',p4:'조직 기여',q1:'사업 발굴',q2:'영업 참여'};
@@ -1110,8 +1161,8 @@ function rpUI(){document.querySelectorAll('#rpK button').forEach(b=>b.classList.
  $('rpInfo').innerHTML=(RP.k==='site'?`${n}곳 · 한 현장이 A4 세로 1장씩 나옵니다.`:`${n}곳을 묶어 종합 보고서를 만듭니다.`)+'<br>'+(RP.v==='pub'?'<b>공개용</b>: 점검 개요·개선 필요 사항·이전 지적 이행·후속 조치·종합 의견만 (점수 상세·면담·개별평가 제외)':'<b>내부용</b>: 팀평가 점수표·면담 요약·개별평가까지 모두 포함 — 점검자 외 배포 금지')+'<br>인쇄 창에서 <b>PDF로 저장</b>을 고르면 파일로 저장됩니다.'}
 $('rpK').onclick=e=>{const b=e.target.closest('button');if(b){RP.k=b.dataset.v;rpUI()}};$('rpV').onclick=e=>{const b=e.target.closest('button');if(b){RP.v=b.dataset.v;rpUI()}};$('rpS').onchange=rpUI;
 $('rpX').onclick=$('rpNo').onclick=()=>$('rp').classList.remove('on');$('bRp').onclick=()=>rpOpen('site');
-$('rpGo').onclick=()=>{const L=rpTargets();if(!L.length)return toast('출력할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub';
- $('rpt').innerHTML=RP.k==='site'?L.map(r=>rpSite(r,pub)).join(''):rpSum(L,pub);$('rp').classList.remove('on');if(RP.k==='site')rpFit();
+$('rpGo').onclick=async()=>{const L=rpTargets();await phLoad(Object.entries(PH).filter(([i,p])=>L.some(r=>r.id===p.site)).map(([i,p])=>({...p,id:i})));if(!L.length)return toast('출력할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub';
+ $('rpt').innerHTML=RP.k==='site'?L.map(r=>rpSite(r,pub)).join(''):rpSum(L,pub);$('rp').classList.remove('on');if(RP.k==='site'){await Promise.all([...$('rpt').querySelectorAll('img')].map(i=>i.complete?1:new Promise(ok=>{i.onload=i.onerror=ok;setTimeout(ok,8000)})));rpFit()}
  $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});
  setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},200)};
 function rpReset(){document.documentElement.classList.remove('rpt');spo($('po').value)}
@@ -1184,6 +1235,7 @@ async function hwpxBlob(D){if(typeof JSZip==='undefined')throw new Error('JSZip 
  return z.generateAsync({type:'blob',mimeType:'application/hwp+zip',compression:'DEFLATE',compressionOptions:{level:6}})}
 async function hwpxSave(D,fname){const blob=await hwpxBlob(D);await saveFile(fname.replace(/[\\/:*?"<>|]/g,'_'),blob);return blob}
 
+let PB={};
 const hwS=v=>!v||v.s==null||v.s===''?'확인 필요':v.s==='na'?'해당없음':v.s+'점 '+(SGR[v.s]||'');
 const hwD=s=>pDate(s)?md(s)+'('+wd(s)+')':'확인 필요';
 function hwSite(D,r,pub,first){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.team||{};const A=Object.values(AC).filter(a=>a.site===r.id);const IVn=(IV[r.id]?.notes||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
@@ -1196,6 +1248,7 @@ function hwSite(D,r,pub,first){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.te
  else{hwpxH2(D,(n++)+'. 개선 필요 사항');if(weak.length)hwpxTable(D,[['부문','항목','확인 내용'],...weak.map(([g,l,v])=>[g,l,v.m||''])],{head:1,w:[12,44,44]});else hwpxP(D,'미흡(2점 이하) 판정 항목 없음')}
  const pv=e.prev||[];hwpxH2(D,(n++)+'. 이전 지적사항 시정조치 이행');if(pv.length){hwpxTable(D,[['지적사항','이행 상태','개선 효과·확인 내용'],...pv.map(p=>[(p.t||'')+(p.from?' ('+rdName(p.from)+')':''),p.st||'확인 필요',p.m||''])],{head:1,w:[42,14,44]});hwpxP(D,`이행 완료 ${pv.filter(p=>p.st==='이행 완료').length} / ${pv.length}건`,{c:11})}else hwpxP(D,'등록된 이전 지적사항 없음');
  hwpxH2(D,(n++)+'. 후속 조치');if(A.length)hwpxTable(D,[['항목','조치 내용','기한','상태'],...A.map(a=>[[a.area,a.item].filter(Boolean).join(' · ')+(a.issue?'\n'+a.issue:''),a.action||'',a.due?hwD(a.due):'확인 필요',a.st||''])],{head:1,w:[36,36,14,14]});else hwpxP(D,'등록된 후속 조치 없음');
+ {const PL=phOf(r.id).filter(p=>(!pub||p.pub)&&PB[p.id]);if(PL.length){hwpxH2(D,(n++)+'. 현장 사진'+(pub?' (공개 선택분)':''));PL.forEach(p=>{hwpxImg(D,PB[p.id],'jpg',p.w||4,p.h||3,80);hwpxP(D,phLabel(p)+(p.cap?' — '+p.cap:'')+' · '+phD(p.ts),{c:11,pp:21})})}}
  if(!pub){hwpxH2(D,(n++)+'. 면담 요약');if(IVn.length)IVn.forEach(v=>hwpxP(D,`${v.who||'팀 전체'} (${(v.ts||'').slice(5,10).replace('-','/')}) ${(v.sum||v.text||'').replace(/\s+/g,' ').trim()}`));else hwpxP(D,'면담 기록 없음');
   const P=(e.ppl||[]).filter(p=>Object.keys(p.it||{}).length),C=EVI.ppl.concat(EVI.lead);hwpxH2(D,(n++)+'. 개별평가');
   if(P.length)hwpxTable(D,[['이름',...C.map(([k])=>RPS[k]),'평균'],...P.map(p=>[p.n,...C.map(([k])=>{const v=p.it[k];return !v?'-':v.s==='na'?'해당없음':String(v.s)}),f1(scoreAvg(p.it))])],{head:1});else hwpxP(D,'개별평가 기록 없음')}
@@ -1219,7 +1272,7 @@ function hwSum(D,L,pub){const S=L.map(r=>({r,s:evStat(r.id),a:Object.values(AC).
  hwpxP(D,`출력 ${ymd(today())} · 앱에 입력된 점검표 기준. 우수팀 후보·평균은 종합 검토 전 참고용이며 확정 결과가 아닙니다. 값이 없으면 '확인 필요' 또는 '-'로 표시했습니다.`,{c:11})}
 $('rpHw').onclick=async()=>{const L=rpTargets();if(!L.length)return toast('저장할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub',b=$('rpHw');
  if(typeof JSZip==='undefined')return toast('한글 저장 도구(JSZip)를 불러오지 못했습니다. 인터넷 연결 후 새로고침하세요');b.disabled=true;
- try{const nm=RP.k==='site'?(L.length===1?'점검결과표_'+L[0].tm:'점검결과표_'+L.length+'곳'):'점검종합보고서';const D=hwpxNew(nm);
+ try{if(RP.k==='site'){PB={};for(const [i,p] of Object.entries(PH)){if(!L.some(r=>r.id===p.site)||(pub&&!p.pub))continue;const by=await phBytes({...p,id:i});if(by)PB[i]=by}}const nm=RP.k==='site'?(L.length===1?'점검결과표_'+L[0].tm:'점검결과표_'+L.length+'곳'):'점검종합보고서';const D=hwpxNew(nm);
   if(RP.k==='site')L.forEach((r,i)=>hwSite(D,r,pub,i===0));else hwSum(D,L,pub);
   await hwpxSave(D,`${nm}_${rdName(RD)}_${pub?'공개용':'내부용'}_${ymd(today())}.hwpx`);$('rp').classList.remove('on');toast('한글(HWPX) 파일을 저장했습니다')}
  catch(e){toast('한글 파일을 만들지 못했습니다: '+(e&&e.message||e))}finally{b.disabled=false}};
@@ -1234,7 +1287,8 @@ function rpSite(r,pub){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.team||{};c
  else h+=`<h2>1. 개선 필요 사항</h2>`+(weak.length?`<table><tr><th class="c">부문</th><th>항목</th><th>확인 내용</th></tr>${weak.map(([g,l,v])=>`<tr><td class="c">${g}</td><td>${esc(l)}</td><td><span class="cl">${esc(v.m||'')}</span></td></tr>`).join('')}</table>`:'<p>미흡(2점 이하) 판정 항목 없음</p>');
  const pv=e.prev||[];h+=`<h2>2. 이전 지적사항 시정조치 이행</h2>`+(pv.length?`<table><tr><th>지적사항</th><th class="c">이행 상태</th><th>개선 효과·확인 내용</th></tr>${pv.map(p=>`<tr><td><span class="cl">${esc(p.t||'')}</span>${p.from?`<div class="rp-g">${esc(rdName(p.from))}</div>`:''}</td><td class="c" style="white-space:nowrap">${p.st==='이행 완료'?esc(p.st):`<span class="rp-w">${esc(p.st||'확인 필요')}</span>`}</td><td><span class="cl">${esc(p.m||'')}</span></td></tr>`).join('')}</table><p class="rp-g" style="margin:0">이행 완료 ${pv.filter(p=>p.st==='이행 완료').length} / ${pv.length}건</p>`:'<p>등록된 이전 지적사항 없음</p>');
  h+=`<h2>3. 후속 조치</h2>`+(A.length?`<table><tr><th>항목</th><th>조치 내용</th><th class="c">기한</th><th class="c">상태</th></tr>${A.map(a=>`<tr><td>${esc([a.area,a.item].filter(Boolean).join(' · '))}${a.issue?`<div class="rp-g cl">${esc(a.issue)}</div>`:''}</td><td><span class="cl">${esc(a.action||'')}</span></td><td class="c nw">${a.due?dt(a.due):'확인 필요'}</td><td class="c nw">${esc(a.st||'')}</td></tr>`).join('')}</table>`:'<p>등록된 후속 조치 없음</p>');
- let n=4;if(!pub){h+=`<h2>${n++}. 면담 요약</h2>`+(IVn.length?`<div class="ivn">면담 ${IVn.length}건 — 내용은 앱에서 확인</div><div class="ivs">`+IVn.map(v=>{const t=(v.sum||v.text||'').replace(/\s+/g,' ').trim();return `<div class="cl" style="margin:1px 0 3px"><b>${esc(v.who||'팀 전체')}</b> <span class="rp-g">${esc((v.ts||'').slice(5,10).replace('-','/'))}</span> ${esc(t.length>260?t.slice(0,260)+'… (전문은 앱)':t)}</div>`}).join('')+'</div>':'<p>면담 기록 없음</p>');
+ let n=4;const ph=rpPhotos(r,pub);if(ph)h+=`<h2>${n++}. 현장 사진${pub?' (공개 선택분)':''}</h2>${ph}`;
+ if(!pub){h+=`<h2>${n++}. 면담 요약</h2>`+(IVn.length?`<div class="ivn">면담 ${IVn.length}건 — 내용은 앱에서 확인</div><div class="ivs">`+IVn.map(v=>{const t=(v.sum||v.text||'').replace(/\s+/g,' ').trim();return `<div class="cl" style="margin:1px 0 3px"><b>${esc(v.who||'팀 전체')}</b> <span class="rp-g">${esc((v.ts||'').slice(5,10).replace('-','/'))}</span> ${esc(t.length>260?t.slice(0,260)+'… (전문은 앱)':t)}</div>`}).join('')+'</div>':'<p>면담 기록 없음</p>');
   const P=(e.ppl||[]).filter(p=>Object.keys(p.it||{}).length);const C=EVI.ppl.concat(EVI.lead);
   h+=`<h2>${n++}. 개별평가</h2>`+(P.length?`<table><tr><th>이름</th>${C.map(([k])=>`<th class="c">${RPS[k]}</th>`).join('')}<th class="c">평균</th></tr>${P.map(p=>`<tr><td style="white-space:nowrap"><b>${esc(p.n)}</b></td>${C.map(([k])=>{const v=p.it[k];return `<td class="c">${!v?'-':v.s==='na'?'해당없음':v.s<=2?`<span class="rp-w">${v.s}</span>`:v.s}</td>`}).join('')}<td class="c"><b>${f1(scoreAvg(p.it))}</b></td></tr>`).join('')}</table>`:'<p>개별평가 기록 없음</p>')}
  h+=`<div style="break-inside:avoid"><h2>${n}. 종합 의견</h2><div class="rp-op">${esc(e.res||'')}</div>`;
@@ -1265,7 +1319,8 @@ function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries
  <div style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap">${AST.map(s=>`<span class="st ${s==='조치 필요'?'s-지연':s==='조치 중'?'s-연기':s==='조치 완료'?'s-예정':'s-완료'}">${s} ${A.filter(([i,a])=>a.st===s).length}</span>`).join('')}</div>`+
  (A.map(([id,a])=>`<div class="ip act" data-a="${id}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(a.tm)}</b><span class="mini">${a.from?'이월('+esc(rdName(a.from))+') · ':''}${esc(a.area||'')}</span></div><div class="mini">${esc(a.item||'')}${a.issue?' — '+esc(a.issue):''}</div>
  <div class="g3" style="grid-template-columns:1fr 1fr;margin-top:4px"><select class="inp" data-af="st">${AST.map(s=>`<option ${a.st===s?'selected':''}>${s}</option>`).join('')}</select><input class="inp" type="date" data-af="due" value="${esc(a.due||'')}" title="조치 기한"></div>
- <input class="inp" data-af="action" placeholder="조치 내용" value="${esc(a.action||'')}" style="margin-top:4px">${ADM?`<button class="btn rd" data-adel style="margin-top:4px">${ic('trash')}</button>`:''}</div>`).join('')||'<p class="mini">등록된 후속 조치가 없습니다. 점검표에서 2점 이하 항목의 "후속 조치 등록"으로 넣습니다.</p>')}
+ <input class="inp" data-af="action" placeholder="조치 내용" value="${esc(a.action||'')}" style="margin-top:4px"><div class="phpair"><div><span class="mini">조치 전</span>${phStrip(a.site,'act:'+id,'before')}</div><div><span class="mini">조치 후</span>${phStrip(a.site,'act:'+id,'after')}</div></div>${ADM?`<button class="btn rd" data-adel style="margin-top:4px">${ic('trash')}</button>`:''}</div>`).join('')||'<p class="mini">등록된 후속 조치가 없습니다. 점검표에서 2점 이하 항목의 "후속 조치 등록"으로 넣습니다.</p>')}
+{const _ra=rAct;rAct=function(){_ra();phFill($('p-act'))}}
 $('p-act').addEventListener('change',async e=>{const c=e.target.closest('.act'),f=e.target.dataset.af;if(!c||!f)return;const a={...AC[c.dataset.a],[f]:e.target.value};delete a.upd;if(await putX('acts',c.dataset.a,a))toast('저장했습니다')});
 $('p-act').addEventListener('click',async e=>{const c=e.target.closest('.act');if(c&&e.target.closest('[data-adel]')&&await ask('이 후속 조치를 삭제할까요?'))delX('acts',c.dataset.a)});
 
