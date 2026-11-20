@@ -470,28 +470,43 @@ const STC={'예정':'#0284c7','완료':'#059669','연기':'#d97706','취소':'#6
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2800)}
 function ask(t){return new Promise(res=>{$('cfT').textContent=t;$('cf').classList.add('on');$('cfY').onclick=()=>{$('cf').classList.remove('on');res(true)};$('cfN').onclick=()=>{$('cf').classList.remove('on');res(false)}})}
 const num=v=>{if(v===''||v==null)return null;const n=+v;return isFinite(n)?n:null};
-function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'').trim(),pd:r.pd||'',ins:[0,1,2].map(i=>String((r.ins||[])[i]||'').trim()),st:['예정','완료','연기','취소'].includes(r.st)?r.st:'예정',ad:r.ad||'',lead:String(r.lead||'').trim(),solo:String(r.solo||'').trim(),tl:String(r.tl||'').trim(),mem:(r.mem||[]).map(x=>String(x).trim()).filter(Boolean),note:String(r.note||'').trim(),addr:String(r.addr||'').trim(),lat:num(r.lat),lng:num(r.lng),src:r.src||'',id:r.id||''}}
+function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'').trim(),pd:r.pd||'',ins:[0,1,2].map(i=>String((r.ins||[])[i]||'').trim()),st:['예정','완료','연기','취소'].includes(r.st)?r.st:'예정',ad:r.ad||'',lead:String(r.lead||'').trim(),solo:String(r.solo||'').trim(),tl:String(r.tl||'').trim(),mem:(r.mem||[]).map(x=>String(x).trim()).filter(Boolean),note:String(r.note||'').trim(),addr:String(r.addr||'').trim(),lat:num(r.lat),lng:num(r.lng),src:r.src||'',rd:r.rd||'2026H2',k:r.k||'',id:r.id||''}}
+
+/* ── 회차(점검 차수): 모든 회차 자료는 ALL, 지금 보는 회차만 rows ── */
+const RD0={id:'2026H2',name:'2026 하반기'};
+let ALL=[],RD=null,RNDS=[RD0];
+const rdName=id=>(RNDS.find(x=>x.id===id)||{name:id}).name;
+const sid=(rd,no)=>(rd==='2026H2'?'':rd+'-')+'s'+String(no).padStart(3,'0');
+function rndSort(){RNDS.sort((a,b)=>a.id<b.id?-1:1)}
+function derive(){if(!RD||!RNDS.find(x=>x.id===RD)){let v=null;try{v=localStorage.getItem(LS+'-rd')}catch(e){}RD=RNDS.find(x=>x.id===v)?v:RNDS[RNDS.length-1].id}rows=ALL.filter(r=>r.rd===RD);rdUI()}
+function rdUI(){const o=RNDS.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}${x.st==='마감'?' (마감)':''}</option>`).join('')+(ADM?'<option value="__new">➕ 새 회차 만들기</option>':'');['rdSel','rdSel2'].forEach(k=>{const e=$(k);if(e){e.innerHTML=o;e.value=RD}});$('ptitle').textContent='스마트 물길점검 · '+rdName(RD)+' 현장점검 및 성과평가 일정'}
 
 /* ── 저장: 공유 DB(Claude 페이지) 또는 이 브라우저(깃허브·파일) ── */
 let rows=[],DB=null,RO=false,mode='local';
 function setStatus(t,c){$('hStat').textContent=t;$('hDot').style.background=c;$('hDot').title='저장: '+t}
 function lsLoad(){try{const v=localStorage.getItem(LS);if(v)return JSON.parse(v)}catch(e){}return null}
-function lsSave(){try{localStorage.setItem(LS,JSON.stringify(rows))}catch(e){}}
-function withIds(list){const u={};return list.map(r=>{r=norm(r);let id=r.id||('s'+String(r.no).padStart(3,'0'));while(u[id])id+='x';u[id]=1;r.id=id;return r})}
-function startLocal(){mode='local';xLoad();rows=withIds(lsLoad()||SEED);setStatus('이 브라우저','#7dd3fc');render(true)}
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify(ALL));localStorage.setItem(LS+'-rounds',JSON.stringify(RNDS))}catch(e){}}
+function withIds(list){const u={};return list.map(r=>{r=norm(r);let id=r.id||sid(r.rd,r.no);while(u[id])id+='x';u[id]=1;r.id=id;if(!r.k)r.k=r.rd==='2026H2'?id:id.replace(/^[^-]+-/,'');return r})}
+function fillFromSeed(){if(!SEED.length)return;const S={};SEED.forEach(r=>S[r.tm]=r);let n=0;ALL.forEach(r=>{const o=S[r.tm];if(!o)return;if(!hasPin(r)&&o.lat!=null){r.lat=o.lat;r.lng=o.lng;r.src=o.src||'';n++}if(!r.addr&&o.addr)r.addr=o.addr});if(n){lsSave();setTimeout(()=>toast('저장돼 있던 자료에 지도 위치 '+n+'곳을 채웠습니다'),800)}}
+function startLocal(){mode='local';xLoad();ALL=withIds(lsLoad()||SEED);fillFromSeed();try{const v=JSON.parse(localStorage.getItem(LS+'-rounds')||'null');if(Array.isArray(v)&&v.length)RNDS=v}catch(e){}rndSort();derive();setStatus('이 브라우저','#7dd3fc');render(true)}
 async function startDb(db){DB=db;mode='db';EV={};IV={};AC={};CT={};subX();setStatus('공유 연결 중…','#fcd34d');let got=false;const tm=setTimeout(()=>{if(!got)setStatus('공유 응답 지연','#fcd34d')},10000);
  try{const u=await claude.use('user');if(u&&u.can){const w=await u.can('data.write');if(w===false)RO=true}}catch(e){}
+ DB.collection('rounds').onSnapshot(s=>{const L=s.docs.map(d=>({id:d.id,...d.data()}));RNDS=L.find(x=>x.id==='2026H2')?L:[RD0,...L];rndSort();derive();render()},e=>{});
  let first=true;
- DB.collection('sites').onSnapshot(s=>{got=true;clearTimeout(tm);rows=withIds(s.docs.map(d=>({...d.data(),id:d.id})));setStatus(s.metadata.fromCache?'공유(확인 중)':RO?'공유 · 보기 전용':'공유 · 실시간',s.metadata.fromCache?'#fcd34d':'#34d399');render(first);first=false},e=>{clearTimeout(tm);setStatus('공유 연결 끊김','#f87171')})}
-async function putRow(r){r=norm(r);if(!r.id)r.id='s'+String(r.no).padStart(3,'0')+'-'+Date.now().toString(36);
+ DB.collection('sites').onSnapshot(s=>{got=true;clearTimeout(tm);ALL=withIds(s.docs.map(d=>({...d.data(),id:d.id})));derive();setStatus(s.metadata.fromCache?'공유(확인 중)':RO?'공유 · 보기 전용':'공유 · 실시간',s.metadata.fromCache?'#fcd34d':'#34d399');render(first);first=false},e=>{clearTimeout(tm);setStatus('공유 연결 끊김','#f87171')})}
+async function putRow(r,quiet){r=norm(r);if(!r.rd)r.rd=RD;if(!r.id)r.id=sid(r.rd,r.no)+'-'+Date.now().toString(36);if(!r.k)r.k=r.id.replace(/^[^-]+-/,'');
  if(mode==='db'){if(RO){toast('보기 권한이라 저장할 수 없습니다');return false}const {id,...b}=r;b.upd=new Date().toISOString();try{await DB.collection('sites').doc(id).set(b)}catch(e){if(e&&e.code==='invalid_argument'){RO=true;toast('저장 권한이 없습니다')}else toast('저장 실패: '+(e&&e.code||''));return false}return true}
- const i=rows.findIndex(x=>x.id===r.id);if(i>=0)rows[i]=r;else rows.push(r);lsSave();render();return true}
-async function delRow(id){if(mode==='db'){if(RO)return toast('보기 권한이라 삭제할 수 없습니다');try{await DB.collection('sites').doc(id).delete()}catch(e){toast('삭제 실패')}return}rows=rows.filter(x=>x.id!==id);lsSave();render()}
-async function replaceAll(list,keepPins){list=withIds(list);
- if(keepPins){const old={};rows.forEach(r=>old[r.tm]=r);list.forEach(r=>{const o=old[r.tm];if(o){if(!hasPin(r)&&hasPin(o)){r.lat=o.lat;r.lng=o.lng;r.src=o.src}if(!r.addr&&o.addr)r.addr=o.addr}})}
+ const i=ALL.findIndex(x=>x.id===r.id);if(i>=0)ALL[i]=r;else ALL.push(r);lsSave();if(!quiet){derive();render()}return true}
+async function delRow(id){if(mode==='db'){if(RO)return toast('보기 권한이라 삭제할 수 없습니다');try{await DB.collection('sites').doc(id).delete()}catch(e){toast('삭제 실패')}return}ALL=ALL.filter(x=>x.id!==id);lsSave();derive();render()}
+/* 엑셀·백업 불러오기: 지금 회차만 바꿈. 같은 팀명은 기존 id·위치·주소·이력 연결(k)을 그대로 이어감 */
+async function replaceAll(list,keepPins){
+ const cur={};rows.forEach(r=>cur[r.tm]=r);const prev={};[...ALL].filter(r=>r.rd!==RD).sort((a,b)=>a.rd<b.rd?-1:1).forEach(r=>prev[r.tm]=r);
+ list=list.map(x=>{const r=norm({...x,rd:RD,id:''});const c=cur[r.tm],p=prev[r.tm];if(c){r.id=c.id;r.k=c.k}else if(p){r.k=p.k}
+  const o=c||p;if(o&&(keepPins||!hasPin(r))){if(!hasPin(r)&&hasPin(o)){r.lat=o.lat;r.lng=o.lng;r.src=o.src}if(!r.addr&&o.addr)r.addr=o.addr}return r});
+ const used=new Set(list.filter(r=>r.id).map(r=>r.id));list.forEach(r=>{if(!r.id){let id=sid(RD,r.no);while(used.has(id))id+='x';used.add(id);r.id=id}if(!r.k)r.k=r.id.replace(/^[^-]+-/,'')});
  if(mode==='db'){if(RO)return toast('보기 권한이라 바꿀 수 없습니다');const keep=new Set(list.map(r=>r.id));
-  try{for(const r of rows)if(!keep.has(r.id))await DB.collection('sites').doc(r.id).delete();let n=0;for(const r of list){const {id,...b}=r;b.upd=new Date().toISOString();await DB.collection('sites').doc(id).set(b);setStatus('저장 중 '+(++n)+'/'+list.length,'#fcd34d')}toast(list.length+'개 현장을 저장했습니다')}catch(e){toast('저장 중 오류: '+(e&&e.code||''))}return}
- rows=list;lsSave();render(true);toast(list.length+'개 현장을 불러왔습니다')}
+  try{for(const r of rows)if(!keep.has(r.id))await DB.collection('sites').doc(r.id).delete();let n=0;for(const r of list){const {id,...b}=r;b.upd=new Date().toISOString();await DB.collection('sites').doc(id).set(b);setStatus('저장 중 '+(++n)+'/'+list.length,'#fcd34d')}toast(rdName(RD)+' '+list.length+'개 현장을 저장했습니다')}catch(e){toast('저장 중 오류: '+(e&&e.code||''))}return}
+ ALL=ALL.filter(r=>r.rd!==RD).concat(list);lsSave();derive();render(true);toast(rdName(RD)+' '+list.length+'개 현장을 불러왔습니다')}
 
 /* ── 필터 ── */
 let F={rg:'',st:'',in:'',q:'',day:''},tab='lst',sortK='pd',sortD=1,calM=null,selId=null;
@@ -617,7 +632,7 @@ function rPin(){const no=rows.filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no),yes=r
 
 /* ── 탭 ── */
 function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin','act','sum'].forEach(x=>$('p-'+x).hidden=x!==t);try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
-$('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)setTab(t)};
+$('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t){setTab(t);if(typeof isMob==='function'&&isMob()&&SH==='peek')setSheet('half')}};
 try{const t=localStorage.getItem(LS+'-tab');if(t)setTab(t)}catch(e){}
 
 /* ── 수정 창 ── */
