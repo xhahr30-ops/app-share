@@ -221,6 +221,11 @@ html.mob #side.card-on .kpis,html.mob #side.card-on #panel{display:none}
 .sc-btn button[data-a=ev] .gi.cc,.ppt .bt button.adm .gi.cc{color:#fff!important}
 html.mob .tbar label.mini{display:none}
 html.mob .nobase.hide{display:none}
+.nvb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.nvb a,.nvb button{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line2);background:var(--card);border-radius:14px;padding:13px 8px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;cursor:pointer}
+.nvb i.dt{width:12px;height:12px;border-radius:50%;display:inline-block}
+.nvr{display:flex;flex-direction:column;gap:2px;margin-top:8px;max-height:180px;overflow:auto}
+.nvr button{text-align:left;border:0;background:none;padding:8px 6px;border-radius:8px;font-size:13.5px;cursor:pointer;color:var(--ink)}.nvr button:hover{background:var(--ind1)}
 .sc-go{display:flex;gap:10px;margin-top:auto;padding-top:6px}
 .sc-go a{flex:1;text-align:center;background:#2563eb;color:#fff;border-radius:999px;padding:13px 0;font-size:17px;font-weight:800;text-decoration:none}
 html.dark .msrch{background:#162033;color:#e2e8f0}html.dark .msrch input{color:#e2e8f0}html.dark.mob .fab button{background:#162033!important}
@@ -315,6 +320,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <span class="sep"></span>
   <button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button>
   <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
+  <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
   <button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 위치 찾기</button>
   <span class="sep"></span>
   <label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label>
@@ -343,7 +349,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   </div>
   <div id="mapWrap">
    <div id="map"></div>
-   <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button></div><button class="mbig" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i></button></div>
+   <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button><button id="mNav" type="button" aria-label="주소찾기·길안내"><i class="ii" data-i="compass"></i></button></div><button class="mbig" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i></button></div>
    <div class="daybar np" id="daybar"></div>
    <div class="fab np">
     <button class="i" id="fFit" title="모든 현장 보기"><i class="ii" data-i="full"></i></button>
@@ -413,6 +419,13 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 상반기 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button></div>
  <div id="evBody"></div>
  <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+</div></div>
+<div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
+ <div style="display:flex;gap:6px"><input id="nvQ" class="inp" placeholder="주소나 장소 이름 (예: 포항시 북구 청하면 화두길 152)" enterkeyhint="go"><button class="btn" id="nvCp" type="button"><i class="ii" data-i="doc"></i> 복사</button></div>
+ <div class="nvr" id="nvR"></div>
+ <div class="nvb" id="nvB"></div>
+ <p class="mini" style="margin:8px 0 0">고른 앱이 이 주소를 검색합니다. 검색 결과에서 목적지를 누르고 길안내를 시작하세요. 티맵은 휴대폰 브라우저에서 열 때만 앱으로 넘어갑니다. 안 열리면 복사해서 붙여 넣으세요.</p>
 </div></div>
 <div class="modal np" id="cf"><div class="mbox" style="max-width:360px;margin-top:60px"><p id="cfT" style="font-weight:700"></p><div style="display:flex;justify-content:flex-end;gap:6px"><button class="btn" id="cfN">취소</button><button class="btn pri" id="cfY">확인</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -535,7 +548,7 @@ function popHtml(r){const s=stOf(r),d=ddays(r.pd);return `<div class="ppt"><b>${
  <div class="r"><span>기술</span>${esc(r.ins[0])}</div><div class="r"><span>영업</span>${esc(r.ins[1])}</div><div class="r"><span>공통</span>${esc(r.ins[2])}</div>
  <div class="r"><span>수검</span>${cnt(r)}명</div>${(CT[r.id]?.p||[]).length?`<div class="r"><span>연락</span><div>${CT[r.id].p.map(telA).join('<br>')}</div></div>`:`<div class="r"><span>연락</span>${esc([r.lead,r.solo,r.tl].filter(real).join(', '))||'-'} ${Object.keys(CT).length?'<b class="warn">연락처 확인 필요</b>':''}</div>`}
  <div class="r"><span>주소</span>${r.addr?esc(r.addr):'<b class="warn">확인 필요</b>'}</div>${r.src?`<div class="r"><span>위치</span><span class="mini">${esc(r.src)}</span></div>`:''}
- <div class="bt"><button class="adm" onclick="openEv('${r.id}')" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button>${r.addr?`<a href="https://map.kakao.com/?q=${encodeURIComponent(r.addr)}" target="_blank" rel="noopener">${ic('map')} 카카오맵</a>`:''}</div></div>`}
+ <div class="bt"><button class="adm" onclick="openEv('${r.id}')" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button><button onclick="openNav(rows.find(x=>x.id==='${r.id}').addr||'${esc(r.rg+' '+r.tm)}')">${ic('compass')} 길안내</button></div></div>`}
 async function donePin(id){const r=rows.find(x=>x.id===id);if(!r)return;if(await putRow({...r,st:'완료',ad:r.ad||ymd(today())})){map&&map.closePopup();toast(r.tm+' 완료 처리')}}
 async function setPin(id,ll,src){const r=rows.find(x=>x.id===id);if(!r)return;const ok=await putRow({...r,lat:+ll.lat.toFixed(6),lng:+ll.lng.toFixed(6),src});if(ok){toast(r.tm+' 위치 저장');if(pickId===id)nextPick()}}
 function startPick(ids){ids=ids.filter(id=>rows.find(r=>r.id===id));if(!ids.length)return toast('위치를 찍을 현장이 없습니다');pickQ=ids.slice(1);pickId=ids[0];map&&map.closePopup();showPick()}
@@ -664,7 +677,7 @@ $('iSrch').onclick=()=>{$('tbar').classList.add('open');hh();$('fQ').focus()};
 $('iEx').onclick=e=>{e.stopPropagation();$('tbar').classList.add('open');hh();$('exMenu').classList.add('on')};
 function hh(){document.documentElement.style.setProperty('--hh',(document.querySelector('header').offsetHeight+22)+'px');map&&map.invalidateSize()}
 addEventListener('resize',hh);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('md').classList.remove('on');endPick()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('md').classList.remove('on');$('nav').classList.remove('on');endPick()}});
 
 /* ════════ 📋 점검표 · 상반기 지적 · 개별평가 · 면담 · 후속 조치 (2026 하반기 현장점검 공문 기준) ════════ */
 const EVI={team:[
@@ -856,15 +869,36 @@ function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd)
  <div class="sc-row">${ic('users')}<div>기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}<div class="mini">수검 ${cnt(r)}명</div></div></div>
  ${c.length?`<div class="sc-row">${ic('phone')}<div>${c.map(telA).join('<br>')}</div></div>`:''}
  <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 위치 고치기</button></div>
- <div class="sc-go"><a href="${kkLink(r,'from')}" target="_blank" rel="noopener">출발</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">도착</a></div>
- <p class="mini" style="margin:0">출발·도착은 카카오맵에서 열립니다${hasPin(r)&&/^대략/.test(r.src||'')?' (대략 위치라 주소 검색으로 엽니다)':''}.</p>`;
+ <div class="sc-go"><a href="#" data-a="nav">길안내</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">카카오맵 도착</a></div>
+ <p class="mini" style="margin:0">길안내는 카카오맵·티맵 중에서 골라 이 현장 주소로 엽니다.</p>`;
  $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek')setSheet('half');drawPins();
  if(map&&hasPin(r)){const z=Math.max(map.getZoom(),11);map.setView([r.lat,r.lng],z);setTimeout(()=>{const p=map.latLngToContainerPoint([r.lat,r.lng]);map.panBy([0,shH(SH)/2-40],{animate:true})},260)}}
 function hideCard(){$('siteCard').hidden=true;$('side').classList.remove('card-on');selId=null;drawPins()}
 $('siteCard').addEventListener('click',async e=>{const r=rows.find(x=>x.id===selId);if(e.target.closest('#scX'))return hideCard();
  const cp=e.target.closest('[data-cp]');if(cp){try{await navigator.clipboard.writeText(cp.dataset.cp);toast('주소를 복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 주소를 길게 눌러 복사하세요')}return}
  const b=e.target.closest('[data-a]');if(!b||!r)return;const a=b.dataset.a;
- if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}});
+ if(a==='nav'){e.preventDefault();openNav(r.addr||(r.rg+' '+r.tm));return}if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}});
+
+
+/* ── 🧭 주소찾기 · 길안내 (주소를 내비 앱에 넘김 — 좌표 필요 없음) ── */
+const NAVS=[['카카오맵',q=>`https://map.kakao.com/link/search/${encodeURIComponent(q)}`,'#f7d400'],['티맵',q=>`tmap://search?name=${encodeURIComponent(q)}`,'#2563eb']];
+const navClean=a=>String(a||'').replace(/\s*\(.*?\)\s*/g,' ').split(',')[0].replace(/\s+\d+(층|호).*$/,'').replace(/\s+/g,' ').trim();
+function navDraw(){const q=$('nvQ').value.trim();const qq=navClean(q)||q;
+ $('nvB').innerHTML=q?NAVS.map(([n,f,c])=>`<a href="${esc(f(qq))}" target="_blank" rel="noopener"><i class="dt" style="background:${c}"></i>${n}</a>`).join('')+`<button type="button" id="nvCp2" style="grid-column:1/-1">${ic('doc')} 주소 복사</button>`:'<p class="mini" style="grid-column:1/-1">주소를 넣거나 아래 현장을 고르세요.</p>';
+ const k=q.replace(/\s/g,'');const M=k?rows.filter(r=>(r.tm+r.rg+(r.addr||'')).replace(/\s/g,'').includes(k)).slice(0,8):[];
+ $('nvR').innerHTML=M.map(r=>`<button type="button" data-nv="${esc(r.id)}">${ic('pin')} <b>${esc(r.tm)}</b> <span class="mini">${esc(r.addr||'주소 확인 필요')}</span></button>`).join('')}
+function openNav(q,title){$('nvQ').value=q||'';navDraw();$('nav').classList.add('on');$('tbar').classList.remove('open');if(!q)setTimeout(()=>$('nvQ').focus(),50)}
+$('nvQ').oninput=navDraw;
+$('nvQ').addEventListener('keydown',e=>{if(e.key==='Enter'){const a=$('nvB').querySelector('a');a&&a.focus()}});
+$('nvR').onclick=e=>{const b=e.target.closest('[data-nv]');if(!b)return;const r=rows.find(x=>x.id===b.dataset.nv);if(r){$('nvQ').value=r.addr||(r.rg+' '+r.tm);navDraw()}};
+const cpTxt=async t=>{try{await navigator.clipboard.writeText(t);toast('주소를 복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 주소를 길게 눌러 복사하세요')}};
+$('nvCp').onclick=()=>cpTxt($('nvQ').value.trim());
+$('nvB').addEventListener('click',e=>{if(e.target.closest('#nvCp2'))cpTxt(navClean($('nvQ').value)||$('nvQ').value)});
+$('nvX').onclick=()=>$('nav').classList.remove('on');
+$('nav').onclick=e=>{if(e.target===$('nav'))$('nav').classList.remove('on')};
+$('bNav').onclick=()=>openNav('');
+$('mNav').onclick=()=>openNav($('mQ').value.trim());
+$('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('mQ').value.trim()&&!filt(true).length)openNav($('mQ').value.trim())});
 
 /* ── 시작 ── */
 initMap();fma();hh();startLocal();mobApply();
