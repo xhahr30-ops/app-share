@@ -1000,7 +1000,7 @@ $('rpGo').onclick=()=>{const L=rpTargets();if(!L.length)return toast('출력할 
  setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},200)};
 function rpReset(){document.documentElement.classList.remove('rpt');spo($('po').value)}
 function rpFit(){const x=$('rpt');x.style.cssText='display:block;position:absolute;left:-9999px;top:0;width:186mm';const pr=document.createElement('div');pr.style.height='273mm';x.appendChild(pr);const H=pr.offsetHeight-4;pr.remove();
- x.querySelectorAll('.rp-page').forEach(p=>{for(const c of ['t1','t2','t3','t4','t5','t6','t7','t8']){if(p.offsetHeight<=H)break;p.classList.add(c)}});x.style.cssText=''}
+ x.querySelectorAll('.rp-page').forEach(p=>{for(const c of ['t1','t2']){if(p.offsetHeight<=H)break;p.classList.add(c)}});x.style.cssText=''}
 function rpHead(t,sub,pub){return `<div class="rp-h"><div><h1>${t}</h1><div style="font-size:9.5pt;color:#475569">${sub}</div></div><span class="rp-tag ${pub?'':'in'}">${pub?'공개용':'내부용 · 배포 금지'}</span></div>`}
 const rpD=r=>r.st==='완료'&&r.ad?`${dt(r.ad)} (실시)`:dt(r.pd);
 function rpSite(r,pub){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.team||{};const A=Object.values(AC).filter(a=>a.site===r.id);const IVn=(IV[r.id]?.notes||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
