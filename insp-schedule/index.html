@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#3730a3">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="물길점검">
 <title>스마트 물길점검</title>
 <script>(function(){var r=document.documentElement,v=null;try{v=localStorage.getItem("bsst-dark")}catch(e){}if(v!=null?v=="1":matchMedia("(prefers-color-scheme: dark)").matches)r.classList.add("dark");var f=null;try{f=localStorage.getItem("insp-fm")}catch(e){}if(f!=="off")r.classList.add("fm")})()</script>
 <style id="pgs">@page{size:A4 landscape;margin:10mm}</style>
@@ -321,6 +327,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button>
   <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
   <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
+  <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
   <button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 위치 찾기</button>
   <span class="sep"></span>
   <label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label>
@@ -921,6 +928,12 @@ $('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('mQ').value.trim()&
 
 /* ── 시작 ── */
 initMap();fma();hh();startLocal();mobApply();
+(function(){let P=null;const b=$('bInst');const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+ try{if(location.protocol==='https:'&&'serviceWorker' in navigator&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+ addEventListener('beforeinstallprompt',e=>{e.preventDefault();P=e;if(b)b.hidden=false});
+ if(b&&!sa&&/iPhone|iPad/.test(navigator.userAgent)&&!/claude|anthropic/.test(location.hostname))b.hidden=false;
+ if(b)b.onclick=async()=>{$('tbar').classList.remove('open');if(P){P.prompt();const r=await P.userChoice;P=null;b.hidden=true;if(r.outcome==='accepted')toast('홈 화면에 설치했습니다. 이제 아이콘으로 열면 주소창 없이 열립니다')}else toast('사파리 아래쪽 공유(□↑) 단추 → \'홈 화면에 추가\'를 누르세요')};
+ addEventListener('appinstalled',()=>{if(b)b.hidden=true})})();
 (async()=>{let db=null;try{if(window.claude&&claude.use)db=await claude.use('db')}catch(e){}if(db)startDb(db);xInit()})();
 </script>
 </body>
