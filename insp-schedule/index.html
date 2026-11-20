@@ -311,13 +311,20 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .rp-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
 .rp-h h1{font-size:17pt;margin:0;color:#1e1b4b}.rp-h .rp-tag{font-size:9pt;font-weight:800;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
 .rp-h .rp-tag.in{background:#ede9fe;color:#5b21b6;border-color:#8b5cf6}
-.rp-page h2{font-size:11.5pt;margin:10px 0 4px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:6px;break-after:avoid}
+.rp-page h2{font-size:11pt;margin:8px 0 3px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:6px;break-after:avoid}
 .rp-page table{width:100%;border-collapse:collapse;margin:2px 0 4px}.rp-page th,.rp-page td{border:1px solid #94a3b8;padding:3px 5px;vertical-align:top;text-align:left}
+.rp-page th,.rp-page td,.rp-page table{font-size:inherit;line-height:1.35}.rp-page td.nw,.rp-page th.nw{white-space:nowrap}
 .rp-page th{background:#e0e7ff;font-weight:700;white-space:nowrap}.rp-page td.c,.rp-page th.c{text-align:center}.rp-page tr{break-inside:avoid}
 .rp-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:4px 0}.rp-kpi div{border:1px solid #c7d2fe;border-radius:6px;padding:4px 6px;background:#f8fafc}.rp-kpi b{display:block;font-size:13pt;color:#4338ca}.rp-kpi span{font-size:8.5pt;color:#475569}
-.rp-op{border:1px solid #94a3b8;min-height:28mm;padding:5px 7px;white-space:pre-wrap}
+.rp-op{border:1px solid #94a3b8;min-height:20mm;padding:4px 7px;white-space:pre-wrap}
 .rp-note{font-size:8.5pt;color:#475569;margin-top:6px}.rp-w{color:#b91c1c;font-weight:700}.rp-g{color:#64748b}
-.rp-sign td{height:16mm}.rp-sign th{text-align:center}
+.rp-sign td{height:13mm}
+.rp-page.t1 th,.rp-page.t1 td{padding:1.5px 4px}.rp-page.t1 h2{margin:6px 0 2px;font-size:10.5pt}.rp-page.t1 .rp-op{min-height:14mm}.rp-page.t1 .rp-sign td{height:11mm}.rp-page.t1 .rp-h{margin-bottom:5px}
+.rp-cut{display:none}.rp-page.t4 .rp-cut{display:inline;color:#b91c1c}
+.rp-page.t4 .cl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.rp-page.t5 .cl,.rp-page.t5 .cl1{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:1}.rp-page.t5 .rp-op{max-height:30mm;overflow:hidden}.rp-page.t5 .rp-g.cl{display:none}.rp-page.t5 .rp-sign td{height:10mm}
+.rp-page.t2{font-size:9pt}.rp-page.t3{font-size:8.5pt}.rp-page.t3 .rp-note{font-size:7.5pt}.ivn{display:none}.rp-page.t7 .ivn{display:block}.rp-page.t7 .ivs{display:none}.rp-page.t7 .rp-op{max-height:16mm}.rp-page.t8{font-size:7.5pt}
+.rp-page.t6{font-size:8pt}.rp-page.t6 th,.rp-page.t6 td{padding:0.5px 3px}.rp-page.t6 h2{margin:4px 0 1px;font-size:10pt}.rp-page.t6 .rp-op{max-height:22mm}
+.rp-sign th{text-align:center}
 @media print{
  html.rpt body>*:not(#rpt){display:none!important}
  html.rpt #rpt{display:block!important}
@@ -825,7 +832,7 @@ $('fPos').onchange=async e=>{const f=e.target.files[0];e.target.value='';$('exMe
  const T=rows.filter(r=>{const p=P[r.tm];return p&&(!hasPin(r)||Math.abs(p.lat-r.lat)>1e-6||Math.abs(p.lng-r.lng)>1e-6)});if(!T.length)return toast('바뀔 위치가 없습니다');
  if(!await ask(`백업에서 ${T.length}곳의 지도 위치만 가져올까요? (일정·점검 기록은 그대로)`))return;let n=0;for(const r of T){const p=P[r.tm];if(await putRow({...r,lat:+p.lat,lng:+p.lng,src:p.src||'백업에서 가져옴'},true))n++}derive();render();toast(n+'곳 위치를 가져왔습니다')}catch(err){toast('백업 파일 형식이 아닙니다')}};
 $('bRst').onclick=async()=>{$('exMenu').classList.remove('on');if(!SEED.length)return toast('이 판에는 기본 자료가 없습니다. 엑셀을 불러오세요.');if(await ask('처음 받은 엑셀 일정('+SEED.length+'곳)으로 되돌릴까요? 찍어 둔 위치는 같은 팀명이면 유지합니다.'))await replaceAll(SEED,true)};
-$('bPr').onclick=()=>{$('exMenu').classList.remove('on');setTab('lst');setTimeout(()=>{try{window.print()}catch(e){}},300)};
+$('bPr').onclick=()=>{rpReset();$('exMenu').classList.remove('on');setTab('lst');setTimeout(()=>{try{window.print()}catch(e){}},300)};
 $('exBtn').onclick=e=>{e.stopPropagation();$('exMenu').classList.toggle('on')};
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('exMenu').classList.remove('on')});
 
@@ -976,6 +983,7 @@ ${d}`,{modelTier:'default',cache:false,onText:({text})=>{$('rsTx').value=text}})
 
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
+const RPS={p1:'근태·태도',p2:'사규 준수',p3:'자기계발',p4:'조직 기여',q1:'사업 발굴',q2:'영업 참여'};
 const SGR={5:'우수',4:'양호',3:'보통',2:'미흡',1:'매우 미흡'};
 const scT=v=>!v||v.s==null||v.s===''?'<span class="rp-g">확인 필요</span>':v.s==='na'?'해당없음':(v.s<=2?`<span class="rp-w">${v.s}점 ${SGR[v.s]}</span>`:`${v.s}점 ${SGR[v.s]||''}`);
 function rpOpen(k,id){if(!ADM)return toast('점검결과 출력은 점검자(편집 권한)만 할 수 있습니다');RP={k:k||'site',v:RP.v||'pub',id:id||null};$('exMenu').classList.remove('on');$('tbar').classList.remove('open');rpUI();$('rp').classList.add('on')}
@@ -987,27 +995,29 @@ function rpUI(){document.querySelectorAll('#rpK button').forEach(b=>b.classList.
 $('rpK').onclick=e=>{const b=e.target.closest('button');if(b){RP.k=b.dataset.v;rpUI()}};$('rpV').onclick=e=>{const b=e.target.closest('button');if(b){RP.v=b.dataset.v;rpUI()}};$('rpS').onchange=rpUI;
 $('rpX').onclick=$('rpNo').onclick=()=>$('rp').classList.remove('on');$('bRp').onclick=()=>rpOpen('site');
 $('rpGo').onclick=()=>{const L=rpTargets();if(!L.length)return toast('출력할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub';
- $('rpt').innerHTML=RP.k==='site'?L.map(r=>rpSite(r,pub)).join(''):rpSum(L,pub);$('rp').classList.remove('on');
- const pg=$('pgs').textContent;$('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');
- const done=()=>{document.documentElement.classList.remove('rpt');$('pgs').textContent=pg;removeEventListener('afterprint',done)};addEventListener('afterprint',done);
- setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}setTimeout(()=>{if(!matchMedia('print').matches)done()},1500)},200)};
+ $('rpt').innerHTML=RP.k==='site'?L.map(r=>rpSite(r,pub)).join(''):rpSum(L,pub);$('rp').classList.remove('on');if(RP.k==='site')rpFit();
+ $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});
+ setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},200)};
+function rpReset(){document.documentElement.classList.remove('rpt');spo($('po').value)}
+function rpFit(){const x=$('rpt');x.style.cssText='display:block;position:absolute;left:-9999px;top:0;width:186mm';const pr=document.createElement('div');pr.style.height='273mm';x.appendChild(pr);const H=pr.offsetHeight-4;pr.remove();
+ x.querySelectorAll('.rp-page').forEach(p=>{for(const c of ['t1','t2','t3','t4','t5','t6','t7','t8']){if(p.offsetHeight<=H)break;p.classList.add(c)}});x.style.cssText=''}
 function rpHead(t,sub,pub){return `<div class="rp-h"><div><h1>${t}</h1><div style="font-size:9.5pt;color:#475569">${sub}</div></div><span class="rp-tag ${pub?'':'in'}">${pub?'공개용':'내부용 · 배포 금지'}</span></div>`}
 const rpD=r=>r.st==='완료'&&r.ad?`${dt(r.ad)} (실시)`:dt(r.pd);
 function rpSite(r,pub){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.team||{};const A=Object.values(AC).filter(a=>a.site===r.id);const IVn=(IV[r.id]?.notes||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
  const lead=[r.lead&&'권역팀장 '+r.lead,r.solo&&'단독팀장 '+r.solo,real(r.tl)&&'팀장 '+r.tl].filter(Boolean).join(' · ')||'확인 필요';
  const weak=EVI.team.flatMap(([g,its])=>its.filter(([k])=>typeof t[k]?.s==='number'&&t[k].s<=2).map(([k,l])=>[g,l,t[k]]));
  let h=rpHead('현장점검 결과표',`${esc(rdName(r.rd||RD))} 현장점검 및 성과평가 · (주)서용엔지니어링`,pub);
- h+=`<table><tr><th>현장</th><td><b>${esc(r.rg)} ${esc(r.tm)}</b></td><th>점검일</th><td>${rpD(r)}</td></tr><tr><th>점검자</th><td colspan="3">기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</td></tr><tr><th>현장 책임자</th><td>${esc(lead)}</td><th>수검 인원</th><td>${cnt(r)}명</td></tr><tr><th>주소</th><td colspan="3">${r.addr?esc(r.addr):'확인 필요'}</td></tr></table>`;
- if(!pub){h+=`<h2>1. 팀평가</h2><table><tr><th class="c">부문</th><th>항목</th><th class="c">평가</th><th>확인 내용</th></tr>`+EVI.team.map(([g,its])=>its.map(([k,l],i)=>`<tr>${i?'':`<td class="c" rowspan="${its.length}"><b>${g}</b><div class="rp-g">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([q])=>[q,t[q]]).filter(x=>x[1]))))}</div></td>`}<td>${esc(l)}</td><td class="c" style="white-space:nowrap">${scT(t[k])}</td><td>${esc(t[k]?.m||'')}</td></tr>`).join('')).join('')+`</table>`}
- else h+=`<h2>1. 개선 필요 사항</h2>`+(weak.length?`<table><tr><th class="c">부문</th><th>항목</th><th>확인 내용</th></tr>${weak.map(([g,l,v])=>`<tr><td class="c">${g}</td><td>${esc(l)}</td><td>${esc(v.m||'')}</td></tr>`).join('')}</table>`:'<p>미흡(2점 이하) 판정 항목 없음</p>');
- const pv=e.prev||[];h+=`<h2>2. 이전 지적사항 시정조치 이행</h2>`+(pv.length?`<table><tr><th>지적사항</th><th class="c">이행 상태</th><th>개선 효과·확인 내용</th></tr>${pv.map(p=>`<tr><td>${esc(p.t||'')}${p.from?`<div class="rp-g">${esc(rdName(p.from))}</div>`:''}</td><td class="c" style="white-space:nowrap">${p.st==='이행 완료'?esc(p.st):`<span class="rp-w">${esc(p.st||'확인 필요')}</span>`}</td><td>${esc(p.m||'')}</td></tr>`).join('')}</table><p class="rp-g" style="margin:0">이행 완료 ${pv.filter(p=>p.st==='이행 완료').length} / ${pv.length}건</p>`:'<p>등록된 이전 지적사항 없음</p>');
- h+=`<h2>3. 후속 조치</h2>`+(A.length?`<table><tr><th>항목</th><th>조치 내용</th><th class="c">기한</th><th class="c">상태</th></tr>${A.map(a=>`<tr><td>${esc([a.area,a.item].filter(Boolean).join(' · '))}${a.issue?`<div class="rp-g">${esc(a.issue)}</div>`:''}</td><td>${esc(a.action||'')}</td><td class="c">${a.due?dt(a.due):'확인 필요'}</td><td class="c">${esc(a.st||'')}</td></tr>`).join('')}</table>`:'<p>등록된 후속 조치 없음</p>');
- let n=4;if(!pub){h+=`<h2>${n++}. 면담 요약</h2>`+(IVn.length?IVn.map(v=>`<div style="margin:2px 0 5px"><b>${esc(v.who||'팀 전체')}</b> <span class="rp-g">${esc((v.ts||'').replace('T',' ').slice(0,16))}</span><div style="white-space:pre-wrap">${esc((v.sum||v.text||'').slice(0,900))}</div></div>`).join(''):'<p>면담 기록 없음</p>');
+ h+=`<table><tr><th>현장</th><td><b>${esc(r.rg)} ${esc(r.tm)}</b></td><th>점검일</th><td>${rpD(r)}</td><th>수검</th><td>${cnt(r)}명</td></tr><tr><th>점검자</th><td colspan="3">기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</td><th>책임자</th><td>${esc(lead)}</td></tr><tr><th>주소</th><td colspan="5">${r.addr?esc(r.addr):'확인 필요'}</td></tr></table>`;
+ if(!pub){h+=`<h2>1. 팀평가</h2><table><colgroup><col style="width:11%"><col style="width:40%"><col style="width:12%"><col></colgroup><tr><th class="c">부문</th><th>항목</th><th class="c">평가</th><th>확인 내용</th></tr>`+EVI.team.map(([g,its])=>its.map(([k,l],i)=>`<tr>${i?'':`<td class="c" rowspan="${its.length}"><b>${g}</b><div class="rp-g">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([q])=>[q,t[q]]).filter(x=>x[1]))))}</div></td>`}<td><span class="cl1">${esc(l)}</span></td><td class="c" style="white-space:nowrap">${scT(t[k])}</td><td><span class="cl">${esc(t[k]?.m||'')}</span></td></tr>`).join('')).join('')+`</table>`}
+ else h+=`<h2>1. 개선 필요 사항</h2>`+(weak.length?`<table><tr><th class="c">부문</th><th>항목</th><th>확인 내용</th></tr>${weak.map(([g,l,v])=>`<tr><td class="c">${g}</td><td>${esc(l)}</td><td><span class="cl">${esc(v.m||'')}</span></td></tr>`).join('')}</table>`:'<p>미흡(2점 이하) 판정 항목 없음</p>');
+ const pv=e.prev||[];h+=`<h2>2. 이전 지적사항 시정조치 이행</h2>`+(pv.length?`<table><tr><th>지적사항</th><th class="c">이행 상태</th><th>개선 효과·확인 내용</th></tr>${pv.map(p=>`<tr><td><span class="cl">${esc(p.t||'')}</span>${p.from?`<div class="rp-g">${esc(rdName(p.from))}</div>`:''}</td><td class="c" style="white-space:nowrap">${p.st==='이행 완료'?esc(p.st):`<span class="rp-w">${esc(p.st||'확인 필요')}</span>`}</td><td><span class="cl">${esc(p.m||'')}</span></td></tr>`).join('')}</table><p class="rp-g" style="margin:0">이행 완료 ${pv.filter(p=>p.st==='이행 완료').length} / ${pv.length}건</p>`:'<p>등록된 이전 지적사항 없음</p>');
+ h+=`<h2>3. 후속 조치</h2>`+(A.length?`<table><tr><th>항목</th><th>조치 내용</th><th class="c">기한</th><th class="c">상태</th></tr>${A.map(a=>`<tr><td>${esc([a.area,a.item].filter(Boolean).join(' · '))}${a.issue?`<div class="rp-g cl">${esc(a.issue)}</div>`:''}</td><td><span class="cl">${esc(a.action||'')}</span></td><td class="c nw">${a.due?dt(a.due):'확인 필요'}</td><td class="c nw">${esc(a.st||'')}</td></tr>`).join('')}</table>`:'<p>등록된 후속 조치 없음</p>');
+ let n=4;if(!pub){h+=`<h2>${n++}. 면담 요약</h2>`+(IVn.length?`<div class="ivn">면담 ${IVn.length}건 — 내용은 앱에서 확인</div><div class="ivs">`+IVn.map(v=>{const t=(v.sum||v.text||'').replace(/\s+/g,' ').trim();return `<div class="cl" style="margin:1px 0 3px"><b>${esc(v.who||'팀 전체')}</b> <span class="rp-g">${esc((v.ts||'').slice(5,10).replace('-','/'))}</span> ${esc(t.length>260?t.slice(0,260)+'… (전문은 앱)':t)}</div>`}).join('')+'</div>':'<p>면담 기록 없음</p>');
   const P=(e.ppl||[]).filter(p=>Object.keys(p.it||{}).length);const C=EVI.ppl.concat(EVI.lead);
-  h+=`<h2>${n++}. 개별평가</h2>`+(P.length?`<table><tr><th>이름</th>${C.map(([k,l])=>`<th class="c" style="white-space:normal;font-size:8pt">${esc(l.replace(/ \(팀장급 이상\)/,''))}</th>`).join('')}<th class="c">평균</th></tr>${P.map(p=>`<tr><td style="white-space:nowrap"><b>${esc(p.n)}</b></td>${C.map(([k])=>{const v=p.it[k];return `<td class="c">${!v?'-':v.s==='na'?'해당없음':v.s<=2?`<span class="rp-w">${v.s}</span>`:v.s}</td>`}).join('')}<td class="c"><b>${f1(scoreAvg(p.it))}</b></td></tr>`).join('')}</table>`:'<p>개별평가 기록 없음</p>')}
+  h+=`<h2>${n++}. 개별평가</h2>`+(P.length?`<table><tr><th>이름</th>${C.map(([k])=>`<th class="c">${RPS[k]}</th>`).join('')}<th class="c">평균</th></tr>${P.map(p=>`<tr><td style="white-space:nowrap"><b>${esc(p.n)}</b></td>${C.map(([k])=>{const v=p.it[k];return `<td class="c">${!v?'-':v.s==='na'?'해당없음':v.s<=2?`<span class="rp-w">${v.s}</span>`:v.s}</td>`}).join('')}<td class="c"><b>${f1(scoreAvg(p.it))}</b></td></tr>`).join('')}</table>`:'<p>개별평가 기록 없음</p>')}
  h+=`<div style="break-inside:avoid"><h2>${n}. 종합 의견</h2><div class="rp-op">${esc(e.res||'')}</div>`;
  h+=`<table class="rp-sign" style="margin-top:8px"><tr><th>점검자 (기술)</th><th>점검자 (영업)</th><th>점검자 (공통)</th><th>현장 책임자</th></tr><tr>${[r.ins[0],r.ins[1],r.ins[2],r.lead||r.solo||(real(r.tl)?r.tl:'')].map(x=>`<td style="vertical-align:bottom;text-align:right" class="rp-g">${esc(x||'')} (서명)</td>`).join('')}</tr></table>
- <div class="rp-note">출력 ${ymd(today())} · 점수는 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다. 비어 있는 값은 '확인 필요'로 표시했습니다.</div></div>`;
+ <div class="rp-note">출력 ${ymd(today())} · 점수는 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다. 비어 있는 값은 '확인 필요'로 표시했습니다.<span class="rp-cut"> 칸이 넘쳐 일부 내용을 줄여 표시했습니다 — 전문은 앱에서 확인.</span></div></div>`;
  return `<div class="rp-page">${h}</div>`}
 function rpSum(L,pub){const S=L.map(r=>({r,s:evStat(r.id),a:Object.values(AC).filter(a=>a.site===r.id)}));const D=S.filter(x=>x.s);const ds=L.map(r=>r.pd).filter(Boolean).sort();
  const av=g=>{const v=D.map(x=>g?x.s.by[g]:x.s.all).filter(x=>x!=null);return v.length?f1(v.reduce((a,b)=>a+b,0)/v.length):'확인 필요'};
