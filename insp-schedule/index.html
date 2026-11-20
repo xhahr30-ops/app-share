@@ -57,6 +57,9 @@ header{background:var(--hd);border-bottom:1px solid var(--line2);position:sticky
 .hin{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;flex-wrap:wrap}
 .hl{display:flex;align-items:center;gap:8px;min-width:0}
 h1{margin:0;font-size:19px;font-weight:800;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.rdsel{font:800 11px inherit;font-family:inherit;color:#1e293b;background:#fbbf24;border:0;border-radius:999px;padding:2px 6px;cursor:pointer;vertical-align:middle;max-width:150px}
+.rdw{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}.rdw select{flex:1}
+.hrow{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13px}.hrow b{min-width:90px}.hrow.cur{background:var(--sub2);border-radius:8px;padding:7px 6px}
 .badge{font-size:10px;font-weight:800;color:#fff;background:var(--ind);border-radius:5px;padding:1px 4px}
 .tag{font-size:11px;background:var(--ind2);color:var(--ind6);padding:2px 8px;border-radius:6px;font-weight:700}
 html.dark .tag{color:#c7d2fe}
@@ -206,6 +209,14 @@ html.mob .nobase{top:calc(max(10px,env(safe-area-inset-top)) + 106px);bottom:aut
 html.mob .pickbar{bottom:calc(var(--sh,32vh) + 14px)}
 html.mob #side{position:fixed;left:0;right:0;bottom:0;height:var(--sh,32vh);z-index:1200;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -4px 20px rgba(15,23,42,.22);padding:0 12px 10px;display:flex;flex-direction:column;gap:8px;transition:height .22s ease;overflow:hidden}
 html.mob #side.drag{transition:none}
+#sheetSum{display:none}
+html.mob #side.sh-mini{gap:0}
+html.mob #side.sh-mini>*:not(#sheetH):not(#sheetSum){display:none!important}
+html.mob #side.sh-mini #sheetSum{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:2px 4px 6px;cursor:pointer;white-space:nowrap;overflow:hidden}
+#sheetSum .ss-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#sheetSum .ss-d{color:#4f46e5;font-weight:900}
+html.mob #side.sh-hide{display:none!important}
+#fSh{display:none}html.mob #fSh{display:flex}
 #sheetH{justify-content:center;align-items:center;height:26px;flex:none;cursor:grab;touch-action:none}
 #sheetH span{width:46px;height:5px;border-radius:3px;background:#cbd5e1}
 html.mob #side .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
@@ -307,7 +318,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <header>
  <div class="hin">
   <div class="hl">
-   <h1>스마트 물길점검 <span class="badge">2026 하반기</span> <span class="dot" id="hDot" title="저장 상태"></span></h1>
+   <h1>스마트 물길점검 <select id="rdSel" class="rdsel" title="점검 회차 (바꾸면 그 회차 일정·점검 기록을 봅니다)"></select> <span class="dot" id="hDot" title="저장 상태"></span></h1>
    <span class="tag">현장점검 · 성과평가 일정 지도</span>
   </div>
   <div class="hr">
@@ -322,6 +333,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   </div>
  </div>
  <div class="tbar np" id="tbar">
+  <label class="rdw mob-only"><i class="ii" data-i="cal"></i> 회차 <select id="rdSel2" class="inp"></select></label>
   <div class="srch"><span><i class="ii" data-i="srch"></i></span><input id="fQ" placeholder="팀명 · 지역 · 이름 · 주소 검색"></div>
   <span class="sep"></span>
   <button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button>
@@ -364,6 +376,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="fNext" title="다음 점검일로"><i class="ii" data-i="flag"></i></button>
     <button class="b" id="fLoc" title="내 위치"><i class="ii" data-i="loc"></i></button>
     <button class="r" id="fPick" title="위치 없는 현장 찍기"><i class="ii" data-i="pin"></i></button>
+    <button id="fSh" title="아래 정보 칸 숨기기"><i class="ii" data-i="shd"></i></button>
    </div>
    <div class="pickbar np" id="pickbar"><span id="pickTx"></span><button id="pickSkip">다음</button><button id="pickX">끝</button></div>
    <div class="nobase" id="nobase">바탕지도: 시·군·구 경계 (통계청 2013) · 도로·건물은 깃허브 판에서 보입니다</div>
@@ -372,7 +385,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  </section>
 
  <section id="side">
-  <div id="sheetH" class="mob-only np" title="끌어 올리기·내리기"><span></span></div>
+  <div id="sheetH" class="mob-only np" title="끌어 올리기·내리기 (끝까지 내리면 한 줄로 접힘)"><span></span></div>
+  <div id="sheetSum" class="np" title="눌러서 펼치기"></div>
   <div id="siteCard" class="mob-only" hidden></div>
   <div class="kpis" id="kp"></div>
   <div class="card" id="panel">
@@ -424,9 +438,18 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 </div></div>
 <div class="modal np" id="ev"><div class="mbox">
  <div class="evhd"><b id="evT"></b><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></div>
- <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 상반기 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button></div>
+ <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
  <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+</div></div>
+<div class="modal np" id="rdm"><div class="mbox" style="max-width:440px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="cal"></i> 새 점검 회차 만들기</b><button class="btn" id="rdX"><i class="ii" data-i="x"></i></button></div>
+ <label class="mini">회차 이름</label><input id="rdN" class="inp" placeholder="예: 2027 상반기">
+ <p class="mini" id="rdInfo" style="margin:8px 0"></p>
+ <label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rdC" checked> 지금 회차의 2점 이하 항목·미이행 지적·끝나지 않은 후속 조치를 다음 회차 '이전 지적'으로 넘기기</label>
+ <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:4px"><input type="checkbox" id="rdM" checked> 지금 회차를 '마감'으로 표시</label>
+ <p class="mini" style="margin:8px 0 0">현장·주소·위치·인원은 그대로 복사하고 점검예정일은 비웁니다. 새 일정 엑셀을 불러오면 같은 팀명끼리 이어집니다. 지금 회차 기록은 지워지지 않습니다.</p>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="rdNo">취소</button><button class="btn pri" id="rdOk"><i class="ii" data-i="plus"></i> 만들기</button></div>
 </div></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
@@ -445,12 +468,12 @@ const ICP={srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',dl:'M12 3v12M7
  plus:'M12 5v14M5 12h14',touch:'M9 11V5a2 2 0 0 1 4 0v6l4 1.5a2 2 0 0 1 1.3 2.3L17 21H10l-4-5 1.5-1.5L9 16z',compass:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM15.5 8.5l-2 5-5 2 2-5z',
  inb:'M3 13h5l2 3h4l2-3h5v7H3zM12 3v9M8 8l4 4 4-4',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',save:'M5 3h11l3 3v15H5zM8 3v6h8V3M8 14h8v7H8z',open:'M3 7h6l2 2h10v10H3zM12 17v-6M9 13l3-3 3 3',
  prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',trash:'M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',
- full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',flag:'M5 21V4M5 4h11l-2 4 2 4H5',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',
+ shd:'M6 9l6 6 6-6M4 20h16',shu:'M6 15l6-6 6 6M4 4h16',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',flag:'M5 21V4M5 4h11l-2 4 2 4H5',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',pen:'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',
  cal:'M4 5h16v16H4zM4 10h16M8 3v4M16 3v4',users:'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 13.6a6.5 6.5 0 0 1 3.5 6.4',
  check:'M5 12.5l4.5 4.5L19 7',clip:'M9 3h6v3H9zM9 5H6v16h12V5h-3M9 12l2 2 4-4M9 17h6',tool:'M15 4a5 5 0 0 0-5 6l-7 7 4 4 7-7a5 5 0 0 0 6-5l-3 3-3-1-1-3z',chart:'M4 20V10M10 20V4M16 20v-7M2 20h20',mic:'M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3M9 21h6',spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z',lock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',doc:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6',x:'M6 6l12 12M18 6L6 18',pause:'M9 5v14M15 5v14',clock:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM12 7v5l3 2'};
 const HU={indigo:['#4f46e5','#a5b4fc'],cyan:['#0891b2','#22d3ee'],amber:['#d97706','#fbbf24'],yellow:['#ca8a04','#facc15'],blue:['#2563eb','#60a5fa'],red:['#dc2626','#f87171'],orange:['#ea580c','#fb923c'],pink:['#db2777','#f472b6'],slate:['#475569','#cbd5e1'],violet:['#7c3aed','#c4b5fd'],green:['#16a34a','#4ade80'],teal:['#0d9488','#2dd4bf'],sky:['#0284c7','#38bdf8']};
-const IC_H={srch:'indigo',dl:'cyan',exp:'cyan',list:'slate',phone:'slate',moon:'indigo',sun:'yellow',plus:'green',touch:'cyan',compass:'orange',inb:'amber',xls:'green',save:'blue',open:'amber',prt:'slate',trash:'red',map:'green',full:'teal',flag:'red',loc:'blue',pin:'red',pen:'pink',warn:'amber',cal:'indigo',users:'violet',check:'green',clip:'indigo',tool:'slate',chart:'green',mic:'red',spark:'violet',lock:'red',hist:'slate',doc:'slate',x:'slate',pause:'amber',clock:'red'};
+const IC_H={shd:'slate',shu:'indigo',srch:'indigo',dl:'cyan',exp:'cyan',list:'slate',phone:'slate',moon:'indigo',sun:'yellow',plus:'green',touch:'cyan',compass:'orange',inb:'amber',xls:'green',save:'blue',open:'amber',prt:'slate',trash:'red',map:'green',full:'teal',flag:'red',loc:'blue',pin:'red',pen:'pink',warn:'amber',cal:'indigo',users:'violet',check:'green',clip:'indigo',tool:'slate',chart:'green',mic:'red',spark:'violet',lock:'red',hist:'slate',doc:'slate',x:'slate',pause:'amber',clock:'red'};
 const ic=k=>{const c=HU[IC_H[k]]||HU.slate;return '<svg class="gi cc" style="--c:'+c[0]+';--cd:'+c[1]+'" viewBox="0 0 24 24" aria-hidden="true"><path d="'+(ICP[k]||ICP.pin)+'"/></svg>'};
 document.querySelectorAll('.ii[data-i]').forEach(e=>e.outerHTML=ic(e.dataset.i));
 const SEED=[{"no": 1, "rg": "강원", "tm": "제천", "pd": "2026-11-23", "ins": ["김*천", "김*성", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "장*우", "mem": ["안*률", "정*록"], "note": "", "addr": "충청북도 제천시 원화산로 43 서희스타힐스 103동 1302호", "lat": 37.125827, "lng": 128.212743, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 2, "rg": "강원", "tm": "단양", "pd": "2026-11-23", "ins": ["김*천", "김*성", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "최*일", "mem": ["박*우"], "note": "", "addr": "충청북도 단양군 대강면 장림길 60 한강빌라 202호", "lat": 36.923608, "lng": 128.348983, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 3, "rg": "강원", "tm": "속초", "pd": "2026-11-24", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "남*국", "mem": ["강*준", "강*경"], "note": "", "addr": "강원특별자치도 속초시 청대마을길 45, 1층 서용엔지니어링", "lat": 38.17373, "lng": 128.52117, "src": "대략 위치(속초시 중심)"}, {"no": 4, "rg": "강원", "tm": "강릉", "pd": "2026-11-24", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "강*욱", "mem": ["이*수", "이*현", "정*광"], "note": "", "addr": "강원특별자치도 강릉시 명륜로 49, 1층", "lat": 37.764195, "lng": 128.897517, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 5, "rg": "강원", "tm": "원주", "pd": "2026-11-26", "ins": ["이*우", "한*천", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "김*준", "tl": "", "mem": ["김*석", "최*우", "황*민"], "note": "", "addr": "강원도 원주시 바우골길 16-4, 1층", "lat": 37.354785, "lng": 127.916824, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 6, "rg": "강원", "tm": "양평", "pd": "2026-11-26", "ins": ["이*우", "김*천", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "신*혁", "mem": ["권*정", "김*수", "김*솔", "양*광", "이*호"], "note": "", "addr": "경기도 양평군 양평읍 중앙로 256, 2층", "lat": 37.49196, "lng": 127.516781, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 7, "rg": "경기", "tm": "이천", "pd": "2026-11-26", "ins": ["김*천", "허*혁", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "김*식", "tl": "-", "mem": ["김*범", "우*호"], "note": "", "addr": "경기도 이천시 마장면 마장로38번길 8 라움하우스 401호", "lat": 37.251679, "lng": 127.355102, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 8, "rg": "경기", "tm": "남양주", "pd": "2026-12-01", "ins": ["김*천", "김*성", "최*철"], "st": "예정", "ad": "", "lead": "차*욱", "solo": "", "tl": "이*민", "mem": ["이*열", "채*진"], "note": "", "addr": "경기도 남양주시 순화궁로 249, 별내역 파라곤 스퀘어 지식산업센터 M동 M1223호", "lat": 37.651916, "lng": 127.128105, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 9, "rg": "강원", "tm": "철원", "pd": "2026-12-01", "ins": ["김*천", "김*성", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "이*규", "mem": ["고*경", "남*재", "정*일", "황*훈"], "note": "", "addr": "강원특별자치도 철원군 갈말읍 명성로 120-1, 철원빌딩 202호", "lat": 38.142483, "lng": 127.307463, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 10, "rg": "전라", "tm": "고흥(유지)", "pd": "2026-12-01", "ins": ["이*철", "배*민", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "강*호", "tl": "-", "mem": ["김*규", "박*리"], "note": "", "addr": "전라남도 고흥군 고흥읍 우주로 121, 고흥군 상수도통합운영센터 2층", "lat": 34.599582, "lng": 127.305239, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 11, "rg": "전라", "tm": "고흥(사후)", "pd": "2026-12-01", "ins": ["이*철", "배*민", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "김*형", "mem": ["김*혁", "정*성"], "note": "", "addr": "전라남도 고흥군 고흥읍 우주로 121, 고흥군 상수도통합운영센터 2층", "lat": 34.599582, "lng": 127.305239, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 12, "rg": "경상", "tm": "순천", "pd": "2026-12-03", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "허*재", "solo": "", "tl": "이*국", "mem": ["임*신", "이*민", "이*재"], "note": "", "addr": "순천시 율산공원길 47, 으뜸빌딩 101호(연향동 1623-7)", "lat": 34.939845, "lng": 127.524986, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 13, "rg": "경상", "tm": "남해", "pd": "2026-12-03", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "문*범", "mem": ["성*동", "장*석", "허*영"], "note": "", "addr": "경남 남해군 화전로 124, 1층(북변리 556-3)", "lat": 34.842247, "lng": 127.8941, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 14, "rg": "경남", "tm": "진주(사후)", "pd": "2026-12-03", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "홍*민", "tl": "-", "mem": [], "note": "", "addr": "경상남도 진주시 초북로 55, 초전해모로루비채 4단지 403동 2102호", "lat": 35.21205, "lng": 128.109696, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 15, "rg": "경남", "tm": "진주(현대화)", "pd": "2026-12-03", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "조*재", "mem": ["정*우"], "note": "", "addr": "경상남도 진주시 초북로 55, 초전해모로루비채 4단지 403동 2102호", "lat": 35.21205, "lng": 128.109696, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 16, "rg": "강원", "tm": "춘천", "pd": "2026-12-03", "ins": ["김*천", "김*천", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "안*주", "mem": ["김*홍", "김*현", "박*현", "이*태", "이*영", "지*", "천*"], "note": "", "addr": "강원특별자치도 춘천시 새청말길 37, 101호 서용엔지니어링", "lat": 37.898064, "lng": 127.737944, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 17, "rg": "강원", "tm": "홍천", "pd": "2026-12-03", "ins": ["김*천", "김*천", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "윤*상", "mem": ["김*민", "김*수", "박*수", "전*준", "신*한"], "note": "", "addr": "강원도 홍천군 북방면 소매곡1길 59", "lat": 37.711106, "lng": 127.832241, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 18, "rg": "전라", "tm": "무안", "pd": "2026-12-03", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "황*욱", "tl": "-", "mem": ["허*지"], "note": "", "addr": "전남 무안군 무안읍 창포로 33-6, 한양숯불갈비 우측 건물 우측 계단 2층 202호", "lat": 34.987667, "lng": 126.471439, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 19, "rg": "전라", "tm": "영암(후속)", "pd": "2026-12-03", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "김*호", "tl": "", "mem": ["신*한", "정*연"], "note": "", "addr": "영암군 영암읍 성밖로 11, 1층 상가", "lat": 34.795071, "lng": 126.696079, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 20, "rg": "전라", "tm": "영암(유지", "pd": "2026-12-03", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "임*환", "mem": ["김*안", "노*영"], "note": "", "addr": "영암군 영암읍 성밖로 11, 1층 상가", "lat": 34.795071, "lng": 126.696079, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 21, "rg": "전라", "tm": "영암(현대화)", "pd": "2026-12-03", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "하*홍", "mem": ["이*준", "최*훈", "한*"], "note": "", "addr": "영암군 영암읍 성밖로 11, 1층 상가", "lat": 34.795071, "lng": 126.696079, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 22, "rg": "전라", "tm": "해남", "pd": "2026-12-03", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "박*훈", "tl": "김*호", "mem": ["김*길", "이*혁"], "note": "", "addr": "전라남도 해남군 해남읍 남각길 53, 1층 현대화사업 사후관리 사무실", "lat": 34.575941, "lng": 126.577719, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 23, "rg": "광주", "tm": "광주", "pd": "2026-12-04", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "윤*영", "solo": "", "tl": "홍*표", "mem": ["홍*표", "박*하", "윤*진", "박*온"], "note": "", "addr": "광주광역시 서구 상무오월로3번길 11, 2층 201호", "lat": 35.15652, "lng": 126.859671, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 24, "rg": "전라", "tm": "장성(현대화)", "pd": "2026-12-04", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "황*하", "tl": "", "mem": ["강*채", "전*호"], "note": "", "addr": "전남 장성군 남면 서태길 62-5", "lat": 35.239495, "lng": 126.828944, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 25, "rg": "전라", "tm": "장성(유지)", "pd": "2026-12-04", "ins": ["이*철", "배*민", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "박*진", "mem": ["김*열", "노*인"], "note": "", "addr": "전남 장성군 남면 서태길 62-5", "lat": 35.239495, "lng": 126.828944, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 26, "rg": "경북", "tm": "포항", "pd": "2026-12-04", "ins": ["한*천", "한*천", "채*이"], "st": "예정", "ad": "", "lead": "구*순", "solo": "", "tl": "-", "mem": ["김*진", "남*모", "박*현", "최*현"], "note": "", "addr": "경북 포항시 북구 천마로89번길 8, 203호", "lat": 36.084758, "lng": 129.395858, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 27, "rg": "경북", "tm": "의성", "pd": "2026-12-04", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "백*욱", "mem": ["심*림", "이*효", "임*민"], "note": "", "addr": "경북 의성군 의성읍 동서2길 18(약국 옆)", "lat": 36.350448, "lng": 128.695965, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 28, "rg": "경북", "tm": "안동", "pd": "2026-12-04", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "김*수", "tl": "김*두", "mem": [], "note": "", "addr": "안동시 강남7길 12, 2층(정하동 298-5)", "lat": 36.549274, "lng": 128.733413, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 29, "rg": "용인", "tm": "기술진단1", "pd": "2026-12-07", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "조*신", "mem": ["이*석", "김*용", "윤*현", "김*성"], "note": "", "addr": "용인시 수지구 광교중앙로 338 광교우미뉴브 A동 1023호", "lat": 37.300242, "lng": 127.071338, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 30, "rg": "용인", "tm": "기술진단2", "pd": "2026-12-07", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "김*태", "mem": ["곽*진", "전*영", "최*지", "권*준", "박*윤"], "note": "", "addr": "용인시 수지구 광교중앙로 338 광교우미뉴브 A동 1023호", "lat": 37.300242, "lng": 127.071338, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 31, "rg": "용인", "tm": "기술운영", "pd": "2026-12-07", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "안*영", "mem": ["피**시", "이*훈"], "note": "", "addr": "용인시 수지구 광교중앙로 338 광교우미뉴브 A동 1023호", "lat": 37.300242, "lng": 127.071338, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 32, "rg": "용인", "tm": "기술혁신팀", "pd": "2026-12-07", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "임*택", "mem": ["김*재", "김*운"], "note": "", "addr": "용인시 수지구 광교중앙로 338 광교우미뉴브 A동 1023호", "lat": 37.300242, "lng": 127.071338, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 33, "rg": "강원", "tm": "가평", "pd": "2026-12-08", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "김*욱", "solo": "", "tl": "조*훈", "mem": ["김*희", "김*영"], "note": "", "addr": "경기도 가평군 가평읍 가화로 225, 102호", "lat": 37.838105, "lng": 127.507141, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 34, "rg": "강원", "tm": "화천", "pd": "2026-12-08", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "김*태", "mem": ["정*진"], "note": "", "addr": "화천군 화천읍 상승로2길25-14, 4동 403호", "lat": 38.105815, "lng": 127.70309, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 35, "rg": "경기", "tm": "용인", "pd": "2026-12-08", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "황*걸", "tl": "-", "mem": ["곽*성", "박*홍", "이*수", "이*혁"], "note": "", "addr": "용인시 수지구 광교중앙로 338, 광교우미뉴브 A동 1023호", "lat": 37.300242, "lng": 127.071338, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 36, "rg": "충남", "tm": "충남(통합)", "pd": "2026-12-08", "ins": ["한*천", "한*천", "안*영"], "st": "예정", "ad": "", "lead": "임*영", "solo": "", "tl": "-", "mem": ["강*규", "김*우", "유*광", "진*하"], "note": "", "addr": "충청남도 홍성군 홍북읍 청사로 158, 센트럴타워 309~311호", "lat": 36.658336, "lng": 126.679202, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 37, "rg": "충남", "tm": "아산", "pd": "2026-12-08", "ins": ["한*천", "한*천", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "이*환", "mem": ["김*건", "이*직", "최**엘", "최*원"], "note": "", "addr": "충남 아산시 청운로176번길 25, 2층", "lat": 36.789231, "lng": 127.0125, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 38, "rg": "충남", "tm": "천안", "pd": "2026-12-08", "ins": ["한*천", "한*천", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "천*웅", "mem": ["박*진", "양*준", "박*언"], "note": "", "addr": "충청남도 아산시 청운로176번길 25, 2층", "lat": 36.789231, "lng": 127.0125, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 39, "rg": "전라", "tm": "부안", "pd": "2026-12-08", "ins": ["이*철", "김*성", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "김*명", "mem": [], "note": "", "addr": "전북특별자치도 부안군 부안읍 부풍로 68, 부안 캐슬온리뷰 404호", "lat": 35.725241, "lng": 126.731642, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 40, "rg": "전라", "tm": "고창", "pd": "2026-12-08", "ins": ["이*철", "김*성", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "조*희", "mem": ["노*형"], "note": "", "addr": "전남 장성군 남면 서태길 62-5", "lat": 35.239495, "lng": 126.828944, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 41, "rg": "전라", "tm": "담양", "pd": "2026-12-08", "ins": ["이*철", "배*민", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "정*원", "tl": "-", "mem": ["선*영", "신*영", "임*찬"], "note": "", "addr": "전라남도 담양군 수북면 한수동로 567, 1층 103호", "lat": 35.302151, "lng": 126.929413, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 42, "rg": "전라", "tm": "장수", "pd": "2026-12-09", "ins": ["이*철", "김*성", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "장*현", "mem": ["김*윤"], "note": "", "addr": "전북특별자치도 장수군 장수읍 시장로 8-17, 1층", "lat": 35.650974, "lng": 127.518542, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 43, "rg": "전라", "tm": "진안", "pd": "2026-12-09", "ins": ["이*철", "김*성", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "김*영", "tl": "", "mem": ["김*형", "최*찬"], "note": "", "addr": "전북특별자치도 진안군 진안읍 중앙로 28, 2층 서용엔지니어링", "lat": 35.788581, "lng": 127.422843, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 44, "rg": "경기", "tm": "군포", "pd": "2026-12-09", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "송*진", "solo": "", "tl": "-", "mem": ["박*범", "채*형"], "note": "", "addr": "경기도 군포시 부곡동 1246, 군포 에이스 더블유밸리 323호", "lat": 37.326307, "lng": 126.940853, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 45, "rg": "인천", "tm": "인천(남동)", "pd": "2026-12-09", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "양*현", "mem": ["이*영", "황*동"], "note": "", "addr": "인천광역시 연수구 청량로184번길 48, 삼마빌딩 2층(옥련동, 경부사무실)", "lat": 37.425071, "lng": 126.654426, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 46, "rg": "인천", "tm": "인천(연수)", "pd": "2026-12-09", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "유*민", "mem": ["김*욱", "김*근"], "note": "", "addr": "인천광역시 연수구 청량로184번길 48, 삼마빌딩 2층(옥련동, 경부사무실)", "lat": 37.425071, "lng": 126.654426, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 47, "rg": "인천", "tm": "시흥", "pd": "2026-12-09", "ins": ["김*천", "허*혁", "최*철"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "최*석", "mem": [], "note": "", "addr": "인천광역시 연수구 청량로184번길 48, 삼마빌딩 2층(옥련동, 경부사무실)", "lat": 37.425071, "lng": 126.654426, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 48, "rg": "경상", "tm": "창녕", "pd": "2026-12-09", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "정*인", "solo": "", "tl": "-", "mem": ["권*희", "윤*웅"], "note": "", "addr": "경상남도 창녕군 창녕읍 창녕시장길 90-1, 시장빌 1층", "lat": 35.541393, "lng": 128.497606, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 49, "rg": "경상", "tm": "함안", "pd": "2026-12-09", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "박*현", "mem": ["최*민"], "note": "", "addr": "경상남도 함안군 가야읍 성내북길 10, 원하우스 102호", "lat": 35.275463, "lng": 128.398722, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 50, "rg": "경상", "tm": "의령", "pd": "2026-12-09", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "이*환", "mem": ["김*현", "김*원", "정*균"], "note": "", "addr": "경상남도 의령군 의령읍 충익로 17, KT 프라자 2층 서용엔지니어링", "lat": 35.317563, "lng": 128.261676, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 51, "rg": "경상", "tm": "의령(유지)", "pd": "2026-12-09", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "박*용", "mem": ["이*원", "이*영"], "note": "", "addr": "경상남도 의령군 의령읍 충익로 17, KT 프라자 2층 서용엔지니어링", "lat": 35.317563, "lng": 128.261676, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 52, "rg": "경기", "tm": "화성", "pd": "2026-12-10", "ins": ["김*천", "허*혁", "안*영"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "김*선", "mem": ["김*희", "허*선"], "note": "", "addr": "경기도 화성시 동탄구 동탄대로 643, 센테라 IT 타워 310호(영천동)", "lat": 37.211092, "lng": 127.098226, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 53, "rg": "울산", "tm": "울산", "pd": "2026-12-10", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "문*봉", "tl": "-", "mem": ["박*범", "서*진", "옥*진", "이*하", "장*재"], "note": "", "addr": "울산광역시 울주군 범서읍 점촌6길 31-6, 1층", "lat": 35.56867, "lng": 129.239976, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 54, "rg": "경남", "tm": "양산", "pd": "2026-12-10", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "안*현", "tl": "-", "mem": [], "note": "", "addr": "양산시 양주3길 15-12, 1층 ㈜진웅", "lat": 35.340933, "lng": 129.03313, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 55, "rg": "경남", "tm": "김해", "pd": "2026-12-10", "ins": ["한*천", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "전*엽", "tl": "-", "mem": ["김*형", "박*원", "윤*의", "정*규", "정*형"], "note": "", "addr": "김해시 분성로390번길 45, 1층", "lat": 35.230303, "lng": 128.889284, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 56, "rg": "부산", "tm": "현장지원", "pd": "2026-12-14", "ins": ["대표이사", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "", "mem": ["김*용", "류*원"], "note": "", "addr": "부산광역시 강서구 녹산산단77로 17(송정동)", "lat": 35.094632, "lng": 128.828952, "src": "주소 검색(Google 지도, 2026-11-20)"}, {"no": 57, "rg": "부산", "tm": "시설진단", "pd": "2026-12-14", "ins": ["대표이사", "이*용", "채*이"], "st": "예정", "ad": "", "lead": "", "solo": "", "tl": "", "mem": ["배*훈"], "note": "", "addr": "부산광역시 강서구 녹산산단77로 17, A동 3층", "lat": 35.094632, "lng": 128.828952, "src": "주소 검색(Google 지도, 2026-11-20)"}];
@@ -465,6 +488,7 @@ const pDate=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||'');return m?new Date
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const wd=s=>{const d=pDate(s);return d?WD[d.getDay()]:''};
 const md=s=>{const d=pDate(s);return d?(d.getMonth()+1)+'/'+d.getDate():'-'};
+const dt=s=>pDate(s)?md(s)+'('+wd(s)+')':'일정 미정';
 const ddays=s=>{const d=pDate(s);return d?Math.round((d-today())/864e5):null};
 const real=v=>v&&v!=='-';
 const people=r=>[r.lead,r.solo,r.tl,...(r.mem||[])].filter(real);
@@ -483,6 +507,7 @@ function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'
 /* ── 회차(점검 차수): 모든 회차 자료는 ALL, 지금 보는 회차만 rows ── */
 const RD0={id:'2026H2',name:'2026 하반기'};
 let ALL=[],RD=null,RNDS=[RD0];
+const ctOf=r=>CT[r.id]||CT[r.k]||{};
 const rdName=id=>(RNDS.find(x=>x.id===id)||{name:id}).name;
 const sid=(rd,no)=>(rd==='2026H2'?'':rd+'-')+'s'+String(no).padStart(3,'0');
 function rndSort(){RNDS.sort((a,b)=>a.id<b.id?-1:1)}
@@ -515,6 +540,38 @@ async function replaceAll(list,keepPins){
  if(mode==='db'){if(RO)return toast('보기 권한이라 바꿀 수 없습니다');const keep=new Set(list.map(r=>r.id));
   try{for(const r of rows)if(!keep.has(r.id))await DB.collection('sites').doc(r.id).delete();let n=0;for(const r of list){const {id,...b}=r;b.upd=new Date().toISOString();await DB.collection('sites').doc(id).set(b);setStatus('저장 중 '+(++n)+'/'+list.length,'#fcd34d')}toast(rdName(RD)+' '+list.length+'개 현장을 저장했습니다')}catch(e){toast('저장 중 오류: '+(e&&e.code||''))}return}
  ALL=ALL.filter(r=>r.rd!==RD).concat(list);lsSave();derive();render(true);toast(rdName(RD)+' '+list.length+'개 현장을 불러왔습니다')}
+
+/* ── 회차 바꾸기 · 새 회차 (자동 이월) ── */
+function rdKey(n){const m=String(n).match(/(20\d\d)\s*(상|하|1|2)/);let id=m?m[1]+'H'+(/상|1/.test(m[2])?1:2):'R'+new Date().toISOString().slice(0,10).replace(/-/g,'');while(RNDS.find(x=>x.id===id))id+='b';return id}
+function rdGo(id){RD=id;try{localStorage.setItem(LS+'-rd',id)}catch(e){}$('ev').classList.remove('on');EVS.id=null;selId=null;if(typeof isMob==='function'&&isMob()){$('siteCard').hidden=true;$('side').classList.remove('card-on')}derive();render(true);toast(rdName(id)+' 회차를 봅니다')}
+function rdNext(){const m=String(RD).match(/^(20\d\d)H([12])$/);return m?(m[2]==='1'?m[1]+' 하반기':(+m[1]+1)+' 상반기'):''}
+function rdOpen(){if(!ADM)return toast('새 회차는 점검자(편집 권한)만 만들 수 있습니다');$('rdN').value=rdNext();rdInfo();$('rdm').classList.add('on');setTimeout(()=>$('rdN').focus(),50)}
+function rdCarry(){const out={};let ni=0,na=0;rows.forEach(r=>{const e=EV[r.id]||{},L=[];
+  EVI.team.forEach(([g,its])=>its.forEach(([k,l])=>{const v=(e.team||{})[k];if(v&&typeof v.s==='number'&&v.s<=2)L.push({t:`[${g}] ${l} (${v.s}점)${v.m?' — '+v.m:''}`,st:'확인 중',m:'',from:RD})}));
+  (e.prev||[]).forEach(p=>{if(p.st!=='이행 완료'&&(p.t||p.m))L.push({t:p.t,st:'확인 중',m:'',from:p.from||RD})});
+  const A=Object.entries(AC).filter(([i,a])=>a.site===r.id&&a.st!=='이행 확인');ni+=L.length;na+=A.length;out[r.id]={L,A}});return{out,ni,na}}
+function rdInfo(){const c=rdCarry();$('rdInfo').innerHTML=`지금 회차: <b>${esc(rdName(RD))}</b> · 현장 ${rows.length}곳 → 새 회차로 복사<br>넘어갈 지적 <b>${c.ni}</b>건 · 끝나지 않은 후속 조치 <b>${c.na}</b>건`}
+$('rdX').onclick=$('rdNo').onclick=()=>{$('rdm').classList.remove('on');rdUI()};
+['rdSel','rdSel2'].forEach(k=>$(k).onchange=e=>{const v=e.target.value;$('tbar').classList.remove('open');if(v==='__new'){e.target.value=RD;rdOpen()}else if(v!==RD)rdGo(v)});
+$('rdOk').onclick=async()=>{const name=$('rdN').value.trim();if(!name)return toast('회차 이름을 적어 주세요');if(RNDS.find(x=>x.name===name))return toast('같은 이름의 회차가 있습니다');
+ if(mode==='db'&&RO)return toast('보기 권한이라 만들 수 없습니다');const id=rdKey(name),old=RD,cr=$('rdC').checked?rdCarry().out:{},close=$('rdM').checked,now=new Date().toISOString();
+ const S=rows.map(r=>{const n={...r,id:sid(id,r.no),rd:id,k:r.k||r.id,pd:'',st:'예정',note:''};delete n.upd;return n});
+ const E=[],A=[];S.forEach((n,i)=>{const c=cr[rows[i].id];if(!c)return;if(c.L.length)E.push([n.id,{team:{},prev:c.L,ppl:[],done:false}]);c.A.forEach(([aid,a],j)=>A.push(['a'+Date.now().toString(36)+i+'_'+j,{...a,site:n.id,from:a.from||old,prevId:aid}]))});
+ const oldR={...(RNDS.find(x=>x.id===old)||{id:old,name:rdName(old)})};if(close)oldR.st='마감';const newR={id,name,st:'진행',made:now};
+ $('rdOk').disabled=true;try{
+ if(mode==='db'){let n=0;const tot=S.length+E.length+A.length+2;const step=()=>setStatus('새 회차 저장 중 '+(++n)+'/'+tot,'#fcd34d');
+  const {id:_o,...ob}=oldR;await DB.collection('rounds').doc(old).set(ob);step();const {id:_n,...nb}=newR;await DB.collection('rounds').doc(id).set(nb);step();
+  for(const r of S){const {id:i,...b}=r;b.upd=now;await DB.collection('sites').doc(i).set(b);step()}
+  for(const [i,d] of E){await DB.collection('eval').doc(i).set({...d,upd:now});step()}
+  for(const [i,d] of A){const {upd,...b}=d;await DB.collection('acts').doc(i).set({...b,upd:now});step()}
+  setStatus('공유 · 실시간','#34d399')}
+ else{RNDS=RNDS.filter(x=>x.id!==old).concat([oldR,newR]);rndSort();ALL=ALL.concat(S);E.forEach(([i,d])=>EV[i]=d);A.forEach(([i,d])=>AC[i]=d);lsSave();xSave()}
+ RNDS=RNDS.filter(x=>x.id!==old&&x.id!==id).concat([oldR,newR]);rndSort();$('rdm').classList.remove('on');rdGo(id);toast(`${name} 회차를 만들었습니다 · 지적 ${E.reduce((a,x)=>a+x[1].prev.length,0)}건 · 후속 조치 ${A.length}건 이월`)}
+ catch(e){toast('새 회차 저장 중 오류: '+(e&&e.code||e))}finally{$('rdOk').disabled=false}};
+function histHtml(r){const k=r.k||r.id;const L=ALL.filter(x=>(x.k||x.id)===k||(!x.k&&x.tm===r.tm)).sort((a,b)=>a.rd<b.rd?1:-1);
+ return `<p class="mini">같은 현장의 회차별 점검 기록입니다. 회차 이름을 누르면 그 회차로 바꿉니다.</p>`+L.map(x=>{const s=evStat(x.id),a=Object.values(AC).filter(q=>q.site===x.id),ao=a.filter(q=>q.st!=='이행 확인').length,iv=(IV[x.id]?.notes||[]).length;
+  return `<div class="hrow ${x.rd===RD?'cur':''}"><b><a href="#" data-rd="${esc(x.rd)}">${esc(rdName(x.rd))}</a>${x.rd===RD?' <span class="mini">(지금)</span>':''}</b><div>${x.pd?md(x.pd)+'('+wd(x.pd)+')':'일정 미정'} · ${esc(x.st||'')}${s?`<br>팀평가 평균 <b>${f1(s.all)}</b> · 미흡 ${s.weak}건 · 이전 지적 ${s.pv}건${s.pr!=null?' (이행 '+s.pr+'%)':''}${s.done?' · 점검 완료':''}`:'<br><span class="mini">점검표 없음</span>'}<br><span class="mini">후속 조치 ${a.length}건${ao?' (미완 '+ao+')':''} · 면담 ${iv}건</span></div></div>`}).join('')}
+$('evBody').addEventListener('click',e=>{const a=e.target.closest('[data-rd]');if(!a)return;e.preventDefault();const v=a.dataset.rd;if(v===RD)return;const k=(rows.find(x=>x.id===EVS.id)||{}).k;rdGo(v);const n=rows.find(x=>x.k===k);if(n)setTimeout(()=>openEv(n.id),50)});
 
 /* ── 필터 ── */
 let F={rg:'',st:'',in:'',q:'',day:''},tab='lst',sortK='pd',sortD=1,calM=null,selId=null;
@@ -567,9 +624,9 @@ function rDays(all,days){const by={};all.forEach(r=>{(by[r.pd]=by[r.pd]||[]).pus
 const telA=p=>`${esc(p.n)} <span class="mini">${esc(p.role||'')}</span> <a href="tel:${esc(p.ph)}" class="tel">${esc(p.ph)}</a>`;
 const insPh=n=>(CT._ins?.p||[]).find(x=>x.n===n);
 function popHtml(r){const s=stOf(r),d=ddays(r.pd);return `<div class="ppt"><b>${esc(r.rg)} ${esc(r.tm)}</b> ${stB(s)}
- <div class="r"><span>점검일</span><b>${md(r.pd)}(${wd(r.pd)}) ${r.st==='완료'?'':d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</b></div>
+ <div class="r"><span>점검일</span><b>${dt(r.pd)} ${r.st==='완료'?'':d===null?'':d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</b></div>
  <div class="r"><span>기술</span>${esc(r.ins[0])}</div><div class="r"><span>영업</span>${esc(r.ins[1])}</div><div class="r"><span>공통</span>${esc(r.ins[2])}</div>
- <div class="r"><span>수검</span>${cnt(r)}명</div>${(CT[r.id]?.p||[]).length?`<div class="r"><span>연락</span><div>${CT[r.id].p.map(telA).join('<br>')}</div></div>`:`<div class="r"><span>연락</span>${esc([r.lead,r.solo,r.tl].filter(real).join(', '))||'-'} ${Object.keys(CT).length?'<b class="warn">연락처 확인 필요</b>':''}</div>`}
+ <div class="r"><span>수검</span>${cnt(r)}명</div>${(ctOf(r).p||[]).length?`<div class="r"><span>연락</span><div>${ctOf(r).p.map(telA).join('<br>')}</div></div>`:`<div class="r"><span>연락</span>${esc([r.lead,r.solo,r.tl].filter(real).join(', '))||'-'} ${Object.keys(CT).length?'<b class="warn">연락처 확인 필요</b>':''}</div>`}
  <div class="r"><span>주소</span>${r.addr?esc(r.addr):'<b class="warn">확인 필요</b>'}</div>${r.src?`<div class="r"><span>위치</span><span class="mini">${esc(r.src)}</span></div>`:''}
  <div class="bt"><button class="adm" onclick="openEv('${r.id}')" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button><button onclick="openEd('${r.id}')">${ic('pen')} 수정</button><button onclick="donePin('${r.id}')">${ic('check')} 완료</button><button onclick="startPick(['${r.id}'])">${ic('pin')} 다시 찍기</button><button onclick="openNav(rows.find(x=>x.id==='${r.id}').addr||'${esc(r.rg+' '+r.tm)}')">${ic('compass')} 길안내</button></div></div>`}
 async function donePin(id){const r=rows.find(x=>x.id===id);if(!r)return;if(await putRow({...r,st:'완료',ad:r.ad||ymd(today())})){map&&map.closePopup();toast(r.tm+' 완료 처리')}}
@@ -604,7 +661,7 @@ $('bGeo').onclick=async()=>{$('tbar').classList.remove('open');const L0=rows.fil
 
 /* ── 오른쪽 칸 ── */
 function k(l,v,s,c){return `<div class="k"><p>${l}</p><h4 style="color:${c||'inherit'}">${v}</h4><small>${s}</small></div>`}
-function render(fit){refreshSel();const L0=filt();
+function render(fit){if(SH==='mini')setTimeout(sumUp,0);refreshSel();const L0=filt();
  const done=L0.filter(r=>r.st==='완료').length,late=L0.filter(r=>stOf(r)==='지연').length;
  const nx=rows.filter(r=>r.st==='예정'&&ddays(r.pd)>=0).sort((a,b)=>a.pd<b.pd?-1:1)[0];
  $('kp').innerHTML=k('현장',L0.length+'곳',F.day?md(F.day)+'('+wd(F.day)+')':'지역 '+new Set(L0.map(r=>r.rg)).size+'곳','#4f46e5')+k('진행률',(L0.length?Math.round(done/L0.length*100):0)+'%','완료 '+done+'곳','#059669')+k('다음 점검',nx?(ddays(nx.pd)===0?'오늘':'D-'+ddays(nx.pd)):'-',nx?md(nx.pd)+'('+wd(nx.pd)+')':'없음','#0284c7')+k('지연 확인',late+'곳','예정일 지남',late?'#d97706':'');
@@ -615,7 +672,7 @@ const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/�
 function val(r,k){return k==='pp'?cnt(r):k==='st'?stOf(r):k==='ins'?r.ins.join():r[k]}
 function rLst(L0){$('lH').innerHTML='<tr>'+COLS.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
  const S=[...L0].sort((a,b)=>{const x=val(a,sortK),y=val(b,sortK);return (x<y?-1:x>y?1:a.no-b.no)*sortD});
- $('lB').innerHTML=S.map(r=>{const d=ddays(r.pd);return `<tr class="r ${r.id===selId?'sel':''}" data-id="${esc(r.id)}"><td style="white-space:nowrap"><b>${md(r.pd)}</b>(${wd(r.pd)})<div class="mini">${r.st==='완료'?(r.ad?'실제 '+md(r.ad):''):d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</div></td><td><b>${esc(r.tm)}</b><div class="mini">${esc(r.rg)}${hasPin(r)?'':' · <span class="nopin">'+ic('pin')+'위치 없음</span>'}${ADM&&EV[r.id]?' · <span style="color:#4f46e5;font-weight:800">'+ic('clip')+'점검표</span>':''}</div></td><td class="mini" style="color:var(--ink2)">${r.ins.map(esc).join(' / ')}</td><td>${cnt(r)}</td><td>${stB(stOf(r))}</td></tr>`}).join('')||'<tr><td colspan="5" class="mini" style="text-align:center;padding:20px">조건에 맞는 현장이 없습니다</td></tr>'}
+ $('lB').innerHTML=S.map(r=>{const d=ddays(r.pd);return `<tr class="r ${r.id===selId?'sel':''}" data-id="${esc(r.id)}"><td style="white-space:nowrap"><b>${dt(r.pd)}</b><div class="mini">${r.st==='완료'?(r.ad?'실제 '+md(r.ad):''):d===null?'':d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</div></td><td><b>${esc(r.tm)}</b><div class="mini">${esc(r.rg)}${hasPin(r)?'':' · <span class="nopin">'+ic('pin')+'위치 없음</span>'}${ADM&&EV[r.id]?' · <span style="color:#4f46e5;font-weight:800">'+ic('clip')+'점검표</span>':''}</div></td><td class="mini" style="color:var(--ink2)">${r.ins.map(esc).join(' / ')}</td><td>${cnt(r)}</td><td>${stB(stOf(r))}</td></tr>`}).join('')||'<tr><td colspan="5" class="mini" style="text-align:center;padding:20px">조건에 맞는 현장이 없습니다</td></tr>'}
 $('lH').onclick=e=>{const k=e.target.closest('th')?.dataset.k;if(!k)return;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}rLst(filt())};
 $('lB').onclick=e=>{const tr=e.target.closest('tr.r');if(!tr)return;const r=rows.find(x=>x.id===tr.dataset.id);if(!r)return;
  if(isMob()){showCard(r);return}if(selId===r.id){openEd(r.id);return}selId=r.id;hiRow();drawPins();if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));setTimeout(()=>mk[r.id]&&mk[r.id].openPopup(),250)}else toast(r.tm+': 위치가 없습니다. 한 번 더 누르면 수정, 위치 탭에서 찍기')};
@@ -640,7 +697,7 @@ function rPin(){const no=rows.filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no),yes=r
 
 /* ── 탭 ── */
 function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin','act','sum'].forEach(x=>$('p-'+x).hidden=x!==t);try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
-$('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t){setTab(t);if(typeof isMob==='function'&&isMob()&&SH==='peek')setSheet('half')}};
+$('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t){setTab(t);if(typeof isMob==='function'&&isMob()&&(SH==='peek'||SH==='mini'))setSheet('half')}};
 try{const t=localStorage.getItem(LS+'-tab');if(t)setTab(t)}catch(e){}
 
 /* ── 수정 창 ── */
@@ -705,9 +762,9 @@ function hh(){document.documentElement.style.setProperty('--hh',(document.queryS
 addEventListener('resize',hh);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('md').classList.remove('on');$('nav').classList.remove('on');endPick()}});
 
-/* ════════ 📋 점검표 · 상반기 지적 · 개별평가 · 면담 · 후속 조치 (2026 하반기 현장점검 공문 기준) ════════ */
+/* ════════ 📋 점검표 · 이전 지적 · 개별평가 · 면담 · 후속 조치 (2026 하반기 현장점검 공문 기준) ════════ */
 const EVI={team:[
- ['공통',[['c1','상반기 지적사항 시정조치 시행 여부'],['c2','시정조치 개선 효과 및 재발 방지 조치 이행'],['c3','안전관리 체계 및 현장 안전관리 수준'],['c4','현장 운영·관리 적정성 (비용·비품·장비·차량·인사)']]],
+ ['공통',[['c1','이전 점검 지적사항 시정조치 시행 여부'],['c2','시정조치 개선 효과 및 재발 방지 조치 이행'],['c3','안전관리 체계 및 현장 안전관리 수준'],['c4','현장 운영·관리 적정성 (비용·비품·장비·차량·인사)']]],
  ['기술',[['t1','보고된 공정 대비 실제 현장 진행률'],['t2','투입인원 대비 공정 진행 적정성·업무 효율'],['t3','용역 수행성과 달성도·성과품 품질 완성도']]],
  ['영업',[['s1','2026년 영업목표 대비 실적·성과'],['s2','단독 수행·추가 사업·물품 판매 영업성과']]]],
  ppl:[['p1','근태 및 업무수행 태도'],['p2','회사 사규 준수'],['p3','개인역량 개발·자기계발 노력'],['p4','조직 기여도·구성원 협업']],
@@ -727,7 +784,7 @@ async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id)
 function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
- document.documentElement.classList.toggle('noadm',!ADM);render()}
+ document.documentElement.classList.toggle('noadm',!ADM);rdUI();render()}
 const scoreAvg=o=>{const v=Object.values(o||{}).map(x=>x&&x.s).filter(x=>typeof x==='number');return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
 const f1=v=>v==null?'-':v.toFixed(1);
 function evStat(id){const e=EV[id];if(!e)return null;const t=e.team||{},by={};EVI.team.forEach(([g,its])=>{const o={};its.forEach(([k])=>{if(t[k])o[k]=t[k]});by[g]=scoreAvg(o)});
@@ -740,7 +797,7 @@ let EVS={id:null,t:'team',w:null,dirty:false};
 function openEv(id){if(!ADM)return toast('점검표는 점검자(편집 권한)만 볼 수 있습니다');const r=rows.find(x=>x.id===id);if(!r)return;map&&map.closePopup();
  EVS={id,t:EVS.t||'team',w:JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),dirty:false};
  const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)));
- $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${md(r.pd)}(${wd(r.pd)}) · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`+((CT[r.id]?.p||[]).length?`<div class="mini" style="font-weight:400;margin-top:2px">${ic('phone')} ${CT[r.id].p.map(telA).join(' · ')}</div>`:'');
+ $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${dt(r.pd)} · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`+((ctOf(r).p||[]).length?`<div class="mini" style="font-weight:400;margin-top:2px">${ic('phone')} ${ctOf(r).p.map(telA).join(' · ')}</div>`:'');
  $('ev').classList.add('on');evTab(EVS.t)}
 function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));evPaneRefresh()}
 $('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab(t)};
@@ -749,11 +806,12 @@ function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-
  <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div></div>`}
 function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const w=EVS.w,b=$('evBody');
  if(EVS.t==='team')b.innerHTML=EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
- else if(EVS.t==='prev')b.innerHTML=`<p class="mini">2026년 상반기 현장점검 때 지적된 사항을 적고, 시정조치 이행 여부와 개선 효과를 확인합니다.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="상반기 지적사항" value="${esc(p.t||'')}"><button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}"></div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
+ else if(EVS.t==='prev')b.innerHTML=`<p class="mini">이전 회차 점검에서 지적된 사항입니다. 새 회차를 만들 때 2점 이하 항목·미이행 지적이 자동으로 넘어옵니다. 시정조치 이행 여부와 개선 효과를 확인하세요.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="이전 지적사항" value="${esc(p.t||'')}">${p.from?`<span class="mini" style="white-space:nowrap;align-self:center">${esc(rdName(p.from))}</span>`:''}<button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}"></div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
  else if(EVS.t==='ppl')b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+w.ppl.map((p,i)=>`<details class="evp" ${i===0?'open':''}><summary><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></summary>${EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}</details>`).join('')||'<p class="mini">수검 인원 명단이 없습니다.</p>';
  else if(EVS.t==='intv')b.innerHTML=intvHtml(r);
  else if(EVS.t==='res')b.innerHTML=resHtml(r);
- $('evSv').style.display=['intv','res'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
+ else if(EVS.t==='hist')b.innerHTML=histHtml(r);
+ $('evSv').style.display=['intv','res','hist'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
 $('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
  const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
  const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
@@ -793,12 +851,12 @@ async function ivSummary(){const tx=$('ivTx').value.trim();if(!tx)return toast('
  const r=rows.find(x=>x.id===EVS.id);const b=$('ivSum');b.disabled=true;b.innerHTML=ic('spark')+' 요약 중…';ivAb&&ivAb.abort();ivAb=new AbortController();
  const prompt=`너는 (주)서용엔지니어링 2026년 하반기 현장점검의 직원면담 기록을 정리하는 비서다.
 아래 [원문]은 휴대폰 음성 받아쓰기라 오타·띄어쓰기 오류가 있을 수 있다. 뜻이 분명한 오타만 바로잡고, 원문에 없는 사실·숫자·이름은 절대 지어내지 마라. 불분명한 부분은 '확인 필요'에 적어라.
-현장점검 목적: 상반기 지적사항 시정조치 이행·개선 효과 확인, 하반기 현장 운영 실태·업무 성과 평가, 운영 문제점 개선.
+현장점검 목적: 이전 지적사항 시정조치 이행·개선 효과 확인, 이번 회차 현장 운영 실태·업무 성과 평가, 운영 문제점 개선.
 출력 형식(한국어 개조식, "~함/~임" 체, 제목 줄 포함, 마크다운 기호 없이):
 ■ 면담 개요: 현장 ${r.rg} ${r.tm} / 대상 ${$('ivWho').value||'팀 전체'} / 일시 ${$('ivTs').value.replace('T',' ')}
 ■ 주요 내용
 ■ 애로·건의사항
-■ 상반기 지적사항 관련 의견 (원문에 있을 때만)
+■ 이전 지적사항 관련 의견 (원문에 있을 때만)
 ■ 조치 필요 사항 (원문에 있을 때만)
 ■ 확인 필요
 [원문]
@@ -812,21 +870,21 @@ async function ivSave(){const tx=$('ivTx').value.trim(),sm=$('ivSm').value.trim(
 function resHtml(r){const w=EVS.w,st={by:{},weak:0};EVI.team.forEach(([g,its])=>{st.by[g]=scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1])))});
  const weak=EVI.team.flatMap(([g,its])=>its.filter(([k])=>typeof w.team[k]?.s==='number'&&w.team[k].s<=2).map(([k,l])=>`${g} · ${l} (${w.team[k].s}점)${w.team[k].m?' — '+w.team[k].m:''}`));
  const pv=w.prev||[];const acts=Object.values(AC).filter(a=>a.site===r.id);const nIv=(IV[r.id]?.notes||[]).length;
- return `<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">${['공통','기술','영업'].map(g=>k(g+' 팀평가',f1(st.by[g]),'평균 (5점 만점)','#4f46e5')).join('')}${k('상반기 지적',pv.length?Math.round(pv.filter(p=>p.st==='이행 완료').length/pv.length*100)+'%':'-','이행 완료 '+pv.filter(p=>p.st==='이행 완료').length+'/'+pv.length,'#059669')}</div>
+ return `<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">${['공통','기술','영업'].map(g=>k(g+' 팀평가',f1(st.by[g]),'평균 (5점 만점)','#4f46e5')).join('')}${k('이전 지적',pv.length?Math.round(pv.filter(p=>p.st==='이행 완료').length/pv.length*100)+'%':'-','이행 완료 '+pv.filter(p=>p.st==='이행 완료').length+'/'+pv.length,'#059669')}</div>
  <h4 class="evh">${ic('warn')} 미흡 항목 ${weak.length}건</h4><div class="mini">${weak.map(x=>'· '+esc(x)).join('<br>')||'없음'}</div>
  <h4 class="evh">${ic('tool')} 후속 조치 ${acts.length}건 · ${ic('mic')} 면담 ${nIv}건</h4>
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button type="button" class="btn pri" id="rsGen">${ic('spark')} ${SMP?'Claude로 결과 보고 작성':'결과 보고 초안 만들기'}</button><button type="button" class="btn" id="rsCopy">${ic('doc')} 복사</button></div>
  <textarea class="inp" id="rsTx" rows="12" placeholder="점검 결과 보고 (저장한 점검표 기준)"></textarea><p class="mini">저장한 점검표 내용으로 만듭니다. 보고서는 점검자 검토용 초안이며 확정 결과가 아닙니다.</p>`}
 function resData(r){const w=EV[r.id]||EVS.w;const L=[];L.push(`현장: ${r.rg} ${r.tm} / 점검일 ${r.pd} / 점검자 기술 ${r.ins[0]}, 영업 ${r.ins[1]}, 공통 ${r.ins[2]} / 수검 ${cnt(r)}명`);
  EVI.team.forEach(([g,its])=>its.forEach(([k,l])=>{const v=w.team?.[k];if(v)L.push(`[${g}] ${l}: ${v.s==='na'?'해당없음':v.s+'점'}${v.m?' / '+v.m:''}`)}));
- (w.prev||[]).forEach(p=>L.push(`[상반기 지적] ${p.t}: ${p.st}${p.m?' / '+p.m:''}`));
+ (w.prev||[]).forEach(p=>L.push(`[이전 지적] ${p.t}: ${p.st}${p.m?' / '+p.m:''}`));
  Object.values(AC).filter(a=>a.site===r.id).forEach(a=>L.push(`[후속 조치] ${a.item||''} ${a.issue||''}: ${a.st}`));
  (IV[r.id]?.notes||[]).forEach(n=>L.push(`[면담 요약 ${n.who||'팀'}] ${(n.sum||n.text||'').slice(0,800)}`));return L.join('\n')}
 async function resGen(){const r=rows.find(x=>x.id===EVS.id);if(EVS.dirty)return toast('점검표를 먼저 저장해 주세요');const d=resData(r);
  if(!SMP){$('rsTx').value='■ 현장점검 결과 (초안)\n'+d;return}
  const b=$('rsGen');b.disabled=true;
  try{const res=await SMP(`아래 [기록]만 근거로 (주)서용엔지니어링 2026년 하반기 현장점검 '현장별 점검 결과 보고' 초안을 한국어 개조식("~함/~임")으로 써라. 마크다운 기호 없이 ■ 제목을 쓴다.
-구성: ■ 점검 개요 ■ 상반기 지적사항 시정조치 이행 및 개선 효과 ■ 공통부문(안전·운영 관리) ■ 기술부문(공정·성과품) ■ 영업부문 ■ 우수 사항 ■ 개선 필요 사항 및 후속 조치 ■ 확인 필요.
+구성: ■ 점검 개요 ■ 이전 지적사항 시정조치 이행 및 개선 효과 ■ 공통부문(안전·운영 관리) ■ 기술부문(공정·성과품) ■ 영업부문 ■ 우수 사항 ■ 개선 필요 사항 및 후속 조치 ■ 확인 필요.
 기록에 없는 사실·숫자는 쓰지 말고 '확인 필요'로 남겨라. 개인 이름은 점검자 외에는 쓰지 말고 개별평가 내용은 넣지 마라.
 [기록]
 ${d}`,{modelTier:'default',cache:false,onText:({text})=>{$('rsTx').value=text}});$('rsTx').value=res.text}catch(e){toast('작성하지 못했습니다');$('rsTx').value='■ 현장점검 결과 (초안)\n'+d}
@@ -834,10 +892,10 @@ ${d}`,{modelTier:'default',cache:false,onText:({text})=>{$('rsTx').value=text}})
 
 /* ── 후속 조치 대장 ── */
 async function addAct(site,area,item,issue){const r=rows.find(x=>x.id===site);const id='a'+Date.now().toString(36);if(await putX('acts',id,{site,tm:r?r.tm:'',area,item,issue,action:'',due:'',st:'조치 필요'}))toast('후속 조치 대장에 등록했습니다')}
-function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries(AC).filter(([id,a])=>L0.has(a.site)||!rows.find(r=>r.id===a.site)).sort((a,b)=>(a[1].tm||'').localeCompare(b[1].tm||''));
+function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries(AC).filter(([id,a])=>L0.has(a.site)||!ALL.find(r=>r.id===a.site)).sort((a,b)=>(a[1].tm||'').localeCompare(b[1].tm||''));
  $('p-act').innerHTML=`<p class="mini">점검에서 나온 개선 필요 사항을 현장팀이 조치하고 점검자가 이행을 확인합니다. 현장팀도 조치 내용·상태를 고칠 수 있습니다.</p>
  <div style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap">${AST.map(s=>`<span class="st ${s==='조치 필요'?'s-지연':s==='조치 중'?'s-연기':s==='조치 완료'?'s-예정':'s-완료'}">${s} ${A.filter(([i,a])=>a.st===s).length}</span>`).join('')}</div>`+
- (A.map(([id,a])=>`<div class="ip act" data-a="${id}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(a.tm)}</b><span class="mini">${esc(a.area||'')}</span></div><div class="mini">${esc(a.item||'')}${a.issue?' — '+esc(a.issue):''}</div>
+ (A.map(([id,a])=>`<div class="ip act" data-a="${id}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(a.tm)}</b><span class="mini">${a.from?'이월('+esc(rdName(a.from))+') · ':''}${esc(a.area||'')}</span></div><div class="mini">${esc(a.item||'')}${a.issue?' — '+esc(a.issue):''}</div>
  <div class="g3" style="grid-template-columns:1fr 1fr;margin-top:4px"><select class="inp" data-af="st">${AST.map(s=>`<option ${a.st===s?'selected':''}>${s}</option>`).join('')}</select><input class="inp" type="date" data-af="due" value="${esc(a.due||'')}" title="조치 기한"></div>
  <input class="inp" data-af="action" placeholder="조치 내용" value="${esc(a.action||'')}" style="margin-top:4px">${ADM?`<button class="btn rd" data-adel style="margin-top:4px">${ic('trash')}</button>`:''}</div>`).join('')||'<p class="mini">등록된 후속 조치가 없습니다. 점검표에서 2점 이하 항목의 "후속 조치 등록"으로 넣습니다.</p>')}
 $('p-act').addEventListener('change',async e=>{const c=e.target.closest('.act'),f=e.target.dataset.af;if(!c||!f)return;const a={...AC[c.dataset.a],[f]:e.target.value};delete a.upd;if(await putX('acts',c.dataset.a,a))toast('저장했습니다')});
@@ -851,7 +909,7 @@ function rSum(){if(!ADM){$('p-sum').innerHTML='<p class="mini">종합은 점검�
  const val=x=>!x.s?-1:sumK==='all'?(x.s.all??-1):sumK==='weak'?x.s.weak:sumK==='pr'?(x.s.pr??-1):(x.s.by[sumK]??-1);
  R.sort((a,b)=>(val(a)-val(b))*sumD||a.r.no-b.r.no);
  $('p-sum').innerHTML=`<p class="mini">점검표 작성 <b>${done.length}</b> / ${R.length}곳 · 부문별 평균 상위 3곳에 ★(우수팀 후보 — 종합 검토 전 참고용)</p><button class="btn am" id="sumXl" style="margin:4px 0">${ic('xls')} 점검 결과 엑셀 (팀·개별·상반기·조치·면담)</button>
- <table><thead><tr><th>팀명</th>${[['all','전체'],['공통','공통'],['기술','기술'],['영업','영업'],['weak','미흡'],['pr','상반기']].map(([k,t])=>`<th data-sk="${k}">${t}${sumK===k?(sumD>0?'↑':'↓'):''}</th>`).join('')}<th>면담</th></tr></thead><tbody>${R.map(x=>`<tr class="r" data-ev="${x.r.id}"><td><b>${esc(x.r.tm)}</b><div class="mini">${md(x.r.pd)}${x.s?.done?' · 완료':''}</div></td><td><b>${x.s?f1(x.s.all):'-'}</b></td>${['공통','기술','영업'].map(g=>`<td>${x.s?f1(x.s.by[g]):'-'}${top[g].includes(x.r.id)?' <span style="color:#d97706">★</span>':''}</td>`).join('')}<td>${x.s?(x.s.weak?`<span class="warn">${x.s.weak}</span>`:0):'-'}</td><td>${x.s&&x.s.pr!=null?x.s.pr+'%':'-'}</td><td>${x.iv||''}</td></tr>`).join('')}</tbody></table>`}
+ <table><thead><tr><th>팀명</th>${[['all','전체'],['공통','공통'],['기술','기술'],['영업','영업'],['weak','미흡'],['pr','이전 지적']].map(([k,t])=>`<th data-sk="${k}">${t}${sumK===k?(sumD>0?'↑':'↓'):''}</th>`).join('')}<th>면담</th></tr></thead><tbody>${R.map(x=>`<tr class="r" data-ev="${x.r.id}"><td><b>${esc(x.r.tm)}</b><div class="mini">${md(x.r.pd)}${x.s?.done?' · 완료':''}</div></td><td><b>${x.s?f1(x.s.all):'-'}</b></td>${['공통','기술','영업'].map(g=>`<td>${x.s?f1(x.s.by[g]):'-'}${top[g].includes(x.r.id)?' <span style="color:#d97706">★</span>':''}</td>`).join('')}<td>${x.s?(x.s.weak?`<span class="warn">${x.s.weak}</span>`:0):'-'}</td><td>${x.s&&x.s.pr!=null?x.s.pr+'%':'-'}</td><td>${x.iv||''}</td></tr>`).join('')}</tbody></table>`}
 $('p-sum').addEventListener('click',e=>{const h=e.target.closest('[data-sk]');if(h){if(sumK===h.dataset.sk)sumD=-sumD;else{sumK=h.dataset.sk;sumD=-1}rSum();return}const tr=e.target.closest('[data-ev]');if(tr)openEv(tr.dataset.ev);if(e.target.closest('#sumXl'))resXl()});
 function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못했습니다');const wb=XLSX.utils.book_new();const sh=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),n);
  const S=[...rows].sort((a,b)=>a.no-b.no);const sc=v=>!v?'':v.s==='na'?'해당없음':v.s;
@@ -860,7 +918,7 @@ function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못
  S.filter(r=>EV[r.id]).forEach(r=>{const e=EV[r.id],st=evStat(r.id);t1.push([r.no,r.rg,r.tm,r.pd,e.done?'완료':'',...T.map(([k])=>sc(e.team?.[k])),...T.map(([k])=>e.team?.[k]?.m||''),f1(st.by['공통']),f1(st.by['기술']),f1(st.by['영업']),f1(st.all)])});sh('팀평가',t1);
  const P=EVI.ppl.concat(EVI.lead);const t2=[['팀명','이름','팀장급',...P.map(x=>x[1]),'메모','평균']];
  S.forEach(r=>(EV[r.id]?.ppl||[]).forEach(p=>t2.push([r.tm,p.n,isLead(r,p.n)?'예':'',...P.map(([k])=>sc(p.it[k])),P.map(([k,l])=>p.it[k]?.m?l+': '+p.it[k].m:'').filter(Boolean).join(' / '),f1(scoreAvg(p.it))])));sh('개별평가',t2);
- const t3=[['팀명','상반기 지적사항','이행 상태','개선 효과·확인 내용']];S.forEach(r=>(EV[r.id]?.prev||[]).forEach(p=>t3.push([r.tm,p.t,p.st,p.m])));sh('상반기 지적',t3);
+ const t3=[['팀명','이전 지적사항','이행 상태','개선 효과·확인 내용']];S.forEach(r=>(EV[r.id]?.prev||[]).forEach(p=>t3.push([r.tm,p.t,p.st,p.m])));sh('이전 지적',t3);
  const t4=[['팀명','부문','항목','지적 내용','조치 내용','기한','상태']];Object.values(AC).forEach(a=>t4.push([a.tm,a.area,a.item,a.issue,a.action,a.due,a.st]));sh('후속 조치',t4);
  const t5=[['팀명','대상','일시','요약','받아쓰기 원문']];S.forEach(r=>(IV[r.id]?.notes||[]).forEach(n=>t5.push([r.tm,n.who||'팀',(n.ts||'').replace('T',' '),n.sum,n.text])));sh('면담',t5);
  saveFile('현장점검_결과_'+stamp()+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
@@ -870,17 +928,24 @@ function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못
 const MQ=matchMedia('(max-width:1023px)');
 const isMob=()=>MQ.matches&&document.documentElement.classList.contains('fm');
 let SH='peek';
-function shH(k){const h=innerHeight;return k==='full'?Math.round(h*.88):k==='half'?Math.round(h*.52):Math.round(h*.3)}
-function setSheet(k){SH=k;document.documentElement.style.setProperty('--sh',shH(k)+'px');setTimeout(()=>map&&map.invalidateSize(),250)}
+function shH(k){const h=innerHeight;return k==='hide'?0:k==='mini'?64:k==='full'?Math.round(h*.88):k==='half'?Math.round(h*.52):Math.round(h*.3)}
+function setSheet(k){SH=k;const sd=$('side');sd.classList.toggle('sh-mini',k==='mini');sd.classList.toggle('sh-hide',k==='hide');document.documentElement.style.setProperty('--sh',shH(k)+'px');
+ const b=$('fSh');if(b){b.innerHTML=ic(k==='hide'?'shu':'shd');b.title=k==='hide'?'아래 정보 칸 보이기':'아래 정보 칸 숨기기';b.classList.toggle('on',k==='hide')}
+ if(k==='mini')sumUp();setTimeout(()=>map&&map.invalidateSize(),250)}
+function sumUp(){const e=$('sheetSum');if(!e||typeof rows==='undefined')return;const L0=(typeof filt==='function'?filt():rows);const dn=L0.filter(r=>r.st==='완료').length;
+ const nx=L0.filter(r=>r.st!=='완료'&&r.pd&&ddays(r.pd)>=0).sort((a,b)=>a.pd<b.pd?-1:1)[0];
+ e.innerHTML=ic('list')+`<span class="ss-t">${L0.length}곳 · 완료 ${dn}`+(nx?` · 다음 ${esc(nx.tm)} ${md(nx.pd)}</span><span class="ss-d">${ddays(nx.pd)===0?'오늘':'D-'+ddays(nx.pd)}</span>`:'</span>')+ic('shu')}
+$('sheetSum').onclick=()=>setSheet('peek');
+$('fSh').onclick=e=>{e.stopPropagation();setSheet(SH==='hide'?'peek':'hide')};
 function mobApply(){const m=isMob();const was=document.documentElement.classList.contains('mob');document.documentElement.classList.toggle('mob',m);if(m){setSheet(SH)}else{$('siteCard').hidden=true;$('side').classList.remove('card-on')}if(was!==m){setTimeout(()=>{map&&map.invalidateSize();drawPins()},120)}}
 try{MQ.addEventListener('change',mobApply)}catch(e){}
 addEventListener('resize',()=>{if(isMob())setSheet(SH)});
 (function(){const h=$('sheetH'),sd=$('side');let y0=0,h0=0,mv=false;
  h.addEventListener('pointerdown',e=>{y0=e.clientY;h0=sd.offsetHeight;mv=false;sd.classList.add('drag');h.setPointerCapture(e.pointerId)});
- h.addEventListener('pointermove',e=>{if(!sd.classList.contains('drag'))return;const dy=y0-e.clientY;if(Math.abs(dy)>4)mv=true;sd.style.height=Math.max(80,Math.min(innerHeight*.92,h0+dy))+'px'});
+ h.addEventListener('pointermove',e=>{if(!sd.classList.contains('drag'))return;const dy=y0-e.clientY;if(Math.abs(dy)>4)mv=true;sd.style.height=Math.max(56,Math.min(innerHeight*.92,h0+dy))+'px'});
  h.addEventListener('pointerup',e=>{sd.classList.remove('drag');const cur=sd.offsetHeight;sd.style.height='';
-  if(!mv){setSheet(SH==='peek'?'half':SH==='half'?'full':'peek');return}
-  const c=['peek','half','full'].map(k=>[k,Math.abs(shH(k)-cur)]).sort((a,b)=>a[1]-b[1])[0][0];setSheet(c)})})();
+  if(!mv){setSheet(SH==='mini'?'peek':SH==='peek'?'half':SH==='half'?'full':'peek');return}
+  const c=['mini','peek','half','full'].map(k=>[k,Math.abs(shH(k)-cur)]).sort((a,b)=>a[1]-b[1])[0][0];setSheet(c)})})();
 $('mQ').oninput=()=>{F.q=$('mQ').value;$('fQ').value=F.q;render()};
 $('mQx').onclick=()=>{$('mQ').value='';F.q='';$('fQ').value='';render()};
 $('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'){$('mQ').blur();setSheet('half')}});
@@ -889,15 +954,15 @@ document.addEventListener('click',e=>{if(isMob()&&$('tbar').classList.contains('
 $('dm2').onclick=()=>$('dm').click();
 $('fm2').onclick=()=>{$('tbar').classList.remove('open');$('fmBtn').click()};
 const kkLink=(r,k)=>{const exact=hasPin(r)&&r.src&&!/^대략/.test(r.src);return exact?`https://map.kakao.com/link/${k}/${encodeURIComponent(r.tm+' 현장')},${r.lat},${r.lng}`:`https://map.kakao.com/link/search/${encodeURIComponent(r.addr||(r.rg+' '+r.tm))}`};
-function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd);const c=CT[r.id]?.p||[];
- $('siteCard').innerHTML=`<div class="sc-h"><div><h2>${esc(r.tm)} <span class="st s-${s}" style="font-size:12px;vertical-align:middle">${ic(STI[s]||'pin')} ${s}</span></h2><div class="sc-sub">${esc(r.rg)} · ${md(r.pd)}(${wd(r.pd)}) ${r.st==='완료'?'':d===0?'· 오늘':d>0?'· D-'+d:'· D+'+(-d)}</div></div><button class="sc-x" id="scX" aria-label="닫기">${ic('x')}</button></div>
+function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd);const c=ctOf(r).p||[];
+ $('siteCard').innerHTML=`<div class="sc-h"><div><h2>${esc(r.tm)} <span class="st s-${s}" style="font-size:12px;vertical-align:middle">${ic(STI[s]||'pin')} ${s}</span></h2><div class="sc-sub">${esc(r.rg)} · ${dt(r.pd)} ${r.st==='완료'?'':d===null?'':d===0?'· 오늘':d>0?'· D-'+d:'· D+'+(-d)}</div></div><button class="sc-x" id="scX" aria-label="닫기">${ic('x')}</button></div>
  <div class="sc-row">${ic('pin')}<div>${r.addr?esc(r.addr)+` <a class="cp" data-cp="${esc(r.addr)}">복사</a>`:'<b class="warn">주소 확인 필요</b>'}${r.src?`<div class="mini">${esc(r.src)}</div>`:''}</div></div>
  <div class="sc-row">${ic('users')}<div>기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}<div class="mini">수검 ${cnt(r)}명</div></div></div>
  ${c.length?`<div class="sc-row">${ic('phone')}<div>${c.map(telA).join('<br>')}</div></div>`:''}
  <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 지도에서 고치기</button><button data-a="geo">${ic('compass')} 주소로 찾기</button></div>
  <div class="sc-go"><a href="#" data-a="nav">길안내</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">카카오맵 도착</a></div>
  <p class="mini" style="margin:0">길안내는 카카오맵·티맵 중에서 골라 이 현장 주소로 엽니다.</p>`;
- $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek')setSheet('half');drawPins();
+ $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek'||SH==='mini'||SH==='hide')setSheet('half');drawPins();
  if(map&&hasPin(r)){const z=Math.max(map.getZoom(),11);map.setView([r.lat,r.lng],z);setTimeout(()=>{const p=map.latLngToContainerPoint([r.lat,r.lng]);map.panBy([0,shH(SH)/2-40],{animate:true})},260)}}
 function hideCard(){$('siteCard').hidden=true;$('side').classList.remove('card-on');selId=null;drawPins()}
 $('siteCard').addEventListener('click',async e=>{const r=rows.find(x=>x.id===selId);if(e.target.closest('#scX'))return hideCard();
