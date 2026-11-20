@@ -289,6 +289,11 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+#cleanX{display:none}
+html.clean header,html.clean #side,html.clean .daybar,html.clean .fab,html.clean .mopt,html.clean #pwT,html.clean #pwR,html.clean #mTop,html.clean .nobase,html.clean .pickbar,html.clean .leaflet-control-container,html.clean #updB{display:none!important}
+html.clean #mapCard{position:fixed!important;inset:0!important;left:0!important;height:auto!important;padding:0!important;border:0!important;border-radius:0!important;z-index:5!important;display:flex!important}
+html.clean #mapWrap{border:0;border-radius:0}html.clean body{overflow:hidden}
+html.clean #cleanX{display:block;position:fixed;right:14px;top:14px;z-index:2700;border:0;border-radius:99px;padding:8px 14px;font-weight:800;font-size:13px;background:rgba(30,27,75,.85);color:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 #updB{display:none;position:fixed;left:50%;transform:translateX(-50%);top:12px;z-index:2600;background:#1e1b4b;color:#fff;border-radius:99px;padding:6px 8px 6px 16px;box-shadow:0 6px 20px rgba(0,0,0,.35);align-items:center;gap:8px;font-size:13.5px;font-weight:700}#updB.on{display:flex}#updB button{border:0;border-radius:99px;padding:6px 12px;font-weight:800;cursor:pointer}#updGo{background:#fbbf24;color:#1e293b}#updX{background:none;color:#c7d2fe}
 html.kk #fRf{font-size:22px;color:#4f46e5}
 .nwc:empty{display:none}.nwc{background:#ef4444;color:#fff;border-radius:99px;padding:0 6px;font-size:11px;font-weight:800;margin-left:2px}
@@ -604,6 +609,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" style="margin:6px 0 0">설정은 이 휴대폰·PC 브라우저에 기억됩니다.</p>
 </div></div>
 <div id="phv" class="np"><img alt="사진"><p></p></div>
+<button id="cleanX" class="np" type="button" title="지도만 보기 끝 (Esc)">✕ 지도만 보기 끝</button>
 <div id="updB" class="np"><span>새 판이 올라왔습니다.</span><button type="button" id="updGo">🔄 새로고침</button><button type="button" id="updX">✕</button></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
@@ -738,9 +744,9 @@ $('fQ').oninput=()=>{F.q=$('fQ').value;render()};
 
 /* ── 카카오 바탕지도 (깃허브 판 · 키는 이 브라우저에만 저장, 실패하면 기본 지도) ── */
 const KKEY='mulgil-kakao-key';let KK=false;
-let LY={map:1,base:1,pin:1,kk:1};try{Object.assign(LY,JSON.parse(localStorage.getItem('mulgil-ly')||'{}'))}catch(e){}
+let LY={map:1,base:1,pin:1,kk:1,clean:0,kkPrev:1};try{Object.assign(LY,JSON.parse(localStorage.getItem('mulgil-ly')||'{}'))}catch(e){}
 const lySave=()=>{try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}};
-const kkKey=()=>{if(!LY.kk)return '';try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
+const kkKey=()=>{if(!LY.kk||LY.clean)return '';try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 /* B안: 팀원용 설정 링크(#kk=키) — 주소의 # 뒤는 서버로 가지 않음. 열면 이 브라우저에 키 저장 후 주소창에서 바로 지움 */
 (()=>{try{const m=/[#&]kk=([0-9a-f]{32})/i.exec(location.hash||'');if(!m)return;localStorage.setItem('mulgil-kakao-key',m[1]);LY.kk=1;localStorage.setItem('mulgil-ly',JSON.stringify(LY));
  history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>toast('카카오 지도 설정을 받았습니다. 이제 바탕지도가 카카오 지도로 보입니다'),1500)}catch(e){}})();
@@ -824,6 +830,7 @@ function lyApply(){const H=document.documentElement;H.classList.toggle('nomap',!
  if(map&&!KK&&map.getPane){const b=map.getPane('base'),t=map.getPane('tilePane');if(b)b.style.display=LY.base?'':'none';if(t)t.style.display=LY.base?'':'none'}
  if(typeof isMob==='function'&&isMob()&&LY.map&&SH==='full')setSheet('half');if(typeof isMob==='function'&&isMob()&&!LY.map)setSheet('full')}
 function lyUI(){const hasK=!!kkKeyRaw()&&!inClaude(),I=[
+ ['clean',LY.clean,'지도만 보기','경계 지도에 핀·지자체 색만 화면 가득 (발표·캡처용) · Esc나 ✕로 끝'],
  ['map',LY.map,'지도 보기','끄면 지도를 숨기고 목록·달력만 넓게 봅니다'],
  ['kk',LY.kk&&hasK,'카카오 바탕지도',hasK?'끄면 기본 지도(시·군·구 경계)로 봅니다 · 바꾸면 다시 열림':inClaude()?'Claude 페이지에서는 쓸 수 없습니다':'메뉴 \'카카오 지도 키\'를 먼저 넣으세요',!hasK],
  ['base',LY.base,'시·군·구 경계·이름 (기본 지도)',KK?'카카오 지도를 쓰는 중에는 해당 없음':'끄면 바탕을 비우고 핀만 봅니다',KK],
@@ -832,10 +839,16 @@ function lyUI(){const hasK=!!kkKeyRaw()&&!inClaude(),I=[
  ['lbl',$('lblOn').checked,'이름표','핀 옆 팀명·점검일']];
  $('lyL').innerHTML=I.map(([k,v,t,d,dis])=>`<label class="${dis?'off':''}"><span>${t}<small>${d}</small></span><input type="checkbox" data-ly="${k}" ${v?'checked':''} ${dis?'disabled':''}></label>`).join('')}
 function lyOpen(){$('tbar').classList.remove('open');lyUI();$('lym').classList.add('on')}
+function cleanSet(v){if(v){if(KK){LY.kkPrev=LY.kk;LY.clean=1;lySave();location.reload();return}LY.clean=1;lySave();cleanApply(true)}
+ else{const back=LY.kkPrev&&kkKeyRaw()&&!inClaude()&&LY.kk;LY.clean=0;lySave();if(back&&!KK){location.reload();return}cleanApply(false)}}
+function cleanApply(fit){const H=document.documentElement;H.classList.toggle('clean',!!LY.clean);if(LY.clean){LY.map=1;H.classList.remove('nomap');$('tbar').classList.remove('open')}
+ setTimeout(()=>{if(!map)return;map.invalidateSize();if(fit||LY.clean){const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(p.length)map.fitBounds(p,{padding:[40,40],maxZoom:12})}},150)}
+$('cleanX').onclick=()=>cleanSet(false);addEventListener('keydown',e=>{if(e.key==='Escape'&&LY.clean)cleanSet(false)});
 $('fLy').onclick=lyOpen;$('bLy').onclick=lyOpen;$('lyX').onclick=()=>$('lym').classList.remove('on');
 $('mapOn').onclick=()=>{LY.map=1;lySave();lyApply();setTimeout(()=>{map&&map.invalidateSize();drawPins(true)},200)};
 $('lyL').addEventListener('change',e=>{const k=e.target.dataset.ly,v=e.target.checked;if(!k)return;
  if(k==='rg'){$('rgOn').checked=v;drawPins();return}if(k==='lbl'){$('lblOn').checked=v;drawPins();return}
+ if(k==='clean'){$('lym').classList.remove('on');cleanSet(v);return}
  LY[k]=v?1:0;lySave();if(k==='kk'){location.reload();return}
  if(k==='map'){lyApply();$('lym').classList.remove('on');if(v)setTimeout(()=>{map&&map.invalidateSize();drawPins(true)},200);return}
  lyApply();drawPins()});
@@ -1233,7 +1246,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261120201234';
+const BUILD='20261120201357';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -1528,7 +1541,7 @@ $('mNav').onclick=()=>openNav($('mQ').value.trim());
 $('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('mQ').value.trim()&&!filt(true).length)openNav($('mQ').value.trim())});
 
 /* ── 시작 ── */
-initMap();fma();hh();startLocal();mobApply();kkStart();lyApply();
+initMap();fma();hh();startLocal();mobApply();kkStart();lyApply();if(LY.clean)cleanApply(true);
 (function(){let P=null;const b=$('bInst');const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
  try{if(location.protocol==='https:'&&'serviceWorker' in navigator&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
  addEventListener('beforeinstallprompt',e=>{e.preventDefault();P=e;if(b)b.hidden=false});
