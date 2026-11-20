@@ -289,6 +289,7 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+.who{width:100%;font-size:12.5px;font-weight:700;color:var(--ink2);padding:2px 2px 4px}.who b{color:var(--ind6)}
 @media screen{
 html.kk{--pl:440px;--pw:440px}
 html.kk.kkc{--pw:0px}
@@ -428,6 +429,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  </div>
  <div id="kkT" class="kk-only np"></div>
  <div class="tbar np" id="tbar">
+  <div class="who" id="who"></div>
+  <a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a>
   <label class="rdw mob-only"><i class="ii" data-i="cal"></i> 회차 <select id="rdSel2" class="inp"></select></label>
   <div class="srch"><span><i class="ii" data-i="srch"></i></span><input id="fQ" placeholder="팀명 · 지역 · 이름 · 주소 검색"></div>
   <span class="sep"></span>
@@ -504,7 +507,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
    <div class="scr" id="p-pin" hidden></div>
    <div class="scr" id="p-act" hidden></div>
    <div class="scr" id="p-sum" hidden></div>
-   <div class="kkft kk-only np">만든이: 구병순 · 저장: <span id="kkSt"></span></div>
+   <div class="kkft kk-only np"><span id="who2"></span> · 만든이: 구병순 · 저장: <span id="kkSt"></span></div>
    <details class="mini np" style="margin-top:6px"><summary style="cursor:pointer;font-weight:700">산정 기준 보기</summary>
     <p>· 수검인원 = 권역팀장·단독팀장·팀장·팀원 칸의 이름 수. "-"는 빈칸으로 보고 세지 않습니다(원본 COUNTA와 다름).</p>
     <p>· 지연 = 예정일이 지났는데 상태가 '예정'인 현장. 현장 확인 대상이며 확정이 아닙니다.</p>
@@ -995,9 +998,17 @@ async function putX(col,id,data){data={...data,upd:new Date().toISOString()};
  XC[col]()[id]=data;xSave();render();return true}
 async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id).delete()}catch(e){toast('삭제 실패')}return}delete XC[col]()[id];xSave();render()}
 function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts','photos'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='eval')EV=o;else if(c==='intv')IV=o;else if(c==='photos'){PH=o;if(EVS.id&&EVS.t==='ph')evPaneRefresh();phFill(document)}else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
+/* ── 🔐 로그인(A안): Claude 페이지는 Claude 계정 로그인 + 권한(소유자·점검자·현장팀·보기), 깃허브 판은 로그인 없음 ── */
+const TEAMURL='';
+async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 저장되는 판',t2='로그인 없음';
+ try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u){const own=u.isOwner?await u.isOwner():false,ed=u.canEdit?await u.canEdit():false,wr=u.can?await u.can('data.write'):null;
+  const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
+  t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
+ $('who').innerHTML=t;$('who2').textContent=t2;
+ if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
- document.documentElement.classList.toggle('noadm',!ADM);rdUI();render()}
+ document.documentElement.classList.toggle('noadm',!ADM);rdUI();render();whoInit()}
 const scoreAvg=o=>{const v=Object.values(o||{}).map(x=>x&&x.s).filter(x=>typeof x==='number');return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
 const f1=v=>v==null?'-':v.toFixed(1);
 function evStat(id){const e=EV[id];if(!e)return null;const t=e.team||{},by={};EVI.team.forEach(([g,its])=>{const o={};its.forEach(([k])=>{if(t[k])o[k]=t[k]});by[g]=scoreAvg(o)});
