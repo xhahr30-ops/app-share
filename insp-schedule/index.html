@@ -159,6 +159,65 @@ footer{font-size:11px;color:var(--mute);text-align:center;padding:2px 0 8px}
 .empty.on{display:flex}
 .empty .card{max-width:340px;text-align:center}
 #ptitle{display:none}
+
+/* ════════ 📱 휴대폰 현장 모드: 카카오맵형 배치 (지도 전체 · 위 검색창 · 날짜 칩 · 오른쪽 둥근 단추 · 아래 끌어올리는 칸) ════════ */
+.mob-only{display:none!important}
+html.mob .mob-only{display:flex!important}
+html.mob body{overflow:hidden}
+html.mob header{position:fixed;top:66px;left:10px;right:10px;background:none;border:0;z-index:1300;pointer-events:none}
+html.mob header .hin{display:none}
+html.mob .tbar{display:none;pointer-events:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,.25);padding:10px;gap:8px}
+html.mob .tbar.open{display:flex}
+html.mob .tbar .srch{display:none}
+html.mob .tbar .sep,html.mob .tbar .sp{display:none}
+html.mob main{display:block;height:auto;padding:0}
+html.mob #ptitle,html.mob footer{display:none}
+html.mob #mapCard{position:fixed;inset:0;height:auto;min-height:0;border:0;border-radius:0;padding:0;z-index:1;box-shadow:none}
+html.mob #mapCard>h3,html.mob #mapCard>.mopt{display:none}
+html.mob #mapWrap{border:0;border-radius:0}
+html.mob .leaflet-control-zoom{display:none}
+#mTop{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;z-index:1000;gap:8px;align-items:stretch}
+.msrch{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border-radius:18px;box-shadow:0 2px 10px rgba(0,0,0,.22);padding:0 14px;height:52px;color:#1e293b}
+.msrch input{flex:1;border:0;outline:0;font-size:16px;background:transparent;min-width:0;color:#1e293b}
+.msrch .gi{width:22px;height:22px}
+.msrch button{border:0;background:none;padding:4px;display:flex;cursor:pointer}
+.mbig{width:52px;height:52px;border-radius:16px;border:0;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer}
+.mbig .gi{width:24px;height:24px;color:#fff!important;stroke-width:2.2}
+html.mob .daybar{top:calc(max(10px,env(safe-area-inset-top)) + 58px);padding:4px 10px}
+html.mob .dc{padding:8px 13px;font-size:13px;box-shadow:0 1px 6px rgba(0,0,0,.2);border-radius:999px}
+html.mob .fab{right:12px;bottom:auto;top:calc(max(10px,env(safe-area-inset-top)) + 118px);gap:10px}
+html.mob .fab button{width:50px;height:50px;background:#fff!important;border:0;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+html.mob .fab .gi.cc{color:var(--c)!important}
+html.mob .fab button.on{outline:3px solid #2563eb}
+html.mob .nobase{top:calc(max(10px,env(safe-area-inset-top)) + 106px);bottom:auto;left:10px;font-size:10px;max-width:60%}
+html.mob .pickbar{bottom:calc(var(--sh,32vh) + 14px)}
+html.mob #side{position:fixed;left:0;right:0;bottom:0;height:var(--sh,32vh);z-index:1200;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -4px 20px rgba(15,23,42,.22);padding:0 12px 10px;display:flex;flex-direction:column;gap:8px;transition:height .22s ease;overflow:hidden}
+html.mob #side.drag{transition:none}
+#sheetH{justify-content:center;align-items:center;height:26px;flex:none;cursor:grab;touch-action:none}
+#sheetH span{width:46px;height:5px;border-radius:3px;background:#cbd5e1}
+html.mob #side .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+html.mob #side .k{padding:6px;border-radius:10px}html.mob #side .k h4{font-size:15px}html.mob #side .k small{display:none}
+html.mob #panel{border:0;box-shadow:none;padding:0;flex:1;min-height:0}
+html.mob #panel .scr{max-height:none}
+#siteCard{flex-direction:column;gap:8px;flex:1;min-height:0;overflow:auto}
+#siteCard[hidden]{display:none!important}
+html.mob #side.card-on .kpis,html.mob #side.card-on #panel{display:none}
+.sc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.sc-h h2{margin:0;font-size:21px;font-weight:900}
+.sc-x{width:40px;height:40px;border-radius:50%;border:0;background:var(--sub2);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+.sc-sub{font-size:14px;color:var(--mute)}
+.sc-row{display:flex;gap:10px;align-items:flex-start;font-size:15px;padding:6px 0;border-top:1px solid var(--line)}
+.sc-row .gi{width:20px;height:20px;margin-top:2px}
+.sc-row a.cp{color:#2563eb;text-decoration:underline;font-size:14px;margin-left:6px;white-space:nowrap;cursor:pointer}
+.sc-btn{display:flex;gap:8px;flex-wrap:wrap}
+.sc-btn button,.sc-btn a{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:var(--card);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:800;color:var(--ink);text-decoration:none;cursor:pointer}
+.sc-btn button[data-a=ev] .gi.cc,.ppt .bt button.adm .gi.cc{color:#fff!important}
+html.mob .tbar label.mini{display:none}
+html.mob .nobase.hide{display:none}
+.sc-go{display:flex;gap:10px;margin-top:auto;padding-top:6px}
+.sc-go a{flex:1;text-align:center;background:#2563eb;color:#fff;border-radius:999px;padding:13px 0;font-size:17px;font-weight:800;text-decoration:none}
+html.dark .msrch{background:#162033;color:#e2e8f0}html.dark .msrch input{color:#e2e8f0}html.dark.mob .fab button{background:#162033!important}
+
 /* BSSTGIS 선 아이콘 (스마트 물길주소·물길해석과 같은 모양·색) */
 .gi{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
 .gi.cc{color:var(--c)}html.dark .gi.cc{color:var(--cd)}
@@ -260,6 +319,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="bPr"><i class="ii" data-i="prt"></i> PDF 인쇄 (지도+목록)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
    </div></div>
+  <button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button>
   <span class="sp"></span>
   <label class="mini" style="display:flex;align-items:center;gap:4px">출력<select id="po" class="flt" style="margin:0;width:auto;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card)"><option value="landscape">가로</option><option value="portrait">세로</option></select></label>
  </div>
@@ -276,6 +336,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   </div>
   <div id="mapWrap">
    <div id="map"></div>
+   <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button></div><button class="mbig" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i></button></div>
    <div class="daybar np" id="daybar"></div>
    <div class="fab np">
     <button class="i" id="fFit" title="모든 현장 보기"><i class="ii" data-i="full"></i></button>
@@ -290,6 +351,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  </section>
 
  <section id="side">
+  <div id="sheetH" class="mob-only np" title="끌어 올리기·내리기"><span></span></div>
+  <div id="siteCard" class="mob-only" hidden></div>
   <div class="kpis" id="kp"></div>
   <div class="card" id="panel">
    <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button><button data-t="act"><i class="ii" data-i="tool"></i> 후속 조치</button><button data-t="sum" class="adm"><i class="ii" data-i="chart"></i> 종합</button></div>
@@ -435,7 +498,7 @@ function initMap(){if(!window.L){$('map').innerHTML='<p style="padding:20px;text
  map.attributionControl.addAttribution('경계 © 통계청(2013)');
  const t=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
  t.on('tileload',()=>{if(tileOk)return;tileOk=true;$('nobase').classList.remove('on');muni.setStyle({fillOpacity:0,color:'#64748b',weight:.8})});
- setTimeout(()=>{if(!tileOk)$('nobase').classList.add('on')},4000);
+ setTimeout(()=>{if(!tileOk){$('nobase').classList.add('on');setTimeout(()=>$('nobase').classList.add('hide'),7000)}},4000);
  pinL=L.layerGroup().addTo(map);
  map.on('click',e=>{if(pickId){setPin(pickId,e.latlng,'지도에서 찍음')}})}
 function colorOf(r,days,insL){const m=$('colBy').value;if(m==='st')return STC[stOf(r)]||'#0284c7';if(m==='ins')return PAL[Math.max(0,insL.indexOf(r.ins[0]))%PAL.length];return PAL[Math.max(0,days.indexOf(r.pd))%PAL.length]}
@@ -447,8 +510,8 @@ function drawPins(fit){const L0=filt(),all=filt(true);
  const lb=$('lblOn').checked;const pts=[];const same={};
  L0.filter(hasPin).sort((a,b)=>a.no-b.no).forEach(r=>{const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const pic=L.divIcon({className:'pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(lb?'':' nolbl'),html:`<div class="d" style="background:${c};${k2?`transform:translate(${k2*6}px,${k2*6}px)`:''}"></div><div class="l" style="${k2?`top:${-10+k2*17}px`:''}">${esc(r.tm)} · ${md(r.pd)}${s==='지연'?' '+ic('clock'):''}</div>`,iconSize:[0,0]});
   const m=L.marker([r.lat,r.lng],{icon:pic,draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:0}).addTo(pinL);
-  m.bindPopup(()=>popHtml(r),{maxWidth:280});
-  m.on('click',()=>{selId=r.id;hiRow()});
+  if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280});
+  m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
   m.on('dragend',async ev=>{const ll=ev.target.getLatLng();if(await ask(`${r.tm} 핀을 이 위치로 옮길까요?`))setPin(r.id,ll,'지도에서 옮김');else drawPins()});
   mk[r.id]=m;pts.push([r.lat,r.lng])});
  const np=L0.filter(r=>!hasPin(r)).length;
@@ -511,7 +574,7 @@ function rLst(L0){$('lH').innerHTML='<tr>'+COLS.map(([k,t])=>`<th data-k="${k}">
  $('lB').innerHTML=S.map(r=>{const d=ddays(r.pd);return `<tr class="r ${r.id===selId?'sel':''}" data-id="${esc(r.id)}"><td style="white-space:nowrap"><b>${md(r.pd)}</b>(${wd(r.pd)})<div class="mini">${r.st==='완료'?(r.ad?'실제 '+md(r.ad):''):d===0?'오늘':d>0?'D-'+d:'D+'+(-d)}</div></td><td><b>${esc(r.tm)}</b><div class="mini">${esc(r.rg)}${hasPin(r)?'':' · <span class="nopin">'+ic('pin')+'위치 없음</span>'}${ADM&&EV[r.id]?' · <span style="color:#4f46e5;font-weight:800">'+ic('clip')+'점검표</span>':''}</div></td><td class="mini" style="color:var(--ink2)">${r.ins.map(esc).join(' / ')}</td><td>${cnt(r)}</td><td>${stB(stOf(r))}</td></tr>`}).join('')||'<tr><td colspan="5" class="mini" style="text-align:center;padding:20px">조건에 맞는 현장이 없습니다</td></tr>'}
 $('lH').onclick=e=>{const k=e.target.closest('th')?.dataset.k;if(!k)return;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}rLst(filt())};
 $('lB').onclick=e=>{const tr=e.target.closest('tr.r');if(!tr)return;const r=rows.find(x=>x.id===tr.dataset.id);if(!r)return;
- if(selId===r.id){openEd(r.id);return}selId=r.id;hiRow();drawPins();if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));setTimeout(()=>mk[r.id]&&mk[r.id].openPopup(),250)}else toast(r.tm+': 위치가 없습니다. 한 번 더 누르면 수정, 위치 탭에서 찍기')};
+ if(isMob()){showCard(r);return}if(selId===r.id){openEd(r.id);return}selId=r.id;hiRow();drawPins();if(map&&hasPin(r)){map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));setTimeout(()=>mk[r.id]&&mk[r.id].openPopup(),250)}else toast(r.tm+': 위치가 없습니다. 한 번 더 누르면 수정, 위치 탭에서 찍기')};
 function hiRow(){document.querySelectorAll('#lB tr.r').forEach(t=>t.classList.toggle('sel',t.dataset.id===selId));const t=document.querySelector(`#lB tr[data-id="${selId}"]`);t&&t.scrollIntoView({block:'nearest'})}
 function rCal(){const L0=filt(true);if(!calM){const n=L0.map(r=>r.pd).filter(d=>d>=ymd(today())).sort()[0]||L0.map(r=>r.pd).sort()[0];const d=pDate(n)||today();calM=new Date(d.getFullYear(),d.getMonth(),1)}
  $('mLbl').textContent=calM.getFullYear()+'년 '+(calM.getMonth()+1)+'월';const by={};L0.forEach(r=>(by[r.pd]=by[r.pd]||[]).push(r));
@@ -582,9 +645,9 @@ $('exBtn').onclick=e=>{e.stopPropagation();$('exMenu').classList.toggle('on')};
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('exMenu').classList.remove('on')});
 
 /* ── 머리글: 다크 · 현장 모드 · 출력 · 휴대폰 아이콘 ── */
-function apd(){const d=document.documentElement.classList.contains('dark');$('dm').innerHTML=d?ic('sun')+' 라이트':ic('moon')+' 다크'}
+function apd(){const d=document.documentElement.classList.contains('dark');$('dm').innerHTML=d?ic('sun')+' 라이트':ic('moon')+' 다크';const d2=$('dm2');if(d2)d2.innerHTML=$('dm').innerHTML}
 $('dm').onclick=()=>{const d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('bsst-dark',d?'1':'0')}catch(e){}apd()};apd();
-function fma(){const on=document.documentElement.classList.contains('fm');$('fmBtn').classList.toggle('on',on);$('fmBtn').innerHTML=ic('phone')+(on?' 현장 모드 켜짐':' 현장 모드');setTimeout(()=>{hh();map&&map.invalidateSize()},150)}
+function fma(){const on=document.documentElement.classList.contains('fm');$('fmBtn').classList.toggle('on',on);$('fmBtn').innerHTML=ic('phone')+(on?' 현장 모드 켜짐':' 현장 모드');setTimeout(()=>{hh();map&&map.invalidateSize();typeof mobApply==='function'&&mobApply()},150)}
 $('fmBtn').onclick=()=>{const on=document.documentElement.classList.toggle('fm');try{localStorage.setItem('insp-fm',on?'on':'off')}catch(e){}fma()};
 function spo(v){if(v!=='portrait')v='landscape';$('pgs').textContent='@page{size:A4 '+v+';margin:10mm}';$('po').value=v;try{localStorage.setItem('insp-po',v)}catch(e){}}
 $('po').onchange=()=>spo($('po').value);try{spo(localStorage.getItem('insp-po'))}catch(e){spo('landscape')}
@@ -755,8 +818,48 @@ function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못
  const t5=[['팀명','대상','일시','요약','받아쓰기 원문']];S.forEach(r=>(IV[r.id]?.notes||[]).forEach(n=>t5.push([r.tm,n.who||'팀',(n.ts||'').replace('T',' '),n.sum,n.text])));sh('면담',t5);
  saveFile('현장점검_결과_'+stamp()+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
 
+
+/* ── 📱 휴대폰 카카오맵형 배치 ── */
+const MQ=matchMedia('(max-width:1023px)');
+const isMob=()=>MQ.matches&&document.documentElement.classList.contains('fm');
+let SH='peek';
+function shH(k){const h=innerHeight;return k==='full'?Math.round(h*.88):k==='half'?Math.round(h*.52):Math.round(h*.3)}
+function setSheet(k){SH=k;document.documentElement.style.setProperty('--sh',shH(k)+'px');setTimeout(()=>map&&map.invalidateSize(),250)}
+function mobApply(){const m=isMob();const was=document.documentElement.classList.contains('mob');document.documentElement.classList.toggle('mob',m);if(m){setSheet(SH)}else{$('siteCard').hidden=true;$('side').classList.remove('card-on')}if(was!==m){setTimeout(()=>{map&&map.invalidateSize();drawPins()},120)}}
+try{MQ.addEventListener('change',mobApply)}catch(e){}
+addEventListener('resize',()=>{if(isMob())setSheet(SH)});
+(function(){const h=$('sheetH'),sd=$('side');let y0=0,h0=0,mv=false;
+ h.addEventListener('pointerdown',e=>{y0=e.clientY;h0=sd.offsetHeight;mv=false;sd.classList.add('drag');h.setPointerCapture(e.pointerId)});
+ h.addEventListener('pointermove',e=>{if(!sd.classList.contains('drag'))return;const dy=y0-e.clientY;if(Math.abs(dy)>4)mv=true;sd.style.height=Math.max(80,Math.min(innerHeight*.92,h0+dy))+'px'});
+ h.addEventListener('pointerup',e=>{sd.classList.remove('drag');const cur=sd.offsetHeight;sd.style.height='';
+  if(!mv){setSheet(SH==='peek'?'half':SH==='half'?'full':'peek');return}
+  const c=['peek','half','full'].map(k=>[k,Math.abs(shH(k)-cur)]).sort((a,b)=>a[1]-b[1])[0][0];setSheet(c)})})();
+$('mQ').oninput=()=>{F.q=$('mQ').value;$('fQ').value=F.q;render()};
+$('mQx').onclick=()=>{$('mQ').value='';F.q='';$('fQ').value='';render()};
+$('mQ').addEventListener('keydown',e=>{if(e.key==='Enter'){$('mQ').blur();setSheet('half')}});
+$('mMenu').onclick=e=>{e.stopPropagation();$('tbar').classList.toggle('open')};
+document.addEventListener('click',e=>{if(isMob()&&$('tbar').classList.contains('open')&&!e.target.closest('#tbar')&&!e.target.closest('#mMenu'))$('tbar').classList.remove('open')});
+$('dm2').onclick=()=>$('dm').click();
+$('fm2').onclick=()=>{$('tbar').classList.remove('open');$('fmBtn').click()};
+const kkLink=(r,k)=>{const exact=hasPin(r)&&r.src&&!/^대략/.test(r.src);return exact?`https://map.kakao.com/link/${k}/${encodeURIComponent(r.tm+' 현장')},${r.lat},${r.lng}`:`https://map.kakao.com/link/search/${encodeURIComponent(r.addr||(r.rg+' '+r.tm))}`};
+function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd);const c=CT[r.id]?.p||[];
+ $('siteCard').innerHTML=`<div class="sc-h"><div><h2>${esc(r.tm)} <span class="st s-${s}" style="font-size:12px;vertical-align:middle">${ic(STI[s]||'pin')} ${s}</span></h2><div class="sc-sub">${esc(r.rg)} · ${md(r.pd)}(${wd(r.pd)}) ${r.st==='완료'?'':d===0?'· 오늘':d>0?'· D-'+d:'· D+'+(-d)}</div></div><button class="sc-x" id="scX" aria-label="닫기">${ic('x')}</button></div>
+ <div class="sc-row">${ic('pin')}<div>${r.addr?esc(r.addr)+` <a class="cp" data-cp="${esc(r.addr)}">복사</a>`:'<b class="warn">주소 확인 필요</b>'}${r.src?`<div class="mini">${esc(r.src)}</div>`:''}</div></div>
+ <div class="sc-row">${ic('users')}<div>기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}<div class="mini">수검 ${cnt(r)}명</div></div></div>
+ ${c.length?`<div class="sc-row">${ic('phone')}<div>${c.map(telA).join('<br>')}</div></div>`:''}
+ <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 위치 고치기</button></div>
+ <div class="sc-go"><a href="${kkLink(r,'from')}" target="_blank" rel="noopener">출발</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">도착</a></div>
+ <p class="mini" style="margin:0">출발·도착은 카카오맵에서 열립니다${hasPin(r)&&/^대략/.test(r.src||'')?' (대략 위치라 주소 검색으로 엽니다)':''}.</p>`;
+ $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek')setSheet('half');drawPins();
+ if(map&&hasPin(r)){const z=Math.max(map.getZoom(),11);map.setView([r.lat,r.lng],z);setTimeout(()=>{const p=map.latLngToContainerPoint([r.lat,r.lng]);map.panBy([0,shH(SH)/2-40],{animate:true})},260)}}
+function hideCard(){$('siteCard').hidden=true;$('side').classList.remove('card-on');selId=null;drawPins()}
+$('siteCard').addEventListener('click',async e=>{const r=rows.find(x=>x.id===selId);if(e.target.closest('#scX'))return hideCard();
+ const cp=e.target.closest('[data-cp]');if(cp){try{await navigator.clipboard.writeText(cp.dataset.cp);toast('주소를 복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 주소를 길게 눌러 복사하세요')}return}
+ const b=e.target.closest('[data-a]');if(!b||!r)return;const a=b.dataset.a;
+ if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}});
+
 /* ── 시작 ── */
-initMap();fma();hh();startLocal();
+initMap();fma();hh();startLocal();mobApply();
 (async()=>{let db=null;try{if(window.claude&&claude.use)db=await claude.use('db')}catch(e){}if(db)startDb(db);xInit()})();
 </script>
 </body>
