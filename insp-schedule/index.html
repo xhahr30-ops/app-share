@@ -445,6 +445,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <h3><i class="ii" data-i="map"></i> 점검 일정 지도 <small id="mapInfo"></small></h3>
   <div class="mopt np">
    <label>점 색 <select id="colBy"><option value="day">점검일</option><option value="st">진행상태</option><option value="ins">기술 점검자</option></select></label>
+   <label><input type="checkbox" id="rgOn" checked> 지자체 색</label>
    <label><input type="checkbox" id="lblOn" checked> 이름표 <span class="mini">(전국 보기에서는 확대하거나 날짜를 고르면 보임)</span></label>
    <span id="legend" class="mini"></span>
   </div>
@@ -733,6 +734,7 @@ $('kkDel').onclick=()=>{try{localStorage.removeItem(KKEY)}catch(e){}location.rel
 if(inClaude())$('bKey').hidden=true;
 
 /* ── 지도 ── */
+let rgL=null,rgK=[];
 let map=null,pinL=null,mk={},tileOk=false,tileErr=0,moveOn=false,pickQ=[],pickId=null;
 const PROV=[['서울',37.56,126.98],['인천',37.46,126.62],['경기',37.55,127.42],['강원',37.72,128.35],['충북',36.78,127.78],['충남',36.55,126.8],['대전',36.35,127.39],['세종',36.52,127.25],['전북',35.73,127.12],['전남',34.88,126.95],['광주',35.16,126.85],['경북',36.38,128.78],['대구',35.86,128.58],['경남',35.33,128.25],['울산',35.55,129.25],['부산',35.18,129.06],['제주',33.38,126.55]];
 function initMap(force){if(!force&&kkKey()&&!inClaude())return;if(!window.L){$('map').innerHTML='<p style="padding:20px;text-align:center" class="mini">지도 도구(Leaflet)를 불러오지 못했습니다. 인터넷 연결을 확인하세요.</p>';return}
@@ -750,11 +752,23 @@ function initMap(force){if(!force&&kkKey()&&!inClaude())return;if(!window.L){$('
  const t=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
  t.on('tileload',()=>{if(tileOk)return;tileOk=true;$('nobase').classList.remove('on');muni.setStyle({fillOpacity:0,color:'#64748b',weight:.8})});
  setTimeout(()=>{if(!tileOk){$('nobase').classList.add('on');setTimeout(()=>$('nobase').classList.add('hide'),7000)}},4000);
+ map.createPane('rgn');map.getPane('rgn').style.zIndex=380;rgL=L.layerGroup().addTo(map);
  pinL=L.layerGroup().addTo(map);
  map.on('click',e=>{if(pickId){setPin(pickId,e.latlng,'지도에서 찍음')}})}
 function colorOf(r,days,insL){const m=$('colBy').value;if(m==='st')return STC[stOf(r)]||'#0284c7';if(m==='ins')return PAL[Math.max(0,insL.indexOf(r.ins[0]))%PAL.length];return PAL[Math.max(0,days.indexOf(r.pd))%PAL.length]}
 function legend(days,insL){const m=$('colBy').value;if(m==='st')return Object.entries(STC).map(([k,c])=>`<span style="color:${c}">●</span>${k}`).join(' ');if(m==='ins')return insL.map((n,i)=>`<span style="color:${PAL[i%PAL.length]}">●</span>${esc(n)}`).join(' ');return '점검일별 색 · 위 날짜 단추 참고'}
 function lblZ(){if(!map)return;const n=Object.keys(mk).length;$('map').classList.toggle('zlow',map.getZoom()<9&&n>12)}
+/* ── 지자체 색: 현장이 있는 시·군·구를 점 색(점검일·상태·점검자)으로 칠함 · 경계 통계청(2013) ── */
+const MUN=(()=>{const F=(BASE.m&&BASE.m.features)||[];return F.map((f,i)=>{const g=f.geometry,P=g.type==='Polygon'?[g.coordinates]:g.coordinates;let a=1e9,b=-1e9,c=1e9,d=-1e9;P.forEach(p=>p[0].forEach(([x,y])=>{a=Math.min(a,x);b=Math.max(b,x);c=Math.min(c,y);d=Math.max(d,y)}));return{f,P,bb:[a,b,c,d],n:(BASE.l[i]||[''])[0]}})})();
+function pip(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const[xi,yi]=r[i],[xj,yj]=r[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
+const munC={};function munOf(r){const k=r.lat.toFixed(5)+','+r.lng.toFixed(5);if(k in munC)return munC[k];let o=-1;
+ for(let i=0;i<MUN.length;i++){const M=MUN[i],[a,b,c,d]=M.bb;if(r.lng<a||r.lng>b||r.lat<c||r.lat>d)continue;if(M.P.some(p=>pip(r.lng,r.lat,p[0])&&!p.slice(1).some(h=>pip(r.lng,r.lat,h)))){o=i;break}}return munC[k]=o}
+function drawRgn(L0,days,insL){if(rgL)rgL.clearLayers();rgK.forEach(p=>p.setMap(null));rgK=[];if(!map||!$('rgOn').checked)return;
+ const G={};L0.filter(hasPin).forEach(r=>{const i=munOf(r);if(i<0)return;(G[i]=G[i]||[]).push(r)});
+ Object.entries(G).forEach(([i,Ls])=>{Ls.sort((a,b)=>(a.pd||'9')<(b.pd||'9')?-1:1);const M=MUN[i],c=colorOf(Ls[0],days,insL),tip=`<b>${esc(M.n)}</b> · ${Ls.map(r=>esc(r.tm)+' '+md(r.pd)).join(', ')}`;
+  if(KK){const km=kakao.maps;M.P.forEach(p=>{const pg=new km.Polygon({map:map.k,path:p.map(ring=>ring.map(([x,y])=>new km.LatLng(y,x))),strokeWeight:2,strokeColor:c,strokeOpacity:.9,fillColor:c,fillOpacity:.22,zIndex:1});rgK.push(pg)})}
+  else L.geoJSON(M.f,{pane:'rgn',style:{color:c,weight:2,opacity:.9,fillColor:c,fillOpacity:.25}}).bindTooltip(tip,{sticky:true}).addTo(rgL)})}
+$('rgOn').onchange=()=>drawPins();
 function drawPins(fit){const L0=filt(),all=filt(true);
  const days=[...new Set(rows.map(r=>r.pd).filter(Boolean))].sort(),insL=[...new Set(rows.map(r=>r.ins[0]).filter(real))].sort();
  rDays(all,days);$('legend').innerHTML=legend(days,insL);if(!map){$('mapInfo').textContent=L0.length+'곳';return}pinL.clearLayers();mk={};
@@ -766,6 +780,7 @@ function drawPins(fit){const L0=filt(),all=filt(true);
   m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
   m.on('dragend',async ev=>{const ll=ev.target.getLatLng();if(await ask(`${r.tm} 핀을 이 위치로 옮길까요?`))setPin(r.id,ll,'지도에서 옮김');else drawPins()});
   mk[r.id]=m;pts.push([r.lat,r.lng])});
+ try{drawRgn(L0,days,insL)}catch(e){}
  const np=L0.filter(r=>!hasPin(r)).length;
  $('mapInfo').textContent=`${L0.length}곳 중 지도 표시 ${pts.length}곳`+(np?` · 위치 없음 ${np}곳`:'');
 
