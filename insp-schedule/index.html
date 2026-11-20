@@ -289,6 +289,8 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+#updB{display:none;position:fixed;left:50%;transform:translateX(-50%);top:12px;z-index:2600;background:#1e1b4b;color:#fff;border-radius:99px;padding:6px 8px 6px 16px;box-shadow:0 6px 20px rgba(0,0,0,.35);align-items:center;gap:8px;font-size:13.5px;font-weight:700}#updB.on{display:flex}#updB button{border:0;border-radius:99px;padding:6px 12px;font-weight:800;cursor:pointer}#updGo{background:#fbbf24;color:#1e293b}#updX{background:none;color:#c7d2fe}
+html.kk #fRf{font-size:22px;color:#4f46e5}
 .nwc:empty{display:none}.nwc{background:#ef4444;color:#fff;border-radius:99px;padding:0 6px;font-size:11px;font-weight:800;margin-left:2px}
 .nwd{font-size:12px;font-weight:800;color:var(--ind6);margin:10px 0 4px}.nwi{display:flex;gap:8px;align-items:flex-start;padding:6px 4px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.nwi.new{background:var(--am1);border-radius:6px}.nwi input{margin-top:2px;flex:none}.nwi .t{color:var(--mute);font-size:11.5px;white-space:nowrap}
 .who{width:100%;font-size:12.5px;font-weight:700;color:var(--ink2);padding:2px 2px 4px}.who b{color:var(--ind6)}
@@ -440,6 +442,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
   <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
   <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
+  <button class="btn" id="bRf" type="button"><i class="ii" data-i="loc"></i> 새로고침</button>
   <button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button>
   <button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button>
   <button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 위치 찾기</button>
@@ -452,6 +455,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <label><i class="ii" data-i="open"></i> 백업 불러오기<input id="fJs" type="file" accept=".json" hidden></label>
     <label><i class="ii" data-i="pin"></i> 위치만 가져오기 (백업)<input id="fPos" type="file" accept=".json" hidden></label>
     <button id="bPr"><i class="ii" data-i="prt"></i> PDF 인쇄 (지도+목록)</button>
+    <button id="bArc" class="adm" type="button"><i class="ii" data-i="save"></i> 최종 파일 받기·보관</button>
     <button id="bRp" class="adm"><i class="ii" data-i="clip"></i> 점검결과 출력 (결과표·종합 보고서)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
    </div></div>
@@ -482,6 +486,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button class="r" id="fPick" title="위치 없는 현장 찍기"><i class="ii" data-i="pin"></i></button>
     <button id="fSh" title="아래 정보 칸 숨기기"><i class="ii" data-i="shd"></i></button>
     <button id="fLy" title="지도 설정 (지도 끄기·바탕지도·경계·지자체 색·핀·이름표)"><i class="ii" data-i="map"></i></button>
+    <button id="fRf" class="kk-only" title="새로고침 (최신 자료·최신 판)">⟳</button>
     <button id="fPr" class="kk-only" title="지도+목록 PDF 인쇄"><i class="ii" data-i="prt"></i></button>
     <button id="fRp" class="kk-only adm" title="점검결과 출력 (결과표·종합 보고서·한글)"><i class="ii" data-i="clip"></i></button>
     <button id="fDm" class="kk-only" title="다크 모드"><i class="ii" data-i="moon"></i></button>
@@ -596,6 +601,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" style="margin:6px 0 0">설정은 이 휴대폰·PC 브라우저에 기억됩니다.</p>
 </div></div>
 <div id="phv" class="np"><img alt="사진"><p></p></div>
+<div id="updB" class="np"><span>새 판이 올라왔습니다.</span><button type="button" id="updGo">🔄 새로고침</button><button type="button" id="updX">✕</button></div>
 <div class="modal np" id="nav"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="compass"></i> 주소찾기 · 길안내</b><button class="btn" id="nvX"><i class="ii" data-i="x"></i></button></div>
  <div style="display:flex;gap:6px"><input id="nvQ" class="inp" placeholder="주소나 장소 이름 (예: 포항시 북구 청하면 화두길 152)" enterkeyhint="go"><button class="btn" id="nvCp" type="button"><i class="ii" data-i="doc"></i> 복사</button></div>
@@ -656,8 +662,9 @@ const ctOf=r=>CT[r.id]||CT[r.k]||{};
 const rdName=id=>(RNDS.find(x=>x.id===id)||{name:id}).name;
 const sid=(rd,no)=>(rd==='2026H2'?'':rd+'-')+'s'+String(no).padStart(3,'0');
 function rndSort(){RNDS.sort((a,b)=>a.id<b.id?-1:1)}
-function derive(){if(!RD||!RNDS.find(x=>x.id===RD)){let v=null;try{v=localStorage.getItem(LS+'-rd')}catch(e){}RD=RNDS.find(x=>x.id===v)?v:RNDS[RNDS.length-1].id}rows=ALL.filter(r=>r.rd===RD);rdUI()}
-function rdUI(){const o=RNDS.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}${x.st==='마감'?' (마감)':''}</option>`).join('')+(ADM?'<option value="__new">➕ 새 회차 만들기</option>':'');['rdSel','rdSel2'].forEach(k=>{const e=$(k);if(e){e.innerHTML=o;e.value=RD}});$('ptitle').textContent='스마트 물길점검 · '+rdName(RD)+' 현장점검 및 성과평가 일정'}
+function derive(){if(!RD||!RNDS.find(x=>x.id===RD)){let v=null;try{v=localStorage.getItem(LS+'-rd')}catch(e){}const live=RNDS.filter(x=>x.st!=='보관');RD=RNDS.find(x=>x.id===v)?v:(live.length?live:RNDS)[(live.length?live:RNDS).length-1].id}rows=ALL.filter(r=>r.rd===RD);rdUI()}
+let SHOWARC=false;
+function rdUI(){const arc=RNDS.filter(x=>x.st==='보관').length;const o=RNDS.filter(x=>SHOWARC||x.st!=='보관'||x.id===RD).map(x=>`<option value="${esc(x.id)}">${esc(x.name)}${x.st==='마감'?' (마감)':x.st==='보관'?' (보관)':''}</option>`).join('')+(arc?`<option value="__arc">${SHOWARC?'🗂 보관 회차 숨기기':'🗂 보관 회차 보기 ('+arc+')'}</option>`:'')+(ADM?'<option value="__new">➕ 새 회차 만들기</option>':'');const cur=RNDS.find(x=>x.id===RD);if($('bArc'))$('bArc').innerHTML=ic('save')+(cur&&cur.st==='보관'?' 보관 해제':' 최종 파일 받기·보관');['rdSel','rdSel2'].forEach(k=>{const e=$(k);if(e){e.innerHTML=o;e.value=RD}});$('ptitle').textContent='스마트 물길점검 · '+rdName(RD)+' 현장점검 및 성과평가 일정'}
 
 /* ── 저장: 공유 DB(Claude 페이지) 또는 이 브라우저(깃허브·파일) ── */
 let rows=[],DB=null,RO=false,mode='local';
@@ -697,7 +704,7 @@ function rdCarry(){const out={};let ni=0,na=0;rows.forEach(r=>{const e=EV[r.id]|
   const A=Object.entries(AC).filter(([i,a])=>a.site===r.id&&a.st!=='이행 확인');ni+=L.length;na+=A.length;out[r.id]={L,A}});return{out,ni,na}}
 function rdInfo(){const c=rdCarry();$('rdInfo').innerHTML=`지금 회차: <b>${esc(rdName(RD))}</b> · 현장 ${rows.length}곳 → 새 회차로 복사<br>넘어갈 지적 <b>${c.ni}</b>건 · 끝나지 않은 후속 조치 <b>${c.na}</b>건`}
 $('rdX').onclick=$('rdNo').onclick=()=>{$('rdm').classList.remove('on');rdUI()};
-['rdSel','rdSel2'].forEach(k=>$(k).onchange=e=>{const v=e.target.value;$('tbar').classList.remove('open');if(v==='__new'){e.target.value=RD;rdOpen()}else if(v!==RD)rdGo(v)});
+['rdSel','rdSel2'].forEach(k=>$(k).onchange=e=>{const v=e.target.value;$('tbar').classList.remove('open');if(v==='__new'){e.target.value=RD;rdOpen()}else if(v==='__arc'){SHOWARC=!SHOWARC;rdUI()}else if(v!==RD)rdGo(v)});
 $('rdOk').onclick=async()=>{const name=$('rdN').value.trim();if(!name)return toast('회차 이름을 적어 주세요');if(RNDS.find(x=>x.name===name))return toast('같은 이름의 회차가 있습니다');
  if(mode==='db'&&RO)return toast('보기 권한이라 만들 수 없습니다');const id=rdKey(name),old=RD,cr=$('rdC').checked?rdCarry().out:{},close=$('rdM').checked,now=new Date().toISOString();
  const S=rows.map(r=>{const n={...r,id:sid(id,r.no),rd:id,k:r.k||r.id,pd:'',st:'예정',note:''};delete n.upd;return n});
@@ -1209,6 +1216,26 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-shs]')&&EVS.id)
 {const _p=putRow;putRow=async function(r,q){const o=ALL.find(x=>x.id===r.id);const ok=await _p(r,q);if(ok&&o&&!q)nwRow(o,{...o,...r});return ok}}
 {const _a=addAct;addAct=async function(site,area,item,issue){await _a(site,area,item,issue);nwAdd(site,`후속 조치 등록: ${[area,item].filter(Boolean).join(' · ')}`)}}
 
+/* ── 📦 최종 파일 받기·보관(C안): 파일만 받고 기록은 지우지 않음 · 회차 목록에서 숨김(보관 회차 보기로 다시 봄) ── */
+async function rdArchive(){if(!ADM)return toast('점검자(편집 권한)만 할 수 있습니다');const cur=RNDS.find(x=>x.id===RD)||{id:RD,name:rdName(RD)};$('exMenu').classList.remove('on');$('tbar').classList.remove('open');
+ if(cur.st==='보관'){if(!await ask(`${cur.name} 회차의 보관을 풀까요? 회차 목록에 다시 보입니다.`))return;await rdSet({...cur,st:'마감'});toast('보관을 풀었습니다');return}
+ if(!await ask(`${cur.name} 최종 파일 4개(일정 엑셀·결과 엑셀·종합 보고서 한글·전체 백업)를 받은 뒤 이 회차를 보관합니다. 기록은 지우지 않습니다. 진행할까요?`))return;
+ const st=stamp(),nm=rdName(RD);try{$('bXl').click()}catch(e){}await new Promise(r=>setTimeout(r,700));try{resXl()}catch(e){}await new Promise(r=>setTimeout(r,700));
+ try{if(typeof JSZip!=='undefined'){const D=hwpxNew('점검종합보고서');hwSum(D,[...rows].sort((a,b)=>(a.pd||'9')<(b.pd||'9')?-1:1),false);await hwpxSave(D,`점검종합보고서_${nm}_내부용_${ymd(today())}.hwpx`)}}catch(e){}
+ const ids=new Set(rows.map(r=>r.id)),pick=o=>Object.fromEntries(Object.entries(o).filter(([k,v])=>ids.has(k)||ids.has(v&&v.site)));
+ await saveFile(`현장점검_전체백업_${nm}_내부용_${st}.json`,JSON.stringify({app:'insp-2026h2',kind:'final',round:cur,saved:new Date().toISOString(),rows:rows.map(({id,...r})=>({...r,_id:id})),eval:pick(EV),intv:pick(IV),acts:pick(AC),photos:pick(PH),news:Object.fromEntries(Object.entries(NW).filter(([k,v])=>v.rd===RD))},null,1));
+ if(!await ask('파일 4개를 모두 받았나요? 확인을 누르면 이 회차를 보관합니다(기록은 그대로).'))return;
+ await rdSet({...cur,st:'보관',arc:new Date().toISOString()});nwAdd('',`회차 보관: ${nm}`);const live=RNDS.filter(x=>x.st!=='보관');if(live.length)rdGo(live[live.length-1].id);else rdUI();toast(nm+' 회차를 보관했습니다. 회차 목록의 "보관 회차 보기"로 다시 볼 수 있습니다')}
+async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collection('rounds').doc(id).set(b)}catch(e){toast('저장 실패: '+(e&&e.code||''));return}}
+ RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
+$('bArc').onclick=rdArchive;
+/* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
+const BUILD='20261120201008';
+function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
+$('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
+async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
+setTimeout(updCheck,5000);setInterval(updCheck,30*60e3);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updCheck()});
+
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
 const RPS={p1:'근태·태도',p2:'사규 준수',p3:'자기계발',p4:'조직 기여',q1:'사업 발굴',q2:'영업 참여'};
@@ -1429,7 +1456,7 @@ function kkLay(){const H=document.documentElement,on=!H.classList.contains('mob'
  if(on)H.style.setProperty('--kh',document.querySelector('header').offsetHeight+'px');$('pwT').textContent=H.classList.contains('kkc')?'▶':'◀';
  if(was!==on)setTimeout(()=>{map&&map.invalidateSize();drawPins()},150)}
 $('pwT').onclick=()=>{document.documentElement.classList.toggle('kkc');kkLay();setTimeout(()=>map&&map.invalidateSize(),230)};
-[['fLy','지도'],['fFit','전체'],['fNext','다음'],['fLoc','내 위치'],['fPick','찍기'],['fPr','인쇄'],['fRp','결과'],['fDm','다크']].forEach(([k,l])=>$(k).dataset.l=l);
+[['fRf','새로'],['fLy','지도'],['fFit','전체'],['fNext','다음'],['fLoc','내 위치'],['fPick','찍기'],['fPr','인쇄'],['fRp','결과'],['fDm','다크']].forEach(([k,l])=>$(k).dataset.l=l);
 $('fPr').onclick=()=>$('bPr').click();$('fRp').onclick=()=>rpOpen('site');$('fDm').onclick=()=>$('dm').click();
 function mobApply(){const m=isMob();const was=document.documentElement.classList.contains('mob');document.documentElement.classList.toggle('mob',m);kkLay();if(m){setSheet(SH)}else{$('siteCard').hidden=true;$('side').classList.remove('card-on')}if(was!==m){setTimeout(()=>{map&&map.invalidateSize();drawPins()},120)}}
 try{MQ.addEventListener('change',mobApply)}catch(e){}
