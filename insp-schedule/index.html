@@ -78,6 +78,14 @@ html.dark .btn.on{color:#c7d2fe}
 .mascot{height:46px;width:auto}
 .tbar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 .tbar .sp{flex:1}
+.tbar .tg{display:contents}.tbar .tgh{display:none}
+html.mob .pc-only{display:none!important}.tbar a.btn{text-decoration:none}
+html.mob .tbar .tg,html.kk .tbar .tg{display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-bottom:8px;border-bottom:1px solid var(--line)}
+html.mob .tbar .tgh,html.kk .tbar .tgh{display:block;width:100%;font-size:12px;font-weight:800;color:var(--mut,#64748b);margin:2px 0 0}
+html.mob .tbar .tg>.btn,html.mob .tbar .tg>.dd,html.mob .tbar .tg>label{flex:1 1 calc(50% - 6px);min-width:0;justify-content:flex-start}
+html.mob .tbar .tg>.dd>.btn{width:100%;justify-content:flex-start}
+html.mob .tbar .who,html.kk .tbar .who{width:100%;order:9;font-size:12px}
+@media (max-width:1023px){.tbar.open .tg{display:flex;flex-wrap:wrap;gap:6px;width:100%}.tbar.open .tgh{display:block;width:100%;font-size:12px;font-weight:800;color:#64748b}}
 .sep{width:1px;height:22px;background:var(--line2);margin:0 2px}
 .srch{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:5px 10px;min-width:220px}
 .srch input{border:0;outline:0;background:transparent;width:100%;font-size:13px}
@@ -128,6 +136,12 @@ main{display:grid;gap:10px;padding:10px 12px;grid-template-columns:minmax(0,1fr)
 .pin.sel .tp.sy{left:-20px;top:-62px;width:40px;height:62px}.pin.sel .tp.sy .syd{width:18px;height:18px;line-height:14px;font-size:11px;box-shadow:0 0 0 2px #f59e0b}
 .pin.sel .tp.sy .syi{filter:drop-shadow(0 0 3px #f59e0b) drop-shadow(0 0 2px #f59e0b)}
 .pin.done .tp.sy .syi{filter:grayscale(.5)}
+.wso{position:relative}.wso i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:8px;background:#0369a1;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);box-sizing:border-box;display:flex;align-items:center;justify-content:center}
+.wso i svg{width:18px;height:18px}.wso span{position:absolute;left:0;top:16px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;background:#fff;color:#0c4a6e;border-radius:6px;padding:1px 5px;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+#map.wsolow .wso span{display:none}#map.wsolow .wso i{transform:scale(.8)}
+html.dark .wso span{background:#0f172a;color:#bae6fd}
+.wsr{display:flex;gap:8px;align-items:center;padding:7px 2px;border-top:1px solid #e2e8f0;font-size:13px}.wsr div{flex:1;min-width:0}.wsr .mini{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wsr.off{opacity:.45}
+html.dark .wsr{border-color:#334155}
 .pin.done .tp{opacity:.75}.pin.done .l2{color:#64748b}
 .pin.nolbl .l2,#map.zlow .pin .l2{display:none}
 .pin .d{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
@@ -476,28 +490,11 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  </div>
  <div id="kkT" class="kk-only np"></div>
  <div class="tbar np" id="tbar">
-  <div class="who" id="who"></div>
-  <a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a>
-  <label class="rdw mob-only"><i class="ii" data-i="cal"></i> 회차 <select id="rdSel2" class="inp"></select></label>
   <div class="srch"><span><i class="ii" data-i="srch"></i></span><input id="fQ" placeholder="팀명 · 지역 · 이름 · 주소 검색"></div>
   <span class="sep"></span>
-  <button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button>
-  <button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button>
-  <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
-  <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
-  <button class="btn" id="bHelp" type="button">❓ 사용법</button>
-  <button class="btn adm" id="bPos" type="button"><i class="ii" data-i="loc"></i> 내 위치 보내기</button>
-  <button class="btn" id="bToday" type="button"><i class="ii" data-i="flag"></i> 오늘 점검</button>
-  <button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button>
-  <button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button>
-  <button class="btn" id="bKeys" type="button" title="PC 단축키">⌨ 단축키</button>
-  <button class="btn" id="bRf" type="button"><i class="ii" data-i="loc"></i> 새로고침</button>
-  <button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button>
-  <button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button>
-  <button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 위치 찾기</button>
-  <span class="sep"></span>
-  <label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label>
-  <div class="dd"><button class="btn" id="exBtn"><i class="ii" data-i="exp"></i> 내보내기 ▾</button>
+  <div class="tg"><b class="tgh">📍 현장</b><button class="btn" id="bToday" type="button"><i class="ii" data-i="flag"></i> 오늘 점검</button><button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button><button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button><button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button><button class="btn adm" id="bPos" type="button"><i class="ii" data-i="loc"></i> 내 위치 보내기</button></div>
+  <div class="tg"><b class="tgh">🗺 지도</b><button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button><button class="btn" id="bWso" type="button">🏢 상수도 사업소</button><button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button></div>
+  <div class="tg"><b class="tgh">📤 자료</b><label class="rdw mob-only"><i class="ii" data-i="cal"></i> 회차 <select id="rdSel2" class="inp"></select></label><label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label><div class="dd"><button class="btn" id="exBtn"><i class="ii" data-i="exp"></i> 내보내기 ▾</button>
    <div class="ddm" id="exMenu">
     <button id="bXl"><i class="ii" data-i="xls"></i> 엑셀 저장 (주소·좌표 포함)</button>
     <button id="bJs"><i class="ii" data-i="save"></i> 백업 파일 만들기 (JSON)</button>
@@ -507,10 +504,11 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="bArc" class="adm" type="button"><i class="ii" data-i="save"></i> 최종 파일 받기·보관</button>
     <button id="bRp" class="adm"><i class="ii" data-i="clip"></i> 점검결과 출력 (결과표·종합 보고서)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
-   </div></div>
-  <button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button>
+   </div></div><button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button><button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 핀 찍기</button></div>
+  <div class="tg"><b class="tgh">⚙ 설정·도움</b><button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button><button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button><button class="btn" id="bRf" type="button"><i class="ii" data-i="rf"></i> 새로고침</button><button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button><button class="btn" id="bHelp" type="button">❓ 사용법</button><button class="btn pc-only" id="bKeys" type="button" title="PC 단축키">⌨ 단축키</button><a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a></div>
   <span class="sp"></span>
-  <label class="mini" style="display:flex;align-items:center;gap:4px">출력<select id="po" class="flt" style="margin:0;width:auto;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card)"><option value="landscape">가로</option><option value="portrait">세로</option></select></label>
+  <label class="mini pc-only" style="display:flex;align-items:center;gap:4px">출력<select id="po" class="flt" style="margin:0;width:auto;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card)"><option value="landscape">가로</option><option value="portrait">세로</option></select></label>
+  <div class="who" id="who"></div>
  </div>
 </header>
 
@@ -611,6 +609,15 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
  <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+</div></div>
+<div class="modal np" id="wsm"><div class="mbox" style="max-width:560px;margin-top:30px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🏢 전국 상수도 사업소</b><button class="btn" id="wsX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" id="wsInfo" style="margin:0 0 8px"></p>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="btn" id="wsGo" type="button" style="background:#0369a1;color:#fff;border-color:#0369a1">🔎 카카오에서 모으기</button><button class="btn" id="wsXl" type="button">⬇ 엑셀로 내려받기</button><button class="btn" id="wsRe" type="button">↺ 뺀 곳 되살리기</button></div>
+ <div id="wsBar" style="display:none;height:8px;background:#e2e8f0;border-radius:9px;overflow:hidden;margin-bottom:8px"><i style="display:block;height:100%;width:0;background:#0369a1;transition:width .2s"></i></div>
+ <input id="wsQ" class="inp" placeholder="사업소 이름·주소 검색" style="margin-bottom:6px">
+ <div id="wsL" style="max-height:55vh;overflow:auto"></div>
+ <p class="mini" style="margin:8px 0 0">이름·주소·위치는 카카오 장소 정보입니다. 정수장 등 엉뚱한 곳은 '빼기'로 지우세요. 기관 확인 필요.</p>
 </div></div>
 <div class="modal np" id="tpm"><div class="mbox" style="max-width:420px;margin-top:60px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b><i class="ii" data-i="loc"></i> 팀장에게 내 위치 보내기</b><button class="btn" id="tpX" type="button"><i class="ii" data-i="x"></i></button></div>
@@ -740,7 +747,7 @@ const ICP={srch:'M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM21 21l-6-6',dl:'M12 3v12M7
  plus:'M12 5v14M5 12h14',touch:'M9 11V5a2 2 0 0 1 4 0v6l4 1.5a2 2 0 0 1 1.3 2.3L17 21H10l-4-5 1.5-1.5L9 16z',compass:'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM15.5 8.5l-2 5-5 2 2-5z',
  inb:'M3 13h5l2 3h4l2-3h5v7H3zM12 3v9M8 8l4 4 4-4',xls:'M3 4h18v16H3zM3 9h18M3 14h18M9 4v16',save:'M5 3h11l3 3v15H5zM8 3v6h8V3M8 14h8v7H8z',open:'M3 7h6l2 2h10v10H3zM12 17v-6M9 13l3-3 3 3',
  prt:'M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z',trash:'M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',
- bell:'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0',share:'M4 13v7h16v-7M12 3v12M7 8l5-5 5 5',shd:'M6 9l6 6 6-6M4 20h16',shu:'M6 15l6-6 6 6M4 4h16',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',flag:'M5 21V4M5 4h11l-2 4 2 4H5',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',
+ bell:'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0',share:'M4 13v7h16v-7M12 3v12M7 8l5-5 5 5',shd:'M6 9l6 6 6-6M4 20h16',shu:'M6 15l6-6 6 6M4 4h16',full:'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',flag:'M5 21V4M5 4h11l-2 4 2 4H5',rf:'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',loc:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z',
  pin:'M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12zM12 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',pen:'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',
  cal:'M4 5h16v16H4zM4 10h16M8 3v4M16 3v4',users:'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 13.6a6.5 6.5 0 0 1 3.5 6.4',
  check:'M5 12.5l4.5 4.5L19 7',clip:'M9 3h6v3H9zM9 5H6v16h12V5h-3M9 12l2 2 4-4M9 17h6',tool:'M15 4a5 5 0 0 0-5 6l-7 7 4 4 7-7a5 5 0 0 0 6-5l-3 3-3-1-1-3z',chart:'M4 20V10M10 20V4M16 20v-7M2 20h20',mic:'M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3M9 21h6',spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z',lock:'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',hist:'M12 3a9 9 0 1 1-8.5 6M3 4v5h5M12 7v5l3 2',doc:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6',x:'M6 6l12 12M18 6L6 18',pause:'M9 5v14M15 5v14',clock:'M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zM12 7v5l3 2'};
@@ -863,7 +870,7 @@ let QF=null;function qFly(){clearTimeout(QF);QF=setTimeout(()=>{const q=F.q.trim
 
 /* ── 카카오 바탕지도 (깃허브 판 · 키는 이 브라우저에만 저장, 실패하면 기본 지도) ── */
 const KKEY='mulgil-kakao-key';let KK=false;
-let LY={map:1,base:1,pin:1,kk:1,clean:0,kkPrev:1,grp:1,route:1};try{Object.assign(LY,JSON.parse(localStorage.getItem('mulgil-ly')||'{}'))}catch(e){}
+let LY={map:1,base:1,osm:1,pin:1,wso:1,kk:1,clean:0,kkPrev:1,grp:1,route:1};try{Object.assign(LY,JSON.parse(localStorage.getItem('mulgil-ly')||'{}'))}catch(e){}
 const lySave=()=>{try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}};
 const kkKey=()=>{if(!LY.kk||LY.clean)return '';try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 /* B안: 팀원용 설정 링크(#kk=키) — 주소의 # 뒤는 서버로 가지 않음. 열면 이 브라우저에 키 저장 후 주소창에서 바로 지움 */
@@ -871,7 +878,7 @@ const kkKey=()=>{if(!LY.kk||LY.clean)return '';try{return localStorage.getItem(K
  history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>toast('카카오 지도 설정을 받았습니다. 이제 바탕지도가 카카오 지도로 보입니다'),1500)}catch(e){}})();
 const kkKeyRaw=()=>{try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 const inClaude=()=>/claude|anthropic/.test(location.hostname);
-function kkLoad(key){return new Promise((ok,no)=>{if(window.kakao&&kakao.maps&&kakao.maps.load)return kakao.maps.load(ok);const sc=document.createElement('script');sc.src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey='+encodeURIComponent(key);const t=setTimeout(()=>no('timeout'),10000);
+function kkLoad(key){return new Promise((ok,no)=>{if(window.kakao&&kakao.maps&&kakao.maps.load)return kakao.maps.load(ok);const sc=document.createElement('script');sc.src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services&appkey='+encodeURIComponent(key);const t=setTimeout(()=>no('timeout'),10000);
  sc.onload=()=>{clearTimeout(t);if(window.kakao&&kakao.maps&&kakao.maps.load)kakao.maps.load(()=>{try{if(!kakao.maps.Map)throw 0;ok()}catch(e){no('nomap')}});else no('nokakao')};sc.onerror=()=>{clearTimeout(t);no('load')};document.head.appendChild(sc)})}
 const z2l=z=>Math.max(1,Math.min(14,19-Math.round(z))),l2z=l=>19-l;
 function kkMap(){const km=kakao.maps,el=$('map');const k=new km.Map(el,{center:new km.LatLng(36.2,127.9),level:12});
@@ -911,14 +918,14 @@ if(inClaude())$('bKey').hidden=true;
 
 /* ── 지도 ── */
 let rgL=null,rgK=[],rtL=null,rtK=[],EXP=new Set(),BLINK=null;
-let map=null,pinL=null,mk={},tileOk=false,tileErr=0,moveOn=false,pickQ=[],pickId=null;
+let MUNI=null,map=null,pinL=null,mk={},tileOk=false,tileErr=0,moveOn=false,pickQ=[],pickId=null;
 const PROV=[['서울',37.56,126.98],['인천',37.46,126.62],['경기',37.55,127.42],['강원',37.72,128.35],['충북',36.78,127.78],['충남',36.55,126.8],['대전',36.35,127.39],['세종',36.52,127.25],['전북',35.73,127.12],['전남',34.88,126.95],['광주',35.16,126.85],['경북',36.38,128.78],['대구',35.86,128.58],['경남',35.33,128.25],['울산',35.55,129.25],['부산',35.18,129.06],['제주',33.38,126.55]];
 function initMap(force){if(!force&&kkKey()&&!inClaude())return;if(!window.L){$('map').innerHTML='<p style="padding:20px;text-align:center" class="mini">지도 도구(Leaflet)를 불러오지 못했습니다. 인터넷 연결을 확인하세요.</p>';return}
  map=L.map('map',{zoomControl:true,attributionControl:true,minZoom:6,maxBounds:[[32,123],[39.5,132.5]]}).setView([36.2,127.9],7);
  map.zoomControl.setPosition('bottomleft');
  /* 내장 바탕지도: 통계청(2013) 시·군·구·시·도 경계 — Claude 페이지처럼 바깥 지도가 막혀도 보임 */
  map.createPane('base');map.getPane('base').style.zIndex=250;map.getPane('base').style.pointerEvents='none';
- const muni=L.geoJSON(BASE.m,{pane:'base',interactive:false,style:{color:'#94a3b8',weight:.7,fillColor:'#f8fafc',fillOpacity:.95}}).addTo(map);
+ const muni=MUNI=L.geoJSON(BASE.m,{pane:'base',interactive:false,style:{color:'#94a3b8',weight:.7,fillColor:'#f8fafc',fillOpacity:.95}}).addTo(map);
  L.geoJSON(BASE.p,{pane:'base',interactive:false,style:{color:'#475569',weight:1.5,fill:false}}).addTo(map);
  const mlab=L.layerGroup(BASE.l.map(([n,a,b])=>L.marker([a,b],{pane:'base',icon:L.divIcon({className:'mlab',html:`<span>${n.replace(/^(.+?[시군])(.+구)$/,'$1 $2')}</span>`,iconSize:[0,0]}),interactive:false})));
  const provL=L.layerGroup(PROV.map(([n,a,b])=>L.marker([a,b],{pane:'base',icon:L.divIcon({className:'prov',html:`<span>${n}</span>`,iconSize:[0,0]}),interactive:false})));
@@ -926,7 +933,7 @@ function initMap(force){if(!force&&kkKey()&&!inClaude())return;if(!window.L){$('
  map.on('zoomend',lblZ);
  map.attributionControl.addAttribution('경계 © 통계청(2013)');
  const t=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
- t.on('tileload',()=>{if(tileOk)return;tileOk=true;$('nobase').classList.remove('on');muni.setStyle({fillOpacity:0,color:'#64748b',weight:.8})});
+ t.on('tileload',()=>{if(tileOk)return;tileOk=true;$('nobase').classList.remove('on');muniSt()});
  setTimeout(()=>{if(!tileOk){$('nobase').classList.add('on');setTimeout(()=>$('nobase').classList.add('hide'),7000)}},4000);
  map.createPane('rgn');map.getPane('rgn').style.zIndex=380;rgL=L.layerGroup().addTo(map);
  pinL=L.layerGroup().addTo(map);
@@ -945,16 +952,19 @@ function drawRgn(L0,days,insL){if(rgL)rgL.clearLayers();rgK.forEach(p=>p.setMap(
   if(KK){const km=kakao.maps;M.P.forEach(p=>{const pg=new km.Polygon({map:map.k,path:p.map(ring=>ring.map(([x,y])=>new km.LatLng(y,x))),strokeWeight:2,strokeColor:c,strokeOpacity:.9,fillColor:c,fillOpacity:.22,zIndex:1});rgK.push(pg)})}
   else L.geoJSON(M.f,{pane:'rgn',style:{color:c,weight:2,opacity:.9,fillColor:c,fillOpacity:.25}}).bindTooltip(tip,{sticky:true}).addTo(rgL)})}
 $('rgOn').onchange=()=>drawPins();
+function muniSt(){if(!MUNI)return;MUNI.setStyle(tileOk&&LY.osm?{fillOpacity:0,color:'#64748b',weight:.8}:{color:'#94a3b8',weight:.7,fillColor:'#f8fafc',fillOpacity:.95})}
 function lyApply(){const H=document.documentElement;H.classList.toggle('nomap',!LY.map);
- if(map&&!KK&&map.getPane){const b=map.getPane('base'),t=map.getPane('tilePane');if(b)b.style.display=LY.base?'':'none';if(t)t.style.display=LY.base?'':'none'}
+ if(map&&!KK&&map.getPane){const b=map.getPane('base'),t=map.getPane('tilePane');if(b)b.style.display=LY.base?'':'none';if(t)t.style.display=LY.base&&LY.osm?'':'none';muniSt()}
  if(typeof isMob==='function'&&isMob()&&LY.map&&SH==='full')setSheet('half');if(typeof isMob==='function'&&isMob()&&!LY.map)setSheet('full')}
 function lyUI(){const hasK=!!kkKeyRaw()&&!inClaude(),I=[
  ...ADM&&AUTH?[['askpos',!tpOff(),'검색 때 팀장에게 내 위치 보내기 묻기','현장을 검색해 하나로 좁혀지면 그 현장 팀장에게 보낼지 물어봅니다 (점검자만)']]:[],
  ['clean',LY.clean,'지도만 보기','경계 지도에 핀·지자체 색만 화면 가득 (발표·캡처용) · Esc나 ✕로 끝'],
  ['map',LY.map,'지도 보기','끄면 지도를 숨기고 목록·달력만 넓게 봅니다'],
  ['kk',LY.kk&&hasK,'카카오 바탕지도',hasK?'끄면 기본 지도(시·군·구 경계)로 봅니다 · 바꾸면 다시 열림':inClaude()?'Claude 페이지에서는 쓸 수 없습니다':'메뉴 \'카카오 지도 키\'를 먼저 넣으세요',!hasK],
+ ['admap',!LY.osm,'행정지도로만 보기',KK?'카카오 지도를 쓰는 중에는 해당 없음 (카카오 바탕지도를 끄면 쓸 수 있음)':'도로·지명 일반 지도 배경을 빼고 시·군·구 경계(행정지도)만 봅니다',KK||!LY.base],
  ['base',LY.base,'시·군·구 경계·이름 (기본 지도)',KK?'카카오 지도를 쓰는 중에는 해당 없음':'끄면 바탕을 비우고 핀만 봅니다',KK],
  ['rg',$('rgOn').checked,'지자체 색','현장이 있는 시·군·구를 점 색으로 칠함'],
+ ['wso',LY.wso,'🏢 상수도 사업소',wsoList().length?wsoList().length+'곳 · 메뉴 \'상수도 사업소\'에서 모으기·목록':'메뉴 \'상수도 사업소\'에서 카카오로 먼저 모으세요'],
  ['pin',LY.pin,'현장 핀','끄면 지자체 색만 봅니다'],
  ['grp',LY.grp,'같은 곳 핀 묶기','한 사무실의 여러 팀을 숫자 핀 하나로 · 누르면 펼침'],
  ['route',LY.route,'하루 동선','날짜를 고르면 점검팀별로 그날 현장을 순서대로 잇고 거리·시간 표시(직선거리 추정)'],
@@ -971,10 +981,11 @@ $('mapOn').onclick=()=>{LY.map=1;lySave();lyApply();setTimeout(()=>{map&&map.inv
 $('lyL').addEventListener('change',e=>{const k=e.target.dataset.ly,v=e.target.checked;if(!k)return;
  if(k==='rg'){$('rgOn').checked=v;drawPins();return}if(k==='lbl'){$('lblOn').checked=v;drawPins();return}
  if(k==='clean'){$('lym').classList.remove('on');cleanSet(v);return}
+ if(k==='admap'){LY.osm=v?0:1;lySave();lyApply();return}
  if(k==='askpos'){try{localStorage.setItem('mulgil-askpos',v?'1':'0')}catch(_){}return}
  LY[k]=v?1:0;lySave();if(k==='kk'){location.reload();return}
  if(k==='map'){lyApply();$('lym').classList.remove('on');if(v)setTimeout(()=>{map&&map.invalidateSize();drawPins(true)},200);return}
- lyApply();drawPins()});
+ lyApply();drawPins();if(k==='base')lyUI()});
 /* 🧭 하루 동선: 엑셀 순서(번호)대로 잇고, 직선거리×1.3·시속 60km로 대략 계산(추정) */
 const hav=(a,b)=>{const R=6371,t=Math.PI/180,dl=(b.lat-a.lat)*t,dn=(b.lng-a.lng)*t,x=Math.sin(dl/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
 const kmT=k=>k<1?Math.round(k*1000)+'m':(k<10?k.toFixed(1):Math.round(k))+'km',minT=m=>m<60?Math.round(m)+'분':Math.floor(m/60)+'시간 '+Math.round(m%60)+'분';
@@ -1401,7 +1412,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121100121';
+const BUILD='20261121102419';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2814,6 +2825,55 @@ $('tpS').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),body=TPTXT+'\n'+TPU+'\n
  location.href='sms:'+l.ph.replace(/[^\d+]/g,'')+(/iP(hone|ad|od)/.test(navigator.userAgent)?'&':'?')+'body='+encodeURIComponent(body);tpClose()};
 $('tpK').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),u=TPU.replace('#pos=','?pos=');if(l.n)toast(`카톡에서 ${l.n} ${l.role}을(를) 골라 보내세요`);
  kkShare(TPTXT+'\n점검자 로그인 후 지도에 차량이 보입니다.',u).catch(()=>shareSend(TPTXT+'\n'+TPU));tpClose()};
+/* 🏢 전국 상수도 사업소: 카카오 장소검색으로 모아 이 브라우저에 저장 · 앱에 고정 탑재된 목록(WSO_SEED)과 합침 */
+const WSO_SEED=[];
+const WSO_KW=['상수도사업본부','상수도사업소','수도사업소','맑은물사업소','맑은물사업본부','상하수도사업소','상하수도사업본부','수도사업본부','아리수본부','물관리사업소','수도과'];
+const WSO_OK=/(상수도|수도|맑은물|상하수도|아리수|물관리)\s*(사업본부|사업소|본부)|수도과$/,WSO_NO=/(정수|배수지|가압|취수|급수장|하수처리|물재생|공사|대리점|설비|주차장|입구|정문|후문|민원실|센터$|지소|출장소|분소|빌딩|아파트)/;
+const wsoGet=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}},wsoPut=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function wsoAll(){const m={};(WSO_SEED||[]).concat(wsoGet('mulgil-wso')||[]).forEach(x=>{if(x&&x.id)m[x.id]=x});return Object.values(m).sort((a,b)=>(a.a||'').localeCompare(b.a||''))}
+const wsoHid=()=>wsoGet('mulgil-wso-off')||{};
+const wsoList=()=>{const h=wsoHid();return wsoAll().filter(x=>!h[x.id])};
+const WSI='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M4 21V9l6-4v16M10 21V3h10v18M3 21h18"/><path d="M15 8.5c1.2 1.6 1.8 2.6 1.8 3.4a1.8 1.8 0 0 1-3.6 0c0-.8.6-1.8 1.8-3.4z" fill="#7dd3fc" stroke="none"/></svg>';
+const wsoShort=n=>String(n||'').replace(/^(.+?(특별시|광역시|특별자치시|특별자치도|도))\s+/,'');
+function wsoZ(){if(map&&$('map'))$('map').classList.toggle('wsolow',map.getZoom()<10)}
+const _drawPins=drawPins;drawPins=function(fit){_drawPins(fit);if(!map||!pinL||!LY.wso)return;wsoZ();
+ wsoList().forEach(x=>{const h=`<div class="wso"><i>${WSI}</i><span>${esc(wsoShort(x.n))}</span></div>`;
+  const m=KK?kkMarker(x,'pin',h,{title:x.n,z:200}).addTo(pinL):L.marker([x.lat,x.lng],{icon:L.divIcon({className:'pin',html:h,iconSize:[0,0]}),title:x.n,zIndexOffset:-500}).addTo(pinL);
+  m.on('click',()=>wsoOpen(x.id))})};
+let WSZ=false;function wsoZbind(){if(WSZ||!map)return;WSZ=true;try{map.on('zoomend',wsoZ)}catch(e){}}
+function wsoUI(focus){const q=($('wsQ').value||'').trim(),h=wsoHid(),A=wsoAll();const on=A.filter(x=>!h[x.id]);
+ $('wsInfo').textContent=A.length?`${on.length}곳 표시${A.length>on.length?' · 뺀 곳 '+(A.length-on.length):''} · 시·도 주소 순`:'아직 모은 사업소가 없습니다. 카카오 지도 키가 있는 폰·PC에서 \'카카오에서 모으기\'를 누르세요.';
+ const L1=A.filter(x=>!q||(x.n+' '+(x.a||'')).includes(q));
+ $('wsL').innerHTML=L1.map(x=>`<div class="wsr ${h[x.id]?'off':''}" data-id="${esc(x.id)}" ${x.id===focus?'style="background:#e0f2fe"':''}><span style="width:26px;height:26px;border-radius:7px;background:#0369a1;display:flex;align-items:center;justify-content:center;flex:none">${WSI}</span><div><b>${esc(x.n)}</b><div class="mini">${esc(x.a||'주소 확인 필요')}</div></div><button class="btn" data-w="map">지도</button><button class="btn" data-w="nav">길안내</button><button class="btn" data-w="off">${h[x.id]?'되살리기':'빼기'}</button></div>`).join('')||'<p class="mini">없음</p>';
+ if(focus)setTimeout(()=>{const e=$('wsL').querySelector('[data-id="'+CSS.escape(focus)+'"]');e&&e.scrollIntoView({block:'center'})},50)}
+function wsoOpen(id){$('tbar').classList.remove('open');$('wsQ').value='';wsoUI(id);$('wsm').classList.add('on')}
+$('bWso').onclick=()=>wsoOpen();$('wsX').onclick=()=>$('wsm').classList.remove('on');$('wsQ').oninput=()=>wsoUI();
+$('wsL').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const id=b.closest('.wsr').dataset.id,x=wsoAll().find(z=>z.id===id);if(!x)return;const w=b.dataset.w;
+ if(w==='off'){const h=wsoHid();if(h[id])delete h[id];else h[id]=1;wsoPut('mulgil-wso-off',h);wsoUI();drawPins();return}
+ if(w==='nav'){$('wsm').classList.remove('on');openNav(x.a||x.n);return}
+ if(w==='map'){$('wsm').classList.remove('on');{const h=wsoHid();if(h[id]){delete h[id];wsoPut('mulgil-wso-off',h)}}if(!LY.wso){LY.wso=1;lySave()}if(isMob()&&typeof setSheet==='function')setSheet('peek');map&&map.setView([x.lat,x.lng],Math.max(map.getZoom(),13));drawPins()}});
+$('wsRe').onclick=()=>{wsoPut('mulgil-wso-off',{});wsoUI();drawPins();toast('뺀 곳을 모두 되살렸습니다')};
+$('wsXl').onclick=()=>{const A=wsoList();if(!A.length)return toast('내려받을 사업소가 없습니다');if(!window.XLSX)return toast('엑셀 도구를 불러오지 못했습니다');
+ const ws=XLSX.utils.json_to_sheet(A.map((x,i)=>({'번호':i+1,'이름':x.n,'도로명 주소':x.ra||'','지번 주소':x.a||'','위도':x.lat,'경도':x.lng,'카카오 장소 ID':x.id.replace(/^k/,''),'출처':'카카오 장소검색 ('+(x.d||'')+')'})));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'상수도 사업소');XLSX.writeFile(wb,'전국_상수도사업소_'+ymd(new Date())+'.xlsx')};
+function wsoRects(){const R=[];(BASE.p.features||[]).forEach(f=>{let a=90,b=180,c=-90,d=-180;const g=f.geometry,P=g.type==='Polygon'?[g.coordinates]:g.coordinates;P.forEach(pl=>pl.forEach(rg=>rg.forEach(([x,y])=>{if(y<a)a=y;if(y>c)c=y;if(x<b)b=x;if(x>d)d=x})));
+ const my=(a+c)/2,mx=(b+d)/2;[[a,b,my,mx],[a,mx,my,d],[my,b,c,mx],[my,mx,c,d]].forEach(r=>R.push(r))});return R}
+let WSB=false;
+$('wsGo').onclick=async()=>{if(WSB)return;let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}
+ if(!key||inClaude())return toast('카카오 지도 키가 있는 깃허브 판에서만 모을 수 있습니다 (메뉴 \'카카오 지도 키\')');
+ WSB=true;$('wsGo').disabled=true;$('wsBar').style.display='block';const bar=$('wsBar').firstElementChild;
+ try{await kkLoad(key);if(!kakao.maps.services)throw 'nosvc';const ps=new kakao.maps.services.Places(),km=kakao.maps,R=wsoRects(),got={},tot=R.length*WSO_KW.length;let n=0,err=0;
+  const one=(kw,b,pg)=>new Promise(ok=>ps.keywordSearch(kw,(d,st,pa)=>ok({d:st===km.services.Status.OK?d:[],more:!!(pa&&pa.hasNextPage),bad:st===km.services.Status.ERROR}),{bounds:b,page:pg,size:15}));
+  for(const r of R){const b=new km.LatLngBounds(new km.LatLng(r[0],r[1]),new km.LatLng(r[2],r[3]));
+   for(const kw of WSO_KW){for(let pg=1;pg<=3;pg++){const o=await one(kw,b,pg);if(o.bad)err++;
+     o.d.forEach(p=>{const nm=p.place_name||'';if(!WSO_OK.test(nm)||WSO_NO.test(nm))return;got['k'+p.id]={id:'k'+p.id,n:nm,a:p.address_name||'',ra:p.road_address_name||'',lat:+p.y,lng:+p.x,d:ymd(new Date())}});
+     if(!o.more)break;await new Promise(z=>setTimeout(z,60))}
+    n++;bar.style.width=Math.round(n/tot*100)+'%';$('wsInfo').textContent=`카카오에서 찾는 중… ${Math.round(n/tot*100)}% · ${Object.keys(got).length}곳`}}
+  const old=wsoGet('mulgil-wso')||[],m={};old.concat(Object.values(got)).forEach(x=>m[x.id]=x);wsoPut('mulgil-wso',Object.values(m));
+  LY.wso=1;lySave();wsoUI();drawPins();toast(`상수도 사업소 ${Object.keys(got).length}곳을 모았습니다${err?' (일부 검색 실패 '+err+'건)':''}`)}
+ catch(e){toast('카카오 장소검색을 쓰지 못했습니다. 키·등록 주소를 확인하세요');wsoUI()}
+ finally{WSB=false;$('wsGo').disabled=false;setTimeout(()=>{$('wsBar').style.display='none';bar.style.width='0'},1500)}};
+setTimeout(wsoZbind,1500);
 /* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
 function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return no('nokey');
  const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:'차량 위치 보기'});ok()}catch(e){no(e)}};
