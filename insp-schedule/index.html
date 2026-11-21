@@ -1512,7 +1512,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121154854';
+const BUILD='20261121160452';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3059,7 +3059,8 @@ $('bPos').onclick=()=>{$('tbar').classList.remove('open');if(!ADM||!AUTH)return 
   const txt=`[2026년 하반기 현장점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`;
   shareBox('📍 내 위치 보내기',txt+'\n앱에 로그인하면 지도에 차량이 보입니다.',u.replace('#pos=','?pos='))},()=>toast('위치를 가져오지 못했습니다 (위치 권한 확인)'),{enableHighAccuracy:true,timeout:12000})};
 function posHash(){const m=/[#&?]pos=([-\d.]+),([-\d.]+),(\d+),([^&]*)/.exec((location.hash||'')+'&'+(location.search||''));if(!m)return;const la=+m[1],ln=+m[2],t=+m[3],nm=decodeURIComponent(m[4]||'')||'점검 차량';let n=0;
- const go=()=>{if(!map||document.documentElement.classList.contains('locked')){if(++n<120)return setTimeout(go,500);return}try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]pos=[^&]*/,'').replace(/^&/,'?'))}catch(e){}
+ if(document.documentElement.classList.contains('locked'))setTimeout(()=>{const m2=$('lkM');if(m2&&!m2.textContent)m2.textContent='🚐 차량 위치 링크입니다. 로그인하면 지도에 차량이 보입니다'},1500);
+ const go=()=>{if(!map||document.documentElement.classList.contains('locked')){if(++n<2400)return setTimeout(go,500);return}try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]pos=[^&]*/,'').replace(/^&/,'?'))}catch(e){}
   if(lockNeed()&&!AUTH)return toast('로그인하면 차량 위치가 보입니다');
   const ago=Math.max(0,Math.round((Date.now()-t)/60000)),lb=`${nm} · ${ago<1?'방금':ago<60?ago+'분 전':Math.floor(ago/60)+'시간 전'}`;vehPut('shared',la,ln,lb,false,false);map.setView([la,ln],Math.max(map.getZoom(),13));toast(nm+' 차량 위치 ('+phT(new Date(t).toISOString())+' 기준)')};setTimeout(go,900)}
 posHash();addEventListener('hashchange',posHash);
