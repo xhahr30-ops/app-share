@@ -711,7 +711,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 </div></div>
 <div class="modal np" id="rp"><div class="mbox" style="max-width:460px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="prt"></i> 점검결과 출력</b><button class="btn" id="rpX"><i class="ii" data-i="x"></i></button></div>
- <label class="mini">무엇을</label><div class="seg" id="rpK"><button type="button" data-v="site">현장별 결과표 (A4 1장씩)</button><button type="button" data-v="sum">회차 종합 보고서</button></div>
+ <label class="mini">무엇을</label><div class="seg" id="rpK"><button type="button" data-v="site">현장별 결과표 (A4 1장씩)</button><button type="button" data-v="sum">회차 종합 보고서</button><button type="button" data-v="ppl">👤 개인별 결과표</button></div>
  <label class="mini" style="margin-top:8px;display:block">어느 현장</label><select class="inp" id="rpS"></select>
  <label class="mini" style="margin-top:8px;display:block">공개 범위</label><div class="seg" id="rpV"><button type="button" data-v="pub">공개용 (현장 배포)</button><button type="button" data-v="in">내부용 (점검자)</button></div>
  <p class="mini" id="rpInfo" style="margin:8px 0 0"></p>
@@ -766,7 +766,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <li>점검표 <b>사진</b> 탭에서 설명 쓰기, <b>공개용에 넣기</b> 고르기, 삭제(점검자).</li><li><b>후속 조치</b> 탭: 상태·기한·조치 내용은 현장팀도 고칠 수 있음.</li>
 <li><b>현장 QR</b>(▦): 찍으면 그 현장의 후속 조치·사진 화면이 열림(깃허브 판 권장).</li></ul></div></details><details class="hlp"><summary>🔔 소식·공유</summary><div><ul><li><b>소식</b> 탭: 일정·상태·점검표 저장·후속 조치·사진 변경이 쌓이고, 새 소식은 빨간 숫자로 표시.</li>
 <li><b>고른 소식 보내기 / 오늘 소식 보내기</b>: 휴대폰 공유창 → 카톡·문자. PC는 복사.</li><li>현장 칸의 <b>📤 소식</b>: 그 현장 현재 상태 요약을 보냄.</li>
-<li>점수·개별평가·면담·이름·주소·연락처는 소식에 넣지 않습니다.</li></ul></div></details><details class="hlp"><summary>🖨 출력·파일</summary><div><ul><li><b>점검결과 출력</b>(종합 탭 · 결과 탭 · 내보내기): 현장별 결과표(A4, 많으면 2장) / 회차 종합 보고서, <b>공개용</b>(점수 상세·면담·개별평가 제외) / <b>내부용</b>.</li>
+<li>점수·개별평가·면담·이름·주소·연락처는 소식에 넣지 않습니다.</li></ul></div></details><details class="hlp"><summary>🖨 출력·파일</summary><div><ul><li><b>점검결과 출력</b>(종합 탭 · 결과 탭 · 내보내기): 현장별 결과표(A4, 많으면 2장) / 회차 종합 보고서 / <b>👤 개인별 결과표</b>(한 사람 1장, 본인 배포용), <b>공개용</b>(점수 상세·면담·개별평가 제외) / <b>내부용</b>.</li>
 <li>인쇄 창에서 <b>PDF로 저장</b>, 또는 <b>한글(HWPX) 저장</b>.</li><li><b>엑셀 저장</b>(주소·좌표 포함), <b>점검 결과 엑셀</b>(종합 탭), <b>백업 파일</b>(JSON) 만들기·불러오기.</li>
 <li><b>휴대폰 달력에 넣기</b>: 지금 목록 일정을 .ics로(전날 9시 알림).</li></ul></div></details><details class="hlp"><summary>🗂 회차 관리</summary><div><ul><li><b>새 회차 만들기</b>(점검자): 회차 목록 → ➕. 현장·주소·인원을 복사하고, 2점 이하 항목·미이행 지적·끝나지 않은 후속 조치를 새 회차 '이전 지적'으로 넘김.</li>
 <li><b>최종 파일 받기·보관</b>(내보내기): 최종 파일 4개를 받은 뒤 회차를 '보관'(기록은 지우지 않음). '보관 회차 보기'로 다시 봄.</li>
@@ -1522,7 +1522,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121193652';
+const BUILD='20261121195449';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2930,13 +2930,13 @@ async function tokGet(pw,nm){if(!gsOn())return '';try{const j=await gsCall({act:
 async function resUp(id,w){if(!ADM||!gsOn())return;const r=ALL.find(x=>x.id===id);if(!r)return;let tk=tokOf();
  if(!tk){const pw=prompt('결과를 구글 시트에 올리려면 점검자 비밀번호를 한 번 넣어 주세요 (이 기기에 30일 기억)');if(!pw)return toast('시트에는 올리지 않았습니다 (이 기기에는 저장됨)');tk=await tokGet(pw.trim(),AUTH.name);if(!tk)return toast('비밀번호가 맞지 않아 시트에 올리지 못했습니다')}
  const sc=o=>{const m={};Object.entries(o||{}).forEach(([k,v])=>{if(v&&v.s!=null)m[k]=v.s});return m};
- const rec={rd:r.rd||RD,site:id,tm:r.tm,people:people(r),ins:r.ins,pub:!!w.pub,team:sc(w.team),avg:scoreAvg(w.team),weak:Object.values(w.team||{}).filter(v=>typeof v.s==='number'&&v.s<=2).length,
+ const rec={rd:r.rd||RD,site:id,tm:r.tm,people:people(r),ins:[...new Set(r.ins||[])],pub:!!w.pub,team:sc(w.team),avg:scoreAvg(w.team),weak:Object.values(w.team||{}).filter(v=>typeof v.s==='number'&&v.s<=2).length,
   ppl:(w.ppl||[]).map(p=>({n:p.n,it:sc(p.it)})),prev:(w.prev||[]).map(p=>({t:p.t||'',st:p.st||''})),acts:Object.values(AC).filter(a=>a.site===id).map(a=>({area:a.area||'',item:a.item||'',issue:a.issue||'',action:a.action||'',due:a.due||'',st:a.st||''})),by:AUTH.name,upd:new Date().toISOString()};
  try{await gsCall({act:'res',tok:tk,rec});toast('결과를 시트에 올렸습니다 · 직원 '+(w.pub?'공개':'비공개'))}catch(e){if(/다시 로그인|확인이 필요/.test(String(e)))tokSet('');toast('시트 올리기 실패: '+e+' (이 기기에는 저장됨)')}}
 const ITN=Object.fromEntries([...EVI.team.flatMap(([g,its])=>its),...EVI.ppl,...EVI.lead]),SCN=Object.fromEntries(SCL.map(([v,t])=>[String(v),t]));
 async function myRes(){$('tbar').classList.remove('open');$('myr').classList.add('on');$('myrB').innerHTML='<p class="mini">불러오는 중…</p>';
- try{const j=await gsCall({act:'myres',tok:tokOf()});const L=j.list||[];
-  $('myrB').innerHTML=L.length?L.map(x=>!x.pub?`<div class="evi"><b>${esc(x.tm)}</b><p class="mini">아직 점검자가 결과를 공개하지 않았습니다.</p></div>`:`<div class="evi"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(x.tm)}</b><span class="mini">${esc(x.upd||'')} 기준</span></div>
+ try{const j=await gsCall({act:'myres',tok:tokOf()});const L=j.list||[];MYR=L;
+  $('myrB').innerHTML=L.length?L.map((x,i)=>!x.pub?`<div class="evi"><b>${esc(x.tm)}</b><p class="mini">아직 점검자가 결과를 공개하지 않았습니다.</p></div>`:`<div class="evi"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(x.tm)}</b><span class="mini">${esc(x.upd||'')} 기준 <button type="button" class="btn myp" data-i="${i}" style="padding:2px 8px;font-size:12px">🖨 출력·PDF</button></span></div>
    <p style="margin:6px 0"><b>팀 평가 평균 ${x.avg==null?'-':(+x.avg).toFixed(2)}</b> / 5</p>
    <table class="myt"><tr><th>항목</th><th>점수</th></tr>${Object.entries(x.team||{}).map(([k,v])=>`<tr><td>${esc(ITN[k]||k)}</td><td>${v==='na'?'해당없음':v+' '+(SCN[v]||'')}</td></tr>`).join('')}</table>
    ${x.mine&&Object.keys(x.mine.it||{}).length?`<p style="margin:10px 0 4px"><b>내 개별평가</b></p><table class="myt">${Object.entries(x.mine.it).map(([k,v])=>`<tr><td>${esc(ITN[k]||k)}</td><td>${v==='na'?'해당없음':v+' '+(SCN[v]||'')}</td></tr>`).join('')}</table>`:''}
@@ -2944,6 +2944,9 @@ async function myRes(){$('tbar').classList.remove('open');$('myr').classList.add
    ${(x.acts||[]).length?`<p style="margin:10px 0 4px"><b>후속 조치</b></p>${x.acts.map(a=>`<div class="mini">· ${esc([a.area,a.item].filter(Boolean).join(' '))} ${esc(a.issue)} → ${esc(a.action||'조치 계획 입력 필요')} ${a.due?'(기한 '+esc(a.due)+')':''} <b>${esc(a.st)}</b></div>`).join('')}`:''}</div>`).join(''):'<p class="mini">아직 올라온 결과가 없습니다. 점검이 끝나고 점검자가 공개하면 여기에 보입니다.</p>'}
  catch(e){$('myrB').innerHTML='<p class="mini">'+esc(String(e))+'</p>'}}
 
+let MYR=[];
+$('myrB').addEventListener('click',e=>{const b=e.target.closest('.myp');if(!b)return;const x=MYR[+b.dataset.i];if(!x)return;const r=(typeof ALL!=='undefined'&&ALL.find(y=>y.tm===x.tm&&(y.rd||RD)===x.rd))||null;
+ $('myr').classList.remove('on');rpPrint(rpPerson({rd:x.rd,tm:x.tm,date:r?rpD(r):'',name:AUTH&&AUTH.name,ins:r?[...new Set((r.ins||[]).filter(real))]:[],team:x.team,mine:(x.mine||{}).it,prev:x.prev,acts:x.acts,upd:x.upd}))});
 $('bMyRes').onclick=myRes;$('myrX').onclick=()=>$('myr').classList.remove('on');
 /* 🔑 비밀번호·초대 (구글 시트 Apps Script 웹앱에 저장) */
 const gsOn=()=>!!LOGURL&&!/^__/.test(LOGURL)&&!inClaude();
@@ -3125,10 +3128,13 @@ function rpTargets(){const sc=$('rpS').value;let L=sc==='one'?rows.filter(r=>r.i
 function rpUI(){document.querySelectorAll('#rpK button').forEach(b=>b.classList.toggle('on',b.dataset.v===RP.k));document.querySelectorAll('#rpV button').forEach(b=>b.classList.toggle('on',b.dataset.v===RP.v));
  const one=RP.id&&rows.find(r=>r.id===RP.id);const cur=$('rpS').value;$('rpS').innerHTML=(one&&RP.k==='site'?`<option value="one">이 현장만 (${esc(one.tm)})</option>`:'')+`<option value="ev">점검표를 쓴 현장 전체 (${rows.filter(r=>EV[r.id]).length}곳)</option><option value="list">지금 목록에 보이는 현장 (${filt(true).length}곳)</option>`;
  if([...$('rpS').options].some(o=>o.value===cur))$('rpS').value=cur;const n=rpTargets().length;
+ $('rpV').parentNode&&($('rpV').style.display=RP.k==='ppl'?'none':'');$('rpV').previousElementSibling.style.display=RP.k==='ppl'?'none':'';$('rpHw').hidden=RP.k==='ppl';
+ if(RP.k==='ppl'){const m=rpTargets().reduce((a,r)=>a+((EV[r.id]?.ppl||[]).filter(p=>Object.keys(p.it||{}).length).length),0);$('rpInfo').innerHTML=`${n}곳 · 개별평가가 있는 ${m}명 · 한 사람이 A4 세로 1장씩 나옵니다.<br><b>본인 배포용</b>: 본인 개별평가·팀 평가 요약·이전 지적·후속 조치만 (다른 사람 점수·면담 제외)<br>인쇄 창에서 <b>PDF로 저장</b>을 고르면 파일로 저장됩니다.`;return}
  $('rpInfo').innerHTML=(RP.k==='site'?`${n}곳 · 한 현장이 A4 세로 1장씩 나옵니다.`:`${n}곳을 묶어 종합 보고서를 만듭니다.`)+'<br>'+(RP.v==='pub'?'<b>공개용</b>: 점검 개요·개선 필요 사항·이전 지적 이행·후속 조치·종합 의견만 (점수 상세·면담·개별평가 제외)':'<b>내부용</b>: 팀평가 점수표·면담 요약·개별평가까지 모두 포함 — 점검자 외 배포 금지')+'<br>인쇄 창에서 <b>PDF로 저장</b>을 고르면 파일로 저장됩니다.'}
 $('rpK').onclick=e=>{const b=e.target.closest('button');if(b){RP.k=b.dataset.v;rpUI()}};$('rpV').onclick=e=>{const b=e.target.closest('button');if(b){RP.v=b.dataset.v;rpUI()}};$('rpS').onchange=rpUI;
 $('rpX').onclick=$('rpNo').onclick=()=>$('rp').classList.remove('on');$('bRp').onclick=()=>rpOpen('site');
 $('rpGo').onclick=async()=>{const L=rpTargets();await phLoad(Object.entries(PH).filter(([i,p])=>L.some(r=>r.id===p.site)).map(([i,p])=>({...p,id:i})));if(!L.length)return toast('출력할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub';
+ if(RP.k==='ppl'){const H=L.flatMap(r=>(EV[r.id]?.ppl||[]).filter(p=>Object.keys(p.it||{}).length).map(p=>rpPerson(rpFromEV(r,p))));if(!H.length)return toast('개별평가를 입력한 사람이 없습니다');$('rp').classList.remove('on');return rpPrint(H.join(''))}
  $('rpt').innerHTML=RP.k==='site'?L.map(r=>rpSite(r,pub)).join(''):rpSum(L,pub);$('rp').classList.remove('on');if(RP.k==='site'){await Promise.all([...$('rpt').querySelectorAll('img')].map(i=>i.complete?1:new Promise(ok=>{i.onload=i.onerror=ok;setTimeout(ok,8000)})));rpFit()}
  $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});
  setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},200)};
@@ -3237,7 +3243,7 @@ function hwSum(D,L,pub){const S=L.map(r=>({r,s:evStat(r.id),a:Object.values(AC).
  if(RNDS.length>1){hwpxH2(D,(n++)+'. 회차 비교');hwpxTable(D,[['회차','현장','점검표',...(pub?[]:['전체 평균']),'미흡 항목','이전 지적 이행률'],...RNDS.map(o=>{const RR=ALL.filter(r=>r.rd===o.id),SS=RR.map(r=>evStat(r.id)).filter(Boolean),al=SS.map(s=>s.all).filter(v=>v!=null),T=SS.reduce((a,s)=>a+s.pv,0),Dd=SS.reduce((a,s)=>a+s.pd,0);
   return [o.name+(o.id===RD?' (이번)':''),String(RR.length),String(SS.length),...(pub?[]:[al.length?f1(al.reduce((a,b)=>a+b,0)/al.length):'-']),String(SS.reduce((a,s)=>a+s.weak,0)),T?Math.round(Dd/T*100)+'%':'-']})],{head:1})}
  hwpxP(D,`출력 ${ymd(today())} · 앱에 입력된 점검표 기준. 우수팀 후보·평균은 종합 검토 전 참고용이며 확정 결과가 아닙니다. 값이 없으면 '확인 필요' 또는 '-'로 표시했습니다.`,{c:11})}
-$('rpHw').onclick=async()=>{const L=rpTargets();if(!L.length)return toast('저장할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub',b=$('rpHw');
+$('rpHw').onclick=async()=>{if(RP.k==='ppl')return toast('개인별 결과표는 출력·PDF로만 저장됩니다');const L=rpTargets();if(!L.length)return toast('저장할 현장이 없습니다 (점검표를 쓴 현장이 없으면 "지금 목록" 범위를 고르세요)');const pub=RP.v==='pub',b=$('rpHw');
  if(typeof JSZip==='undefined')return toast('한글 저장 도구(JSZip)를 불러오지 못했습니다. 인터넷 연결 후 새로고침하세요');b.disabled=true;
  try{if(RP.k==='site'){PB={};for(const [i,p] of Object.entries(PH)){if(!L.some(r=>r.id===p.site)||(pub&&!p.pub))continue;const by=await phBytes({...p,id:i});if(by)PB[i]=by}}const nm=RP.k==='site'?(L.length===1?'점검결과표_'+L[0].tm:'점검결과표_'+L.length+'곳'):'점검종합보고서';const D=hwpxNew(nm);
   if(RP.k==='site')L.forEach((r,i)=>hwSite(D,r,pub,i===0));else hwSum(D,L,pub);
@@ -3245,6 +3251,21 @@ $('rpHw').onclick=async()=>{const L=rpTargets();if(!L.length)return toast('저�
  catch(e){toast('한글 파일을 만들지 못했습니다: '+(e&&e.message||e))}finally{b.disabled=false}};
 function rpHead(t,sub,pub){return `<div class="rp-h"><div><h1>${t}</h1><div style="font-size:9.5pt;color:#475569">${sub}</div></div><span class="rp-tag ${pub?'':'in'}">${pub?'공개용':'내부용 · 배포 금지'}</span></div>`}
 const rpD=r=>r.st==='완료'&&r.ad?`${dt(r.ad)} (실시)`:dt(r.pd);
+/* 👤 개인 결과표 (직원 본인 · 점검자 일괄) — 점수 o: {k: 숫자|'na'} */
+const scV=v=>v==null||v===''?'<span class="rp-g">확인 필요</span>':v==='na'?'해당없음':(+v<=2?`<span class="rp-w">${v}점 ${SGR[v]||''}</span>`:`${v}점 ${SGR[v]||''}`);
+const avgV=o=>{const v=Object.values(o||{}).filter(x=>typeof x==='number');return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+function rpFromEV(r,p){const e=EV[r.id]||{},n=o=>{const m={};Object.entries(o||{}).forEach(([k,v])=>{if(v&&v.s!=null&&v.s!=='')m[k]=v.s});return m};
+ return {rd:r.rd||RD,tm:(r.rg?r.rg+' ':'')+r.tm,date:rpD(r),name:p.n,ins:[...new Set((r.ins||[]).filter(real))],team:n(e.team),mine:n(p.it),prev:(e.prev||[]).map(x=>({t:x.t||'',st:x.st||''})),acts:Object.values(AC).filter(a=>a.site===r.id)}}
+function rpPerson(o){const M=o.mine||{},T=o.team||{},C=EVI.ppl.concat(Object.keys(M).some(k=>k[0]==='q')?EVI.lead:[]);
+ let h=`<div class="rp-h"><div><h1>개인 점검결과표</h1><div style="font-size:9.5pt;color:#475569">${esc(rdName(o.rd||RD))} 현장점검 및 성과평가 · (주)서용엔지니어링</div></div><span class="rp-tag">본인 배포용</span></div>`;
+ h+=`<table><tr><th>이름</th><td><b>${esc(o.name||'확인 필요')}</b></td><th>현장</th><td>${esc(o.tm||'확인 필요')}</td><th>점검일</th><td>${o.date||'확인 필요'}</td></tr><tr><th>점검자</th><td colspan="5">${(o.ins||[]).length?esc(o.ins.join(' · ')):'확인 필요'}</td></tr></table>`;
+ const a=avgV(M);h+=`<h2>1. 내 개별평가</h2><table><colgroup><col><col style="width:22%"></colgroup><tr><th>항목</th><th class="c">평가</th></tr>${C.map(([k,l])=>`<tr><td>${esc(l)}</td><td class="c nw">${scV(M[k])}</td></tr>`).join('')}<tr><th>평균</th><th class="c">${a==null?'확인 필요':a.toFixed(1)+' / 5'}</th></tr></table>`;
+ const ta=avgV(T);h+=`<h2>2. 팀 평가 요약</h2>`+(Object.keys(T).length?`<table><tr><th class="c">부문</th><th class="c">평균</th><th>미흡(2점 이하) 항목</th></tr>${EVI.team.map(([g,its])=>{const sub=Object.fromEntries(its.filter(([k])=>T[k]!=null).map(([k])=>[k,T[k]])),av=avgV(sub),w=its.filter(([k])=>typeof T[k]==='number'&&T[k]<=2).map(([k,l])=>l);return `<tr><td class="c"><b>${g}</b></td><td class="c">${av==null?'확인 필요':av.toFixed(1)}</td><td>${w.length?w.map(x=>`<span class="rp-w">${esc(x)}</span>`).join('<br>'):'없음'}</td></tr>`}).join('')}<tr><th class="c">전체</th><th class="c">${ta==null?'확인 필요':ta.toFixed(1)}</th><td></td></tr></table>`:'<p>팀 평가 점수 없음 (확인 필요)</p>');
+ const pv=o.prev||[];h+=`<h2>3. 이전 지적사항 이행</h2>`+(pv.length?`<table><tr><th>지적사항</th><th class="c">이행 상태</th></tr>${pv.map(p=>`<tr><td>${esc(p.t)}</td><td class="c nw">${p.st==='이행 완료'?esc(p.st):`<span class="rp-w">${esc(p.st||'확인 필요')}</span>`}</td></tr>`).join('')}</table>`:'<p>등록된 이전 지적사항 없음</p>');
+ const A=o.acts||[];h+=`<h2>4. 후속 조치</h2>`+(A.length?`<table><tr><th>항목</th><th>조치 내용</th><th class="c">기한</th><th class="c">상태</th></tr>${A.map(x=>`<tr><td>${esc([x.area,x.item].filter(Boolean).join(' · '))}${x.issue?`<div class="rp-g">${esc(x.issue)}</div>`:''}</td><td>${esc(x.action||'')}</td><td class="c nw">${x.due?dt(x.due):'확인 필요'}</td><td class="c nw">${esc(x.st||'')}</td></tr>`).join('')}</table>`:'<p>등록된 후속 조치 없음</p>');
+ h+=`<div class="rp-note">출력 ${ymd(today())}${o.upd?' · '+esc(o.upd)+' 기준':''} · 점수는 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다. 비어 있는 값은 '확인 필요'로 표시했습니다. 본인 외 배포 금지.</div>`;
+ return `<div class="rp-page">${h}</div>`}
+function rpPrint(html){$('rpt').innerHTML=html;$('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},200)}
 function rpSite(r,pub){const e=EV[r.id]||{team:{},prev:[],ppl:[]},t=e.team||{};const A=Object.values(AC).filter(a=>a.site===r.id);const IVn=(IV[r.id]?.notes||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
  const lead=[r.lead&&'권역팀장 '+r.lead,r.solo&&'단독팀장 '+r.solo,real(r.tl)&&'팀장 '+r.tl].filter(Boolean).join(' · ')||'확인 필요';
  const weak=EVI.team.flatMap(([g,its])=>its.filter(([k])=>typeof t[k]?.s==='number'&&t[k].s<=2).map(([k,l])=>[g,l,t[k]]));
