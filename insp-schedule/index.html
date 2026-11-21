@@ -868,11 +868,11 @@ function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'
 /* ── 회차(점검 차수): 모든 회차 자료는 ALL, 지금 보는 회차만 rows ── */
 const RD0={id:'2026H2',name:'2026 하반기'};
 let ALL=[],RD=null,RNDS=[RD0];
-const ctOf=r=>CT[r.id]||CT[r.k]||{};
+const ctOf=r=>(typeof AUTH!=='undefined'&&AUTH&&AUTH.role==='emp')?{}:(CT[r.id]||CT[r.k]||{});
 const rdName=id=>(RNDS.find(x=>x.id===id)||{name:id}).name;
 const sid=(rd,no)=>(rd==='2026H2'?'':rd+'-')+'s'+String(no).padStart(3,'0');
 function rndSort(){RNDS.sort((a,b)=>a.id<b.id?-1:1)}
-function derive(){if(!RD||!RNDS.find(x=>x.id===RD)){let v=null;try{v=localStorage.getItem(LS+'-rd')}catch(e){}const live=RNDS.filter(x=>x.st!=='보관');RD=RNDS.find(x=>x.id===v)?v:(live.length?live:RNDS)[(live.length?live:RNDS).length-1].id}rows=ALL.filter(r=>r.rd===RD);rdUI()}
+function derive(){if(!RD||!RNDS.find(x=>x.id===RD)){let v=null;try{v=localStorage.getItem(LS+'-rd')}catch(e){}const live=RNDS.filter(x=>x.st!=='보관');RD=RNDS.find(x=>x.id===v)?v:(live.length?live:RNDS)[(live.length?live:RNDS).length-1].id}rows=ALL.filter(r=>r.rd===RD);if(typeof isEmp==='function'&&isEmp())rows=empView(rows);rdUI()}
 let SHOWARC=false;
 function rdUI(){const arc=RNDS.filter(x=>x.st==='보관').length;const o=RNDS.filter(x=>SHOWARC||x.st!=='보관'||x.id===RD).map(x=>`<option value="${esc(x.id)}">${esc(x.name)}${x.st==='마감'?' (마감)':x.st==='보관'?' (보관)':''}</option>`).join('')+(arc?`<option value="__arc">${SHOWARC?'🗂 보관 회차 숨기기':'🗂 보관 회차 보기 ('+arc+')'}</option>`:'')+(ADM?'<option value="__new">➕ 새 회차 만들기</option>':'');const cur=RNDS.find(x=>x.id===RD);if($('bArc'))$('bArc').innerHTML=ic('save')+(cur&&cur.st==='보관'?' 보관 해제':' 최종 파일 받기·보관');['rdSel','rdSel2'].forEach(k=>{const e=$(k);if(e){e.innerHTML=o;e.value=RD}});$('ptitle').textContent='2026년 하반기 현장점검 · '+rdName(RD)+' 현장점검 및 성과평가 일정'}
 
@@ -1517,7 +1517,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121183023';
+const BUILD='20261121191331';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2903,8 +2903,11 @@ lockApply();
 /* 📧 직원 이메일 로그인 (인증번호) · 본인 현장만 보기 — 이메일 명단은 구글 시트 '직원명부' 탭에만 있음 */
 const isEmp=()=>!!(AUTH&&AUTH.role==='emp');
 const empMk=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n[0]+'*'.repeat(n.length-2)+n[n.length-1]};
-function empOk(r){if(!isEmp())return true;const nm=AUTH.name,mk=empMk(nm),ps=people(r);if(!(ps.includes(nm)||ps.includes(mk)))return false;
+function empOk(r){if(!isEmp()||r._emp)return true;const nm=AUTH.name,mk=empMk(nm),ps=people(r);if(!(ps.includes(nm)||ps.includes(mk)))return false;
  const st=(AUTH.site||'').replace(/\s/g,'');if(!st||st==='-')return true;const tm=String(r.tm||'').replace(/[()\s]/g,''),s2=st.replace(/[()\s]/g,'');return tm.includes(s2.slice(0,2))||s2.includes(tm.slice(0,2))||!ALL.some(x=>x!==r&&(people(x).includes(nm)||people(x).includes(mk)))}
+/* 직원 화면: 본인 현장만 + 같은 현장 다른 직원 이름·연락처는 숨기고 본인만 */
+function empView(L){const nm=AUTH.name,mk=empMk(nm),me=x=>x===nm||x===mk,keep=v=>real(v)&&me(v)?v:'-';
+ return L.filter(r=>empOk(r)).map(r=>Object.assign({},r,{_emp:1,lead:keep(r.lead),solo:keep(r.solo),tl:keep(r.tl),mem:(r.mem||[]).filter(me)}))}
 $('lkEmT').onclick=()=>{const b=$('lkEm');b.hidden=!b.hidden;if(!b.hidden)setTimeout(()=>$('lkEmI').focus(),50)};
 $('lkEmS').onclick=async()=>{const em=$('lkEmI').value.trim();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){$('lkM').textContent='회사 이메일을 정확히 넣어 주세요';return}
  const b=$('lkEmS');b.disabled=true;$('lkM').textContent='인증번호를 보내는 중…';
@@ -2913,7 +2916,7 @@ $('lkEmV').onclick=async()=>{const em=$('lkEmI').value.trim(),cd=$('lkEmN').valu
  const b=$('lkEmV');b.disabled=true;$('lkM').textContent='확인 중…';
  try{const j=await gsCall({act:'otpv',email:em,code:cd});const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
   try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',j.name)}catch(_){}$('lkM').textContent='';$('lkEm').hidden=true;
-  logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();render();setTimeout(()=>{const n=filt().length;toast(n?`${j.name} 님 현장 ${n}곳만 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
+  logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();derive();render();setTimeout(()=>{const n=filt().length;toast(n?`${j.name} 님 현장 ${n}곳만 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmV').click()});$('lkEmI').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmS').click()});
 
 /* 🔑 비밀번호·초대 (구글 시트 Apps Script 웹앱에 저장) */
