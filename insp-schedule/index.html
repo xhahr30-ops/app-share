@@ -289,6 +289,9 @@ html.noadm .adm{display:none!important}
 
 /* ── 🗺 카카오맵형 PC 배치 (html.kk: 1024px 이상 · 휴대폰 배치가 아닐 때) ── */
 .kk-only{display:none}
+.veh{position:absolute;left:0;top:0;transform:translate(-50%,-92%);width:78px;pointer-events:auto;cursor:pointer}.veh img{width:78px;display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45));transition:transform .4s}.veh.flip img{transform:scaleX(-1)}
+.veh span{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;background:#1e1b4b;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;margin-top:1px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.veh.me span{background:#dc2626}html.dark .veh span{background:#312e81}#fLoc.on{background:#fee2e2!important}
 .iwh{position:absolute}#intro{display:none;position:fixed;inset:0;z-index:6000;background:linear-gradient(135deg,#4f46e5,#2563eb);overflow:hidden;cursor:pointer}#intro.on{display:block}#intro.out{opacity:0;transition:opacity .35s}
 .iroad{position:absolute;left:0;right:0;top:calc(50% + min(90vw,560px)*.19);height:6px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.75) 0 40px,transparent 40px 80px);animation:iroad .55s linear infinite}
 @keyframes iroad{to{background-position:-80px 0}}
@@ -477,6 +480,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button>
   <button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button>
   <button class="btn" id="bHelp" type="button">❓ 사용법</button>
+  <button class="btn adm" id="bPos" type="button"><i class="ii" data-i="loc"></i> 내 위치 보내기</button>
   <button class="btn" id="bToday" type="button"><i class="ii" data-i="flag"></i> 오늘 점검</button>
   <button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button>
   <button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button>
@@ -601,6 +605,12 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
  <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+</div></div>
+<div class="modal np" id="tpm"><div class="mbox" style="max-width:420px;margin-top:60px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b><i class="ii" data-i="loc"></i> 팀장에게 내 위치 보내기</b><button class="btn" id="tpX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <p id="tpQ" style="margin:6px 0 2px;font-weight:700;font-size:15px"></p><p class="mini" id="tpD" style="margin:0 0 10px"></p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="tpS" type="button" style="background:#4f46e5;color:#fff;border-color:#4f46e5;flex:1">💬 문자</button><button class="btn" id="tpK" type="button" style="background:#fee500;color:#191919;border-color:#fee500;flex:1">🟡 카톡</button><button class="btn" id="tpN" type="button" style="flex:1">아니오</button></div>
+ <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="tpOff"> 검색할 때 묻지 않기 (지도 설정에서 다시 켤 수 있음)</label>
 </div></div>
 <div class="modal np" id="rdm"><div class="mbox" style="max-width:440px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b><i class="ii" data-i="cal"></i> 새 점검 회차 만들기</b><button class="btn" id="rdX"><i class="ii" data-i="x"></i></button></div>
@@ -843,7 +853,7 @@ $('nearB').onclick=()=>{if(sortK==='dist'){sortK='pd';sortD=1;MYPOS=null;$('near
  navigator.geolocation.getCurrentPosition(p=>{MYPOS={lat:p.coords.latitude,lng:p.coords.longitude};sortK='dist';sortD=1;$('nearB').classList.add('on');$('nearI').textContent='내 위치에서 직선거리 순 · 다시 누르면 끔';setTab('lst');render()},()=>{$('nearI').textContent='';toast('위치를 가져오지 못했습니다 (위치 권한 확인)')},{enableHighAccuracy:true,timeout:9000})};
 /* 🔎 검색 결과가 한 곳이면 지도로 이동하고 핀을 깜빡임 */
 let QF=null;function qFly(){clearTimeout(QF);QF=setTimeout(()=>{const q=F.q.trim();if(!q||!map)return;const L=filt();if(L.length!==1||!hasPin(L[0]))return;const r=L[0];selId=r.id;BLINK=r.id;
- map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));drawPins();hiRow&&hiRow();setTimeout(()=>{BLINK=null},3000)},450)}
+ map.setView([r.lat,r.lng],Math.max(map.getZoom(),12));drawPins();hiRow&&hiRow();setTimeout(()=>{BLINK=null},3000);const q0=F.q;setTimeout(()=>{if(F.q===q0)tposAsk(r,true)},1300)},450)}
 
 /* ── 카카오 바탕지도 (깃허브 판 · 키는 이 브라우저에만 저장, 실패하면 기본 지도) ── */
 const KKEY='mulgil-kakao-key';let KK=false;
@@ -933,6 +943,7 @@ function lyApply(){const H=document.documentElement;H.classList.toggle('nomap',!
  if(map&&!KK&&map.getPane){const b=map.getPane('base'),t=map.getPane('tilePane');if(b)b.style.display=LY.base?'':'none';if(t)t.style.display=LY.base?'':'none'}
  if(typeof isMob==='function'&&isMob()&&LY.map&&SH==='full')setSheet('half');if(typeof isMob==='function'&&isMob()&&!LY.map)setSheet('full')}
 function lyUI(){const hasK=!!kkKeyRaw()&&!inClaude(),I=[
+ ...ADM&&AUTH?[['askpos',!tpOff(),'검색 때 팀장에게 내 위치 보내기 묻기','현장을 검색해 하나로 좁혀지면 그 현장 팀장에게 보낼지 물어봅니다 (점검자만)']]:[],
  ['clean',LY.clean,'지도만 보기','경계 지도에 핀·지자체 색만 화면 가득 (발표·캡처용) · Esc나 ✕로 끝'],
  ['map',LY.map,'지도 보기','끄면 지도를 숨기고 목록·달력만 넓게 봅니다'],
  ['kk',LY.kk&&hasK,'카카오 바탕지도',hasK?'끄면 기본 지도(시·군·구 경계)로 봅니다 · 바꾸면 다시 열림':inClaude()?'Claude 페이지에서는 쓸 수 없습니다':'메뉴 \'카카오 지도 키\'를 먼저 넣으세요',!hasK],
@@ -954,6 +965,7 @@ $('mapOn').onclick=()=>{LY.map=1;lySave();lyApply();setTimeout(()=>{map&&map.inv
 $('lyL').addEventListener('change',e=>{const k=e.target.dataset.ly,v=e.target.checked;if(!k)return;
  if(k==='rg'){$('rgOn').checked=v;drawPins();return}if(k==='lbl'){$('lblOn').checked=v;drawPins();return}
  if(k==='clean'){$('lym').classList.remove('on');cleanSet(v);return}
+ if(k==='askpos'){try{localStorage.setItem('mulgil-askpos',v?'1':'0')}catch(_){}return}
  LY[k]=v?1:0;lySave();if(k==='kk'){location.reload();return}
  if(k==='map'){lyApply();$('lym').classList.remove('on');if(v)setTimeout(()=>{map&&map.invalidateSize();drawPins(true)},200);return}
  lyApply();drawPins()});
@@ -1013,7 +1025,7 @@ $('pickSkip').onclick=nextPick;$('pickX').onclick=endPick;
 $('fPick').onclick=()=>{if(pickId)return endPick();const ids=filt().filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no).map(r=>r.id);if(!ids.length)return toast('모든 현장에 위치가 있습니다');startPick(ids)};
 $('fFit').onclick=()=>{const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(map&&p.length)map.fitBounds(p,{padding:[60,60],maxZoom:12});else if(map)map.setView([36.2,127.9],7)};
 $('fNext').onclick=()=>{const d=rows.filter(r=>r.st==='예정'&&ddays(r.pd)>=0).map(r=>r.pd).sort()[0];if(!d)return toast('남은 점검 일정이 없습니다');F.day=d;render(true);toast(md(d)+'('+wd(d)+') 점검 현장')};
-$('fLoc').onclick=()=>{if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,13);(KK?kkMarker({lat:ll[0],lng:ll[1]},'pin','<div class="d" style="background:#2563eb"></div>',{title:'내 위치',z:2000}).addTo(pinL):L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(pinL))},()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:8000})};
+$('fLoc').onclick=()=>{if(ADM&&lockNeed()&&AUTH&&vehMine())return;if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,13);(KK?kkMarker({lat:ll[0],lng:ll[1]},'pin','<div class="d" style="background:#2563eb"></div>',{title:'내 위치',z:2000}).addTo(pinL):L.circleMarker(ll,{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(pinL))},()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:8000})};
 $('bMove').onclick=()=>{moveOn=!moveOn;$('bMove').classList.toggle('on',moveOn);drawPins();toast(moveOn?'핀을 끌어서 옮길 수 있습니다':'핀 옮기기 꺼짐')};
 $('colBy').onchange=()=>drawPins();$('lblOn').onchange=()=>drawPins();
 function dbArrows(){const d=$('daybar'),w=$('mapWrap');if(!d||!w)return;const r=d.getBoundingClientRect(),q=w.getBoundingClientRect(),f=d.querySelector('.dc');const top=(f?f.getBoundingClientRect().top+f.offsetHeight/2:r.top+22)-q.top-17;
@@ -1383,7 +1395,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121093140';
+const BUILD='20261121095406';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2763,6 +2775,53 @@ $('lkK').addEventListener('mousedown',e=>e.preventDefault());$('lkK').onclick=()
 function lockOut(){if(AUTH)logEv('로그아웃',AUTH.name,AUTH.role);try{localStorage.removeItem('mulgil-auth');sessionStorage.removeItem('mulgil-auth')}catch(e){}location.reload()}
 lockApply();
 
+/* ── 🚐 관리자(점검자 로그인) 차량 위치: A 내 화면에 차량으로 따라가기 · C 내 위치 보내기(링크, 서버 없음) ── */
+const VEH={};let VW=null,VPREV=null;
+const vanSrc=()=>{const i=document.querySelector('#intro .ivan img');return i?i.src:''};
+function vehPut(key,lat,lng,label,flip,me){if(!map)return;const html=`<div class="veh${flip?' flip':''}${me?' me':''}"><img src="${vanSrc()}" alt="점검 차량"><span>${esc(label)}</span></div>`;let v=VEH[key];
+ if(KK){const km=kakao.maps,pos=new km.LatLng(lat,lng);if(!v||!v.k){const el=document.createElement('div');el.innerHTML=html;const o=new km.CustomOverlay({position:pos,content:el,xAnchor:0,yAnchor:0,zIndex:3500,clickable:true});o.setMap(map.k);VEH[key]={k:o,el}}else{v.k.setPosition(pos);v.el.innerHTML=html}}
+ else{const ic=L.divIcon({className:'',html,iconSize:[0,0]});if(!v||!v.l){VEH[key]={l:L.marker([lat,lng],{icon:ic,zIndexOffset:3000,interactive:false}).addTo(map)}}else{v.l.setLatLng([lat,lng]);v.l.setIcon(ic)}}}
+function vehDel(key){const v=VEH[key];if(!v)return;try{v.k&&v.k.setMap(null);v.l&&v.l.remove()}catch(e){}delete VEH[key]}
+function vehMine(){if(VW!=null){navigator.geolocation.clearWatch(VW);VW=null;VPREV=null;vehDel('me');$('fLoc').classList.remove('on');toast('내 차량 표시를 껐습니다');return true}
+ if(!navigator.geolocation){toast('이 화면에서는 위치를 쓸 수 없습니다');return true}let first=true;$('fLoc').classList.add('on');toast('내 위치를 차량으로 표시합니다 · 다시 누르면 끔');
+ VW=navigator.geolocation.watchPosition(p=>{const la=p.coords.latitude,ln=p.coords.longitude;let flip=VPREV?VPREV.flip:false;if(VPREV&&Math.abs(ln-VPREV.ln)>0.00003)flip=ln<VPREV.ln;VPREV={la,ln,flip};
+  const nm=(AUTH&&AUTH.name)||MEN||'내 차량';vehPut('me',la,ln,nm+' (나)',flip,true);if(first){first=false;map.setView([la,ln],Math.max(map.getZoom(),13))}},
+  e=>{if(e&&e.code===1){toast('위치 권한이 없어 내 차량 표시를 껐습니다');vehMine()}else if(first)toast('위치를 찾는 중입니다…')},{enableHighAccuracy:true,maximumAge:5000,timeout:20000});return true}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&VW!=null){navigator.geolocation.clearWatch(VW);VW=null;VPREV=null;vehDel('me');$('fLoc').classList.remove('on')}});
+/* 현장 검색 → 그 현장 팀장에게 내 위치 보내기 묻기 (점검자 로그인만) */
+const TPASK={};let TPR=null,TPTXT='',TPU='';
+const tpOff=()=>{try{return localStorage.getItem('mulgil-askpos')==='0'}catch(e){return false}};
+const tpLead=r=>{const c=ctOf(r).p||[];const l=c.find(x=>/팀장/.test(x.role||''))||c[0];return{n:(l&&l.n)||r.tl||r.solo||r.lead||'',role:(l&&l.role)||'팀장',ph:(l&&l.ph)||''}};
+function tposAsk(r,auto){if(!ADM||!AUTH||!r)return;if(auto&&(tpOff()||TPASK[r.id]||$('tpm').classList.contains('on')||document.querySelector('.modal.on')))return;TPASK[r.id]=1;TPR=r;TPTXT='';TPU='';
+ const l=tpLead(r),who=l.n?`${l.n} ${l.role}`:'팀장';$('tpQ').textContent=`${r.tm} 현장 ${who}에게 내 위치를 보낼까요?`;$('tpD').textContent='내 위치 확인 중…';
+ $('tpS').hidden=!l.ph;$('tpOff').checked=tpOff();$('tpm').classList.add('on');$('tpS').disabled=$('tpK').disabled=true;
+ const fin=(la,ln)=>{const nm=(AUTH&&AUTH.name)||MEN||'점검자',t=Date.now();let km='';if(la!=null&&hasPin(r)){const k=hav({lat:la,lng:ln},r);km=k<1?'1km 이내':'약 '+(k<10?k.toFixed(1):Math.round(k))+'km'}
+  TPU=la!=null?location.origin+location.pathname+'#pos='+la.toFixed(5)+','+ln.toFixed(5)+','+t+','+encodeURIComponent(nm):location.origin+location.pathname;
+  TPTXT=`[스마트 물길점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`+(km?`\n${r.tm} 현장까지 직선 ${km}`:'');
+  $('tpD').textContent=la==null?'위치를 못 가져와 앱 주소만 보냅니다 (위치 권한 확인)':(km?`현장까지 직선 ${km} · `:'')+(l.ph?'문자는 팀장 번호가 채워진 채 열립니다':'카톡에서 팀장을 골라 보내세요');$('tpS').disabled=$('tpK').disabled=false};
+ if(!navigator.geolocation)return fin(null);navigator.geolocation.getCurrentPosition(p=>fin(p.coords.latitude,p.coords.longitude),()=>fin(null),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
+const tpClose=()=>{$('tpm').classList.remove('on');TPR=null};
+$('tpX').onclick=$('tpN').onclick=tpClose;
+$('tpOff').onchange=e=>{try{localStorage.setItem('mulgil-askpos',e.target.checked?'0':'1')}catch(_){}};
+$('tpS').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),body=TPTXT+'\n'+TPU+'\n(점검자 로그인 후 지도에 차량이 보입니다)';
+ location.href='sms:'+l.ph.replace(/[^\d+]/g,'')+(/iP(hone|ad|od)/.test(navigator.userAgent)?'&':'?')+'body='+encodeURIComponent(body);tpClose()};
+$('tpK').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),u=TPU.replace('#pos=','?pos=');if(l.n)toast(`카톡에서 ${l.n} ${l.role}을(를) 골라 보내세요`);
+ kkShare(TPTXT+'\n점검자 로그인 후 지도에 차량이 보입니다.',u).catch(()=>shareSend(TPTXT+'\n'+TPU));tpClose()};
+/* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
+function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return no('nokey');
+ const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:'차량 위치 보기'});ok()}catch(e){no(e)}};
+ if(window.Kakao&&Kakao.Share)return send();const sc=document.createElement('script');sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';sc.crossOrigin='anonymous';
+ const t=setTimeout(()=>no('timeout'),8000);sc.onload=()=>{clearTimeout(t);window.Kakao&&Kakao.Share?send():no('nosdk')};sc.onerror=()=>{clearTimeout(t);no('load')};document.head.appendChild(sc)})}
+$('bPos').onclick=()=>{$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('관리자(점검자 로그인)만 쓸 수 있습니다');if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');toast('내 위치 찾는 중…');
+ navigator.geolocation.getCurrentPosition(p=>{const nm=(AUTH&&AUTH.name)||MEN||'관리자',t=Date.now(),u=location.origin+location.pathname+'#pos='+p.coords.latitude.toFixed(5)+','+p.coords.longitude.toFixed(5)+','+t+','+encodeURIComponent(nm);
+  const txt=`[스마트 물길점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`;
+  kkShare(txt+'\n점검자 로그인 후 지도에 차량이 보입니다.',u.replace('#pos=','?pos=')).catch(()=>shareSend(txt+'\n아래 링크를 누르면 앱 지도에 차량 위치가 보입니다.\n'+u))},()=>toast('위치를 가져오지 못했습니다 (위치 권한 확인)'),{enableHighAccuracy:true,timeout:12000})};
+function posHash(){const m=/[#&?]pos=([-\d.]+),([-\d.]+),(\d+),([^&]*)/.exec((location.hash||'')+'&'+(location.search||''));if(!m)return;const la=+m[1],ln=+m[2],t=+m[3],nm=decodeURIComponent(m[4]||'')||'점검 차량';let n=0;
+ const go=()=>{if(!map||document.documentElement.classList.contains('locked')){if(++n<120)return setTimeout(go,500);return}try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]pos=[^&]*/,'').replace(/^&/,'?'))}catch(e){}
+  if(!ADM)return toast('차량 위치는 관리자(점검자 로그인)만 볼 수 있습니다');
+  const ago=Math.max(0,Math.round((Date.now()-t)/60000)),lb=`${nm} · ${ago<1?'방금':ago<60?ago+'분 전':Math.floor(ago/60)+'시간 전'}`;vehPut('shared',la,ln,lb,false,false);map.setView([la,ln],Math.max(map.getZoom(),13));toast(nm+' 차량 위치 ('+phT(new Date(t).toISOString())+' 기준)')};setTimeout(go,900)}
+posHash();addEventListener('hashchange',posHash);
+
 /* ── 🖨 점검결과 출력 (현장별 결과표 · 회차 종합 보고서 / 공개용·내부용) ── */
 let RP={k:'site',v:'pub',id:null};
 const RPS={p1:'근태·태도',p2:'사규 준수',p3:'자기계발',p4:'조직 기여',q1:'사업 발굴',q2:'영업 참여'};
@@ -3018,7 +3077,7 @@ function showCard(r){if(!isMob())return;selId=r.id;const s=stOf(r),d=ddays(r.pd)
  <div class="sc-row">${ic('pin')}<div>${r.addr?esc(r.addr)+` <a class="cp" data-cp="${esc(r.addr)}">복사</a>`:'<b class="warn">주소 확인 필요</b>'}${r.src?`<div class="mini">${esc(r.src)}</div>`:''}</div></div>
  <div class="sc-row">${ic('users')}<div>기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}<div class="mini">수검 ${cnt(r)}명</div></div></div>
  ${c.length?`<div class="sc-row">${ic('phone')}<div>${c.map(telA).join('<br>')}</div></div>`:''}
- <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 지도에서 고치기</button><button data-a="share">${ic('share')} 소식 보내기</button><button data-a="qr">▦ QR</button><button data-a="geo">${ic('compass')} 주소로 찾기</button></div>
+ <div class="sc-btn">${ADM?`<button data-a="ev" style="background:#4f46e5;color:#fff;border-color:#4f46e5">${ic('clip')} 점검표${EV[r.id]?' ✓':''}</button>`:''}<button data-a="ed">${ic('pen')} 수정</button><button data-a="done">${ic('check')} 완료</button><button data-a="pick">${ic('pin')} 지도에서 고치기</button><button data-a="share">${ic('share')} 소식 보내기</button>${ADM&&AUTH?`<button data-a="tpos">${ic('loc')} 팀장에게 내 위치</button>`:''}<button data-a="qr">▦ QR</button><button data-a="geo">${ic('compass')} 주소로 찾기</button></div>
  <div class="sc-go"><a href="#" data-a="nav">길안내</a><a href="${kkLink(r,'to')}" target="_blank" rel="noopener">카카오맵 도착</a></div>
  <p class="mini" style="margin:0">길안내는 카카오맵·티맵 중에서 골라 이 현장 주소로 엽니다.</p>`;
  $('siteCard').hidden=false;$('side').classList.add('card-on');if(SH==='peek'||SH==='mini'||SH==='hide')setSheet('half');drawPins();
@@ -3027,7 +3086,7 @@ function hideCard(){$('siteCard').hidden=true;$('side').classList.remove('card-o
 $('siteCard').addEventListener('click',async e=>{const r=rows.find(x=>x.id===selId);if(e.target.closest('#scX'))return hideCard();
  const cp=e.target.closest('[data-cp]');if(cp){try{await navigator.clipboard.writeText(cp.dataset.cp);toast('주소를 복사했습니다')}catch(_){toast('복사가 막혀 있습니다. 주소를 길게 눌러 복사하세요')}return}
  const b=e.target.closest('[data-a]');if(!b||!r)return;const a=b.dataset.a;
- if(a==='share'){shareSite(r.id);return}
+ if(a==='share'){shareSite(r.id);return}if(a==='tpos'){tposAsk(r,false);return}
  if(a==='qr'){qrOpen(r.id);return}
  if(a==='nav'){e.preventDefault();openNav(r.addr||(r.rg+' '+r.tm));return}if(a==='ev')openEv(r.id);else if(a==='ed')openEd(r.id);else if(a==='done'){await donePin(r.id);const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else if(a==='pick'){setSheet('peek');startPick([r.id])}else if(a==='geo'){if(!r.addr)return toast('주소가 없습니다');toast('주소로 찾는 중…');try{const g=await geoOne(r.addr);if(g&&!g.rough){await putRow({...r,lat:+g.lat.toFixed(6),lng:+g.lng.toFixed(6),src:'주소 검색: '+g.q});toast('위치를 고쳤습니다');const n=rows.find(x=>x.id===r.id);n&&showCard(n)}else toast('정확한 위치를 못 찾았습니다. 지도에서 고치기를 쓰세요')}catch(_){toast('주소 검색 서버에 연결할 수 없습니다(Claude 페이지에서는 막힘). 지도에서 고치기를 쓰세요')}}});
 
