@@ -483,6 +483,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .lstb{display:flex;gap:6px;align-items:center;margin:0 0 6px;flex-wrap:wrap}.lstb .btn.on{background:#4f46e5;color:#fff;border-color:#4f46e5}.dist{color:#0369a1;font-weight:700}
 .rp-page{font-size:10pt;color:#0f172a;line-height:1.45}
 .rp-page+.rp-page{break-before:page}
+.dp-map{width:100%;height:auto;border:1px solid #94a3b8;border-radius:6px;display:block;margin:2px 0 6px;background:#dbeafe}
+.dp-chip{display:inline-flex;gap:4px;align-items:center;padding:5px 9px;border:1px solid var(--line2,#cbd5e1);border-radius:999px;font-size:13px;cursor:pointer}.dp-chip input{margin:0}
 .rp-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
 .rp-h h1{font-size:17pt;margin:0;color:#1e1b4b}.rp-h .rp-tag{font-size:9pt;font-weight:800;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
 .rp-h .rp-tag.in{background:#ede9fe;color:#5b21b6;border-color:#8b5cf6}
@@ -549,6 +551,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <label><i class="ii" data-i="open"></i> 백업 불러오기<input id="fJs" type="file" accept=".json" hidden></label>
     <label><i class="ii" data-i="pin"></i> 위치만 가져오기 (백업)<input id="fPos" type="file" accept=".json" hidden></label>
     <button id="bPr"><i class="ii" data-i="prt"></i> PDF 인쇄 (지도+목록)</button>
+    <button id="bDp" type="button"><i class="ii" data-i="cal"></i> 일자별 출력 (날짜마다 A4 세로 1장)</button>
     <button id="bArc" class="adm" type="button"><i class="ii" data-i="save"></i> 최종 파일 받기·보관</button>
     <button id="bRp" class="adm"><i class="ii" data-i="clip"></i> 점검결과 출력 (결과표·종합 보고서)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
@@ -676,6 +679,13 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" id="mlI" style="margin:0 0 8px"></p><div id="mlL" style="max-height:55vh;overflow:auto"></div>
  <p class="mini" style="margin:8px 0 0">각자에게 <b>본인 개별평가·팀 평가 요약·지적사항·후속 조치</b>만 보냅니다. 메일 주소는 구글 시트 '직원명부'에서만 꺼내 씁니다. 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) 1시간마다 자동으로 이어서 보냅니다.</p>
  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="mlNo" type="button">취소</button><button class="btn pri" id="mlGo" type="button">📧 보내기</button></div></div></div>
+<div class="modal np" id="dpm"><div class="mbox" style="max-width:440px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>📅 일자별 출력</b><button class="btn" id="dpX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" style="margin:0 0 8px">점검일마다 A4 세로 한 장: 그날 현장 지도(이동 순서·거리) + 현장 목록. 지금 목록의 조건(지역·상태·점검자·검색)을 따릅니다.</p>
+ <div style="display:flex;gap:6px;margin-bottom:6px"><button class="btn" id="dpAll" type="button">모두 선택</button><button class="btn" id="dpNone" type="button">모두 해제</button><button class="btn" id="dpLeft" type="button">오늘 이후만</button></div>
+ <div id="dpL" style="display:flex;flex-wrap:wrap;gap:6px;max-height:45vh;overflow:auto"></div>
+ <p class="mini" id="dpI" style="margin:8px 0 0"></p>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="dpNo" type="button">취소</button><button class="btn pri" id="dpGo" type="button"><i class="ii" data-i="prt"></i> 출력 · PDF 저장</button></div></div></div>
 <div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
  <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
@@ -1544,7 +1554,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121215113';
+const BUILD='20261121215420';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3204,6 +3214,44 @@ $('rpGo').onclick=async()=>{const L=rpTargets();await phLoad(Object.entries(PH).
 function rpReset(){document.documentElement.classList.remove('rpt');spo($('po').value)}
 function rpFit(){const x=$('rpt');x.style.cssText='display:block;position:absolute;left:-9999px;top:0;width:186mm';const pr=document.createElement('div');pr.style.height='273mm';x.appendChild(pr);const H=pr.offsetHeight-4;pr.remove();
  x.querySelectorAll('.rp-page').forEach(p=>{for(const c of ['t1','t2']){if(p.offsetHeight<=H)break;p.classList.add(c)}});x.style.cssText=''}
+
+/* 📅 일자별 출력: 날짜마다 A4 세로 1장 (내장 경계로 그린 SVG 지도 + 현장 목록) */
+let BBX=null;
+function bbxOf(g){let a=180,b=90,c=-180,d=-90;const w=r=>r.forEach(([x,y])=>{if(x<a)a=x;if(x>c)c=x;if(y<b)b=y;if(y>d)d=y});(g.type==='Polygon'?[g.coordinates]:g.coordinates).forEach(P=>P.forEach(w));return [a,b,c,d]}
+function dpSvg(R){const P=R.filter(hasPin);const W=1000,H=640;if(!P.length)return '<div class="dp-map" style="height:60mm;display:flex;align-items:center;justify-content:center;color:#64748b">좌표가 있는 현장이 없어 지도를 그릴 수 없습니다 (확인 필요)</div>';
+ let x0=Math.min(...P.map(r=>r.lng)),x1=Math.max(...P.map(r=>r.lng)),y0=Math.min(...P.map(r=>r.lat)),y1=Math.max(...P.map(r=>r.lat));
+ const cy=(y0+y1)/2,kx=Math.cos(cy*Math.PI/180);let w=Math.max((x1-x0)*kx,.3),h=Math.max(y1-y0,.3);const cx=(x0+x1)/2*kx,cyy=(y0+y1)/2;w*=1.35;h*=1.35;
+ if(w/h>W/H)h=w*H/W;else w=h*W/H;const L0=cx-w/2,T0=cyy+h/2,sc=W/w;const X=lng=>((lng*kx-L0)*sc).toFixed(1),Y=lat=>((T0-lat)*sc).toFixed(1);
+ const vb=[L0/kx,T0-h,(L0+w)/kx,T0];if(!BBX)BBX={m:BASE.m.features.map(f=>bbxOf(f.geometry)),p:BASE.p.features.map(f=>bbxOf(f.geometry))};
+ const hit=b=>!(b[2]<vb[0]||b[0]>vb[2]||b[3]<vb[1]||b[1]>vb[3]);
+ const path=g=>(g.type==='Polygon'?[g.coordinates]:g.coordinates).map(Pg=>Pg.map(rg=>'M'+rg.map(([a,b])=>X(a)+' '+Y(b)).join('L')+'Z').join('')).join('');
+ let o=`<svg class="dp-map" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#dbeafe"/>`;
+ BASE.m.features.forEach((f,i)=>{if(hit(BBX.m[i]))o+=`<path d="${path(f.geometry)}" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>`});
+ BASE.p.features.forEach((f,i)=>{if(hit(BBX.p[i]))o+=`<path d="${path(f.geometry)}" fill="none" stroke="#475569" stroke-width="2"/>`});
+ if(w/kx<1.6)BASE.l.forEach(([n,a,b])=>{if(b>vb[0]&&b<vb[2]&&a>vb[1]&&a<vb[3])o+=`<text x="${X(b)}" y="${Y(a)}" font-size="15" fill="#94a3b8" text-anchor="middle">${esc(n.replace(/^(.+?[시군])(.+구)$/,'$1 $2'))}</text>`});
+ const COL=['#4f46e5','#dc2626','#059669','#d97706','#0891b2','#db2777','#7c3aed','#65a30d'];
+ rtGroups(P).forEach((g,gi)=>{const c=COL[gi%8],L=g.L;for(let i=1;i<L.length;i++){const a=L[i-1],b=L[i],d=hav(a,b)*1.3;o+=`<line x1="${X(a.lng)}" y1="${Y(a.lat)}" x2="${X(b.lng)}" y2="${Y(b.lat)}" stroke="${c}" stroke-width="3" stroke-dasharray="10 7"/>`;
+  const mx=(+X(a.lng)+ +X(b.lng))/2,my=(+Y(a.lat)+ +Y(b.lat))/2,t=`약 ${kmT(d)} · ${minT(d)}`;o+=`<rect x="${mx-t.length*4.6}" y="${my-12}" width="${t.length*9.2}" height="22" rx="11" fill="#fff" stroke="${c}"/><text x="${mx}" y="${my+4}" font-size="14" font-weight="700" fill="${c}" text-anchor="middle">${t}</text>`}});
+ P.forEach(r=>{const x=+X(r.lng),y=+Y(r.lat),c=r.st==='완료'?'#9ca3af':'#4f46e5';o+=`<circle cx="${x}" cy="${y}" r="17" fill="${c}" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y+6}" font-size="17" font-weight="800" fill="#fff" text-anchor="middle">${r._dn}</text><text x="${x+22}" y="${y+6}" font-size="17" font-weight="700" fill="#1e1b4b" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(r.tm)}</text>`});
+ return o+`<text x="${W-8}" y="${H-8}" font-size="12" fill="#64748b" text-anchor="end">바탕: 통계청(2013) 시·군·구 경계 · 거리·시간은 직선×1.3 추정</text></svg>`}
+function dpPage(d,L){const R=[];rtGroups(L.filter(hasPin)).forEach(g=>g.L.forEach(r=>R.push(r)));L.forEach(r=>{if(!R.includes(r))R.push(r)});R.forEach((r,i)=>r._dn=i+1);
+ const insS=[...new Set(R.flatMap(r=>(r.ins||[]).filter(real)))];const lead=r=>[r.lead,r.solo,r.tl].filter(real).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'-';
+ let h=`<div class="rp-h"><div><h1>${esc(dt(d))} 점검 일정</h1><div style="font-size:9.5pt;color:#475569">${esc(rdName(RD))} 현장점검 · ${R.length}곳 · 수검 ${R.reduce((a,r)=>a+cnt(r),0)}명 · (주)서용엔지니어링</div></div><span class="rp-tag">일자별</span></div>`;
+ h+=dpSvg(R);
+ h+=`<table><colgroup><col style="width:6%"><col style="width:15%"><col><col style="width:22%"><col style="width:15%"><col style="width:7%"><col style="width:8%"></colgroup><tr><th class="c">순서</th><th>현장</th><th>주소</th><th>점검자 (기술/영업/공통)</th><th>책임자</th><th class="c">인원</th><th class="c">상태</th></tr>`+
+  R.map(r=>`<tr><td class="c"><b>${r._dn}</b></td><td><b>${esc(r.tm)}</b><div class="rp-g">${esc(r.rg||'')}</div></td><td><span class="cl">${r.addr?esc(r.addr):'<span class="rp-g">확인 필요</span>'}</span></td><td>${esc((r.ins||[]).map(x=>real(x)?x:'-').join(' / '))}</td><td>${esc(lead(r))}</td><td class="c">${cnt(r)}</td><td class="c nw">${esc(stOf(r))}</td></tr>`).join('')+'</table>';
+ h+=`<div class="rp-note">출력 ${ymd(today())} · 점검자 ${insS.length}명 (${esc(insS.join(', '))}) · 순서는 같은 점검자 팀의 이동 순서(지도 점선)입니다. 비어 있는 값은 '확인 필요'로 표시했습니다.</div>`;
+ return `<div class="rp-page">${h}</div>`}
+function dpDays(){return [...new Set(filt(true).map(r=>r.pd).filter(d=>pDate(d)))].sort()}
+function dpOpen(){$('exMenu').classList.remove('on');$('tbar').classList.remove('open');const D=dpDays(),F=filt(true);
+ $('dpL').innerHTML=D.length?D.map(d=>`<label class="dp-chip"><input type="checkbox" value="${d}" checked> ${esc(dt(d))} <span class="mini">${F.filter(r=>r.pd===d).length}곳</span></label>`).join(''):'<p class="mini">점검일이 정해진 현장이 없습니다.</p>';dpInfo();$('dpm').classList.add('on')}
+function dpInfo(){const n=$('dpL').querySelectorAll('input:checked').length;$('dpI').textContent=`${n}일 선택 → A4 세로 ${n}장`}
+$('dpL').addEventListener('change',dpInfo);$('dpAll').onclick=()=>{$('dpL').querySelectorAll('input').forEach(x=>x.checked=true);dpInfo()};$('dpNone').onclick=()=>{$('dpL').querySelectorAll('input').forEach(x=>x.checked=false);dpInfo()};
+$('dpLeft').onclick=()=>{const t=ymd(today());$('dpL').querySelectorAll('input').forEach(x=>x.checked=x.value>=t);dpInfo()};
+$('dpX').onclick=$('dpNo').onclick=()=>$('dpm').classList.remove('on');$('bDp').onclick=dpOpen;
+$('dpGo').onclick=()=>{const D=[...$('dpL').querySelectorAll('input:checked')].map(x=>x.value);if(!D.length)return toast('날짜를 골라 주세요');const F=filt(true);
+ $('dpm').classList.remove('on');$('rpt').innerHTML=D.map(d=>dpPage(d,F.filter(r=>r.pd===d).sort((a,b)=>a.no-b.no))).join('');rpFit();
+ $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},250)};
 /* ── 📝 한글(HWPX) 저장: 출력과 같은 내용 (스마트 물길주소의 HWPX 공용 함수 그대로) ── */
 const HWPX={W:48190,MM:283.465};
 const hwX=s=>String(s??'').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
