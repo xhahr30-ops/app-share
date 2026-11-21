@@ -1474,7 +1474,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121115340';
+const BUILD='20261121120001';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2837,7 +2837,7 @@ function carIntro(name){return new Promise(ok=>{if(matchMedia('(prefers-reduced-
  el.classList.remove('out');el.classList.add('on');[...el.querySelectorAll('.ivan,.itxt')].forEach(x=>{x.style.animation='none';void x.offsetWidth;x.style.animation=''});
  let done=false;const fin=()=>{if(done)return;done=true;el.classList.add('out');setTimeout(()=>{el.classList.remove('on','out');ok()},350)};el.onclick=fin;setTimeout(fin,3400)})}
 /* 로그인 기록 → 구글 시트(Apps Script 웹앱). 주소가 없거나 안 될 때는 이 기기에 모아 두었다가 다음에 보냄 */
-const LOGURL='https://script.google.com/macros/s/AKfycbyBFaxFn3cnmWX2A1LeGyUYv2tMIxgnwEWE7u8YquJM6xbH-iwLFHlydkrWwhVqn88n/exec';
+const LOGURL='https://script.google.com/macros/s/AKfycbz_Ssx-jmUwmyfymBYGJPjL98ZmGGDYdtPZuGnJbWkg3gsHaQau-ZV7qp73qNlPXmAb/exec';
 const devT=()=>{const u=navigator.userAgent;const os=/Android/i.test(u)?'안드로이드':/iPhone|iPad/i.test(u)?'아이폰':/Windows/i.test(u)?'윈도우':/Mac/i.test(u)?'맥':'기타';const br=/SamsungBrowser/i.test(u)?'삼성인터넷':/KAKAOTALK/i.test(u)?'카톡':/Edg\//.test(u)?'엣지':/Chrome\//.test(u)?'크롬':/Safari/i.test(u)?'사파리':'기타';const app=matchMedia('(display-mode: standalone)').matches||navigator.standalone?' · 설치앱':'';return os+' '+br+app};
 let DEVID='';try{DEVID=localStorage.getItem('mulgil-dev')||'';if(!DEVID){DEVID='d'+Math.random().toString(36).slice(2,8);localStorage.setItem('mulgil-dev',DEVID)}}catch(e){}
 function logEv(ev,name,role){const d=new Date(),o={ts:ymd(d)+' '+p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds()),ev,name:name||'',role:role==='ins'?'점검자':role==='team'?'팀원':'',dev:devT(),devId:DEVID,app:(/app-share/.test(location.pathname)?'공개판':'비공개판'),build:BUILD};
