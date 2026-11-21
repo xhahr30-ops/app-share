@@ -513,6 +513,23 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  main{display:block;height:auto;padding:0}
  #ptitle{display:block;text-align:center;font-size:18pt;font-weight:800;color:#1e1b4b;border-bottom:2px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
  #mapCard{height:150mm;break-inside:avoid;margin-bottom:8px}
+ html.prsz #mapCard{max-width:100%;break-after:auto;position:relative!important}
+ /* 출력에서는 서용이를 빼고 색 점(상태 표시)만: 현장 위치 정확히 */
+ html .tp.sy{--s:1!important;width:18px!important;height:18px!important;left:-9px!important;top:-9px!important;filter:none!important}
+ html .tp.sy .syi{display:none!important}
+ html .tp.sy .syd{right:0!important;top:0!important;width:18px!important;height:18px!important;font:900 11px/14px sans-serif!important;box-shadow:0 0 0 1px rgba(15,23,42,.5)!important}
+ /* 인쇄는 다크모드여도 흰 종이 · 요약 칸 4개 한 줄 · 표 머리 남색 */
+ html.dark{--bg:#fff;--card:#fff;--sub:#f8fafc;--sub2:#f1f5f9;--ink:#1e293b;--ink2:#475569;--mute:#64748b;--line:#e2e8f0;--line2:#cbd5e1;--ind1:#eef2ff;--ind2:#e0e7ff;--em1:#d1fae5;--am1:#fef3c7;--rd1:#fee2e2;--sk1:#e0f2fe;--hd:#f3f3f3;color-scheme:light}
+ html body,html #side,html main,html #panel,html .card{background:#fff!important;color:#1e293b!important}
+ html #side{position:static!important;box-shadow:none!important;border:0!important;transform:none!important;height:auto!important;max-height:none!important;overflow:visible!important}
+ html #mapCard{border:1px solid #cbd5e1!important;border-radius:8px;overflow:hidden}
+ html .kpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3mm!important;margin:0 0 3mm!important}
+ html .kpis>*{background:#fff!important;border:1px solid #c7d2fe!important;border-left:4px solid #4f46e5!important;border-radius:6px!important;box-shadow:none!important;padding:2mm 3mm!important;color:#1e293b!important}
+ html #panel{border:0!important;box-shadow:none!important;padding:0!important}
+ html #panel table{width:100%;border-collapse:collapse;font-size:9pt}
+ html #panel th{background:#e0e7ff!important;color:#1e1b4b!important;border-bottom:2px solid #4f46e5!important;padding:2mm 2mm!important;text-align:left}
+ html #panel td{border-bottom:1px solid #e2e8f0!important;padding:1.6mm 2mm!important;color:#1e293b!important}
+ html #panel tr:nth-child(even) td{background:#f8fafc!important}
  .scr{overflow:visible!important;max-height:none!important}
  .card{box-shadow:none}
  tr{break-inside:avoid}
@@ -1288,10 +1305,12 @@ $('fPos').onchange=async e=>{const f=e.target.files[0];e.target.value='';$('exMe
  const T=rows.filter(r=>{const p=P[r.tm];return p&&(!hasPin(r)||Math.abs(p.lat-r.lat)>1e-6||Math.abs(p.lng-r.lng)>1e-6)});if(!T.length)return toast('바뀔 위치가 없습니다');
  if(!await ask(`백업에서 ${T.length}곳의 지도 위치만 가져올까요? (일정·점검 기록은 그대로)`))return;let n=0;for(const r of T){const p=P[r.tm];if(await putRow({...r,lat:+p.lat,lng:+p.lng,src:p.src||'백업에서 가져옴'},true))n++}derive();render();toast(n+'곳 위치를 가져왔습니다')}catch(err){toast('백업 파일 형식이 아닙니다')}};
 $('bRst').onclick=async()=>{$('exMenu').classList.remove('on');if(!SEED.length)return toast('이 판에는 기본 자료가 없습니다. 엑셀을 불러오세요.');if(await ask('처음 받은 엑셀 일정('+SEED.length+'곳)으로 되돌릴까요? 찍어 둔 위치는 같은 팀명이면 유지합니다.'))await replaceAll(SEED,true)};
-$('bPr').onclick=()=>{rpReset();$('exMenu').classList.remove('on');setTab('lst');const w=prMob();setTimeout(()=>{try{window.print()}catch(e){}},w?900:300)};
-/* 인쇄할 때 모바일(현장 모드) 화면이면 잠깐 PC 화면으로 바꿔 지도+목록이 A4에 다 나오게 (Ctrl+P 포함) */
-let PRM=false;function prMob(){const d=document.documentElement;if(!d.classList.contains('mob')||d.classList.contains('rpt'))return false;PRM=true;d.classList.remove('mob');d.classList.add('prsz');{const mc=$('mapCard');if(mc){mc.style.width=($('po').value==='portrait'?188:275)+'mm';mc.style.height='150mm'}}try{if(map){map.invalidateSize(false);const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(p.length)map.fitBounds(p,{padding:[45,45],maxZoom:12,animate:false});drawPins()}}catch(e){}return true}
-addEventListener('beforeprint',prMob);addEventListener('afterprint',()=>{if(!PRM)return;PRM=false;document.documentElement.classList.remove('prsz');{const mc=$('mapCard');if(mc){mc.style.width='';mc.style.height=''}}setTimeout(()=>{try{mobApply();map&&map.invalidateSize();drawPins()}catch(e){}},100)});
+$('bPr').onclick=()=>{rpReset();$('exMenu').classList.remove('on');setTab('lst');$('po').value='portrait';spo('portrait');prMob(true);setTimeout(()=>{try{window.print()}catch(e){}},900)};
+/* 인쇄 준비: 모바일(현장 모드)이면 잠깐 PC 배치로, 지도 칸을 A4 크기로 맞추고 전체 현장이 다 들어오게 (Ctrl+P 포함) */
+let PRM=false,PRW=false;function prMob(force){const d=document.documentElement;if(d.classList.contains('rpt')||PRM)return false;const mob=d.classList.contains('mob');if(!mob&&!force)return false;
+ PRM=true;PRW=mob;if(mob)d.classList.remove('mob');d.classList.add('prsz');try{kkLay()}catch(e){}const por=$('po').value==='portrait';{const mc=$('mapCard');if(mc){mc.style.width=(por?188:275)+'mm';mc.style.height=(por?200:150)+'mm'}}
+ try{if(map){map.invalidateSize(false);const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(p.length)map.fitBounds(p,{padding:[45,45],maxZoom:12,animate:false});drawPins()}}catch(e){}return true}
+addEventListener('beforeprint',()=>prMob(false));addEventListener('afterprint',()=>{if(!PRM)return;PRM=false;document.documentElement.classList.remove('prsz');{const mc=$('mapCard');if(mc){mc.style.width='';mc.style.height=''}}const w=PRW;PRW=false;setTimeout(()=>{try{if(w)mobApply();else kkLay();map&&map.invalidateSize();drawPins()}catch(e){}},100)});
 $('exBtn').onclick=e=>{e.stopPropagation();$('exMenu').classList.toggle('on')};
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('exMenu').classList.remove('on')});
 
@@ -1554,7 +1573,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121220513';
+const BUILD='20261121221632';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2948,8 +2967,8 @@ function empOk(r){if(!isEmp()||r._emp)return true;const nm=AUTH.name,mk=empMk(nm
 /* 직원 화면: 본인 현장만 + 같은 현장 다른 직원 이름·연락처는 숨기고 본인만 */
 function empView(L){const nm=AUTH.name,mk=empMk(nm),me=x=>x===nm||x===mk,keep=v=>real(v)&&me(v)?v:'-';
  const M=L.filter(r=>empOk(r));EMPM=new Set(M.map(r=>r.id));
- /* 전 현장 일정 공개: 다른 현장은 점검일·지역·현장명·주소·상태·점검자만 (직원 이름·연락처·결과 숨김) */
- return L.map(r=>EMPM.has(r.id)?Object.assign({},r,{_emp:1,_mine:1,lead:keep(r.lead),solo:keep(r.solo),tl:keep(r.tl),mem:(r.mem||[]).filter(me)}):Object.assign({},r,{_emp:1,_oth:1,_n:people(r).length,lead:'-',solo:'',tl:'-',mem:[],memo:'',note:''}))}
+ /* 전 현장 일정 공개: 다른 현장은 점검일·지역·현장명·주소·상태·점검자·팀장만 (팀원 이름·연락처·결과 숨김) */
+ return L.map(r=>EMPM.has(r.id)?Object.assign({},r,{_emp:1,_mine:1,mem:(r.mem||[]).filter(me)}):Object.assign({},r,{_emp:1,_oth:1,_n:people(r).length,mem:[],memo:'',note:''}))}
 let EMPM=new Set();const empMine=id=>!isEmp()||EMPM.has(id);
 /* 📧 결과 메일의 '앱에서 보기' 링크(#el=표) → 바로 직원 모드로 들어가 내 결과 열기 */
 let ELT='';{const m=/[#&?]el=([a-f0-9]{16,40})/.exec((location.hash||'')+'&'+(location.search||''));if(m){ELT=m[1];try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]el=[a-f0-9]+/,'').replace(/^&/,'?')+(location.hash||'').replace(/[#&]?el=[a-f0-9]+/,''))}catch(e){}}}
@@ -3249,10 +3268,10 @@ function dpSvg(R){const P=R.filter(hasPin);const W=1000,H=640;if(!P.length)retur
   else o+=`<text x="${best.cx.toFixed(1)}" y="${(best.cy+6).toFixed(1)}" font-size="17" font-weight="700" fill="#1e1b4b" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle">${esc(t)}</text>`});
  return o+`<text x="${W-8}" y="${H-8}" font-size="12" fill="#64748b" text-anchor="end">바탕: 통계청(2013) 시·군·구 경계 · 거리·시간은 직선×1.3 추정</text></svg>`}
 function dpPage(d,L){const R=[];rtGroups(L.filter(hasPin)).forEach(g=>g.L.forEach(r=>R.push(r)));L.forEach(r=>{if(!R.includes(r))R.push(r)});R.forEach((r,i)=>r._dn=i+1);
- const insS=[...new Set(R.flatMap(r=>(r.ins||[]).filter(real)))];const lead=r=>[r.lead,r.solo,r.tl].filter(real).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'-';
+ const insS=[...new Set(R.flatMap(r=>(r.ins||[]).filter(real)))];const lead=r=>real(r.tl)?r.tl:(real(r.solo)?r.solo:(real(r.lead)?r.lead:'-'));
  let h=`<div class="rp-h"><div><h1>${esc(dt(d))} 점검 일정</h1><div style="font-size:9.5pt;color:#475569">${esc(rdName(RD))} 현장점검 · ${R.length}곳 · 수검 ${R.reduce((a,r)=>a+cnt(r),0)}명 · (주)서용엔지니어링</div></div><span class="rp-tag">일자별</span></div>`;
  h+=dpSvg(R);
- h+=`<table><colgroup><col style="width:6%"><col style="width:15%"><col><col style="width:22%"><col style="width:15%"><col style="width:7%"><col style="width:8%"></colgroup><tr><th class="c">순서</th><th>현장</th><th>주소</th><th>점검자 (기술/영업/공통)</th><th>책임자</th><th class="c">인원</th><th class="c">상태</th></tr>`+
+ h+=`<table><colgroup><col style="width:6%"><col style="width:15%"><col><col style="width:22%"><col style="width:15%"><col style="width:7%"><col style="width:8%"></colgroup><tr><th class="c">순서</th><th>현장</th><th>주소</th><th>점검자 (기술/영업/공통)</th><th>팀장</th><th class="c">인원</th><th class="c">상태</th></tr>`+
   R.map(r=>`<tr><td class="c"><b>${r._dn}</b></td><td><b>${esc(r.tm)}</b><div class="rp-g">${esc(r.rg||'')}</div></td><td><span class="cl">${r.addr?esc(r.addr):'<span class="rp-g">확인 필요</span>'}</span></td><td>${esc((r.ins||[]).map(x=>real(x)?x:'-').join(' / '))}</td><td>${esc(lead(r))}</td><td class="c">${cnt(r)}</td><td class="c nw">${esc(stOf(r))}</td></tr>`).join('')+'</table>';
  h+=`<div class="rp-note">출력 ${ymd(today())} · 점검자 ${insS.length}명 (${esc(insS.join(', '))}) · 순서는 같은 점검자 팀의 이동 순서(지도 점선)입니다. 비어 있는 값은 '확인 필요'로 표시했습니다.</div>`;
  return `<div class="rp-page">${h}</div>`}
@@ -3463,7 +3482,7 @@ function resXl(){if(!window.XLSX)return toast('엑셀 도구를 불러오지 못
 
 /* ── 📱 휴대폰 카카오맵형 배치 ── */
 const MQ=matchMedia('(max-width:1023px)');
-const isMob=()=>MQ.matches&&document.documentElement.classList.contains('fm');
+const isMob=()=>MQ.matches&&document.documentElement.classList.contains('fm')&&!document.documentElement.classList.contains('prsz');
 let SH='peek';
 function shH(k){const h=innerHeight;return k==='hide'?0:k==='mini'?64:k==='full'?Math.round(h*.88):k==='half'?Math.round(h*.52):Math.round(h*.3)}
 function setSheet(k){SH=k;const sd=$('side');sd.classList.toggle('sh-mini',k==='mini');sd.classList.toggle('sh-hide',k==='hide');document.documentElement.style.setProperty('--sh',shH(k)+'px');
@@ -3475,7 +3494,7 @@ function sumUp(){const e=$('sheetSum');if(!e||typeof rows==='undefined')return;c
 $('sheetSum').onclick=()=>setSheet('peek');
 $('fSh').onclick=e=>{e.stopPropagation();setSheet(SH==='hide'?'peek':'hide')};
 const KKO={};
-function kkLay(){const H=document.documentElement,on=!H.classList.contains('mob')&&innerWidth>=1024,was=H.classList.contains('kk');H.classList.toggle('kk',on);
+function kkLay(){const H=document.documentElement,on=!H.classList.contains('mob')&&!H.classList.contains('prsz')&&innerWidth>=1024,was=H.classList.contains('kk');H.classList.toggle('kk',on);
  const sr=$('fQ').closest('.srch'),tb=$('tabs');
  if(on){if(!KKO.sr){KKO.sr=[sr.parentNode,sr.nextSibling];KKO.tb=[tb.parentNode,tb.nextSibling]}$('kkS').appendChild(sr);$('kkT').appendChild(tb);$('fQ').placeholder='팀명 · 지역 · 이름 · 주소 검색'}
  else if(KKO.sr&&was){KKO.sr[0].insertBefore(sr,KKO.sr[1]);KKO.tb[0].insertBefore(tb,KKO.tb[1])}
