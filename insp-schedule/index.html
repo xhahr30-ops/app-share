@@ -99,6 +99,8 @@ html.kk .whoc{flex:1;min-width:0;background:none;border:0;padding:0;gap:6px;font
 html.kk .whoa{gap:0;background:rgba(15,23,42,.55);border-radius:11px;overflow:hidden;flex:none}html.kk .whoa .whob.wi{width:52px;height:46px;padding:4px 0 3px;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;color:#fff}html.kk .whoa .whob.wi+.whob.wi{border-left:1px solid rgba(255,255,255,.12)}html.kk .whoa .whob.wi:hover{background:rgba(255,255,255,.1)}html.kk .whoa .whob.wi .gi{width:19px;height:19px}html.kk .whoa .whob.wi span{font-size:10.5px;font-weight:800;line-height:1;color:#fff}html.kk .whoa .wok{right:6px;top:3px}
 .whob .wok{position:absolute;right:-3px;top:-4px;font-style:normal;font-size:10px;background:#22c55e;color:#fff;border-radius:99px;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
 html.kk .hr{display:none!important}.whob.wmenu{display:none!important}html.kk .whob.wmenu{display:flex!important;background:rgba(79,70,229,.6)!important}html.kk .whob.wmenu .gi{--c:#fff;--cd:#fff;color:#fff}html.kk #iMenu.mnb{background:rgba(15,23,42,.55);border:0;color:#fff;width:52px;height:52px;border-radius:12px}html.kk #iMenu.mnb .gi{width:21px;height:21px}html.kk #iMenu.mnb span{font-size:10.5px}
+.myt{width:100%;border-collapse:collapse;font-size:13px}.myt td,.myt th{border-top:1px solid rgba(148,163,184,.35);padding:5px 4px;text-align:left}.myt td:last-child{white-space:nowrap;font-weight:700}
+html:not(.isemp) .emp{display:none!important}
 .tbar .tg{display:contents}.tbar .tgh{display:none}
 html.mob .pc-only{display:none!important}.tbar a.btn{text-decoration:none}
 html.mob .tbar .tg,html.kk .tbar .tg{display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-bottom:8px;border-bottom:1px solid var(--line)}
@@ -528,7 +530,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div class="srch"><span><i class="ii" data-i="srch"></i></span><input id="fQ" type="search" name="mulgil-site-q" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="팀명 · 지역 · 이름 · 주소 검색"></div>
   <span class="sep"></span>
   <div class="tg"><b class="tgh">📍 현장</b><button class="btn" id="bToday" type="button"><i class="ii" data-i="flag"></i> 오늘 점검</button><button class="btn" id="bAdd"><i class="ii" data-i="plus"></i> 현장 추가</button><button class="btn" id="bMove" title="켜면 지도의 핀을 끌어서 옮길 수 있습니다"><i class="ii" data-i="touch"></i> 핀 옮기기</button><button class="btn" id="bNav" type="button"><i class="ii" data-i="compass"></i> 주소찾기·길안내</button><button class="btn adm" id="bPos" type="button"><i class="ii" data-i="loc"></i> 내 위치 보내기</button></div>
-  <div class="tg"><b class="tgh">🗺 지도</b><button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button><button class="btn" id="bWso" type="button">🏢 상수도 사업소</button><button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button></div>
+  <div class="tg"><b class="tgh">🗺 지도</b><button class="btn" id="bLy" type="button"><i class="ii" data-i="map"></i> 지도 설정</button><button class="btn" id="bWso" type="button">🏢 상수도 사업소</button><button class="btn emp" id="bMyRes" type="button">📊 내 점검 결과</button><button class="btn" id="bKey" title="카카오 지도를 바탕지도로 씁니다 (깃허브 판)"><i class="ii" data-i="pin"></i> 카카오 지도 키</button></div>
   <div class="tg"><b class="tgh">📤 자료</b><label class="rdw mob-only"><i class="ii" data-i="cal"></i> 회차 <select id="rdSel2" class="inp"></select></label><label class="btn" style="cursor:pointer"><i class="ii" data-i="inb"></i> 엑셀 불러오기<input id="fXl" type="file" accept=".xlsx,.xlsm,.xls" hidden></label><div class="dd"><button class="btn" id="exBtn"><i class="ii" data-i="exp"></i> 내보내기 ▾</button>
    <div class="ddm" id="exMenu">
     <button id="bXl"><i class="ii" data-i="xls"></i> 엑셀 저장 (주소·좌표 포함)</button>
@@ -643,7 +645,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="evhd"><b id="evT"></b><span style="display:flex;gap:6px;flex:none"><button class="btn" id="evPop" type="button" title="점검표를 새 창으로 열기 (지도·목록과 나란히 보기)">↗ 새 창</button><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></span></div>
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
- <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+ <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><label class="mini" style="display:flex;gap:6px;align-items:center" title="켜면 이메일로 로그인한 직원이 본인 결과(팀 점수·본인 개별평가·지적사항·후속 조치)를 볼 수 있습니다"><input type="checkbox" id="evPub"> <b>직원에게 결과 공개</b></label><span id="evMsg" class="mini"></span><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
 </div></div>
 <div id="instB" class="np" role="dialog" aria-label="홈 화면 추가 안내"><div class="ib-h"><span style="font-size:22px">📲</span><div style="flex:1;min-width:0"><b id="ibT"></b><div class="mini" id="ibH" style="margin-top:2px"></div></div><button id="ibX" type="button" aria-label="닫기">✕</button></div>
  <div class="ib-b"><button class="btn pri" id="ibGo" type="button"></button><button class="btn" id="ibLater" type="button">나중에</button><button class="btn" id="ibNever" type="button" style="color:var(--mut,#64748b)">다시 보지 않기</button></div></div>
@@ -658,6 +660,9 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <p class="mini" style="margin:6px 0">바꾸면 그 비밀번호로 로그인한 사람은 앱을 다시 열 때 <b>새 비밀번호로 다시 로그인</b>해야 합니다. 바꾼 뒤 팀에 새 비밀번호를 알려 주세요. 영문은 대·소문자 구분 없음.</p>
   <button class="btn" id="pwSet" type="button" style="background:#dc2626;color:#fff;border-color:#dc2626">🔑 비밀번호 바꾸기</button></div>
 </div></div>
+<div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
 <div class="modal np" id="shm"><div class="mbox" style="max-width:420px;margin-top:60px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b id="shT">보내기</b><button class="btn" id="shX" type="button"><i class="ii" data-i="x"></i></button></div>
  <pre id="shP" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.5;word-break:break-all;background:rgba(148,163,184,.16);border:1px solid rgba(148,163,184,.35);color:inherit;border-radius:10px;padding:10px;margin:0 0 10px;max-height:30vh;overflow:auto"></pre>
@@ -1299,7 +1304,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원(본인 현장만)':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원(본인 현장만)':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+(AUTH.role==='emp'?`<button type="button" class="whob wi" id="whoRes" title="내 점검 결과">${ic('chart')}<span>내 결과</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();if($('whoRes'))$('whoRes').onclick=myRes;$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1331,7 +1336,7 @@ function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const 
  else if(EVS.t==='res')b.innerHTML=resHtml(r);
  else if(EVS.t==='hist')b.innerHTML=histHtml(r);
  else if(EVS.t==='ph')b.innerHTML=phTab(r);
- phFill(b);$('evSv').style.display=['intv','hist','ph'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done}
+ phFill(b);$('evSv').style.display=['intv','hist','ph'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done;$('evPub').checked=!!w.pub}
 $('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
  const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
  const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
@@ -1348,10 +1353,10 @@ $('evBody').addEventListener('input',e=>{const t=e.target,it=t.closest('.evi');i
  if(t.hasAttribute('data-m')){const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),m:t.value};setDirty()}
  else if(t.dataset.f){EVS.w.prev[+it.dataset.i][t.dataset.f]=t.value;setDirty()}});
 function objOf(p){if(p==='team')return EVS.w.team;const i=+p.split(':')[1];return EVS.w.ppl[i].it}
-$('evDone').onchange=()=>{EVS.w.done=$('evDone').checked;setDirty()};
+$('evDone').onchange=()=>{EVS.w.done=$('evDone').checked;setDirty()};$('evPub').onchange=()=>{EVS.w.pub=$('evPub').checked;setDirty()};
 async function evSave(){const w=EVS.w;w.ppl=(w.ppl||[]).filter(p=>Object.keys(p.it||{}).length);w.prev=(w.prev||[]).filter(p=>p.t||p.m);
  if(await putX('eval',EVS.id,w)){dfClear(EVS.id);{const wk=EVI.team.flatMap(([g,its])=>its).filter(([k])=>typeof w.team?.[k]?.s==='number'&&w.team[k].s<=2).length,pv=w.prev||[];nwAdd(EVS.id,`점검표 저장 · 개선 필요 ${wk}건`+(pv.length?` · 이전 지적 이행 ${pv.filter(p=>p.st==='이행 완료').length}/${pv.length}`:''))}EVS.dirty=false;$('evSv').classList.remove('pulse');$('evMsg').textContent='저장했습니다';
-  const r=rows.find(x=>x.id===EVS.id);if(w.done&&r&&r.st!=='완료')await putRow({...r,st:'완료',ad:r.ad||ymd(today())});openEv(EVS.id)}}
+  const r=rows.find(x=>x.id===EVS.id);resUp(EVS.id,w);if(w.done&&r&&r.st!=='완료')await putRow({...r,st:'완료',ad:r.ad||ymd(today())});openEv(EVS.id)}}
 $('evSv').onclick=evSave;
 $('evX').onclick=async()=>{if(EVS.dirty&&!await ask('저장하지 않은 점검표 변경이 있습니다. 닫을까요?'))return;$('ev').classList.remove('on');EVS.id=null;if(EVWIN){try{window.close()}catch(e){}setTimeout(()=>{document.documentElement.classList.remove('evwin');EVWIN=''},300)}};
 /* ↗ 점검표 새 창: 같은 앱을 #ev=현장 으로 열어 점검표만 화면 가득 · 저장하면 원래 창에도 자동 반영 */
@@ -1517,7 +1522,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121191331';
+const BUILD='20261121193652';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2890,11 +2895,11 @@ let LOGB=false;async function logFlush(){if(LOGB||!LOGURL||/^__/.test(LOGURL)||!
 addEventListener('online',logFlush);
 function lockNeed(){return !!(LOCK&&LOCK.team)&&!inClaude()}
 function lockState(){try{const a=JSON.parse(localStorage.getItem('mulgil-auth')||'null');if(authOk(a)&&a.exp>Date.now())return a}catch(e){}try{const a=JSON.parse(sessionStorage.getItem('mulgil-auth')||'null');if(authOk(a))return a}catch(e){}return null}
-function lockApply(){if(!lockNeed())return;AUTH=lockState();if(INVC&&AUTH&&AUTH.role==='ins'){INVC='';setTimeout(()=>toast('이미 점검자로 로그인돼 있습니다'),1500)}if(INVC){AUTH=null;$('lkInvB').hidden=false}if(AUTH){try{const t=ymd(today());if(localStorage.getItem('mulgil-lastday')!==t){localStorage.setItem('mulgil-lastday',t);logEv('접속(기억된 로그인)',AUTH.name,AUTH.role)}}catch(e){}setTimeout(logFlush,3000)}document.documentElement.classList.toggle('locked',!AUTH);if(!AUTH){setTimeout(()=>$('lkP').focus(),300);return}
+function lockApply(){if(!lockNeed())return;AUTH=lockState();document.documentElement.classList.toggle('isemp',!!(AUTH&&AUTH.role==='emp'));if(INVC&&AUTH&&AUTH.role==='ins'){INVC='';setTimeout(()=>toast('이미 점검자로 로그인돼 있습니다'),1500)}if(INVC){AUTH=null;$('lkInvB').hidden=false}if(AUTH){try{const t=ymd(today());if(localStorage.getItem('mulgil-lastday')!==t){localStorage.setItem('mulgil-lastday',t);logEv('접속(기억된 로그인)',AUTH.name,AUTH.role)}}catch(e){}setTimeout(logFlush,3000)}document.documentElement.classList.toggle('locked',!AUTH);if(!AUTH){setTimeout(()=>$('lkP').focus(),300);return}
  if(mode!=='db'){ADM=AUTH.role==='ins';document.documentElement.classList.toggle('noadm',!ADM);setTimeout(()=>{try{rdUI();render()}catch(e){}},0)}}
 $('lkGo').onclick=()=>{const nm=$('lkN').value.trim().slice(0,20),p=$('lkP').value.trim();if(!nm){$('lkM').textContent='이름을 넣어 주세요';$('lkN').focus();return}if(!p)return;const h=sha256h(LOCK.salt+p.toUpperCase()),role=h===LOCK.ins?'ins':h===LOCK.team?'team':'';
  if(!role){$('lkM').textContent='비밀번호가 맞지 않습니다';logEv('비밀번호 틀림',nm,'');$('lkP').select();return}const a={role,name:nm,h:LOCK.salt,k:kOf(role),exp:Date.now()+30*864e5};logEv('로그인',nm,role);try{localStorage.setItem('mulgil-lastday',ymd(today()))}catch(e){}
- try{if($('lkR').checked)localStorage.setItem('mulgil-auth',JSON.stringify(a));else sessionStorage.setItem('mulgil-auth',JSON.stringify(a))}catch(e){}$('lkP').value='';$('lkM').textContent='';carIntro(nm);lockApply();whoInit();toast(role==='ins'?'점검자로 로그인했습니다':'팀원으로 로그인했습니다')};
+ try{if($('lkR').checked)localStorage.setItem('mulgil-auth',JSON.stringify(a));else sessionStorage.setItem('mulgil-auth',JSON.stringify(a))}catch(e){}if(role==='ins')tokGet(p,nm);$('lkP').value='';$('lkM').textContent='';carIntro(nm);lockApply();whoInit();toast(role==='ins'?'점검자로 로그인했습니다':'팀원으로 로그인했습니다')};
 $('lkP').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkGo').click()});
 $('lkK').addEventListener('mousedown',e=>e.preventDefault());$('lkK').onclick=()=>{const p=$('lkP'),num=p.inputMode!=='numeric';p.inputMode=num?'numeric':'text';$('lkK').textContent=num?'🔤 문자 자판으로 바꾸기 (지금: 숫자)':'🔢 숫자 자판으로 바꾸기 (지금: 문자)';p.blur();setTimeout(()=>p.focus(),60)};$('lkK').textContent='🔢 숫자 자판으로 바꾸기 (지금: 문자)';$('lkN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkP').focus()});try{$('lkN').value=localStorage.getItem('mulgil-lastname')||''}catch(e){}
 {const _g=$('lkGo').onclick;$('lkGo').onclick=()=>{try{localStorage.setItem('mulgil-lastname',$('lkN').value.trim())}catch(e){}_g()}}
@@ -2914,11 +2919,32 @@ $('lkEmS').onclick=async()=>{const em=$('lkEmI').value.trim();if(!/^[^@\s]+@[^@\
  try{await gsCall({act:'otp',email:em});$('lkEmC').hidden=false;$('lkM').textContent='메일로 6자리 인증번호를 보냈습니다 (10분 유효). 메일함·스팸함을 확인하세요';setTimeout(()=>$('lkEmN').focus(),50)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmV').onclick=async()=>{const em=$('lkEmI').value.trim(),cd=$('lkEmN').value.trim();if(!/^\d{6}$/.test(cd)){$('lkM').textContent='6자리 숫자를 넣어 주세요';return}
  const b=$('lkEmV');b.disabled=true;$('lkM').textContent='확인 중…';
- try{const j=await gsCall({act:'otpv',email:em,code:cd});const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
+ try{const j=await gsCall({act:'otpv',email:em,code:cd});if(j.tok)tokSet(j.tok);const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
   try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',j.name)}catch(_){}$('lkM').textContent='';$('lkEm').hidden=true;
   logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();derive();render();setTimeout(()=>{const n=filt().length;toast(n?`${j.name} 님 현장 ${n}곳만 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmV').click()});$('lkEmI').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmS').click()});
 
+/* 📊 점검 결과 → 구글 시트 '점검결과' 탭 · 직원은 공개된 본인 결과만 */
+const tokSet=t=>{try{localStorage.setItem('mulgil-tok',t)}catch(e){}},tokOf=()=>{try{return localStorage.getItem('mulgil-tok')||''}catch(e){return ''}};
+async function tokGet(pw,nm){if(!gsOn())return '';try{const j=await gsCall({act:'tok',pw,name:nm});tokSet(j.tok);return j.tok}catch(e){return ''}}
+async function resUp(id,w){if(!ADM||!gsOn())return;const r=ALL.find(x=>x.id===id);if(!r)return;let tk=tokOf();
+ if(!tk){const pw=prompt('결과를 구글 시트에 올리려면 점검자 비밀번호를 한 번 넣어 주세요 (이 기기에 30일 기억)');if(!pw)return toast('시트에는 올리지 않았습니다 (이 기기에는 저장됨)');tk=await tokGet(pw.trim(),AUTH.name);if(!tk)return toast('비밀번호가 맞지 않아 시트에 올리지 못했습니다')}
+ const sc=o=>{const m={};Object.entries(o||{}).forEach(([k,v])=>{if(v&&v.s!=null)m[k]=v.s});return m};
+ const rec={rd:r.rd||RD,site:id,tm:r.tm,people:people(r),ins:r.ins,pub:!!w.pub,team:sc(w.team),avg:scoreAvg(w.team),weak:Object.values(w.team||{}).filter(v=>typeof v.s==='number'&&v.s<=2).length,
+  ppl:(w.ppl||[]).map(p=>({n:p.n,it:sc(p.it)})),prev:(w.prev||[]).map(p=>({t:p.t||'',st:p.st||''})),acts:Object.values(AC).filter(a=>a.site===id).map(a=>({area:a.area||'',item:a.item||'',issue:a.issue||'',action:a.action||'',due:a.due||'',st:a.st||''})),by:AUTH.name,upd:new Date().toISOString()};
+ try{await gsCall({act:'res',tok:tk,rec});toast('결과를 시트에 올렸습니다 · 직원 '+(w.pub?'공개':'비공개'))}catch(e){if(/다시 로그인|확인이 필요/.test(String(e)))tokSet('');toast('시트 올리기 실패: '+e+' (이 기기에는 저장됨)')}}
+const ITN=Object.fromEntries([...EVI.team.flatMap(([g,its])=>its),...EVI.ppl,...EVI.lead]),SCN=Object.fromEntries(SCL.map(([v,t])=>[String(v),t]));
+async function myRes(){$('tbar').classList.remove('open');$('myr').classList.add('on');$('myrB').innerHTML='<p class="mini">불러오는 중…</p>';
+ try{const j=await gsCall({act:'myres',tok:tokOf()});const L=j.list||[];
+  $('myrB').innerHTML=L.length?L.map(x=>!x.pub?`<div class="evi"><b>${esc(x.tm)}</b><p class="mini">아직 점검자가 결과를 공개하지 않았습니다.</p></div>`:`<div class="evi"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(x.tm)}</b><span class="mini">${esc(x.upd||'')} 기준</span></div>
+   <p style="margin:6px 0"><b>팀 평가 평균 ${x.avg==null?'-':(+x.avg).toFixed(2)}</b> / 5</p>
+   <table class="myt"><tr><th>항목</th><th>점수</th></tr>${Object.entries(x.team||{}).map(([k,v])=>`<tr><td>${esc(ITN[k]||k)}</td><td>${v==='na'?'해당없음':v+' '+(SCN[v]||'')}</td></tr>`).join('')}</table>
+   ${x.mine&&Object.keys(x.mine.it||{}).length?`<p style="margin:10px 0 4px"><b>내 개별평가</b></p><table class="myt">${Object.entries(x.mine.it).map(([k,v])=>`<tr><td>${esc(ITN[k]||k)}</td><td>${v==='na'?'해당없음':v+' '+(SCN[v]||'')}</td></tr>`).join('')}</table>`:''}
+   ${(x.prev||[]).length?`<p style="margin:10px 0 4px"><b>이전 지적사항</b></p>${x.prev.map(p=>`<div class="mini">· ${esc(p.t)} — ${esc(p.st||'확인 중')}</div>`).join('')}`:''}
+   ${(x.acts||[]).length?`<p style="margin:10px 0 4px"><b>후속 조치</b></p>${x.acts.map(a=>`<div class="mini">· ${esc([a.area,a.item].filter(Boolean).join(' '))} ${esc(a.issue)} → ${esc(a.action||'조치 계획 입력 필요')} ${a.due?'(기한 '+esc(a.due)+')':''} <b>${esc(a.st)}</b></div>`).join('')}`:''}</div>`).join(''):'<p class="mini">아직 올라온 결과가 없습니다. 점검이 끝나고 점검자가 공개하면 여기에 보입니다.</p>'}
+ catch(e){$('myrB').innerHTML='<p class="mini">'+esc(String(e))+'</p>'}}
+
+$('bMyRes').onclick=myRes;$('myrX').onclick=()=>$('myr').classList.remove('on');
 /* 🔑 비밀번호·초대 (구글 시트 Apps Script 웹앱에 저장) */
 const gsOn=()=>!!LOGURL&&!/^__/.test(LOGURL)&&!inClaude();
 async function gsCall(o){if(!gsOn())throw '구글 시트 주소가 없습니다';let r;try{r=await fetch(LOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)})}catch(e){throw '인터넷 연결을 확인하세요'}
@@ -2929,7 +2955,7 @@ async function lockSync(){if(!gsOn()||!LOCK0)return;try{const r=await fetch(LOGU
  const ch=c.team!==LOCK.team||c.ins!==LOCK.ins;lockSave(c);if(ch){const was=AUTH;lockApply();if(was&&!AUTH){$('lkM').textContent='비밀번호가 바뀌었습니다. 새 비밀번호로 로그인하세요';logEv('비밀번호 바뀌어 다시 로그인 요청',was.name,was.role)}}}catch(e){}}
 setTimeout(lockSync,1200);
 $('lkInvGo').onclick=async()=>{const nm=$('lkN').value.trim().slice(0,20);if(!nm){$('lkM').textContent='이름을 넣어 주세요';$('lkN').focus();return}const b=$('lkInvGo');b.disabled=true;$('lkM').textContent='초대 확인 중…';
- try{await gsCall({act:'redeem',code:INVC,name:nm});const a={role:'ins',name:nm,h:LOCK.salt,k:kOf('ins'),exp:Date.now()+30*864e5};try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',nm)}catch(e){}
+ try{const jr=await gsCall({act:'redeem',code:INVC,name:nm});if(jr.tok)tokSet(jr.tok);const a={role:'ins',name:nm,h:LOCK.salt,k:kOf('ins'),exp:Date.now()+30*864e5};try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',nm)}catch(e){}
   INVC='';$('lkInvB').hidden=true;$('lkM').textContent='';logEv('초대로 로그인',nm,'ins');carIntro(nm);lockApply();whoInit();toast('점검자로 들어왔습니다')}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 function pwOpen(){$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('점검자 로그인에서만 쓸 수 있습니다');$('pwCur').value=$('pwN1').value=$('pwN2').value='';
  $('pwSt').innerHTML=gsOn()?`구글 시트에 연결됨 · 지금 비밀번호: ${LOCK.ver?'<b>앱에서 바꾼 비밀번호</b> ('+LOCK.ver+'번째 변경)':'처음 비밀번호'}`:'<b class="warn">구글 시트 주소가 없어 쓸 수 없습니다</b>';$('pwm').classList.add('on')}
