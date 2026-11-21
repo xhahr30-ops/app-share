@@ -512,7 +512,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="bRp" class="adm"><i class="ii" data-i="clip"></i> 점검결과 출력 (결과표·종합 보고서)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
    </div></div><button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button><button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 핀 찍기</button></div>
-  <div class="tg"><b class="tgh">⚙ 설정·도움</b><button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button><button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button><button class="btn" id="bRf" type="button"><i class="ii" data-i="rf"></i> 새로고침</button><button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button><button class="btn" id="bHelp" type="button">❓ 사용법</button><button class="btn pc-only" id="bKeys" type="button" title="PC 단축키">⌨ 단축키</button><a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a></div>
+  <div class="tg"><b class="tgh">⚙ 설정·도움</b><button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button><button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button><button class="btn adm" id="bPw" type="button">🔑 비밀번호·초대</button><button class="btn" id="bRf" type="button"><i class="ii" data-i="rf"></i> 새로고침</button><button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button><button class="btn" id="bHelp" type="button">❓ 사용법</button><button class="btn pc-only" id="bKeys" type="button" title="PC 단축키">⌨ 단축키</button><a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a></div>
   <span class="sp"></span>
   <label class="mini pc-only" style="display:flex;align-items:center;gap:4px">출력<select id="po" class="flt" style="margin:0;width:auto;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card)"><option value="landscape">가로</option><option value="portrait">세로</option></select></label>
   <div class="who" id="who"></div>
@@ -619,6 +619,17 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 </div></div>
 <div id="instB" class="np" role="dialog" aria-label="홈 화면 추가 안내"><div class="ib-h"><span style="font-size:22px">📲</span><div style="flex:1;min-width:0"><b id="ibT"></b><div class="mini" id="ibH" style="margin-top:2px"></div></div><button id="ibX" type="button" aria-label="닫기">✕</button></div>
  <div class="ib-b"><button class="btn pri" id="ibGo" type="button"></button><button class="btn" id="ibLater" type="button">나중에</button><button class="btn" id="ibNever" type="button" style="color:var(--mut,#64748b)">다시 보지 않기</button></div></div>
+<div class="modal np" id="pwm"><div class="mbox" style="max-width:440px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🔑 비밀번호 · 점검자 초대</b><button class="btn" id="pwX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" id="pwSt" style="margin:0 0 8px"></p>
+ <label class="mini">현재 점검자 비밀번호 (확인용)</label><input id="pwCur" class="inp" type="password" autocomplete="off" autocapitalize="characters" placeholder="지금 쓰는 점검자 비밀번호">
+ <div style="margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:12px"><b style="font-size:14px">📨 점검자 초대</b><p class="mini" style="margin:4px 0 8px">한 번만 쓸 수 있고 48시간 동안 유효한 링크를 만들어 카톡으로 보냅니다. 받은 사람은 이름만 넣고 점검자로 들어옵니다.</p><button class="btn pri" id="pwInv" type="button">📨 초대 링크 만들기</button></div>
+ <div style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px"><b style="font-size:14px">🔑 비밀번호 바꾸기</b>
+  <div style="display:flex;gap:6px;margin:6px 0"><label style="flex:1;display:flex;gap:4px;align-items:center;font-size:13px"><input type="radio" name="pwR" value="team" checked> 팀원 비밀번호</label><label style="flex:1;display:flex;gap:4px;align-items:center;font-size:13px"><input type="radio" name="pwR" value="ins"> 점검자 비밀번호</label></div>
+  <input id="pwN1" class="inp" type="text" autocomplete="off" autocapitalize="characters" placeholder="새 비밀번호 (영문·숫자 4~20자)" style="margin-bottom:6px"><input id="pwN2" class="inp" type="text" autocomplete="off" autocapitalize="characters" placeholder="새 비밀번호 한 번 더">
+  <p class="mini" style="margin:6px 0">바꾸면 그 비밀번호로 로그인한 사람은 앱을 다시 열 때 <b>새 비밀번호로 다시 로그인</b>해야 합니다. 바꾼 뒤 팀에 새 비밀번호를 알려 주세요. 영문은 대·소문자 구분 없음.</p>
+  <button class="btn" id="pwSet" type="button" style="background:#dc2626;color:#fff;border-color:#dc2626">🔑 비밀번호 바꾸기</button></div>
+</div></div>
 <div class="modal np" id="wsm"><div class="mbox" style="max-width:560px;margin-top:30px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🏢 전국 상수도 사업소</b><button class="btn" id="wsX" type="button"><i class="ii" data-i="x"></i></button></div>
  <p class="mini" id="wsInfo" style="margin:0 0 8px"></p>
@@ -720,11 +731,32 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <li><b>휴대폰 달력에 넣기</b>: 지금 목록 일정을 .ics로(전날 9시 알림).</li></ul></div></details><details class="hlp"><summary>🗂 회차 관리</summary><div><ul><li><b>새 회차 만들기</b>(점검자): 회차 목록 → ➕. 현장·주소·인원을 복사하고, 2점 이하 항목·미이행 지적·끝나지 않은 후속 조치를 새 회차 '이전 지적'으로 넘김.</li>
 <li><b>최종 파일 받기·보관</b>(내보내기): 최종 파일 4개를 받은 뒤 회차를 '보관'(기록은 지우지 않음). '보관 회차 보기'로 다시 봄.</li>
 <li>새 일정 엑셀을 불러오면 같은 팀명끼리 위치·이력이 이어집니다.</li></ul></div></details><details class="hlp"><summary>🔐 두 가지 판 · 권한</summary><div><ul><li><b>Claude 페이지</b>(공유판): Claude 계정 로그인, 팀 전체가 같은 자료·사진·소식을 실시간으로 봄. 권한: 소유자 · 점검자(편집) · 현장팀(참여) · 보기. 바탕지도는 경계만.</li>
-<li><b>깃허브 판</b>: 로그인 없음, 기록은 <b>그 휴대폰 브라우저에만</b> 저장. 이름 가운데는 *, 연락처 없음(공개판). 카카오 지도·설치 가능.</li>
+<li><b>깃허브 판</b>: 이름+비밀번호로 로그인(팀원·점검자 두 가지), 기록은 <b>그 휴대폰 브라우저에만</b> 저장. 이름 가운데는 *, 연락처 없음(공개판). 카카오 지도·설치 가능.</li>
 <li>새 판이 올라오면 위쪽에 '새 판이 올라왔습니다' → 🔄 새로고침.</li></ul></div></details><details class="hlp"><summary>⚙️ 편의 기능</summary><div><ul><li><b>오늘 점검</b>(메뉴): 오늘 현장 카드(길안내·점검표·연락처). 오늘 점검이 있으면 열 때 먼저 보임.</li>
 <li><b>달력 끌어 옮기기</b>(PC 달력 탭): 현장을 다른 날짜로 끌어 놓기.</li><li><b>↶ 되돌리기</b>: 변경·삭제 직후 6초 동안 화면 아래 단추.</li>
 <li><b>가 글자 크기</b>(메뉴): 보통·크게·아주 크게.</li><li><b>다크 모드</b>, <b>지도만 보기</b>(발표·캡처용, Esc로 끝).</li>
-<li><b>PC 단축키</b>: <code>/</code> 검색 · <code>←</code><code>→</code> 날짜 · <code>F</code> 지도만 보기 · <code>T</code> 오늘 점검 · <code>Esc</code> 닫기 · <code>?</code> 사용법</li></ul></div></details><details class="hlp"><summary>❗ 알아 둘 점</summary><div><ul><li>평가 점수·우수팀 후보·동선 거리는 <b>참고용이며 확정이 아닙니다</b>. 확정은 종합 검토 후 정합니다.</li>
+<li><b>PC 단축키</b>: <code>/</code> 검색 · <code>←</code><code>→</code> 날짜 · <code>F</code> 지도만 보기 · <code>T</code> 오늘 점검 · <code>Esc</code> 닫기 · <code>?</code> 사용법</li></ul></div></details><details class="hlp"><summary>🔑 로그인 · 비밀번호 · 점검자 초대</summary><div><ul>
+<li><b>로그인</b>: 이름과 비밀번호를 넣습니다. 팀원 비밀번호는 보기·참여, 점검자 비밀번호는 점검표·결과 출력 등 모든 기능. '30일 동안 기억'을 켜 두면 다시 묻지 않습니다.</li>
+<li>숫자만 나오는 자판이면 비밀번호 칸 아래 <b>🔤/🔢 자판 바꾸기</b>를 누르세요. 영문은 대·소문자 구분 없음.</li>
+<li><b>점검자 초대</b>(점검자만): 메뉴 ⚙ → <b>🔑 비밀번호·초대</b> → 현재 점검자 비밀번호 입력 → <b>📨 초대 링크 만들기</b> → 카톡으로 보내기. 받은 사람은 링크를 열고 <b>이름만 넣고</b> '초대로 점검자 들어가기'. 링크는 <b>한 번만 · 48시간</b> 유효.</li>
+<li><b>비밀번호 바꾸기</b>(점검자만): 같은 창에서 팀원/점검자를 고르고 새 비밀번호(영문·숫자 4~20자)를 두 번 입력. 모든 사람에게 바로 적용되고, 옛 비밀번호로 로그인해 있던 사람은 다음에 열 때 새 비밀번호를 넣어야 합니다. <b>새 비밀번호를 꼭 따로 적어 두고 팀에 알려 주세요.</b></li>
+<li>로그인·비밀번호 변경·초대 기록은 관리자 구글 시트 '접속기록'에 남습니다(비밀번호 원문은 남지 않음).</li></ul></div></details>
+<details class="hlp"><summary>🚐 차량 위치 · 팀장에게 알리기</summary><div><ul>
+<li><b>내 차량 표시</b>(점검자): 지도 오른쪽 <b>내 위치</b>를 누르면 내 위치에 점검 차량이 나오고 움직이면 따라갑니다. 다시 누르면 끔.</li>
+<li><b>내 위치 보내기</b>(점검자): 메뉴 📍현장 → 내 위치 보내기 → 카카오톡으로 위치 링크 전송.</li>
+<li><b>팀장에게 내 위치</b>(점검자): 현장을 검색해 하나로 좁혀지면 '○○ 팀장에게 내 위치를 보낼까요?'가 뜹니다. <b>💬 문자</b>(팀장 번호 자동, 비공개판) 또는 <b>🟡 카톡</b>. 사전 공지·협조 인사와 현장까지 직선거리가 함께 갑니다. 지도 설정에서 끌 수 있고, 폰 현장 카드의 '팀장에게 내 위치'로도 보낼 수 있습니다.</li>
+<li>받은 사람은 링크를 누르고 <b>로그인하면</b>(팀원도 가능) 지도에 차량과 '○분 전'이 보입니다. 위치는 링크 안에만 있고 어디에도 저장되지 않습니다.</li></ul></div></details>
+<details class="hlp"><summary>🗺 지도 설정 · 상수도 사업소</summary><div><ul>
+<li><b>지도 설정</b>(메뉴 🗺): 바탕지도(카카오 바탕지도 · <b>행정지도로만 보기</b> · 시·군·구 경계 · 지도만 보기), 현장 표시(현장 핀 · 같은 곳 묶기 · 이름표 · 지자체 색 · 하루 동선), 함께 보기(상수도 사업소).</li>
+<li><b>현장 핀</b>: 서용이 + 오른쪽 위 색 점(점검일·점검자·상태 색). 점 안 ✓ 완료, ! 지연.</li>
+<li><b>카카오 지도 키</b>: 처음이면 창에 '키 받는 방법'이 펼쳐집니다(카카오 개발자 사이트에서 약 5분). 같은 키로 카카오 지도·상수도 사업소 모으기·카톡 바로 보내기가 됩니다.</li>
+<li><b>🏢 상수도 사업소</b>(메뉴 🗺): 카카오 키가 있는 기기에서 <b>🔎 카카오에서 모으기</b> → 전국 상수도사업본부·사업소를 지도에 파란 건물로 표시. 엉뚱한 곳은 '빼기', 엑셀로 내려받기 가능. 주소는 카카오 장소 정보(확인 필요).</li>
+<li>검색 결과가 0곳이면 목록에 검색어와 <b>✕ 검색어 지우기</b>가 나옵니다.</li></ul></div></details>
+<details class="hlp"><summary>📲 홈 화면에 추가 (앱처럼 쓰기)</summary><div><ul>
+<li>폰 브라우저로 열면 아래쪽에 안내가 뜹니다. <b>안드로이드 크롬</b>은 [추가하기] 한 번, <b>아이폰</b>은 공유 ⬆ → 홈 화면에 추가, <b>삼성 인터넷</b>은 메뉴 ≡ → 현재 페이지 추가 → 홈 화면.</li>
+<li><b>카톡으로 받은 링크</b>는 카톡 안에서는 추가가 안 되므로 [브라우저로 열기]를 먼저 누르세요.</li>
+<li>'나중에'는 7일 뒤 다시, '다시 보지 않기'를 눌러도 메뉴 ⚙ '앱으로 설치'로 언제든 추가할 수 있습니다.</li></ul></div></details>
+<details class="hlp"><summary>❗ 알아 둘 점</summary><div><ul><li>평가 점수·우수팀 후보·동선 거리는 <b>참고용이며 확정이 아닙니다</b>. 확정은 종합 검토 후 정합니다.</li>
 <li>자료에 없는 값은 '확인 필요'로 표시됩니다.</li><li>개별평가·면담·연락처가 든 파일(내부용)은 점검자 외에 배포하지 마세요.</li>
 <li>문의·오류: 만든이 구병순</li></ul></div></details></div>
  <p class="mini" style="margin:8px 0 0">만든이: 구병순 · 메뉴(≡) → ❓ 사용법, PC는 오른쪽 도구 막대 '도움'이나 ? 키로 다시 열 수 있습니다.</p>
@@ -738,6 +770,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <button type="button" id="lkK" class="btn" style="margin-top:6px;font-size:12.5px">🔤 영문 자판 (지금: 문자)</button>
  <label class="mini" style="display:flex;gap:6px;align-items:center;justify-content:center;margin:8px 0"><input type="checkbox" id="lkR" checked> 이 기기에서 30일 동안 기억</label>
  <button class="btn pri" id="lkGo" type="button" style="width:100%;justify-content:center;height:44px;font-size:15px">로그인</button>
+ <div id="lkInvB" hidden style="margin-top:10px;padding:10px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:12px;color:#312e81;font-size:13px"><b>📨 점검자 초대 링크로 열었습니다</b><div class="mini" style="margin:4px 0 8px;color:#4338ca">위에 이름만 넣고 아래 단추를 누르세요. 비밀번호는 필요 없습니다. (한 번만 쓸 수 있음)</div><button class="btn pri" id="lkInvGo" type="button" style="width:100%;justify-content:center">📨 초대로 점검자 들어가기</button></div>
  <p class="mini" id="lkM" style="margin:8px 0 0;min-height:16px"></p>
  <p class="mini" style="margin:10px 0 0;color:var(--mute)">팀원 비밀번호: 일정·지도·후속 조치 · 점검자 비밀번호: 점검표·개별평가·종합까지<br>로그인·로그아웃 기록(시각·이름·권한·기기)이 관리자에게 남습니다 · 비밀번호 문의: 구병순</p>
 </div></div>
@@ -1434,7 +1467,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121112854';
+const BUILD='20261121114007';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2780,7 +2813,11 @@ $('hlQ').oninput=()=>{const q=$('hlQ').value.trim();$('hlB').innerHTML=HLB;if(!q
 setTimeout(()=>{try{if(!localStorage.getItem('mulgil-help')&&!$('tdm').classList.contains('on'))helpOpen()}catch(e){}},3200);
 
 /* ── 🔒 깃허브 판 앱 잠금(B안): 팀원·점검자 비밀번호(SHA-256 해시만 앱에 둠) · 화면 잠금 수준 ── */
-const LOCK={"salt": "a193c9c3d28834ea", "team": "d5d10e774d55b56728a58cd10564860480354df4e9eef599435a04f4f23b8e70", "ins": "4b09041bdc2568afaf7417ce3de899ea82fb863b9883e6c0011ccb39c1f54344"};
+const LOCK0={"salt": "a193c9c3d28834ea", "team": "d5d10e774d55b56728a58cd10564860480354df4e9eef599435a04f4f23b8e70", "ins": "4b09041bdc2568afaf7417ce3de899ea82fb863b9883e6c0011ccb39c1f54344"};let LOCK=LOCK0;try{const c=JSON.parse(localStorage.getItem('mulgil-lock')||'null');if(LOCK0&&c&&c.salt===LOCK0.salt&&c.team&&c.ins)LOCK=c}catch(e){}
+/* 시트(Apps Script)에 저장된 최신 비밀번호를 받아 옴 · 안 되면 앱에 든 값 사용 */
+const kOf=role=>((role==='ins'?LOCK.ins:LOCK.team)||'').slice(0,10);
+function authOk(a){if(!a||!LOCK||a.h!==LOCK.salt)return false;if(a.k)return a.k===kOf(a.role);return a.role==='ins'?LOCK.ins===LOCK0.ins:LOCK.team===LOCK0.team}
+let INVC='';{const m=/[#&]inv=([A-Za-z0-9]{8,20})/.exec(location.hash||'');if(m){INVC=m[1];try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}}
 function sha256h(m){const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
  const b=new TextEncoder().encode(m),l=b.length,n=((l+9+63)>>6)<<6,a=new Uint8Array(n);a.set(b);a[l]=0x80;const dv=new DataView(a.buffer);dv.setUint32(n-4,l*8);
  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];const W=new Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
@@ -2802,17 +2839,41 @@ let LOGB=false;async function logFlush(){if(LOGB||!LOGURL||/^__/.test(LOGURL)||!
  try{await fetch(LOGURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({rows:q})});let r=[];try{r=JSON.parse(localStorage.getItem('mulgil-logq')||'[]')}catch(e){}localStorage.setItem('mulgil-logq',JSON.stringify(r.slice(q.length)))}catch(e){}finally{LOGB=false}}
 addEventListener('online',logFlush);
 function lockNeed(){return !!(LOCK&&LOCK.team)&&!inClaude()}
-function lockState(){try{const a=JSON.parse(localStorage.getItem('mulgil-auth')||'null');if(a&&a.h===LOCK.salt&&a.exp>Date.now())return a}catch(e){}try{const a=JSON.parse(sessionStorage.getItem('mulgil-auth')||'null');if(a&&a.h===LOCK.salt)return a}catch(e){}return null}
-function lockApply(){if(!lockNeed())return;AUTH=lockState();if(AUTH){try{const t=ymd(today());if(localStorage.getItem('mulgil-lastday')!==t){localStorage.setItem('mulgil-lastday',t);logEv('접속(기억된 로그인)',AUTH.name,AUTH.role)}}catch(e){}setTimeout(logFlush,3000)}document.documentElement.classList.toggle('locked',!AUTH);if(!AUTH){setTimeout(()=>$('lkP').focus(),300);return}
+function lockState(){try{const a=JSON.parse(localStorage.getItem('mulgil-auth')||'null');if(authOk(a)&&a.exp>Date.now())return a}catch(e){}try{const a=JSON.parse(sessionStorage.getItem('mulgil-auth')||'null');if(authOk(a))return a}catch(e){}return null}
+function lockApply(){if(!lockNeed())return;AUTH=lockState();if(INVC&&AUTH&&AUTH.role==='ins'){INVC='';setTimeout(()=>toast('이미 점검자로 로그인돼 있습니다'),1500)}if(INVC){AUTH=null;$('lkInvB').hidden=false}if(AUTH){try{const t=ymd(today());if(localStorage.getItem('mulgil-lastday')!==t){localStorage.setItem('mulgil-lastday',t);logEv('접속(기억된 로그인)',AUTH.name,AUTH.role)}}catch(e){}setTimeout(logFlush,3000)}document.documentElement.classList.toggle('locked',!AUTH);if(!AUTH){setTimeout(()=>$('lkP').focus(),300);return}
  if(mode!=='db'){ADM=AUTH.role==='ins';document.documentElement.classList.toggle('noadm',!ADM);setTimeout(()=>{try{rdUI();render()}catch(e){}},0)}}
 $('lkGo').onclick=()=>{const nm=$('lkN').value.trim().slice(0,20),p=$('lkP').value.trim();if(!nm){$('lkM').textContent='이름을 넣어 주세요';$('lkN').focus();return}if(!p)return;const h=sha256h(LOCK.salt+p.toUpperCase()),role=h===LOCK.ins?'ins':h===LOCK.team?'team':'';
- if(!role){$('lkM').textContent='비밀번호가 맞지 않습니다';logEv('비밀번호 틀림',nm,'');$('lkP').select();return}const a={role,name:nm,h:LOCK.salt,exp:Date.now()+30*864e5};logEv('로그인',nm,role);try{localStorage.setItem('mulgil-lastday',ymd(today()))}catch(e){}
+ if(!role){$('lkM').textContent='비밀번호가 맞지 않습니다';logEv('비밀번호 틀림',nm,'');$('lkP').select();return}const a={role,name:nm,h:LOCK.salt,k:kOf(role),exp:Date.now()+30*864e5};logEv('로그인',nm,role);try{localStorage.setItem('mulgil-lastday',ymd(today()))}catch(e){}
  try{if($('lkR').checked)localStorage.setItem('mulgil-auth',JSON.stringify(a));else sessionStorage.setItem('mulgil-auth',JSON.stringify(a))}catch(e){}$('lkP').value='';$('lkM').textContent='';carIntro(nm);lockApply();whoInit();toast(role==='ins'?'점검자로 로그인했습니다':'팀원으로 로그인했습니다')};
 $('lkP').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkGo').click()});
 $('lkK').addEventListener('mousedown',e=>e.preventDefault());$('lkK').onclick=()=>{const p=$('lkP'),num=p.inputMode!=='numeric';p.inputMode=num?'numeric':'text';$('lkK').textContent=num?'🔤 문자 자판으로 바꾸기 (지금: 숫자)':'🔢 숫자 자판으로 바꾸기 (지금: 문자)';p.blur();setTimeout(()=>p.focus(),60)};$('lkK').textContent='🔢 숫자 자판으로 바꾸기 (지금: 문자)';$('lkN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkP').focus()});try{$('lkN').value=localStorage.getItem('mulgil-lastname')||''}catch(e){}
 {const _g=$('lkGo').onclick;$('lkGo').onclick=()=>{try{localStorage.setItem('mulgil-lastname',$('lkN').value.trim())}catch(e){}_g()}}
 function lockOut(){if(AUTH)logEv('로그아웃',AUTH.name,AUTH.role);try{localStorage.removeItem('mulgil-auth');sessionStorage.removeItem('mulgil-auth')}catch(e){}location.reload()}
 lockApply();
+/* 🔑 비밀번호·초대 (구글 시트 Apps Script 웹앱에 저장) */
+const gsOn=()=>!!LOGURL&&!/^__/.test(LOGURL)&&!inClaude();
+async function gsCall(o){if(!gsOn())throw '구글 시트 주소가 없습니다';let r;try{r=await fetch(LOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)})}catch(e){throw '인터넷 연결을 확인하세요'}
+ let j=null;try{j=await r.json()}catch(e){throw '시트 코드가 옛날 판입니다. 새 gs 코드로 바꿔 \'새 버전\'으로 배포해 주세요'}if(!j||!j.ok)throw (j&&j.msg)||'처리하지 못했습니다';return j}
+function lockSave(c){LOCK=c;try{localStorage.setItem('mulgil-lock',JSON.stringify(c))}catch(e){}}
+function authSave(a){try{if(localStorage.getItem('mulgil-auth'))localStorage.setItem('mulgil-auth',JSON.stringify(a));else sessionStorage.setItem('mulgil-auth',JSON.stringify(a))}catch(e){}}
+async function lockSync(){if(!gsOn()||!LOCK0)return;try{const r=await fetch(LOGURL+'?act=lock',{cache:'no-store'});const c=await r.json();if(!c||c.salt!==LOCK0.salt||!c.team||!c.ins)return;
+ const ch=c.team!==LOCK.team||c.ins!==LOCK.ins;lockSave(c);if(ch){const was=AUTH;lockApply();if(was&&!AUTH){$('lkM').textContent='비밀번호가 바뀌었습니다. 새 비밀번호로 로그인하세요';logEv('비밀번호 바뀌어 다시 로그인 요청',was.name,was.role)}}}catch(e){}}
+setTimeout(lockSync,1200);
+$('lkInvGo').onclick=async()=>{const nm=$('lkN').value.trim().slice(0,20);if(!nm){$('lkM').textContent='이름을 넣어 주세요';$('lkN').focus();return}const b=$('lkInvGo');b.disabled=true;$('lkM').textContent='초대 확인 중…';
+ try{await gsCall({act:'redeem',code:INVC,name:nm});const a={role:'ins',name:nm,h:LOCK.salt,k:kOf('ins'),exp:Date.now()+30*864e5};try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',nm)}catch(e){}
+  INVC='';$('lkInvB').hidden=true;$('lkM').textContent='';logEv('초대로 로그인',nm,'ins');carIntro(nm);lockApply();whoInit();toast('점검자로 들어왔습니다')}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
+function pwOpen(){$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('점검자 로그인에서만 쓸 수 있습니다');$('pwCur').value=$('pwN1').value=$('pwN2').value='';
+ $('pwSt').innerHTML=gsOn()?`구글 시트에 연결됨 · 지금 비밀번호: ${LOCK.ver?'<b>앱에서 바꾼 비밀번호</b> ('+LOCK.ver+'번째 변경)':'처음 비밀번호'}`:'<b class="warn">구글 시트 주소가 없어 쓸 수 없습니다</b>';$('pwm').classList.add('on')}
+$('bPw').onclick=pwOpen;$('pwX').onclick=()=>$('pwm').classList.remove('on');
+const pwCurOk=()=>{const c=$('pwCur').value.trim();if(!c){toast('현재 점검자 비밀번호를 넣어 주세요');$('pwCur').focus();return ''}if(sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins){toast('현재 점검자 비밀번호가 맞지 않습니다');$('pwCur').select();return ''}return c};
+$('pwInv').onclick=async()=>{const c=pwCurOk();if(!c)return;const b=$('pwInv');b.disabled=true;
+ try{const j=await gsCall({act:'inv',cur:c,by:AUTH.name});const u=location.origin+location.pathname+'#inv='+j.code,until=phT(new Date(j.exp).toISOString());
+  const t=`[스마트 물길점검] ${AUTH.name} 님이 점검자로 초대했습니다.\n아래 링크를 눌러 이름만 넣으면 점검자로 들어옵니다.\n(한 번만 사용 · ${until}까지)`;
+  kkShare(t,u).catch(()=>shareSend(t+'\n'+u));toast('초대 링크를 만들었습니다')}catch(e){toast(String(e))}finally{b.disabled=false}};
+$('pwSet').onclick=async()=>{const c=pwCurOk();if(!c)return;const role=(document.querySelector('input[name=pwR]:checked')||{}).value,n1=$('pwN1').value.trim(),n2=$('pwN2').value.trim();
+ if(!/^[A-Za-z0-9]{4,20}$/.test(n1))return toast('새 비밀번호는 영문·숫자 4~20자입니다');if(n1.toUpperCase()!==n2.toUpperCase())return toast('새 비밀번호가 서로 다릅니다');
+ if(!await ask(`${role==='ins'?'점검자':'팀원'} 비밀번호를 바꿀까요? 그 비밀번호로 로그인한 사람은 다시 로그인해야 합니다.`))return;const b=$('pwSet');b.disabled=true;
+ try{const j=await gsCall({act:'setpw',cur:c,role,npw:n1,by:AUTH.name});lockSave(j.lock);AUTH.k=kOf(AUTH.role);authSave(AUTH);$('pwm').classList.remove('on');toast((role==='ins'?'점검자':'팀원')+' 비밀번호를 바꿨습니다. 팀에 새 비밀번호를 알려 주세요')}catch(e){toast(String(e))}finally{b.disabled=false}};
 
 /* ── 🚐 관리자(점검자 로그인) 차량 위치: A 내 화면에 차량으로 따라가기 · C 내 위치 보내기(링크, 서버 없음) ── */
 (()=>{const i=document.querySelector('img.mascot');if(i&&i.src)document.documentElement.style.setProperty('--sy',`url("${i.src}")`)})();
