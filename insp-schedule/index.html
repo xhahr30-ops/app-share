@@ -1554,7 +1554,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121215420';
+const BUILD='20261121220109';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3225,14 +3225,28 @@ function dpSvg(R){const P=R.filter(hasPin);const W=1000,H=640;if(!P.length)retur
  const vb=[L0/kx,T0-h,(L0+w)/kx,T0];if(!BBX)BBX={m:BASE.m.features.map(f=>bbxOf(f.geometry)),p:BASE.p.features.map(f=>bbxOf(f.geometry))};
  const hit=b=>!(b[2]<vb[0]||b[0]>vb[2]||b[3]<vb[1]||b[1]>vb[3]);
  const path=g=>(g.type==='Polygon'?[g.coordinates]:g.coordinates).map(Pg=>Pg.map(rg=>'M'+rg.map(([a,b])=>X(a)+' '+Y(b)).join('L')+'Z').join('')).join('');
- let o=`<svg class="dp-map" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#dbeafe"/>`;
+ let o=`<svg class="dp-map" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="dpa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1e1b4b"/></marker></defs><rect width="${W}" height="${H}" fill="#dbeafe"/>`;
  BASE.m.features.forEach((f,i)=>{if(hit(BBX.m[i]))o+=`<path d="${path(f.geometry)}" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>`});
  BASE.p.features.forEach((f,i)=>{if(hit(BBX.p[i]))o+=`<path d="${path(f.geometry)}" fill="none" stroke="#475569" stroke-width="2"/>`});
  if(w/kx<1.6)BASE.l.forEach(([n,a,b])=>{if(b>vb[0]&&b<vb[2]&&a>vb[1]&&a<vb[3])o+=`<text x="${X(b)}" y="${Y(a)}" font-size="15" fill="#94a3b8" text-anchor="middle">${esc(n.replace(/^(.+?[시군])(.+구)$/,'$1 $2'))}</text>`});
- const COL=['#4f46e5','#dc2626','#059669','#d97706','#0891b2','#db2777','#7c3aed','#65a30d'];
+ const COL=['#4f46e5','#dc2626','#059669','#d97706','#0891b2','#db2777','#7c3aed','#65a30d'],RLB=[];
  rtGroups(P).forEach((g,gi)=>{const c=COL[gi%8],L=g.L;for(let i=1;i<L.length;i++){const a=L[i-1],b=L[i],d=hav(a,b)*1.3;o+=`<line x1="${X(a.lng)}" y1="${Y(a.lat)}" x2="${X(b.lng)}" y2="${Y(b.lat)}" stroke="${c}" stroke-width="3" stroke-dasharray="10 7"/>`;
-  const mx=(+X(a.lng)+ +X(b.lng))/2,my=(+Y(a.lat)+ +Y(b.lat))/2,t=`약 ${kmT(d)} · ${minT(d)}`;o+=`<rect x="${mx-t.length*4.6}" y="${my-12}" width="${t.length*9.2}" height="22" rx="11" fill="#fff" stroke="${c}"/><text x="${mx}" y="${my+4}" font-size="14" font-weight="700" fill="${c}" text-anchor="middle">${t}</text>`}});
- P.forEach(r=>{const x=+X(r.lng),y=+Y(r.lat),c=r.st==='완료'?'#9ca3af':'#4f46e5';o+=`<circle cx="${x}" cy="${y}" r="17" fill="${c}" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y+6}" font-size="17" font-weight="800" fill="#fff" text-anchor="middle">${r._dn}</text><text x="${x+22}" y="${y+6}" font-size="17" font-weight="700" fill="#1e1b4b" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(r.tm)}</text>`});
+  const mx=(+X(a.lng)+ +X(b.lng))/2,my=(+Y(a.lat)+ +Y(b.lat))/2,t=`약 ${kmT(d)} · ${minT(d)}`;if(Math.hypot(X(a.lng)-X(b.lng),Y(a.lat)-Y(b.lat))<t.length*9.2+30)continue;RLB.push([mx-t.length*4.6,my-12,mx+t.length*4.6,my+10]);o+=`<rect x="${mx-t.length*4.6}" y="${my-12}" width="${t.length*9.2}" height="22" rx="11" fill="#fff" stroke="${c}"/><text x="${mx}" y="${my+4}" font-size="14" font-weight="700" fill="${c}" text-anchor="middle">${t}</text>`}});
+ /* 겹치는 핀은 둘레로 벌려 놓고(가는 선으로 실제 위치 연결), 이름표는 빈 자리를 찾아 붙임 */
+ const M=P.map((r,k)=>({r,x:+X(r.lng),y:+Y(r.lat),px:+X(r.lng)+(k%3-1)*.01,py:+Y(r.lat)+(k%2)*.01}));
+ for(let it=0;it<80;it++)for(let a=0;a<M.length;a++)for(let b=a+1;b<M.length;b++){const A=M[a],B=M[b];let dx=B.px-A.px,dy=B.py-A.py,d=Math.hypot(dx,dy);if(d<40){if(d<.5){dx=Math.cos(a+b);dy=Math.sin(a+b);d=1}const m=(40-d)/2;A.px-=dx/d*m;A.py-=dy/d*m;B.px+=dx/d*m;B.py+=dy/d*m}}
+ M.forEach(m=>{m.px=Math.min(W-20,Math.max(20,m.px));m.py=Math.min(H-24,Math.max(20,m.py));if(Math.hypot(m.px-m.x,m.py-m.y)>4)o+=`<line x1="${m.x}" y1="${m.y}" x2="${m.px.toFixed(1)}" y2="${m.py.toFixed(1)}" stroke="#1e1b4b" stroke-width="1.5"/><circle cx="${m.x}" cy="${m.y}" r="4" fill="#1e1b4b"/>`});
+ const BX=M.map(m=>[m.px-19,m.py-19,m.px+19,m.py+19]).concat(RLB),ov=(a,b)=>!(a[2]<b[0]||a[0]>b[2]||a[3]<b[1]||a[1]>b[3]),inV=b=>b[0]>=2&&b[2]<=W-2&&b[1]>=2&&b[3]<=H-20;
+ M.forEach(m=>{const c=m.r.st==='완료'?'#9ca3af':'#4f46e5';o+=`<circle cx="${m.px.toFixed(1)}" cy="${m.py.toFixed(1)}" r="17" fill="${c}" stroke="#fff" stroke-width="3"/><text x="${m.px.toFixed(1)}" y="${(m.py+6).toFixed(1)}" font-size="17" font-weight="800" fill="#fff" text-anchor="middle">${m.r._dn}</text>`});
+ /* 이름표: 가까운 빈 자리부터 찾고, 멀리 붙으면 화살표로 핀을 가리킴 */
+ const sp=[];[0,1,2,3].forEach(k=>{for(let a=0;a<16;a++)sp.push([[0,48,88,130][k],a*Math.PI/8])});
+ M.forEach(m=>{const t=m.r.tm,tw=t.length*17+8,th=24;let best=null;
+  for(const [rd,an] of sp){const cx=m.px+(rd?Math.cos(an)*(rd+tw/2):tw/2+22),cy=m.py+(rd?Math.sin(an)*(rd*.7+14):0),b=[cx-tw/2,cy-th/2,cx+tw/2,cy+th/2];if(inV(b)&&!BX.some(q=>ov(q,b))){best={cx,cy,b,rd};break}}
+  if(!best){const cx=m.px+22+tw/2,cy=m.py;best={cx,cy,b:[cx-tw/2,cy-th/2,cx+tw/2,cy+th/2],rd:0}}BX.push(best.b);
+  if(best.rd){const ex=Math.max(best.b[0],Math.min(m.px,best.b[2])),ey=Math.max(best.b[1],Math.min(m.py,best.b[3])),d=Math.hypot(m.px-ex,m.py-ey),ux=(m.px-ex)/d,uy=(m.py-ey)/d;
+   o+=`<line x1="${ex.toFixed(1)}" y1="${ey.toFixed(1)}" x2="${(m.px-ux*19).toFixed(1)}" y2="${(m.py-uy*19).toFixed(1)}" stroke="#1e1b4b" stroke-width="1.6" marker-end="url(#dpa)"/>`;
+   o+=`<rect x="${best.b[0].toFixed(1)}" y="${best.b[1].toFixed(1)}" width="${tw}" height="${th}" rx="6" fill="#fff" stroke="#1e1b4b" stroke-width="1.2"/><text x="${best.cx.toFixed(1)}" y="${(best.cy+6).toFixed(1)}" font-size="16" font-weight="700" fill="#1e1b4b" text-anchor="middle"><tspan fill="#4f46e5">${m.r._dn}</tspan> ${esc(t)}</text>`}
+  else o+=`<text x="${best.cx.toFixed(1)}" y="${(best.cy+6).toFixed(1)}" font-size="17" font-weight="700" fill="#1e1b4b" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle">${esc(t)}</text>`});
  return o+`<text x="${W-8}" y="${H-8}" font-size="12" fill="#64748b" text-anchor="end">바탕: 통계청(2013) 시·군·구 경계 · 거리·시간은 직선×1.3 추정</text></svg>`}
 function dpPage(d,L){const R=[];rtGroups(L.filter(hasPin)).forEach(g=>g.L.forEach(r=>R.push(r)));L.forEach(r=>{if(!R.includes(r))R.push(r)});R.forEach((r,i)=>r._dn=i+1);
  const insS=[...new Set(R.flatMap(r=>(r.ins||[]).filter(real)))];const lead=r=>[r.lead,r.solo,r.tl].filter(real).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'-';
