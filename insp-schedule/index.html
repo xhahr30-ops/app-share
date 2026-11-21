@@ -572,7 +572,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     <button id="bArc" class="adm" type="button"><i class="ii" data-i="save"></i> 최종 파일 받기·보관</button>
     <button id="bRp" class="adm"><i class="ii" data-i="clip"></i> 점검결과 출력 (결과표·종합 보고서)</button>
     <button id="bRst" style="color:var(--rd)"><i class="ii" data-i="trash"></i> 처음 자료로 되돌리기</button>
-   </div></div><button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button><button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 핀 찍기</button></div>
+   </div></div><button class="btn" id="bIcs" type="button"><i class="ii" data-i="cal"></i> 휴대폰 달력에 넣기</button><button class="btn" id="bGeo" title="주소가 있고 위치가 없는 현장을 주소로 찾아 핀을 찍습니다"><i class="ii" data-i="compass"></i> 주소로 핀 찍기</button><button class="btn" id="bPr2" type="button"><i class="ii" data-i="prt"></i> 인쇄 (지도+목록)</button><button class="btn" id="bDp3" type="button"><i class="ii" data-i="cal"></i> 일자별 출력</button><button class="btn adm" id="bRp2" type="button"><i class="ii" data-i="clip"></i> 점검결과 출력</button></div>
   <div class="tg"><b class="tgh">⚙ 설정·도움</b><button class="btn" id="bFs" type="button"><b style="font-size:15px">가</b> <span id="fsT">글자 보통</span></button><button class="btn mob-only" id="dm2" type="button"><i class="ii" data-i="moon"></i> 다크</button><button class="btn mob-only" id="fm2" type="button"><i class="ii" data-i="phone"></i> PC 배치로</button><button class="btn adm" id="bPw" type="button">🔑 비밀번호·초대</button><button class="btn" id="bRf" type="button"><i class="ii" data-i="rf"></i> 새로고침</button><button class="btn" id="bInst" hidden title="주소창 없이 앱처럼 열리게 홈 화면에 설치합니다"><i class="ii" data-i="plus"></i> 앱으로 설치</button><button class="btn" id="bHelp" type="button">❓ 사용법</button><button class="btn pc-only" id="bKeys" type="button" title="PC 단축키">⌨ 단축키</button><a class="btn" id="bTeam" hidden target="_blank" rel="noopener"><i class="ii" data-i="lock"></i> 팀 공유판 (로그인) 열기</a></div>
   <span class="sp"></span>
   <label class="mini pc-only" style="display:flex;align-items:center;gap:4px">출력<select id="po" class="flt" style="margin:0;width:auto;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card)"><option value="landscape">가로</option><option value="portrait">세로</option></select></label>
@@ -1573,7 +1573,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121221632';
+const BUILD='20261121222300';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3281,7 +3281,11 @@ function dpOpen(){$('exMenu').classList.remove('on');$('tbar').classList.remove(
 function dpInfo(){const n=$('dpL').querySelectorAll('input:checked').length;$('dpI').textContent=`${n}일 선택 → A4 세로 ${n}장`}
 $('dpL').addEventListener('change',dpInfo);$('dpAll').onclick=()=>{$('dpL').querySelectorAll('input').forEach(x=>x.checked=true);dpInfo()};$('dpNone').onclick=()=>{$('dpL').querySelectorAll('input').forEach(x=>x.checked=false);dpInfo()};
 $('dpLeft').onclick=()=>{const t=ymd(today());$('dpL').querySelectorAll('input').forEach(x=>x.checked=x.value>=t);dpInfo()};
-$('dpX').onclick=$('dpNo').onclick=()=>$('dpm').classList.remove('on');$('bDp').onclick=dpOpen;$('bDp2').onclick=dpOpen;
+$('dpX').onclick=$('dpNo').onclick=()=>$('dpm').classList.remove('on');/* 카카오톡·네이버 등 앱 안 브라우저는 인쇄가 막혀 있음 → 안내 */
+const inApp=()=>/KAKAOTALK|NAVER\(|Line\/|Instagram|FBAN|FBAV|DaumApps|; wv\)/i.test(navigator.userAgent);
+function prGuard(){if(!inApp())return true;toast('이 앱 안의 화면에서는 인쇄가 안 됩니다. 오른쪽 위 ⋮ → "다른 브라우저로 열기"(크롬)로 연 뒤 다시 눌러 주세요');return false}
+$('bPr2').onclick=()=>{$('tbar').classList.remove('open');if(prGuard())$('bPr').click()};$('bDp3').onclick=()=>{if(prGuard())dpOpen()};$('bRp2').onclick=()=>{if(prGuard())rpOpen('site')};
+$('bDp').onclick=dpOpen;$('bDp2').onclick=dpOpen;
 $('dpGo').onclick=()=>{const D=[...$('dpL').querySelectorAll('input:checked')].map(x=>x.value);if(!D.length)return toast('날짜를 골라 주세요');const F=filt(true);
  $('dpm').classList.remove('on');$('rpt').innerHTML=D.map(d=>dpPage(d,F.filter(r=>r.pd===d).sort((a,b)=>a.no-b.no))).join('');rpFit();
  $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},250)};
