@@ -1278,7 +1278,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('whoA').innerHTML=AUTH.role==='ins'?'<button type="button" class="whob" id="whoPw">🔑 비밀번호</button><button type="button" class="whob" id="whoInv">📨 초대</button>':'';$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('whoA').innerHTML=(AUTH.role==='ins'?'<button type="button" class="whob" id="whoPw">🔑 비밀번호</button><button type="button" class="whob" id="whoInv">📨 초대</button>':'')+'<button type="button" class="whob" id="whoKk" title="카카오 지도 키 넣기·확인">🗺 카카오 키'+(kkKeyRaw()?' ✓':'')+'</button>';$('whoKk').onclick=()=>$('bKey').click();$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1496,7 +1496,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121152541';
+const BUILD='20261121152840';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
