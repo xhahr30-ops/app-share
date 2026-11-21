@@ -543,7 +543,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div id="mapWrap">
    <div id="map"></div>
    <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" type="search" name="mulgil-site-mq" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button><button id="mNav" type="button" aria-label="주소찾기·길안내"><i class="ii" data-i="compass"></i></button></div><button class="mbig mnb" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i><span>메뉴</span></button></div>
-   <div class="daybar np" id="daybar"></div><div id="dayBig" class="np" hidden></div>
+   <div class="daybar np" id="daybar"></div>
    <button class="dba np" id="dbL" type="button" aria-label="왼쪽 날짜">‹</button><button class="dba np" id="dbR" type="button" aria-label="오른쪽 날짜">›</button>
    <div class="fab np">
     <button class="i" id="fFit" title="모든 현장 보기"><i class="ii" data-i="full"></i></button>
@@ -1096,7 +1096,7 @@ function drawPins(fit){const L0=filt(),all=filt(true);
 
  if(fit&&pts.length)map.fitBounds(pts,{padding:[60,60],maxZoom:12});setTimeout(lblZ,300)}
 function rDays(all,days){const by={};all.forEach(r=>{(by[r.pd]=by[r.pd]||[]).push(r)});
- $('daybar').innerHTML=`<button class="dc ${F.day?'':'on'}" data-d="">전체 <b>${all.length}</b></button>`+days.filter(d=>by[d]).map(d=>{const dd=ddays(d),l=by[d],dn=l.filter(r=>r.st==='완료').length;const all1=dn===l.length,pc=Math.round(dn/l.length*100);const on=F.day===d,bg=dn&&!all1?` style="background:linear-gradient(90deg,${on?'#6b7280':'#c2c7cf'} ${pc}%,${on?'#312e81':'rgba(255,255,255,.95)'} ${pc}%)"`:'';return `<button class="dc ${on?'on':''} ${all1?'dcok':''}"${bg} data-d="${d}" title="${md(d)} 현장 ${l.length}곳 중 ${dn}곳 완료"><i style="background:${all1?'#9ca3af':$('colBy').value==='day'?PAL[days.indexOf(d)%PAL.length]:'#94a3b8'}"></i>${md(d)}(${wd(d)}) <b>${dn?dn+'/'+l.length:l.length}</b>${dd===0?' 오늘':all1?' '+ic('check'):''}</button>`}).join('');{const bg=$('dayBig'),sel=F.day&&$('daybar').querySelector('.dc.on[data-d]');if(sel&&F.day){bg.innerHTML=sel.outerHTML.replace('class="dc on','class="dc on big');bg.hidden=false;bg.firstChild.onclick=()=>{const b=$('daybar').querySelector('[data-d=""]');b&&b.click()};bg.firstChild.title='누르면 전체 보기'}else{bg.hidden=true;bg.innerHTML=''}}}
+ $('daybar').innerHTML=`<button class="dc ${F.day?'':'on'}" data-d="">전체 <b>${all.length}</b></button>`+days.filter(d=>by[d]).map(d=>{const dd=ddays(d),l=by[d],dn=l.filter(r=>r.st==='완료').length;const all1=dn===l.length,pc=Math.round(dn/l.length*100);const on=F.day===d,bg=dn&&!all1?` style="background:linear-gradient(90deg,${on?'#6b7280':'#c2c7cf'} ${pc}%,${on?'#312e81':'rgba(255,255,255,.95)'} ${pc}%)"`:'';return `<button class="dc ${on?'on':''} ${all1?'dcok':''}"${bg} data-d="${d}" title="${md(d)} 현장 ${l.length}곳 중 ${dn}곳 완료"><i style="background:${all1?'#9ca3af':$('colBy').value==='day'?PAL[days.indexOf(d)%PAL.length]:'#94a3b8'}"></i>${md(d)}(${wd(d)}) <b>${dn?dn+'/'+l.length:l.length}</b>${dd===0?' 오늘':all1?' '+ic('check'):''}</button>`}).join('')}
 const telA=p=>`${esc(p.n)} <span class="mini">${esc(p.role||'')}</span> <a href="tel:${esc(p.ph)}" class="tel">${esc(p.ph)}</a>`;
 const insPh=n=>(CT._ins?.p||[]).find(x=>x.n===n);
 function popHtml(r){const s=stOf(r),d=ddays(r.pd);return `<div class="ppt"><b>${esc(r.rg)} ${esc(r.tm)}</b> ${stB(s)}
@@ -1486,7 +1486,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121145207';
+const BUILD='20261121152311';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
