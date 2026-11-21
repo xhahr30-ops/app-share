@@ -142,6 +142,7 @@ main{display:grid;gap:10px;padding:10px 12px;grid-template-columns:minmax(0,1fr)
 html.dark .wso span{background:#0f172a;color:#bae6fd}
 .wsr{display:flex;gap:8px;align-items:center;padding:7px 2px;border-top:1px solid #e2e8f0;font-size:13px}.wsr div{flex:1;min-width:0}.wsr .mini{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wsr.off{opacity:.45}
 html.dark .wsr{border-color:#334155}
+#lyL .lyh{font-size:12px;font-weight:800;color:#64748b;padding:10px 2px 2px;border-top:1px solid var(--line)}#lyL .lyh:first-child{border-top:0;padding-top:0}
 html.dark #kkHow{background:#1f2937;border-color:#854d0e}
 #instB{display:none;position:fixed;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2600;background:var(--card,#fff);border:1px solid #c7d2fe;border-radius:16px;box-shadow:0 10px 30px rgba(15,23,42,.35);padding:12px;animation:ibup .35s ease-out}
 #instB.on{display:block}@keyframes ibup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
@@ -967,19 +968,22 @@ function lyApply(){const H=document.documentElement;H.classList.toggle('nomap',!
  if(map&&!KK&&map.getPane){const b=map.getPane('base'),t=map.getPane('tilePane');if(b)b.style.display=LY.base?'':'none';if(t)t.style.display=LY.base&&LY.osm?'':'none';muniSt()}
  if(typeof isMob==='function'&&isMob()&&LY.map&&SH==='full')setSheet('half');if(typeof isMob==='function'&&isMob()&&!LY.map)setSheet('full')}
 function lyUI(){const hasK=!!kkKeyRaw()&&!inClaude(),I=[
- ...ADM&&AUTH?[['askpos',!tpOff(),'검색 때 팀장에게 내 위치 보내기 묻기','현장을 검색해 하나로 좁혀지면 그 현장 팀장에게 보낼지 물어봅니다 (점검자만)']]:[],
- ['clean',LY.clean,'지도만 보기','경계 지도에 핀·지자체 색만 화면 가득 (발표·캡처용) · Esc나 ✕로 끝'],
+ '🗺 바탕지도',
  ['map',LY.map,'지도 보기','끄면 지도를 숨기고 목록·달력만 넓게 봅니다'],
  ['kk',LY.kk&&hasK,'카카오 바탕지도',hasK?'끄면 기본 지도(시·군·구 경계)로 봅니다 · 바꾸면 다시 열림':inClaude()?'Claude 페이지에서는 쓸 수 없습니다':'메뉴 \'카카오 지도 키\'를 먼저 넣으세요',!hasK],
  ['admap',!LY.osm,'행정지도로만 보기',KK?'카카오 지도를 쓰는 중에는 해당 없음 (카카오 바탕지도를 끄면 쓸 수 있음)':'도로·지명 일반 지도 배경을 빼고 시·군·구 경계(행정지도)만 봅니다',KK||!LY.base],
  ['base',LY.base,'시·군·구 경계·이름 (기본 지도)',KK?'카카오 지도를 쓰는 중에는 해당 없음':'끄면 바탕을 비우고 핀만 봅니다',KK],
- ['rg',$('rgOn').checked,'지자체 색','현장이 있는 시·군·구를 점 색으로 칠함'],
- ['wso',LY.wso,'🏢 상수도 사업소',wsoList().length?wsoList().length+'곳 · 메뉴 \'상수도 사업소\'에서 모으기·목록':'메뉴 \'상수도 사업소\'에서 카카오로 먼저 모으세요'],
+ ['clean',LY.clean,'지도만 보기','경계 지도에 핀·지자체 색만 화면 가득 (발표·캡처용) · Esc나 ✕로 끝'],
+ '📍 현장 표시',
  ['pin',LY.pin,'현장 핀','끄면 지자체 색만 봅니다'],
  ['grp',LY.grp,'같은 곳 핀 묶기','한 사무실의 여러 팀을 숫자 핀 하나로 · 누르면 펼침'],
+ ['lbl',$('lblOn').checked,'이름표','핀 옆 팀명·점검일'],
+ ['rg',$('rgOn').checked,'지자체 색','현장이 있는 시·군·구를 점 색으로 칠함'],
  ['route',LY.route,'하루 동선','날짜를 고르면 점검팀별로 그날 현장을 순서대로 잇고 거리·시간 표시(직선거리 추정)'],
- ['lbl',$('lblOn').checked,'이름표','핀 옆 팀명·점검일']];
- $('lyL').innerHTML=I.map(([k,v,t,d,dis])=>`<label class="${dis?'off':''}"><span>${t}<small>${d}</small></span><input type="checkbox" data-ly="${k}" ${v?'checked':''} ${dis?'disabled':''}></label>`).join('')}
+ '🏢 함께 보기',
+ ['wso',LY.wso,'🏢 상수도 사업소',wsoList().length?wsoList().length+'곳 · 메뉴 \'상수도 사업소\'에서 모으기·목록':'메뉴 \'상수도 사업소\'에서 카카오로 먼저 모으세요'],
+ ...ADM&&AUTH?['⚙ 점검자',['askpos',!tpOff(),'검색 때 팀장에게 내 위치 보내기 묻기','현장을 검색해 하나로 좁혀지면 그 현장 팀장에게 보낼지 물어봅니다 (점검자만)']]:[]];
+ $('lyL').innerHTML=I.map(x=>typeof x==='string'?`<div class="lyh">${x}</div>`:x).map(x=>typeof x==='string'?x:(([k,v,t,d,dis])=>`<label class="${dis?'off':''}"><span>${t}<small>${d}</small></span><input type="checkbox" data-ly="${k}" ${v?'checked':''} ${dis?'disabled':''}></label>`)(x)).join('')}
 function lyOpen(){$('tbar').classList.remove('open');lyUI();$('lym').classList.add('on')}
 function cleanSet(v){if(v){if(KK){LY.kkPrev=LY.kk;LY.clean=1;lySave();location.reload();return}LY.clean=1;lySave();cleanApply(true)}
  else{const back=LY.kkPrev&&kkKeyRaw()&&!inClaude()&&LY.kk;LY.clean=0;lySave();if(back&&!KK){location.reload();return}cleanApply(false)}}
@@ -1422,7 +1426,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121103154';
+const BUILD='20261121105421';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2846,7 +2850,9 @@ const wsoList=()=>{const h=wsoHid();return wsoAll().filter(x=>!h[x.id])};
 const WSI='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M4 21V9l6-4v16M10 21V3h10v18M3 21h18"/><path d="M15 8.5c1.2 1.6 1.8 2.6 1.8 3.4a1.8 1.8 0 0 1-3.6 0c0-.8.6-1.8 1.8-3.4z" fill="#7dd3fc" stroke="none"/></svg>';
 const wsoShort=n=>String(n||'').replace(/^(.+?(특별시|광역시|특별자치시|특별자치도|도))\s+/,'');
 function wsoZ(){if(map&&$('map'))$('map').classList.toggle('wsolow',map.getZoom()<10)}
-const _drawPins=drawPins;drawPins=function(fit){_drawPins(fit);if(!map||!pinL||!LY.wso)return;wsoZ();
+let DIAGN=0;function diag(w,e){const m=String(e&&(e.message||e)||'').slice(0,80);if(DIAGN++<3){toast('⚠ '+w+' 오류: '+m+' (화면을 캡처해 관리자에게 보내 주세요)');try{logEv('오류 '+w+': '+m.slice(0,40),(AUTH&&AUTH.name)||'',AUTH&&AUTH.role)}catch(_){}}}
+addEventListener('error',e=>diag('앱',e.error||e.message));
+const _drawPins=drawPins;drawPins=function(fit){try{_drawPins(fit)}catch(e){diag('지도 핀',e)}if(!map||!pinL||!LY.wso)return;wsoZ();
  wsoList().forEach(x=>{const h=`<div class="wso"><i>${WSI}</i><span>${esc(wsoShort(x.n))}</span></div>`;
   const m=KK?kkMarker(x,'pin',h,{title:x.n,z:200}).addTo(pinL):L.marker([x.lat,x.lng],{icon:L.divIcon({className:'pin',html:h,iconSize:[0,0]}),title:x.n,zIndexOffset:-500}).addTo(pinL);
   m.on('click',()=>wsoOpen(x.id))})};
