@@ -1426,7 +1426,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121105421';
+const BUILD='20261121105738';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2852,6 +2852,8 @@ const wsoShort=n=>String(n||'').replace(/^(.+?(특별시|광역시|특별자치�
 function wsoZ(){if(map&&$('map'))$('map').classList.toggle('wsolow',map.getZoom()<10)}
 let DIAGN=0;function diag(w,e){const m=String(e&&(e.message||e)||'').slice(0,80);if(DIAGN++<3){toast('⚠ '+w+' 오류: '+m+' (화면을 캡처해 관리자에게 보내 주세요)');try{logEv('오류 '+w+': '+m.slice(0,40),(AUTH&&AUTH.name)||'',AUTH&&AUTH.role)}catch(_){}}}
 addEventListener('error',e=>diag('앱',e.error||e.message));
+setTimeout(()=>{try{if(!map||KK||document.documentElement.classList.contains('locked'))return;const n=document.querySelectorAll('#map .pin').length,hp=rows.filter(hasPin).length;if(n||!hp)return;
+ const m=`핀0 r${rows.length}/${hp} f${filt().length} pin${LY.pin} L${pinL&&pinL._map?1:0} z${map.getZoom()} ${$('map').clientWidth}x${$('map').clientHeight}`;toast('⚠ 지도 진단: '+m+' (화면 캡처해 주세요)');logEv('진단 '+m,(AUTH&&AUTH.name)||'',AUTH&&AUTH.role)}catch(e){diag('진단',e)}},9000);
 const _drawPins=drawPins;drawPins=function(fit){try{_drawPins(fit)}catch(e){diag('지도 핀',e)}if(!map||!pinL||!LY.wso)return;wsoZ();
  wsoList().forEach(x=>{const h=`<div class="wso"><i>${WSI}</i><span>${esc(wsoShort(x.n))}</span></div>`;
   const m=KK?kkMarker(x,'pin',h,{title:x.n,z:200}).addTo(pinL):L.marker([x.lat,x.lng],{icon:L.divIcon({className:'pin',html:h,iconSize:[0,0]}),title:x.n,zIndexOffset:-500}).addTo(pinL);
