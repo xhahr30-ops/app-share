@@ -1523,7 +1523,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121200355';
+const BUILD='20261121201146';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2889,7 +2889,7 @@ function carIntro(name){return new Promise(ok=>{if(matchMedia('(prefers-reduced-
 const LOGURL='https://script.google.com/macros/s/AKfycbz_Ssx-jmUwmyfymBYGJPjL98ZmGGDYdtPZuGnJbWkg3gsHaQau-ZV7qp73qNlPXmAb/exec';
 const devT=()=>{const u=navigator.userAgent;const os=/Android/i.test(u)?'안드로이드':/iPhone|iPad/i.test(u)?'아이폰':/Windows/i.test(u)?'윈도우':/Mac/i.test(u)?'맥':'기타';const br=/SamsungBrowser/i.test(u)?'삼성인터넷':/KAKAOTALK/i.test(u)?'카톡':/Edg\//.test(u)?'엣지':/Chrome\//.test(u)?'크롬':/Safari/i.test(u)?'사파리':'기타';const app=matchMedia('(display-mode: standalone)').matches||navigator.standalone?' · 설치앱':'';return os+' '+br+app};
 let DEVID='';try{DEVID=localStorage.getItem('mulgil-dev')||'';if(!DEVID){DEVID='d'+Math.random().toString(36).slice(2,8);localStorage.setItem('mulgil-dev',DEVID)}}catch(e){}
-function logEv(ev,name,role){const d=new Date(),o={ts:ymd(d)+' '+p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds()),ev,name:name||'',role:role==='ins'?'점검자':role==='team'?'팀원':'',dev:devT(),devId:DEVID,app:(/app-share/.test(location.pathname)?'공개판':'비공개판'),build:BUILD};
+function logEv(ev,name,role){const d=new Date(),o={ts:ymd(d)+' '+p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds()),ev,name:name||'',role:role==='ins'?'점검자':role==='emp'?'직원':role==='team'?'팀원':'',dev:devT(),devId:DEVID,app:(/app-share/.test(location.pathname)?'공개판':'비공개판'),build:BUILD};
  let q=[];try{q=JSON.parse(localStorage.getItem('mulgil-logq')||'[]')}catch(e){}q.push(o);if(q.length>200)q=q.slice(-200);try{localStorage.setItem('mulgil-logq',JSON.stringify(q))}catch(e){}logFlush()}
 let LOGB=false;async function logFlush(){if(LOGB||!LOGURL||/^__/.test(LOGURL)||!navigator.onLine)return;let q=[];try{q=JSON.parse(localStorage.getItem('mulgil-logq')||'[]')}catch(e){}if(!q.length)return;LOGB=true;
  try{await fetch(LOGURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({rows:q})});let r=[];try{r=JSON.parse(localStorage.getItem('mulgil-logq')||'[]')}catch(e){}localStorage.setItem('mulgil-logq',JSON.stringify(r.slice(q.length)))}catch(e){}finally{LOGB=false}}
@@ -2907,6 +2907,8 @@ $('lkK').addEventListener('mousedown',e=>e.preventDefault());$('lkK').onclick=()
 {const _g=$('lkGo').onclick;$('lkGo').onclick=()=>{try{localStorage.setItem('mulgil-lastname',$('lkN').value.trim())}catch(e){}_g()}}
 function lockOut(){if(AUTH)logEv('로그아웃',AUTH.name,AUTH.role);try{localStorage.removeItem('mulgil-auth');sessionStorage.removeItem('mulgil-auth')}catch(e){}location.reload()}
 lockApply();
+/* 같은 브라우저의 다른 창·탭에서 로그인이 바뀌면 이 창도 맞춤 (점검자↔직원이 섞여 보이는 것 방지) */
+addEventListener('storage',e=>{if(e.key!=='mulgil-auth')return;const a=lockState(),k=x=>x?x.role+'|'+x.name:'';if(k(a)===k(AUTH))return;toast(a?`다른 창에서 ${a.name} · ${a.role==='ins'?'점검자':'직원'}(으)로 로그인해 이 창도 바뀝니다`:'다른 창에서 로그아웃해 이 창도 잠급니다');setTimeout(()=>location.reload(),1500)});
 /* 📧 직원 이메일 로그인 (인증번호) · 본인 현장만 보기 — 이메일 명단은 구글 시트 '직원명부' 탭에만 있음 */
 const isEmp=()=>!!(AUTH&&AUTH.role==='emp');
 const empMk=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n[0]+'*'.repeat(n.length-2)+n[n.length-1]};
