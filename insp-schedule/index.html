@@ -78,6 +78,11 @@ html.dark .btn.on{color:#c7d2fe}
 .mascot{height:46px;width:auto}
 .tbar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 .tbar .sp{flex:1}
+.whoc{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#e0e7ff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:2px 10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.whoc b{color:#fff}.whoc a{color:#fde68a;margin-left:4px;font-weight:700}.whoc[hidden]{display:none}
+html:not(.kk) .whoc{color:var(--mut,#64748b);background:var(--card);border-color:var(--line)}html:not(.kk) .whoc b{color:inherit}html:not(.kk) .whoc a{color:#4f46e5}
+html.mob .whoc{display:none}
+html.kk .tbar .who,html:not(.mob) .tbar .who{display:none}
 .tbar .tg{display:contents}.tbar .tgh{display:none}
 html.mob .pc-only{display:none!important}.tbar a.btn{text-decoration:none}
 html.mob .tbar .tg,html.kk .tbar .tg{display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-bottom:8px;border-bottom:1px solid var(--line)}
@@ -483,6 +488,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div class="hl">
    <h1>스마트 물길점검 <select id="rdSel" class="rdsel" title="점검 회차 (바꾸면 그 회차 일정·점검 기록을 봅니다)"></select> <span class="dot" id="hDot" title="저장 상태"></span></h1>
    <span class="tag">현장점검 · 성과평가 일정 지도</span>
+   <span id="whoC" class="whoc np"></span>
   </div>
   <div class="hr">
    <button class="ibtn np" id="iSrch" title="검색"><i class="ii" data-i="srch"></i></button>
@@ -623,7 +629,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🔑 비밀번호 · 점검자 초대</b><button class="btn" id="pwX" type="button"><i class="ii" data-i="x"></i></button></div>
  <p class="mini" id="pwSt" style="margin:0 0 8px"></p>
  <label class="mini">현재 점검자 비밀번호 (확인용)</label><input id="pwCur" class="inp" type="password" autocomplete="off" autocapitalize="characters" placeholder="지금 쓰는 점검자 비밀번호">
- <div style="margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:12px"><b style="font-size:14px">📨 점검자 초대</b><p class="mini" style="margin:4px 0 8px">한 번만 쓸 수 있고 48시간 동안 유효한 링크를 만들어 카톡으로 보냅니다. 받은 사람은 이름만 넣고 점검자로 들어옵니다.</p><button class="btn pri" id="pwInv" type="button">📨 초대 링크 만들기</button></div>
+ <div style="margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:12px"><b style="font-size:14px">📨 점검자 초대</b><p class="mini" style="margin:4px 0 8px">48시간 동안 유효한 링크를 만들어 카톡으로 보냅니다. 받은 사람은 이름만 넣고 점검자로 들어옵니다. 여러 명이면 <b>인원수</b>를 골라 링크 하나를 단톡방에 보내세요.</p><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label class="mini" style="display:flex;gap:4px;align-items:center">쓸 수 있는 인원 <select id="pwMax" class="inp" style="width:auto;padding:4px 8px"><option value="1">1명</option><option value="5">5명</option><option value="10" selected>10명</option><option value="15">15명</option><option value="20">20명</option><option value="30">30명</option></select></label><button class="btn pri" id="pwInv" type="button">📨 초대 링크 만들기</button></div><div id="pwWho" style="margin-top:10px"></div></div>
  <div style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px"><b style="font-size:14px">🔑 비밀번호 바꾸기</b>
   <div style="display:flex;gap:6px;margin:6px 0"><label style="flex:1;display:flex;gap:4px;align-items:center;font-size:13px"><input type="radio" name="pwR" value="team" checked> 팀원 비밀번호</label><label style="flex:1;display:flex;gap:4px;align-items:center;font-size:13px"><input type="radio" name="pwR" value="ins"> 점검자 비밀번호</label></div>
   <input id="pwN1" class="inp" type="text" autocomplete="off" autocapitalize="characters" placeholder="새 비밀번호 (영문·숫자 4~20자)" style="margin-bottom:6px"><input id="pwN2" class="inp" type="text" autocomplete="off" autocapitalize="characters" placeholder="새 비밀번호 한 번 더">
@@ -738,7 +744,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <li><b>PC 단축키</b>: <code>/</code> 검색 · <code>←</code><code>→</code> 날짜 · <code>F</code> 지도만 보기 · <code>T</code> 오늘 점검 · <code>Esc</code> 닫기 · <code>?</code> 사용법</li></ul></div></details><details class="hlp"><summary>🔑 로그인 · 비밀번호 · 점검자 초대</summary><div><ul>
 <li><b>로그인</b>: 이름과 비밀번호를 넣습니다. 팀원 비밀번호는 보기·참여, 점검자 비밀번호는 점검표·결과 출력 등 모든 기능. '30일 동안 기억'을 켜 두면 다시 묻지 않습니다.</li>
 <li>숫자만 나오는 자판이면 비밀번호 칸 아래 <b>🔤/🔢 자판 바꾸기</b>를 누르세요. 영문은 대·소문자 구분 없음.</li>
-<li><b>점검자 초대</b>(점검자만): 메뉴 ⚙ → <b>🔑 비밀번호·초대</b> → 현재 점검자 비밀번호 입력 → <b>📨 초대 링크 만들기</b> → 카톡으로 보내기. 받은 사람은 링크를 열고 <b>이름만 넣고</b> '초대로 점검자 들어가기'. 링크는 <b>한 번만 · 48시간</b> 유효.</li>
+<li><b>점검자 초대</b>(점검자만): 메뉴 ⚙ → <b>🔑 비밀번호·초대</b> → 현재 점검자 비밀번호 입력 → <b>📨 초대 링크 만들기</b> → 카톡으로 보내기. 받은 사람은 링크를 열고 <b>이름만 넣고</b> '초대로 점검자 들어가기'. 링크는 <b>48시간</b> 유효하고, 만들 때 고른 <b>인원수(1~30명)</b>만큼 쓸 수 있습니다. 여러 명이면 인원수를 골라 <b>링크 하나를 단톡방에</b> 보내면 됩니다.</li>
 <li><b>비밀번호 바꾸기</b>(점검자만): 같은 창에서 팀원/점검자를 고르고 새 비밀번호(영문·숫자 4~20자)를 두 번 입력. 모든 사람에게 바로 적용되고, 옛 비밀번호로 로그인해 있던 사람은 다음에 열 때 새 비밀번호를 넣어야 합니다. <b>새 비밀번호를 꼭 따로 적어 두고 팀에 알려 주세요.</b></li>
 <li>로그인·비밀번호 변경·초대 기록은 관리자 구글 시트 '접속기록'에 남습니다(비밀번호 원문은 남지 않음).</li></ul></div></details>
 <details class="hlp"><summary>🚐 차량 위치 · 팀장에게 알리기</summary><div><ul>
@@ -770,7 +776,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <button type="button" id="lkK" class="btn" style="margin-top:6px;font-size:12.5px">🔤 영문 자판 (지금: 문자)</button>
  <label class="mini" style="display:flex;gap:6px;align-items:center;justify-content:center;margin:8px 0"><input type="checkbox" id="lkR" checked> 이 기기에서 30일 동안 기억</label>
  <button class="btn pri" id="lkGo" type="button" style="width:100%;justify-content:center;height:44px;font-size:15px">로그인</button>
- <div id="lkInvB" hidden style="margin-top:10px;padding:10px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:12px;color:#312e81;font-size:13px"><b>📨 점검자 초대 링크로 열었습니다</b><div class="mini" style="margin:4px 0 8px;color:#4338ca">위에 이름만 넣고 아래 단추를 누르세요. 비밀번호는 필요 없습니다. (한 번만 쓸 수 있음)</div><button class="btn pri" id="lkInvGo" type="button" style="width:100%;justify-content:center">📨 초대로 점검자 들어가기</button></div>
+ <div id="lkInvB" hidden style="margin-top:10px;padding:10px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:12px;color:#312e81;font-size:13px"><b>📨 점검자 초대 링크로 열었습니다</b><div class="mini" style="margin:4px 0 8px;color:#4338ca">위에 이름만 넣고 아래 단추를 누르세요. 비밀번호는 필요 없습니다.</div><button class="btn pri" id="lkInvGo" type="button" style="width:100%;justify-content:center">📨 초대로 점검자 들어가기</button></div>
  <p class="mini" id="lkM" style="margin:8px 0 0;min-height:16px"></p>
  <p class="mini" style="margin:10px 0 0;color:var(--mute)">팀원 비밀번호: 일정·지도·후속 조치 · 점검자 비밀번호: 점검표·개별평가·종합까지<br>로그인·로그아웃 기록(시각·이름·권한·기기)이 관리자에게 남습니다 · 비밀번호 문의: 구병순</p>
 </div></div>
@@ -1259,6 +1265,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('lkOut2').onclick=e=>{e.preventDefault();lockOut()}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1467,7 +1474,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121114007';
+const BUILD='20261121115340';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2864,11 +2871,20 @@ $('lkInvGo').onclick=async()=>{const nm=$('lkN').value.trim().slice(0,20);if(!nm
   INVC='';$('lkInvB').hidden=true;$('lkM').textContent='';logEv('초대로 로그인',nm,'ins');carIntro(nm);lockApply();whoInit();toast('점검자로 들어왔습니다')}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 function pwOpen(){$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('점검자 로그인에서만 쓸 수 있습니다');$('pwCur').value=$('pwN1').value=$('pwN2').value='';
  $('pwSt').innerHTML=gsOn()?`구글 시트에 연결됨 · 지금 비밀번호: ${LOCK.ver?'<b>앱에서 바꾼 비밀번호</b> ('+LOCK.ver+'번째 변경)':'처음 비밀번호'}`:'<b class="warn">구글 시트 주소가 없어 쓸 수 없습니다</b>';$('pwm').classList.add('on')}
-$('bPw').onclick=pwOpen;$('pwX').onclick=()=>$('pwm').classList.remove('on');
+const mkN=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n[0]+'*'.repeat(n.length-2)+n[n.length-1]};
+let WHO=null;
+function pwWho(){const P={};rows.forEach(r=>r.ins.forEach((n,i)=>{if(!real(n))return;const p=P[n]=P[n]||{n,c:0,ro:new Set()};p.c++;p.ro.add(['기술','영업','공통'][i])}));
+ const L=Object.values(P).sort((a,b)=>b.c-a.c||a.n.localeCompare(b.n)),inn=x=>WHO&&WHO.find(w=>w.n===x.n||mkN(w.n)===x.n||mkN(w.n)===mkN(x.n));
+ const k=WHO?L.filter(inn).length:0;
+ $('pwWho').innerHTML=`<b style="font-size:13px">👥 이번 회차 점검자 ${L.length}명</b> <span class="mini">${WHO?`· 들어온 사람 <b style="color:#059669">${k}명</b> · 아직 ${L.length-k}명`:'· 위에 현재 점검자 비밀번호를 넣으면 누가 들어왔는지 함께 보입니다'}</span>
+ <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${L.map(x=>{const w=inn(x);return `<span title="${esc([...x.ro].join('·'))} · ${x.c}곳${w?' · 마지막 '+esc(w.t):''}" style="font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid ${w?'#6ee7b7':'var(--line)'};background:${w?'#ecfdf5':'transparent'};color:${w?'#047857':'inherit'}">${w?'✓ ':''}${esc(x.n)} <small style="opacity:.6">${x.c}</small></span>`}).join('')}</div>
+ <p class="mini" style="margin:6px 0 0">숫자는 맡은 현장 수 · ✓는 점검자로 로그인한 적 있음(접속기록 기준)</p>`}
+let PWT=0;$('pwCur').addEventListener('input',()=>{clearTimeout(PWT);PWT=setTimeout(async()=>{const c=$('pwCur').value.trim();if(!c||sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins||!gsOn())return;try{const j=await gsCall({act:'who',cur:c});WHO=j.list||[];pwWho()}catch(e){}},400)});
+$('bPw').onclick=()=>{WHO=null;pwOpen();pwWho()};$('pwX').onclick=()=>$('pwm').classList.remove('on');
 const pwCurOk=()=>{const c=$('pwCur').value.trim();if(!c){toast('현재 점검자 비밀번호를 넣어 주세요');$('pwCur').focus();return ''}if(sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins){toast('현재 점검자 비밀번호가 맞지 않습니다');$('pwCur').select();return ''}return c};
 $('pwInv').onclick=async()=>{const c=pwCurOk();if(!c)return;const b=$('pwInv');b.disabled=true;
- try{const j=await gsCall({act:'inv',cur:c,by:AUTH.name});const u=location.origin+location.pathname+'#inv='+j.code,until=phT(new Date(j.exp).toISOString());
-  const t=`[스마트 물길점검] ${AUTH.name} 님이 점검자로 초대했습니다.\n아래 링크를 눌러 이름만 넣으면 점검자로 들어옵니다.\n(한 번만 사용 · ${until}까지)`;
+ try{const mx=+$('pwMax').value||1,j=await gsCall({act:'inv',cur:c,by:AUTH.name,max:mx});const u=location.origin+location.pathname+'#inv='+j.code,until=phT(new Date(j.exp).toISOString());
+  const t=`[스마트 물길점검] ${AUTH.name} 님이 점검자로 초대했습니다.\n아래 링크를 눌러 이름만 넣으면 점검자로 들어옵니다.\n(${(j.max||1)>1?'선착순 '+j.max+'명':'한 번만'} 사용 · ${until}까지)`;
   kkShare(t,u).catch(()=>shareSend(t+'\n'+u));toast('초대 링크를 만들었습니다')}catch(e){toast(String(e))}finally{b.disabled=false}};
 $('pwSet').onclick=async()=>{const c=pwCurOk();if(!c)return;const role=(document.querySelector('input[name=pwR]:checked')||{}).value,n1=$('pwN1').value.trim(),n2=$('pwN2').value.trim();
  if(!/^[A-Za-z0-9]{4,20}$/.test(n1))return toast('새 비밀번호는 영문·숫자 4~20자입니다');if(n1.toUpperCase()!==n2.toUpperCase())return toast('새 비밀번호가 서로 다릅니다');
