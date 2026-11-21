@@ -79,9 +79,9 @@ html.dark .btn.on{color:#c7d2fe}
 .tbar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 .tbar .sp{flex:1}
 .whoc{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#e0e7ff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:2px 10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.whoc b{color:#fff}.whoc a{color:#fde68a;margin-left:4px;font-weight:700}.whoc[hidden]{display:none}
+.whoc b{color:#fff}.whorow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.whoa{display:inline-flex;gap:4px}.whob{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:99px;padding:1px 8px;font-size:11.5px;font-weight:700;cursor:pointer}.whob:hover{background:rgba(255,255,255,.25)}html:not(.kk) .whob{color:#4f46e5;border-color:#c7d2fe;background:#eef2ff}.whoc a{color:#fde68a;margin-left:4px;font-weight:700}.whoc[hidden]{display:none}
 html:not(.kk) .whoc{color:var(--mut,#64748b);background:var(--card);border-color:var(--line)}html:not(.kk) .whoc b{color:inherit}html:not(.kk) .whoc a{color:#4f46e5}
-html.mob .whoc{display:none}
+html.mob .whorow{display:none}
 html.kk .tbar .who,html:not(.mob) .tbar .who{display:none}
 .tbar .tg{display:contents}.tbar .tgh{display:none}
 html.mob .pc-only{display:none!important}.tbar a.btn{text-decoration:none}
@@ -488,7 +488,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div class="hl">
    <h1>스마트 물길점검 <select id="rdSel" class="rdsel" title="점검 회차 (바꾸면 그 회차 일정·점검 기록을 봅니다)"></select> <span class="dot" id="hDot" title="저장 상태"></span></h1>
    <span class="tag">현장점검 · 성과평가 일정 지도</span>
-   <span id="whoC" class="whoc np"></span>
+   <div class="whorow np"><span id="whoC" class="whoc"></span><span id="whoA" class="whoa"></span></div>
   </div>
   <div class="hr">
    <button class="ibtn np" id="iSrch" title="검색"><i class="ii" data-i="srch"></i></button>
@@ -1272,7 +1272,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('lkOut2').onclick=e=>{e.preventDefault();lockOut()}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('whoA').innerHTML=AUTH.role==='ins'?'<button type="button" class="whob" id="whoPw">🔑 비밀번호</button><button type="button" class="whob" id="whoInv">📨 초대</button>':'';$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1481,7 +1481,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121120747';
+const BUILD='20261121132800';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
