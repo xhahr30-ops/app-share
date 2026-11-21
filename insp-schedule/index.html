@@ -230,11 +230,12 @@ html.mob #mapCard>h3,html.mob #mapCard>.mopt{display:none}
 html.mob #mapWrap{border:0;border-radius:0}
 html.mob .leaflet-control-zoom{display:none}
 #mTop{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;z-index:1000;gap:8px;align-items:stretch}
-.msrch{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border-radius:18px;box-shadow:0 2px 10px rgba(0,0,0,.22);padding:0 14px;height:52px;color:#1e293b}
+.msrch{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border-radius:18px;box-shadow:0 2px 10px rgba(0,0,0,.22);padding:0 14px;height:52px;color:#1e293b}
 .msrch input{flex:1;border:0;outline:0;font-size:16px;background:transparent;min-width:0;color:#1e293b}
 .msrch .gi{width:22px;height:22px}
 .msrch button{border:0;background:none;padding:4px;display:flex;cursor:pointer}
-.mbig{width:52px;height:52px;border-radius:16px;border:0;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer}
+.msrch input{min-width:0;width:100%}.mnb{flex-direction:column;gap:1px;line-height:1}.mnb span{font-size:10.5px;font-weight:800;letter-spacing:-.2px}#iMenu.mnb{width:46px;height:46px}
+.mbig{flex:none;width:52px;height:52px;border-radius:16px;border:0;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer}
 .mbig .gi{width:24px;height:24px;color:#fff!important;stroke-width:2.2}
 html.mob .daybar{top:calc(max(10px,env(safe-area-inset-top)) + 58px);padding:4px 10px}
 html.mob .dc{padding:8px 13px;font-size:13px;box-shadow:0 1px 6px rgba(0,0,0,.2);border-radius:999px}
@@ -493,7 +494,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div class="hr">
    <button class="ibtn np" id="iSrch" title="검색"><i class="ii" data-i="srch"></i></button>
    <button class="ibtn np" id="iEx" title="내보내기"><i class="ii" data-i="dl"></i></button>
-   <button class="ibtn np" id="iMenu" title="메뉴"><i class="ii" data-i="list"></i></button>
+   <button class="ibtn np mnb" id="iMenu" title="메뉴"><i class="ii" data-i="list"></i><span>메뉴</span></button>
    <div class="chip hs"><span>저장:</span><b id="hStat">연결 중…</b></div>
    <div class="chip hs"><span>만든이:</span><b>구병순</b></div>
    <button class="btn np hs" id="fmBtn" title="현장 모드: 지도 먼저 · 큰 버튼"><i class="ii" data-i="phone"></i> 현장 모드</button>
@@ -537,7 +538,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   </div>
   <div id="mapWrap">
    <div id="map"></div>
-   <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" type="search" name="mulgil-site-mq" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button><button id="mNav" type="button" aria-label="주소찾기·길안내"><i class="ii" data-i="compass"></i></button></div><button class="mbig" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i></button></div>
+   <div id="mTop" class="mob-only np"><div class="msrch"><i class="ii" data-i="srch"></i><input id="mQ" type="search" name="mulgil-site-mq" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="팀명 · 지역 · 이름 검색" enterkeyhint="search"><button id="mQx" type="button" aria-label="지우기"><i class="ii" data-i="x"></i></button><button id="mNav" type="button" aria-label="주소찾기·길안내"><i class="ii" data-i="compass"></i></button></div><button class="mbig mnb" id="mMenu" type="button" aria-label="메뉴"><i class="ii" data-i="list"></i><span>메뉴</span></button></div>
    <div class="daybar np" id="daybar"></div>
    <button class="dba np" id="dbL" type="button" aria-label="왼쪽 날짜">‹</button><button class="dba np" id="dbR" type="button" aria-label="오른쪽 날짜">›</button>
    <div class="fab np">
@@ -1272,7 +1273,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('whoA').innerHTML=AUTH.role==='ins'?'<button type="button" class="whob" id="whoPw">🔑 비밀번호</button><button type="button" class="whob" id="whoInv">📨 초대</button>':'';$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`🔐 <b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'} <a href="#" id="lkOut2">로그아웃</a>`;$('whoA').innerHTML=AUTH.role==='ins'?'<button type="button" class="whob" id="whoPw">🔑 비밀번호</button><button type="button" class="whob" id="whoInv">📨 초대</button>':'';$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1481,7 +1482,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121133933';
+const BUILD='20261121134644';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2880,18 +2881,26 @@ function pwOpen(){$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast
  $('pwSt').innerHTML=gsOn()?`구글 시트에 연결됨 · 지금 비밀번호: ${LOCK.ver?'<b>앱에서 바꾼 비밀번호</b> ('+LOCK.ver+'번째 변경)':'처음 비밀번호'}`:'<b class="warn">구글 시트 주소가 없어 쓸 수 없습니다</b>';$('pwm').classList.add('on')}
 const mkN=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n[0]+'*'.repeat(n.length-2)+n[n.length-1]};
 let WHO=null;
+let INVSEL=null;
 function pwWho(){const P={};rows.forEach(r=>r.ins.forEach((n,i)=>{if(!real(n))return;const p=P[n]=P[n]||{n,c:0,ro:new Set()};p.c++;p.ro.add(['기술','영업','공통'][i])}));
  const L=Object.values(P).sort((a,b)=>b.c-a.c||a.n.localeCompare(b.n)),inn=x=>WHO&&WHO.find(w=>w.n===x.n||mkN(w.n)===x.n||mkN(w.n)===mkN(x.n));
- const k=WHO?L.filter(inn).length:0;
- $('pwWho').innerHTML=`<b style="font-size:13px">👥 이번 회차 점검자 ${L.length}명</b> <span class="mini">${WHO?`· 들어온 사람 <b style="color:#059669">${k}명</b> · 아직 ${L.length-k}명`:'· 위에 현재 점검자 비밀번호를 넣으면 누가 들어왔는지 함께 보입니다'}</span>
- <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${L.map(x=>{const w=inn(x);return `<span title="${esc([...x.ro].join('·'))} · ${x.c}곳${w?' · 마지막 '+esc(w.t):''}" style="font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid ${w?'#6ee7b7':'var(--line)'};background:${w?'#ecfdf5':'transparent'};color:${w?'#047857':'inherit'}">${w?'✓ ':''}${esc(x.n)} <small style="opacity:.6">${x.c}</small></span>`}).join('')}</div>
- <p class="mini" style="margin:6px 0 0">숫자는 맡은 현장 수 · ✓는 점검자로 로그인한 적 있음(접속기록 기준)</p>`}
-let PWT=0;$('pwCur').addEventListener('input',()=>{clearTimeout(PWT);PWT=setTimeout(async()=>{const c=$('pwCur').value.trim();if(!c||sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins||!gsOn())return;try{const j=await gsCall({act:'who',cur:c});WHO=j.list||[];pwWho()}catch(e){}},400)});
-$('bPw').onclick=()=>{WHO=null;pwOpen();pwWho()};$('pwX').onclick=()=>$('pwm').classList.remove('on');
+ if(!INVSEL){INVSEL=new Set(L.filter(x=>!inn(x)).map(x=>x.n))}
+ const k=WHO?L.filter(inn).length:0,sel=L.filter(x=>INVSEL.has(x.n));
+ $('pwWho').innerHTML=`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b style="font-size:13px">👥 이번 회차 점검자 ${L.length}명</b><span class="mini">${WHO?`· 들어온 사람 <b style="color:#059669">${k}명</b> · 아직 ${L.length-k}명`:'· 위에 현재 점검자 비밀번호를 넣으면 누가 들어왔는지 함께 보입니다'}</span></div>
+ <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap"><span class="mini">초대할 사람 <b id="pwSelN">${sel.length}</b>명 선택 · 이름을 누르면 선택/해제</span><button type="button" class="btn" data-ws="all" style="padding:2px 8px;font-size:12px">모두 선택</button><button type="button" class="btn" data-ws="none" style="padding:2px 8px;font-size:12px">모두 해제</button><button type="button" class="btn" data-ws="new" style="padding:2px 8px;font-size:12px">안 들어온 사람만</button></div>
+ <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${L.map(x=>{const w=inn(x),on=INVSEL.has(x.n);return `<button type="button" data-wn="${esc(x.n)}" title="${esc([...x.ro].join('·'))} · ${x.c}곳${w?' · 마지막 '+esc(w.t):''}" style="cursor:pointer;font-size:12px;padding:3px 9px;border-radius:99px;border:1.5px solid ${on?'#6366f1':'rgba(148,163,184,.45)'};background:${on?'rgba(99,102,241,.22)':'transparent'};color:inherit;opacity:${on?1:.55}">${on?'☑':'☐'} ${esc(x.n)}${w?' <b style="color:#059669">✓</b>':''} <small style="opacity:.6">${x.c}</small></button>`}).join('')}</div>
+ <p class="mini" style="margin:6px 0 0">숫자는 맡은 현장 수 · ✓는 점검자로 로그인한 적 있음(접속기록 기준) · 선택한 인원수만큼 쓸 수 있는 링크가 만들어지고, 메시지에 초대 대상 이름이 들어갑니다</p>`;
+ const sm=$('pwMax');if(sel.length){let o=[...sm.options].find(o=>+o.value===sel.length);if(!o){o=new Option(sel.length+'명',sel.length);o.dataset.sel=1;sm.add(o,0)}sm.value=String(sel.length)}}
+$('pwWho').addEventListener('click',e=>{const b=e.target.closest('[data-wn],[data-ws]');if(!b)return;if(!INVSEL)INVSEL=new Set();
+ if(b.dataset.wn){const n=b.dataset.wn;INVSEL.has(n)?INVSEL.delete(n):INVSEL.add(n)}else{const all=[...$('pwWho').querySelectorAll('[data-wn]')];
+  if(b.dataset.ws==='all')all.forEach(x=>INVSEL.add(x.dataset.wn));else if(b.dataset.ws==='none')INVSEL.clear();else{INVSEL.clear();all.forEach(x=>{if(!x.querySelector('b'))INVSEL.add(x.dataset.wn)})}}
+ pwWho()});
+let PWT=0;$('pwCur').addEventListener('input',()=>{clearTimeout(PWT);PWT=setTimeout(async()=>{const c=$('pwCur').value.trim();if(!c||sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins||!gsOn())return;try{const j=await gsCall({act:'who',cur:c});WHO=j.list||[];INVSEL=null;pwWho()}catch(e){}},400)});
+$('bPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho()};$('pwX').onclick=()=>$('pwm').classList.remove('on');
 const pwCurOk=()=>{const c=$('pwCur').value.trim();if(!c){toast('현재 점검자 비밀번호를 넣어 주세요');$('pwCur').focus();return ''}if(sha256h(LOCK.salt+c.toUpperCase())!==LOCK.ins){toast('현재 점검자 비밀번호가 맞지 않습니다');$('pwCur').select();return ''}return c};
 $('pwInv').onclick=async()=>{const c=pwCurOk();if(!c)return;const b=$('pwInv');b.disabled=true;
  try{const mx=+$('pwMax').value||1,j=await gsCall({act:'inv',cur:c,by:AUTH.name,max:mx});const u=location.origin+location.pathname+'#inv='+j.code,until=phT(new Date(j.exp).toISOString());
-  const t=`[2026년 하반기 현장점검] ${AUTH.name} 님이 점검자로 초대했습니다.\n아래 링크를 눌러 이름만 넣으면 점검자로 들어옵니다.\n(${(j.max||1)>1?'선착순 '+j.max+'명':'한 번만'} 사용 · ${until}까지)`;
+  const nms=INVSEL&&INVSEL.size?[...INVSEL]:[];const t=`[2026년 하반기 현장점검] ${AUTH.name} 님이 점검자로 초대했습니다.${nms.length?'\n초대 대상: '+nms.join(', '):''}\n아래 링크를 눌러 이름만 넣으면 점검자로 들어옵니다.\n(${(j.max||1)>1?'선착순 '+j.max+'명':'한 번만'} 사용 · ${until}까지)`;
   shareBox('📨 점검자 초대 보내기',t,u.replace('#inv=','?inv='));toast('초대 링크를 만들었습니다')}catch(e){toast(String(e))}finally{b.disabled=false}};
 $('pwSet').onclick=async()=>{const c=pwCurOk();if(!c)return;const role=(document.querySelector('input[name=pwR]:checked')||{}).value,n1=$('pwN1').value.trim(),n2=$('pwN2').value.trim();
  if(!/^[A-Za-z0-9]{4,20}$/.test(n1))return toast('새 비밀번호는 영문·숫자 4~20자입니다');if(n1.toUpperCase()!==n2.toUpperCase())return toast('새 비밀번호가 서로 다릅니다');
