@@ -1278,7 +1278,10 @@ $('fPos').onchange=async e=>{const f=e.target.files[0];e.target.value='';$('exMe
  const T=rows.filter(r=>{const p=P[r.tm];return p&&(!hasPin(r)||Math.abs(p.lat-r.lat)>1e-6||Math.abs(p.lng-r.lng)>1e-6)});if(!T.length)return toast('바뀔 위치가 없습니다');
  if(!await ask(`백업에서 ${T.length}곳의 지도 위치만 가져올까요? (일정·점검 기록은 그대로)`))return;let n=0;for(const r of T){const p=P[r.tm];if(await putRow({...r,lat:+p.lat,lng:+p.lng,src:p.src||'백업에서 가져옴'},true))n++}derive();render();toast(n+'곳 위치를 가져왔습니다')}catch(err){toast('백업 파일 형식이 아닙니다')}};
 $('bRst').onclick=async()=>{$('exMenu').classList.remove('on');if(!SEED.length)return toast('이 판에는 기본 자료가 없습니다. 엑셀을 불러오세요.');if(await ask('처음 받은 엑셀 일정('+SEED.length+'곳)으로 되돌릴까요? 찍어 둔 위치는 같은 팀명이면 유지합니다.'))await replaceAll(SEED,true)};
-$('bPr').onclick=()=>{rpReset();$('exMenu').classList.remove('on');setTab('lst');setTimeout(()=>{try{window.print()}catch(e){}},300)};
+$('bPr').onclick=()=>{rpReset();$('exMenu').classList.remove('on');setTab('lst');const w=prMob();setTimeout(()=>{try{window.print()}catch(e){}},w?900:300)};
+/* 인쇄할 때 모바일(현장 모드) 화면이면 잠깐 PC 화면으로 바꿔 지도+목록이 A4에 다 나오게 (Ctrl+P 포함) */
+let PRM=false;function prMob(){const d=document.documentElement;if(!d.classList.contains('mob')||d.classList.contains('rpt'))return false;PRM=true;d.classList.remove('mob');d.classList.add('prsz');{const mc=$('mapCard');if(mc){mc.style.width=($('po').value==='portrait'?188:275)+'mm';mc.style.height='150mm'}}try{if(map){map.invalidateSize(false);const p=filt().filter(hasPin).map(r=>[r.lat,r.lng]);if(p.length)map.fitBounds(p,{padding:[45,45],maxZoom:12,animate:false});drawPins()}}catch(e){}return true}
+addEventListener('beforeprint',prMob);addEventListener('afterprint',()=>{if(!PRM)return;PRM=false;document.documentElement.classList.remove('prsz');{const mc=$('mapCard');if(mc){mc.style.width='';mc.style.height=''}}setTimeout(()=>{try{mobApply();map&&map.invalidateSize();drawPins()}catch(e){}},100)});
 $('exBtn').onclick=e=>{e.stopPropagation();$('exMenu').classList.toggle('on')};
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('exMenu').classList.remove('on')});
 
@@ -1541,7 +1544,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121214754';
+const BUILD='20261121215113';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
