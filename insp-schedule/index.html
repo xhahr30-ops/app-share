@@ -1534,7 +1534,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121211522';
+const BUILD='20261121213019';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2877,7 +2877,7 @@ function helpOpen(){$('tbar').classList.remove('open');$('hlQ').value='';$('hlB'
 $('bHelp').onclick=helpOpen;$('fHp').onclick=helpOpen;$('hlX').onclick=()=>$('hlm').classList.remove('on');
 $('hlQ').oninput=()=>{const q=$('hlQ').value.trim();$('hlB').innerHTML=HLB;if(!q)return;const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
  $('hlB').querySelectorAll('.hlp').forEach(d=>{const hit=d.textContent.toLowerCase().includes(q.toLowerCase());d.style.display=hit?'':'none';if(hit){d.open=true;const w=document.createTreeWalker(d.querySelector('div'),NodeFilter.SHOW_TEXT);const T=[];while(w.nextNode())T.push(w.currentNode);T.forEach(n=>{if(re.test(n.nodeValue)){re.lastIndex=0;const sp=document.createElement('span');sp.innerHTML=esc(n.nodeValue).replace(re,m=>'<mark>'+m+'</mark>');n.replaceWith(sp)}re.lastIndex=0})}})};
-setTimeout(()=>{try{if(!localStorage.getItem('mulgil-help')&&!$('tdm').classList.contains('on'))helpOpen()}catch(e){}},3200);
+setTimeout(()=>{try{if(!localStorage.getItem('mulgil-help')&&!$('tdm').classList.contains('on')&&!$('myr').classList.contains('on')&&!/[#&?]el=/.test(location.href)&&!(typeof AUTH!=='undefined'&&AUTH&&AUTH.role==='emp'))helpOpen()}catch(e){}},3200);
 
 /* ── 🔒 깃허브 판 앱 잠금(B안): 팀원·점검자 비밀번호(SHA-256 해시만 앱에 둠) · 화면 잠금 수준 ── */
 const LOCK0={"salt": "a193c9c3d28834ea", "team": "d5d10e774d55b56728a58cd10564860480354df4e9eef599435a04f4f23b8e70", "ins": "4b09041bdc2568afaf7417ce3de899ea82fb863b9883e6c0011ccb39c1f54344"};let LOCK=LOCK0;try{const c=JSON.parse(localStorage.getItem('mulgil-lock')||'null');if(LOCK0&&c&&c.salt===LOCK0.salt&&c.team&&c.ins)LOCK=c}catch(e){}
@@ -2931,20 +2931,30 @@ function empView(L){const nm=AUTH.name,mk=empMk(nm),me=x=>x===nm||x===mk,keep=v=
  /* 전 현장 일정 공개: 다른 현장은 점검일·지역·현장명·주소·상태·점검자만 (직원 이름·연락처·결과 숨김) */
  return L.map(r=>EMPM.has(r.id)?Object.assign({},r,{_emp:1,_mine:1,lead:keep(r.lead),solo:keep(r.solo),tl:keep(r.tl),mem:(r.mem||[]).filter(me)}):Object.assign({},r,{_emp:1,_oth:1,_n:people(r).length,lead:'-',solo:'',tl:'-',mem:[],memo:'',note:''}))}
 let EMPM=new Set();const empMine=id=>!isEmp()||EMPM.has(id);
+/* 📧 결과 메일의 '앱에서 보기' 링크(#el=표) → 바로 직원 모드로 들어가 내 결과 열기 */
+let ELT='';{const m=/[#&?]el=([a-f0-9]{16,40})/.exec((location.hash||'')+'&'+(location.search||''));if(m){ELT=m[1];try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]el=[a-f0-9]+/,'').replace(/^&/,'?')+(location.hash||'').replace(/[#&]?el=[a-f0-9]+/,''))}catch(e){}}}
+async function elLogin(){if(!ELT||!gsOn())return;const t=ELT;ELT='';
+ if(AUTH&&AUTH.role==='emp'&&tokOf()===t){setTimeout(myRes,1500);return}
+ try{const j=await gsCall({act:'elogin',tok:t});tokSet(t,'emp');const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};authPut(a,true);try{localStorage.setItem('mulgil-lastname',j.name)}catch(_){}
+  logEv('메일 링크로 직원 로그인',j.name,'emp');$('lkM').textContent='';lockApply();whoInit();derive();render();toast(j.name+' 님, 직원 모드로 들어왔습니다');setTimeout(()=>{const h=$('hlm');if(h)h.classList.remove('on');myRes()},1500)}
+ catch(e){if(!AUTH){$('lkM').innerHTML='메일 링크가 만료됐습니다. 아래 <b>📧 직원 이메일로 로그인</b>으로 들어와 주세요';$('lkEm').hidden=false}else toast('메일 링크 확인 실패: '+e)}}
+setTimeout(elLogin,600);addEventListener('hashchange',()=>{const m=/[#&]el=([a-f0-9]{16,40})/.exec(location.hash||'');if(m){ELT=m[1];try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}elLogin()}});
 $('lkEmT').onclick=()=>{const b=$('lkEm');b.hidden=!b.hidden;if(!b.hidden)setTimeout(()=>$('lkEmI').focus(),50)};
 $('lkEmS').onclick=async()=>{const em=$('lkEmI').value.trim();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){$('lkM').textContent='회사 이메일을 정확히 넣어 주세요';return}
  const b=$('lkEmS');b.disabled=true;$('lkM').textContent='인증번호를 보내는 중…';
  try{await gsCall({act:'otp',email:em});$('lkEmC').hidden=false;$('lkM').textContent='메일로 6자리 인증번호를 보냈습니다 (10분 유효). 메일함·스팸함을 확인하세요';setTimeout(()=>$('lkEmN').focus(),50)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmV').onclick=async()=>{const em=$('lkEmI').value.trim(),cd=$('lkEmN').value.trim();if(!/^\d{6}$/.test(cd)){$('lkM').textContent='6자리 숫자를 넣어 주세요';return}
  const b=$('lkEmV');b.disabled=true;$('lkM').textContent='확인 중…';
- try{const j=await gsCall({act:'otpv',email:em,code:cd});if(j.tok)tokSet(j.tok);const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
+ try{const j=await gsCall({act:'otpv',email:em,code:cd});if(j.tok)tokSet(j.tok,'emp');const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
   authPut(a,true);try{localStorage.setItem('mulgil-lastname',j.name)}catch(_){}$('lkM').textContent='';$('lkEm').hidden=true;
   logEv('직원 로그인',j.name,'emp');carIntro(j.name);setTimeout(resBanner,4500);lockApply();whoInit();derive();render();setTimeout(()=>{const n=filt().length;toast(EMPM.size?`전 현장 일정 ${n}곳이 보입니다 · ${j.name} 님 현장(${[...EMPM].map(i=>(rows.find(r=>r.id===i)||{}).tm).filter(Boolean).join('·')})만 자세히 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmV').click()});$('lkEmI').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmS').click()});
 
 /* 📊 점검 결과 → 구글 시트 '점검결과' 탭 · 직원은 공개된 본인 결과만 */
-const tokSet=t=>{try{localStorage.setItem('mulgil-tok',t)}catch(e){}},tokOf=()=>{try{return localStorage.getItem('mulgil-tok')||''}catch(e){return ''}};
-async function tokGet(pw,nm){if(!gsOn())return '';try{const j=await gsCall({act:'tok',pw,name:nm});tokSet(j.tok);return j.tok}catch(e){return ''}}
+/* 표(토큰)는 권한별로 따로 보관: 한 브라우저에서 점검자 창·직원 창을 같이 써도 섞이지 않게 */
+const tkK=r=>'mulgil-tok-'+(r||(typeof AUTH!=='undefined'&&AUTH&&AUTH.role)||'x');
+const tokSet=(t,r)=>{try{localStorage.setItem(tkK(r),t)}catch(e){}},tokOf=()=>{try{return localStorage.getItem(tkK())||localStorage.getItem('mulgil-tok')||''}catch(e){return ''}};
+async function tokGet(pw,nm){if(!gsOn())return '';try{const j=await gsCall({act:'tok',pw,name:nm});tokSet(j.tok,'ins');return j.tok}catch(e){return ''}}
 async function resUp(id,w){if(!ADM||!gsOn())return;const r=ALL.find(x=>x.id===id);if(!r)return;let tk=tokOf();
  if(!tk){const pw=prompt('결과를 구글 시트에 올리려면 점검자 비밀번호를 한 번 넣어 주세요 (이 기기에 30일 기억)');if(!pw)return toast('시트에는 올리지 않았습니다 (이 기기에는 저장됨)');tk=await tokGet(pw.trim(),AUTH.name);if(!tk)return toast('비밀번호가 맞지 않아 시트에 올리지 못했습니다')}
  const sc=o=>{const m={};Object.entries(o||{}).forEach(([k,v])=>{if(v&&v.s!=null)m[k]=v.s});return m};
@@ -2999,7 +3009,7 @@ async function lockSync(){if(!gsOn()||!LOCK0)return;try{const r=await fetch(LOGU
  const ch=c.team!==LOCK.team||c.ins!==LOCK.ins;lockSave(c);if(ch){const was=AUTH;lockApply();if(was&&!AUTH){$('lkM').textContent='비밀번호가 바뀌었습니다. 새 비밀번호로 로그인하세요';logEv('비밀번호 바뀌어 다시 로그인 요청',was.name,was.role)}}}catch(e){}}
 setTimeout(lockSync,1200);
 $('lkInvGo').onclick=async()=>{const nm=$('lkN').value.trim().slice(0,20);if(!nm){$('lkM').textContent='이름을 넣어 주세요';$('lkN').focus();return}const b=$('lkInvGo');b.disabled=true;$('lkM').textContent='초대 확인 중…';
- try{const jr=await gsCall({act:'redeem',code:INVC,name:nm});if(jr.tok)tokSet(jr.tok);const a={role:'ins',name:nm,h:LOCK.salt,k:kOf('ins'),exp:Date.now()+30*864e5};authPut(a,true);try{localStorage.setItem('mulgil-lastname',nm)}catch(e){}
+ try{const jr=await gsCall({act:'redeem',code:INVC,name:nm});if(jr.tok)tokSet(jr.tok,'ins');const a={role:'ins',name:nm,h:LOCK.salt,k:kOf('ins'),exp:Date.now()+30*864e5};authPut(a,true);try{localStorage.setItem('mulgil-lastname',nm)}catch(e){}
   INVC='';$('lkInvB').hidden=true;$('lkM').textContent='';logEv('초대로 로그인',nm,'ins');carIntro(nm);lockApply();whoInit();toast('점검자로 들어왔습니다')}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 function pwOpen(){$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('점검자 로그인에서만 쓸 수 있습니다');$('pwCur').value=$('pwN1').value=$('pwN2').value='';
  $('pwSt').innerHTML=gsOn()?`구글 시트에 연결됨 · 지금 비밀번호: ${LOCK.ver?'<b>앱에서 바꾼 비밀번호</b> ('+LOCK.ver+'번째 변경)':'처음 비밀번호'}`:'<b class="warn">구글 시트 주소가 없어 쓸 수 없습니다</b>';$('pwm').classList.add('on')}
