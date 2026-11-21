@@ -1482,7 +1482,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121134644';
+const BUILD='20261121140223';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2998,7 +2998,17 @@ setTimeout(wsoZbind,1500);
 let SHX=null;const KKERR={nokey:'카카오 지도 키가 없어 카톡 바로 보내기를 못 합니다 (메뉴 🗺 카카오 지도 키). 복사해서 붙여 넣으세요.',timeout:'카카오 연결이 늦습니다. 다시 누르거나 복사해서 보내세요.',load:'카카오 도구를 불러오지 못했습니다. 복사해서 보내세요.',nosdk:'카카오 도구를 불러오지 못했습니다. 복사해서 보내세요.'};
 function shareBox(title,text,url,err){SHX={text,url};try{if(localStorage.getItem(KKEY))kkSdk().catch(()=>{})}catch(e){}$('shT').textContent=title;$('shP').textContent=text+'\n'+url;$('shO').style.display=navigator.share?'':'none';$('shM').textContent=err?(KKERR[err]||'카톡 바로 보내기가 안 됐습니다. 복사해서 보내세요.'):'';$('shm').classList.add('on')}
 $('shX').onclick=()=>$('shm').classList.remove('on');
-$('shK').onclick=()=>{if(!SHX)return;$('shM').textContent='카카오톡 여는 중…';kkShare(SHX.text,SHX.url).then(()=>{$('shM').textContent='카카오톡 창에서 받을 사람을 고르세요. (PC는 새 창이 뜹니다 · 팝업 차단 해제)'}).catch(e=>{$('shM').textContent=KKERR[e]||('카톡 바로 보내기가 안 됐습니다'+(e&&(e.message||e.code)?' ('+(e.code||'')+' '+(e.message||'')+')':'')+'. 카카오 개발자 사이트 \'제품 링크 관리 → 웹 도메인\' 등록을 확인하거나, 복사해서 보내세요.')})};
+/* SDK를 못 불러오면 카카오 공유 창 주소를 직접 열기 (도구 파일 없이) */
+function kkDirectUrl(text,url){let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return '';
+ const tpl={object_type:'text',text:text.slice(0,200),link:{web_url:url,mobile_web_url:url},button_title:/inv=/.test(url)?'초대 받기':'차량 위치 보기'};
+ const ka='sdk/2.8.2 os/javascript sdk_type/javascript lang/ko-KR device/'+(navigator.platform||'web')+' origin/'+encodeURIComponent(location.origin);
+ return 'https://sharer.kakao.com/picker/link?app_key='+encodeURIComponent(key)+'&ka='+encodeURIComponent(ka)+'&validation_action=default&validation_params='+encodeURIComponent(JSON.stringify({link_ver:'4.0',template_object:tpl}))}
+$('shK').onclick=()=>{if(!SHX)return;const X=SHX;
+ if(window.Kakao&&Kakao.Share){kkShare(X.text,X.url).then(()=>{$('shM').textContent='카카오톡 창에서 받을 사람을 고르세요. (PC는 새 창이 뜹니다 · 팝업 차단 해제)'}).catch(e=>{$('shM').textContent='카톡 보내기가 안 됐습니다'+(e&&(e.message||e.code)?' ('+(e.code||'')+' '+(e.message||'')+')':'')+'. 복사해서 보내세요.'});return}
+ const du=kkDirectUrl(X.text,X.url);if(!du){$('shM').textContent=KKERR.nokey;return}
+ const w=window.open('about:blank','kkshare','width=480,height=720');$('shM').textContent='카카오톡 여는 중…';
+ kkSdk().then(()=>{try{w&&w.close()}catch(e){}return kkShare(X.text,X.url)}).then(()=>{$('shM').textContent='카카오톡 창에서 받을 사람을 고르세요. (팝업 차단 해제)'})
+  .catch(()=>{if(w&&!w.closed){w.location.href=du;$('shM').textContent='카카오 공유 창을 열었습니다. 로그인 후 받을 사람을 고르세요. (안 되면 복사해서 보내세요)'+(KKLOG.length?' ['+KKLOG.join(' · ')+']':'')}else{$('shM').textContent='팝업이 막혔습니다. 주소창 오른쪽에서 팝업을 허용하거나 복사해서 보내세요.'}})};
 $('shC').onclick=async()=>{if(!SHX)return;const t=SHX.text+'\n'+SHX.url;try{await navigator.clipboard.writeText(t);$('shM').textContent='복사했습니다. 카톡 대화방에 붙여 넣으세요.'}catch(e){prompt('복사해서 보내세요',t)}};
 $('shO').onclick=async()=>{if(!SHX)return;try{await navigator.share({text:SHX.text+'\n'+SHX.url})}catch(e){}};
 /* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
@@ -3007,9 +3017,9 @@ function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=local
  if(window.Kakao&&Kakao.Share)return send();kkSdk().then(send).catch(no)})}
 /* 카카오 공유 도구 불러오기: 여러 주소를 차례로 시도 (crossorigin 없이) */
 let KKSDK=null;const KKSRC=['https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js','https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js','https://developers.kakao.com/sdk/js/kakao.min.js'];
-function kkSdk(){if(window.Kakao&&Kakao.Share)return Promise.resolve();if(KKSDK)return KKSDK;
- KKSDK=new Promise((ok,no)=>{let k=0;const next=()=>{if(window.Kakao&&Kakao.Share)return ok();if(k>=KKSRC.length){KKSDK=null;return no('load')}const sc=document.createElement('script');sc.src=KKSRC[k++];
-  const t=setTimeout(()=>{sc.onload=sc.onerror=null;next()},7000);sc.onload=()=>{clearTimeout(t);window.Kakao&&Kakao.Share?ok():next()};sc.onerror=()=>{clearTimeout(t);next()};document.head.appendChild(sc)};next()});return KKSDK}
+let KKLOG=[];function kkSdk(){if(window.Kakao&&Kakao.Share)return Promise.resolve();if(KKSDK)return KKSDK;KKLOG=[];
+ KKSDK=new Promise((ok,no)=>{let k=0;const next=()=>{if(window.Kakao&&Kakao.Share)return ok();if(k>=KKSRC.length){KKSDK=null;return no('load')}const src=KKSRC[k++],sc=document.createElement('script'),t0=Date.now();sc.src=src;const tag=(src.match(/sdk\/(js|[\d.]+)/)||[])[1]||src;
+  const t=setTimeout(()=>{sc.onload=sc.onerror=null;KKLOG.push(tag+' 시간초과');next()},4000);sc.onload=()=>{clearTimeout(t);if(window.Kakao&&Kakao.Share)ok();else{KKLOG.push(tag+' 받았으나 공유 기능 없음('+(window.Kakao?'Kakao 있음':'Kakao 없음')+')');next()}};sc.onerror=()=>{clearTimeout(t);KKLOG.push(tag+' 막힘('+(Date.now()-t0)+'ms)');next()};document.head.appendChild(sc)};next()});return KKSDK}
 $('bPos').onclick=()=>{$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('관리자(점검자 로그인)만 쓸 수 있습니다');if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');toast('내 위치 찾는 중…');
  navigator.geolocation.getCurrentPosition(p=>{const nm=(AUTH&&AUTH.name)||MEN||'관리자',t=Date.now(),u=location.origin+location.pathname+'#pos='+p.coords.latitude.toFixed(5)+','+p.coords.longitude.toFixed(5)+','+t+','+encodeURIComponent(nm);
   const txt=`[2026년 하반기 현장점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`;
