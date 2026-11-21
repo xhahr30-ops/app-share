@@ -506,6 +506,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  html.rpt #rpt{display:block!important}
  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  header,.np,.fab,.daybar,.modal,.pickbar,.tabs,.flt{display:none!important}
+ html.mob #mTop,html.mob .mob-only.np,html .np,#resB,#instB,.leaflet-control-container{display:none!important}
  body{background:#fff}
  main{display:block;height:auto;padding:0}
  #ptitle{display:block;text-align:center;font-size:18pt;font-weight:800;color:#1e1b4b;border-bottom:2px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
@@ -1540,7 +1541,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121213337';
+const BUILD='20261121214754';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
