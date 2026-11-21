@@ -676,7 +676,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="evhd"><b id="evT"></b><span style="display:flex;gap:6px;flex:none"><button class="btn" id="evPop" type="button" title="점검표를 새 창으로 열기 (지도·목록과 나란히 보기)">↗ 새 창</button><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></span></div>
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
- <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><label class="mini" style="display:flex;gap:6px;align-items:center" title="켜면 이메일로 로그인한 직원이 본인 결과(팀 점수·본인 개별평가·지적사항·후속 조치)를 볼 수 있습니다"><input type="checkbox" id="evPub"> <b>직원에게 결과 공개</b></label><span id="evMsg" class="mini"></span><button class="btn" id="evMail" type="button" title="공개한 결과를 현장 직원 각자에게 본인 결과만 메일로 보냅니다">📧 결과 메일</button><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+ <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><label class="mini" style="display:flex;gap:6px;align-items:center" title="켜면 이메일로 로그인한 직원이 본인 결과(팀 점수·본인 개별평가·지적사항·후속 조치)를 볼 수 있습니다"><input type="checkbox" id="evPub"> <b>직원에게 결과 공개</b></label><span id="evMsg" class="mini"></span><button class="btn" id="evMail" type="button" title="공개한 결과를 현장 직원 각자에게 본인 결과만 메일로 보냅니다">📧 결과 메일</button><button class="btn" id="evKk" type="button" title="공개한 결과를 직원 각자에게 카톡으로 (본인 전용 결과 링크 · 7일)">💬 카톡 결과</button><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
 </div></div>
 <div id="instB" class="np" role="dialog" aria-label="홈 화면 추가 안내"><div class="ib-h"><span style="font-size:22px">📲</span><div style="flex:1;min-width:0"><b id="ibT"></b><div class="mini" id="ibH" style="margin-top:2px"></div></div><button id="ibX" type="button" aria-label="닫기">✕</button></div>
  <div class="ib-b"><button class="btn pri" id="ibGo" type="button"></button><button class="btn" id="ibLater" type="button">나중에</button><button class="btn" id="ibNever" type="button" style="color:var(--mut,#64748b)">다시 보지 않기</button></div></div>
@@ -703,6 +703,11 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div id="dpL" style="display:flex;flex-wrap:wrap;gap:6px;max-height:45vh;overflow:auto"></div>
  <p class="mini" id="dpI" style="margin:8px 0 0"></p>
  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="dpNo" type="button">취소</button><button class="btn pri" id="dpGo" type="button"><i class="ii" data-i="prt"></i> 출력 · PDF 저장</button></div></div></div>
+<div class="modal np" id="kkr"><div class="mbox" style="max-width:480px;margin-top:40px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>💬 카톡으로 결과 보내기</b><button class="btn" id="krX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <p class="mini" id="krI" style="margin:0 0 8px"></p><div id="krL" style="max-height:55vh;overflow:auto"></div>
+ <p class="mini" style="margin:8px 0 0">카톡에는 <b>점수 없이</b> "결과가 나왔습니다 [결과 보기]"만 갑니다. 받은 사람이 누르면 로그인 없이 <b>직원 모드로 본인 결과</b>가 열립니다(본인 전용 · <b>7일</b> 유효, 지나면 이메일 인증으로). 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방을 고르세요.</p>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="krNo" type="button">닫기</button><button class="btn pri" id="krGo" type="button">🔗 결과 링크 만들기</button></div></div></div>
 <div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
  <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
@@ -835,7 +840,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <details class="hlp"><summary>📊 결과 공개 · 결과 메일 (점검자)</summary><div><ul>
 <li><b>공개</b>: 점검표 아래 <b>직원에게 결과 공개</b>를 체크하고 <b>점검표 저장</b> → 관리자 구글 시트 '점검결과' 탭에 올라가고 직원이 '내 결과'에서 봅니다. 체크를 풀고 저장하면 다시 비공개.</li>
 <li><b>📧 결과 메일</b>(점검표 아래): 받을 사람 목록(직원명부 일치·가린 메일 주소·보냄 여부)을 확인하고 <b>보내기</b>. 각자에게 <b>본인 결과만</b> 갑니다. 명부에 없거나 같은 가림 이름이 여럿이면 '확인 필요'로 빠집니다.</li>
-<li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
+<li><b>💬 카톡 결과</b>(점검표 아래): 받을 사람을 고르고 <b>🔗 결과 링크 만들기</b> → 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방 선택. 카톡에는 점수 없이 [결과 보기] 버튼만 가고, 누르면 직원 모드로 본인 결과가 열립니다(본인 전용 · 7일 유효).</li><li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
 <li><b>👤 개인별 결과표</b>(점검결과 출력 → 종류): 개별평가를 입력한 사람마다 A4 1장(본인 배포용, 다른 사람 점수·면담 제외).</li>
 <li>메일 주소는 구글 시트 '직원명부'에서만 쓰고, 앱·깃허브에는 넣지 않습니다.</li></ul></div></details>
 <details class="hlp"><summary>🚐 차량 위치 · 팀장에게 알리기</summary><div><ul>
@@ -1586,7 +1591,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122080930';
+const BUILD='20261122084754';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3043,7 +3048,24 @@ $('mlGo').onclick=async()=>{if(!MLS)return;const N=[...$('mlL').querySelectorAll
  if(!await ask(`${MLS.tm} 현장 ${N.length}명에게 각자 본인 결과 메일을 보낼까요?`))return;const b=$('mlGo');b.disabled=true;b.textContent='보내는 중…';
  try{const j=await gsCall({act:'mailsend',tok:MLS.tk,rd:MLS.rd,site:MLS.site,names:N});$('mlm').classList.remove('on');toast(`메일 ${j.sent}통 보냄`+(j.wait>0?` · ${j.wait}통은 한도 초과로 대기 (한도가 풀리면 자동으로 이어서 보냄)`:''));nwAdd&&nwAdd(MLS.site,`${MLS.tm} 결과 메일 ${j.sent}통 발송`)}
  catch(e){toast('메일 보내기 실패: '+e)}finally{b.disabled=false;b.textContent='📧 보내기'}};
-$('evMail').onclick=mlOpen;$('mlX').onclick=$('mlNo').onclick=()=>$('mlm').classList.remove('on');
+$('evMail').onclick=mlOpen;
+/* 💬 카톡 결과 (점검자): 받을 사람 고르기 → 본인 전용 링크(7일) → 한 사람씩 카톡 공유 */
+let KRS=null;
+async function krOpen(){if(!ADM||!EVS.id)return;if(!gsOn())return toast('구글 시트 주소가 없어 링크를 만들 수 없습니다');if(EVS.dirty)return toast('점검표를 먼저 저장해 주세요');if(!EVS.w.pub)return toast("먼저 '직원에게 결과 공개'를 체크하고 저장해 주세요");
+ const r=rows.find(x=>x.id===EVS.id);const tk=await mlTok();if(!tk)return;KRS={rd:r.rd||RD,site:r.id,tm:r.tm,tk,links:null};$('krGo').hidden=false;$('krL').innerHTML='<p class="mini">받을 사람 확인 중…</p>';$('krI').textContent=r.tm+' 현장';$('kkr').classList.add('on');
+ try{const j=await gsCall({act:'mailprev',tok:tk,rd:KRS.rd,site:KRS.site});const L=j.list||[];$('krI').innerHTML=`<b>${esc(r.tm)}</b> 현장 · 결과 저장 ${esc(String(j.at||'').slice(0,16))}`;
+  $('krL').innerHTML=L.length?L.map(x=>`<label style="display:flex;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line,#e2e8f0)"><input type="checkbox" data-n="${esc(x.n)}" ${x.ok?'checked':'disabled'}><span style="flex:1"><b>${esc(x.n)}</b> <span class="mini">${x.ok?(x.hasMine?'':'개별평가 없음(팀 결과만)'):'<span class="warn">'+esc(x.why)+'</span>'}</span></span></label>`).join(''):'<p class="mini">이 현장의 수검 인원이 없습니다.</p>'}
+ catch(e){$('krL').innerHTML='<p class="mini warn">'+esc(String(e))+'</p>';if(/다시 로그인|확인이 필요/.test(String(e)))tokSet('')}}
+$('krGo').onclick=async()=>{if(!KRS)return;const N=[...$('krL').querySelectorAll('input:checked')].map(x=>x.dataset.n);if(!N.length)return toast('받을 사람을 골라 주세요');const b=$('krGo');b.disabled=true;b.textContent='만드는 중…';
+ try{const j=await gsCall({act:'kklink',tok:KRS.tk,rd:KRS.rd,site:KRS.site,names:N});KRS.links=j.list||[];b.hidden=true;
+  $('krL').innerHTML=KRS.links.map((x,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line,#e2e8f0)"><span style="flex:1"><b>${esc(x.n)}</b> ${x.ok?'':'<span class="mini warn">'+esc(x.why)+'</span>'}</span>${x.ok?`<span class="mini" id="krS${i}"></span><button class="btn pri krs" type="button" data-i="${i}" style="background:#fee500;border-color:#fee500;color:#191919">💬 보내기</button>`:''}</div>`).join('');
+  nwAdd&&nwAdd(KRS.site,`${KRS.tm} 카톡 결과 링크 ${KRS.links.filter(x=>x.ok).length}명`)}
+ catch(e){toast('링크 만들기 실패: '+e)}finally{b.disabled=false;b.textContent='🔗 결과 링크 만들기'}};
+$('krL').addEventListener('click',e=>{const b=e.target.closest('.krs');if(!b||!KRS||!KRS.links)return;const x=KRS.links[+b.dataset.i];if(!x||!x.link)return;
+ const txt=`[2026년 하반기 현장점검] ${x.n} 님, ${KRS.tm} 현장 점검 결과가 나왔습니다.\n[결과 보기]를 누르면 바로 내 결과가 열립니다. (본인 전용 · 7일 유효 · 다른 사람에게 전달하지 마세요)`;
+ const done=()=>{const m=$('krS'+b.dataset.i);if(m)m.textContent='✓ 보냄';b.textContent='다시 보내기'};
+ kkShare(txt,x.link).then(done).catch(err=>{shareBox('💬 '+x.n+' 님에게 결과 보내기',txt,x.link,typeof err==='string'?err:'');done()})});
+$('evKk').onclick=krOpen;$('krX').onclick=$('krNo').onclick=()=>$('kkr').classList.remove('on');$('mlX').onclick=$('mlNo').onclick=()=>$('mlm').classList.remove('on');
 /* 직원: 새로 공개된 결과가 있으면 위쪽 배너로 바로 알림 (한 번 본 결과는 다시 안 띄움) */
 const rbKey=x=>x.rd+'|'+x.tm+'|'+(x.upd||'');
 function rbSeen(){try{return JSON.parse(localStorage.getItem('mulgil-resseen')||'[]')}catch(e){return []}}
@@ -3189,7 +3211,7 @@ function shareBox(title,text,url,err){SHX={text,url};try{if(localStorage.getItem
 $('shX').onclick=()=>$('shm').classList.remove('on');
 /* SDK를 못 불러오면 카카오 공유 창 주소를 직접 열기 (도구 파일 없이) */
 function kkDirectUrl(text,url){let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return '';
- const tpl={object_type:'text',text:text.slice(0,200),link:{web_url:url,mobile_web_url:url},button_title:/inv=/.test(url)?'초대 받기':'차량 위치 보기'};
+ const tpl={object_type:'text',text:text.slice(0,200),link:{web_url:url,mobile_web_url:url},button_title:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':'차량 위치 보기'};
  const ka='sdk/2.8.2 os/javascript sdk_type/javascript lang/ko-KR device/'+(navigator.platform||'web')+' origin/'+encodeURIComponent(location.origin);
  return 'https://sharer.kakao.com/picker/link?app_key='+encodeURIComponent(key)+'&ka='+encodeURIComponent(ka)+'&validation_action=default&validation_params='+encodeURIComponent(JSON.stringify({link_ver:'4.0',template_object:tpl}))}
 $('shK').onclick=()=>{if(!SHX)return;const X=SHX;
@@ -3202,7 +3224,7 @@ $('shC').onclick=async()=>{if(!SHX)return;const t=SHX.text+'\n'+SHX.url;try{awai
 $('shO').onclick=async()=>{if(!SHX)return;try{await navigator.share({text:SHX.text+'\n'+SHX.url})}catch(e){}};
 /* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
 function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return no('nokey');
- const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:/inv=/.test(url)?'초대 받기':'차량 위치 보기'});ok()}catch(e){no(e)}};
+ const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':'차량 위치 보기'});ok()}catch(e){no(e)}};
  if(kkReady())return send();kkSdk().then(send).catch(no)})}
 /* 카카오 공유 도구 불러오기: 여러 주소를 차례로 시도 (crossorigin 없이) */
 let KKSDK=null;const KKSRC=['https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js','https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js','https://developers.kakao.com/sdk/js/kakao.min.js'];
