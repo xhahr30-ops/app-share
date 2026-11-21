@@ -140,7 +140,7 @@ main{display:grid;gap:10px;padding:10px 12px;grid-template-columns:minmax(0,1fr)
 .pin .tp.sy .syd{position:absolute;right:-7px;top:-2px;width:15px;height:15px;border-radius:50%;border:2px solid #fff;color:#fff;font:900 9px/11px sans-serif;text-align:center;box-sizing:border-box}
 .pin.sel .tp.sy{left:-20px;top:-62px;width:40px;height:62px}.pin.sel .tp.sy .syd{width:18px;height:18px;line-height:14px;font-size:11px;box-shadow:0 0 0 2px #f59e0b}
 .pin.sel .tp.sy .syi{filter:drop-shadow(0 0 3px #f59e0b) drop-shadow(0 0 2px #f59e0b)}
-.pin.done .tp.sy .syi{filter:grayscale(.5)}
+.pin.done .tp.sy .syi{filter:grayscale(1) brightness(1.05);opacity:.75}
 .wso{position:relative}.wso i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:8px;background:#0369a1;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .wso i svg{width:18px;height:18px}.wso span{position:absolute;left:0;top:16px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;background:#fff;color:#0c4a6e;border-radius:6px;padding:1px 5px;box-shadow:0 1px 2px rgba(0,0,0,.35)}
 #map.wsolow .wso span{display:none}#map.wsolow .wso i{transform:scale(.8)}
@@ -1014,7 +1014,7 @@ const munC={};function munOf(r){const k=r.lat.toFixed(5)+','+r.lng.toFixed(5);if
  for(let i=0;i<MUN.length;i++){const M=MUN[i],[a,b,c,d]=M.bb;if(r.lng<a||r.lng>b||r.lat<c||r.lat>d)continue;if(M.P.some(p=>pip(r.lng,r.lat,p[0])&&!p.slice(1).some(h=>pip(r.lng,r.lat,h)))){o=i;break}}return munC[k]=o}
 function drawRgn(L0,days,insL){if(rgL)rgL.clearLayers();rgK.forEach(p=>p.setMap(null));rgK=[];if(!map||!$('rgOn').checked)return;
  const G={};L0.filter(hasPin).forEach(r=>{const i=munOf(r);if(i<0)return;(G[i]=G[i]||[]).push(r)});
- Object.entries(G).forEach(([i,Ls])=>{Ls.sort((a,b)=>(a.pd||'9')<(b.pd||'9')?-1:1);const M=MUN[i],c=colorOf(Ls[0],days,insL),tip=`<b>${esc(M.n)}</b> · ${Ls.map(r=>esc(r.tm)+' '+md(r.pd)).join(', ')}`;
+ Object.entries(G).forEach(([i,Ls])=>{Ls.sort((a,b)=>(a.pd||'9')<(b.pd||'9')?-1:1);const M=MUN[i],live=Ls.filter(r=>r.st!=='완료'),c=live.length?colorOf(live[0],days,insL):'#9ca3af',tip=`<b>${esc(M.n)}</b> · ${Ls.map(r=>esc(r.tm)+' '+md(r.pd)).join(', ')}`;
   if(KK){const km=kakao.maps;M.P.forEach(p=>{const pg=new km.Polygon({map:map.k,path:p.map(ring=>ring.map(([x,y])=>new km.LatLng(y,x))),strokeWeight:2,strokeColor:c,strokeOpacity:.9,fillColor:c,fillOpacity:.22,zIndex:1});rgK.push(pg)})}
   else L.geoJSON(M.f,{pane:'rgn',style:{color:c,weight:2,opacity:.9,fillColor:c,fillOpacity:.25}}).bindTooltip(tip,{sticky:true}).addTo(rgL)})}
 $('rgOn').onchange=()=>drawPins();
@@ -1079,7 +1079,7 @@ function drawPins(fit){const L0=filt(),all=filt(true);
    const pc='pin grp'+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0"><div class="tp"><svg viewBox="0 0 30 40"><path class="b" d="M15 39C15 39 2 24.5 2 15A13 13 0 0 1 28 15C28 24.5 15 39 15 39Z" fill="#312e81" stroke="#fff" stroke-width="2.2"/><text x="15" y="20" text-anchor="middle" font-size="13" font-weight="800" fill="#fde68a">${g.length}</text></svg></div><div class="l2">${esc(g[0].tm)} 외 ${g.length-1}곳</div></div>`;
    const gm=KK?kkMarker(r,pc,ph,{title:g.map(x=>x.tm).join(', '),z:500}).addTo(pinL):L.marker([r.lat,r.lng],{icon:L.divIcon({className:pc,html:ph,iconSize:[0,0]}),title:g.map(x=>x.tm).join(', '),zIndexOffset:500}).addTo(pinL);
    gm.on('click',()=>{EXP.add(gk);drawPins();map.setView([r.lat,r.lng],Math.max(map.getZoom(),13))});g.forEach(x=>mk[x.id]=gm);pts.push([r.lat,r.lng]);return}}const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const ik=r.st==='완료'?'M10 20.5l3.5 3.5l7-7.5':s==='지연'?'M15 12.5a6 6 0 1 1 0 12a6 6 0 0 1 0-12zM15 15.5v3.2l2.2 1.4':'M11 11.5h8v13h-8zM13 11.5v-1.5h4v1.5M13 18.5l1.6 1.6l2.8-3';
-  const pc='pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(r.id===BLINK?' blink':'')+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp sy"><i class="syi"></i><b class="syd" style="background:${c}">${r.st==='완료'?'✓':s==='지연'?'!':''}</b></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${ORD[r.id]?'<b class="ord">'+ORD[r.id]+'</b> ':''}${esc(r.tm)} · ${md(r.pd)}</div></div>`;
+  const pc='pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(r.id===BLINK?' blink':'')+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp sy"><i class="syi"></i><b class="syd" style="background:${r.st==='완료'?'#9ca3af':c}">${r.st==='완료'?'✓':s==='지연'?'!':''}</b></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${ORD[r.id]?'<b class="ord">'+ORD[r.id]+'</b> ':''}${esc(r.tm)} · ${md(r.pd)}</div></div>`;
   const m=KK?kkMarker(r,pc,ph,{draggable:moveOn,title:r.rg+' '+r.tm,z:r.id===selId?1000:k2*10}).addTo(pinL):L.marker([r.lat,r.lng],{icon:L.divIcon({className:pc,html:ph,iconSize:[0,0]}),draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:k2*10}).addTo(pinL);
   if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280,offset:[0,-34]});
   m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
@@ -1482,7 +1482,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121142659';
+const BUILD='20261121144333';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
