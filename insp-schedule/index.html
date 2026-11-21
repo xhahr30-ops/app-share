@@ -674,7 +674,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" style="margin:6px 0 0">키는 이 휴대폰·PC 브라우저에만 저장되고 앱 파일이나 공유 자료에는 들어가지 않습니다. <b>팀원용 설정 링크</b>를 카톡으로 보내면 팀원이 한 번 눌러 같은 카카오 지도를 씁니다(링크를 받은 사람만).</p>
  <details id="kkHow" style="margin-top:8px;border:1px solid #fde68a;background:#fffbeb;color:#422006;border-radius:10px;padding:8px 10px"><summary style="cursor:pointer;font-weight:800;font-size:14px">📘 키 받는 방법 (처음 한 번 · 약 5분)</summary><ol style="margin:8px 0 6px;padding-left:20px;line-height:1.7;font-size:13px">
   <li><code>developers.kakao.com</code>에 카카오 계정으로 로그인 → <b>내 애플리케이션 → 애플리케이션 추가하기</b> (앱 이름: 스마트 물길점검)</li>
-  <li>만든 앱 → <b>앱 설정 → 플랫폼 → Web 플랫폼 등록</b> → 사이트 도메인에 <code>https://xhahr30-ops.github.io</code> 입력·저장</li>
+  <li>만든 앱 → <b>앱 → 플랫폼 키 → JavaScript 키 → JavaScript SDK 도메인</b>에 <code>https://xhahr30-ops.github.io</code> 등록 (예전 화면: 플랫폼 → Web 사이트 도메인)</li><li><b>카톡 보내기용</b>: <b>앱 → 제품 링크 관리 → 웹 도메인</b>에도 <code>https://xhahr30-ops.github.io</code> 등록 (안 하면 카톡 보내기가 안 되거나 링크가 안 눌림)</li>
   <li><b>제품 설정 → 카카오맵</b>에서 사용 설정을 <b>켜기(ON)</b></li>
   <li><b>앱 키</b>의 <b>JavaScript 키</b>를 복사해 위 칸에 붙여 넣기 → <b>저장하고 다시 열기</b></li></ol>
   <a class="btn" href="https://developers.kakao.com/console/app" target="_blank" rel="noopener" style="display:inline-flex;margin:0 0 6px;background:#fee500;border-color:#fee500;color:#191919;text-decoration:none">🔗 카카오 개발자 사이트 열기</a>
@@ -1481,7 +1481,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121133221';
+const BUILD='20261121133436';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2987,15 +2987,15 @@ $('wsGo').onclick=async()=>{if(WSB)return;let key='';try{key=localStorage.getIte
 setTimeout(wsoZbind,1500);
 /* 📤 보내기 고르기: 카카오톡 · 복사 · 다른 앱 */
 let SHX=null;const KKERR={nokey:'카카오 지도 키가 없어 카톡 바로 보내기를 못 합니다 (메뉴 🗺 카카오 지도 키). 복사해서 붙여 넣으세요.',timeout:'카카오 연결이 늦습니다. 다시 누르거나 복사해서 보내세요.',load:'카카오 도구를 불러오지 못했습니다. 복사해서 보내세요.',nosdk:'카카오 도구를 불러오지 못했습니다. 복사해서 보내세요.'};
-function shareBox(title,text,url,err){SHX={text,url};if(!window.Kakao){try{if(localStorage.getItem(KKEY)&&!document.getElementById('kksdk')){const sc=document.createElement('script');sc.id='kksdk';sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';sc.crossOrigin='anonymous';document.head.appendChild(sc)}}catch(e){}}$('shT').textContent=title;$('shP').textContent=text+'\n'+url;$('shO').style.display=navigator.share?'':'none';$('shM').textContent=err?(KKERR[err]||'카톡 바로 보내기가 안 됐습니다. 복사해서 보내세요.'):'';$('shm').classList.add('on')}
+function shareBox(title,text,url,err){SHX={text,url};if(!window.Kakao){try{if(localStorage.getItem(KKEY)&&!document.getElementById('kksdk')){const sc=document.createElement('script');sc.id='kksdk';sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js';sc.crossOrigin='anonymous';document.head.appendChild(sc)}}catch(e){}}$('shT').textContent=title;$('shP').textContent=text+'\n'+url;$('shO').style.display=navigator.share?'':'none';$('shM').textContent=err?(KKERR[err]||'카톡 바로 보내기가 안 됐습니다. 복사해서 보내세요.'):'';$('shm').classList.add('on')}
 $('shX').onclick=()=>$('shm').classList.remove('on');
-$('shK').onclick=()=>{if(!SHX)return;$('shM').textContent='카카오톡 여는 중…';kkShare(SHX.text,SHX.url).then(()=>{$('shM').textContent='카카오톡 창에서 받을 사람을 고르세요. (PC는 새 창이 뜹니다 · 팝업 차단 해제)'}).catch(e=>{$('shM').textContent=KKERR[e]||('카톡 바로 보내기가 안 됐습니다'+(e&&e.message?' ('+e.message+')':'')+'. 복사해서 보내세요.')})};
+$('shK').onclick=()=>{if(!SHX)return;$('shM').textContent='카카오톡 여는 중…';kkShare(SHX.text,SHX.url).then(()=>{$('shM').textContent='카카오톡 창에서 받을 사람을 고르세요. (PC는 새 창이 뜹니다 · 팝업 차단 해제)'}).catch(e=>{$('shM').textContent=KKERR[e]||('카톡 바로 보내기가 안 됐습니다'+(e&&(e.message||e.code)?' ('+(e.code||'')+' '+(e.message||'')+')':'')+'. 카카오 개발자 사이트 \'제품 링크 관리 → 웹 도메인\' 등록을 확인하거나, 복사해서 보내세요.')})};
 $('shC').onclick=async()=>{if(!SHX)return;const t=SHX.text+'\n'+SHX.url;try{await navigator.clipboard.writeText(t);$('shM').textContent='복사했습니다. 카톡 대화방에 붙여 넣으세요.'}catch(e){prompt('복사해서 보내세요',t)}};
 $('shO').onclick=async()=>{if(!SHX)return;try{await navigator.share({text:SHX.text+'\n'+SHX.url})}catch(e){}};
 /* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
 function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return no('nokey');
- const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:'차량 위치 보기'});ok()}catch(e){no(e)}};
- if(window.Kakao&&Kakao.Share)return send();const sc=document.createElement('script');sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';sc.crossOrigin='anonymous';
+ const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:/inv=/.test(url)?'초대 받기':'차량 위치 보기'});ok()}catch(e){no(e)}};
+ if(window.Kakao&&Kakao.Share)return send();const sc=document.createElement('script');sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js';sc.crossOrigin='anonymous';
  const t=setTimeout(()=>no('timeout'),8000);sc.onload=()=>{clearTimeout(t);window.Kakao&&Kakao.Share?send():no('nosdk')};sc.onerror=()=>{clearTimeout(t);no('load')};document.head.appendChild(sc)})}
 $('bPos').onclick=()=>{$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('관리자(점검자 로그인)만 쓸 수 있습니다');if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');toast('내 위치 찾는 중…');
  navigator.geolocation.getCurrentPosition(p=>{const nm=(AUTH&&AUTH.name)||MEN||'관리자',t=Date.now(),u=location.origin+location.pathname+'#pos='+p.coords.latitude.toFixed(5)+','+p.coords.longitude.toFixed(5)+','+t+','+encodeURIComponent(nm);
