@@ -1434,7 +1434,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121112001';
+const BUILD='20261121112854';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2831,22 +2831,23 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&VW!=null){
 /* 현장 검색 → 그 현장 팀장에게 내 위치 보내기 묻기 (점검자 로그인만) */
 const TPASK={};let TPR=null,TPTXT='',TPU='';
 const tpOff=()=>{try{return localStorage.getItem('mulgil-askpos')==='0'}catch(e){return false}};
-const tpLead=r=>{const c=ctOf(r).p||[];const l=c.find(x=>/팀장/.test(x.role||''))||c[0];return{n:(l&&l.n)||r.tl||r.solo||r.lead||'',role:(l&&l.role)||'팀장',ph:(l&&l.ph)||''}};
+const tpLead=r=>{const c=ctOf(r).p||[];const l=c.find(x=>/^(단독)?팀장$/.test(x.role||''))||c.find(x=>/팀장/.test(x.role||''))||c[0];if(l)return{n:l.n,role:l.role||'팀장',ph:l.ph||''};
+ const f=real(r.tl)?[r.tl,'팀장']:real(r.solo)?[r.solo,'단독팀장']:real(r.lead)?[r.lead,'권역팀장']:['','팀장'];return{n:f[0],role:f[1],ph:''}};
 function tposAsk(r,auto){if(!ADM||!AUTH||!r)return;if(auto&&(tpOff()||TPASK[r.id]||$('tpm').classList.contains('on')||document.querySelector('.modal.on')))return;TPASK[r.id]=1;TPR=r;TPTXT='';TPU='';
  const l=tpLead(r),who=l.n?`${l.n} ${l.role}`:'팀장';$('tpQ').textContent=`${r.tm} 현장 ${who}에게 내 위치를 보낼까요?`;$('tpD').textContent='내 위치 확인 중…';
- $('tpS').hidden=!l.ph;$('tpOff').checked=tpOff();$('tpm').classList.add('on');$('tpS').disabled=$('tpK').disabled=true;
+ $('tpS').hidden=!l.ph;$('tpS').style.display=l.ph?'':'none';$('tpOff').checked=tpOff();$('tpm').classList.add('on');$('tpS').disabled=$('tpK').disabled=true;
  const fin=(la,ln)=>{const nm=(AUTH&&AUTH.name)||MEN||'점검자',t=Date.now();let km='';if(la!=null&&hasPin(r)){const k=hav({lat:la,lng:ln},r);km=k<1?'1km 이내':'약 '+(k<10?k.toFixed(1):Math.round(k))+'km'}
   TPU=la!=null?location.origin+location.pathname+'#pos='+la.toFixed(5)+','+ln.toFixed(5)+','+t+','+encodeURIComponent(nm):location.origin+location.pathname;
-  TPTXT=`[스마트 물길점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`+(km?`\n${r.tm} 현장까지 직선 ${km}`:'');
+  TPTXT=`[스마트 물길점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`+(km?`\n${r.tm} 현장까지 직선 ${km}`:'')+`\n\n안녕하세요. 사전에 업무연락으로 공지한 현장점검을 위해 ${r.tm} 현장을 방문할 예정입니다. 원활한 점검이 되도록 협조 부탁드립니다. 감사합니다.`;
   $('tpD').textContent=la==null?'위치를 못 가져와 앱 주소만 보냅니다 (위치 권한 확인)':(km?`현장까지 직선 ${km} · `:'')+(l.ph?'문자는 팀장 번호가 채워진 채 열립니다':'카톡에서 팀장을 골라 보내세요');$('tpS').disabled=$('tpK').disabled=false};
  if(!navigator.geolocation)return fin(null);navigator.geolocation.getCurrentPosition(p=>fin(p.coords.latitude,p.coords.longitude),()=>fin(null),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
 const tpClose=()=>{$('tpm').classList.remove('on');TPR=null};
 $('tpX').onclick=$('tpN').onclick=tpClose;
 $('tpOff').onchange=e=>{try{localStorage.setItem('mulgil-askpos',e.target.checked?'0':'1')}catch(_){}};
-$('tpS').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),body=TPTXT+'\n'+TPU+'\n(점검자 로그인 후 지도에 차량이 보입니다)';
+$('tpS').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),body=TPTXT+'\n'+TPU+'\n(앱에 로그인하면 지도에 차량이 보입니다)';
  location.href='sms:'+l.ph.replace(/[^\d+]/g,'')+(/iP(hone|ad|od)/.test(navigator.userAgent)?'&':'?')+'body='+encodeURIComponent(body);tpClose()};
 $('tpK').onclick=()=>{if(!TPR)return;const l=tpLead(TPR),u=TPU.replace('#pos=','?pos=');if(l.n)toast(`카톡에서 ${l.n} ${l.role}을(를) 골라 보내세요`);
- kkShare(TPTXT+'\n점검자 로그인 후 지도에 차량이 보입니다.',u).catch(()=>shareSend(TPTXT+'\n'+TPU));tpClose()};
+ kkShare(TPTXT+'\n앱에 로그인하면 지도에 차량이 보입니다.',u).catch(()=>shareSend(TPTXT+'\n'+TPU));tpClose()};
 /* 🏢 전국 상수도 사업소: 카카오 장소검색으로 모아 이 브라우저에 저장 · 앱에 고정 탑재된 목록(WSO_SEED)과 합침 */
 const WSO_SEED=[];
 const WSO_KW=['상수도사업본부','상수도사업소','수도사업소','맑은물사업소','맑은물사업본부','상하수도사업소','상하수도사업본부','수도사업본부','아리수본부','물관리사업소','수도과'];
@@ -2908,10 +2909,10 @@ function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=local
 $('bPos').onclick=()=>{$('tbar').classList.remove('open');if(!ADM||!AUTH)return toast('관리자(점검자 로그인)만 쓸 수 있습니다');if(!navigator.geolocation)return toast('이 화면에서는 위치를 쓸 수 없습니다');toast('내 위치 찾는 중…');
  navigator.geolocation.getCurrentPosition(p=>{const nm=(AUTH&&AUTH.name)||MEN||'관리자',t=Date.now(),u=location.origin+location.pathname+'#pos='+p.coords.latitude.toFixed(5)+','+p.coords.longitude.toFixed(5)+','+t+','+encodeURIComponent(nm);
   const txt=`[스마트 물길점검] ${nm} 점검 차량 현재 위치 (${phT(new Date(t).toISOString())})`;
-  kkShare(txt+'\n점검자 로그인 후 지도에 차량이 보입니다.',u.replace('#pos=','?pos=')).catch(()=>shareSend(txt+'\n아래 링크를 누르면 앱 지도에 차량 위치가 보입니다.\n'+u))},()=>toast('위치를 가져오지 못했습니다 (위치 권한 확인)'),{enableHighAccuracy:true,timeout:12000})};
+  kkShare(txt+'\n앱에 로그인하면 지도에 차량이 보입니다.',u.replace('#pos=','?pos=')).catch(()=>shareSend(txt+'\n아래 링크를 누르면 앱 지도에 차량 위치가 보입니다.\n'+u))},()=>toast('위치를 가져오지 못했습니다 (위치 권한 확인)'),{enableHighAccuracy:true,timeout:12000})};
 function posHash(){const m=/[#&?]pos=([-\d.]+),([-\d.]+),(\d+),([^&]*)/.exec((location.hash||'')+'&'+(location.search||''));if(!m)return;const la=+m[1],ln=+m[2],t=+m[3],nm=decodeURIComponent(m[4]||'')||'점검 차량';let n=0;
  const go=()=>{if(!map||document.documentElement.classList.contains('locked')){if(++n<120)return setTimeout(go,500);return}try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]pos=[^&]*/,'').replace(/^&/,'?'))}catch(e){}
-  if(!ADM)return toast('차량 위치는 관리자(점검자 로그인)만 볼 수 있습니다');
+  if(lockNeed()&&!AUTH)return toast('로그인하면 차량 위치가 보입니다');
   const ago=Math.max(0,Math.round((Date.now()-t)/60000)),lb=`${nm} · ${ago<1?'방금':ago<60?ago+'분 전':Math.floor(ago/60)+'시간 전'}`;vehPut('shared',la,ln,lb,false,false);map.setView([la,ln],Math.max(map.getZoom(),13));toast(nm+' 차량 위치 ('+phT(new Date(t).toISOString())+' 기준)')};setTimeout(go,900)}
 posHash();addEventListener('hashchange',posHash);
 
