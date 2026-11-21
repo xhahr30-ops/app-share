@@ -155,10 +155,10 @@ html.mob #dayBig{top:calc(max(10px,env(safe-area-inset-top)) + 112px)}html.clean
 .pin.sel .tp{left:-20px;top:-53px;width:40px;height:53px}.pin.sel .tp svg{width:40px;height:53px}
 .pin.sel .tp path.b{stroke:#f59e0b;stroke-width:3}
 .pin .l2{position:absolute;left:0;top:3px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:800;color:#0f172a;background:rgba(255,255,255,.95);border:1px solid #cbd5e1;border-radius:999px;padding:1px 7px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
-.pin .tp.sy{left:-15px;top:-46px;width:30px;height:46px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.pin .tp.sy{--k:1;--s:1;--z:calc(var(--k)*var(--s));left:calc(-15px*var(--z));top:calc(-46px*var(--z));width:calc(30px*var(--z));height:calc(46px*var(--z));filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .pin .tp.sy .syi{position:absolute;inset:0;background:var(--sy) center bottom/contain no-repeat}
-.pin .tp.sy .syd{position:absolute;right:-7px;top:-2px;width:15px;height:15px;border-radius:50%;border:2px solid #fff;color:#fff;font:900 9px/11px sans-serif;text-align:center;box-sizing:border-box}
-.pin.sel .tp.sy{left:-20px;top:-62px;width:40px;height:62px}.pin.sel .tp.sy .syd{width:18px;height:18px;line-height:14px;font-size:11px;box-shadow:0 0 0 2px #f59e0b}
+.pin .tp.sy .syd{position:absolute;right:calc(-7px*var(--z));top:calc(-2px*var(--z));width:calc(15px*var(--z));height:calc(15px*var(--z));border-radius:50%;border:2px solid #fff;color:#fff;font:900 calc(9px*var(--z))/calc(11px*var(--z)) sans-serif;text-align:center;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
+.pin.sel .tp.sy{--s:1.33}.pin.sel .tp.sy .syd{box-shadow:0 0 0 2px #f59e0b}
 .pin.sel .tp.sy .syi{filter:drop-shadow(0 0 3px #f59e0b) drop-shadow(0 0 2px #f59e0b)}
 .pin.done .tp.sy .syi{filter:grayscale(1) brightness(1.05);opacity:.75}
 .wso{position:relative}.wso i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:8px;background:#0369a1;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);box-sizing:border-box;display:flex;align-items:center;justify-content:center}
@@ -1090,6 +1090,8 @@ function drawRoute(GS){if(rtL)rtL.clearLayers();rtK.forEach(o=>o.setMap(null));r
   else L.polyline(RL.map(r=>[r.lat,r.lng]),{color:col,weight:4,opacity:.85,dashArray:'8 8',interactive:false}).addTo(rtL);
   out.push(`${RL[0].ins[0]}팀 ${RL.length}곳 약 ${kmT(tot)}·${minT(tot)}`)});
  return out.length?' · 동선(직선거리 추정) '+out.join(' / '):''}
+/* 서용이 크기: 현장 인원 5단계 (1명 0.7 · 2명 0.85 · 3명 1 · 4~5명 1.2 · 6명+ 1.45) */
+const syK=r=>{const n=cnt(r);return n<=1?.7:n===2?.85:n===3?1:n<=5?1.2:1.45};
 function drawPins(fit){const L0=filt(),all=filt(true);
  const days=[...new Set(rows.map(r=>r.pd).filter(Boolean))].sort(),insL=[...new Set(rows.map(r=>r.ins[0]).filter(real))].sort();
  rDays(all,days);$('legend').innerHTML=legend(days,insL);if(!map){$('mapInfo').textContent=L0.length+'곳';return}pinL.clearLayers();mk={};
@@ -1100,7 +1102,7 @@ function drawPins(fit){const L0=filt(),all=filt(true);
    const pc='pin grp'+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0"><div class="tp"><svg viewBox="0 0 30 40"><path class="b" d="M15 39C15 39 2 24.5 2 15A13 13 0 0 1 28 15C28 24.5 15 39 15 39Z" fill="#312e81" stroke="#fff" stroke-width="2.2"/><text x="15" y="20" text-anchor="middle" font-size="13" font-weight="800" fill="#fde68a">${g.length}</text></svg></div><div class="l2">${esc(g[0].tm)} 외 ${g.length-1}곳</div></div>`;
    const gm=KK?kkMarker(r,pc,ph,{title:g.map(x=>x.tm).join(', '),z:500}).addTo(pinL):L.marker([r.lat,r.lng],{icon:L.divIcon({className:pc,html:ph,iconSize:[0,0]}),title:g.map(x=>x.tm).join(', '),zIndexOffset:500}).addTo(pinL);
    gm.on('click',()=>{EXP.add(gk);drawPins();map.setView([r.lat,r.lng],Math.max(map.getZoom(),13))});g.forEach(x=>mk[x.id]=gm);pts.push([r.lat,r.lng]);return}}const c=colorOf(r,days,insL),s=stOf(r);const sk=r.lat.toFixed(4)+','+r.lng.toFixed(4);const k2=same[sk]=(same[sk]??-1)+1;const ik=r.st==='완료'?'M10 20.5l3.5 3.5l7-7.5':s==='지연'?'M15 12.5a6 6 0 1 1 0 12a6 6 0 0 1 0-12zM15 15.5v3.2l2.2 1.4':'M11 11.5h8v13h-8zM13 11.5v-1.5h4v1.5M13 18.5l1.6 1.6l2.8-3';
-  const pc='pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(r.id===BLINK?' blink':'')+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp sy"><i class="syi"></i><b class="syd" style="background:${r.st==='완료'?'#9ca3af':c}">${r.st==='완료'?'✓':s==='지연'?'!':''}</b></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${ORD[r.id]?'<b class="ord">'+ORD[r.id]+'</b> ':''}${esc(r.tm)} · ${md(r.pd)}</div></div>`;
+  const pc='pin'+(r.st==='완료'?' done':'')+(r.id===selId?' sel':'')+(r.id===BLINK?' blink':'')+(lb?'':' nolbl'),ph=`<div style="position:absolute;left:0;top:0;transform:translate(${k2*14}px,0)"><div class="tp sy" style="--k:${syK(r)}"><i class="syi"></i><b class="syd" style="background:${r.st==='완료'?'#9ca3af':c}">${r.st==='완료'?'✓':s==='지연'?'!':''}</b></div><div class="l2" style="${k2?`top:${3+k2*19}px`:''}">${ORD[r.id]?'<b class="ord">'+ORD[r.id]+'</b> ':''}${esc(r.tm)} · ${md(r.pd)}</div></div>`;
   const m=KK?kkMarker(r,pc,ph,{draggable:moveOn,title:r.rg+' '+r.tm,z:r.id===selId?1000:k2*10}).addTo(pinL):L.marker([r.lat,r.lng],{icon:L.divIcon({className:pc,html:ph,iconSize:[0,0]}),draggable:moveOn,title:r.rg+' '+r.tm,zIndexOffset:r.id===selId?1000:k2*10}).addTo(pinL);
   if(!isMob())m.bindPopup(()=>popHtml(r),{maxWidth:280,offset:[0,-34]});
   m.on('click',()=>{selId=r.id;hiRow();if(isMob())showCard(r)});
@@ -1512,7 +1514,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121160452';
+const BUILD='20261121162728';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
