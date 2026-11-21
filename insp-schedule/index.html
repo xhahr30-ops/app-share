@@ -806,6 +806,9 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <label class="mini" style="display:flex;gap:6px;align-items:center;justify-content:center;margin:8px 0"><input type="checkbox" id="lkR" checked> 이 기기에서 30일 동안 기억</label>
  <button class="btn pri" id="lkGo" type="button" style="width:100%;justify-content:center;height:44px;font-size:15px">로그인</button>
  <div id="lkInvB" hidden style="margin-top:10px;padding:10px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:12px;color:#312e81;font-size:13px"><b>📨 점검자 초대 링크로 열었습니다</b><div class="mini" style="margin:4px 0 8px;color:#4338ca">위에 이름만 넣고 아래 단추를 누르세요. 비밀번호는 필요 없습니다.</div><button class="btn pri" id="lkInvGo" type="button" style="width:100%;justify-content:center">📨 초대로 점검자 들어가기</button></div>
+ <div style="margin-top:10px;border-top:1px dashed rgba(148,163,184,.5);padding-top:10px"><button type="button" class="btn" id="lkEmT" style="width:100%;justify-content:center">📧 직원 이메일로 로그인 (본인 현장만 보기)</button>
+ <div id="lkEm" hidden style="margin-top:8px"><input id="lkEmI" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="회사 이메일 (직원명부에 있는 주소)" style="text-align:center;height:42px;margin-bottom:6px"><button class="btn pri" id="lkEmS" type="button" style="width:100%;justify-content:center">📨 인증번호 받기</button>
+ <div id="lkEmC" hidden style="margin-top:8px"><input id="lkEmN" class="inp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="메일로 받은 6자리" style="text-align:center;height:42px;font-size:18px;letter-spacing:4px;margin-bottom:6px"><button class="btn pri" id="lkEmV" type="button" style="width:100%;justify-content:center">확인하고 들어가기</button></div></div></div>
  <p class="mini" id="lkM" style="margin:8px 0 0;min-height:16px"></p>
  <p class="mini" style="margin:10px 0 0;color:var(--mute)">팀원 비밀번호: 일정·지도·후속 조치 · 점검자 비밀번호: 점검표·개별평가·종합까지<br>로그인·로그아웃 기록(시각·이름·권한·기기)이 관리자에게 남습니다 · 비밀번호 문의: 구병순</p>
 </div></div>
@@ -940,7 +943,7 @@ $('evBody').addEventListener('click',e=>{const a=e.target.closest('[data-rd]');i
 /* ── 필터 ── */
 let F={rg:'',st:'',in:'',q:'',day:'',me:0},tab='lst',sortK='pd',sortD=1,calM=null,selId=null;
 let MEN='';try{MEN=localStorage.getItem('mulgil-me')||'';F.me=MEN&&localStorage.getItem('mulgil-meon')==='1'?1:0}catch(e){}
-function filt(noDay){const q=F.q.trim();return rows.filter(r=>(!F.me||!MEN||r.ins.includes(MEN)||people(r).includes(MEN))&&(!F.rg||r.rg===F.rg)&&(!F.st||stOf(r)===F.st)&&(!F.in||r.ins.includes(F.in))&&(noDay||!F.day||r.pd===F.day)&&(!q||[r.rg,r.tm,r.note,r.addr,...r.ins,...people(r)].join(' ').includes(q)))}
+function filt(noDay){const q=F.q.trim();return rows.filter(r=>empOk(r)&&(!F.me||!MEN||r.ins.includes(MEN)||people(r).includes(MEN))&&(!F.rg||r.rg===F.rg)&&(!F.st||stOf(r)===F.st)&&(!F.in||r.ins.includes(F.in))&&(noDay||!F.day||r.pd===F.day)&&(!q||[r.rg,r.tm,r.note,r.addr,...r.ins,...people(r)].join(' ').includes(q)))}
 function fillSel(id,vals,all){const s=$(id),v=s.value;s.innerHTML=`<option value="">${all}</option>`+vals.map(x=>`<option>${esc(x)}</option>`).join('');s.value=vals.includes(v)?v:''}
 function refreshSel(){fillSel('fRg',[...new Set(rows.map(r=>r.rg).filter(Boolean))].sort(),'전체 지역');fillSel('fSt',['예정','지연','완료','연기','취소'],'전체 상태');fillSel('fIn',[...new Set(rows.flatMap(r=>r.ins).filter(real))].sort(),'전체 점검자');F.rg=$('fRg').value;F.st=$('fSt').value;F.in=$('fIn').value}
 ['fRg','fSt','fIn'].forEach(k=>$(k).onchange=()=>{F[{fRg:'rg',fSt:'st',fIn:'in'}[k]]=$(k).value;render(true)});
@@ -1291,12 +1294,12 @@ async function delX(col,id){if(mode==='db'){try{await DB.collection(col).doc(id)
 function subX(){DB.collection('cont').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());CT=o;render()},e=>{});['eval','intv','acts','photos','news'].forEach(c=>{DB.collection(c).onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());if(c==='news'){NW=o;nwBadge();if(tab==='nw')rNews();return}if(c==='eval')EV=o;else if(c==='intv')IV=o;else if(c==='photos'){PH=o;if(EVS.id&&EVS.t==='ph')evPaneRefresh();phFill(document)}else AC=o;render();if(EVS.id&&c!=='acts'&&!EVS.dirty)evPaneRefresh()},e=>{})})}
 /* ── 🔐 로그인(A안): Claude 페이지는 Claude 계정 로그인 + 권한(소유자·점검자·현장팀·보기), 깃허브 판은 로그인 없음 ── */
 const TEAMURL='';
-async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 저장되는 판',t2='로그인 없음';if(typeof AUTH!=='undefined'&&AUTH){t=`🔐 <b>${esc(AUTH.name||'')} · ${AUTH.role==='ins'?'점검자':'팀원'}</b> 로그인 · 이 기기 · 기록은 이 브라우저에만 저장 <a href="#" id="lkOut" style="margin-left:6px">로그아웃</a>`;t2=(AUTH.name?AUTH.name+' · ':'')+(AUTH.role==='ins'?'점검자':'팀원')}
+async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 저장되는 판',t2='로그인 없음';if(typeof AUTH!=='undefined'&&AUTH){t=`🔐 <b>${esc(AUTH.name||'')} · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원':'팀원'}</b> 로그인 · 이 기기 · 기록은 이 브라우저에만 저장 <a href="#" id="lkOut" style="margin-left:6px">로그아웃</a>`;t2=(AUTH.name?AUTH.name+' · ':'')+(AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원':'팀원')}
  try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u){const own=u.isOwner?await u.isOwner():false,ed=u.canEdit?await u.canEdit():false,wr=u.can?await u.can('data.write'):null;
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원(본인 현장만)':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1514,7 +1517,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121162728';
+const BUILD='20261121183023';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2863,7 +2866,7 @@ setTimeout(()=>{try{if(!localStorage.getItem('mulgil-help')&&!$('tdm').classList
 const LOCK0={"salt": "a193c9c3d28834ea", "team": "d5d10e774d55b56728a58cd10564860480354df4e9eef599435a04f4f23b8e70", "ins": "4b09041bdc2568afaf7417ce3de899ea82fb863b9883e6c0011ccb39c1f54344"};let LOCK=LOCK0;try{const c=JSON.parse(localStorage.getItem('mulgil-lock')||'null');if(LOCK0&&c&&c.salt===LOCK0.salt&&c.team&&c.ins)LOCK=c}catch(e){}
 /* 시트(Apps Script)에 저장된 최신 비밀번호를 받아 옴 · 안 되면 앱에 든 값 사용 */
 const kOf=role=>((role==='ins'?LOCK.ins:LOCK.team)||'').slice(0,10);
-function authOk(a){if(!a||!LOCK||a.h!==LOCK.salt)return false;if(a.k)return a.k===kOf(a.role);return a.role==='ins'?LOCK.ins===LOCK0.ins:LOCK.team===LOCK0.team}
+function authOk(a){if(!a||!LOCK||a.h!==LOCK.salt)return false;if(a.role==='emp')return !!a.name;if(a.k)return a.k===kOf(a.role);return a.role==='ins'?LOCK.ins===LOCK0.ins:LOCK.team===LOCK0.team}
 let INVC='';{const m=/[#&?]inv=([A-Za-z0-9]{8,20})/.exec((location.hash||'')+'&'+(location.search||''));if(m){INVC=m[1];try{history.replaceState(null,'',location.pathname+location.search.replace(/[?&]inv=[^&]*/,'').replace(/^&/,'?'))}catch(e){}}}
 function sha256h(m){const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
  const b=new TextEncoder().encode(m),l=b.length,n=((l+9+63)>>6)<<6,a=new Uint8Array(n);a.set(b);a[l]=0x80;const dv=new DataView(a.buffer);dv.setUint32(n-4,l*8);
@@ -2897,6 +2900,22 @@ $('lkK').addEventListener('mousedown',e=>e.preventDefault());$('lkK').onclick=()
 {const _g=$('lkGo').onclick;$('lkGo').onclick=()=>{try{localStorage.setItem('mulgil-lastname',$('lkN').value.trim())}catch(e){}_g()}}
 function lockOut(){if(AUTH)logEv('로그아웃',AUTH.name,AUTH.role);try{localStorage.removeItem('mulgil-auth');sessionStorage.removeItem('mulgil-auth')}catch(e){}location.reload()}
 lockApply();
+/* 📧 직원 이메일 로그인 (인증번호) · 본인 현장만 보기 — 이메일 명단은 구글 시트 '직원명부' 탭에만 있음 */
+const isEmp=()=>!!(AUTH&&AUTH.role==='emp');
+const empMk=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n[0]+'*'.repeat(n.length-2)+n[n.length-1]};
+function empOk(r){if(!isEmp())return true;const nm=AUTH.name,mk=empMk(nm),ps=people(r);if(!(ps.includes(nm)||ps.includes(mk)))return false;
+ const st=(AUTH.site||'').replace(/\s/g,'');if(!st||st==='-')return true;const tm=String(r.tm||'').replace(/[()\s]/g,''),s2=st.replace(/[()\s]/g,'');return tm.includes(s2.slice(0,2))||s2.includes(tm.slice(0,2))||!ALL.some(x=>x!==r&&(people(x).includes(nm)||people(x).includes(mk)))}
+$('lkEmT').onclick=()=>{const b=$('lkEm');b.hidden=!b.hidden;if(!b.hidden)setTimeout(()=>$('lkEmI').focus(),50)};
+$('lkEmS').onclick=async()=>{const em=$('lkEmI').value.trim();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){$('lkM').textContent='회사 이메일을 정확히 넣어 주세요';return}
+ const b=$('lkEmS');b.disabled=true;$('lkM').textContent='인증번호를 보내는 중…';
+ try{await gsCall({act:'otp',email:em});$('lkEmC').hidden=false;$('lkM').textContent='메일로 6자리 인증번호를 보냈습니다 (10분 유효). 메일함·스팸함을 확인하세요';setTimeout(()=>$('lkEmN').focus(),50)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
+$('lkEmV').onclick=async()=>{const em=$('lkEmI').value.trim(),cd=$('lkEmN').value.trim();if(!/^\d{6}$/.test(cd)){$('lkM').textContent='6자리 숫자를 넣어 주세요';return}
+ const b=$('lkEmV');b.disabled=true;$('lkM').textContent='확인 중…';
+ try{const j=await gsCall({act:'otpv',email:em,code:cd});const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
+  try{localStorage.setItem('mulgil-auth',JSON.stringify(a));localStorage.setItem('mulgil-lastname',j.name)}catch(_){}$('lkM').textContent='';$('lkEm').hidden=true;
+  logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();render();setTimeout(()=>{const n=filt().length;toast(n?`${j.name} 님 현장 ${n}곳만 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
+$('lkEmN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmV').click()});$('lkEmI').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmS').click()});
+
 /* 🔑 비밀번호·초대 (구글 시트 Apps Script 웹앱에 저장) */
 const gsOn=()=>!!LOGURL&&!/^__/.test(LOGURL)&&!inClaude();
 async function gsCall(o){if(!gsOn())throw '구글 시트 주소가 없습니다';let r;try{r=await fetch(LOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)})}catch(e){throw '인터넷 연결을 확인하세요'}
