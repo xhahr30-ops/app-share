@@ -1482,7 +1482,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121142458';
+const BUILD='20261121142659';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2883,6 +2883,7 @@ const mkN=n=>{n=String(n||'').trim();return n.length<2?n:n.length===2?n[0]+'*':n
 let WHO=null;
 let INVSEL=null;
 function pwWho(){const P={};rows.forEach(r=>r.ins.forEach((n,i)=>{if(!real(n))return;const p=P[n]=P[n]||{n,c:0,ro:new Set()};p.c++;p.ro.add(['기술','영업','공통'][i])}));
+ /* 시험·관리용 추가 점검자 */ ['구병순'].forEach(n=>{if(!P[n]&&!P[mkN(n)])P[n]={n,c:0,ro:new Set(['관리·시험'])}});
  const L=Object.values(P).sort((a,b)=>b.c-a.c||a.n.localeCompare(b.n)),inn=x=>WHO&&WHO.find(w=>w.n===x.n||mkN(w.n)===x.n||mkN(w.n)===mkN(x.n));
  if(!INVSEL){INVSEL=new Set(L.filter(x=>!inn(x)).map(x=>x.n))}
  const k=WHO?L.filter(inn).length:0,sel=L.filter(x=>INVSEL.has(x.n));
