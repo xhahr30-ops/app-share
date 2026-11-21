@@ -812,7 +812,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <label class="mini" style="display:flex;gap:6px;align-items:center;justify-content:center;margin:8px 0"><input type="checkbox" id="lkR" checked> 이 기기에서 30일 동안 기억</label>
  <button class="btn pri" id="lkGo" type="button" style="width:100%;justify-content:center;height:44px;font-size:15px">로그인</button>
  <div id="lkInvB" hidden style="margin-top:10px;padding:10px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:12px;color:#312e81;font-size:13px"><b>📨 점검자 초대 링크로 열었습니다</b><div class="mini" style="margin:4px 0 8px;color:#4338ca">위에 이름만 넣고 아래 단추를 누르세요. 비밀번호는 필요 없습니다.</div><button class="btn pri" id="lkInvGo" type="button" style="width:100%;justify-content:center">📨 초대로 점검자 들어가기</button></div>
- <div style="margin-top:10px;border-top:1px dashed rgba(148,163,184,.5);padding-top:10px"><button type="button" class="btn" id="lkEmT" style="width:100%;justify-content:center">📧 직원 이메일로 로그인 (본인 현장만 보기)</button>
+ <div style="margin-top:10px;border-top:1px dashed rgba(148,163,184,.5);padding-top:10px"><button type="button" class="btn" id="lkEmT" style="width:100%;justify-content:center">📧 직원 이메일로 로그인 (전 현장 일정 · 본인 결과)</button>
  <div id="lkEm" hidden style="margin-top:8px"><input id="lkEmI" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="회사 이메일 (직원명부에 있는 주소)" style="text-align:center;height:42px;margin-bottom:6px"><button class="btn pri" id="lkEmS" type="button" style="width:100%;justify-content:center">📨 인증번호 받기</button>
  <div id="lkEmC" hidden style="margin-top:8px"><input id="lkEmN" class="inp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="메일로 받은 6자리" style="text-align:center;height:42px;font-size:18px;letter-spacing:4px;margin-bottom:6px"><button class="btn pri" id="lkEmV" type="button" style="width:100%;justify-content:center">확인하고 들어가기</button></div></div></div>
  <p class="mini" id="lkM" style="margin:8px 0 0;min-height:16px"></p>
@@ -859,7 +859,7 @@ const dt=s=>pDate(s)?md(s)+'('+wd(s)+')':'일정 미정';
 const ddays=s=>{const d=pDate(s);return d?Math.round((d-today())/864e5):null};
 const real=v=>v&&v!=='-';
 const people=r=>[r.lead,r.solo,r.tl,...(r.mem||[])].filter(real).filter((v,i,a)=>a.indexOf(v)===i);
-const cnt=r=>people(r).length;
+const cnt=r=>r._oth?(r._n||0):people(r).length;
 const hasPin=r=>isFinite(r.lat)&&isFinite(r.lng)&&r.lat!==null&&r.lng!==null;
 function stOf(r){if(r.st==='예정'){const d=ddays(r.pd);if(d!==null&&d<0)return '지연'}return r.st||'예정'}
 const STI={'예정':'pin','완료':'check','연기':'pause','취소':'x','지연':'clock'};
@@ -1305,7 +1305,7 @@ async function whoInit(){let t='🔓 로그인 없음 · 이 브라우저에만 
   const role=own?'소유자(관리)':ed?'점검자(편집)':wr===false?'보기 전용':'현장팀(참여)';let nm='';try{const id=await u.me();const ps=await u.profiles([id]);nm=(ps[id]&&ps[id].name)||''}catch(e){}
   t=`🔐 <b>${esc(nm||'로그인한 사용자')}</b> · ${role} · Claude 계정 로그인`;t2=(nm||'로그인')+' · '+role}}catch(e){}
  $('who').innerHTML=t;$('who2').textContent=t2;const lo=$('lkOut');if(lo)lo.onclick=e=>{e.preventDefault();lockOut()};
- {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원(본인 현장만)':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+(AUTH.role==='emp'?`<button type="button" class="whob wi" id="whoRes" title="내 점검 결과">${ic('chart')}<span>내 결과</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();if($('whoRes'))$('whoRes').onclick=myRes;$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
+ {const c=$('whoC');if(c){if(typeof AUTH!=='undefined'&&AUTH){c.innerHTML=`<span class="wav">${esc((AUTH.name||'?').trim()[0]||'?')}</span><span class="wnm"><b>${esc(AUTH.name||'')}</b> · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원':'팀원'}</span>`;$('whoA').innerHTML=(AUTH.role==='ins'?`<button type="button" class="whob wi" id="whoPw" title="비밀번호 바꾸기">${ic('lock')}<span>비밀번호</span></button><button type="button" class="whob wi" id="whoInv" title="점검자 초대">${ic('users')}<span>초대</span></button>`:'')+(AUTH.role==='emp'?`<button type="button" class="whob wi" id="whoRes" title="내 점검 결과">${ic('chart')}<span>내 결과</span></button>`:'')+`<button type="button" class="whob wi" id="whoKk" title="카카오 지도 키${kkKeyRaw()?' (넣음)':' 넣기'}">${ic('map')}<span>카카오키</span>${kkKeyRaw()?'<i class="wok">✓</i>':''}</button><button type="button" class="whob wi" id="lkOut2" title="로그아웃">${ic('open')}<span>로그아웃</span></button><button type="button" class="whob wi wmenu" id="whoMenu" title="메뉴">${ic('list')}<span>메뉴</span></button>`;$('whoMenu').onclick=e=>{e.stopPropagation();$('iMenu').click()};$('whoKk').onclick=()=>$('bKey').click();if($('whoRes'))$('whoRes').onclick=myRes;$('lkOut2').onclick=e=>{e.preventDefault();lockOut()};if($('whoPw')){$('whoPw').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>{$('pwN1').closest('div').scrollIntoView({block:'center'});$('pwCur').focus()},80)};$('whoInv').onclick=()=>{WHO=null;INVSEL=null;pwOpen();pwWho();setTimeout(()=>$('pwCur').focus(),80)}}}else c.innerHTML=t2==='로그인 없음'?'':esc(t2);c.hidden=!c.innerHTML}}
  if(mode!=='db'&&TEAMURL&&!/^__/.test(TEAMURL)){$('bTeam').href=TEAMURL;$('bTeam').hidden=false}}
 async function xInit(){try{const u=window.claude&&claude.use?await claude.use('user'):null;if(u&&u.canEdit){const a=await u.canEdit();if(a===false)ADM=false}}catch(e){}
  try{SMP=window.claude&&claude.use?await claude.use('sample'):null}catch(e){SMP=null}
@@ -1523,7 +1523,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261121202959';
+const BUILD='20261121205817';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -2916,7 +2916,10 @@ function empOk(r){if(!isEmp()||r._emp)return true;const nm=AUTH.name,mk=empMk(nm
  const st=(AUTH.site||'').replace(/\s/g,'');if(!st||st==='-')return true;const tm=String(r.tm||'').replace(/[()\s]/g,''),s2=st.replace(/[()\s]/g,'');return tm.includes(s2.slice(0,2))||s2.includes(tm.slice(0,2))||!ALL.some(x=>x!==r&&(people(x).includes(nm)||people(x).includes(mk)))}
 /* 직원 화면: 본인 현장만 + 같은 현장 다른 직원 이름·연락처는 숨기고 본인만 */
 function empView(L){const nm=AUTH.name,mk=empMk(nm),me=x=>x===nm||x===mk,keep=v=>real(v)&&me(v)?v:'-';
- return L.filter(r=>empOk(r)).map(r=>Object.assign({},r,{_emp:1,lead:keep(r.lead),solo:keep(r.solo),tl:keep(r.tl),mem:(r.mem||[]).filter(me)}))}
+ const M=L.filter(r=>empOk(r));EMPM=new Set(M.map(r=>r.id));
+ /* 전 현장 일정 공개: 다른 현장은 점검일·지역·현장명·상태·점검자만 (직원 이름·연락처·주소·결과 숨김) */
+ return L.map(r=>EMPM.has(r.id)?Object.assign({},r,{_emp:1,_mine:1,lead:keep(r.lead),solo:keep(r.solo),tl:keep(r.tl),mem:(r.mem||[]).filter(me)}):Object.assign({},r,{_emp:1,_oth:1,_n:people(r).length,lead:'-',solo:'',tl:'-',mem:[],addr:'',memo:'',note:''}))}
+let EMPM=new Set();const empMine=id=>!isEmp()||EMPM.has(id);
 $('lkEmT').onclick=()=>{const b=$('lkEm');b.hidden=!b.hidden;if(!b.hidden)setTimeout(()=>$('lkEmI').focus(),50)};
 $('lkEmS').onclick=async()=>{const em=$('lkEmI').value.trim();if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){$('lkM').textContent='회사 이메일을 정확히 넣어 주세요';return}
  const b=$('lkEmS');b.disabled=true;$('lkM').textContent='인증번호를 보내는 중…';
@@ -2925,7 +2928,7 @@ $('lkEmV').onclick=async()=>{const em=$('lkEmI').value.trim(),cd=$('lkEmN').valu
  const b=$('lkEmV');b.disabled=true;$('lkM').textContent='확인 중…';
  try{const j=await gsCall({act:'otpv',email:em,code:cd});if(j.tok)tokSet(j.tok);const a={role:'emp',name:j.name,site:j.site||'',dept:j.dept||'',h:LOCK.salt,exp:Date.now()+30*864e5};
   authPut(a,true);try{localStorage.setItem('mulgil-lastname',j.name)}catch(_){}$('lkM').textContent='';$('lkEm').hidden=true;
-  logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();derive();render();setTimeout(()=>{const n=filt().length;toast(n?`${j.name} 님 현장 ${n}곳만 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
+  logEv('직원 로그인',j.name,'emp');carIntro(j.name);lockApply();whoInit();derive();render();setTimeout(()=>{const n=filt().length;toast(EMPM.size?`전 현장 일정 ${n}곳이 보입니다 · ${j.name} 님 현장(${[...EMPM].map(i=>(rows.find(r=>r.id===i)||{}).tm).filter(Boolean).join('·')})만 자세히 보입니다`:'일정에서 '+j.name+' 님 현장을 찾지 못했습니다. 관리자에게 문의하세요')},1200)}catch(e){$('lkM').textContent=String(e)}finally{b.disabled=false}};
 $('lkEmN').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmV').click()});$('lkEmI').addEventListener('keydown',e=>{if(e.key==='Enter')$('lkEmS').click()});
 
 /* 📊 점검 결과 → 구글 시트 '점검결과' 탭 · 직원은 공개된 본인 결과만 */
@@ -3307,7 +3310,7 @@ function rpSum(L,pub){const S=L.map(r=>({r,s:evStat(r.id),a:Object.values(AC).fi
 
 /* ── 후속 조치 대장 ── */
 async function addAct(site,area,item,issue){const r=rows.find(x=>x.id===site);const id='a'+Date.now().toString(36);if(await putX('acts',id,{site,tm:r?r.tm:'',area,item,issue,action:'',due:'',st:'조치 필요'}))toast('후속 조치 대장에 등록했습니다')}
-function rAct(){const L0=new Set(filt(true).map(r=>r.id));const A=Object.entries(AC).filter(([id,a])=>L0.has(a.site)||!ALL.find(r=>r.id===a.site)).sort((a,b)=>(a[1].tm||'').localeCompare(b[1].tm||''));
+function rAct(){const L0=new Set(filt(true).filter(r=>empMine(r.id)).map(r=>r.id));const A=Object.entries(AC).filter(([id,a])=>L0.has(a.site)||!ALL.find(r=>r.id===a.site)).sort((a,b)=>(a[1].tm||'').localeCompare(b[1].tm||''));
  $('p-act').innerHTML=`<p class="mini">점검에서 나온 개선 필요 사항을 현장팀이 조치하고 점검자가 이행을 확인합니다. 현장팀도 조치 내용·상태를 고칠 수 있습니다.</p>
  <div style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap">${AST.map(s=>`<span class="st ${s==='조치 필요'?'s-지연':s==='조치 중'?'s-연기':s==='조치 완료'?'s-예정':'s-완료'}">${s} ${A.filter(([i,a])=>a.st===s).length}</span>`).join('')}</div>`+
  (A.map(([id,a])=>`<div class="ip act" data-a="${id}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${esc(a.tm)}</b><span class="mini">${a.from?'이월('+esc(rdName(a.from))+') · ':''}${esc(a.area||'')}</span></div><div class="mini">${esc(a.item||'')}${a.issue?' — '+esc(a.issue):''}</div>
