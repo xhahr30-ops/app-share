@@ -7037,7 +7037,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok)$/;
+const BK_SKIP=/^geo-(lock|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -18573,6 +18573,67 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   ov.addEventListener('change',e=>{if(e.target.id==='hqUf'){A.uf=e.target.value;render()}});
   ['pointerdown','touchstart','mousedown','wheel'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));
   if(SSg('geo-hqadm')&&window.HQ_URL)load()};
+})();
+</script>
+<script>/* 📲 홈 화면 추가 안내 띠 A안 (2026-11-21): 폰·태블릿에서 브라우저로 열면 아래쪽에 한 줄 띠.
+ 이미 홈 화면 앱으로 열었으면 안 띄움. 안드로이드 크롬=설치 창 바로, 아이폰=공유 → 홈 화면에 추가 그림 안내,
+ 카카오톡 등 앱 안 브라우저=크롬(사파리)으로 열기. 나중에=7일 뒤, 다시 보지 않기=geo-a2hs 'off' */
+(function(){
+ var K='geo-a2hs',W=7*864e5,ua=navigator.userAgent||'',dp=null;
+ window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
+ window.addEventListener('appinstalled',function(){dp=null;hide();try{localStorage.setItem(K,'off')}catch(_){}});
+ function inst(){try{return matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: minimal-ui)').matches||navigator.standalone===true}catch(_){return false}}
+ var ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),and=/Android/i.test(ua);
+ var kak=/KAKAOTALK/i.test(ua),inapp=kak||/NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|DaumApps|BAND\/|everytimeApp|; wv\)/i.test(ua);
+ var mob=ios||and||(function(){try{return matchMedia('(pointer:coarse)').matches&&matchMedia('(hover:none)').matches}catch(_){return false}})();
+ window.a2hsShow=function(){show(true)}; /* 시험·도움말에서 다시 띄우기 */
+ if(!mob||inst())return;
+ function st(){try{return localStorage.getItem(K)||''}catch(_){return ''}}
+ function setS(v){try{localStorage.setItem(K,v)}catch(_){}}
+ var s=st();if(s==='off'||(+s&&Date.now()-(+s)<W))return;
+ var css=document.createElement('style');css.textContent=
+ '#a2hs{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:19500;margin:0 auto;max-width:560px;background:#1e1b4b;color:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.35);padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font:600 13.5px/1.35 system-ui,-apple-system,"Malgun Gothic",sans-serif}'+
+ '#a2hs .t{flex:1 1 170px;min-width:0;cursor:pointer}#a2hs .t small{display:block;font-weight:500;opacity:.8;font-size:11.5px}'+
+ '#a2hs .bs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}#a2hs button{border:0;border-radius:9px;padding:7px 10px;font:700 12.5px system-ui,sans-serif;cursor:pointer;min-height:34px}'+
+ '#a2hs .go{background:#facc15;color:#1e1b4b}#a2hs .lt{background:rgba(255,255,255,.16);color:#fff}#a2hs .no{background:transparent;color:#c7d2fe;text-decoration:underline;padding:7px 4px}'+
+ '#a2hsG{position:fixed;inset:0;z-index:20500;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}'+
+ '#a2hsG .bx{background:#fff;color:#0f172a;border-radius:16px;width:min(420px,100%);padding:14px 16px calc(14px + env(safe-area-inset-bottom));font:14px/1.5 system-ui,-apple-system,"Malgun Gothic",sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3)}'+
+ '#a2hsG h3{margin:0 0 8px;font-size:16px}#a2hsG ol{margin:0;padding-left:20px}#a2hsG li{margin:6px 0}#a2hsG .ic{display:inline-flex;vertical-align:middle;background:#eef2ff;border-radius:6px;padding:2px 5px;margin:0 2px}'+
+ '#a2hsG .ar{text-align:center;font-size:26px;color:#4f46e5;margin-top:6px}#a2hsG button{width:100%;margin-top:10px;border:0;border-radius:10px;padding:10px;background:#4f46e5;color:#fff;font:700 14px system-ui,sans-serif}'+
+ '@media (prefers-color-scheme:dark){#a2hsG .bx{background:#1e293b;color:#e2e8f0}#a2hsG .ic{background:#334155}}';
+ document.head.appendChild(css);
+ var SH='<svg width="16" height="18" viewBox="0 0 16 18" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V1.5M4.5 5 8 1.5 11.5 5"/><path d="M5 7.5H2.5v9h11v-9H11"/></svg>',
+     PL='<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"><rect x="1.5" y="1.5" width="13" height="13" rx="3"/><path d="M8 5v6M5 8h6"/></svg>';
+ function box(){return document.fullscreenElement||document.webkitFullscreenElement||document.body}
+ function hide(){var b=document.getElementById('a2hs');if(b)b.remove()}
+ function later(){setS(String(Date.now()));hide()}
+ function guide(h,items,arrow){var g=document.createElement('div');g.id='a2hsG';g.setAttribute('role','dialog');
+  g.innerHTML='<div class="bx"><h3>'+h+'</h3><ol>'+items.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ol>'+(arrow?'<div class="ar">'+arrow+'</div>':'')+'<button type="button">알겠어요</button></div>';
+  ['pointerdown','touchstart','mousedown','click'].forEach(function(t){g.addEventListener(t,function(e){e.stopPropagation()})});
+  g.addEventListener('click',function(e){if(e.target===g||e.target.tagName==='BUTTON')g.remove()});box().appendChild(g)}
+ function openOut(){var u=location.href;
+  if(and){var p=u.replace(/^https?:\/\//,'');location.href='intent://'+p+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(u)+';end';return}
+  if(ios&&kak){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u);return}
+  guide('사파리로 열어 주세요',['오른쪽 위(또는 아래) <b>⋯</b> 메뉴를 누릅니다','<b>Safari로 열기</b>(기본 브라우저로 열기)를 누릅니다','사파리에서 다시 열면 아래 안내 띠로 홈 화면에 추가할 수 있습니다'])}
+ function add(){hide();
+  if(inapp){openOut();return}
+  if(dp){var e=dp;dp=null;try{e.prompt();e.userChoice.then(function(r){if(r&&r.outcome==='accepted')setS('off');else setS(String(Date.now()))}).catch(function(){})}catch(_){}return}
+  if(ios){guide('📲 홈 화면에 추가하는 방법',[(/CriOS|FxiOS|EdgiOS/.test(ua)?'주소창 오른쪽의 ':'화면 아래(아이패드는 위)의 ')+'<span class="ic">'+SH+'</span> <b>공유</b> 버튼을 누릅니다','목록을 위로 밀어 <span class="ic">'+PL+'</span> <b>홈 화면에 추가</b>를 누릅니다','오른쪽 위 <b>추가</b>를 누르면 홈 화면에 <b>물길주소</b> 아이콘이 생깁니다'],/CriOS|FxiOS|EdgiOS/.test(ua)?'':'⬇');return}
+  if(/SamsungBrowser/i.test(ua)){guide('📲 홈 화면에 추가하는 방법',['화면 아래 <b>≡</b> 메뉴를 누릅니다','<b>현재 페이지 추가</b> → <b>홈 화면</b>을 누릅니다','홈 화면에 <b>물길주소</b> 아이콘이 생깁니다']);return}
+  guide('📲 홈 화면에 추가하는 방법',['크롬 오른쪽 위 <b>⋮</b> 메뉴를 누릅니다','<b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누릅니다','홈 화면에 <b>물길주소</b> 아이콘이 생깁니다'])}
+ function show(force){if(document.getElementById('a2hs'))return;if(!force&&inst())return;
+  var b=document.createElement('div');b.id='a2hs';b.setAttribute('role','region');b.setAttribute('aria-label','홈 화면 추가 안내');
+  b.innerHTML=inapp?'<div class="t">📲 '+(kak?'카카오톡':'앱')+' 안에서는 홈 화면에 추가가 안 돼요<small>'+(ios?'사파리':'크롬')+'으로 열면 앱처럼 바로 열 수 있어요</small></div><div class="bs"><button type="button" class="go" data-a="add">'+(ios?'사파리로 열기':'크롬으로 열기')+'</button><button type="button" class="lt" data-a="later">나중에</button><button type="button" class="no" data-a="off">다시 보지 않기</button></div>'
+   :'<div class="t">📲 홈 화면에 추가하면 앱처럼 바로 열려요</div><div class="bs"><button type="button" class="go" data-a="add">추가하기</button><button type="button" class="lt" data-a="later">나중에</button><button type="button" class="no" data-a="off">다시 보지 않기</button></div>';
+  ['pointerdown','touchstart','mousedown'].forEach(function(t){b.addEventListener(t,function(e){e.stopPropagation()})});
+  b.addEventListener('click',function(e){e.stopPropagation();var x=e.target.closest('[data-a]'),a=x?x.dataset.a:'later';
+   if(a==='add')add();else if(a==='off'){setS('off');hide()}else later()});
+  box().appendChild(b)}
+ /* 잠금 화면·자료 없음 카드 등 다른 창이 없을 때 띄움(시작 5초 뒤부터, 최대 3분 기다림) */
+ var t0=Date.now();(function wait(){if(inst())return;
+  var busy=document.documentElement.classList.contains('locked')||document.getElementById('lockBox')||document.querySelector('.pcm:not([hidden]),#rcvCard');
+  if(!busy&&Date.now()-t0>5000){show();return}if(Date.now()-t0<18e4)setTimeout(wait,1500)})();
+ document.addEventListener('fullscreenchange',function(){var b=document.getElementById('a2hs');if(b&&b.parentNode!==box())box().appendChild(b)});
 })();
 </script>
 </body></html>
