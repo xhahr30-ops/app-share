@@ -1516,6 +1516,21 @@ html.qzon,html.qzon body{overflow:hidden!important}
  var SKMAX=3;function skN(){var v=LG(K+'-skip')||'';return v.split('|')[0]===QZ_VER?(+v.split('|')[1]||0):0}
  function skipped(){try{return sessionStorage.getItem(K+'-skip')===QZ_VER}catch(e){return false}}
  var Q=[];try{Q=JSON.parse(document.getElementById('qzKB').textContent)}catch(e){}
+ /* 🛠 개발자 모드(C안, 2026-11-22): 본부에서 새 문제은행을 적용하면 그 판을 받아 씀(geo-quiz-bank={ver,bank}, BK_SKIP) */
+ var QB={ver:QZ_VER,bank:Q};
+ function useBank(c){if(c&&c.ver&&Array.isArray(c.bank)&&c.bank.length>=N){Q=c.bank;QZ_VER=c.ver}else{Q=QB.bank;QZ_VER=QB.ver}}
+ try{useBank(JSON.parse(LG(K+'-bank')||'null'))}catch(e){}
+ /* 문제 번호: 문제 글자로 만든 짧은 id(본부 통계용) */
+ function qid(q){var h=5381,t=String(q&&q[1]||'');for(var j=0;j<t.length;j++)h=((h<<5)+h+t.charCodeAt(j))>>>0;return h.toString(36)}
+ function send(o){try{if(!window.hqPost||!window.HQ_URL||navigator.onLine===false)return;var S=window.SITE||{};
+  o.op='qz_res';o.id=S.id||'';o.u=window.__uid?window.__uid():'';o.n=LG('geo-user')||'';o.v=QZ_VER;o.pass=PASS;window.hqPost(o).catch(function(){})}catch(e){}}
+ /* 본부 판 확인: 바뀌었으면 받아 두고, 퀴즈 창이 아직 안 떴으면 바로 씀 */
+ function bankSync(){try{if(!window.hqPost||!window.HQ_URL||navigator.onLine===false)return;var c=null;try{c=JSON.parse(LG(K+'-bank')||'null')}catch(e){}
+  window.hqPost({op:'qz_ver'}).then(function(j){var v=j&&j.ver||'';if(v===(c&&c.ver||''))return;
+   if(!v){try{localStorage.removeItem(K+'-bank')}catch(e){}if(!box)useBank(null);return}
+   return window.hqPost({op:'qz_bank'}).then(function(b){if(!b||b.ver!==v||!Array.isArray(b.bank)||b.bank.length<N)return;var o={ver:v,bank:b.bank};LS(K+'-bank',JSON.stringify(o));if(!box)useBank(o)})}).catch(function(){})}catch(e){}}
+ setTimeout(bankSync,800);
+ window.__qz={ver:function(){return QZ_VER},bank:function(){return Q},builtin:QB,id:qid,isK:isK,N:N,PASS:PASS,sync:bankSync};
  function E(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
  function mix(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
  /* 5문제: 관망운영관리사 1급 교안 시험형 3 + 📚 백과사전 정의 1 + 바른 용어 1, 같은 분류 겹침 줄이기 */
@@ -1532,7 +1547,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   ['pointerdown','touchstart','mousedown','click','keydown','keyup'].forEach(function(e){box.addEventListener(e,stop)});
   document.body.appendChild(box);document.documentElement.classList.add('qzon');intro()}
  function close(){if(!box)return;box.remove();box=null;document.documentElement.classList.remove('qzon');window.dispatchEvent(new Event('resize'))}
- function skip(){if(skN()>=SKMAX)return;LS(K+'-skip',QZ_VER+'|'+(skN()+1));try{sessionStorage.setItem(K+'-skip',QZ_VER)}catch(e){}close()}
+ function skip(){if(skN()>=SKMAX)return;send({sk:1});LS(K+'-skip',QZ_VER+'|'+(skN()+1));try{sessionStorage.setItem(K+'-skip',QZ_VER)}catch(e){}close()}
  function SK(){var r=SKMAX-skN();return r>0?'<button class="qzsk" id="qzSk" title="통과 기록은 남지 않아 앱을 다시 열면 또 묻습니다">⏩ 급해요, 건너뛰고 바로 쓰기 <span style="font-weight:500">(남은 '+r+'번 · 다음에 다시 물음)</span></button>':'<div class="qzf" style="color:#b45309">⏩ 건너뛰기 '+SKMAX+'번을 다 썼습니다. 이제 풀어야 앱을 쓸 수 있습니다.</div>'}
  function card(h){box.innerHTML='<div class="qzc">'+h+(h.indexOf('id="qzEnd"')<0?SK():'')+'<div class="qzf">만든이: 구병순 · 포항시 서용이·포항이</div></div>';var sk=box.querySelector('#qzSk');if(sk)sk.onclick=skip}
  function intro(){var nm=LG('geo-user')||'';
@@ -1551,7 +1566,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
     +'<button class="qzbtn" id="qzNx">'+(i+1<N?'다음':'결과 보기')+'</button>';
    var nx=box.querySelector('#qzNx');nx.onclick=function(){i++;i<N?ask():end()};nx.focus()}});
   box.onkeydown=function(ev){var n=+ev.key;if(n>=1&&n<=4&&bs[n-1]&&!bs[n-1].disabled){bs[n-1].click()}}}
- function end(){var pass=score>=PASS;box.onkeydown=null;
+ function end(){var pass=score>=PASS;box.onkeydown=null;send({s:score,t:N,k:set.map(qid),w:wrong.map(qid)});
   if(pass)LS(K,QZ_VER+'|'+new Date().toISOString().slice(0,10)+'|'+score+'/'+N);
   card('<div class="qzh">🎓 결과</div><div class="qzs" style="color:'+(pass?'#059669':'#dc2626')+'">'+score+' / '+N+'</div>'
    +'<div class="qzm">'+(pass?'통과했습니다. 이제 앱을 쓸 수 있습니다.':PASS+'개 이상 맞아야 합니다. 틀린 문제를 보고 다시 풀어 주세요.')+'</div>'
@@ -18569,7 +18584,7 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
    ${s.reg?(nK(s.keys)?'<span class="bd g">🔑 키 '+nK(s.keys)+'개</span>':'<span class="bd a">🔑 키 없음</span>'):''}
    기능 ${N-offN}/${N} 켬${offN?' · 끔: '+E((s.off||[]).map(FEAT.name).join(', ')):''}${s.reg&&s.at?` · 고친 날 ${E(new Date(s.at).toLocaleString('ko-KR'))}${s.by?' ('+E(s.by)+')':''}`:''}</div>
    <button type="button" class="hqBtn${s.reg?'':' pri'}" data-x="ed" data-id="${E(s.id)}">${s.reg?'✏ 고치기':'➕ 본부에 등록'}</button></div>`}).join('')+
-  `<div class="hqRow" style="margin-top:6px"><button type="button" class="hqBtn pri" data-x="new">➕ 새 현장 추가</button><button type="button" class="hqBtn" data-x="users">👥 사용자 현황</button></div>`+usersHtml()}
+  `<div class="hqRow" style="margin-top:6px"><button type="button" class="hqBtn pri" data-x="new">➕ 새 현장 추가</button><button type="button" class="hqBtn" data-x="users">👥 사용자 현황</button><button type="button" class="hqBtn" data-x="qdev" id="hqQdev" title="용어 퀴즈 정답률·문제은행 새로 만들기">🛠 개발자 모드 (용어 퀴즈)${A.qa?' <span class="bd r">🔔 정답률 '+E(A.qa)+'</span>':''}</button></div>`+usersHtml()}
  function edHtml(s,isNew){const off=s.off||[],c=s.c||SITE.c,bi=!!SITE_BI[s.id];
   const ft=FEATS.map(f=>`<label><input type="checkbox" data-f="${f.k}"${off.includes(f.k)?'':' checked'}><span>${E(f.n)}<small>${E(f.d)}</small></span></label>`).join('');
   return `<div class="hqEd"><h4>${isNew?'➕ 새 현장':'✏ '+E(s.name)+' ('+E(s.id)+')'}</h4>
@@ -18601,7 +18616,8 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
  async function load(){const u=document.getElementById('hqUrl').value.trim(),k=document.getElementById('hqKey').value.trim();if(!k){msg('관리자 키를 넣어 주세요. (본부 서버 setup 실행 로그에 나온 키)','err');return}
   msg('불러오는 중…');try{const j=await hqPost({op:'adm_list',akey:k},u);A.key=k;SSs('geo-hqadm',k);A.sites=j.sites||[];
    if(u!==window.HQ_URL){window.HQ_URL=u;if(u===window.HQ_URL0)LSr('geo-hq');else LSs('geo-hq',u)}
-   msg(`✓ 본부 서버 연결됨 (${j.ver||'?'} 판) · 등록된 현장 ${A.sites.length}곳`,'ok');render()}
+   msg(`✓ 본부 서버 연결됨 (${j.ver||'?'} 판) · 등록된 현장 ${A.sites.length}곳`,'ok');render();
+   /* 🎓 퀴즈 정답률 70% 넘으면 🛠 단추에 알림 */if(window.qzDevBadge)window.qzDevBadge(k).then(r=>{A.qa=r;if(r)render()})}
   catch(e){A.key='';SSs('geo-hqadm','');msg(e.message,'err');render()}}
  function readEd(){const g=id=>{const e=document.getElementById(id);return e?e.value.trim():''};const s=A.ed.s;
   const o={id:g('hqId').toLowerCase(),name:g('hqNm'),short:g('hqSh'),col:g('hqCol'),on:g('hqOn')!=='0',region:g('hqRg'),gc:g('hqGc'),c:[+g('hqLat'),+g('hqLng')],crs:g('hqCrs'),url:g('hqUrlS'),alias:g('hqAl'),cw:g('hqCw'),
@@ -18643,6 +18659,7 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   if(x==='ed'){const R=rows(),s=R.find(r=>r.id===b.dataset.id);if(!s)return;A.ed={isNew:false,s:Object.assign({},SITE_BI[s.id]||{},s)};render();return}
   if(x==='cancel'){A.ed=null;render();return}
   if(x==='users')return users();if(x==='ucsv')return ucsv();
+  if(x==='qdev'){if(window.qzDev)window.qzDev(A.key);return}
   if(x==='udel'){if(!confirm('이 기기 기록을 사용자 현황에서 지울까요? (그 기기가 다시 열면 새로 나옵니다)'))return;hqPost({op:'adm_user_del',akey:A.key,k:b.dataset.k}).then(()=>{A.users=(A.users||[]).filter(u=>u.k!==b.dataset.k);render()}).catch(e=>msg(e.message,'err'));return}
   if(x==='kshow'){document.querySelectorAll('#hqOv [id^="hqK_"]').forEach(i=>i.type=b.checked?'text':'password');return}
   if(x==='save')return save(b);if(x==='del')return del(b);
@@ -18662,6 +18679,171 @@ html.dark #hqOv .bd.g{background:#14532d;color:#bbf7d0}html.dark #hqOv .bd.r{bac
   ov.addEventListener('change',e=>{if(e.target.id==='hqUf'){A.uf=e.target.value;render()}});
   ['pointerdown','touchstart','mousedown','wheel'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));
   if(SSg('geo-hqadm')&&window.HQ_URL)load()};
+})();
+</script>
+<style>
+/* 🛠 개발자 모드 · 🎓 용어 퀴즈 (C안, 2026-11-22) */
+#qdOv{position:fixed;inset:0;z-index:2147482100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:10px;font-family:'Noto Sans KR',system-ui,sans-serif}
+#qdOv .qdW{--bg:#fff;--tx:#1e293b;--mu:#64748b;--bd:#e2e8f0;--sf:#f8fafc;width:100%;max-width:980px;max-height:94vh;max-height:94dvh;display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden}
+html.dark #qdOv .qdW{--bg:#1e293b;--tx:#e2e8f0;--mu:#94a3b8;--bd:#334155;--sf:#0f172a}
+#qdOv .qdH{display:flex;align-items:center;gap:8px;padding:12px 14px;color:#fff;background:linear-gradient(135deg,#4338ca,#2563eb)}
+#qdOv .qdH b{font-size:16px}#qdOv .qdH small{opacity:.85;font-size:12px}#qdOv .sp{flex:1}
+#qdOv .qdH button{border:0;background:#ffffff26;color:#fff;border-radius:8px;min-width:32px;height:32px;font-size:15px;cursor:pointer;padding:0 8px;font-family:inherit}
+#qdOv .qdB{padding:12px 14px;overflow:auto;flex:1;min-height:0}
+#qdOv .qdF{padding:7px 14px;font-size:11px;color:var(--mu);border-top:1px solid var(--bd)}
+#qdOv .kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+#qdOv .kpi>div{border:1px solid var(--bd);border-radius:12px;padding:9px 11px;background:var(--sf)}
+#qdOv .kpi small{display:block;font-size:11.5px;color:var(--mu)}#qdOv .kpi b{font-size:21px;font-weight:800}
+#qdOv .kpi .big{border:2px solid #6366f1}
+#qdOv .bd{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
+#qdOv .bd.r{background:#fee2e2;color:#991b1b}#qdOv .bd.a{background:#fef3c7;color:#92400e}#qdOv .bd.g{background:#dcfce7;color:#166534}#qdOv .bd.b{background:#e0e7ff;color:#3730a3}
+#qdOv .alert{border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:13.5px;line-height:1.55}
+#qdOv .alert.r{background:#fef2f2;border:1.5px solid #fca5a5;color:#7f1d1d}#qdOv .alert.g{background:#f0fdf4;border:1px solid #bbf7d0;color:#14532d}#qdOv .alert.a{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert.g{background:#052e16;color:#bbf7d0}html.dark #qdOv .alert.a{background:#451a03;color:#fde68a}
+#qdOv .sec{border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+#qdOv .sec h4{margin:0 0 8px;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#qdOv .sec h4 small{font-weight:400;color:var(--mu);font-size:12px}
+#qdOv .row label.l{flex:none}#qdOv .row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px}
+#qdOv label.l{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mu);min-width:120px}
+#qdOv input,#qdOv select,#qdOv textarea{font:inherit;font-size:13.5px;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;box-sizing:border-box;min-width:0}
+#qdOv .qdBtn{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:8px;padding:8px 12px;cursor:pointer;white-space:nowrap}
+#qdOv .qdBtn.pri{background:#4f46e5;border-color:#4f46e5;color:#fff}#qdOv .qdBtn.red{color:#dc2626}#qdOv .qdBtn:disabled{opacity:.5;cursor:default}
+#qdOv .msg{min-height:18px;font-size:12.5px;margin:2px 0 8px;color:var(--mu);white-space:pre-line}#qdOv .msg.err{color:#dc2626}#qdOv .msg.ok{color:#059669}
+#qdOv .tb{overflow:auto;max-height:44vh;border:1px solid var(--bd);border-radius:8px}
+#qdOv table{border-collapse:collapse;width:100%;font-size:12.5px}
+#qdOv th,#qdOv td{padding:5px 7px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}
+#qdOv th{position:sticky;top:0;background:var(--sf);font-size:11.5px;color:var(--mu);z-index:1}
+#qdOv td.n{text-align:right;white-space:nowrap}
+#qdOv tr.out td{background:#fff7ed}html.dark #qdOv tr.out td{background:#431407}
+#qdOv .rate{display:inline-block;width:54px;height:7px;background:var(--bd);border-radius:4px;overflow:hidden;vertical-align:middle;margin-right:4px}
+#qdOv .rate i{display:block;height:100%}
+#qdOv .dr{border:1px solid var(--bd);border-left:5px solid #6366f1;border-radius:10px;padding:8px 10px;margin-bottom:8px}
+#qdOv .dr.bad{border-left-color:#f59e0b}
+#qdOv .dr .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+#qdOv .dr input{width:100%}
+#qdOv .dr .qt{font-size:12px;color:var(--mu);margin-top:6px;line-height:1.5}
+#qdOv .dr label.ck{display:flex;flex-wrap:wrap;gap:6px;align-items:center;white-space:nowrap;font-weight:700;font-size:13px;cursor:pointer}
+#qdOv .dr label.ck input{width:18px;height:18px}
+@media (max-width:560px){#qdOv .dr .g2{grid-template-columns:1fr}#qdOv .kpi b{font-size:18px}#qdOv{padding:0}#qdOv .qdW{max-height:100dvh;border-radius:0}}
+</style>
+<script>
+/* 🛠 개발자 모드 · 🎓 용어 퀴즈 (C안, 2026-11-22)
+ 👑 현장 관리 › 🛠 개발자 모드. 관리자 키로 본부 서버 adm_qz(통계)·adm_qz_ai(AI 초안)·adm_qz_pub(새 판 적용)·adm_qz_off(내장으로 되돌리기).
+ · 정답률 = 지금 판에서 직원들이 답한 문제 중 맞은 비율. 70% 이상(답 25개 이상일 때)이면 '문제은행 바꿀 때' 알림.
+ · 쉬운 문제(정답률 90% 이상·3번 넘게 나옴)는 '빼기'에 미리 체크.
+ · AI 초안: 📚 백과사전 자료실(기기 안 kb)에서 고른 문서의 조각을 본부로 보내 문제를 받음. 근거 문장이 조각에 그대로 있는지, 정답 숫자가 조각에 있는지 앱이 다시 확인(없으면 ⚠, 채택 체크 해제).
+ · 새 판 적용: 지금 문제 − 뺄 문제 + 채택한 초안 → 본부 QZB, 모든 기기가 받아 다시 풂. */
+(function(){
+ const E=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const RATE_ALERT=.7,MIN_T=25,EASY=.9,EASY_N=3;
+ const D={key:'',st:null,bank:null,ver:'',out:new Set(),dr:[],used:new Set(),busy:false,sv:''};
+ const pct=x=>x==null?'–':Math.round(x*100)+'%';
+ const fmt=t=>t?new Date(t).toLocaleString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+ const nrm=t=>String(t||'').replace(/\s+/g,'').replace(/[·ㆍ‧]/g,'·');
+ function msg(t,c){D.m=t||'';D.mc=c||'';const m=document.getElementById('qdMsg');if(m){m.textContent=D.m;m.className='msg'+(c?' '+c:'')}}
+ const me=()=>{try{return localStorage.getItem('geo-user')||''}catch(_){return ''}};
+ const Z=()=>window.__qz||{};
+ function curStat(){const S=D.st&&D.st.stats||{};return S[D.sv||D.ver]||{}}
+ function rateOf(st){return st&&st.t?st.r/st.t:null}
+ /* 지금 판 정답률로 알림 상태 */
+ function level(st){const r=rateOf(st);if(r==null||st.t<MIN_T)return['a','자료 적음','답 '+(st.t||0)+'개 · '+MIN_T+'개 넘으면 판단'];return r>=RATE_ALERT?['r','🔔 문제은행 바꿀 때','정답률 '+pct(r)+' (70% 이상)']:['g','양호','정답률 '+pct(r)+' (70% 미만)']}
+ window.qzDevBadge=async function(akey){try{const j=await window.hqPost({op:'adm_qz',akey});const v=(j.meta&&j.meta.ver)||Z().builtin.ver,st=(j.stats||{})[v]||{},r=rateOf(st);return r!=null&&st.t>=MIN_T&&r>=RATE_ALERT?pct(r):''}catch(_){return ''}};
+ async function load(){msg('불러오는 중…');try{const j=await window.hqPost({op:'adm_qz',akey:D.key});D.st=j;
+   const m=j.meta||{};D.ver=m.ver||Z().builtin.ver;
+   if(m.ver){const b=await window.hqPost({op:'qz_bank'});D.bank=b.ver===m.ver?b.bank:Z().bank()}else D.bank=Z().builtin.bank;
+   if(!D.sv)D.sv=D.ver;autoOut();msg('✓ 본부 '+(j.ver||'?')+' 판 · 퀴즈 '+(m.ver?'본부 문제은행 '+m.ver:'앱 내장 문제 '+D.ver)+' · '+D.bank.length+'문제','ok');render()}
+  catch(e){msg(/알 수 없는 요청/.test(e.message)?'본부 서버가 옛 판입니다. Code_본부.gs 2026-11-22 판을 붙여넣고 새 버전으로 배포해 주세요.':e.message,'err');render()}}
+ function autoOut(){D.out=new Set();const st=(D.st&&D.st.stats||{})[D.ver]||{},q=st.q||{};(D.bank||[]).forEach(x=>{const c=q[Z().id(x)];if(c&&c[0]>=EASY_N&&c[1]/c[0]>=EASY)D.out.add(Z().id(x))})}
+ function kpiHtml(){const st=curStat(),lv=level(st),m=D.st&&D.st.meta||{},U=(D.st&&D.st.users)||[];
+  const vers=Object.keys(D.st&&D.st.stats||{});if(!vers.includes(D.ver))vers.unshift(D.ver);
+  return `<div class="row"><label class="l">통계 볼 판<select id="qdSv">${vers.map(v=>`<option value="${E(v)}"${v===(D.sv||D.ver)?' selected':''}>${E(v)}${v===D.ver?' (지금 판)':''}</option>`).join('')}</select></label><button type="button" class="qdBtn" data-x="reload">↻ 새로 고침</button><span class="sp" style="flex:1"></span>${m.ver?'<button type="button" class="qdBtn red" data-x="off" title="본부 문제은행을 지우고 앱에 들어 있는 문제로 돌아감">↩ 앱 내장 문제로 되돌리기</button>':''}</div>
+  <div class="alert ${lv[0]}">${lv[0]==='r'?'<b>🔔 정답률이 70%를 넘었습니다.</b> 직원들이 문제에 익숙해졌습니다. 아래에서 쉬운 문제를 빼고 🤖 AI 초안으로 새 문제를 더해 <b>새 판</b>을 적용하세요.':lv[0]==='g'?'정답률이 70% 미만입니다. 지금 문제은행을 그대로 써도 됩니다.':'아직 응시 자료가 적습니다(답 '+(st.t||0)+'개). 직원들이 새 판 앱으로 퀴즈를 풀면 쌓입니다.'}</div>
+  <div class="kpi"><div class="big"><small>정답률 <span class="bd ${lv[0]}">${E(lv[1])}</span></small><b>${pct(rateOf(st))}</b><small>${E(lv[2])}</small></div>
+   <div><small>응시</small><b>${st.a||0}</b><small>통과 ${st.p||0} · ${pct(st.a?st.p/st.a:null)}</small></div>
+   <div><small>⏩ 건너뛰기</small><b>${st.k||0}</b><small>통과 기록 없음</small></div>
+   <div><small>답한 문제</small><b>${st.t||0}</b><small>맞음 ${st.r||0}</small></div>
+   <div><small>문제은행</small><b>${(D.bank||[]).length}</b><small>${m.ver?'본부 '+E(m.ver)+(m.by?' · '+E(m.by):''):'앱 내장 '+E(D.ver)}</small></div>
+   <div><small>푼 기기</small><b>${U.filter(u=>u.v===(D.sv||D.ver)).length}</b><small>모든 판 ${U.length}대</small></div></div>`}
+ function qHtml(){const st=curStat(),q=st.q||{},B=D.bank||[],id=Z().id;
+  const L=B.map((x,i)=>{const c=q[id(x)]||[0,0];return{x,i,k:id(x),n:c[0],r:c[0]?c[1]/c[0]:null}}).sort((a,b)=>(b.r??-1)-(a.r??-1)||b.n-a.n);
+  const col=r=>r==null?'#cbd5e1':r>=EASY?'#dc2626':r>=RATE_ALERT?'#f59e0b':'#10b981';
+  return `<div class="sec"><h4>📊 문제별 정답률 <small>${B.length}문제 · 빼기 ${D.out.size} · 정답률 높은 순 · 90% 이상·${EASY_N}번 넘게 나온 문제는 빼기에 미리 체크</small></h4>
+  <div class="row"><button type="button" class="qdBtn" data-x="outauto">쉬운 문제 다시 고르기</button><button type="button" class="qdBtn" data-x="outnone">빼기 모두 풀기</button><button type="button" class="qdBtn" data-x="csv">⬇ 문제별 정답률 엑셀(CSV)</button></div>
+  <div class="tb"><table><thead><tr><th>빼기</th><th>정답률</th><th>나옴</th><th>분류</th><th>문제 · 정답</th><th>출처</th></tr></thead><tbody>
+  ${L.map(o=>`<tr${D.out.has(o.k)?' class="out"':''}><td><input type="checkbox" data-out="${E(o.k)}"${D.out.has(o.k)?' checked':''} aria-label="이 문제 빼기"></td><td class="n"><span class="rate"><i style="width:${o.r==null?0:Math.round(o.r*100)}%;background:${col(o.r)}"></i></span>${pct(o.r)}</td><td class="n">${o.n}</td><td>${Z().isK&&Z().isK(o.x)?'📝 ':''}${E(o.x[0])}</td><td>${E(o.x[1])}<br><b style="color:#047857">→ ${E(o.x[2])}</b></td><td style="font-size:11.5px;color:var(--mu)">${E(o.x[4])} · ${E(o.x[5])}</td></tr>`).join('')}
+  </tbody></table></div></div>`}
+ function uHtml(){const U=(D.st&&D.st.users)||[],nm=id=>((window.SITE_HQ||{})[id]||(window.SITE_BI||{})[id]||{}).name||id;
+  return `<div class="sec"><h4>👥 직원별 퀴즈 기록 <small>${U.length}대 · 이름은 직원이 적은 것</small></h4><div class="tb" style="max-height:30vh"><table><thead><tr><th>이름</th><th>현장</th><th>판</th><th>응시</th><th>통과</th><th>건너뛰기</th><th>최근</th><th>최고</th><th>마지막</th><th></th></tr></thead><tbody>
+  ${U.map(u=>`<tr><td><b>${E(u.n||'(이름 없음)')}</b></td><td>${E(nm(u.s))}</td><td style="font-size:11px">${E(u.v)}</td><td class="n">${u.c||0}</td><td class="n">${u.p||0}</td><td class="n">${u.k||0}</td><td class="n">${u.c?E(u.l)+'/'+Z().N:'–'}</td><td class="n">${u.c?E(u.b)+'/'+Z().N:'–'}</td><td>${E(fmt(u.at))}</td><td><button type="button" class="qdBtn" data-x="udel" data-u="${E(u.u)}" style="padding:2px 7px" title="이 줄 지우기">🗑</button></td></tr>`).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--mu)">아직 기록이 없습니다.</td></tr>'}
+  </tbody></table></div></div>`}
+ function aiHtml(){const st=D.st||{},docs=(KB.d&&KB.d.docs)||[];const ok=D.dr.filter(d=>d.on).length;
+  return `<div class="sec"><h4>🤖 AI 새 문제 초안 <small>${st.ai?'본부 AI 켜짐 · '+E(st.model)+' · 오늘 '+(st.aiUsed||0)+'/'+(st.aiLim||30)+'번':'<span class="bd a">본부 AI_KEY 없음</span>'}</small></h4>
+  ${st.ai?'':'<div class="alert a">본부 Apps Script [프로젝트 설정] › [스크립트 속성]에 <b>AI_KEY</b>(Anthropic API 키)를 넣고 새 버전으로 배포하면 쓸 수 있습니다. 키는 본부 서버 안에만 있고 앱으로 내려오지 않습니다.</div>'}
+  ${docs.length?'':'<div class="alert a">이 기기 📚 백과사전 자료실이 비어 있습니다. 📖 사용법 › 📚 백과사전 › 자료실 관리에서 <b>기본 6종+1급 교안 묶음</b>을 넣어 주세요.</div>'}
+  <div class="row"><label class="l" style="flex:1;min-width:200px">자료(📚 백과사전 문서)<select id="qdDoc">${docs.map((d,i)=>d.off?'':`<option value="${i}"${i===D.doc?' selected':''}>${E(d.n)}${d.ver?' ('+E(d.ver)+')':''}</option>`).join('')}</select></label>
+   <label class="l" style="min-width:90px">문제 수<select id="qdN">${[3,5,8,10].map(n=>`<option${n===(D.n||5)?' selected':''}>${n}</option>`).join('')}</select></label>
+   <button type="button" class="qdBtn pri" data-x="ai"${st.ai&&docs.length&&!D.busy?'':' disabled'}>🤖 초안 만들기</button></div>
+  <p class="msg" style="margin-top:-4px">고른 문서에서 아직 안 쓴 조각 6개를 골라 보냅니다. 근거 문장이 조각에 그대로 있는지 앱이 확인하고, 없으면 ⚠ 표시하고 채택을 풉니다. 문제·정답·오답은 고쳐 쓸 수 있습니다.</p>
+  <div id="qdDr">${D.dr.map((d,i)=>`<div class="dr${d.bad?' bad':''}"><label class="ck"><input type="checkbox" data-on="${i}"${d.on?' checked':''}>채택 <span class="bd ${d.bad?'a':'g'}">${d.bad?'⚠ '+E(d.bad):'✓ 근거 확인'}</span><span style="font-weight:400;font-size:12px;color:var(--mu)">${E(d.src)} · ${E(d.pg)}</span></label>
+   <div class="g2"><label class="l">분류<input data-f="${i}:0" value="${E(d.x[0])}"></label><label class="l">정답<input data-f="${i}:2" value="${E(d.x[2])}"></label></div>
+   <label class="l" style="margin-top:6px">문제<input data-f="${i}:1" value="${E(d.x[1])}"></label>
+   <div class="g2"><label class="l">오답 1<input data-f="${i}:w0" value="${E(d.x[3][0])}"></label><label class="l">오답 2<input data-f="${i}:w1" value="${E(d.x[3][1])}"></label><label class="l">오답 3<input data-f="${i}:w2" value="${E(d.x[3][2])}"></label></div>
+   <div class="qt">📚 근거: 「${E(d.x[6])}」</div></div>`).join('')}</div>
+  ${D.dr.length?`<div class="row"><span class="bd b">채택 ${ok} / ${D.dr.length}</span><button type="button" class="qdBtn" data-x="drclr">초안 모두 지우기</button></div>`:''}</div>`}
+ function pubHtml(){const B=D.bank||[],out=B.filter(x=>D.out.has(Z().id(x))).length,add=D.dr.filter(d=>d.on).length,n=B.length-out+add;
+  return `<div class="sec" style="border:2px solid #6366f1"><h4>🚀 새 판 적용 <small>모든 기기가 다음에 열 때 새 문제로 다시 풉니다</small></h4>
+  <div style="font-size:14px;margin-bottom:8px">지금 <b>${B.length}</b>문제 − 빼기 <b>${out}</b> + 채택 초안 <b>${add}</b> = 새 판 <b>${n}</b>문제 ${n<Math.max(10,Z().N)?'<span class="bd r">10문제 이상이어야 함</span>':''}</div>
+  <div class="row"><label class="l" style="flex:1;min-width:200px">바꾼 까닭(메모)<input id="qdNote" placeholder="예: 정답률 74% → 쉬운 문제 20개 빼고 교안 새 문제 15개"></label><button type="button" class="qdBtn" data-x="bankcsv">⬇ 새 판 문제 엑셀(CSV)</button><button type="button" class="qdBtn pri" data-x="pub"${n<Math.max(10,Z().N)||(!out&&!add)?' disabled':''}>🚀 새 판 적용</button></div></div>`}
+ function render(){const b=document.getElementById('qdBody');if(!b)return;const y=b.scrollTop;
+  b.innerHTML=`<p class="msg${D.mc?' '+D.mc:''}" id="qdMsg">${E(D.m||'')}</p>`+(D.st?kpiHtml()+qHtml()+aiHtml()+pubHtml()+uHtml():'');b.scrollTop=y}
+ function newBank(){const B=D.bank||[];return B.filter(x=>!D.out.has(Z().id(x))).concat(D.dr.filter(d=>d.on).map(d=>d.x))}
+ function dl(name,rows){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',t='﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+ const day=()=>new Date().toISOString().slice(0,10).replace(/-/g,'');
+ /* 조각 고르기: 문서 안 글 300자 이상, 아직 안 쓴 것, 무작위 6개 */
+ async function pickRefs(di){await kbLoad();const d=KB.d;if(!d)return[];const C=d.ch.map((c,i)=>[c,i]).filter(([c,i])=>c[0]===di&&String(c[4]||'').length>=300&&!D.used.has(i));
+  for(let i=C.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[C[i],C[j]]=[C[j],C[i]]}
+  return C.slice(0,6).map(([c,i])=>{D.used.add(i);return{i,src:d.docs[di].n,pg:c[2]?c[2]+'쪽':'PDF '+c[1]+'쪽',sec:c[3]||'',x:kbScrub(String(c[4]).slice(0,1800))}})}
+ async function ai(btn){const di=+document.getElementById('qdDoc').value,n=+document.getElementById('qdN').value;D.doc=di;D.n=n;
+  btn.disabled=true;D.busy=true;msg('🤖 자료 조각을 고르는 중…');try{const refs=await pickRefs(di);if(!refs.length)throw new Error('이 문서에 아직 안 쓴 조각이 없습니다. 다른 문서를 골라 주세요.');
+   msg('🤖 AI가 문제를 만드는 중… (30초~1분)');const have=(D.bank||[]).filter(x=>x[4]===refs[0].src||!refs[0].src).map(x=>x[1]).concat(D.dr.map(d=>d.x[1]));
+   const j=await window.hqPost({op:'adm_qz_ai',akey:D.key,n,refs:refs.map(r=>({src:r.src,pg:r.pg,sec:r.sec,x:r.x})),have,by:me()});
+   let k=0;(j.items||[]).forEach(it=>{const r=refs[(+it.ref||1)-1]||refs[0],w=(it.wrong||[]).slice(0,3);while(w.length<3)w.push('');
+    const x=[String(it.cat||'').slice(0,30),String(it.q||'').slice(0,300),String(it.a||'').slice(0,150),w.map(s=>String(s).slice(0,150)),r.src,r.pg,String(it.quote||'').slice(0,200)];
+    const body=nrm(r.x);let bad='';if(!x[6]||!body.includes(nrm(x[6])))bad='근거 문장을 자료에서 못 찾음';
+    else{const nums=(x[2].match(/\d+(?:[.,]\d+)?/g)||[]).filter(v=>!body.includes(v.replace(/,/g,''))&&!body.includes(v));if(nums.length)bad='정답 숫자 '+nums.join('·')+' 자료에 없음'}
+    if(!x[1]||!x[2]||w.some(s=>!s))bad=bad||'빈 칸 있음';if(new Set([x[2]].concat(w)).size<4)bad=bad||'보기가 겹침';
+    if((D.bank||[]).some(b=>nrm(b[1])===nrm(x[1])))bad=bad||'같은 문제 이미 있음';
+    D.dr.push({x,src:r.src,pg:r.pg,bad,on:!bad});k++});
+   D.st.aiUsed=j.used;msg(`✓ 초안 ${k}개 (오늘 AI ${j.used}/${j.limit}번)`,'ok')}catch(e){msg(e.message,'err')}finally{D.busy=false;render()}}
+ async function pub(btn){const nb=newBank(),out=(D.bank||[]).length-nb.length+D.dr.filter(d=>d.on).length;
+  if(!confirm(`새 판(${nb.length}문제)을 적용할까요?\n빼는 문제 ${out}개 · 더하는 문제 ${D.dr.filter(d=>d.on).length}개\n모든 직원 기기가 다음에 열 때 퀴즈를 다시 풉니다.`))return;
+  btn.disabled=true;msg('적용하는 중…');try{const j=await window.hqPost({op:'adm_qz_pub',akey:D.key,bank:nb,by:me(),note:(document.getElementById('qdNote')||{}).value||'',from:D.ver});
+   D.dr=[];D.sv='';D.m='';await load();msg(`✓ 새 판 ${j.ver} 적용 (${j.n}문제). 직원 기기는 다음에 열 때 받습니다.`,'ok');try{Z().sync&&Z().sync()}catch(_){}}catch(e){btn.disabled=false;msg(e.message,'err')}}
+ function onClick(e){const b=e.target.closest('[data-x]');if(!b)return;const x=b.dataset.x;
+  if(x==='close'){document.getElementById('qdOv').remove();return}
+  if(x==='reload'){D.sv='';return load()}
+  if(x==='outauto'){autoOut();render();return}if(x==='outnone'){D.out.clear();render();return}
+  if(x==='ai')return ai(b);if(x==='pub')return pub(b);if(x==='drclr'){if(confirm('초안을 모두 지울까요?')){D.dr=[];render()}return}
+  if(x==='off'){if(!confirm('본부 문제은행을 지우고 앱에 들어 있는 문제로 돌아갈까요? 모든 기기가 다시 풉니다.'))return;window.hqPost({op:'adm_qz_off',akey:D.key}).then(()=>{D.sv='';return load()}).catch(er=>msg(er.message,'err'));return}
+  if(x==='udel'){if(!confirm('이 기기 퀴즈 기록을 지울까요?'))return;window.hqPost({op:'adm_qz_udel',akey:D.key,u:b.dataset.u}).then(()=>{D.st.users=D.st.users.filter(u=>u.u!==b.dataset.u);render()}).catch(er=>msg(er.message,'err'));return}
+  if(x==='csv'){const st=curStat(),q=st.q||{};dl('퀴즈_문제별정답률_'+(D.sv||D.ver)+'_'+day()+'.csv',[['분류','문제','정답','출처','쪽','나옴','맞음','정답률','빼기']].concat((D.bank||[]).map(o=>{const c=q[Z().id(o)]||[0,0];return[o[0],o[1],o[2],o[4],o[5],c[0],c[1],c[0]?Math.round(c[1]/c[0]*100)+'%':'',D.out.has(Z().id(o))?'빼기':'']})));return}
+  if(x==='bankcsv'){dl('퀴즈_새판문제_'+day()+'.csv',[['분류','문제','정답','오답1','오답2','오답3','출처','쪽','근거']].concat(newBank().map(o=>[o[0],o[1],o[2],o[3][0],o[3][1],o[3][2],o[4],o[5],o[6]])));return}}
+ window.qzDev=function(akey){if(!akey){alert('먼저 👑 현장 관리에서 관리자 키로 불러오기를 해 주세요.');return}
+  const o0=document.getElementById('qdOv');if(o0)o0.remove();D.key=akey;D.st=null;D.dr=[];D.sv='';D.m='';
+  const ov=document.createElement('div');ov.id='qdOv';
+  ov.innerHTML=`<div class="qdW" role="dialog" aria-modal="true" aria-label="개발자 모드 용어 퀴즈"><div class="qdH"><div><b>🛠 개발자 모드 · 🎓 용어 퀴즈</b><br><small>정답률 70% 넘으면 문제은행 새로 만들기 · AI 초안 · 새 판 적용</small></div><span class="sp"></span><button type="button" data-x="close" aria-label="닫기">✕</button></div>
+  <div class="qdB" id="qdBody"><p class="msg" id="qdMsg"></p></div><div class="qdF">만든이: 구병순 · 서용이 · 문제는 출처(문서·쪽)와 근거 문장을 꼭 확인하고 채택하세요 · 고객 정보는 문제에 넣지 않습니다</div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov){ov.remove();return}onClick(e)});
+  ov.addEventListener('keydown',e=>{if(e.key==='Escape')ov.remove();e.stopPropagation()});
+  ov.addEventListener('change',e=>{const t=e.target;if(t.id==='qdSv'){D.sv=t.value;render();return}
+   if(t.dataset.out){t.checked?D.out.add(t.dataset.out):D.out.delete(t.dataset.out);render();return}
+   if(t.dataset.on){D.dr[+t.dataset.on].on=t.checked;render();return}
+   if(t.id==='qdDoc'){D.doc=+t.value}if(t.id==='qdN'){D.n=+t.value}});
+  ov.addEventListener('input',e=>{const f=e.target.dataset.f;if(!f)return;const[i,k]=f.split(':'),d=D.dr[+i];if(!d)return;if(k[0]==='w')d.x[3][+k[1]]=e.target.value;else d.x[+k]=e.target.value});
+  ['pointerdown','touchstart','mousedown','wheel'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));
+  kbLoad().then(()=>{if(D.st)render()});load()};
 })();
 </script>
 <script>/* 📲 홈 화면 추가 안내 띠 A안 (2026-11-21): 폰·태블릿에서 브라우저로 열면 아래쪽에 한 줄 띠.
