@@ -483,6 +483,8 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .lstb{display:flex;gap:6px;align-items:center;margin:0 0 6px;flex-wrap:wrap}.lstb .btn.on{background:#4f46e5;color:#fff;border-color:#4f46e5}.dist{color:#0369a1;font-weight:700}
 .rp-page{font-size:10pt;color:#0f172a;line-height:1.45}
 .rp-page+.rp-page{break-before:page}
+.evtd{font-weight:800;font-size:13px;color:var(--ink2);margin:10px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--line)}.evtd.now{color:var(--ind)}.evtr{display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line)}.evts{display:inline-block;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:4px}.evtb{height:6px;border-radius:99px;background:var(--sub2);margin-top:5px;overflow:hidden}.evtb i{display:block;height:100%;border-radius:99px}
+.evpt{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;margin:4px 0 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2;scrollbar-width:thin}.evpt button{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--sub);color:var(--ink);cursor:pointer;font-family:inherit;min-height:44px}.evpt button b{font-size:14px}.evpt button span{font-size:11px;color:var(--mute)}.evpt button.ok{border-color:#059669}.evpt button.ok span{color:#059669}.evpt button.on{background:var(--ind);border-color:var(--ind);color:#fff}.evpt button.on span{color:#e0e7ff}.evpt button.tm{border-style:dashed}.evpt button.tm.on{border-style:solid}.evph{margin:2px 0 6px;font-size:15px}.evpn{display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px}
 #dvm table{border-collapse:collapse}#dvm th,#dvm td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}#dvm th{color:var(--ink2);font-weight:700}#dvm .kpi{background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column}#dvm .kpi span{font-size:11px;color:var(--mute)}#dvm .kpi b{font-size:16px;color:var(--ink)}#dvm summary .btn{margin-left:6px}
 .dp-map{width:100%;height:auto;border:1px solid #94a3b8;border-radius:6px;display:block;margin:2px 0 6px;background:#dbeafe}
 .dp-chip{display:inline-flex;gap:4px;align-items:center;padding:5px 9px;border:1px solid var(--line2,#cbd5e1);border-radius:999px;font-size:13px;cursor:pointer}.dp-chip input{margin:0}
@@ -625,12 +627,13 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   <div id="siteCard" class="mob-only" hidden></div>
   <div class="kpis" id="kp"></div>
   <div class="card" id="panel">
-   <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button><button data-t="act"><i class="ii" data-i="tool"></i> 후속 조치</button><button data-t="sum" class="adm"><i class="ii" data-i="chart"></i> 종합</button><button data-t="nw"><i class="ii" data-i="bell"></i> 소식 <span id="nwc" class="nwc"></span></button></div>
+   <div class="tabs np" id="tabs"><button data-t="lst" class="on"><i class="ii" data-i="list"></i> 목록</button><button data-t="cal"><i class="ii" data-i="cal"></i> 달력</button><button data-t="ins"><i class="ii" data-i="users"></i> 점검자</button><button data-t="pin"><i class="ii" data-i="pin"></i> 위치 <span id="npc"></span></button><button data-t="evt" class="adm"><i class="ii" data-i="clip"></i> 점검표 작성</button><button data-t="act"><i class="ii" data-i="tool"></i> 후속 조치</button><button data-t="sum" class="adm"><i class="ii" data-i="chart"></i> 종합</button><button data-t="nw"><i class="ii" data-i="bell"></i> 소식 <span id="nwc" class="nwc"></span></button></div>
    <div class="flt np"><select id="fRg"></select><select id="fSt"></select><select id="fIn"></select></div>
    <div class="scr" id="p-lst"><div class="lstb np"><button class="btn" id="meB" type="button"><i class="ii" data-i="users"></i> <span id="meT">내 담당만</span></button><button class="btn" id="meE" type="button" title="내 이름 바꾸기" style="padding:4px 8px">✎</button><button class="btn" id="nearB" type="button"><i class="ii" data-i="loc"></i> 가까운 현장 순</button><span class="mini" id="nearI"></span></div><table><thead id="lH"></thead><tbody id="lB"></tbody></table></div>
    <div class="scr" id="p-cal" hidden><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><button class="btn" id="mPrev">◀</button><b id="mLbl"></b><button class="btn" id="mNext">▶</button></div><div class="cal" id="calG"></div><p class="mini">날짜를 누르면 지도에서 그날 현장만 봅니다.</p></div>
    <div class="scr" id="p-ins" hidden></div>
    <div class="scr" id="p-pin" hidden></div>
+   <div class="scr" id="p-evt" hidden></div>
    <div class="scr" id="p-act" hidden></div>
    <div class="scr" id="p-sum" hidden></div>
    <div class="scr" id="p-nw" hidden></div>
@@ -865,7 +868,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <details class="hlp"><summary>📊 결과 공개 · 결과 메일 (점검자)</summary><div><ul>
 <li><b>공개</b>: 점검표 아래 <b>직원에게 결과 공개</b>를 체크하고 <b>점검표 저장</b> → 관리자 구글 시트 '점검결과' 탭에 올라가고 직원이 '내 결과'에서 봅니다. 체크를 풀고 저장하면 다시 비공개.</li>
 <li><b>📧 결과 메일</b>(점검표 아래): 받을 사람 목록(직원명부 일치·가린 메일 주소·보냄 여부)을 확인하고 <b>보내기</b>. 각자에게 <b>본인 결과만</b> 갑니다. 명부에 없거나 같은 가림 이름이 여럿이면 '확인 필요'로 빠집니다.</li>
-<li><b>💬 카톡 결과</b>(점검표 아래): 받을 사람을 고르고 <b>🔗 결과 링크 만들기</b> → 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방 선택. 카톡에는 점수 없이 [결과 보기] 버튼만 가고, 누르면 직원 모드로 본인 결과가 열립니다(본인 전용 · 7일 유효).</li><li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
+<li><b>📋 점검표 작성 탭</b>(점검자): 현장별 작성 상태(미작성·작성 중·완료·공개)와 팀평가·개별평가 진행을 보고 <b>작성 / 이어 쓰기</b>로 바로 엽니다. 점검표 안 위쪽 칸은 <b>🏢 팀명</b>(그 현장 팀평가) → 사람 이름(개별평가) 순서, ✓는 입력 끝.</li><li><b>💬 카톡 결과</b>(점검표 아래): 받을 사람을 고르고 <b>🔗 결과 링크 만들기</b> → 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방 선택. 카톡에는 점수 없이 [결과 보기] 버튼만 가고, 누르면 직원 모드로 본인 결과가 열립니다(본인 전용 · 7일 유효).</li><li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
 <li><b>👤 개인별 결과표</b>(점검결과 출력 → 종류): 개별평가를 입력한 사람마다 A4 1장(본인 배포용, 다른 사람 점수·면담 제외).</li>
 <li>메일 주소는 구글 시트 '직원명부'에서만 쓰고, 앱·깃허브에는 넣지 않습니다.</li></ul></div></details>
 <details class="hlp"><summary>🚐 차량 위치 · 팀장에게 알리기</summary><div><ul>
@@ -1264,7 +1267,7 @@ function render(fit){if(SH==='mini')setTimeout(sumUp,0);refreshSel();const L0=fi
  $('kp').innerHTML=k('현장',L0.length+'곳',F.day?md(F.day)+'('+wd(F.day)+')':'지역 '+new Set(L0.map(r=>r.rg)).size+'곳','#4f46e5')+k('진행률',(L0.length?Math.round(done/L0.length*100):0)+'%','완료 '+done+'곳','#059669')+k('다음 점검',nx?(ddays(nx.pd)===0?'오늘':'D-'+ddays(nx.pd)):'-',nx?md(nx.pd)+'('+wd(nx.pd)+')':'없음','#0284c7')+k('지연 확인',late+'곳','예정일 지남',late?'#d97706':'');
  $('empty').classList.toggle('on',!rows.length);
  const np=rows.filter(r=>!hasPin(r)).length;$('npc').textContent=np?'('+np+')':'';
- rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();nwBadge();setTimeout(dbArrows,0);if(tab==='nw')rNews();drawPins(fit)}
+ rLst(L0);rCal();rIns(L0);rPin();rAct();rSum();rEvt();nwBadge();setTimeout(dbArrows,0);if(tab==='nw')rNews();drawPins(fit)}
 const COLS=[['pd','점검일'],['tm','팀명'],['ins','점검자(기술/영업/공통)'],['pp','인원'],['st','상태']];
 let MYPOS=null;const dstOf=r=>MYPOS&&hasPin(r)?hav(MYPOS,r):Infinity;
 function val(r,k){return k==='dist'?dstOf(r):k==='pp'?cnt(r):k==='st'?stOf(r):k==='ins'?r.ins.join():r[k]}
@@ -1300,7 +1303,7 @@ function rPin(){const no=rows.filter(r=>!hasPin(r)).sort((a,b)=>a.no-b.no),yes=r
  <table><tbody>${no.map(r=>`<tr class="r" onclick="startPick(['${r.id}'])"><td><b>${esc(r.tm)}</b> <span class="mini">${esc(r.rg)} · ${md(r.pd)}</span><div class="mini">${r.addr?esc(r.addr):'<b class="warn">주소 확인 필요</b>'}</div></td><td style="text-align:right"><span class="btn">${ic('pin')} 찍기</span></td></tr>`).join('')}</tbody></table>`}
 
 /* ── 탭 ── */
-function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin','act','sum','nw'].forEach(x=>$('p-'+x).hidden=x!==t);if(t==='nw')rNews();else nwSeen();try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
+function setTab(t){tab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['lst','cal','ins','pin','evt','act','sum','nw'].forEach(x=>$('p-'+x).hidden=x!==t);if(t==='nw')rNews();else nwSeen();try{localStorage.setItem(LS+'-tab',t)}catch(e){}}
 $('tabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t){setTab(t);if(typeof isMob==='function'&&isMob()&&(SH==='peek'||SH==='mini'))setSheet('half')}};
 try{const t=localStorage.getItem(LS+'-tab');if(t)setTab(t)}catch(e){}
 
@@ -1422,16 +1425,23 @@ $('evTabs').onclick=e=>{const t=e.target.closest('button')?.dataset.t;if(t)evTab
 function setDirty(){EVS.dirty=true;dfSave();$('evSv').classList.add('pulse');$('evMsg').textContent='저장하지 않은 변경이 있습니다'}
 function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-k="${key}" data-p="${path}"><div class="evl">${esc(label)}</div><div class="seg">${SCL.map(([s,n])=>`<button type="button" data-s="${s}" class="${String(v.s)===String(s)?'on s'+s:''}" title="${n}">${s==='na'?'해당없음':s+' '+n}</button>`).join('')}</div>
  <div class="evm"><input class="inp" data-m placeholder="메모 (확인 내용·근거)" value="${esc(v.m||'')}">${typeof v.s==='number'&&v.s<=2?`<button type="button" class="btn" data-act>${ic('tool')} 후속 조치 등록</button>`:''}</div>${path==='team'&&EVS.id?phStrip(EVS.id,'team:'+key):''}</div>`}
+/* 점검표 위 칸: 첫 칸은 팀명(그 현장 팀평가), 다음은 사람별 개별평가 */
+function evChips(r,w,cur){const P=w.ppl||[],its=p=>EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]),fill=p=>its(p).filter(([k])=>p.it[k]&&p.it[k].s!=null&&p.it[k].s!=='').length;
+ const TK=EVI.team.flatMap(x=>x[1].map(y=>y[0])),tn=TK.filter(k=>w.team[k]&&w.team[k].s!=null&&w.team[k].s!=='').length,ta=scoreAvg(Object.fromEntries(TK.map(k=>[k,w.team[k]]).filter(x=>x[1])));
+ return `<div class="evpt" role="tablist"><button type="button" role="tab" data-tt="1" class="tm${cur==='team'?' on':''}${tn===TK.length?' ok':''}"><b>🏢 ${esc(r.tm)} 팀</b><span>${tn===TK.length?'✓ ':''}${tn}/${TK.length}${ta!=null?' · '+f1(ta):''}</span></button>${P.map((p,i)=>{const n=fill(p),m=its(p).length;return `<button type="button" role="tab" data-pi="${i}" class="${cur===i?'on':''}${n===m?' ok':''}"><b>${esc(p.n)}</b><span>${n===m?'✓ ':''}${n}/${m}${scoreAvg(p.it)!=null?' · '+f1(scoreAvg(p.it)):''}</span></button>`}).join('')}</div>`}
 function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const w=EVS.w,b=$('evBody');
- if(EVS.t==='team')b.innerHTML=EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
+ if(EVS.t==='team')b.innerHTML=evChips(r,w,'team')+`<div class="evph"><b>🏢 ${esc(r.tm)} 팀평가</b> <span class="mini">그 현장(팀) 전체 평가 · 부문별 아래</span></div>`+EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
  else if(EVS.t==='prev')b.innerHTML=`<p class="mini">이전 회차 점검에서 지적된 사항입니다. 새 회차를 만들 때 2점 이하 항목·미이행 지적이 자동으로 넘어옵니다. 시정조치 이행 여부와 개선 효과를 확인하세요.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="이전 지적사항" value="${esc(p.t||'')}">${p.from?`<span class="mini" style="white-space:nowrap;align-self:center">${esc(rdName(p.from))}</span>`:''}<button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}">${phStrip(EVS.id,'prev:'+i)}</div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
- else if(EVS.t==='ppl')b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+w.ppl.map((p,i)=>`<details class="evp" ${i===0?'open':''}><summary><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></summary>${EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}</details>`).join('')||'<p class="mini">수검 인원 명단이 없습니다.</p>';
+ else if(EVS.t==='ppl'){if(EVS.piId!==EVS.id){EVS.pi=0;EVS.piId=EVS.id}const P=w.ppl||[];if(EVS.pi>=P.length)EVS.pi=0;const its=p=>EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]),fill=p=>its(p).filter(([k])=>p.it[k]&&p.it[k].s!=null&&p.it[k].s!=='').length;
+  b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+(P.length?evChips(r,w,EVS.pi)+(()=>{const i=EVS.pi,p=P[i];return `<div class="evph"><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></div>${its(p).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}<div class="evpn"><button type="button" class="btn" data-pmv="-1" ${i?'':'disabled'}>◀ 이전 사람</button><span class="mini">${i+1} / ${P.length}</span><button type="button" class="btn pri" data-pmv="1" ${i<P.length-1?'':'disabled'}>다음 사람 ▶</button></div>`})():'<p class="mini">수검 인원 명단이 없습니다.</p>')}
  else if(EVS.t==='intv')b.innerHTML=intvHtml(r);
  else if(EVS.t==='res')b.innerHTML=resHtml(r);
  else if(EVS.t==='hist')b.innerHTML=histHtml(r);
  else if(EVS.t==='ph')b.innerHTML=phTab(r);
  phFill(b);$('evSv').style.display=['intv','hist','ph'].includes(EVS.t)?'none':'';$('evDone').checked=!!w.done;$('evPub').checked=!!w.pub}
 $('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
+ const tt=t.closest('[data-tt]');if(tt){const x=document.querySelector('#evm [data-t="team"],[data-t="team"]');if(x)x.click();else{EVS.t='team';evPaneRefresh()}return}
+ const pt=t.closest('[data-pi]');if(pt){EVS.pi=+pt.dataset.pi;if(EVS.t!=='ppl'){EVS.piId=EVS.id;const x=document.querySelector('[data-t="ppl"]');if(x){x.click();return}EVS.t='ppl'}evPaneRefresh();return}const pm=t.closest('[data-pmv]');if(pm){EVS.pi=Math.max(0,(EVS.pi||0)+ +pm.dataset.pmv);evPaneRefresh();$('evBody').scrollTop=0;try{$('evBody').closest('.mbox').scrollTop=0}catch(_){}return}
  const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
  const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
  if(t.closest('[data-del]')&&it){w.prev.splice(+it.dataset.i,1);setDirty();evPaneRefresh();return}
@@ -1616,7 +1626,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122091223';
+const BUILD='20261122105037';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3400,6 +3410,26 @@ async function kkAuto(){if(!AUTH||AUTH._pv||!gsOn()||inClaude())return;const tk=
  if(j.key&&j.key!==cur&&(!cur||auto)){localStorage.setItem(KKEY,j.key);localStorage.setItem('mulgil-kk-auto','1');LY.kk=1;try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}toast('카카오 지도 키가 자동으로 설정됐습니다. 다시 불러옵니다');setTimeout(()=>location.reload(),1500)}
  else if(!j.key&&auto&&cur){localStorage.removeItem(KKEY);localStorage.removeItem('mulgil-kk-auto');toast('카카오 키 공유가 꺼져 이 기기의 키를 지웠습니다');setTimeout(()=>location.reload(),1500)}}catch(e){}}
 setTimeout(kkAuto,5000);
+
+/* ── 📝 점검표 작성 탭 (점검자): 현장별 작성 진행 → 바로 열기 ── */
+let EVTF='all';
+function evProg(r){const e=EV[r.id]||{},TK=EVI.team.flatMap(x=>x[1].map(y=>y[0])),f=o=>o&&o.s!=null&&o.s!=='';const tn=TK.filter(k=>f((e.team||{})[k])).length;
+ const P=e.ppl&&e.ppl.length?e.ppl:people(r).map(n=>({n,it:{}})),pn=P.filter(p=>EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]).every(([k])=>f(p.it[k]))).length;
+ const st=e.done?'완료':(tn||P.some(p=>Object.keys(p.it||{}).length))?'작성 중':'미작성';return {tn,tt:TK.length,pn,pt:P.length,st,pub:!!e.pub,pct:Math.round(((tn/TK.length)*.5+(P.length?pn/P.length:1)*.5)*100)}}
+function rEvt(){const el=$('p-evt');if(!el)return;if(!ADM){el.innerHTML='<p class="mini">점검표 작성은 점검자만 할 수 있습니다.</p>';return}
+ const t=ymd(today()),L=filt(true).slice().sort((a,b)=>(a.pd||'9')<(b.pd||'9')?-1:(a.pd||'9')>(b.pd||'9')?1:a.no-b.no).map(r=>({r,g:evProg(r)}));
+ const C={all:L.length,today:L.filter(x=>x.r.pd===t).length,no:L.filter(x=>x.g.st==='미작성').length,ing:L.filter(x=>x.g.st==='작성 중').length,done:L.filter(x=>x.g.st==='완료').length};
+ const F=L.filter(x=>EVTF==='all'||(EVTF==='today'&&x.r.pd===t)||(EVTF==='no'&&x.g.st==='미작성')||(EVTF==='ing'&&x.g.st==='작성 중')||(EVTF==='done'&&x.g.st==='완료'));
+ const chip=(k,l)=>`<button type="button" class="btn${EVTF===k?' pri':''}" data-ef="${k}" style="padding:5px 10px;font-size:13px">${l} <b>${C[k]}</b></button>`;
+ let h=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">${chip('all','전체')}${chip('today','오늘')}${chip('no','미작성')}${chip('ing','작성 중')}${chip('done','완료')}</div>`;
+ if(!F.length)h+='<p class="mini">해당하는 현장이 없습니다.</p>';let last=null;
+ F.forEach(({r,g})=>{if(r.pd!==last){last=r.pd;h+=`<div class="evtd${r.pd===t?' now':''}">${r.pd?esc(dt(r.pd))+(r.pd===t?' · 오늘':''):'일정 미정'}</div>`}
+  const col=g.st==='완료'?'#059669':g.st==='작성 중'?'#d97706':'#94a3b8';
+  h+=`<div class="evtr"><div style="flex:1;min-width:0"><div><b>${esc(r.tm)}</b> <span class="mini">${esc(r.rg||'')}</span> <span class="evts" style="background:${col}">${g.st}</span>${g.pub?' <span class="evts" style="background:#4f46e5">공개</span>':''}</div>
+   <div class="mini" style="margin-top:2px">팀평가 ${g.tn}/${g.tt} · 개별평가 ${g.pn}/${g.pt}명</div><div class="evtb"><i style="width:${g.pct}%;background:${col}"></i></div></div>
+   <button type="button" class="btn${g.st==='완료'?'':' pri'}" data-eo="${esc(r.id)}" style="flex:none">${ic('clip')} ${g.st==='미작성'?'작성':g.st==='완료'?'보기':'이어 쓰기'}</button></div>`});
+ el.innerHTML=h}
+$('p-evt').addEventListener('click',e=>{const f=e.target.closest('[data-ef]');if(f){EVTF=f.dataset.ef;rEvt();return}const o=e.target.closest('[data-eo]');if(o)openEv(o.dataset.eo)});
 /* ── 📝 한글(HWPX) 저장: 출력과 같은 내용 (스마트 물길주소의 HWPX 공용 함수 그대로) ── */
 const HWPX={W:48190,MM:283.465};
 const hwX=s=>String(s??'').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
