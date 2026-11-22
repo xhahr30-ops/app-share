@@ -680,7 +680,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <div class="evhd"><b id="evT"></b><span style="display:flex;gap:6px;flex:none"><button class="btn" id="evPop" type="button" title="점검표를 새 창으로 열기 (지도·목록과 나란히 보기)">↗ 새 창</button><button class="btn" id="evX"><i class="ii" data-i="x"></i></button></span></div>
  <div class="tabs" id="evTabs"><button data-t="team" class="on"><i class="ii" data-i="clip"></i> 팀평가</button><button data-t="prev"><i class="ii" data-i="hist"></i> 이전 지적</button><button data-t="ppl"><i class="ii" data-i="users"></i> 개별평가</button><button data-t="intv"><i class="ii" data-i="mic"></i> 면담</button><button data-t="res"><i class="ii" data-i="doc"></i> 결과</button><button data-t="ph"><i class="ii" data-i="map"></i> 사진</button><button data-t="hist"><i class="ii" data-i="cal"></i> 회차 이력</button></div>
  <div id="evBody"></div>
- <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><label class="mini" style="display:flex;gap:6px;align-items:center" title="켜면 이메일로 로그인한 직원이 본인 결과(팀 점수·본인 개별평가·지적사항·후속 조치)를 볼 수 있습니다"><input type="checkbox" id="evPub"> <b>직원에게 결과 공개</b></label><span id="evMsg" class="mini"></span><button class="btn" id="evMail" type="button" title="공개한 결과를 현장 직원 각자에게 본인 결과만 메일로 보냅니다">📧 결과 메일</button><button class="btn" id="evKk" type="button" title="공개한 결과를 직원 각자에게 카톡으로 (본인 전용 결과 링크 · 7일)">💬 카톡 결과</button><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
+ <div class="evft"><label class="mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evDone"> <b>이 현장 점검 완료</b></label><label class="mini" style="display:flex;gap:6px;align-items:center" title="켜면 이메일로 로그인한 직원이 본인 결과(팀 점수·본인 개별평가·지적사항·후속 조치)를 볼 수 있습니다"><input type="checkbox" id="evPub"> <b>직원에게 결과 공개</b></label><span id="evMsg" class="mini"></span><button class="btn" id="evRst" type="button" title="점수·메모를 지웁니다 (저장해야 적용)" style="color:#dc2626">↺ 초기화</button><button class="btn" id="evMail" type="button" title="공개한 결과를 현장 직원 각자에게 본인 결과만 메일로 보냅니다">📧 결과 메일</button><button class="btn" id="evKk" type="button" title="공개한 결과를 직원 각자에게 카톡으로 (본인 전용 결과 링크 · 7일)">💬 카톡 결과</button><button class="btn pri" id="evSv"><i class="ii" data-i="save"></i> 점검표 저장</button></div>
 </div></div>
 <div id="instB" class="np" role="dialog" aria-label="홈 화면 추가 안내"><div class="ib-h"><span style="font-size:22px">📲</span><div style="flex:1;min-width:0"><b id="ibT"></b><div class="mini" id="ibH" style="margin-top:2px"></div></div><button id="ibX" type="button" aria-label="닫기">✕</button></div>
  <div class="ib-b"><button class="btn pri" id="ibGo" type="button"></button><button class="btn" id="ibLater" type="button">나중에</button><button class="btn" id="ibNever" type="button" style="color:var(--mut,#64748b)">다시 보지 않기</button></div></div>
@@ -736,6 +736,9 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   </div></details>
  </div></div></div>
 <div id="dvBar" class="np" hidden style="position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:2700;background:#059669;color:#fff;border-radius:999px;padding:6px 8px 6px 14px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);gap:8px;align-items:center"><span id="dvBarT"></span><button class="btn" id="dvBarX" type="button" style="padding:3px 10px;font-size:12px">끝내기</button></div>
+<div class="modal np" id="rsm"><div class="mbox" style="max-width:380px;margin-top:120px">
+ <b>↺ 작성 초기화</b><p class="mini" style="margin:6px 0 10px">지운 내용은 <b>점검표 저장</b>을 눌러야 적용됩니다. 저장 전에 창을 닫으면 원래대로 남습니다. 사진·면담 기록은 지우지 않습니다.</p>
+ <div style="display:flex;flex-direction:column;gap:8px"><button class="btn" id="rsOne" type="button" style="justify-content:center"></button><button class="btn" id="rsAll" type="button" style="justify-content:center;color:#dc2626">점검표 전체 (팀평가 · 개별평가 · 이전 지적 확인 · 완료 표시)</button><button class="btn" id="rsNo" type="button" style="justify-content:center">취소</button></div></div></div>
 <div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
  <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
@@ -1626,7 +1629,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122105037';
+const BUILD='20261122105319';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3084,6 +3087,13 @@ $('mlGo').onclick=async()=>{if(!MLS)return;const N=[...$('mlL').querySelectorAll
  try{const j=await gsCall({act:'mailsend',tok:MLS.tk,rd:MLS.rd,site:MLS.site,names:N});$('mlm').classList.remove('on');toast(`메일 ${j.sent}통 보냄`+(j.wait>0?` · ${j.wait}통은 한도 초과로 대기 (한도가 풀리면 자동으로 이어서 보냄)`:''));nwAdd&&nwAdd(MLS.site,`${MLS.tm} 결과 메일 ${j.sent}통 발송`)}
  catch(e){toast('메일 보내기 실패: '+e)}finally{b.disabled=false;b.textContent='📧 보내기'}};
 $('evMail').onclick=mlOpen;
+/* ↺ 작성 초기화: 지금 칸만 / 점검표 전체 (저장해야 적용) */
+function rsLabel(){const r=rows.find(x=>x.id===EVS.id)||{};if(EVS.t==='ppl'){const p=(EVS.w.ppl||[])[EVS.pi||0];return p?`${p.n} 개별평가만`:''}if(EVS.t==='prev')return '이전 지적 확인(상태·확인 내용)만';return `${r.tm||''} 팀평가만`}
+$('evRst').onclick=()=>{if(!EVS.w)return;const l=rsLabel();$('rsOne').textContent='이 칸만: '+l;$('rsOne').hidden=!l||!['team','ppl','prev'].includes(EVS.t);$('rsm').classList.add('on')};
+$('rsNo').onclick=()=>$('rsm').classList.remove('on');
+$('rsOne').onclick=()=>{const w=EVS.w;if(EVS.t==='ppl'){const p=(w.ppl||[])[EVS.pi||0];if(p)p.it={}}else if(EVS.t==='prev')(w.prev||[]).forEach(x=>{x.st='확인 중';x.m=''});else w.team={};w.done=false;setDirty();$('rsm').classList.remove('on');evPaneRefresh();$('evDone').checked=false;toast('지웠습니다 · 점검표 저장을 눌러야 적용됩니다')};
+$('rsAll').onclick=async()=>{if(!await ask('이 현장 점검표의 점수·메모를 모두 지울까요? (저장해야 적용)'))return;const w=EVS.w;w.team={};(w.ppl||[]).forEach(p=>p.it={});(w.prev||[]).forEach(x=>{x.st='확인 중';x.m=''});w.done=false;w.pub=false;setDirty();$('rsm').classList.remove('on');evPaneRefresh();$('evDone').checked=false;$('evPub').checked=false;toast('전체를 지웠습니다 · 점검표 저장을 눌러야 적용됩니다 (직원 공개도 꺼짐)')};
+
 /* 💬 카톡 결과 (점검자): 받을 사람 고르기 → 본인 전용 링크(7일) → 한 사람씩 카톡 공유 */
 let KRS=null;
 async function krOpen(){if(!ADM||!EVS.id)return;if(!gsOn())return toast('구글 시트 주소가 없어 링크를 만들 수 없습니다');if(EVS.dirty)return toast('점검표를 먼저 저장해 주세요');if(!EVS.w.pub)return toast("먼저 '직원에게 결과 공개'를 체크하고 저장해 주세요");
