@@ -483,6 +483,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .lstb{display:flex;gap:6px;align-items:center;margin:0 0 6px;flex-wrap:wrap}.lstb .btn.on{background:#4f46e5;color:#fff;border-color:#4f46e5}.dist{color:#0369a1;font-weight:700}
 .rp-page{font-size:10pt;color:#0f172a;line-height:1.45}
 .rp-page+.rp-page{break-before:page}
+#dvm table{border-collapse:collapse}#dvm th,#dvm td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}#dvm th{color:var(--ink2);font-weight:700}#dvm .kpi{background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column}#dvm .kpi span{font-size:11px;color:var(--mute)}#dvm .kpi b{font-size:16px;color:var(--ink)}#dvm summary .btn{margin-left:6px}
 .dp-map{width:100%;height:auto;border:1px solid #94a3b8;border-radius:6px;display:block;margin:2px 0 6px;background:#dbeafe}
 .dp-chip{display:inline-flex;gap:4px;align-items:center;padding:5px 9px;border:1px solid var(--line2,#cbd5e1);border-radius:999px;font-size:13px;cursor:pointer}.dp-chip input{margin:0}
 .rp-h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #4f46e5;padding-bottom:4px;margin-bottom:8px}
@@ -708,6 +709,30 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" id="krI" style="margin:0 0 8px"></p><div id="krL" style="max-height:55vh;overflow:auto"></div>
  <p class="mini" style="margin:8px 0 0">카톡에는 <b>점수 없이</b> "결과가 나왔습니다 [결과 보기]"만 갑니다. 받은 사람이 누르면 로그인 없이 <b>직원 모드로 본인 결과</b>가 열립니다(본인 전용 · <b>7일</b> 유효, 지나면 이메일 인증으로). 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방을 고르세요.</p>
  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="krNo" type="button">닫기</button><button class="btn pri" id="krGo" type="button">🔗 결과 링크 만들기</button></div></div></div>
+<div class="modal np" id="dvm"><div class="mbox" style="max-width:720px;margin-top:20px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>🛠 개발자 모드</b><button class="btn" id="dvX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <div id="dvLk"><p class="mini" style="margin:0 0 8px">관리자 전용입니다. 개발자 비밀번호를 넣어 주세요. <b>처음이면 지금 넣는 값이 개발자 비밀번호로 정해집니다</b>(영문·숫자 6~20자, 점검자 비밀번호와 다르게).</p>
+  <div style="display:flex;gap:6px"><input id="dvP" class="inp" type="password" autocomplete="off" placeholder="개발자 비밀번호" style="flex:1"><button class="btn pri" id="dvGo" type="button">열기</button></div><p class="mini warn" id="dvM" style="margin:6px 0 0"></p></div>
+ <div id="dvB" hidden>
+  <details class="hlp" open><summary>📟 이 기기 · 앱 상태</summary><div id="dvA"></div></details>
+  <details class="hlp" open><summary>🖥 서버(구글 시트) 상태 <button class="btn" id="dvRf" type="button" style="padding:2px 8px;font-size:12px">다시 불러오기</button></summary><div id="dvS"><p class="mini">불러오는 중…</p></div></details>
+  <details class="hlp" open><summary>🧪 시험 도구</summary><div>
+   <div class="mini" style="margin:2px 0 4px"><b>👷 직원 화면으로 보기</b> — 로그아웃 없이 그 직원이 보는 화면을 미리 봅니다 (저장 안 됨, 끝내면 원래대로)</div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="dvEmp" class="inp" style="flex:1;min-width:180px"><option value="">직원 고르기 (서버 상태를 불러오면 채워짐)</option></select><button class="btn" id="dvEmpGo" type="button">👷 미리보기</button></div>
+   <div class="mini" style="margin:10px 0 4px"><b>📧 결과 메일 · 💬 카톡 미리보기</b> — 보내지 않고 내용만</div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="dvSite" class="inp" style="flex:1;min-width:180px"></select><button class="btn" id="dvMail" type="button">📧 메일 미리보기</button><button class="btn" id="dvKkP" type="button">💬 카톡 미리보기</button></div>
+   <div id="dvPv" style="margin-top:6px"></div>
+   <div class="mini" style="margin:10px 0 4px"><b>다시 보기 · 정리</b></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="dvBan" type="button">📊 결과 배너 보기</button><button class="btn" id="dvHelp" type="button">❓ 처음 사용법 창</button><button class="btn" id="dvSeen" type="button">'본 결과' 기록 지우기</button><button class="btn" id="dvDraft" type="button">임시 저장 지우기</button><button class="btn" id="dvCache" type="button">캐시 비우고 새로 받기</button><button class="btn" id="dvTok" type="button">만료된 로그인 표 정리(서버)</button><button class="btn" id="dvDiag" type="button">📮 진단 보내기</button></div>
+  </div></details>
+  <details class="hlp" open><summary>🗝 카카오 키 공유</summary><div>
+   <p class="mini" style="margin:0 0 6px">공유 범위에 든 사람은 <b>로그인하면 이 기기에 카카오 키가 자동으로 설정</b>됩니다(카카오 지도 · 카톡 바로 보내기). 범위를 끄면 자동으로 받은 키는 다음 접속 때 지워집니다. 키는 구글 시트 스크립트 속성에만 보관합니다.</p>
+   <div id="dvKs" class="mini" style="margin-bottom:6px"></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="dvKey" class="inp" placeholder="JavaScript 키 32자리" style="flex:1;min-width:220px" autocomplete="off"><label class="mini" style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="dvKi"> 🔑 점검자</label><label class="mini" style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="dvKe"> 👷 직원</label><button class="btn pri" id="dvKsv" type="button">저장</button></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn" id="dvKl" type="button">🔗 설정 링크 직접 보내기 (한 사람)</button><button class="btn" id="dvKd" type="button" style="color:#dc2626">공유 끄고 키 지우기</button></div>
+  </div></details>
+ </div></div></div>
+<div id="dvBar" class="np" hidden style="position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:2700;background:#059669;color:#fff;border-radius:999px;padding:6px 8px 6px 14px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);gap:8px;align-items:center"><span id="dvBarT"></span><button class="btn" id="dvBarX" type="button" style="padding:3px 10px;font-size:12px">끝내기</button></div>
 <div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
  <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
@@ -1033,7 +1058,7 @@ let LY={map:1,base:1,osm:1,pin:1,wso:1,kk:1,clean:0,kkPrev:1,grp:1,route:1};try{
 const lySave=()=>{try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}};
 const kkKey=()=>{if(!LY.kk||LY.clean)return '';try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 /* B안: 팀원용 설정 링크(#kk=키) — 주소의 # 뒤는 서버로 가지 않음. 열면 이 브라우저에 키 저장 후 주소창에서 바로 지움 */
-(()=>{try{const m=/[#&]kk=([0-9a-f]{32})/i.exec(location.hash||'');if(!m)return;localStorage.setItem('mulgil-kakao-key',m[1]);LY.kk=1;localStorage.setItem('mulgil-ly',JSON.stringify(LY));
+(()=>{try{const m=/[#&]kk=([0-9a-f]{32})/i.exec(location.hash||'');if(!m)return;localStorage.setItem('mulgil-kakao-key',m[1]);localStorage.removeItem('mulgil-kk-auto');LY.kk=1;localStorage.setItem('mulgil-ly',JSON.stringify(LY));
  history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>toast('카카오 지도 설정을 받았습니다. 이제 바탕지도가 카카오 지도로 보입니다'),1500)}catch(e){}})();
 const kkKeyRaw=()=>{try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
 const inClaude=()=>/claude|anthropic/.test(location.hostname);
@@ -1067,7 +1092,7 @@ async function kkStart(){const key=kkKey();if(!key||inClaude())return;$('mapInfo
 function kkOpen(){if(inClaude())return toast('Claude 페이지에서는 바깥 지도가 막혀 카카오 지도를 쓸 수 없습니다. 깃허브 판(설치한 앱)에서 쓰세요');$('tbar').classList.remove('open');const k=kkKey();$('kkIn').value=k;$('kkHow').open=!kkKeyRaw();
  $('kkSt').innerHTML=KK?'✔ 지금 카카오 지도로 보고 있습니다.':k?'⚠ 키가 저장돼 있지만 카카오 지도를 불러오지 못했습니다. 키와 등록 주소를 확인하세요.':'키를 넣으면 바탕지도가 카카오 지도로 바뀝니다. 키가 없으면 지금 지도를 씁니다.';$('kkm').classList.add('on')}
 $('bKey').onclick=kkOpen;$('kkX').onclick=()=>$('kkm').classList.remove('on');
-$('kkOk').onclick=()=>{const v=$('kkIn').value.trim();if(!/^[0-9a-f]{32}$/i.test(v))return toast('JavaScript 키는 영문·숫자 32자리입니다');try{localStorage.setItem(KKEY,v)}catch(e){return toast('이 브라우저에 저장할 수 없습니다')}location.reload()};
+$('kkOk').onclick=()=>{const v=$('kkIn').value.trim();if(!/^[0-9a-f]{32}$/i.test(v))return toast('JavaScript 키는 영문·숫자 32자리입니다');try{localStorage.setItem(KKEY,v);localStorage.removeItem('mulgil-kk-auto')}catch(e){return toast('이 브라우저에 저장할 수 없습니다')}location.reload()};
 $('kkLink').onclick=async()=>{const k=$('kkIn').value.trim()||kkKeyRaw();if(!/^[0-9a-f]{32}$/i.test(k))return toast('먼저 JavaScript 키(32자리)를 넣어 주세요');
  const u=location.origin+location.pathname+'#kk='+k,t='2026년 하반기 현장점검 카카오 지도 설정 링크입니다. 휴대폰에서 한 번 눌러 주세요 (팀 내부용, 다른 곳에 올리지 마세요)';
  try{if(navigator.share){await navigator.share({title:'2026년 하반기 현장점검',text:t,url:u});return}}catch(e){if(e&&e.name==='AbortError')return}
@@ -1591,7 +1616,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122084754';
+const BUILD='20261122091223';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3211,7 +3236,7 @@ function shareBox(title,text,url,err){SHX={text,url};try{if(localStorage.getItem
 $('shX').onclick=()=>$('shm').classList.remove('on');
 /* SDK를 못 불러오면 카카오 공유 창 주소를 직접 열기 (도구 파일 없이) */
 function kkDirectUrl(text,url){let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return '';
- const tpl={object_type:'text',text:text.slice(0,200),link:{web_url:url,mobile_web_url:url},button_title:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':'차량 위치 보기'};
+ const tpl={object_type:'text',text:text.slice(0,200),link:{web_url:url,mobile_web_url:url},button_title:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':/kk=/.test(url)?'설정하기':'차량 위치 보기'};
  const ka='sdk/2.8.2 os/javascript sdk_type/javascript lang/ko-KR device/'+(navigator.platform||'web')+' origin/'+encodeURIComponent(location.origin);
  return 'https://sharer.kakao.com/picker/link?app_key='+encodeURIComponent(key)+'&ka='+encodeURIComponent(ka)+'&validation_action=default&validation_params='+encodeURIComponent(JSON.stringify({link_ver:'4.0',template_object:tpl}))}
 $('shK').onclick=()=>{if(!SHX)return;const X=SHX;
@@ -3224,7 +3249,7 @@ $('shC').onclick=async()=>{if(!SHX)return;const t=SHX.text+'\n'+SHX.url;try{awai
 $('shO').onclick=async()=>{if(!SHX)return;try{await navigator.share({text:SHX.text+'\n'+SHX.url})}catch(e){}};
 /* 카카오톡 바로 보내기 — 카카오 키(이 브라우저에 저장된 것)가 있을 때만. 없거나 실패하면 기존 공유창 */
 function kkShare(text,url){return new Promise((ok,no)=>{let key='';try{key=localStorage.getItem(KKEY)||''}catch(e){}if(!key)return no('nokey');
- const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':'차량 위치 보기'});ok()}catch(e){no(e)}};
+ const send=()=>{try{if(!Kakao.isInitialized())Kakao.init(key);Kakao.Share.sendDefault({objectType:'text',text:text.slice(0,200),link:{mobileWebUrl:url,webUrl:url},buttonTitle:/inv=/.test(url)?'초대 받기':/el=/.test(url)?'결과 보기':/kk=/.test(url)?'설정하기':'차량 위치 보기'});ok()}catch(e){no(e)}};
  if(kkReady())return send();kkSdk().then(send).catch(no)})}
 /* 카카오 공유 도구 불러오기: 여러 주소를 차례로 시도 (crossorigin 없이) */
 let KKSDK=null;const KKSRC=['https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js','https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js','https://developers.kakao.com/sdk/js/kakao.min.js'];
@@ -3324,6 +3349,57 @@ $('bDp').onclick=dpOpen;$('bDp2').onclick=dpOpen;
 $('dpGo').onclick=()=>{const D=[...$('dpL').querySelectorAll('input:checked')].map(x=>x.value);if(!D.length)return toast('날짜를 골라 주세요');const F=filt(true);
  $('dpm').classList.remove('on');$('rpt').innerHTML=D.map(d=>dpPage(d,F.filter(r=>r.pd===d).sort((a,b)=>a.no-b.no))).join('');rpFit();
  $('pgs').textContent='@page{size:A4 portrait;margin:12mm}';document.documentElement.classList.add('rpt');addEventListener('afterprint',rpReset,{once:true});setTimeout(()=>{try{window.print()}catch(e){toast('인쇄 창을 열 수 없습니다')}},250)};
+
+/* ── 🛠 개발자 모드 (관리자): 머리글 서용이 5번 → 개발자 비밀번호 ── */
+let DVT='',DVI=null,DVTAP=[];try{const x=JSON.parse(sessionStorage.getItem('mulgil-dtok')||'null');if(x&&x.exp>Date.now())DVT=x.t}catch(e){}
+document.addEventListener('click',e=>{if(!e.target.closest('.hsy'))return;const t=Date.now();DVTAP=DVTAP.filter(x=>t-x<2500);DVTAP.push(t);if(DVTAP.length>=5){DVTAP=[];dvOpen()}});
+function dvOpen(){if(!AUTH||AUTH.role!=='ins')return toast('개발자 모드는 점검자 로그인 후에 열 수 있습니다');$('dvm').classList.add('on');$('dvLk').hidden=!!DVT;$('dvB').hidden=!DVT;$('dvM').textContent='';if(DVT)dvLoad();else setTimeout(()=>$('dvP').focus(),100)}
+$('dvX').onclick=()=>$('dvm').classList.remove('on');
+$('dvGo').onclick=async()=>{const pin=$('dvP').value.trim();if(!pin)return;if(!gsOn())return $('dvM').textContent='구글 시트 주소가 없는 판입니다';const tk=await mlTok();if(!tk)return;
+ try{const j=await gsCall({act:'dev',tok:tk,pin});DVT=j.dtok;try{sessionStorage.setItem('mulgil-dtok',JSON.stringify({t:DVT,exp:Date.now()+12*3600e3}))}catch(e){}$('dvP').value='';if(j.first)toast('개발자 비밀번호를 정했습니다. 따로 적어 두세요');$('dvLk').hidden=true;$('dvB').hidden=false;dvLoad()}
+ catch(e){$('dvM').textContent=String(e);if(/점검자 로그인/.test(String(e)))tokSet('')}};
+$('dvP').addEventListener('keydown',e=>{if(e.key==='Enter')$('dvGo').click()});
+const dvKB=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||'').length}}catch(e){}return n*2};
+function dvLocal(){const H=document.documentElement,k=kkKeyRaw(),lay=['mob','kk','fm','dark','isemp','noadm','clean'].filter(c=>H.classList.contains(c)).join(' · ')||'기본';
+ const R=[['판',(/app-share/.test(location.pathname)?'공개판':'비공개판')+' · 빌드 '+BUILD],['로그인',AUTH?`${AUTH.name} · ${AUTH.role==='ins'?'점검자':AUTH.role==='emp'?'직원':AUTH.role}`:'없음'],['로그인 표(이 기기)',tokOf()?'있음':'없음 (결과 업로드·메일 때 비밀번호 다시 물음)'],['화면 배치',lay+' · '+innerWidth+'×'+innerHeight],
+  ['카카오 키',k?('있음 (…'+k.slice(-4)+')'+(localStorage.getItem('mulgil-kk-auto')?' · 공유로 받음':' · 직접 넣음')):'없음'],['카카오 공유 도구',window.Kakao?(kkReady()?'준비됨':'받음(초기화 전)'):'아직 안 받음'],['구글 시트 연결',gsOn()?'있음':'없음'],['기기',devT()+' · 번호 '+DEVID],['이 기기 저장 공간',(dvKB()/1024).toFixed(0)+' KB 사용'],['설치(앱처럼)',matchMedia('(display-mode: standalone)').matches?'설치된 앱으로 실행 중':'브라우저']];
+ $('dvA').innerHTML='<table class="rtab" style="width:100%;font-size:13px">'+R.map(([a,b])=>`<tr><th style="text-align:left;width:34%">${esc(a)}</th><td>${esc(b)}</td></tr>`).join('')+'</table>';
+ $('dvSite').innerHTML=rows.slice().sort((a,b)=>a.no-b.no).map(r=>`<option value="${esc(r.id)}">${esc(r.tm)} · ${r.pd?esc(dt(r.pd)):'일정 미정'}</option>`).join('')}
+async function dvLoad(){dvLocal();$('dvS').innerHTML='<p class="mini">불러오는 중…</p>';const t0=Date.now();
+ try{const j=await gsCall({act:'devinfo',dtok:DVT}),ms=Date.now()-t0;DVI=j;
+  $('dvS').innerHTML=`<div class="kpis" style="margin-bottom:6px"><div class="kpi"><span>응답</span><b>${ms} ms</b></div><div class="kpi"><span>오늘 메일 한도 남음</span><b>${j.quota}</b></div><div class="kpi"><span>메일 대기 / 보냄</span><b>${j.wait} / ${j.sent}</b></div><div class="kpi"><span>결과(공개/전체)</span><b>${j.pub} / ${j.res}</b></div></div>
+  <p class="mini" style="margin:0 0 6px">자동 이어 보내기 ${j.trig?'<b>켜짐</b>':'꺼짐'} · 로그인 표 ${j.toks}개 · 직원명부 ${j.staff.length}명 · 서버 시각 ${esc(j.now)}</p>
+  <div class="scr" style="max-height:260px;overflow:auto"><table class="rtab" style="width:100%;font-size:12px"><tr><th>받은 시각</th><th>구분</th><th>이름</th><th>권한</th><th>기기</th><th>판</th></tr>${j.logs.map(x=>`<tr${/틀림|오류|막힘/.test(x[2])?' style="color:#dc2626"':''}><td class="nw">${esc(String(x[0]).slice(5,16))}</td><td>${esc(x[2])}</td><td>${esc(x[3])}</td><td>${esc(x[4])}</td><td>${esc(x[5])}</td><td>${esc(x[7]||'')}</td></tr>`).join('')}</table></div>`;
+  $('dvEmp').innerHTML='<option value="">직원 고르기</option>'+j.staff.map((x,i)=>`<option value="${i}">${esc(x.n)}${x.s?' · '+esc(x.s):''}</option>`).join('');dvKst()}
+ catch(e){$('dvS').innerHTML='<p class="mini warn">'+esc(String(e))+'</p>';if(/만료/.test(String(e))){DVT='';try{sessionStorage.removeItem('mulgil-dtok')}catch(_){}$('dvLk').hidden=false;$('dvB').hidden=true}}}
+$('dvRf').onclick=e=>{e.preventDefault();dvLoad()};
+/* 👷 직원 화면 미리보기: 메모리에서만 직원으로 바꿈 → 끝내기는 새로고침 */
+$('dvEmpGo').onclick=()=>{const i=$('dvEmp').value;if(i===''||!DVI)return toast('직원을 골라 주세요');const x=DVI.staff[+i];
+ AUTH={role:'emp',name:x.n,site:x.s||'',dept:'',h:LOCK.salt,exp:Date.now()+36e5,_pv:1};ADM=false;const H=document.documentElement;H.classList.add('isemp','noadm');
+ $('dvm').classList.remove('on');try{whoInit()}catch(e){}derive();render();$('dvBarT').textContent=`👷 ${x.n} 화면 미리보기 중 (저장 안 됨)`;$('dvBar').hidden=false;$('dvBar').style.display='flex';logEv('개발자: 직원 화면 미리보기',x.n,'ins')};
+$('dvBarX').onclick=()=>location.reload();
+$('dvMail').onclick=async()=>{const id=$('dvSite').value,r=rows.find(x=>x.id===id);if(!r)return;$('dvPv').innerHTML='<p class="mini">불러오는 중…</p>';
+ try{const j=await gsCall({act:'devmail',dtok:DVT,rd:r.rd||RD,site:id});const f=document.createElement('iframe');f.setAttribute('sandbox','');f.style.cssText='width:100%;height:420px;border:1px solid #cbd5e1;border-radius:10px;background:#fff';f.srcdoc=j.html;$('dvPv').innerHTML=`<p class="mini" style="margin:0 0 4px">${j.pub?'공개된 결과':'<span class="warn">비공개 결과 — 실제로는 보내지지 않음</span>'} · 첫 번째 개별평가 대상 기준 미리보기</p>`;$('dvPv').appendChild(f)}
+ catch(e){$('dvPv').innerHTML='<p class="mini warn">'+esc(String(e))+'</p>'}};
+$('dvKkP').onclick=()=>{const r=rows.find(x=>x.id===$('dvSite').value);if(!r)return;$('dvPv').innerHTML=`<div style="max-width:300px;background:#fee500;border-radius:14px;padding:12px 14px;color:#191919;font-size:13px;line-height:1.5"><b>[2026년 하반기 현장점검]</b> ○○ 님, ${esc(r.tm)} 현장 점검 결과가 나왔습니다.<br>[결과 보기]를 누르면 바로 내 결과가 열립니다. (본인 전용 · 7일 유효 · 다른 사람에게 전달하지 마세요)<div style="margin-top:8px;background:#fff;border-radius:8px;text-align:center;padding:7px;font-weight:700">결과 보기</div></div>`};
+$('dvBan').onclick=()=>{$('dvm').classList.remove('on');$('rbT').innerHTML='<b>점검 결과가 나왔습니다</b><br>○○ 현장 · 팀 평가와 내 개별평가를 확인하세요 (미리보기)';$('resB').dataset.k='[]';$('resB').classList.add('on')};
+$('dvHelp').onclick=()=>{try{localStorage.removeItem('mulgil-help')}catch(e){}$('dvm').classList.remove('on');helpOpen()};
+$('dvSeen').onclick=()=>{try{localStorage.removeItem('mulgil-resseen')}catch(e){}toast("'본 결과' 기록을 지웠습니다 (직원 배너가 다시 뜸)")};
+$('dvDraft').onclick=async()=>{const K=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/draft|tmp|임시/i.test(k))K.push(k)}}catch(e){}if(!K.length)return toast('지울 임시 저장이 없습니다');if(!await ask(`임시 저장 ${K.length}개를 지울까요? (저장한 점검표는 그대로)`))return;K.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});toast('임시 저장을 지웠습니다')};
+$('dvCache').onclick=async()=>{if(!await ask('캐시를 비우고 앱을 새로 받을까요? (로그인·기록은 그대로)'))return;try{if(window.caches){const K=await caches.keys();await Promise.all(K.map(k=>caches.delete(k)))}if(navigator.serviceWorker){const R=await navigator.serviceWorker.getRegistrations();await Promise.all(R.map(r=>r.update().catch(()=>{})))}}catch(e){}location.href=location.pathname+'?v='+Date.now()};
+$('dvTok').onclick=async()=>{try{const j=await gsCall({act:'devclean',dtok:DVT});toast(`만료된 로그인 표 ${j.removed}개를 정리했습니다`);dvLoad()}catch(e){toast(String(e))}};
+$('dvDiag').onclick=()=>{const H=document.documentElement;logEv(`진단 ${devT()} ${innerWidth}x${innerHeight} ${['mob','kk','fm','dark','isemp'].filter(c=>H.classList.contains(c)).join('+')} 현장${rows.length} 키${kkKeyRaw()?'O':'X'} 표${tokOf()?'O':'X'}`.slice(0,90),AUTH&&AUTH.name,AUTH&&AUTH.role);logFlush();toast('진단 한 줄을 시트 접속기록으로 보냈습니다')};
+/* 🗝 카카오 키 공유 */
+async function dvKst(){try{const j=await gsCall({act:'kkstat',dtok:DVT});$('dvKi').checked=!!(j.scope||{}).ins;$('dvKe').checked=!!(j.scope||{}).emp;$('dvKs').innerHTML=j.has?`지금: 키 …${esc(j.tail)} · 공유 범위 <b>${[(j.scope||{}).ins?'점검자':'',(j.scope||{}).emp?'직원':''].filter(Boolean).join(' · ')||'없음'}</b>`:'지금: 서버에 공유 키 없음';if(!$('dvKey').value)$('dvKey').value=kkKeyRaw()||''}catch(e){$('dvKs').textContent=String(e)}}
+$('dvKsv').onclick=async()=>{const k=$('dvKey').value.trim();if(!/^[0-9a-f]{32}$/i.test(k))return toast('JavaScript 키 32자리를 넣어 주세요');const sc={ins:$('dvKi').checked,emp:$('dvKe').checked};
+ if(!await ask(`카카오 키를 ${[sc.ins?'점검자':'',sc.emp?'직원':''].filter(Boolean).join(' · ')||'아무에게도 안'} 공유할까요?`))return;try{await gsCall({act:'kkset',dtok:DVT,key:k,scope:sc});toast('저장했습니다. 해당하는 사람은 다음 접속 때 자동 설정됩니다');dvKst()}catch(e){toast(String(e))}};
+$('dvKd').onclick=async()=>{if(!await ask('카카오 키 공유를 끄고 서버의 키를 지울까요? (공유로 받은 기기의 키도 다음 접속 때 지워짐)'))return;try{await gsCall({act:'kkset',dtok:DVT,key:'',scope:{}});toast('공유를 껐습니다');dvKst()}catch(e){toast(String(e))}};
+$('dvKl').onclick=()=>{const k=$('dvKey').value.trim()||kkKeyRaw();if(!/^[0-9a-f]{32}$/i.test(k))return toast('JavaScript 키 32자리를 넣어 주세요');shareBox('🔗 카카오 지도 설정 링크','2026년 하반기 현장점검 카카오 지도 설정 링크입니다. 휴대폰에서 한 번 눌러 주세요 (팀 내부용, 다른 곳에 올리지 마세요)',location.origin+location.pathname+'#kk='+k)};
+/* 로그인한 사람: 공유 범위면 카카오 키 자동 설정 / 범위에서 빠지면 자동으로 받은 키 지움 */
+async function kkAuto(){if(!AUTH||AUTH._pv||!gsOn()||inClaude())return;const tk=tokOf();if(!tk)return;try{const j=await gsCall({act:'kkget',tok:tk});const cur=kkKeyRaw(),auto=localStorage.getItem('mulgil-kk-auto');
+ if(j.key&&j.key!==cur&&(!cur||auto)){localStorage.setItem(KKEY,j.key);localStorage.setItem('mulgil-kk-auto','1');LY.kk=1;try{localStorage.setItem('mulgil-ly',JSON.stringify(LY))}catch(e){}toast('카카오 지도 키가 자동으로 설정됐습니다. 다시 불러옵니다');setTimeout(()=>location.reload(),1500)}
+ else if(!j.key&&auto&&cur){localStorage.removeItem(KKEY);localStorage.removeItem('mulgil-kk-auto');toast('카카오 키 공유가 꺼져 이 기기의 키를 지웠습니다');setTimeout(()=>location.reload(),1500)}}catch(e){}}
+setTimeout(kkAuto,5000);
 /* ── 📝 한글(HWPX) 저장: 출력과 같은 내용 (스마트 물길주소의 HWPX 공용 함수 그대로) ── */
 const HWPX={W:48190,MM:283.465};
 const hwX=s=>String(s??'').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
