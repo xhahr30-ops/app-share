@@ -1494,6 +1494,8 @@ html.dark svg.ri{color:var(--cd)!important}
 #qzBox .qzx b{color:#0f172a}
 #qzBox .qzbtn{width:100%;margin-top:12px;padding:12px;font-size:16px;font-weight:700;color:#fff;background:#4f46e5;border:0;border-radius:10px;cursor:pointer;font-family:inherit}
 #qzBox .qzbtn.sub{background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe}
+#qzBox .qzsk{display:block;width:100%;margin-top:8px;padding:9px;font-size:13.5px;font-weight:700;color:#64748b;background:transparent;border:1.5px dashed #cbd5e1;border-radius:10px;cursor:pointer;font-family:inherit}
+#qzBox .qzsk:hover{background:#f1f5f9;color:#334155}
 #qzBox .qzs{font-size:40px;font-weight:800;text-align:center;margin:8px 0 2px}
 #qzBox .qzm{text-align:center;font-size:13.5px;color:#475569;line-height:1.5}
 #qzBox .qzf{font-size:11px;color:#94a3b8;margin-top:12px;text-align:center}
@@ -1508,7 +1510,11 @@ html.qzon,html.qzon body{overflow:hidden!important}
  function LG(k){try{return localStorage.getItem(k)}catch(e){return null}}
  function LS(k,v){try{localStorage.setItem(k,v)}catch(e){}}
  function done(){var v=LG(K);return !!v&&v.split('|')[0]===QZ_VER}
- window.__qzReset=function(){try{localStorage.removeItem(K)}catch(e){}};
+ window.__qzReset=function(){try{localStorage.removeItem(K);sessionStorage.removeItem(K+'-skip')}catch(e){}};
+ /* ⏩ 건너뛰기: 급할 때 바로 앱 사용. 통과 기록은 안 남김 → 이 창(탭)에서만 안 묻고, 앱을 다시 열면 또 물음 */
+ /* 건너뛰기는 이 기기에서 판마다 3번까지(geo-quiz-skip = 판|횟수, BK_SKIP) */
+ var SKMAX=3;function skN(){var v=LG(K+'-skip')||'';return v.split('|')[0]===QZ_VER?(+v.split('|')[1]||0):0}
+ function skipped(){try{return sessionStorage.getItem(K+'-skip')===QZ_VER}catch(e){return false}}
  var Q=[];try{Q=JSON.parse(document.getElementById('qzKB').textContent)}catch(e){}
  function E(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
  function mix(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
@@ -1521,11 +1527,14 @@ html.qzon,html.qzon body{overflow:hidden!important}
   return mix(out)}
  var box,set,i,score,wrong;
  function stop(ev){ev.stopPropagation()}
- function start(){if(box||done()||Q.length<N)return;
+ function start(){if(box||done()||skipped()||Q.length<N)return;
   box=document.createElement('div');box.id='qzBox';box.setAttribute('role','dialog');box.setAttribute('aria-label','앱 사용 전 용어 퀴즈');
   ['pointerdown','touchstart','mousedown','click','keydown','keyup'].forEach(function(e){box.addEventListener(e,stop)});
   document.body.appendChild(box);document.documentElement.classList.add('qzon');intro()}
- function card(h){box.innerHTML='<div class="qzc">'+h+'<div class="qzf">만든이: 구병순 · 포항시 서용이·포항이</div></div>'}
+ function close(){if(!box)return;box.remove();box=null;document.documentElement.classList.remove('qzon');window.dispatchEvent(new Event('resize'))}
+ function skip(){if(skN()>=SKMAX)return;LS(K+'-skip',QZ_VER+'|'+(skN()+1));try{sessionStorage.setItem(K+'-skip',QZ_VER)}catch(e){}close()}
+ function SK(){var r=SKMAX-skN();return r>0?'<button class="qzsk" id="qzSk" title="통과 기록은 남지 않아 앱을 다시 열면 또 묻습니다">⏩ 급해요, 건너뛰고 바로 쓰기 <span style="font-weight:500">(남은 '+r+'번 · 다음에 다시 물음)</span></button>':'<div class="qzf" style="color:#b45309">⏩ 건너뛰기 '+SKMAX+'번을 다 썼습니다. 이제 풀어야 앱을 쓸 수 있습니다.</div>'}
+ function card(h){box.innerHTML='<div class="qzc">'+h+(h.indexOf('id="qzEnd"')<0?SK():'')+'<div class="qzf">만든이: 구병순 · 포항시 서용이·포항이</div></div>';var sk=box.querySelector('#qzSk');if(sk)sk.onclick=skip}
  function intro(){var nm=LG('geo-user')||'';
   card('<div style="font-size:36px;line-height:1;text-align:center">🎓</div><div style="font-size:18px;font-weight:800;margin-top:8px;text-align:center">앱 사용 전 용어 확인</div>'
    +'<div class="qzm" style="margin-top:8px">'+(nm?E(nm)+' 님, ':'')+'상수도 용어 '+N+'문제를 풀어 주세요.<br>'+PASS+'개 이상 맞으면 이 기기에서는 다시 묻지 않습니다.<br><span style="font-size:12px;color:#64748b">문제는 상수도관망시설운영관리사 1급 교안(시험형), 📚 백과사전(상수도설계기준 2025·노후상수도 정비사업 지침·관망진단 매뉴얼), 회사 보고서 작성 요령에서 냅니다.</span></div>'
@@ -1549,9 +1558,9 @@ html.qzon,html.qzon body{overflow:hidden!important}
    +(wrong.length?'<div class="qzx"><b>틀린 문제</b>'+wrong.map(function(q){return '<div style="margin-top:6px">• '+E(q[1])+'<br>&nbsp;&nbsp;→ <b style="color:#047857">'+E(q[2])+'</b> <span style="color:#64748b">('+E(q[4])+' · '+E(q[5])+')</span></div>'}).join('')+'</div>':'')
    +(pass?'<button class="qzbtn" id="qzEnd">앱 시작</button>':'<button class="qzbtn" id="qzRe">다시 풀기</button>'));
   var b=box.querySelector(pass?'#qzEnd':'#qzRe');
-  b.onclick=pass?function(){box.remove();box=null;document.documentElement.classList.remove('qzon');window.dispatchEvent(new Event('resize'))}:function(){set=pick();i=0;score=0;wrong=[];ask()};b.focus()}
+  b.onclick=pass?close:function(){set=pick();i=0;score=0;wrong=[];ask()};b.focus()}
  /* 잠금 화면이 사라지면 시작(이미 열린 기기는 바로) */
- function watch(){if(done())return;if(!document.getElementById('lockBox')){start();return}
+ function watch(){if(done()||skipped())return;if(!document.getElementById('lockBox')){start();return}
   var mo=new MutationObserver(function(){if(!document.getElementById('lockBox')){mo.disconnect();start()}});mo.observe(document.body,{childList:true})}
  if(document.body)watch();else document.addEventListener('DOMContentLoaded',watch);
 })();
