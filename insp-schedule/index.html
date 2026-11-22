@@ -1684,7 +1684,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122114647';
+const BUILD='20261122120448';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3147,7 +3147,7 @@ let MLS=null;
 async function mlTok(){let tk=tokOf();if(tk)return tk;const pw=prompt('메일을 보내려면 점검자 비밀번호를 한 번 넣어 주세요 (이 기기에 30일 기억)');if(!pw)return '';tk=await tokGet(pw.trim(),AUTH.name);if(!tk)toast('비밀번호가 맞지 않습니다');return tk}
 async function mlOpen(){if(!ADM||!EVS.id)return;if(!gsOn())return toast('구글 시트 주소가 없어 메일을 보낼 수 없습니다');if(EVS.dirty)return toast('점검표를 먼저 저장해 주세요');if(!EVS.w.pub)return toast("먼저 '직원에게 결과 공개'를 체크하고 저장해 주세요");
  const r=rows.find(x=>x.id===EVS.id);const tk=await mlTok();if(!tk)return;MLS={rd:r.rd||RD,site:r.id,tm:r.tm,tk};$('mlL').innerHTML='<p class="mini">받을 사람 확인 중…</p>';$('mlI').textContent=r.tm+' 현장';$('mlm').classList.add('on');
- gsCall({act:'pkstat',tok:tk}).then(p=>{MLS.pk=!!p.has;$('mlPk').innerHTML=p.has?`관리자 메일 <b>${esc(p.to)}</b>로 <b>엑셀(이메일·이름·현장명) 1통</b>을 보내면, 피클이 고른 사람들에게 업무연락으로 보냅니다. 내용: 결과 공개 안내 + 앱 주소(각자 이메일로 로그인해 확인).`:'<span class="warn">관리자 메일 주소가 없습니다 — 개발자 모드 🛠 → 📮 관리자 메일에서 넣어 주세요.</span>';}).catch(()=>{});
+ gsCall({act:'pkstat',tok:tk}).then(p=>{MLS.pk=!!p.has;$('mlPk').innerHTML=p.has?`관리자 메일 <b>${esc(p.to)}</b>로 <b>엑셀(이메일·이름·현장명) 1통</b>을 보내면, 피클이 고른 사람들에게 업무연락으로 보냅니다. 내용: 결과 공개 안내 + 앱 주소 + <b>본인 로그인 이메일(직원명부 등록 주소)</b>.`:'<span class="warn">관리자 메일 주소가 없습니다 — 개발자 모드 🛠 → 📮 관리자 메일에서 넣어 주세요.</span>';}).catch(()=>{});
  try{const j=await gsCall({act:'mailprev',tok:tk,rd:MLS.rd,site:MLS.site});const L=j.list||[];
   $('mlI').innerHTML=`<b>${esc(r.tm)}</b> 현장 · 결과 저장 ${esc(String(j.at||'').slice(0,16))} · 오늘 남은 메일 한도 <b>${j.quota}</b>통`;
   $('mlL').innerHTML=L.length?L.map((x,i)=>`<label style="display:flex;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line,#e2e8f0)"><input type="checkbox" data-n="${esc(x.n)}" ${x.ok?(x.st==='보냄'||x.st==='대기'||x.st==='피클 전달'?'':'checked'):'disabled'}><span style="flex:1"><b>${esc(x.n)}</b> <span class="mini">${x.ok?esc(x.em):'<span class="warn">'+esc(x.why)+'</span>'}${x.ok&&!x.hasMine?' · 개별평가 없음(팀 결과만)':''}</span></span><span class="mini">${x.st==='보냄'?'✓ 보냄 '+esc(String(x.t).slice(5,16)):x.st==='대기'?'⏳ 대기':x.st==='피클 전달'?'🥒 피클 '+esc(String(x.t).slice(5,16)):''}</span></label>`).join(''):'<p class="mini">이 현장의 수검 인원이 없습니다.</p>'}
