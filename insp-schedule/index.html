@@ -1686,7 +1686,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122125045';
+const BUILD='20261122125348';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3522,7 +3522,7 @@ function rEvt(){const el=$('p-evt');if(!el)return;if(!ADM){el.innerHTML='<p clas
  const C={all:L.length,today:L.filter(x=>x.r.pd===t).length,no:L.filter(x=>x.g.st==='미작성').length,ing:L.filter(x=>x.g.st==='작성 중').length,done:L.filter(x=>x.g.st==='완료').length};
  const F=L.filter(x=>EVTF==='all'||(EVTF==='today'&&x.r.pd===t)||(EVTF==='no'&&x.g.st==='미작성')||(EVTF==='ing'&&x.g.st==='작성 중')||(EVTF==='done'&&x.g.st==='완료'));
  const chip=(k,l)=>`<button type="button" class="btn${EVTF===k?' pri':''}" data-ef="${k}" style="padding:5px 10px;font-size:13px">${l} <b>${C[k]}</b></button>`;
- let h=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">${chip('all','전체')}${chip('today','오늘')}${chip('no','미작성')}${chip('ing','작성 중')}${chip('done','완료')}</div>`;
+ const GP=rosterGaps();let h=(GP.length?`<div class="evlk" style="background:#fef3c7;border-color:#fde68a">⚠ 이 기기 명단에서 빠진 사람이 있는 현장 <b>${GP.length}곳</b>: ${GP.map(g=>`${esc(g.r.tm)}(${g.miss.length})`).join(' · ')} <button type="button" class="btn" data-rfa="1" style="padding:2px 10px;font-size:12.5px">모두 되살리기</button></div>`:`<div class="mini" style="margin:0 0 6px;color:#059669">✓ 명단 점검: 모든 현장 명단이 일정 엑셀과 맞습니다(빼기 · 이동 제외)</div>`)+`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px">${chip('all','전체')}${chip('today','오늘')}${chip('no','미작성')}${chip('ing','작성 중')}${chip('done','완료')}</div>`;
  if(!F.length)h+='<p class="mini">해당하는 현장이 없습니다.</p>';let last=null;
  F.forEach(({r,g})=>{if(r.pd!==last){last=r.pd;h+=`<div class="evtd${r.pd===t?' now':''}">${r.pd?esc(dt(r.pd))+(r.pd===t?' · 오늘':''):'일정 미정'}</div>`}
   const col=g.st==='완료'?'#059669':g.st==='작성 중'?'#d97706':'#94a3b8';
@@ -3530,7 +3530,7 @@ function rEvt(){const el=$('p-evt');if(!el)return;if(!ADM){el.innerHTML='<p clas
    <div class="mini" style="margin-top:2px">팀평가 ${g.tn}/${g.tt} · 개별평가 ${g.pn}/${g.pt}명</div><div class="evtb"><i style="width:${g.pct}%;background:${col}"></i></div></div>
    <button type="button" class="btn${g.st==='완료'?'':' pri'}" data-eo="${esc(r.id)}" style="flex:none">${ic('clip')} ${g.st==='미작성'?'작성':g.st==='완료'?'보기':'이어 쓰기'}</button></div>`});
  el.innerHTML=h}
-$('p-evt').addEventListener('click',e=>{const f=e.target.closest('[data-ef]');if(f){EVTF=f.dataset.ef;rEvt();return}const o=e.target.closest('[data-eo]');if(o)openEv(o.dataset.eo)});
+$('p-evt').addEventListener('click',e=>{if(e.target.closest('[data-rfa]')){rosterFixAll();return}const f=e.target.closest('[data-ef]');if(f){EVTF=f.dataset.ef;rEvt();return}const o=e.target.closest('[data-eo]');if(o)openEv(o.dataset.eo)});
 
 /* ── 👥 수검 인원 추가 · 이동 · 평가 제외 (공통 담당 · 대리 입력) + 일정·명단 공유(시트) ── */
 const SCHK=['pd','st','lead','solo','tl','mem','exc','ldx'];
@@ -3544,6 +3544,11 @@ function roOpen(mode){const r=rows.find(x=>x.id===EVS.id);if(!r)return;if(!canSe
 $('roX').onclick=$('roNo').onclick=()=>$('rom').classList.remove('on');
 /* 처음 받은 일정 엑셀(SEED)의 같은 현장 — 겹치는 이름은 현장명 붙은 형태로 */
 function seedOf(r){if(!r||typeof SEED==='undefined'||!SEED.length)return null;const o=SEED.find(x=>x.tm===r.tm);if(!o)return null;const fx=v=>COLN.has(v)?o.tm+v:v;return {...o,lead:fx(o.lead||''),solo:fx(o.solo||''),tl:fx(o.tl||''),mem:(o.mem||[]).map(fx),exc:[]}}
+/* 전 현장 명단 점검: 일정 엑셀(SEED)에 있는데 이 기기 명단에서 빠진 사람 (빼기·이동한 사람 제외) */
+function rosterGaps(){return rows.map(r=>{const sd=seedOf(r);if(!sd)return null;const miss=people(sd).filter(n=>!people(r).includes(n)&&!(r.exc||[]).some(x=>x.n===n)&&!rows.some(x=>x.id!==r.id&&people(x).includes(n)));return miss.length?{r,miss}:null}).filter(Boolean)}
+async function rosterFixAll(){const G=rosterGaps();if(!G.length)return toast('빠진 명단이 없습니다');if(!await ask(`${G.length}곳에서 빠진 ${G.reduce((a,g)=>a+g.miss.length,0)}명을 일정 엑셀 명단대로 되살릴까요?`))return;
+ for(const g of G){const sd=seedOf(g.r),x={...g.r};['lead','solo','tl'].forEach(k=>{if(!real(x[k])&&real(sd[k])&&g.miss.includes(sd[k]))x[k]=sd[k]});x.mem=[...(x.mem||[]),...g.miss.filter(n=>![x.lead,x.solo,x.tl].includes(n))];await putRow(x,true);nwAdd(x.id,`${x.tm} 명단 되살리기: ${g.miss.join(', ')}`)}
+ derive();render();toast(`${G.length}곳 명단을 되살렸습니다 · 시트로 공유합니다`)}
 function evPplRebuild(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const P=people(r),W=EVS.w;W.ppl=P.map(n=>(W.ppl||[]).find(x=>x.n===n)||{n,it:{}});if(EVS.pi>=W.ppl.length)EVS.pi=Math.max(0,W.ppl.length-1);evPaneRefresh()}
 $('roGo').onclick=async()=>{if(!ROM)return;const r={...rows.find(x=>x.id===ROM.id)};const now=new Date().toISOString(),me=(AUTH&&AUTH.name)||'';
  if(ROM.mode==='add'){let n=$('roN').value.trim().slice(0,20);if(!n)return toast('이름을 넣어 주세요');if(people(r).includes(n))return toast('이미 명단에 있습니다');
