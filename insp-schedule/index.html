@@ -486,6 +486,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 #iab{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.92);display:flex;align-items:center;justify-content:center;padding:20px}#iab[hidden]{display:none}#iab .iabx{background:#fff;color:#1e293b;border-radius:20px;padding:22px 20px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center}
 .evtd{font-weight:800;font-size:13px;color:var(--ink2);margin:10px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--line)}.evtd.now{color:var(--ind)}.evtr{display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line)}.evts{display:inline-block;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:4px}.evtb{height:6px;border-radius:99px;background:var(--sub2);margin-top:5px;overflow:hidden}.evtb i{display:block;height:100%;border-radius:99px}
 .evlk{font-size:12.5px;background:var(--ind1);border:1px solid var(--ind2);border-radius:10px;padding:6px 10px;margin:0 0 8px;color:var(--ink)}.evi.ro{opacity:.55}.evi.ro .seg button{cursor:not-allowed}.evby{font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--sub2);color:var(--ink2);margin-left:4px}.evby.me{background:#d1fae5;color:#065f46}
+.evpt button.addp{border-style:dashed;color:var(--ind)}.evexc{margin-top:10px;padding:8px 10px;border:1px dashed var(--line2);border-radius:10px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.evexc i{color:var(--mute);font-style:normal;font-size:12px}
 .evpt{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;margin:4px 0 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2;scrollbar-width:thin}.evpt button{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--sub);color:var(--ink);cursor:pointer;font-family:inherit;min-height:44px}.evpt button b{font-size:14px}.evpt button span{font-size:11px;color:var(--mute)}.evpt button.ok{border-color:#059669}.evpt button.ok span{color:#059669}.evpt button.on{background:var(--ind);border-color:var(--ind);color:#fff}.evpt button.on span{color:#e0e7ff}.evpt button.tm{border-style:dashed}.evpt button.tm.on{border-style:solid}.evph{margin:2px 0 6px;font-size:15px}.evpn{display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px}
 #dvm table{border-collapse:collapse}#dvm th,#dvm td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}#dvm th{color:var(--ink2);font-weight:700}#dvm .kpi{background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column}#dvm .kpi span{font-size:11px;color:var(--mute)}#dvm .kpi b{font-size:16px;color:var(--ink)}#dvm summary .btn{margin-left:6px}
 .dp-map{width:100%;height:auto;border:1px solid #94a3b8;border-radius:6px;display:block;margin:2px 0 6px;background:#dbeafe}
@@ -747,6 +748,13 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  <p class="mini" id="iabH" style="margin:8px 0 0"></p>
  <button type="button" class="btn" id="iabCp" style="width:100%;justify-content:center;margin-top:6px">🔗 주소 복사</button>
  <button type="button" id="iabX" style="margin-top:10px;background:none;border:0;color:#64748b;text-decoration:underline;font-size:12.5px;cursor:pointer;font-family:inherit">그래도 여기서 잠깐 보기 (저장·인쇄 안 됨)</button></div></div>
+<div class="modal np" id="rom"><div class="mbox" style="max-width:420px;margin-top:80px">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b id="roT"></b><button class="btn" id="roX" type="button"><i class="ii" data-i="x"></i></button></div>
+ <div id="roA"><label class="mini">이름</label><input id="roN" class="inp" placeholder="예: 홍*동 (공개판은 가운데를 *로 가려서)" autocomplete="off"><label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="roL"> 팀장급(권역팀장·단독팀장·팀장) — 영업 개별평가 2항목 추가</label></div>
+ <div id="roM"><label class="mini">옮길 현장 (같은 회차)</label><select id="roS" class="inp"></select><p class="mini" style="margin:6px 0 0">이미 입력한 개별평가 점수도 함께 옮깁니다.</p></div>
+ <div id="roE"><label class="mini">빼는 이유</label><select id="roW" class="inp"><option>휴직</option><option>퇴사</option><option>출장·교육</option><option>현장 이동</option><option>기타</option></select><p class="mini" style="margin:6px 0 0">지우지 않고 '평가 제외'로 남아 언제든 되돌릴 수 있습니다. 입력한 점수는 보관됩니다.</p></div>
+ <p class="mini" style="margin:8px 0 0">바꾼 명단은 이 기기에 바로 적용되고, 시트를 거쳐 다른 점검자 · 직원 화면에도 맞춰집니다(인원수 · 서용이 크기 · 결과 메일/카톡 받을 사람).</p>
+ <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px"><button class="btn" id="roNo" type="button">취소</button><button class="btn pri" id="roGo" type="button">확인</button></div></div></div>
 <div class="modal np" id="myr"><div class="mbox" style="max-width:520px;margin-top:40px">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📊 내 점검 결과</b><button class="btn" id="myrX" type="button"><i class="ii" data-i="x"></i></button></div>
  <div id="myrB" style="max-height:70vh;overflow:auto"></div><p class="mini" style="margin:8px 0 0">점검자가 공개한 현장의 팀 평가·본인 개별평가·지적사항·후속 조치만 보입니다. 다른 사람의 개별평가는 보이지 않습니다.</p></div></div>
@@ -880,7 +888,7 @@ html:not(.fm) main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 <details class="hlp"><summary>📊 결과 공개 · 결과 메일 (점검자)</summary><div><ul>
 <li><b>공개</b>: 점검표 아래 <b>직원에게 결과 공개</b>를 체크하고 <b>점검표 저장</b> → 관리자 구글 시트 '점검결과' 탭에 올라가고 직원이 '내 결과'에서 봅니다. 체크를 풀고 저장하면 다시 비공개.</li>
 <li><b>📧 결과 메일</b>(점검표 아래): 받을 사람 목록(직원명부 일치·가린 메일 주소·보냄 여부)을 확인하고 <b>보내기</b>. 각자에게 <b>본인 결과만</b> 갑니다. 명부에 없거나 같은 가림 이름이 여럿이면 '확인 필요'로 빠집니다.</li>
-<li><b>여러 점검자가 한 현장</b>: 일정의 <b>기술 · 영업 · 공통</b> 담당이 각자 폰에서 <b>자기 부문만</b> 입력합니다(공통 담당은 개별평가 · 이전 지적 · 직원 공개까지). 다른 부문은 🔒 읽기만이고, 점검표를 열면 다른 점검자가 저장한 부문을 시트에서 불러와 합칩니다. 담당이 아닌 사람(관리자)은 모든 부문 대리 입력 가능.</li><li><b>📋 점검표 작성 탭</b>(점검자): 현장별 작성 상태(미작성·작성 중·완료·공개)와 팀평가·개별평가 진행을 보고 <b>작성 / 이어 쓰기</b>로 바로 엽니다. 점검표 안 위쪽 칸은 <b>🏢 팀명</b>(그 현장 팀평가) → 사람 이름(개별평가) 순서, ✓는 입력 끝.</li><li><b>💬 카톡 결과</b>(점검표 아래): 받을 사람을 고르고 <b>🔗 결과 링크 만들기</b> → 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방 선택. 카톡에는 점수 없이 [결과 보기] 버튼만 가고, 누르면 직원 모드로 본인 결과가 열립니다(본인 전용 · 7일 유효).</li><li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
+<li><b>여러 점검자가 한 현장</b>: 일정의 <b>기술 · 영업 · 공통</b> 담당이 각자 폰에서 <b>자기 부문만</b> 입력합니다(공통 담당은 개별평가 · 이전 지적 · 직원 공개까지). 다른 부문은 🔒 읽기만이고, 점검표를 열면 다른 점검자가 저장한 부문을 시트에서 불러와 합칩니다. 담당이 아닌 사람(관리자)은 모든 부문 대리 입력 가능.</li><li><b>👥 수검 인원</b>(개별평가, 공통 담당): 이름 칸 끝 <b>＋ 인원</b>으로 추가(팀장급 선택), 사람을 고르고 <b>⇄ 다른 현장으로</b>(입력한 점수도 같이) · <b>🚫 평가에서 빼기</b>(휴직·퇴사 등, 아래 '되돌리기'). 점검일 · 상태 · 명단을 바꾸면 시트를 거쳐 <b>다른 점검자 · 직원 화면에도 자동으로 맞춰집니다</b>(앱을 열 때 · 5분마다).</li><li><b>📋 점검표 작성 탭</b>(점검자): 현장별 작성 상태(미작성·작성 중·완료·공개)와 팀평가·개별평가 진행을 보고 <b>작성 / 이어 쓰기</b>로 바로 엽니다. 점검표 안 위쪽 칸은 <b>🏢 팀명</b>(그 현장 팀평가) → 사람 이름(개별평가) 순서, ✓는 입력 끝.</li><li><b>💬 카톡 결과</b>(점검표 아래): 받을 사람을 고르고 <b>🔗 결과 링크 만들기</b> → 한 사람씩 <b>💬 보내기</b> → 카톡에서 그 사람 대화방 선택. 카톡에는 점수 없이 [결과 보기] 버튼만 가고, 누르면 직원 모드로 본인 결과가 열립니다(본인 전용 · 7일 유효).</li><li><b>메일 한도</b>: 하루 한도가 차면 시트 '메일발송' 탭에 <b>대기</b>로 남고, 한도가 풀리면(보통 다음날) <b>1시간마다 자동으로 이어서</b> 보냅니다.</li>
 <li><b>👤 개인별 결과표</b>(점검결과 출력 → 종류): 개별평가를 입력한 사람마다 A4 1장(본인 배포용, 다른 사람 점수·면담 제외).</li>
 <li>메일 주소는 구글 시트 '직원명부'에서만 쓰고, 앱·깃허브에는 넣지 않습니다.</li></ul></div></details>
 <details class="hlp"><summary>🚐 차량 위치 · 팀장에게 알리기</summary><div><ul>
@@ -962,7 +970,7 @@ const md=s=>{const d=pDate(s);return d?(d.getMonth()+1)+'/'+d.getDate():'-'};
 const dt=s=>pDate(s)?md(s)+'('+wd(s)+')':'일정 미정';
 const ddays=s=>{const d=pDate(s);return d?Math.round((d-today())/864e5):null};
 const real=v=>v&&v!=='-';
-const people=r=>[r.lead,r.solo,r.tl,...(r.mem||[])].filter(real).filter((v,i,a)=>a.indexOf(v)===i);
+const people=r=>[r.lead,r.solo,r.tl,...(r.mem||[])].filter(real).filter((v,i,a)=>a.indexOf(v)===i).filter(n=>!(r.exc||[]).some(x=>x.n===n));
 const cnt=r=>r._oth?(r._n||0):people(r).length;
 const hasPin=r=>isFinite(r.lat)&&isFinite(r.lng)&&r.lat!==null&&r.lng!==null;
 function stOf(r){if(r.st==='예정'){const d=ddays(r.pd);if(d!==null&&d<0)return '지연'}return r.st||'예정'}
@@ -973,7 +981,7 @@ const STC={'예정':'#0284c7','완료':'#059669','연기':'#d97706','취소':'#6
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2800)}
 function ask(t){return new Promise(res=>{$('cfT').textContent=t;$('cf').classList.add('on');$('cfY').onclick=()=>{$('cf').classList.remove('on');res(true)};$('cfN').onclick=()=>{$('cf').classList.remove('on');res(false)}})}
 const num=v=>{if(v===''||v==null)return null;const n=+v;return isFinite(n)?n:null};
-function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'').trim(),pd:r.pd||'',ins:[0,1,2].map(i=>String((r.ins||[])[i]||'').trim()),st:['예정','완료','연기','취소'].includes(r.st)?r.st:'예정',ad:r.ad||'',lead:String(r.lead||'').trim(),solo:String(r.solo||'').trim(),tl:String(r.tl||'').trim(),mem:(r.mem||[]).map(x=>String(x).trim()).filter(Boolean),note:String(r.note||'').trim(),addr:String(r.addr||'').trim(),lat:num(r.lat),lng:num(r.lng),src:r.src||'',rd:r.rd||'2026H2',k:r.k||'',id:r.id||''}}
+function norm(r){return{no:+r.no||0,rg:String(r.rg||'').trim(),tm:String(r.tm||'').trim(),pd:r.pd||'',ins:[0,1,2].map(i=>String((r.ins||[])[i]||'').trim()),st:['예정','완료','연기','취소'].includes(r.st)?r.st:'예정',ad:r.ad||'',lead:String(r.lead||'').trim(),solo:String(r.solo||'').trim(),tl:String(r.tl||'').trim(),mem:(r.mem||[]).map(x=>String(x).trim()).filter(Boolean),note:String(r.note||'').trim(),addr:String(r.addr||'').trim(),lat:num(r.lat),lng:num(r.lng),src:r.src||'',rd:r.rd||'2026H2',k:r.k||'',id:r.id||'',exc:Array.isArray(r.exc)?r.exc.filter(x=>x&&x.n):[],ldx:Array.isArray(r.ldx)?r.ldx.filter(Boolean):[],sat:r.sat||''}}
 
 /* ── 회차(점검 차수): 모든 회차 자료는 ALL, 지금 보는 회차만 rows ── */
 const RD0={id:'2026H2',name:'2026 하반기'};
@@ -1010,7 +1018,7 @@ async function startDb(db){DB=db;mode='db';EV={};IV={};AC={};CT={};subX();setSta
  DB.collection('rounds').onSnapshot(s=>{const L=s.docs.map(d=>({id:d.id,...d.data()}));RNDS=L.find(x=>x.id==='2026H2')?L:[RD0,...L];rndSort();derive();render()},e=>{});
  let first=true;
  DB.collection('sites').onSnapshot(s=>{got=true;clearTimeout(tm);ALL=withIds(s.docs.map(d=>({...d.data(),id:d.id})));derive();setStatus(s.metadata.fromCache?'공유(확인 중)':RO?'공유 · 보기 전용':'공유 · 실시간',s.metadata.fromCache?'#fcd34d':'#34d399');render(first);first=false},e=>{clearTimeout(tm);setStatus('공유 연결 끊김','#f87171')})}
-async function putRow(r,quiet){r=norm(r);if(!r.rd)r.rd=RD;if(!r.id)r.id=sid(r.rd,r.no)+'-'+Date.now().toString(36);if(!r.k)r.k=r.id.replace(/^[^-]+-/,'');
+async function putRow(r,quiet){const o0=r.id?ALL.find(x=>x.id===r.id):null;r=norm(r);if(quiet!=='sync'&&o0&&SCHK.some(k=>JSON.stringify(o0[k]??'')!==JSON.stringify(r[k]??''))){r.sat=new Date().toISOString();setTimeout(()=>schUp(r.id),300)}if(!r.rd)r.rd=RD;if(!r.id)r.id=sid(r.rd,r.no)+'-'+Date.now().toString(36);if(!r.k)r.k=r.id.replace(/^[^-]+-/,'');
  if(mode==='db'){if(RO){toast('보기 권한이라 저장할 수 없습니다');return false}const {id,...b}=r;b.upd=new Date().toISOString();try{await DB.collection('sites').doc(id).set(b)}catch(e){if(e&&e.code==='invalid_argument'){RO=true;toast('저장 권한이 없습니다')}else toast('저장 실패: '+(e&&e.code||''));return false}return true}
  const i=ALL.findIndex(x=>x.id===r.id);if(i>=0)ALL[i]=r;else ALL.push(r);lsSave();if(!quiet){derive();render()}return true}
 async function delRow(id){if(mode==='db'){if(RO)return toast('보기 권한이라 삭제할 수 없습니다');try{await DB.collection('sites').doc(id).delete()}catch(e){toast('삭제 실패')}return}ALL=ALL.filter(x=>x.id!==id);lsSave();derive();render()}
@@ -1430,7 +1438,7 @@ const f1=v=>v==null?'-':v.toFixed(1);
 function evStat(id){const e=EV[id];if(!e)return null;const t=e.team||{},by={};EVI.team.forEach(([g,its])=>{const o={};its.forEach(([k])=>{if(t[k])o[k]=t[k]});by[g]=scoreAvg(o)});
  const weak=Object.entries(t).filter(([k,v])=>typeof v.s==='number'&&v.s<=2).length;const pv=e.prev||[];const pd=pv.filter(p=>p.st==='이행 완료').length;
  return{by,all:scoreAvg(t),weak,pv:pv.length,pd,pr:pv.length?Math.round(pd/pv.length*100):null,done:!!e.done}}
-const isLead=(r,n)=>[r.lead,r.solo,r.tl].includes(n);
+const isLead=(r,n)=>[r.lead,r.solo,r.tl,...(r.ldx||[])].includes(n);
 
 /* ── 점검표 창 ── */
 let EVS={id:null,t:'team',w:null,dirty:false};
@@ -1439,7 +1447,7 @@ function mySec(r){if(!AUTH||!r)return null;const me=AUTH.name,mk=empMk(me),hit=i
 const canSec=(r,x)=>{const S=mySec(r);return !S||S.has(x)};
 const SECN={t:'기술',s:'영업',c:'공통',ppl:'개별평가',prev:'이전 지적'};
 /* 시트의 합쳐진 결과 → 내 담당이 아닌 부문을 이 기기 점검표에 반영 */
-function evMerge(id,rec,quiet){const r=rows.find(x=>x.id===id);if(!r||!rec)return false;const own=x=>{const S=mySec(r);return !S||S.has(x)};
+function evMerge(id,rec,quiet){const r=rows.find(x=>x.id===id);if(!r||!rec)return false;if(rec.sch)schApply(id,rec.sch);const own=x=>{const S=mySec(r);return !S||S.has(x)};
  const cur=JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),T2=rec.team2||Object.fromEntries(Object.entries(rec.team||{}).map(([k,v])=>[k,{s:v}]));let ch=false;
  Object.keys(T2).forEach(k=>{if(own(k[0]))return;if(JSON.stringify(cur.team[k])!==JSON.stringify(T2[k])){cur.team[k]=T2[k];ch=true}});
  Object.keys(cur.team||{}).forEach(k=>{if(!own(k[0])&&!(k in T2)){delete cur.team[k];ch=true}});
@@ -1451,7 +1459,7 @@ function evMerge(id,rec,quiet){const r=rows.find(x=>x.id===id);if(!r||!rec)retur
 async function evPull(id){if(!gsOn()||!tokOf())return;const r=rows.find(x=>x.id===id);if(!r)return;try{const j=await gsCall({act:'resget',tok:tokOf(),rd:r.rd||RD,site:id});if(j&&j.rec)evMerge(id,j.rec,false)}catch(e){}}
 function openEv(id){if(!ADM)return toast('점검표는 점검자(편집 권한)만 볼 수 있습니다');const r=rows.find(x=>x.id===id);if(!r)return;map&&map.closePopup();
  EVS={id,t:EVS.t||'team',w:JSON.parse(JSON.stringify(EV[id]||{team:{},prev:[],ppl:[],done:false})),dirty:false};
- const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)));
+ const P=people(r);EVS.w.ppl=P.map(n=>(EVS.w.ppl||[]).find(x=>x.n===n)||{n,it:{}}).concat((EVS.w.ppl||[]).filter(x=>!P.includes(x.n)&&!(r.exc||[]).some(e=>e.n===x.n)&&Object.keys(x.it||{}).length));
  $('evT').innerHTML=ic('clip')+' '+esc(r.rg+' '+r.tm)+` <span class="mini">${dt(r.pd)} · 기술 ${esc(r.ins[0])} · 영업 ${esc(r.ins[1])} · 공통 ${esc(r.ins[2])}</span>`+((ctOf(r).p||[]).length?`<div class="mini" style="font-weight:400;margin-top:2px">${ic('phone')} ${ctOf(r).p.map(telA).join(' · ')}</div>`:'');
  $('ev').classList.add('on');evTab(EVS.t);dfCheck(id);if(!EVS._pulled||EVS._pulled!==id){EVS._pulled=id;evPull(id)}}
 function evTab(t){EVS.t=t;document.querySelectorAll('#evTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));evPaneRefresh()}
@@ -1462,7 +1470,7 @@ function scoreRow(key,label,o,path){const v=o||{};return `<div class="evi" data-
 /* 점검표 위 칸: 첫 칸은 팀명(그 현장 팀평가), 다음은 사람별 개별평가 */
 function evChips(r,w,cur){const P=w.ppl||[],its=p=>EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]),fill=p=>its(p).filter(([k])=>p.it[k]&&p.it[k].s!=null&&p.it[k].s!=='').length;
  const TK=EVI.team.flatMap(x=>x[1].map(y=>y[0])),tn=TK.filter(k=>w.team[k]&&w.team[k].s!=null&&w.team[k].s!=='').length,ta=scoreAvg(Object.fromEntries(TK.map(k=>[k,w.team[k]]).filter(x=>x[1])));
- return `<div class="evpt" role="tablist"><button type="button" role="tab" data-tt="1" class="tm${cur==='team'?' on':''}${tn===TK.length?' ok':''}"><b>🏢 ${esc(r.tm)} 팀</b><span>${tn===TK.length?'✓ ':''}${tn}/${TK.length}${ta!=null?' · '+f1(ta):''}</span></button>${P.map((p,i)=>{const n=fill(p),m=its(p).length;return `<button type="button" role="tab" data-pi="${i}" class="${cur===i?'on':''}${n===m?' ok':''}"><b>${esc(p.n)}</b><span>${n===m?'✓ ':''}${n}/${m}${scoreAvg(p.it)!=null?' · '+f1(scoreAvg(p.it)):''}</span></button>`}).join('')}</div>`}
+ return `<div class="evpt" role="tablist"><button type="button" role="tab" data-tt="1" class="tm${cur==='team'?' on':''}${tn===TK.length?' ok':''}"><b>🏢 ${esc(r.tm)} 팀</b><span>${tn===TK.length?'✓ ':''}${tn}/${TK.length}${ta!=null?' · '+f1(ta):''}</span></button>${P.map((p,i)=>{const n=fill(p),m=its(p).length;return `<button type="button" role="tab" data-pi="${i}" class="${cur===i?'on':''}${n===m?' ok':''}"><b>${esc(p.n)}</b><span>${n===m?'✓ ':''}${n}/${m}${scoreAvg(p.it)!=null?' · '+f1(scoreAvg(p.it)):''}</span></button>`}).join('')}${canSec(r,'ppl')?`<button type="button" class="addp" data-ra="add" title="수검 인원 추가"><b>＋ 인원</b><span>추가</span></button>`:''}</div>`}
 function evLock(r,b){const S=mySec(r),by=(EVS.w&&EVS.w.secBy)||{};let note='';
  if(S)note=`<div class="evlk">🔒 내 담당: <b>${[...S].filter(x=>x.length===1).map(x=>SECN[x]).join(' · ')}</b>${S.has('ppl')?' + 개별평가 · 이전 지적':''} — 다른 부문은 읽기만 (담당 점검자가 입력)</div>`;else note=`<div class="evlk">이 현장 담당이 아니어서 <b>모든 부문</b>을 입력할 수 있습니다(대리 입력). 저장하면 담당자 입력을 덮어쓸 수 있으니 주의하세요.</div>`;
  b.insertAdjacentHTML('afterbegin',note);
@@ -1473,7 +1481,7 @@ function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const 
  if(EVS.t==='team')b.innerHTML=evChips(r,w,'team')+`<div class="evph"><b>🏢 ${esc(r.tm)} 팀평가</b> <span class="mini">그 현장(팀) 전체 평가 · 부문별 아래</span></div>`+EVI.team.map(([g,its])=>`<h4 class="evh">${g==='공통'?ic('clip'):g==='기술'?ic('tool'):ic('chart')} ${g}부문 팀평가 <span class="mini">평균 ${f1(scoreAvg(Object.fromEntries(its.map(([k])=>[k,w.team[k]]).filter(x=>x[1]))))}</span></h4>`+its.map(([k,l])=>scoreRow(k,l,w.team[k],'team')).join('')).join('')+`<p class="mini">점수: 5 우수 · 4 양호 · 3 보통 · 2 미흡 · 1 매우 미흡. 2점 이하는 후속 조치로 등록할 수 있습니다. 평가는 점검자 판단이며 확정 결과는 종합 검토 후 정합니다.</p>`;
  else if(EVS.t==='prev')b.innerHTML=`<p class="mini">이전 회차 점검에서 지적된 사항입니다. 새 회차를 만들 때 2점 이하 항목·미이행 지적이 자동으로 넘어옵니다. 시정조치 이행 여부와 개선 효과를 확인하세요.</p>`+(w.prev||[]).map((p,i)=>`<div class="evi" data-i="${i}"><div style="display:flex;gap:6px"><input class="inp" data-f="t" placeholder="이전 지적사항" value="${esc(p.t||'')}">${p.from?`<span class="mini" style="white-space:nowrap;align-self:center">${esc(rdName(p.from))}</span>`:''}<button type="button" class="btn rd" data-del>${ic('trash')}</button></div><div class="seg">${PST.map(s=>`<button type="button" data-st="${s}" class="${p.st===s?'on '+(s==='이행 완료'?'s5':s==='미이행'?'s1':s==='일부 이행'?'s3':'sna'):''}">${s}</button>`).join('')}</div><input class="inp" data-f="m" placeholder="개선 효과·재발 방지 확인 내용" value="${esc(p.m||'')}">${phStrip(EVS.id,'prev:'+i)}</div>`).join('')+`<button type="button" class="btn em" id="pvAdd">${ic('plus')} 지적사항 추가</button>`;
  else if(EVS.t==='ppl'){if(EVS.piId!==EVS.id){EVS.pi=0;EVS.piId=EVS.id}const P=w.ppl||[];if(EVS.pi>=P.length)EVS.pi=0;const its=p=>EVI.ppl.concat(isLead(r,p.n)?EVI.lead:[]),fill=p=>its(p).filter(([k])=>p.it[k]&&p.it[k].s!=null&&p.it[k].s!=='').length;
-  b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+(P.length?evChips(r,w,EVS.pi)+(()=>{const i=EVS.pi,p=P[i];return `<div class="evph"><b>${esc(p.n)}</b> <span class="mini">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span></div>${its(p).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}<div class="evpn"><button type="button" class="btn" data-pmv="-1" ${i?'':'disabled'}>◀ 이전 사람</button><span class="mini">${i+1} / ${P.length}</span><button type="button" class="btn pri" data-pmv="1" ${i<P.length-1?'':'disabled'}>다음 사람 ▶</button></div>`})():'<p class="mini">수검 인원 명단이 없습니다.</p>')}
+  b.innerHTML=`<p class="mini">${ic('lock')} 개별평가는 점검자만 볼 수 있습니다. 팀장급(권역팀장·단독팀장·팀장)은 영업 개별평가 2항목이 더 있습니다.</p>`+(P.length?evChips(r,w,EVS.pi)+(()=>{const i=EVS.pi,p=P[i];return `<div class="evph" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><b>${esc(p.n)}</b> <span class="mini" style="flex:1">${isLead(r,p.n)?'팀장급 · ':''}평균 ${f1(scoreAvg(p.it))}</span>${canSec(r,'ppl')&&people(r).includes(p.n)?`<button type="button" class="btn" data-ra="mv" style="padding:4px 10px;font-size:12.5px">⇄ 다른 현장으로</button><button type="button" class="btn" data-ra="ex" style="padding:4px 10px;font-size:12.5px;color:#dc2626">🚫 평가에서 빼기</button>`:''}</div>${its(p).map(([k,l])=>scoreRow(k,l,p.it[k],'ppl:'+i)).join('')}<div class="evpn"><button type="button" class="btn" data-pmv="-1" ${i?'':'disabled'}>◀ 이전 사람</button><span class="mini">${i+1} / ${P.length}</span><button type="button" class="btn pri" data-pmv="1" ${i<P.length-1?'':'disabled'}>다음 사람 ▶</button></div>`+((r.exc||[]).length?`<div class="evexc"><b>평가 제외 ${r.exc.length}명</b>${r.exc.map((x,j)=>`<span>${esc(x.n)} <i>${esc(x.why||'')}</i>${canSec(r,'ppl')?` <button type="button" class="btn" data-rb="${j}" style="padding:1px 8px;font-size:12px">되돌리기</button>`:''}</span>`).join('')}</div>`:'')})():'<p class="mini">수검 인원 명단이 없습니다.</p>')}
  else if(EVS.t==='intv')b.innerHTML=intvHtml(r);
  else if(EVS.t==='res')b.innerHTML=resHtml(r);
  else if(EVS.t==='hist')b.innerHTML=histHtml(r);
@@ -1482,6 +1490,7 @@ function evPaneRefresh(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const 
 $('evBody').addEventListener('click',async e=>{const w=EVS.w,t=e.target;const it=t.closest('.evi');
  const tt=t.closest('[data-tt]');if(tt){const x=document.querySelector('#evm [data-t="team"],[data-t="team"]');if(x)x.click();else{EVS.t='team';evPaneRefresh()}return}
  if(it&&it.closest('.ro')&&(t.closest('button')||t.closest('input'))){toast('담당 부문이 아니라 읽기만 할 수 있습니다');return}
+ const ra=t.closest('[data-ra]');if(ra){roOpen(ra.dataset.ra);return}const rb=t.closest('[data-rb]');if(rb){const r=rows.find(x=>x.id===EVS.id);if(!canSec(r,'ppl'))return;const x={...r};const g=(x.exc||[])[+rb.dataset.rb];x.exc=(x.exc||[]).filter((_,j)=>j!==+rb.dataset.rb);await putRow(x);if(g){const e0=(EV[x.id]&&EV[x.id].ppl||[]).find(p=>p.n===g.n);if(e0&&!(EVS.w.ppl||[]).some(p=>p.n===g.n))EVS.w.ppl.push(JSON.parse(JSON.stringify(e0)))}evPplRebuild();toast('되돌렸습니다');return}
  const pt=t.closest('[data-pi]');if(pt){EVS.pi=+pt.dataset.pi;if(EVS.t!=='ppl'){EVS.piId=EVS.id;const x=document.querySelector('[data-t="ppl"]');if(x){x.click();return}EVS.t='ppl'}evPaneRefresh();return}const pm=t.closest('[data-pmv]');if(pm){EVS.pi=Math.max(0,(EVS.pi||0)+ +pm.dataset.pmv);evPaneRefresh();$('evBody').scrollTop=0;try{$('evBody').closest('.mbox').scrollTop=0}catch(_){}return}
  const sb=t.closest('[data-s]');if(sb&&it){const s=sb.dataset.s==='na'?'na':+sb.dataset.s;const o=objOf(it.dataset.p);o[it.dataset.k]={...(o[it.dataset.k]||{}),s};setDirty();evPaneRefresh();return}
  const pb=t.closest('[data-st]');if(pb&&it){w.prev[+it.dataset.i].st=pb.dataset.st;setDirty();evPaneRefresh();return}
@@ -1667,7 +1676,7 @@ async function rdSet(o){const {id,...b}=o;if(mode==='db'){try{await DB.collectio
  RNDS=RNDS.filter(x=>x.id!==id).concat([o]);rndSort();lsSave();rdUI()}
 $('bArc').onclick=rdArchive;
 /* ── 🔄 새로고침(A안) + 새 판 알림(깃허브 판) ── */
-const BUILD='20261122111226';
+const BUILD='20261122112316';
 function doRefresh(){toast('새로 불러오는 중…');setTimeout(()=>location.reload(),150)}
 $('bRf').onclick=doRefresh;$('fRf').onclick=doRefresh;$('updGo').onclick=doRefresh;$('updX').onclick=()=>$('updB').classList.remove('on');
 async function updCheck(){if(inClaude()||!/^https?:/.test(location.protocol)||/^__/.test(BUILD))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)$('updB').classList.add('on')}catch(e){}}
@@ -3106,7 +3115,7 @@ function upqAdd(id){const q=upqGet();q[id]=Date.now();try{localStorage.setItem(U
 function upqDel(id){const q=upqGet();if(!(id in q))return;delete q[id];try{localStorage.setItem(UPQK,JSON.stringify(q))}catch(e){}upqUI()}
 function upqUI(){const n=Object.keys(upqGet()).length,el=$('upqB');if(!el)return;el.hidden=!n;el.textContent=n?`⏳ 시트 올리기 대기 ${n}건 · 누르면 지금 다시`:''}
 let UPQRUN=false;async function upqRun(manual){if(UPQRUN||!ADM||!gsOn())return;const q=upqGet(),ids=Object.keys(q);if(!ids.length)return;if(!navigator.onLine&&!manual)return;if(!tokOf()){if(manual)toast('점검표를 한 번 저장하면 비밀번호를 묻고 다시 올립니다');return}
- UPQRUN=true;let ok=0;for(const id of ids){if(!EV[id]){upqDel(id);continue}if(await resUp(id,EV[id],true))ok++}UPQRUN=false;const left=Object.keys(upqGet()).length;
+ UPQRUN=true;let ok=0;for(const id of ids){if(id.startsWith('sch:')){await schUp(id.slice(4));if(!(id in upqGet()))ok++;continue}if(!EV[id]){upqDel(id);continue}if(await resUp(id,EV[id],true))ok++}UPQRUN=false;const left=Object.keys(upqGet()).length;
  if(ok)toast(`대기 중이던 결과 ${ok}건을 시트에 올렸습니다`+(left?` · 남은 ${left}건`:''));else if(manual)toast('아직 연결이 안 됩니다. 신호가 잡히면 자동으로 다시 올립니다')}
 addEventListener('online',()=>setTimeout(upqRun,2000));setInterval(()=>upqRun(),120000);setTimeout(()=>{upqUI();upqRun()},6000);
 
@@ -3505,6 +3514,38 @@ function rEvt(){const el=$('p-evt');if(!el)return;if(!ADM){el.innerHTML='<p clas
    <button type="button" class="btn${g.st==='완료'?'':' pri'}" data-eo="${esc(r.id)}" style="flex:none">${ic('clip')} ${g.st==='미작성'?'작성':g.st==='완료'?'보기':'이어 쓰기'}</button></div>`});
  el.innerHTML=h}
 $('p-evt').addEventListener('click',e=>{const f=e.target.closest('[data-ef]');if(f){EVTF=f.dataset.ef;rEvt();return}const o=e.target.closest('[data-eo]');if(o)openEv(o.dataset.eo)});
+
+/* ── 👥 수검 인원 추가 · 이동 · 평가 제외 (공통 담당 · 대리 입력) + 일정·명단 공유(시트) ── */
+const SCHK=['pd','st','lead','solo','tl','mem','exc','ldx'];
+let ROM=null;
+function roOpen(mode){const r=rows.find(x=>x.id===EVS.id);if(!r)return;if(!canSec(r,'ppl'))return toast('인원 명단은 공통 담당 점검자가 바꿉니다');const p=(EVS.w.ppl||[])[EVS.pi||0];
+ ROM={mode,id:r.id,n:p&&p.n};$('roA').hidden=mode!=='add';$('roM').hidden=mode!=='mv';$('roE').hidden=mode!=='ex';
+ $('roT').textContent=mode==='add'?`＋ ${r.tm} 수검 인원 추가`:mode==='mv'?`⇄ ${p.n} — 다른 현장으로`:`🚫 ${p.n} — 평가에서 빼기`;
+ if(mode==='add'){$('roN').value='';$('roL').checked=false;setTimeout(()=>$('roN').focus(),80)}
+ if(mode==='mv')$('roS').innerHTML=rows.filter(x=>x.id!==r.id).sort((a,b)=>a.no-b.no).map(x=>`<option value="${esc(x.id)}">${esc(x.tm)} · ${x.pd?esc(dt(x.pd)):'일정 미정'}</option>`).join('');
+ $('rom').classList.add('on')}
+$('roX').onclick=$('roNo').onclick=()=>$('rom').classList.remove('on');
+function evPplRebuild(){const r=rows.find(x=>x.id===EVS.id);if(!r)return;const P=people(r),W=EVS.w;W.ppl=P.map(n=>(W.ppl||[]).find(x=>x.n===n)||{n,it:{}});if(EVS.pi>=W.ppl.length)EVS.pi=Math.max(0,W.ppl.length-1);evPaneRefresh()}
+$('roGo').onclick=async()=>{if(!ROM)return;const r={...rows.find(x=>x.id===ROM.id)};const now=new Date().toISOString(),me=(AUTH&&AUTH.name)||'';
+ if(ROM.mode==='add'){let n=$('roN').value.trim().slice(0,20);if(!n)return toast('이름을 넣어 주세요');if(people(r).includes(n))return toast('이미 명단에 있습니다');
+  if(rows.some(x=>x.id!==r.id&&people(x).includes(n))&&n.includes('*')){if(!await ask(`다른 현장에 같은 이름(${n})이 있습니다. 구분하려고 "${r.tm}${n}"로 넣을까요?`))return;n=r.tm+n}
+  r.exc=(r.exc||[]).filter(x=>x.n!==n);r.mem=[...(r.mem||[]),n];if($('roL').checked)r.ldx=[...(r.ldx||[]),n];await putRow(r);nwAdd(r.id,`${r.tm} 수검 인원 추가: ${n}`);EVS.pi=people(r).indexOf(n)}
+ else if(ROM.mode==='ex'){const n=ROM.n;r.exc=[...(r.exc||[]).filter(x=>x.n!==n),{n,why:$('roW').value,by:me,at:now}];await putRow(r);nwAdd(r.id,`${r.tm} 평가 제외: ${n} (${$('roW').value})`)}
+ else if(ROM.mode==='mv'){const n=ROM.n,did=$('roS').value,d={...rows.find(x=>x.id===did)};if(!d.id)return;
+  ['lead','solo','tl'].forEach(k=>{if(r[k]===n)r[k]='-'});r.mem=(r.mem||[]).filter(x=>x!==n);r.ldx=(r.ldx||[]).filter(x=>x!==n);r.exc=(r.exc||[]).filter(x=>x.n!==n);
+  if(!people(d).includes(n))d.mem=[...(d.mem||[]),n];d.exc=(d.exc||[]).filter(x=>x.n!==n);await putRow(r,true);await putRow(d);
+  const ent=(EVS.w.ppl||[]).find(x=>x.n===n);if(ent&&Object.keys(ent.it||{}).length){const de=JSON.parse(JSON.stringify(EV[did]||{team:{},prev:[],ppl:[],done:false}));de.ppl=(de.ppl||[]).filter(x=>x.n!==n).concat([ent]);EV[did]=de;try{xSave()}catch(e){}}
+  EVS.w.ppl=(EVS.w.ppl||[]).filter(x=>x.n!==n);if(EV[r.id]){EV[r.id].ppl=(EV[r.id].ppl||[]).filter(x=>x.n!==n);try{xSave()}catch(e){}}
+  nwAdd(r.id,`${r.tm} → ${d.tm} 인원 이동: ${n}`)}
+ $('rom').classList.remove('on');evPplRebuild();toast('명단을 바꿨습니다 · 시트로 공유합니다')};
+/* 일정·명단 공유: 바꾸면 시트 '점검결과'에 sch로 올리고, 앱을 열 때 전체를 받아 더 새 것으로 맞춤 */
+const schOf=r=>({pd:r.pd,st:r.st,lead:r.lead,solo:r.solo,tl:r.tl,mem:r.mem||[],exc:r.exc||[],ldx:r.ldx||[],at:r.sat||new Date().toISOString(),by:(AUTH&&AUTH.name)||''});
+async function schUp(id){if(!ADM||!gsOn())return;const r=ALL.find(x=>x.id===id);if(!r)return;const tk=tokOf();if(!tk){upqAdd('sch:'+id);return}
+ try{await gsCall({act:'res',tok:tk,rec:{rd:r.rd||RD,site:id,tm:r.tm,people:people(r),ins:[...new Set(r.ins||[])],sec:[],sch:schOf(r),upd:new Date().toISOString()}});upqDel('sch:'+id)}catch(e){upqAdd('sch:'+id)}}
+function schApply(id,sc){const r=ALL.find(x=>x.id===id);if(!r||!sc||!sc.at)return false;if(String(sc.at)<=String(r.sat||''))return false;
+ const n={...r};SCHK.forEach(k=>{if(sc[k]!==undefined)n[k]=sc[k]});n.sat=sc.at;putRow(n,'sync');return true}
+async function schPull(){if(!AUTH||!gsOn()||!tokOf())return;try{const j=await gsCall({act:'schall',tok:tokOf(),rd:RD});let c=0;Object.entries(j.sch||{}).forEach(([id,sc])=>{if(schApply(id,sc))c++});if(c){derive();render();toast(`다른 점검자가 바꾼 일정·명단 ${c}곳을 맞췄습니다`)}}catch(e){}}
+setTimeout(schPull,4500);setInterval(schPull,300000);
 /* ── 📝 한글(HWPX) 저장: 출력과 같은 내용 (스마트 물길주소의 HWPX 공용 함수 그대로) ── */
 const HWPX={W:48190,MM:283.465};
 const hwX=s=>String(s??'').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
