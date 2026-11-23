@@ -16757,7 +16757,7 @@ function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id,r=
   ${tmr('tA','접수')}${tmr('tB','도착','B')}${tmr('tC','착공','C')}${tmr('tD','준공','D')}
   <div class="g2">${sel('res','민원원인',FLD_L.res)}${inp('co','공사업체',{list:'fldDlCo'})}</div>
   <label class="f">현장주소 <small class="mute">(이 기기에만 저장)</small><span class="fldAd"><input data-x="addr" value="${esc(r._addr??'')}" placeholder="📸 위치 캡처 때 자동으로 들어감 · 직접 고쳐도 됨"><button type="button" class="btn ol sm" data-adr="1">📍 주소 찾기</button></span><small class="c-ind">💡 📸 위치 캡처를 하면 빨간 점 자리 주소가 이 칸에 자동으로 들어갑니다(같은 접수번호).</small></label>
-  <label class="f">대리인 <small class="mute">(이 기기에만 저장)</small><input data-x="agent" list="fldDlAg" value="${esc(r._agent??'')}" placeholder="공사업체 대리인"></label><datalist id="fldDlAg">${[...new Set(Object.values(ldxGet().ag))].map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+  <label class="f">대리인 <small class="mute">(이 기기에만 저장)</small><input data-x="agent" list="fldDlAg" value="${esc(r._agent??'')}" placeholder="민원대응 대리인 (모르면 비워 두면 대장에 확인불가)"></label><datalist id="fldDlAg">${[...new Set(Object.values(ldxGet().ag))].map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
   <div class="g2">${inp('mat','누수관종',{list:'fldDlMat'})}${inp('dia','누수관경(mm)',{list:'fldDlDia',im:'numeric'})}</div>
   <div class="g2">${inp('cause','누수원인',{list:'fldDlCause'})}${inp('part','누수부위',{list:'fldDlPart'})}</div>
   <div class="g2">${sel('gl','누수구분',FLD_L.gl)}${inp('fix','관정비여부')}</div>
@@ -16781,7 +16781,7 @@ function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id,r=
   else if(b.dataset.save)fldSave(r,false,msg);
   else if(b.dataset.del){if(confirm('이 건을 지울까요? (서버에서도 지워집니다)'))fldSave(r,true,msg)}};
  bd.oninput=e=>{const d=e.target.dataset||{},k=d.k;if(k)r[k]=e.target.value.trim();if(d.x)r['_'+d.x]=e.target.value.trim();
-  if(k==='co'&&r.src!=='탐사'){const ai=bd.querySelector('[data-x="agent"]');if(ai&&!ai.value){const j=ldxGet(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,''),kk=Object.keys(j.ag).find(a=>nz(a)===nz(r.co));if(kk&&e.type==='change'){ai.value=j.ag[kk];r._agent=j.ag[kk]}}}
+  if(k==='co'&&r.src!=='탐사'){const ai=bd.querySelector('[data-x="agent"]');if(ai&&!ai.value){const j=ldxGet(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,''),kk=Object.keys(j.ag).find(a=>nz(a)===nz(r.co));if(false&&kk){ai.value=j.ag[kk];r._agent=j.ag[kk]}}}
   if(k==='no'&&e.type==='change'&&r.no){const x=ldxOf(String(r.no).trim().normalize('NFC')),ad=bd.querySelector('[data-x="addr"]'),ag=bd.querySelector('[data-x="agent"]');if(ad&&!ad.value&&x.addr){ad.value=x.addr;r._addr=x.addr}if(ag&&!ag.value&&x.agent){ag.value=x.agent;r._agent=x.agent}}};bd.onchange=bd.oninput;
  if(isN&&T)setLoc('');try{bd.parentElement.scrollTop=0}catch(_){}}
 async function fldSave(r,del,msg){if(FLD.busy)return;if(!r.d){msg('⚠ 날짜를 넣어 주세요.');return}
@@ -16921,10 +16921,10 @@ async function vcCapture(btn){if(VC.busy)return;const no=VC.no;if(!no){vcRender(
   vcRender(`✓ ${no}-6-1${ids.length>1?'~'+ids.length:''}.png ${ids.length}장을 ${esc(no)} 사진 묶음에 넣었습니다${del.length?` (예전 캡처 ${del.length}장 바꿈)`:''}. 📄 대장 미리보기에서 확인하세요.`)}
  catch(e){alert('밸브 상세도를 만들지 못했습니다: '+((e&&e.message)||e));vcRender()}finally{VC.busy=false;w.style.visibility='';btn.disabled=false}}
 const LDV={no:'',cv:null,pk:null,ty:'mw'};
-/* 주소·대리인 (2026-11-19 사용자 요청): 이 기기에만 저장(geo-ldvx, 서버로 안 보냄). 주소 = 📸 위치 캡처 때 빨간 점 자리 주소(카카오 좌표→주소)·직접 입력, 대리인 = 직접 또는 공사업체 대리인 표 */
+/* 주소·대리인 (2026-11-19 사용자 요청): 이 기기에만 저장(geo-ldvx, 서버로 안 보냄). 주소 = 📸 위치 캡처 때 빨간 점 자리 주소(카카오 좌표→주소)·직접 입력, 대리인 = 민원대응 대리인 직접 입력(없으면 PC 대장에 확인불가, 2026-11-23) */
 function ldxGet(){try{const j=JSON.parse(localStorage.getItem('geo-ldvx')||'{}');j.nos=j.nos||{};j.ag=j.ag||{};return j}catch(_){return{nos:{},ag:{}}}}
 function ldxSet(j){try{localStorage.setItem('geo-ldvx',JSON.stringify(j))}catch(_){}}
-function ldxOf(no){const j=ldxGet(),x=j.nos[no]||{},r=ldvRecOf(no,'mw')||{},co=String(r.co||'').trim(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,'');let ag=x.agent||'';if(!ag&&co){const k=Object.keys(j.ag).find(a=>nz(a)===nz(co));if(k)ag=j.ag[k]}return{addr:x.addr||'',agent:ag}}
+function ldxOf(no){const j=ldxGet(),x=j.nos[no]||{},r=ldvRecOf(no,'mw')||{},co=String(r.co||'').trim(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,'');let ag=x.agent||'';return{addr:x.addr||'',agent:ag}}
 function ldxPut(no,k,v){const j=ldxGet();j.nos[no]=Object.assign(j.nos[no]||{},{[k]:v});ldxSet(j)}
 function ldvIsT(r,ty){return (ty||LDV.ty)==='lk'?r.src==='탐사':r.src!=='탐사'}
 function ldvRecOf(no,ty){let o=null;fldAll().filter(r=>ldvIsT(r,ty)&&String(r.no||'').trim().normalize('NFC')===no).forEach(r=>{if(!o||(r.d||'')>(o.d||''))o=r});return o}
@@ -16935,11 +16935,11 @@ function ldvWin(){let w=$('ldvW');if(w)return w;w=document.createElement('div');
  w.innerHTML=`<div class="fldBox ldvBox"><div class="fldHd"><b>📒 대장작성</b><small class="ldvSub">민원 대응관리 일지</small><button type="button" class="fldX" aria-label="닫기">✕</button></div><div class="fldBd">
   <div class="sbtns ldvTy"><button type="button" class="btn" data-ty="mw">📞 민원 대응관리 일지</button><button type="button" class="btn ol" data-ty="lk">💧 누수탐사 대장</button></div>
   <div class="sbtns ldvRow"><label class="ldvNo"><span class="ldvNoT">접수번호</span> <input type="text" data-a="no" list="ldvNoL" autocomplete="off" placeholder="예: 1956"></label><datalist id="ldvNoL"></datalist><button type="button" class="btn" data-a="pv">📄 미리보기</button></div>
-  <div class="ldvX"><label>📍 주소 <input type="text" data-x="addr" autocomplete="off" placeholder="위치 캡처 주소(자동) · 직접 고쳐도 됨"></label><button type="button" class="btn ol sm" data-a="adr" title="위치 캡처 빨간 점 자리의 주소를 다시 찾기">↻ 캡처 주소</button><label class="ldvAgL">🧑‍🔧 대리인 <input type="text" data-x="agent" list="ldvAgL" autocomplete="off" placeholder="공사업체 대리인"></label><datalist id="ldvAgL"></datalist></div>
+  <div class="ldvX"><label>📍 주소 <input type="text" data-x="addr" autocomplete="off" placeholder="위치 캡처 주소(자동) · 직접 고쳐도 됨"></label><button type="button" class="btn ol sm" data-a="adr" title="위치 캡처 빨간 점 자리의 주소를 다시 찾기">↻ 캡처 주소</button><label class="ldvAgL">🧑‍🔧 대리인 <input type="text" data-x="agent" list="ldvAgL" autocomplete="off" placeholder="민원대응 대리인 (모르면 비워 두면 대장에 확인불가)"></label><datalist id="ldvAgL"></datalist></div>
   <div class="ldvPv"><p class="hint">접수번호를 넣고 📄 미리보기를 누르세요. 아래 점검 목록의 번호를 눌러도 됩니다.</p></div>
   <div class="sbtns ldvOut"><button type="button" class="btn ol" data-a="pr" disabled>🖨 인쇄·PDF</button><button type="button" class="btn ol" data-a="hw" disabled>📝 한글</button><button type="button" class="btn ol" data-a="im" disabled>🖼 그림 저장</button><button type="button" class="btn ol" data-a="pk" title="민원 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 리스트 줄 엑셀">📒 대장 묶음</button><button type="button" class="btn ol" data-a="pc" title="PC 크롬·엣지: 대장 폴더를 한 번 고르면 대장 xlsm에 줄을 넣고 [사진] 폴더에 사진을 넣음(원본 백업)">💾 PC 대장에 넣기</button><button type="button" class="btn ol" data-a="fld">📋 현장 일지</button></div>
   <details class="ldvChk" open><summary>🔎 점검: 최근 60일 번호별 위치도·사진</summary><div class="ldvList"></div></details>
-  <details class="ldvAg"><summary>🧑‍🔧 공사업체 대리인 표 (업체=성함, 한 줄에 하나)</summary><textarea data-x="ag" rows="5" placeholder="아당건설㈜=홍길동"></textarea><small class="mute">복구팀(공사업체)이 같으면 대리인 칸을 자동으로 채웁니다. 이 기기에만 저장합니다.</small></details>
+  <details class="ldvAg" hidden><summary>🧑‍🔧 공사업체 대리인 표 (업체=성함, 한 줄에 하나)</summary><textarea data-x="ag" rows="5" placeholder="아당건설㈜=홍길동"></textarea><small class="mute">복구팀(공사업체)이 같으면 대리인 칸을 자동으로 채웁니다. 이 기기에만 저장합니다.</small></details>
   <p class="hint ldvHelp" data-ty="lk" hidden>누수탐사 대장 칸: 누수 위치도 = 탐사연번.png(📸 위치 캡처), 원경 = 번호-1, 근경 = 번호-2, 누수사진 1~6 = 번호-3~-8(📷 번호 이어 찍기 순서 그대로). 9장째부터는 다음 장 추가사진. 블록명·관종·원인·수선내용은 📋 현장 일지(💧 누수탐사) 값. 주소는 위치 캡처 빨간 점 자리 주소, 이 기기에만 저장하고 서버로 보내지 않습니다.</p>
   <p class="hint ldvHelp" data-ty="mw">대장 칸: 위치도 = 번호.png(📸 위치 캡처), 현장사진 = 번호-1~4, 단수밸브 상세도 = 번호-6-1~4(💧 단수구역 🔧 밸브 상세도 캡처). 시각·관종·원인은 📋 현장 일지 값. 주소는 위치 캡처 빨간 점 자리 주소. 주소·대리인은 이 기기에만 저장하고 서버로 보내지 않습니다.</p></div></div>`;
  document.body.appendChild(w);w.querySelector('.fldX').onclick=()=>{w.hidden=true};w.addEventListener('click',e=>{if(e.target===w)w.hidden=true});
@@ -16962,7 +16962,7 @@ function pcpAddrSave(no,ll){if(!no||!ll)return;if(ldxOf(no).addr)return;shutAddr
 function ldvFill(){const w=$('ldvW');if(!w)return;const ns=ldvNos();w.querySelector('#ldvNoL').innerHTML=ns.map(n=>`<option value="${esc(n)}">`).join('');ldvChkList(ns)}
 function ldvTyUi(){const w=$('ldvW');if(!w)return;const T=LDV.ty==='lk';w.querySelectorAll('.ldvTy [data-ty]').forEach(b=>b.classList.toggle('ol',b.dataset.ty!==LDV.ty));
  w.querySelector('.ldvSub').textContent=T?'누수탐사 대장':'민원 대응관리 일지';w.querySelector('.ldvNoT').textContent=T?'탐사연번':'접수번호';w.querySelector('[data-a="no"]').placeholder=T?'예: 225':'예: 1956';
- w.querySelectorAll('.ldvAgL,.ldvAg').forEach(e=>e.style.display=T?'none':'');w.querySelectorAll('.ldvHelp').forEach(p=>p.hidden=p.dataset.ty!==LDV.ty);
+ w.querySelectorAll('.ldvAgL,.ldvAg').forEach(e=>e.style.display='none');w.querySelectorAll('.ldvHelp').forEach(p=>p.hidden=p.dataset.ty!==LDV.ty);
  const pk=w.querySelector('.ldvOut [data-a="pk"]');if(pk){pk.textContent=T?'📒 누수 대장 묶음':'📒 대장 묶음';pk.title=T?'누수 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 총괄표 줄 엑셀':'민원 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 리스트 줄 엑셀'}
  w.querySelector('.ldvChk summary').textContent=T?'🔎 점검: 최근 60일 탐사연번별 위치도·사진':'🔎 점검: 최근 60일 번호별 위치도·사진';
  w.querySelector('.ldvPv').innerHTML=`<p class="hint">${T?'탐사연번':'접수번호'}을 넣고 📄 미리보기를 누르세요. 아래 점검 목록의 번호를 눌러도 됩니다.</p>`;
@@ -17168,14 +17168,16 @@ async function lddPatch(zip,ty,rows){const C=LDD.cfg[ty];
  const styleRow=last||R.filter(r=>r.r<C.r0).pop()||null,stRows=R.filter(o=>o.r>=C.r0&&(!last||o.r<=last.r)).slice(-40).reverse(),stC=new Map(),styleOf=col=>{if(stC.has(col))return stC.get(col);let s=null,s2=null;for(const o of stRows){const c=cellsOf(o).get(col);if(c&&c.s!=null){if(c.v!==''){s=c.s;break}if(s2==null)s2=c.s}}s=s??s2;stC.set(col,s);return s};
  const txC=new Map(),txt=col=>{if(txC.has(col))return txC.get(col);let a=0,b=0;for(const o of stRows){const c=cellsOf(o).get(col);if(!c||c.v==='')continue;if(c.t==='s'||c.t==='inlineStr'||c.t==='str')a++;else b++}const r=a>b;txC.set(col,r);return r};
  const rowX=(r,attrs,M,ch,fill)=>{let any=false;const out=new Map(M),fil=[];
-  for(const [col,val] of ch){const c=M.get(col);if(c&&c.hasF)continue;if(fill&&c&&c.v!=='')continue;const s=fill?(c&&c.s!=null?c.s:styleOf(col)):(styleOf(col)??(c?c.s:null));out.set(col,{col,xml:cellX(lddColL(col)+r,s,val),nw:1});any=true;fil.push(lddColL(col))}
+  for(let [col,val] of ch){const c=M.get(col);if(c&&c.hasF)continue;
+   if(fill&&c&&c.v!==''&&C.tm.includes(lddColL(col))&&val.s!=null&&c.t!=='s'&&c.t!=='inlineStr'&&c.t!=='str'&&isFinite(+c.v)&&+c.v>=0&&+c.v<1){const mm=Math.round(+c.v*1440);val={s:String(Math.floor(mm/60)).padStart(2,'0')+':'+String(mm%60).padStart(2,'0')}}
+   else if(fill&&c&&c.v!=='')continue;const s=fill?(c&&c.s!=null?c.s:styleOf(col)):(styleOf(col)??(c?c.s:null));out.set(col,{col,xml:cellX(lddColL(col)+r,s,val),nw:1});any=true;fil.push(lddColL(col))}
   if(!any)return null;for(const [col,c] of out)if(!c.nw&&c.hasF)out.set(col,Object.assign({},c,{xml:stripV(c)}));
   const at=String(attrs||'').replace(/\s(r|spans)="[^"]*"/g,'');return{xml:`<${pf}row r="${r}"${at}>${[...out.values()].sort((a,b)=>a.col-b.col).map(c=>c.xml).join('')}</${pf}row>`,fil}};
  const rowsAt=new Map(R.map(o=>[o.r,o])),rep=[],ins=[],added=[],filled=[],same=[];let nextR=(last?last.r:C.r0-1)+1;const nrAttr=styleRow?styleRow.a:'';
  const seen=new Set();for(const vals of rows){const kv=lddKey(vals[kc-1]);if(!kv||seen.has(kv))continue;seen.add(kv);const ch=new Map();
   for(let i=0;i<Math.min(vals.length,C.n);i++){const v=conv(i+1,vals[i]);if(v)ch.set(i+1,v)}
   let cand=(byK.get(kv)||[]);if(yc&&ch.get(yc)){const y=yOf(ch.get(yc).n);const c2=cand.filter(rw=>{const yy=yOf((cellsOf(rw).get(yc)||{}).v);return !yy||!y||yy===y});cand=c2}
-  if(C.ag){const [cc,ac]=C.ag.map(lddColN),co=ch.get(cc);if(co&&co.s!=null&&!ch.get(ac)){const nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사/g,''),k=nz(co.s);for(let i=R.length-1;i>=0;i--){const o=R[i];if(o.r<C.r0)break;const M=cellsOf(o),a=(M.get(ac)||{}).v;if(a&&nz((M.get(cc)||{}).v||'')===k){ch.set(ac,{s:a});break}}}}
+  if(C.ag){const ac=lddColN(C.ag[1]);if(!ch.get(ac))ch.set(ac,{s:'확인불가'})}
   const hit=cand[cand.length-1];
   if(hit){const res=rowX(hit.r,hit.a,cellsOf(hit),ch,true);if(res){rep.push([hit.i0,hit.i1,res.xml]);filled.push({no:kv,r:hit.r,cols:res.fil})}else same.push({no:kv,r:hit.r});continue}
   const r=nextR++;if(sc)ch.set(sc,{n:++seqMax});const dv=ch.get(yc||lddColN((C.dt[0]||'A')));
