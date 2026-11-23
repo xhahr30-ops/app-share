@@ -1509,6 +1509,11 @@ html.dark svg.ri{color:var(--cd)!important}
 #qzBox .qzbtn.sub{background:#fff;color:#4f46e5;border:1.5px solid #c7d2fe}
 #qzBox .qzsk{display:block;width:100%;margin-top:8px;padding:9px;font-size:13.5px;font-weight:700;color:#64748b;background:transparent;border:1.5px dashed #cbd5e1;border-radius:10px;cursor:pointer;font-family:inherit}
 #qzBox .qzsk:hover{background:#f1f5f9;color:#334155}
+#qzBox .qzkb{display:block;width:100%;margin-top:8px;padding:9px;font-size:13.5px;font-weight:700;color:#0369a1;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;cursor:pointer;font-family:inherit}
+#qzBox .qzkb:disabled{opacity:.55;cursor:default}
+#qzBox .qzkr{margin-top:8px;padding:9px 11px;border-radius:10px;background:#f0f9ff;border:1px solid #bae6fd;font-size:12.5px;line-height:1.55;color:#0c4a6e;max-height:38vh;overflow:auto}
+#qzBox .qzkr .it{margin-top:7px;padding-top:7px;border-top:1px dashed #bae6fd}#qzBox .qzkr .it:first-of-type{margin-top:4px;padding-top:0;border-top:0}
+#qzBox .qzkr small{display:block;color:#0369a1;font-weight:700;margin-bottom:2px}
 #qzBox .qzs{font-size:40px;font-weight:800;text-align:center;margin:8px 0 2px}
 #qzBox .qzm{text-align:center;font-size:13.5px;color:#475569;line-height:1.5}
 #qzBox .qzf{font-size:11px;color:#94a3b8;margin-top:12px;text-align:center}
@@ -1554,6 +1559,18 @@ html.qzon,html.qzon body{overflow:hidden!important}
   if(out.length<N)take(mix(Q.filter(function(q){return out.indexOf(q)<0})),N-out.length,out);
   return mix(out)}
  var box,set,i,score,wrong;
+ /* 📚 백과사전 찬스(2026-11-23): 한 번 풀 때(5문제) 2번까지, 답 고르기 전에 이 기기 백과사전에서 문제 글로 찾아 조각 3개 보기. 자료실이 비었으면 횟수 안 씀 */
+ var KBMAX=2,kbc=0;
+ function KBB(){var r=KBMAX-kbc;return '<button class="qzkb" id="qzKbB"'+(r>0?'':' disabled')+'>📚 백과사전 찬스 '+(r>0?'쓰기 (남은 '+r+'번)':KBMAX+'번 다 씀')+'</button><div id="qzKbR"></div>'}
+ function kbChance(q,btn){if(kbc>=KBMAX)return;var out=box.querySelector('#qzKbR');btn.disabled=true;btn.textContent='📚 찾는 중…';
+  var fail=function(t){btn.outerHTML=KBB().replace('<div id="qzKbR"></div>','');var b2=box.querySelector('#qzKbB');if(b2)b2.onclick=function(){kbChance(q,b2)};out.innerHTML='<div class="qzkr">'+t+'</div>'};
+  if(typeof kbLoad!=='function'||typeof kbFind!=='function'){fail('📚 백과사전을 아직 쓸 수 없습니다. 찬스는 그대로 남아 있습니다.');return}
+  kbLoad().then(function(d){if(!box)return;if(!d||!d.ch||!d.ch.length){fail('📚 이 기기 백과사전 자료실이 비어 있습니다(⬇️ 지금 받기로 받을 수 있음). 찬스는 그대로 남아 있습니다.');return}
+   var R=kbFind(d,q[1],8,typeof kbUse==='function'?kbUse(d):null);if(typeof kbRecent==='function')R=kbRecent(d,R);R=R.slice(0,3);
+   if(!R.length){fail('📚 이 문제와 맞는 글을 찾지 못했습니다. 찬스는 그대로 남아 있습니다.');return}
+   kbc++;var bb=box.querySelector('#qzKbB');if(bb){bb.outerHTML=KBB().replace('<div id="qzKbR"></div>','')}
+   out.innerHTML='<div class="qzkr"><b>📚 백과사전에서 찾은 글</b> <span style="color:#64748b">(찬스 '+kbc+'/'+KBMAX+')</span>'+R.map(function(r){var c=d.ch[r.i];return '<div class="it"><small>'+E(typeof kbSrc==='function'?kbSrc(d,c):'')+'</small>'+E(typeof kbSnip==='function'?kbSnip(String(c[4]||''),q[1],260):String(c[4]||'').slice(0,260))+'</div>'}).join('')+'</div>'})
+   .catch(function(){fail('📚 백과사전을 여는 중 문제가 생겼습니다. 찬스는 그대로 남아 있습니다.')})}
  function stop(ev){ev.stopPropagation()}
  function start(){if(box||done()||skipped()||Q.length<N)return;
   box=document.createElement('div');box.id='qzBox';box.setAttribute('role','dialog');box.setAttribute('aria-label','앱 사용 전 용어 퀴즈');
@@ -1565,16 +1582,16 @@ html.qzon,html.qzon body{overflow:hidden!important}
  function card(h){box.innerHTML='<div class="qzc">'+h+(h.indexOf('id="qzEnd"')<0?SK():'')+'<div class="qzf">만든이: 구병순 · 포항시 서용이·포항이</div></div>';var sk=box.querySelector('#qzSk');if(sk)sk.onclick=skip}
  function intro(){var nm=LG('geo-user')||'';
   card('<div style="font-size:36px;line-height:1;text-align:center">🎓</div><div style="font-size:18px;font-weight:800;margin-top:8px;text-align:center">앱 사용 전 용어 확인</div>'
-   +'<div class="qzm" style="margin-top:8px">'+(nm?E(nm)+' 님, ':'')+'상수도 용어 '+N+'문제를 풀어 주세요.<br>'+PASS+'개 이상 맞으면 이 기기에서는 다시 묻지 않습니다.<br><span style="font-size:12px;color:#64748b">문제는 상수도관망시설운영관리사 1급 교안(시험형), 📚 백과사전(상수도설계기준 2025·노후상수도 정비사업 지침·관망진단 매뉴얼), 회사 보고서 작성 요령에서 냅니다.</span></div>'
+   +'<div class="qzm" style="margin-top:8px">'+(nm?E(nm)+' 님, ':'')+'상수도 용어 '+N+'문제를 풀어 주세요.<br>'+PASS+'개 이상 맞으면 이 기기에서는 다시 묻지 않습니다.<br>모르는 문제는 <b>📚 백과사전 찬스</b>를 '+KBMAX+'번까지 쓸 수 있습니다.<br><span style="font-size:12px;color:#64748b">문제는 상수도관망시설운영관리사 1급 교안(시험형), 📚 백과사전(상수도설계기준 2025·노후상수도 정비사업 지침·관망진단 매뉴얼), 회사 보고서 작성 요령에서 냅니다.</span></div>'
    +'<button class="qzbtn" id="qzGo">시작</button>');
-  box.querySelector('#qzGo').onclick=function(){set=pick();i=0;score=0;wrong=[];ask()};setTimeout(function(){var b=box&&box.querySelector('#qzGo');b&&b.focus()},30)}
+  box.querySelector('#qzGo').onclick=function(){set=pick();i=0;score=0;wrong=[];kbc=0;ask()};setTimeout(function(){var b=box&&box.querySelector('#qzGo');b&&b.focus()},30)}
  function ask(){var q=set[i],ops=mix([q[2]].concat(q[3]));
   card('<div class="qzh">🎓 용어 확인<small>'+(i+1)+' / '+N+' · 맞음 '+score+'</small></div><div class="qzbar"><i style="width:'+(i/N*100)+'%"></i></div>'
    +'<div class="qzt">'+(isK(q)?'📝 관망운영관리사형 · ':'')+E(q[0])+'</div><div class="qzq">'+E(q[1])+'</div>'
-   +ops.map(function(o,k){return '<button class="qzo" data-k="'+k+'">'+(k+1)+'. '+E(o)+'</button>'}).join('')+'<div id="qzX"></div>');
-  var bs=box.querySelectorAll('.qzo');
+   +ops.map(function(o,k){return '<button class="qzo" data-k="'+k+'">'+(k+1)+'. '+E(o)+'</button>'}).join('')+KBB()+'<div id="qzX"></div>');
+  var bs=box.querySelectorAll('.qzo'),kbB=box.querySelector('#qzKbB');if(kbB)kbB.onclick=function(){kbChance(q,kbB)};
   bs.forEach(function(b){b.onclick=function(){var pickd=ops[+b.dataset.k],ok=pickd===q[2];
-   bs.forEach(function(x){x.disabled=true;if(ops[+x.dataset.k]===q[2])x.classList.add('ok')});if(!ok){b.classList.add('ng');wrong.push(q)}else score++;
+   bs.forEach(function(x){x.disabled=true;if(ops[+x.dataset.k]===q[2])x.classList.add('ok')});var kb2=box.querySelector('#qzKbB');if(kb2)kb2.remove();if(!ok){b.classList.add('ng');wrong.push(q)}else score++;
    box.querySelector('#qzX').innerHTML='<div class="qzx">'+(ok?'⭕ <b>맞았습니다.</b>':'❌ <b>정답: '+E(q[2])+'</b>')+'<br>📚 '+E(q[4])+' · '+E(q[5])+(q[6]?'<br><span style="color:#64748b">「'+E(q[6])+'」</span>':'')+'</div>'
     +'<button class="qzbtn" id="qzNx">'+(i+1<N?'다음':'결과 보기')+'</button>';
    var nx=box.querySelector('#qzNx');nx.onclick=function(){i++;i<N?ask():end()};nx.focus()}});
@@ -1586,7 +1603,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
    +(wrong.length?'<div class="qzx"><b>틀린 문제</b>'+wrong.map(function(q){return '<div style="margin-top:6px">• '+E(q[1])+'<br>&nbsp;&nbsp;→ <b style="color:#047857">'+E(q[2])+'</b> <span style="color:#64748b">('+E(q[4])+' · '+E(q[5])+')</span></div>'}).join('')+'</div>':'')
    +(pass?'<button class="qzbtn" id="qzEnd">앱 시작</button>':'<button class="qzbtn" id="qzRe">다시 풀기</button>'));
   var b=box.querySelector(pass?'#qzEnd':'#qzRe');
-  b.onclick=pass?close:function(){set=pick();i=0;score=0;wrong=[];ask()};b.focus()}
+  b.onclick=pass?close:function(){set=pick();i=0;score=0;wrong=[];kbc=0;ask()};b.focus()}
  /* 잠금 화면이 사라지면 시작(이미 열린 기기는 바로) */
  function watch(){if(done()||skipped())return;if(!document.getElementById('lockBox')){start();return}
   var mo=new MutationObserver(function(){if(!document.getElementById('lockBox')){mo.disconnect();start()}});mo.observe(document.body,{childList:true})}
