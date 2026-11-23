@@ -2236,8 +2236,8 @@ const TABS=[
   {n:'공정보고',b:[['win:wr','rep','주간공정보고',1],['win:wrm','calc','월간공정보고',1],['win:wrd','bell','일일보고',1],['fld','pen','현장 일지',1]]}]},
  {k:'ldg',n:'대장작성',g:[
   {n:'입력',b:[['fld','pen','현장 일지',1]]},
-  {n:'민원 대장',b:[['ldv','doc','대장 미리보기 · 출력',1],['ldgPk','list','대장 묶음 (엑셀 대장용)',1],['ldvChk','tbl','빠진 사진 점검',1]]},
-  {n:'누수탐사 대장',b:[['lkv','doc','누수 대장 미리보기 · 출력',1],['lkPk','list','누수 대장 묶음 (엑셀 대장용)',1]]}]},
+  {n:'민원 대장',b:[['ldv','doc','대장 미리보기 · 출력',1],['ldgPk','list','대장 묶음 (엑셀 대장용)',1],['ldgDir','save','PC 대장에 바로 넣기',1],['ldvChk','tbl','빠진 사진 점검',1]]},
+  {n:'누수탐사 대장',b:[['lkv','doc','누수 대장 미리보기 · 출력',1],['lkPk','list','누수 대장 묶음 (엑셀 대장용)',1],['lkDir','save','PC 누수 대장에 바로 넣기',1]]}]},
  {k:'table',n:'표',g:[
   {n:'결과 표 (아래 창)',b:[['dock:tbl','tbl','상세 결과',1],['dock:bar','chart','블록별 현황',1],['dock:kpi','kpi','요약 지표',1]]},
   {n:'다른 모니터',b:[['dw','mon','대시보드 새 창',1]]}]},
@@ -2266,7 +2266,7 @@ function A(k){const d=k.indexOf(':'),h=d>0?k.slice(0,d):k,v=d>0?k.slice(d+1):'';
   /* 검토 탭: 경계밸브 추적 = ②-4 창 열고 🔴 버튼, 혼탁수 주의 = 레이어 창 '혼탁수 주의 (평소 표시)'와 같은 값 */
   lqBv:()=>{if(!(S.win==='leak'&&!$('gwWin').hidden))winOpen('leak');setTimeout(()=>{const b=$('lqBvBtn');if(b){try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}b.click()}},80)},
   tb:()=>{const t=LAY.find(x=>x.k==='tb');if(!t)return;if(!t.ok()){msg('혼탁수 주의는 ②-1 관로를 먼저 넣어야 합니다');return}const o=!t.on();t.set(o);try{layKey='';layRender()}catch(_){}msg(o?'혼탁수 주의 구간 표시 켬 (관망해석 유속이 있어야 보입니다)':'혼탁수 주의 구간 표시 끔');setTimeout(sync,0)},
-  bp:()=>bpOpen(),fld:()=>F('fldOpen'),ldv:()=>F('ldvOpen',null,'mw'),lkv:()=>F('ldvOpen',null,'lk'),lkPk:()=>F('lkPack',null),ldgPk:()=>F('ldgPack',null),ldvChk:()=>{F('ldvOpen',null,'mw');setTimeout(()=>{const d=document.querySelector('#ldvW .ldvChk');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},150)},
+  bp:()=>bpOpen(),fld:()=>F('fldOpen'),ldv:()=>F('ldvOpen',null,'mw'),lkv:()=>F('ldvOpen',null,'lk'),lkPk:()=>F('lkPack',null),ldgPk:()=>F('ldgPack',null),ldgDir:()=>F('lddRun','mw',null),lkDir:()=>F('lddRun','lk',null),ldvChk:()=>{F('ldvOpen',null,'mw');setTimeout(()=>{const d=document.querySelector('#ldvW .ldvChk');if(d){d.open=true;try{d.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}}},150)},
   po:()=>{const s=$('po');if(!s)return;s.value=s.value==='portrait'?'landscape':'portrait';s.dispatchEvent(new Event('change'));msg('출력 방향: '+(s.value==='portrait'?'세로':'가로'))},
   report:()=>set(false),dark:()=>clk('dm'),lay:()=>layToggle(),
   lblW:()=>{if(window.LBLM)LBLM.open()},lblOff:()=>{if(window.LBLM)LBLM.off()},
@@ -16812,7 +16812,7 @@ async function ldgConv(b,as){const want=as==='png'?'image/png':'image/jpeg';if(b
 async function ldgBlobs(ms,btn){let bl=await idbMany(ms.map(m=>'ph:'+m.id));const need=ms.map((m,i)=>[m,i]).filter(([m,i])=>!bl[i]&&m.shUp);
  if(need.length&&typeof shFetchMany==='function')for(let a=0;a<need.length;a+=5){if(btn)btn.textContent=`⏳ 서버에서 원본 받는 중… ${Math.min(a+5,need.length)}/${need.length}`;const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0].id),'big');sl.forEach(([m,i])=>{if(got[m.id])bl[i]=got[m.id]})}
  return bl}
-async function ldgPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
+async function ldgPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
  const A=fldAll().filter(r=>r.src!=='탐사'&&r.no&&(FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())));
  const def=pre||[...new Set(A.map(r=>String(r.no).trim()))].join(', ');
  const ans=prompt('대장 묶음에 넣을 접수번호 (쉼표로 여럿)\n지금 목록의 민원 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
@@ -16821,7 +16821,7 @@ async function ldgPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='un
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
   const blobs=await ldgBlobs(items.map(o=>o.m),btn);
-  const z=new JSZip(),miss=[];let n=0;
+  const z=sink||new JSZip(),miss=[];let n=0;
   for(let i=0;i<items.length;i++){const o=items[i],b=blobs[i];if(!b){miss.push(o.fn);continue}if(btn)btn.textContent=`⏳ 이름 맞추는 중… ${i+1}/${items.length}`;
    const bb=await ldgConv(b,o.as);z.file('사진/'+o.fn,bb);n++;
    if(o.kind==='위치도')for(const [fn,t] of await phWorldFiles(o.m,bb,crs,'사진/'+o.fn.replace(/\.png$/,'')))z.file(fn,t)}
@@ -16830,6 +16830,7 @@ async function ldgPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='un
   const L=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(P.map((p,i)=>{const r=recOf.get(p.no)||{},d=r.d||ymd(p.loc)||ymd((p.out.find(o=>o.kind==='현장사진')||{}).m);
    const X=ldxOf(p.no);return [i+1,d,nm(p.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'',X.agent,X.addr,r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',d?+d.slice(5,7):'',d?+d.slice(0,4):'']}));
   const C=[['접수번호','위치도(번호.png)','현장사진 수','넣은 파일','현장 일지','확인']].concat(P.map(p=>[nm(p.no),p.loc?'있음':'없음',p.nPh,p.out.map(o=>o.fn).join(', '),recOf.has(p.no)?'있음':'없음',[!p.loc?'위치 캡처 필요':'',p.nPh<4?`현장사진 ${4-p.nPh}장 모자람`:'',p.nPh>4?`대장 칸은 4장(-1~-4)만 씀`:'',!recOf.has(p.no)?'시각·원인은 대장에서 직접':''].filter(Boolean).join(' · ')||'OK']));
+  if(sink)return{P,L,C,n,miss};
   const wb=XLSX.utils.book_new();[['리스트 줄',L,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['사진 확인',C,[10,14,10,60,10,40]]].forEach(([nn,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,nn)});
   z.file('리스트_붙여넣기.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
   z.file('읽어보기.txt',['민원 대장 묶음','','1) 이 ZIP의 [사진] 폴더 안 파일을 민원 대장(xlsm)이 있는 폴더의 [사진] 폴더에 복사합니다(같은 이름은 덮어쓰기).','2) 리스트_붙여넣기.xlsx [리스트 줄] 시트의 줄을 대장 [리스트(매크로용)] 시트 A~S 칸에 값으로 붙여 넣습니다.','   대리인·현장주소 = 📄 대장 창 값(현장주소는 위치 캡처 빨간 점 자리 주소, 이 기기에만 저장). 비어 있으면 대장에서 직접 채우세요.','3) 대장 시트에서 조회번호를 바꾸면 매크로가 위치도(번호.png)·현장사진(번호-1~4.jpg)을 넣습니다.','','· 위치도 = 📸 위치 캡처(빨간 점), 없으면 앱 위치도. 번호.pgw·번호.prj = 월드 파일('+crs+', QGIS·캐드에서 제자리).','· 단수밸브 상세도·추가사진(번호-6-1~12.png)은 앱이 만들지 않습니다. 같은 이름 사진이 앱에 있으면 그대로 넣었습니다.','· [사진 확인] 시트에 번호별 빠진 사진을 적었습니다.'+(miss.length?'\n· 원본을 못 받은 파일: '+miss.join(', '):'')].join('\r\n'));
@@ -16910,7 +16911,7 @@ function ldvWin(){let w=$('ldvW');if(w)return w;w=document.createElement('div');
   <div class="sbtns ldvRow"><label class="ldvNo"><span class="ldvNoT">접수번호</span> <input type="text" data-a="no" list="ldvNoL" autocomplete="off" placeholder="예: 1956"></label><datalist id="ldvNoL"></datalist><button type="button" class="btn" data-a="pv">📄 미리보기</button></div>
   <div class="ldvX"><label>📍 주소 <input type="text" data-x="addr" autocomplete="off" placeholder="위치 캡처 주소(자동) · 직접 고쳐도 됨"></label><button type="button" class="btn ol sm" data-a="adr" title="위치 캡처 빨간 점 자리의 주소를 다시 찾기">↻ 캡처 주소</button><label class="ldvAgL">🧑‍🔧 대리인 <input type="text" data-x="agent" list="ldvAgL" autocomplete="off" placeholder="공사업체 대리인"></label><datalist id="ldvAgL"></datalist></div>
   <div class="ldvPv"><p class="hint">접수번호를 넣고 📄 미리보기를 누르세요. 아래 점검 목록의 번호를 눌러도 됩니다.</p></div>
-  <div class="sbtns ldvOut"><button type="button" class="btn ol" data-a="pr" disabled>🖨 인쇄·PDF</button><button type="button" class="btn ol" data-a="hw" disabled>📝 한글</button><button type="button" class="btn ol" data-a="im" disabled>🖼 그림 저장</button><button type="button" class="btn ol" data-a="pk" title="민원 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 리스트 줄 엑셀">📒 대장 묶음</button><button type="button" class="btn ol" data-a="fld">📋 현장 일지</button></div>
+  <div class="sbtns ldvOut"><button type="button" class="btn ol" data-a="pr" disabled>🖨 인쇄·PDF</button><button type="button" class="btn ol" data-a="hw" disabled>📝 한글</button><button type="button" class="btn ol" data-a="im" disabled>🖼 그림 저장</button><button type="button" class="btn ol" data-a="pk" title="민원 대장(xlsm) 옆 사진 폴더에 그대로 풀 사진 + 리스트 줄 엑셀">📒 대장 묶음</button><button type="button" class="btn ol" data-a="pc" title="PC 크롬·엣지: 대장 폴더를 한 번 고르면 대장 xlsm에 줄을 넣고 [사진] 폴더에 사진을 넣음(원본 백업)">💾 PC 대장에 넣기</button><button type="button" class="btn ol" data-a="fld">📋 현장 일지</button></div>
   <details class="ldvChk" open><summary>🔎 점검: 최근 60일 번호별 위치도·사진</summary><div class="ldvList"></div></details>
   <details class="ldvAg"><summary>🧑‍🔧 공사업체 대리인 표 (업체=성함, 한 줄에 하나)</summary><textarea data-x="ag" rows="5" placeholder="아당건설㈜=홍길동"></textarea><small class="mute">복구팀(공사업체)이 같으면 대리인 칸을 자동으로 채웁니다. 이 기기에만 저장합니다.</small></details>
   <p class="hint ldvHelp" data-ty="lk" hidden>누수탐사 대장 칸: 누수 위치도 = 탐사연번.png(📸 위치 캡처), 원경 = 번호-1, 근경 = 번호-2, 누수사진 1~6 = 번호-3~-8(📷 번호 이어 찍기 순서 그대로). 9장째부터는 다음 장 추가사진. 블록명·관종·원인·수선내용은 📋 현장 일지(💧 누수탐사) 값. 주소는 위치 캡처 빨간 점 자리 주소, 이 기기에만 저장하고 서버로 보내지 않습니다.</p>
@@ -16918,7 +16919,7 @@ function ldvWin(){let w=$('ldvW');if(w)return w;w=document.createElement('div');
  document.body.appendChild(w);w.querySelector('.fldX').onclick=()=>{w.hidden=true};w.addEventListener('click',e=>{if(e.target===w)w.hidden=true});
  w.onclick=async e=>{const b=e.target.closest('button[data-a],button[data-no],button[data-ty]');if(!b)return;if(b.dataset.ty){if(LDV.ty!==b.dataset.ty){LDV.ty=b.dataset.ty;LDV.no='';LDV.cv=null;ldvTyUi();ldvFill()}return}if(b.dataset.no){w.querySelector('[data-a="no"]').value=b.dataset.no;ldvShow(b.dataset.no);return}
   const a=b.dataset.a,no=w.querySelector('[data-a="no"]').value.trim().normalize('NFC');
-  if(a==='pv'){if(no)ldvShow(no)}else if(a==='pk')(LDV.ty==='lk'?lkPack:ldgPack)(b,no);else if(a==='adr'){if(no)ldvAddr(no,b,true)}else if(a==='fld'){w.hidden=true;F('fldOpen')}
+  if(a==='pv'){if(no)ldvShow(no)}else if(a==='pk')(LDV.ty==='lk'?lkPack:ldgPack)(b,no);else if(a==='pc')lddRun(LDV.ty==='lk'?'lk':'mw',b,no);else if(a==='adr'){if(no)ldvAddr(no,b,true)}else if(a==='fld'){w.hidden=true;F('fldOpen')}
   else if(LDV.cv&&LDV.no)ldvOut(a,b)};
  w.querySelector('[data-a="no"]').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=e.target.value.trim().normalize('NFC');if(v)ldvShow(v)}});
  w.addEventListener('change',e=>{const k=e.target.dataset.x;if(!k)return;if(k==='ag'){const j=ldxGet();j.ag={};e.target.value.split(/\r?\n/).forEach(l=>{const m=/^(.+?)\s*[=:,\t]\s*(.+)$/.exec(l.trim());if(m)j.ag[m[1].trim()]=m[2].trim()});ldxSet(j);ldvAgFill();if(LDV.no)ldvShow(LDV.no);return}
@@ -17068,7 +17069,7 @@ async function lkDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no,'lk')||{},W=1754
   q.font=FN(400,14);q.fillStyle='#64748b';q.textAlign='right';q.fillText(`출력 ${fmtDT(Date.now())}`,W-M,H-M+6);cvs.push(c2)}
  return cvs}
 /* 📒 누수 대장 묶음: 사진/ 폴더(매크로 이름 그대로) + 총괄표_붙여넣기.xlsx('누수탐사총괄표' A~X 칸 순서) + 읽어보기 */
-async function lkPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
+async function lkPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
  const A=fldAll().filter(r=>r.src==='탐사'&&r.no&&(FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())));
  const def=pre||[...new Set(A.map(r=>String(r.no).trim()))].join(', ');
  const ans=prompt('누수 대장 묶음에 넣을 탐사연번 (쉼표로 여럿)\n지금 목록의 누수탐사 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
@@ -17076,7 +17077,7 @@ async function lkPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='und
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
-  const blobs=await ldgBlobs(items.map(o=>o.m),btn);const z=new JSZip(),miss=[];let n=0;
+  const blobs=await ldgBlobs(items.map(o=>o.m),btn);const z=sink||new JSZip(),miss=[];let n=0;
   for(let i=0;i<items.length;i++){const o=items[i],b=blobs[i];if(!b){miss.push(o.fn);continue}if(btn)btn.textContent=`⏳ 이름 맞추는 중… ${i+1}/${items.length}`;
    const bb=await ldgConv(b,o.as);z.file('사진/'+o.fn,bb);n++;
    if(o.kind==='위치도')for(const [fn,t] of await phWorldFiles(o.m,bb,crs,'사진/'+o.fn.replace(/\.png$/,'')))z.file(fn,t)}
@@ -17086,6 +17087,7 @@ async function lkPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='und
    return [nm(p.no),blk,xd(d),xd(r.cd||''),r.res||'',X.addr,nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'',lng!=null?+lng.toFixed(7):'',lat!=null?+lat.toFixed(7):'']}));
   const C=[['탐사연번','위치도(번호.png)','원경·근경','누수사진','넣은 파일','현장 일지','확인']].concat(P.map(p=>{const ks=new Set(p.out.filter(o=>o.kind==='현장사진').map(o=>o.k)),r=ldvRecOf(p.no,'lk'),lack=[1,2,3,4,5,6,7,8].filter(k=>!ks.has(k)).map(k=>LK_LAB(k));
    return [nm(p.no),p.loc?'있음':'없음',[1,2].filter(k=>ks.has(k)).length+'/2',[3,4,5,6,7,8].filter(k=>ks.has(k)).length+'/6',p.out.map(o=>o.fn).join(', '),r?'있음':'없음',[!p.loc?'위치 캡처 필요':'',lack.length?'빠짐: '+lack.join('·'):'',p.nPh>8?'9장째부터 대장 칸 없음(추가사진)':'',!r?'블록명·원인은 대장에서 직접':''].filter(Boolean).join(' · ')||'OK']}));
+  if(sink)return{P,L,C,n,miss};
   const wb=XLSX.utils.book_new();[['총괄표 줄',L,[9,9,11,11,9,24,7,9,9,30,7,8,10,12,24,12,20,8,12,13,12]],['사진 확인',C,[10,14,9,9,60,10,44]]].forEach(([nn,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));
    if(nn==='총괄표 줄')for(let i=1;i<a.length;i++)['C','D'].forEach(cl=>{const c=ws[cl+(i+1)];if(c&&c.t==='n')c.z='yyyy-mm-dd'});XLSX.utils.book_append_sheet(wb,ws,nn)});
   z.file('총괄표_붙여넣기.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
@@ -17094,6 +17096,118 @@ async function lkPack(btn,pre){if(typeof JSZip==='undefined'||typeof XLSX==='und
   dlBlob(blob,`누수대장묶음_${(typeof SITE==='object'&&SITE.name)||'현장'}_${fldToday().replace(/-/g,'')}.zip`);
   const noLoc=P.filter(p=>!p.loc).map(p=>p.no);try{phToast(`📒 누수 대장 묶음: 번호 ${P.length}개 · 사진 ${n}장${noLoc.length?' · 위치도 없음 '+noLoc.join(', '):''}${miss.length?' · 원본 못 받음 '+miss.length:''}`)}catch(_){}}
  catch(e){alert('누수 대장 묶음 실패: '+((e&&e.message)||e))}finally{if(btn){btn.disabled=false;btn.textContent=t0}}}
+/* ===== 💾 PC 대장에 바로 넣기 (2026-11-23 C안): PC 크롬·엣지에서 대장(xlsm) 폴더를 한 번 고르면 기억(IndexedDB 'ldd:mw'·'ldd:lk')
+   ① 대장 파일 찾기(이름에 민원 / 누수·탐사, ~$ 잠금 파일 있으면 엑셀에서 열림 → 멈춤)
+   ② 📒 대장 묶음과 같은 사진·줄(ldgPack/lkPack sink) → [사진] 폴더에 매크로 이름 그대로(같은 이름 있으면 건너뜀)
+   ③ 원본을 이름_백업_날짜_시분.xlsm 으로 같은 폴더에 남긴 뒤, 시트 XML만 고쳐 덮어씀(매크로·서식·수식·다른 시트 그대로)
+      같은 번호 줄 = 빈칸만 채움(수식 칸·값 있는 칸 안 건드림) / 새 번호 = 마지막 줄 아래에 이어 씀(순번 이어 매김, 서식은 윗줄)
+      고친 줄의 수식은 캐시 값을 지우고 workbook calcPr fullCalcOnLoad=1 → 엑셀이 열 때 다시 계산(사진 이름 칸 BB=C&".png" 등) */
+const LDD={cfg:{
+ mw:{sh:'리스트(매크로용)',key:'C',r0:6,n:19,seq:'A',dt:['B'],tm:['E','F','G','H'],ym:{R:'m',S:'y'},yr:'B',fn:/민원/,nm:'민원 대장',w:'민원'},
+ lk:{sh:'누수탐사총괄표',key:'A',r0:3,n:21,dt:['C','D'],tm:[],ym:{},yr:'',fn:/누수|탐사/,nm:'누수탐사 대장',w:'누수'}}};
+const lddColN=s=>{let n=0;for(const ch of String(s).toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n};
+const lddColL=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-1-m)/26}return s};
+const lddX=s=>String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const lddUx=s=>String(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(m,d)=>String.fromCharCode(+d)).replace(/&#x([0-9a-f]+);/gi,(m,h)=>String.fromCharCode(parseInt(h,16))).replace(/&amp;/g,'&');
+const lddAt=(t,k)=>{const m=new RegExp('\\s'+k+'="([^"]*)"').exec(t);return m?lddUx(m[1]):null};
+const lddKey=v=>{let s=String(v??'').trim().normalize('NFC');if(/^-?\d+(\.0+)?$/.test(s))s=String(+s);return s};
+/* 대장 xlsm(JSZip)의 시트 하나를 고침. rows = 대장 칸 순서 배열(A부터). 반환 {added,filled,same,skipF} */
+async function lddPatch(zip,ty,rows){const C=LDD.cfg[ty];
+ const wbP='xl/workbook.xml',wbx=await zip.file(wbP).async('string'),rels=await zip.file('xl/_rels/workbook.xml.rels').async('string');
+ const st=[...wbx.matchAll(/<(?:\w+:)?sheet\b[^>]*>/g)].map(m=>m[0]).find(t=>(lddAt(t,'name')||'').normalize('NFC')===C.sh);
+ if(!st)throw new Error(`'${C.sh}' 시트를 못 찾았습니다`);
+ const rid=(/\s[\w]+:id="([^"]+)"/.exec(st)||[])[1],rel=[...rels.matchAll(/<(?:\w+:)?Relationship\b[^>]*>/g)].map(m=>m[0]),tgt=a=>{const t=(lddAt(a,'Target')||'').replace(/\\/g,'/');return t.startsWith('/')?t.slice(1):'xl/'+t.replace(/^\.\//,'')};
+ const sr=rel.find(a=>lddAt(a,'Id')===rid);if(!sr)throw new Error('시트 연결(rels)을 못 찾았습니다');const shP=tgt(sr);
+ const ssR=rel.find(a=>/sharedStrings$/.test(lddAt(a,'Type')||'')),ssP=ssR?tgt(ssR):null;let sst=null;
+ const sstGet=async()=>{if(sst)return sst;sst=[];if(ssP&&zip.file(ssP)){const s=await zip.file(ssP).async('string');for(const m of s.matchAll(/<(?:\w+:)?si\b[^>]*?(?:\/>|>([\s\S]*?)<\/(?:\w+:)?si>)/g))sst.push(lddUx([...String(m[1]||'').replace(/<(?:\w+:)?rPh\b[\s\S]*?<\/(?:\w+:)?rPh>/g,'').matchAll(/<(?:\w+:)?t\b[^>]*>([\s\S]*?)<\/(?:\w+:)?t>/g)].map(x=>x[1]).join('')))}return sst};
+ await sstGet();
+ let x=await zip.file(shP).async('string');const pf=(/<(\w+:)?worksheet[\s>]/.exec(x)||[])[1]||'';
+ if(new RegExp('<'+pf+'sheetData\\s*/>').test(x))x=x.replace(new RegExp('<'+pf+'sheetData\\s*/>'),`<${pf}sheetData></${pf}sheetData>`);
+ const o0=x.indexOf('>',x.indexOf('<'+pf+'sheetData'))+1,o1=x.indexOf('</'+pf+'sheetData>');if(o0<=0||o1<0)throw new Error('시트 자료 칸을 못 읽었습니다');
+ const body=x.slice(o0,o1),R=[],reR=new RegExp('<'+pf+'row\\b([^>]*?)(/>|>([\\s\\S]*?)</'+pf+'row>)','g'),reC=new RegExp('<'+pf+'c\\b([^>]*?)(?:/>|>([\\s\\S]*?)</'+pf+'c>)','g');
+ let pr=0;for(const m of body.matchAll(reR)){const ra=m[1],r=+(lddAt(' '+ra,'r')||pr+1);pr=r;R.push({r,a:ra,inner:m[3]||'',i0:m.index,i1:m.index+m[0].length,cells:null})}
+ const cellsOf=row=>{if(row.cells)return row.cells;const M=new Map();let pc=0;for(const m of row.inner.matchAll(reC)){const a=m[1],ref=lddAt(' '+a,'r'),col=ref?lddColN(ref.replace(/\d+/g,'')):pc+1;pc=col;const inn=m[2]||'',t=lddAt(' '+a,'t');
+   const hasF=new RegExp('<'+pf+'f[\\s>/]').test(inn),vm=new RegExp('<'+pf+'v>([\\s\\S]*?)</'+pf+'v>').exec(inn);let v=vm?lddUx(vm[1]):null;
+   if(t==='inlineStr'){const tt=[...inn.matchAll(/<(?:\w+:)?t\b[^>]*>([\s\S]*?)<\/(?:\w+:)?t>/g)].map(z=>z[1]).join('');v=lddUx(tt)}else if(t==='s'&&v!=null)v=sst[+v]??'';
+   M.set(col,{col,a,s:lddAt(' '+a,'s'),t,hasF,v:v==null?'':String(v),xml:m[0]})}row.cells=M;return M};
+ const kc=lddColN(C.key),yc=C.yr?lddColN(C.yr):0,sc=C.seq?lddColN(C.seq):0,byK=new Map();let last=null,seqMax=0;
+ for(const row of R){if(row.r<C.r0)continue;const M=cellsOf(row),kv=lddKey((M.get(kc)||{}).v);if(!kv)continue;if(!byK.has(kv))byK.set(kv,[]);byK.get(kv).push(row);if(!last||row.r>last.r)last=row;
+  if(sc){const q=+((M.get(sc)||{}).v);if(isFinite(q)&&q>seqMax)seqMax=q}}
+ const yOf=v=>{const n=+v;if(isFinite(n)&&n>20000&&n<80000)return new Date(Math.round((n-25569)*864e5)).getUTCFullYear();const m=/^(\d{4})-/.exec(String(v||''));return m?+m[1]:0};
+ const conv=(col,v)=>{if(v==null||v==='')return null;const L=lddColL(col);
+  if(C.dt.includes(L)&&typeof v==='string'){const m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);if(m)return{n:Date.UTC(+m[1],+m[2]-1,+m[3])/864e5+25569}}
+  if(C.tm.includes(L)&&typeof v==='string'){const m=/^(\d{1,2}):(\d{2})/.exec(v);if(m)return{n:Math.round((+m[1]*60+ +m[2])/1440*1e10)/1e10}}
+  if(typeof v==='number'&&isFinite(v))return{n:v};return{s:String(v)}};
+ const cellX=(ref,s,val)=>{const sa=s!=null?` s="${s}"`:'';return val.n!=null?`<${pf}c r="${ref}"${sa}><${pf}v>${val.n}</${pf}v></${pf}c>`:`<${pf}c r="${ref}"${sa} t="inlineStr"><${pf}is><${pf}t xml:space="preserve">${lddX(val.s)}</${pf}t></${pf}is></${pf}c>`};
+ const stripV=c=>c.xml.replace(new RegExp('<'+pf+'v\\s*/>|<'+pf+'v>[\\s\\S]*?</'+pf+'v>'),'').replace(/\st="(str|s|b|e|n)"/,'');
+ const styleRow=last||R.filter(r=>r.r<C.r0).pop()||null,stRows=R.filter(o=>o.r>=C.r0&&(!last||o.r<=last.r)).slice(-40).reverse(),stC=new Map(),styleOf=col=>{if(stC.has(col))return stC.get(col);let s=null;for(const o of stRows){const c=cellsOf(o).get(col);if(c&&c.s!=null){s=c.s;break}}stC.set(col,s);return s};
+ const rowX=(r,attrs,M,ch,fill)=>{let any=false;const out=new Map(M),fil=[];
+  for(const [col,val] of ch){const c=M.get(col);if(c&&c.hasF)continue;if(fill&&c&&c.v!=='')continue;const s=c&&c.s!=null?c.s:styleOf(col);out.set(col,{col,xml:cellX(lddColL(col)+r,s,val),nw:1});any=true;fil.push(lddColL(col))}
+  if(!any)return null;for(const [col,c] of out)if(!c.nw&&c.hasF)out.set(col,Object.assign({},c,{xml:stripV(c)}));
+  const at=String(attrs||'').replace(/\s(r|spans)="[^"]*"/g,'');return{xml:`<${pf}row r="${r}"${at}>${[...out.values()].sort((a,b)=>a.col-b.col).map(c=>c.xml).join('')}</${pf}row>`,fil}};
+ const rowsAt=new Map(R.map(o=>[o.r,o])),rep=[],ins=[],added=[],filled=[],same=[];let nextR=(last?last.r:C.r0-1)+1;const nrAttr=styleRow?styleRow.a:'';
+ const seen=new Set();for(const vals of rows){const kv=lddKey(vals[kc-1]);if(!kv||seen.has(kv))continue;seen.add(kv);const ch=new Map();
+  for(let i=0;i<Math.min(vals.length,C.n);i++){const v=conv(i+1,vals[i]);if(v)ch.set(i+1,v)}
+  let cand=(byK.get(kv)||[]);if(yc&&ch.get(yc)){const y=yOf(ch.get(yc).n);const c2=cand.filter(rw=>{const yy=yOf((cellsOf(rw).get(yc)||{}).v);return !yy||!y||yy===y});cand=c2}
+  const hit=cand[cand.length-1];
+  if(hit){const res=rowX(hit.r,hit.a,cellsOf(hit),ch,true);if(res){rep.push([hit.i0,hit.i1,res.xml]);filled.push({no:kv,r:hit.r,cols:res.fil})}else same.push({no:kv,r:hit.r});continue}
+  const r=nextR++;if(sc)ch.set(sc,{n:++seqMax});const dv=ch.get(yc||lddColN((C.dt[0]||'A')));
+  for(const [L,k] of Object.entries(C.ym))if(dv&&dv.n){const d=new Date(Math.round((dv.n-25569)*864e5));ch.set(lddColN(L),{n:k==='m'?d.getUTCMonth()+1:d.getUTCFullYear()})}
+  const ex=rowsAt.get(r);if(ex){const res=rowX(r,ex.a,cellsOf(ex),ch,false);if(res)rep.push([ex.i0,ex.i1,res.xml])}
+  else{const res=rowX(r,nrAttr,new Map(),ch,false);const nx=R.find(o=>o.r>r);ins.push([nx?nx.i0:body.length,r,res.xml])}
+  added.push({no:kv,r})}
+ if(rep.length||ins.length){const ed=rep.map(([a,b,t])=>({a,b,t,o:Infinity})).concat(ins.map(([a,r,t])=>({a,b:a,t,o:r})));ed.sort((p,q)=>q.a-p.a||q.o-p.o);
+  let nb=body;for(const e of ed)nb=nb.slice(0,e.a)+e.t+nb.slice(e.b);x=x.slice(0,o0)+nb+x.slice(o1);zip.file(shP,x);
+  let w2=wbx;const cp=/<(\w+:)?calcPr\b([^>]*?)(\/?)>/;
+  if(cp.test(w2))w2=w2.replace(cp,(m,p,a,sl)=>/fullCalcOnLoad=/.test(a)?m.replace(/fullCalcOnLoad="[^"]*"/,'fullCalcOnLoad="1"'):`<${p||''}calcPr${a} fullCalcOnLoad="1"${sl}>`);
+  else{const p=(/<(\w+:)?workbook[\s>]/.exec(w2)||[])[1]||'',tag=`<${p}calcPr fullCalcOnLoad="1"/>`,an=['definedNames','externalReferences','sheets'].map(k=>'</'+p+k+'>').find(k=>w2.includes(k));if(an)w2=w2.replace(an,an+tag)}
+  zip.file(wbP,w2)}
+ return{added,filled,same,sheet:C.sh}}
+/* 고른 폴더 기억: 핸들은 IndexedDB(이 기기·이 브라우저), 권한은 앱을 열 때마다 한 번 허용 */
+function lddDlg(title,html,btns){return new Promise(res=>{let w=$('lddW');if(w)w.remove();w=document.createElement('div');w.id='lddW';
+ w.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+ w.innerHTML=`<div style="background:var(--card,#fff);color:inherit;max-width:560px;width:100%;max-height:86vh;overflow:auto;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.3);font-size:13.5px;line-height:1.6"><div style="padding:12px 16px;background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;font-weight:700;border-radius:14px 14px 0 0">${title}</div><div style="padding:14px 16px">${html}</div><div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:0 16px 14px">${btns.map((b,i)=>`<button type="button" class="btn ${b.p?'':'ol'}" style="width:auto;flex:0 0 auto" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
+ document.body.appendChild(w);w.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b){if(e.target===w){w.remove();res(null)}return}const it=btns[+b.dataset.i];
+  if(it.fn){const p=it.fn();w.remove();res(p)}else{w.remove();res(it.v)}})})}
+async function lddPick(ty){try{const dh=await window.showDirectoryPicker({id:'ldd-'+ty,mode:'readwrite'});await idbPut([['ldd:'+ty,dh]]);return dh}catch(e){return null}}
+async function lddRun(ty,btn,pre){const C=LDD.cfg[ty];
+ if(typeof window.showDirectoryPicker!=='function'){alert(`💾 PC 대장에 바로 넣기는 PC 크롬·엣지에서만 됩니다.\n폰이나 다른 브라우저에서는 📒 ${ty==='lk'?'누수 ':''}대장 묶음(ZIP)을 쓰세요.`);return}
+ if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
+ let dh=null;try{[dh]=await idbMany(['ldd:'+ty])}catch(_){}
+ if(dh){let p='prompt';try{p=await dh.queryPermission({mode:'readwrite'})}catch(_){dh=null}
+  if(dh&&p!=='granted'){try{p=await dh.requestPermission({mode:'readwrite'})}catch(_){p='prompt'}
+   if(p!=='granted'){const a=await lddDlg(`💾 ${C.nm} 폴더 허용`,`기억해 둔 폴더 <b>${lddX(dh.name)}</b> 에 쓰기 허용이 필요합니다.<br>크롬이 묻는 창에서 <b>수정 허용</b>(또는 허용)을 눌러 주세요.`,[{t:'다시 허용하기',p:1,fn:()=>dh.requestPermission({mode:'readwrite'}).catch(()=>'x')},{t:'📂 다른 폴더 고르기',fn:()=>lddPick(ty)},{t:'닫기',v:null}]);
+    if(a==null||a==='x'||a==='denied'||a==='prompt')return;if(a!=='granted')dh=a}}}
+ if(!dh){dh=await lddDlg(`💾 ${C.nm}에 바로 넣기 — 처음 한 번 폴더 고르기`,`PC에서 <b>${C.nm} 엑셀(xlsm)이 들어 있는 폴더</b>를 골라 주세요. 그 폴더 안 <b>사진</b> 폴더에 사진도 같이 넣습니다.<br><br>· 한 번 고르면 이 PC·이 브라우저가 기억합니다. 앱을 다시 열면 <b>허용</b>만 한 번 누르면 됩니다.<br>· 덮어쓰기 전에 원본을 <b>이름_백업_날짜_시분.xlsm</b> 으로 같은 폴더에 남깁니다.<br>· 엑셀로 대장을 열어 둔 상태면 저장이 안 됩니다. 먼저 닫아 주세요.`,[{t:'📂 대장 폴더 고르기',p:1,fn:()=>lddPick(ty)},{t:'닫기',v:null}]);if(!dh)return}
+ const t0=btn?btn.textContent:'';const busy=t=>{if(btn){btn.disabled=true;btn.textContent=t}};
+ try{busy('⏳ 대장 파일 찾는 중…');const ents=[];for await(const [n,h] of dh.entries())ents.push([n.normalize('NFC'),h]);
+  const xs=ents.filter(([n,h])=>h.kind==='file'&&/\.xls[xm]$/i.test(n)&&!/^~\$/.test(n)&&!/_백업_\d{8}/.test(n));let cand=xs.filter(([n])=>C.fn.test(n));if(!cand.length&&xs.length===1)cand=xs;
+  if(!cand.length){await lddDlg('💾 대장 파일 없음',`고른 폴더 <b>${lddX(dh.name)}</b> 에 ${C.nm} 파일이 없습니다.<br>이름에 <b>'${C.w}'</b>가 들어간 .xlsm 파일이 있는 폴더를 골라 주세요.`,[{t:'📂 다른 폴더 고르기',p:1,fn:()=>lddPick(ty)},{t:'닫기',v:null}]);return}
+  const fs=await Promise.all(cand.map(async([n,h])=>[n,h,await h.getFile()]));fs.sort((a,b)=>b[2].lastModified-a[2].lastModified);const [fn,fh,file]=fs[0];
+  if(ents.some(([n])=>/^~\$/.test(n)&&(n.slice(2)===fn||n.slice(2)===fn.slice(2)))){alert(`${fn} 이(가) 엑셀에서 열려 있습니다.\n엑셀에서 대장을 닫고 다시 눌러 주세요.\n(엑셀을 닫았는데도 이 글이 나오면 폴더의 ~$${fn.slice(2)} 파일을 지워 주세요.)`);return}
+  const sink={files:[],file(p,d){this.files.push([p,d])}};const pk=await (ty==='lk'?lkPack:ldgPack)(btn,pre,sink);if(!pk||!pk.L)return;
+  busy('⏳ 대장 고치는 중…');const buf=await file.arrayBuffer(),zip=await JSZip.loadAsync(buf),res=await lddPatch(zip,ty,pk.L.slice(1));
+  const pd=await dh.getDirectoryHandle('사진',{create:true}),put=[],skip=[],bad=[];
+  for(let i=0;i<sink.files.length;i++){const [p,d]=sink.files[i],nm=String(p).replace(/^사진\//,'');busy(`⏳ 사진 넣는 중… ${i+1}/${sink.files.length}`);
+   let ex=false;try{await pd.getFileHandle(nm);ex=true}catch(_){}if(ex){skip.push(nm);continue}
+   try{const h=await pd.getFileHandle(nm,{create:true}),w=await h.createWritable();await w.write(d);await w.close();put.push(nm)}catch(e){bad.push(nm)}}
+  let bk='',saved=false,err='';const chg=res.added.length+res.filled.length;
+  if(chg){const d=new Date(),p2=v=>String(v).padStart(2,'0'),stamp=`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}_${p2(d.getHours())}${p2(d.getMinutes())}`;bk=fn.replace(/(\.xls[xm])$/i,`_백업_${stamp}$1`);
+   try{busy('⏳ 원본 백업 중…');const bh=await dh.getFileHandle(bk,{create:true}),bw=await bh.createWritable();await bw.write(buf);await bw.close();
+    busy('⏳ 대장 저장 중…');const out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),w=await fh.createWritable();await w.write(out);await w.close();saved=true}
+   catch(e){err=(e&&e.message)||String(e)}}
+  const li=a=>a.length?a.map(lddX).join(', '):'없음';
+  const html=`<div><b>대장 파일</b>: ${lddX(fn)} · 시트 '${lddX(res.sheet)}'</div>`+
+   (chg?(saved?`<div style="color:#15803d"><b>✅ 저장함</b> · 원본 백업 <b>${lddX(bk)}</b></div>`:`<div style="color:#b91c1c"><b>❌ 대장 저장 실패</b>: ${lddX(err)}<br>엑셀에서 열려 있거나 파일이 읽기 전용이면 저장이 안 됩니다. 원본은 그대로입니다.</div>`):'<div>대장에 바뀐 칸이 없어 파일을 그대로 두었습니다.</div>')+
+   `<div style="margin-top:8px"><b>새 줄</b> ${res.added.length}건: ${li(res.added.map(a=>`${a.no}(${a.r}행)`))}</div>`+
+   `<div><b>빈칸 채움</b> ${res.filled.length}건: ${li(res.filled.map(a=>`${a.no}(${a.r}행 ${a.cols.join('·')})`))}</div>`+
+   (res.same.length?`<div><b>이미 다 채워져 그대로</b>: ${li(res.same.map(a=>a.no))}</div>`:'')+
+   `<div style="margin-top:8px"><b>사진 폴더</b>: 넣음 ${put.length}장${skip.length?` · <b>같은 이름이 있어 건너뜀</b> ${skip.length}장 (${li(skip)})`:''}${bad.length?` · <span style="color:#b91c1c">못 넣음 ${li(bad)}</span>`:''}</div>`+
+   ((pk.miss||[]).length?`<div style="color:#b45309">원본을 못 받은 사진: ${li(pk.miss)}</div>`:'')+
+   `<div style="margin-top:8px;color:#64748b;font-size:12.5px">· 같은 번호 줄은 빈칸만 채우고, 값이 있는 칸과 수식 칸은 건드리지 않았습니다(현장내용 칸에 대장 수식이 있으면 수식이 만든 글이 들어갑니다).<br>· 사진 이름 칸 수식은 엑셀로 열 때 다시 계산됩니다. 열고 한 번 저장해 주세요.<br>· 바꾸려는 사진이 이미 있으면 [사진] 폴더에서 그 파일을 지우고 다시 누르세요.</div>`;
+  (()=>{if(typeof phToast==='function')try{phToast(`💾 ${C.nm}: 새 줄 ${res.added.length} · 빈칸 채움 ${res.filled.length} · 사진 ${put.length}장${skip.length?' · 건너뜀 '+skip.length:''}`)}catch(_){}})();
+  await lddDlg(`💾 ${C.nm}에 넣은 결과`,html,[{t:'📂 폴더 바꾸기',fn:()=>lddPick(ty)},{t:'확인',p:1,v:1}])}
+ catch(e){alert(`${C.nm}에 넣기 실패: `+((e&&e.message)||e))}finally{if(btn){btn.disabled=false;btn.textContent=t0}}}
 async function ldvOut(a,btn){const cv=LDV.cv,cvs=LDV.cvs||[cv],no=LDV.no,T=LDV.ty==='lk',ttl=T?'누수탐사 대장':'민원 대응관리 일지',lan=cv.width>cv.height,base=`${T?'누수탐사대장':'민원대응관리일지'}_${fileSafe(no)}_${fldToday().replace(/-/g,'')}`;
  if(a==='im'){for(let i=0;i<cvs.length;i++){const b=await new Promise(r=>cvs[i].toBlob(r,'image/png'));dlBlob(b,base+(cvs.length>1?`_${i+1}쪽`:'')+'.png');if(i+1<cvs.length)await new Promise(r=>setTimeout(r,600))}return}
  if(a==='pr'){const w=window.open('','_blank');if(!w){alert('팝업이 막혔습니다. 이 사이트의 팝업을 허용해 주세요.');return}const us=cvs.map(c=>c.toDataURL('image/jpeg',.92));
