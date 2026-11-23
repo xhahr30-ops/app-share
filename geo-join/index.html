@@ -584,7 +584,10 @@ html.chipOn .chipbar .chord a{background:#f1f5f9}
 /* 로그아웃 칩: 아이콘 정리 바로 옆, 빨강 바탕으로 다른 칩과 구분 */
 html.chipOn .chipbar .chout a{background:#dc2626!important;color:#fff!important}
 html.chipOn .chipbar .chout a:hover{background:#b91c1c!important}
-html.chipOn .chipbar .chnm a{background:#eef2ff;color:#3730a3}
+html.chipOn .chipbar .chnm a{background:#16a34a!important;color:#fff!important}
+html.chipOn .chipbar .chnm a:hover{background:#15803d!important}
+html.chipOn .chipbar .chrl a{background:#2563eb!important;color:#fff!important}
+html.chipOn .chipbar .chrl a:hover{background:#1d4ed8!important}
 /* 아이콘 끄기(아이콘 정리 창) · 왼쪽 세로 줄 옆으로 숨기기 */
 html.chipOn .chipbar>.chOff{display:none!important}
 html.chipOn:not(.chipV) .chipbar>.chhide{display:none!important}
@@ -4773,7 +4776,7 @@ function chipOff(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipoff')
 function chipOffApply(){const bar=chipBar();if(!bar)return;const off=chipOff();for(const x of bar.children)x.classList.toggle('chOff',off.includes(x.dataset.ck))}
 function chipHidWant(){try{return localStorage.getItem('geo-chiphid')==='1'}catch(_){return false}}
 function chipHidSet(v){try{localStorage.setItem('geo-chiphid',v?'1':'0')}catch(_){}chipTipHide();chipVApply()}
-function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k==='nm')return 9999.6;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
+function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k==='nm')return 9999.6;if(k==='rl')return 9999.8;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
 function chipVWant(){try{return localStorage.getItem('geo-chipv')==='l'}catch(_){return false}}
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
@@ -4838,14 +4841,19 @@ function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUti
  /* 👤 이름 칩(로그아웃 다음): 지금 로그인한 이름을 보이고, 누르면 이름 바꾸기 */
  const nd=L.DomUtil.create('div','leaflet-bar leaflet-control chnm np',bar),na=L.DomUtil.create('a','',nd);nd.dataset.ck='nm';
  na.href='#';na.setAttribute('role','button');
- na.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#4f46e5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>';
+ na.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#fff"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>';
  L.DomEvent.on(na,'click',e=>{L.DomEvent.preventDefault(e);if(window.nameAsk)nameAsk(true)});chipNmSync();
  /* 로그아웃 칩(아이콘 정리 바로 옆, chipIx로 자리 정함): 이 기기의 시작 비밀번호 기억(geo-lock)을 지우고 잠금 화면으로. 현장 자료·내 이름은 그대로 */
  const od=L.DomUtil.create('div','leaflet-bar leaflet-control chout np',bar),oa=L.DomUtil.create('a','',od);od.dataset.ck='out';
  oa.href='#';oa.dataset.lb='로그아웃';oa.title='로그아웃 (시작 비밀번호 화면으로)';oa.setAttribute('role','button');oa.setAttribute('aria-label',oa.title);
  oa.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#fff"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
  L.DomEvent.on(oa,'click',e=>{L.DomEvent.preventDefault(e);appLogout()});
- bar.insertBefore(od,nd);/* 순서: 아이콘 정리 → 로그아웃 → 이름 */
+ bar.insertBefore(od,nd);/* 순서: 아이콘 정리 → 로그아웃 → 이름 → 새로고침 */
+ /* 🔄 새로고침 칩: 주소 끝에 시각을 붙여 다시 열어 브라우저 저장본 대신 새 판을 받음(자료·로그인은 그대로) */
+ const rd=L.DomUtil.create('div','leaflet-bar leaflet-control chrl np',bar),ra=L.DomUtil.create('a','',rd);rd.dataset.ck='rl';
+ ra.href='#';ra.dataset.lb='새로고침';ra.title='새로고침 (새 판 받기)';ra.setAttribute('role','button');ra.setAttribute('aria-label',ra.title);
+ ra.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#fff"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>';
+ L.DomEvent.on(ra,'click',e=>{L.DomEvent.preventDefault(e);appReload()});
  /* ◀ 옆으로 숨기기(왼쪽 세로 줄일 때만 보임) → 줄이 화면 왼쪽 밖으로 들어가고 가장자리 손잡이만 남음. 손잡이를 누르거나 오른쪽으로 밀면 다시 나옴 */
  const hd=L.DomUtil.create('div','leaflet-bar leaflet-control chhide np',bar),ha=L.DomUtil.create('a','',hd);hd.dataset.ck='hide';
  ha.href='#';ha.dataset.lb='옆으로 숨기기';ha.title='아이콘 줄을 화면 옆으로 숨기기';ha.setAttribute('role','button');ha.setAttribute('aria-label',ha.title);
@@ -4859,10 +4867,11 @@ function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUti
 /* 로그아웃: geo-lock만 지우고 새로 고침 → 시작 비밀번호 화면. 자료·설정·이름(geo-user)은 이 기기에 그대로 남음 */
 function chipNmSync(){const a=document.querySelector('.chipbar .chnm a');if(!a)return;let n='';try{n=localStorage.getItem('geo-user')||''}catch(_){}
  a.dataset.lb=n||'이름 넣기';a.title=(n?'로그인 이름: '+n+' · 누르면 이름 바꾸기':'내 이름 넣기');a.setAttribute('aria-label',a.title)}
+function appReload(){try{const u=new URL(location.href);u.searchParams.set('r',Date.now().toString(36));location.replace(u.toString())}catch(_){location.reload()}}
 function appLogout(){if(!confirm('로그아웃할까요?\n시작 비밀번호 화면으로 돌아갑니다. 다시 열려면 비밀번호를 넣어야 합니다.\n이 기기의 자료·설정은 그대로 남습니다.'))return;
  try{localStorage.removeItem('geo-lock')}catch(_){}try{sessionStorage.setItem('geo-lockmsg','로그아웃했습니다. 다시 열려면 비밀번호를 넣어 주세요.')}catch(_){}location.reload()}
 function chipBar(){return map&&map._controlContainer&&map._controlContainer.querySelector('.chipbar')}
-function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks=chipOrd();ks.push('ord','out','nm','hide');
+function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks=chipOrd();ks.push('ord','out','nm','rl','hide');
  const now=[...bar.children].map(x=>x.dataset.ck),want=ks.filter(k=>now.includes(k)).concat(now.filter(k=>!ks.includes(k)));
  if(now.join()===want.join())return;for(const k of want){const el=[...bar.children].find(x=>x.dataset.ck===k);if(el)bar.appendChild(el)}}
 /* 전체화면이고 '왼쪽 세로'를 골랐으면 html.chipV. 세로 줄 폭은 --chw로 넣어 ＋/−·범례·설정 창을 그만큼 오른쪽으로 비킴 */
