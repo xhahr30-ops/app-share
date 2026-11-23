@@ -1921,7 +1921,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   <div class="sbtns"><button id="sbRun" type="button" class="btn">🔀 찾기·지도 표시</button><button id="sbXl" type="button" class="btn ol">⬇ 엑셀</button><button id="sbHw" type="button" class="btn ol">📝 한글(HWPX)</button><button id="sbOff" type="button" class="btn ol">🙈 지도 표시 지우기</button></div>
   <p class="hint" id="sbMsg"></p>
   <div id="sbTbl"></div>
-  <p class="hint">지도: <b style="color:#16a34a">초록</b> = 묶이는 급수관, <b style="color:#ea580c">주황 점선</b> = 메인관 제안 노선(골목 가운데 선). 공사비는 💰 개략공사비의 설계내역서 m당 값·원가계산서 요율로 셈. 메인관 관경은 묶인 급수관 단면적 합 기준이며 실제 기준은 확인이 필요합니다. 관리번호·소블록만 쓰고 고객 정보는 넣지 않습니다.</p>
+  <p class="hint">지도: <b style="color:#16a34a">초록</b> = 묶이는 급수관, <b style="color:#ea580c">주황 점선</b> = 메인관 제안 노선(골목 가운데 선), <b style="color:#ea580c">주황 점</b> = 배수관 분기점(회색 점 = 20m 안에 배수관 없음). 길 가운데 배수관을 건너는 급수관은 서로 묶지 않아 길 양쪽이 따로 나옵니다. 공사비는 💰 개략공사비의 설계내역서 m당 값·원가계산서 요율로 셈. 메인관 관경은 묶인 급수관 단면적 합 기준이며 실제 기준은 확인이 필요합니다. 관리번호·소블록만 쓰고 고객 정보는 넣지 않습니다.</p>
  </div>
 
 <div class="sec" id="stSec">
@@ -7697,6 +7697,7 @@ const facKO=k=>{const v=+((FAC.kop||{})[k]);return v>0&&v<1?v:1};
 function facKBadge(k){const l=(FAC.klbl||{})[k],o=facKO(k),t=[];if(l)t.push('🏷️'+((FKL_OPT.find(x=>x[0]===l)||[])[1]||''));if(o<1)t.push('투명 '+Math.round(o*100)+'%');
  return t.length?` <small class="c-am" title="이 종류만 따로 정한 설정 (줄에서 오른쪽 버튼·길게 누르기로 바꿈)">${t.join(' · ')}</small>`:''}
 const LYM={el:null,tg:null,at:0};
+const LYM_WIN={sb:'🔀 급수관 묶음 창 (개수·길이·범위 조정)',rs:'📐 적정 관경 창 (조건 조정)',pg:'🧭 관망도 점검 창 (조건 조정)',cw:'🏗 공사 추천 창',rp:'✅ 교체 완료 관로 창'};
 function lymRefresh(){try{facKindsUi()}catch(_){}const d=document.querySelector('#gwLayB .gwl-fk');if(d)d.dispatchEvent(new Event('change',{bubbles:true}))}
 function lymTarget(el){if(!el||!el.closest)return null;const r=el.closest('.fkr');
  if(r&&r.closest('#fKinds,#gwLayB')){const c=r.querySelector('input[data-k]');return c?{t:'fk',k:c.dataset.k}:null}
@@ -7706,7 +7707,9 @@ function lymHtml(tg){const B=(a,t,x='')=>`<button type="button" data-a="${a}"${x
  if(tg.t==='lay'){const tr=document.querySelector(`#gwLayB input[data-l="${tg.k}"]`),row=tr&&tr.closest('tr');if(!row)return'';const nm=(row.querySelector('label')||{}).textContent||'',on=tr.checked,xb=row.querySelector('.gwl-x');
   const tab={pipe:'pipe',fac:'pipe',hop:'pipe',ind:'pipe',vlv:'pipe',pl:'pipe',ph:'ph',vid:'ph'}[tg.k]||'map';
   return `<div class="lym-h"><b>${esc(nm.trim())}</b></div>`+(tr.disabled?'<p class="lym-n">아직 자료가 없는 레이어입니다</p>':B('vis',on?'🙈 끄기':'👁 켜기'))+(xb&&!xb.hidden?B('lx',xb.getAttribute('aria-expanded')==='true'?'▾ 범례 접기':'▸ 범례 펼치기'):'')
-   +(/^(bl|cl|pl|pipe|fac|pt|blk)$/.test(tg.k)?B('lblw','🎨 라벨 색·글꼴·크기 (라벨 탭)'):'')+B('ui','⚙️ 설정 창 ('+({map:'지도',pipe:'관로·시설물',ph:'사진'})[tab]+' 탭)',` data-tab="${tab}"`)}
+   +(/^(bl|cl|pl|pipe|fac|pt|blk)$/.test(tg.k)?B('lblw','🎨 라벨 색·글꼴·크기 (라벨 탭)'):'')
+   /* 2026-11-23: 검토 레이어는 조건(개수·길이·범위)을 바꾸는 자기 창을 바로 엶 */
+   +(LYM_WIN[tg.k]&&window.gwWinOpen?B('win',LYM_WIN[tg.k]):'')+B('ui','⚙️ 설정 창 ('+({map:'지도',pipe:'관로·시설물',ph:'사진'})[tab]+' 탭)',` data-tab="${tab}"`)}
  const k=tg.k,on=!FAC.hidden.has(k),pc=Math.round(facKS(k)*100);
  if(k[0]==='#'){const nm={'#phm':'📷 사진 있는 시설물 표시','#bnd':'경계밸브','#ind':'공업밸브','#vil':'마을상수도'}[k]||k;
   return `<div class="lym-h"><b>${esc(nm)}</b></div>`+B('vis',on?'🙈 끄기':'👁 켜기')+(k==='#phm'?'':`<div class="lym-r"><span>🔎 크기</span>${B('sz','−',' data-d="-1"')}<b>${pc}%</b>${B('sz','＋',' data-d="1"')}${B('sz','↺',' data-d="0" title="100%로"')}</div>`)}
@@ -7730,6 +7733,7 @@ function lymRe(){if(!LYM.el||LYM.el.hidden||!LYM.tg)return;const m=LYM.el,l=m.st
 function lymAct(e){const b=e.target.closest('button[data-a]');if(!b)return;e.preventDefault();e.stopPropagation();lymDo(b.dataset.a,b)}
 function lymDo(a,b){const tg=LYM.tg;if(!tg)return;if(a==='x')return lymClose();
  if(a==='lblw'){lymClose();const gm={pl:'pl',pipe:'pl',cl:'cl',pt:'cl',bl:'bl',blk:'bl'};if(tg.t==='lay')lstFocus(gm[tg.k]||'fac','');else lstFocus('fac',tg.k[0]==='#'?'':tg.k);return}
+ if(a==='win'){lymClose();try{window.gwWinOpen(tg.k)}catch(_){}return}
  if(a==='ui'){lymClose();if(window.LBLM){const p=$('lblSet');if(p&&!p.hidden)lblOpen(false)}uiPanel(true,b.dataset.tab||'map');return}
  if(tg.t==='lay'){const c=document.querySelector(`#gwLayB input[data-l="${tg.k}"]`);
   if(a==='vis'&&c&&!c.disabled){c.click();setTimeout(lymRe,80)}else if(a==='lx'){const x=c&&c.closest('tr').querySelector('.gwl-x');if(x)x.click();lymClose()}return}
@@ -16006,10 +16010,10 @@ function pgInit(){if(!$('pgSec'))return;pgUi();
    급수관을 각각 교체하는 안의 개략공사비(💰 개략공사비 설계내역서 기준)를 비교.
    찾는 법: 급수관(기본 15m 이상)을 4m마다 점으로 나누고, 점마다 간격 R m 안·방향 20° 안에 다른 급수관이 몇 개 있는지 셈 →
    N개 이상 겹친 점끼리 8m 안·방향 30° 안이면 한 골목으로 묶음 → 골목 길이(주축 방향 길이) 기준 이상만 후보. */
-const SB={k:'geo-sb',c:{v:2,scope:'all',blk:'',R:6,N:2,Lmin:20,Smin:4,base:'YG08'},res:null,on:true,L:null,cv:null,hl:null,how:''};
-try{const v=JSON.parse(localStorage.getItem(SB.k)||'null');/* 2026-11-23: 예전 기본값(지금 화면·3개·15m)이 저장돼 있으면 새 기본값(전체·2개·4m)으로 바꿈 */if(v){if(!(v.v>=2)){if(v.scope==='view')v.scope='all';if(v.N==3)v.N=2;if(v.Smin==15)v.Smin=4;v.v=2}Object.assign(SB.c,v)}}catch(_){}
+const SB={k:'geo-sb',c:{v:3,scope:'all',blk:'',R:6,N:2,Lmin:15,Smin:4,base:'YG08'},res:null,on:true,L:null,cv:null,hl:null,how:''};
+try{const v=JSON.parse(localStorage.getItem(SB.k)||'null');/* 2026-11-23: 예전 기본값(지금 화면·3개·15m)이 저장돼 있으면 새 기본값(전체·2개·4m)으로 바꿈 */if(v){if(!(v.v>=2)){if(v.scope==='view')v.scope='all';if(v.N==3)v.N=2;if(v.Smin==15)v.Smin=4;v.v=2}/* v3: 골목 안 짧은 묶음(운예로40번길 등)도 → 최소 골목 길이 20→15m */if(v.v<3){if(v.Lmin==20)v.Lmin=15;v.v=3}Object.assign(SB.c,v)}}catch(_){}
 function sbSave(){try{localStorage.setItem(SB.k,JSON.stringify(SB.c))}catch(_){}}
-const SB_STEP=4,SB_ANG=20,SB_LAT=1,SB_DIA=[50,75,100,150,200];/* SB_LAT: 옆 관이 1m 이상 옆에 있어야 '나란한 관' (한 줄 관이 여러 토막으로 나뉜 것은 셈하지 않음) */
+const SB_STEP=4,SB_ANG=20,SB_LAT=.3,SB_TAP=20,SB_DIA=[50,75,100,150,200];/* SB_LAT: 옆 관이 0.3m 이상 옆에 있어야 '나란한 관' (한 줄 관이 여러 토막으로 나뉜 것은 셈하지 않음) */
 function sbReadUi(){const g=id=>$(id).value,n=(v,d)=>{const x=parseFloat(v);return isFinite(x)&&x>0?x:d};Object.assign(SB.c,{scope:g('sbScope'),blk:g('sbBlk'),R:n(g('sbR'),6),N:Math.max(2,Math.round(n(g('sbN'),3))),Lmin:n(g('sbL'),20),Smin:n(g('sbS'),15),base:g('sbBase')});sbSave();$('sbBlkL').hidden=SB.c.scope!=='blk'}
 function sbUi(){const c=SB.c;$('sbScope').value=c.scope;$('sbBlk').value=c.blk;$('sbR').value=c.R;$('sbN').value=c.N;$('sbL').value=c.Lmin;$('sbS').value=c.Smin;$('sbBase').value=AXC_NAE[c.base]?c.base:'YG08';$('sbBlkL').hidden=c.scope!=='blk'}
 const sbAd=(a,b)=>{const d=Math.abs(a-b)%180;return Math.min(d,180-d)};
@@ -16019,22 +16023,28 @@ function sbScopeOk(){const c=SB.c;if(c.scope==='view'&&map){const b=map.getBound
  SB.how='전체';return()=>true}
 async function sbRun(){const msg=$('sbMsg');sbReadUi();if(!PIPE.feats.length){msg.textContent='⚠ ②-1 상수관로를 먼저 불러오세요.';return}
  const ok=sbScopeOk(),c=SB.c,t0=performance.now();msg.textContent='⏳ 급수관 나란한 곳 찾는 중…';await new Promise(r=>setTimeout(r,20));
- const lat0=map?map.getCenter().lat:36,MX=111320*Math.cos(lat0*Math.PI/180),MY=110574,P=[],SVC=[],MAINP=[];
- PIPE.feats.forEach((f,fi)=>{const a=attrOf(f);const m=sxMid(f.geometry);if(!m||!ok(m))return;
-  if(a.use==='배수관'||a.use==='송수관'){for(const q of lineParts(f.geometry))for(let i=1;i<q.length;i++){const x0=q[i-1][0]*MX,y0=q[i-1][1]*MY,x1=q[i][0]*MX,y1=q[i][1]*MY,l=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(l/SB_STEP));for(let j=0;j<n;j++){const t=(j+.5)/n;MAINP.push(x0+(x1-x0)*t,y0+(y1-y0)*t)}}return}
-  if(a.use!=='급수관')return;let Lt=0;const segs=[];
-  for(const q of lineParts(f.geometry))for(let i=1;i<q.length;i++){const x0=q[i-1][0]*MX,y0=q[i-1][1]*MY,x1=q[i][0]*MX,y1=q[i][1]*MY,l=Math.hypot(x1-x0,y1-y0);Lt+=l;if(l>=SB_STEP)segs.push([x0,y0,x1,y1,l])}
+ const lat0=map?map.getCenter().lat:36,MX=111320*Math.cos(lat0*Math.PI/180),MY=110574,P=[],SVC=[],MAINP=[],MS=new Map(),MSC=10;
+ /* 2026-11-23: 배수관·송수관 선분 격자 — 길 가운데 배수관을 건너는 급수관끼리는 묶지 않음 (길 양쪽은 따로 메인관) */
+ const msAdd=(x0,y0,x1,y1)=>{for(let i=Math.floor(Math.min(x0,x1)/MSC);i<=Math.floor(Math.max(x0,x1)/MSC);i++)for(let j=Math.floor(Math.min(y0,y1)/MSC);j<=Math.floor(Math.max(y0,y1)/MSC);j++){const q=i+','+j;let a=MS.get(q);if(!a)MS.set(q,a=[]);a.push([x0,y0,x1,y1])}};
+ const crs=(ax,ay,bx,by,cx,cy,dx,dy)=>{const d1=(dx-cx)*(ay-cy)-(dy-cy)*(ax-cx),d2=(dx-cx)*(by-cy)-(dy-cy)*(bx-cx),d3=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax),d4=(bx-ax)*(dy-ay)-(by-ay)*(dx-ax);return d1*d2<0&&d3*d4<0};
+ const msCross=(ax,ay,bx,by)=>{if(!MS.size)return false;const seen=new Set();for(let i=Math.floor(Math.min(ax,bx)/MSC);i<=Math.floor(Math.max(ax,bx)/MSC);i++)for(let j=Math.floor(Math.min(ay,by)/MSC);j<=Math.floor(Math.max(ay,by)/MSC);j++){const a=MS.get(i+','+j);if(a)for(const s of a){if(seen.has(s))continue;seen.add(s);if(crs(ax,ay,bx,by,s[0],s[1],s[2],s[3]))return true}}return false};
+ PIPE.feats.forEach((f,fi)=>{const a=attrOf(f);const m=sxMid(f.geometry);if(!m)return;const inS=ok(m);
+  if(a.use==='배수관'||a.use==='송수관'){for(const q of lineParts(f.geometry))for(let i=1;i<q.length;i++){const x0=q[i-1][0]*MX,y0=q[i-1][1]*MY,x1=q[i][0]*MX,y1=q[i][1]*MY,l=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(l/SB_STEP));msAdd(x0,y0,x1,y1);for(let j=0;j<n;j++){const t=(j+.5)/n;MAINP.push(x0+(x1-x0)*t,y0+(y1-y0)*t)}}return}
+  if(a.use!=='급수관'||!inS)return;let Lt=0;const segs=[];
+  /* 2026-11-23: 꼭짓점이 촘촘한 관(마디 4m 미만)도 빠지지 않게 — 관 전체를 따라 4m마다 점, 방향은 앞뒤 2m 사이 */
+  for(const q0 of lineParts(f.geometry)){const q=q0.map(c=>[c[0]*MX,c[1]*MY]),cum=[0];for(let i=1;i<q.length;i++)cum.push(cum[i-1]+Math.hypot(q[i][0]-q[i-1][0],q[i][1]-q[i-1][1]));const Lq=cum[cum.length-1];Lt+=Lq;if(Lq>=SB_STEP)segs.push([q,cum,Lq])}
   if(Lt<c.Smin)return;const si=SVC.length;SVC.push({fi,a,L:Lt,n:0});
-  for(const [x0,y0,x1,y1,l] of segs){const an=(Math.atan2(y1-y0,x1-x0)*180/Math.PI+180)%180,n=Math.floor(l/SB_STEP);for(let j=0;j<n;j++){const t=(j+.5)/n;P.push([x0+(x1-x0)*t,y0+(y1-y0)*t,an,si])}}});
+  for(const [q,cum,Lq] of segs){let i=1;const at=d=>{d=d<0?0:d>Lq?Lq:d;while(i>1&&cum[i-1]>d)i--;while(i<q.length-1&&cum[i]<d)i++;const s0=cum[i-1],sl=cum[i]-s0||1,t=(d-s0)/sl;return[q[i-1][0]+(q[i][0]-q[i-1][0])*t,q[i-1][1]+(q[i][1]-q[i-1][1])*t]};
+   const n=Math.floor(Lq/SB_STEP);for(let j=0;j<n;j++){const d=(j+.5)*Lq/n,a=at(d-2),b=at(d+2),c=at(d),an=(Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI+180)%180;P.push([c[0],c[1],an,si])}}});
  /* 1) 겹친 점 */
  const R=c.R,R2=R*R,G=new Map(),key=(x,y,s)=>Math.floor(x/s)+','+Math.floor(y/s);P.forEach((p,k)=>{const q=key(p[0],p[1],R);let a=G.get(q);if(!a)G.set(q,a=[]);a.push(k)});
  const bund=[];for(let k=0;k<P.length;k++){const [x,y,an,si]=P[k],cx=Math.floor(x/R),cy=Math.floor(y/R),ids=new Set([si]),ux=Math.cos(an*Math.PI/180),uy=Math.sin(an*Math.PI/180);
-  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=G.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){const p=P[m];if(ids.has(p[3]))continue;if((p[0]-x)**2+(p[1]-y)**2<=R2&&sbAd(p[2],an)<=SB_ANG&&Math.abs((p[0]-x)*uy-(p[1]-y)*ux)>=SB_LAT)ids.add(p[3])}}
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=G.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){const p=P[m];if(ids.has(p[3]))continue;if((p[0]-x)**2+(p[1]-y)**2<=R2&&sbAd(p[2],an)<=SB_ANG&&Math.abs((p[0]-x)*uy-(p[1]-y)*ux)>=SB_LAT&&!msCross(x,y,p[0],p[1]))ids.add(p[3])}}
   if(ids.size>=c.N)bund.push(k)}
  /* 2) 골목으로 묶기 */
  const par=new Map(bund.map(k=>[k,k])),fd=k=>{while(par.get(k)!==k){par.set(k,par.get(par.get(k)));k=par.get(k)}return k},C2=8,GB=new Map();
  bund.forEach(k=>{const q=key(P[k][0],P[k][1],C2);let a=GB.get(q);if(!a)GB.set(q,a=[]);a.push(k)});
- for(const k of bund){const [x,y,an]=P[k],cx=Math.floor(x/C2),cy=Math.floor(y/C2);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=GB.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){if(m<=k)continue;const p=P[m];if((p[0]-x)**2+(p[1]-y)**2<=C2*C2&&sbAd(p[2],an)<=30){const r1=fd(k),r2=fd(m);if(r1!==r2)par.set(r1,r2)}}}}
+ for(const k of bund){const [x,y,an]=P[k],cx=Math.floor(x/C2),cy=Math.floor(y/C2);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=GB.get((cx+dx)+','+(cy+dy));if(a)for(const m of a){if(m<=k)continue;const p=P[m];if((p[0]-x)**2+(p[1]-y)**2<=C2*C2&&sbAd(p[2],an)<=30&&!msCross(x,y,p[0],p[1])){const r1=fd(k),r2=fd(m);if(r1!==r2)par.set(r1,r2)}}}}
  const CL=new Map();bund.forEach(k=>{const r=fd(k);let a=CL.get(r);if(!a)CL.set(r,a=[]);a.push(k)});
  /* 배수관 점 격자 (옆에 이미 배수관 있는지) */
  const GM=new Map();for(let i=0;i<MAINP.length;i+=2){const q=key(MAINP[i],MAINP[i+1],5);let a=GM.get(q);if(!a)GM.set(q,a=[]);a.push(i)}
@@ -16052,11 +16062,15 @@ async function sbRun(){const msg=$('sbMsg');sbReadUi();if(!PIPE.feats.length){ms
   const mem=new Map();for(const si of ids)mem.set(si,0);
   const bx0=Math.min(...line.map(p=>p[0]))-R-2,bx1=Math.max(...line.map(p=>p[0]))+R+2,by0=Math.min(...line.map(p=>p[1]))-R-2,by1=Math.max(...line.map(p=>p[1]))+R+2;
   for(let x=Math.floor(bx0/R);x<=Math.floor(bx1/R);x++)for(let y=Math.floor(by0/R);y<=Math.floor(by1/R);y++){const a=G.get(x+','+y);if(a)for(const m of a){const p=P[m];if(!mem.has(p[3]))continue;if(sbAd(p[2],th*180/Math.PI+180)<=35&&dl(p[0],p[1])<=R+2)mem.set(p[3],mem.get(p[3])+SB_STEP)}}
+  /* 2026-11-23: 메인관은 가까운 배수관에서 분기 — 골목 선 양 끝 중 배수관(SB_TAP m 안)에 더 가까운 끝을 배수관 위 점까지 이음 */
+  let tap=null;{const nr=(x,y)=>{let b=null,bd=SB_TAP*SB_TAP;const seen=new Set();for(let i=Math.floor((x-SB_TAP)/MSC);i<=Math.floor((x+SB_TAP)/MSC);i++)for(let j=Math.floor((y-SB_TAP)/MSC);j<=Math.floor((y+SB_TAP)/MSC);j++){const a=MS.get(i+','+j);if(a)for(const g of a){if(seen.has(g))continue;seen.add(g);const vx=g[2]-g[0],vy=g[3]-g[1],l2=vx*vx+vy*vy||1;let t=((x-g[0])*vx+(y-g[1])*vy)/l2;t=t<0?0:t>1?1:t;const px=g[0]+vx*t,py=g[1]+vy*t,d=(px-x)**2+(py-y)**2;if(d<bd){bd=d;b=[px,py,Math.sqrt(d)]}}}return b};
+   const e0=line[0],e1=line[line.length-1],t0=nr(e0[0],e0[1]),t1=nr(e1[0],e1[1]);
+   if(t0&&(!t1||t0[2]<=t1[2])){line.unshift([t0[0],t0[1]]);Lm+=t0[2];tap=t0}else if(t1){line.push([t1[0],t1[1]]);Lm+=t1[2];tap=t1}}
   const M=[...mem].map(([si,Lc])=>({...SVC[si],Lc:Math.min(Lc,SVC[si].L)})),dEq=Math.sqrt(M.reduce((s,o)=>s+(o.a.dia>0?o.a.dia:13)**2,0)),Dm=SB_DIA.find(d=>d>=dEq)||SB_DIA[SB_DIA.length-1];
   const Lc=M.reduce((s,o)=>s+o.Lc,0),nm=line.filter(p=>nearMain(p[0],p[1])).length/line.length;
   const each=axcNaeRun(NP,M.map(o=>({d:o.a.dia>0?o.a.dia:13,L:o.Lc}))).T,main=axcNaeRun(NP,[{d:Dm,L:Lm}]).T;
-  const ll=line.map(p=>[p[0]/MX,p[1]/MY]),mid=ll[Math.floor(ll.length/2)];
-  res.push({line:ll,mid,blk:blkAt(mid[0],mid[1])||'',n:M.length,M,Lm,Lc,save:Lc-Lm,dEq,Dm,each,main,diff:each-main,nm,yr:Math.min(...M.map(o=>o.a.year||9999))})}
+  const ll=line.map(p=>[p[0]/MX,p[1]/MY]),mid=ll[Math.floor(ll.length/2)],tp=tap?[tap[0]/MX,tap[1]/MY]:null;
+  res.push({line:ll,mid,tap:tp,tapD:tap?tap[2]:null,blk:blkAt(mid[0],mid[1])||'',n:M.length,M,Lm,Lc,save:Lc-Lm,dEq,Dm,each,main,diff:each-main,nm,yr:Math.min(...M.map(o=>o.a.year||9999))})}
  res.sort((a,b)=>b.diff-a.diff);res.forEach((r,i)=>r.no=i+1);SB.res=res;SB.np=NP;SB.at=Date.now();
  msg.textContent=`${SB.how}: 급수관 ${SVC.length.toLocaleString()}개(${c.Smin}m 이상) 살펴봄 → 나란한 골목 ${res.length}곳 · ${((performance.now()-t0)/1000).toFixed(1)}초`;
  sbTable();sbDraw(true)}
@@ -16071,7 +16085,7 @@ function sbLayer(){if(!map)return null;if(!map.getPane('sbPane')){const p=map.cr
 function sbDraw(fit){if(!map)return;const G=sbLayer();G.clearLayers();SB.hl=null;if(!SB.on||!SB.res||!SB.res.length)return;const B=[];
  for(const o of SB.res){for(const m of o.M)for(const q of lineParts(PIPE.feats[m.fi].geometry))L.polyline(q.map(c=>[c[1],c[0]]),{renderer:SB.cv,color:'#16a34a',weight:4,opacity:.85,interactive:false}).addTo(G);
   const ll=o.line.map(c=>[c[1],c[0]]);L.polyline(ll,{renderer:SB.cv,color:'#0f172a',weight:9,opacity:.55,interactive:false}).addTo(G);L.polyline(ll,{renderer:SB.cv,color:'#f97316',weight:5,dashArray:'10 6',interactive:false}).addTo(G);
-  L.circleMarker([o.mid[1],o.mid[0]],{renderer:SB.cv,radius:9,color:'#fff',weight:2,fillColor:'#ea580c',fillOpacity:1,interactive:false}).addTo(G);B.push(...ll)}
+  const dp=o.tap||o.mid;/* 주황 점 = 배수관 분기점 (배수관 못 찾으면 골목 가운데, 회색) */L.circleMarker([dp[1],dp[0]],{renderer:SB.cv,radius:9,color:'#fff',weight:2,fillColor:o.tap?'#ea580c':'#64748b',fillOpacity:1,interactive:false}).addTo(G);B.push(...ll)}
  if(fit&&SB.c.scope!=='view'&&B.length)try{map.fitBounds(L.latLngBounds(B),{maxZoom:17,padding:[30,30]})}catch(_){}}
 function sbGo(i){const o=SB.res&&SB.res[i];if(!o||!map)return;const G=sbLayer();if(SB.hl)G.removeLayer(SB.hl);SB.hl=L.polyline(o.line.map(c=>[c[1],c[0]]),{renderer:SB.cv,color:'#facc15',weight:16,opacity:.6,interactive:false}).addTo(G);try{map.fitBounds(SB.hl.getBounds(),{maxZoom:19,padding:[60,60]})}catch(_){}}
 function sbInfo(){const c=SB.c,P=SB.np;return[['범위',SB.how],['찾는 기준',`급수관 ${c.Smin}m 이상 · 간격 ${c.R}m 안 · 방향 ${SB_ANG}° 안에 ${c.N}개 이상 나란히 · 골목 길이 ${c.Lmin}m 이상`],
