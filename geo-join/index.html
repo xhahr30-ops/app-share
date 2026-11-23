@@ -16812,10 +16812,26 @@ async function ldgConv(b,as){const want=as==='png'?'image/png':'image/jpeg';if(b
 async function ldgBlobs(ms,btn){let bl=await idbMany(ms.map(m=>'ph:'+m.id));const need=ms.map((m,i)=>[m,i]).filter(([m,i])=>!bl[i]&&m.shUp);
  if(need.length&&typeof shFetchMany==='function')for(let a=0;a<need.length;a+=5){if(btn)btn.textContent=`⏳ 서버에서 원본 받는 중… ${Math.min(a+5,need.length)}/${need.length}`;const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0].id),'big');sl.forEach(([m,i])=>{if(got[m.id])bl[i]=got[m.id]})}
  return bl}
+/* 대장 번호 고르기 (2026-11-23 사용자 "번호 말고 접수날짜로"): 접수날짜(시작~끝) → 현장 일지 접수날짜(r.d) + 그 날 찍은 번호 사진(민원대응/누수탐사)의 번호를 모아 보여 줌, 번호 칸은 고칠 수 있음 */
+function ldgNosByDate(isT,d0,d1){const inR=d=>d&&d>=d0&&d<=d1,out=new Map();
+ fldAll().forEach(r=>{if(!r.no||(isT?r.src!=='탐사':r.src==='탐사')||!inR(r.d||''))return;const k=String(r.no).trim().normalize('NFC');if(!out.has(k))out.set(k,r.d)});
+ try{const re=typeof phCodeRe==='function'?phCodeRe():null,kd=isT?'ts':'mw',has=new Set(fldAll().filter(r=>r.no).map(r=>String(r.no).trim().normalize('NFC')));
+  for(const m of PH.list){if(!m||m.del||m.map)continue;let k0='';try{k0=phKd(m)}catch(_){}if(k0!==kd)continue;const d=String(m.dt||'').slice(0,10);if(!inR(d))continue;
+   const c=String((m.cd||(PH.code&&PH.code.get(m.id))||(typeof phCodeOf==='function'?phCodeOf(m,re):'')||'')).trim().normalize('NFC');if(c&&!out.has(c)&&!has.has(c))out.set(c,d)}}catch(_){}
+ return [...out.entries()].sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0],'ko',{numeric:true})).map(x=>x[0])}
+async function ldgAskNos(pre,tk,sink){if(pre)return pre;const isT=tk==='탐사',what=isT?'탐사연번':'접수번호',dt=isT?'탐사일자':'접수날짜',dst=sink?(isT?'PC 누수 대장에 넣기':'PC 민원 대장에 넣기'):(isT?'누수 대장 묶음':'대장 묶음');
+ let k0='';try{k0=localStorage.getItem('geo-ldgd')||''}catch(_){}const td=fldToday(),[s0,e0]=k0.split('~');const ds=s0&&s0<=td?s0:td,de=e0&&e0<=td&&e0>=ds?e0:td;
+ const fill=()=>{const a=$('ldgD0'),b=$('ldgD1'),t=$('ldgNos'),i=$('ldgNi');if(!a||!b||!t)return;let x=a.value||td,y=b.value||x;if(y<x){y=x;b.value=y}const L=ldgNosByDate(isT,x,y);t.value=L.join(', ');i.textContent=L.length?`${dt} ${x}${y!==x?' ~ '+y:''} · ${L.length}건`:`${dt} ${x}${y!==x?' ~ '+y:''}에 해당하는 ${isT?'누수탐사':'민원'}이 없습니다. 날짜를 바꾸거나 번호를 직접 적으세요.`};
+ const p=lddDlg(`📅 ${dst} — ${dt}로 고르기`,`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${dt}</b><input type="date" id="ldgD0" value="${ds}" style="width:auto;flex:0 1 160px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px"> ~ <input type="date" id="ldgD1" value="${de}" style="width:auto;flex:0 1 160px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px">
+  <button type="button" class="btn ol" style="width:auto" id="ldgDt">오늘</button></div>
+  <div id="ldgNi" style="margin:10px 0 4px;color:#4338ca;font-weight:700"></div>
+  <textarea id="ldgNos" rows="3" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit" placeholder="${isT?'예) 273, 274':'예) 2126, 긴급159'}"></textarea>
+  <div style="color:#64748b;font-size:12.5px;margin-top:4px">· 현장 일지의 ${dt}와, 그 날 찍은 ${isT?'누수탐사':'민원대응'} 번호 사진에서 ${what}를 모았습니다.<br>· 빼거나 더할 번호는 위 칸에서 바로 고치면 됩니다.</div>`,
+  [{t:'다음 ▶',p:1,fn:()=>{const a=$('ldgD0'),b=$('ldgD1');try{localStorage.setItem('geo-ldgd',(a&&a.value||'')+'~'+(b&&b.value||''))}catch(_){}return ($('ldgNos')||{}).value||''}},{t:'취소',v:null}]);
+ setTimeout(()=>{fill();['ldgD0','ldgD1'].forEach(id=>{const e=$(id);if(e)e.addEventListener('change',fill)});const t=$('ldgDt');if(t)t.addEventListener('click',()=>{$('ldgD0').value=td;$('ldgD1').value=td;fill()})},0);
+ const v=await p;return v==null||!String(v).trim()?null:v}
 async function ldgPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
- const A=fldAll().filter(r=>r.src!=='탐사'&&r.no&&(FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())));
- const def=pre||[...new Set(A.map(r=>String(r.no).trim()))].join(', ');
- const ans=prompt('대장 묶음에 넣을 접수번호 (쉼표로 여럿)\n지금 목록의 민원 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
+ const ans=await ldgAskNos(pre,'민원',sink);if(ans==null)return;
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
@@ -17070,9 +17086,7 @@ async function lkDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no,'lk')||{},W=1754
  return cvs}
 /* 📒 누수 대장 묶음: 사진/ 폴더(매크로 이름 그대로) + 총괄표_붙여넣기.xlsx('누수탐사총괄표' A~X 칸 순서) + 읽어보기 */
 async function lkPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
- const A=fldAll().filter(r=>r.src==='탐사'&&r.no&&(FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())));
- const def=pre||[...new Set(A.map(r=>String(r.no).trim()))].join(', ');
- const ans=prompt('누수 대장 묶음에 넣을 탐사연번 (쉼표로 여럿)\n지금 목록의 누수탐사 번호를 넣어 두었습니다. 사진만 있는 번호도 적으면 됩니다.',def);if(ans==null)return;
+ const ans=await ldgAskNos(pre,'탐사',sink);if(ans==null)return;
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
