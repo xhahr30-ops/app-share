@@ -16813,20 +16813,25 @@ async function ldgBlobs(ms,btn){let bl=await idbMany(ms.map(m=>'ph:'+m.id));cons
  if(need.length&&typeof shFetchMany==='function')for(let a=0;a<need.length;a+=5){if(btn)btn.textContent=`⏳ 서버에서 원본 받는 중… ${Math.min(a+5,need.length)}/${need.length}`;const sl=need.slice(a,a+5),got=await shFetchMany(sl.map(x=>x[0].id),'big');sl.forEach(([m,i])=>{if(got[m.id])bl[i]=got[m.id]})}
  return bl}
 /* 대장 번호 고르기 (2026-11-23 사용자 "번호 말고 접수날짜로"): 접수날짜(시작~끝) → 현장 일지 접수날짜(r.d) + 그 날 찍은 번호 사진(민원대응/누수탐사)의 번호를 모아 보여 줌, 번호 칸은 고칠 수 있음 */
-function ldgNosByDate(isT,d0,d1){const inR=d=>d&&d>=d0&&d<=d1,out=new Map();
- fldAll().forEach(r=>{if(!r.no||(isT?r.src!=='탐사':r.src==='탐사')||!inR(r.d||''))return;const k=String(r.no).trim().normalize('NFC');if(!out.has(k))out.set(k,r.d)});
+const ldgLocDay=t=>{const d=new Date(t);if(!isFinite(d))return '';const p=v=>String(v).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`};
+function ldgNosByDate(isT,d0,d1,st){const inR=d=>d&&d>=d0&&d<=d1,out=new Map();st=st||{};st.fld=0;st.ph=0;st.phNo=0;
+ fldAll().forEach(r=>{if(!r.no||(isT?r.src!=='탐사':r.src==='탐사')||!inR(r.d||''))return;st.fld++;const k=String(r.no).trim().normalize('NFC');if(!out.has(k))out.set(k,r.d)});
  try{const re=typeof phCodeRe==='function'?phCodeRe():null,kd=isT?'ts':'mw',has=new Set(fldAll().filter(r=>r.no).map(r=>String(r.no).trim().normalize('NFC')));
-  for(const m of PH.list){if(!m||m.del||m.map)continue;let k0='';try{k0=phKd(m)}catch(_){}if(k0!==kd)continue;const d=String(m.dt||'').slice(0,10);if(!inR(d))continue;
-   const c=String((m.cd||(PH.code&&PH.code.get(m.id))||(typeof phCodeOf==='function'?phCodeOf(m,re):'')||'')).trim().normalize('NFC');if(c&&!out.has(c)&&!has.has(c))out.set(c,d)}}catch(_){}
+  for(const m of PH.list){if(!m||m.del||m.map)continue;let k0='';try{k0=phKd(m)}catch(_){}if(k0!==kd)continue;const d1=String(m.dt||'').replace(/^(\d{4})[:.\/](\d{2})[:.\/](\d{2})/,'$1-$2-$3').slice(0,10),d2=m.at?ldgLocDay(m.at):'',d=inR(d1)?d1:inR(d2)?d2:'';if(!d)continue;st.ph++;
+   const c=String((m.cd||(PH.code&&PH.code.get(m.id))||(typeof phCodeOf==='function'?phCodeOf(m,re):'')||'')).trim().normalize('NFC');if(c)st.phNo++;if(c&&!out.has(c)&&!has.has(c))out.set(c,d)}}catch(_){}
  return [...out.entries()].sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0],'ko',{numeric:true})).map(x=>x[0])}
-async function ldgAskNos(pre,tk,sink){if(pre)return pre;const isT=tk==='탐사',what=isT?'탐사연번':'접수번호',dt=isT?'탐사일자':'접수날짜',dst=sink?(isT?'PC 누수 대장에 넣기':'PC 민원 대장에 넣기'):(isT?'누수 대장 묶음':'대장 묶음');
+async function ldgAskNos(pre,tk,sink){if(pre)return pre;
+ const tst=t=>{try{if(typeof phToast==='function')phToast(t)}catch(_){}};
+ try{if(typeof SH==='object'&&SH.on&&SH.on()&&!SH.busy&&typeof shSync==='function'){tst('☁️ 직원이 올린 사진 받는 중…');await shSync(false)}}catch(_){}
+ try{fldQLoad();if(!FLD.at||Date.now()-FLD.at>3e5){tst('📋 현장 일지 목록 받는 중…');await fldLoad()}}catch(_){}const isT=tk==='탐사',what=isT?'탐사연번':'접수번호',dt=isT?'탐사일자':'접수날짜',dst=sink?(isT?'PC 누수 대장에 넣기':'PC 민원 대장에 넣기'):(isT?'누수 대장 묶음':'대장 묶음');
  let k0='';try{k0=localStorage.getItem('geo-ldgd')||''}catch(_){}const td=fldToday(),[s0,e0]=k0.split('~');const ds=s0&&s0<=td?s0:td,de=e0&&e0<=td&&e0>=ds?e0:td;
- const fill=()=>{const a=$('ldgD0'),b=$('ldgD1'),t=$('ldgNos'),i=$('ldgNi');if(!a||!b||!t)return;let x=a.value||td,y=b.value||x;if(y<x){y=x;b.value=y}const L=ldgNosByDate(isT,x,y);t.value=L.join(', ');i.textContent=L.length?`${dt} ${x}${y!==x?' ~ '+y:''} · ${L.length}건`:`${dt} ${x}${y!==x?' ~ '+y:''}에 해당하는 ${isT?'누수탐사':'민원'}이 없습니다. 날짜를 바꾸거나 번호를 직접 적으세요.`};
+ const fill=()=>{const a=$('ldgD0'),b=$('ldgD1'),t=$('ldgNos'),i=$('ldgNi');if(!a||!b||!t)return;let x=a.value||td,y=b.value||x;if(y<x){y=x;b.value=y}const st={},L=ldgNosByDate(isT,x,y,st);t.value=L.join(', ');const kn=isT?'누수탐사':'민원대응';
+  i.innerHTML=L.length?`${dt} ${x}${y!==x?' ~ '+y:''} · ${L.length}건`:`${dt} ${x}${y!==x?' ~ '+y:''}에 해당하는 ${isT?'누수탐사':'민원'}이 없습니다. 날짜를 바꾸거나 번호를 직접 적으세요.<div style="font-weight:400;color:#64748b;font-size:12.5px;margin-top:4px">찾아본 곳: 현장 일지 ${st.fld}건${FLD.msg?' ('+lddX(String(FLD.msg).replace(/^⚠\s*/,'').slice(0,60))+'…)':''} · 그 날 ${kn} 사진 ${st.ph}장 중 번호 붙은 사진 ${st.phNo}장${st.ph&&!st.phNo?'<br>→ 사진에 번호가 없습니다. 📷 번호 이어 찍기로 찍었거나 사진 이름이 \'2126-1.jpg\'처럼 번호로 시작해야 모입니다.':''}${!st.ph?'<br>→ 그 날 찍은 '+kn+' 사진이 앱에 없습니다(다른 기기에서 올린 사진은 ⬇ 받기 뒤에 보입니다).':''}</div>`};
  const p=lddDlg(`📅 ${dst} — ${dt}로 고르기`,`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${dt}</b><input type="date" id="ldgD0" value="${ds}" style="width:auto;flex:0 1 160px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px"> ~ <input type="date" id="ldgD1" value="${de}" style="width:auto;flex:0 1 160px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px">
   <button type="button" class="btn ol" style="width:auto" id="ldgDt">오늘</button></div>
   <div id="ldgNi" style="margin:10px 0 4px;color:#4338ca;font-weight:700"></div>
   <textarea id="ldgNos" rows="3" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit" placeholder="${isT?'예) 273, 274':'예) 2126, 긴급159'}"></textarea>
-  <div style="color:#64748b;font-size:12.5px;margin-top:4px">· 현장 일지의 ${dt}와, 그 날 찍은 ${isT?'누수탐사':'민원대응'} 번호 사진에서 ${what}를 모았습니다.<br>· 빼거나 더할 번호는 위 칸에서 바로 고치면 됩니다.</div>`,
+  <div style="color:#64748b;font-size:12.5px;margin-top:4px">· 현장 일지의 ${dt}와, 그 날 찍거나 올린 ${isT?'누수탐사':'민원대응'} 번호 사진에서 ${what}를 모았습니다(직원 공유 사진을 먼저 받아 옵니다).<br>· 빼거나 더할 번호는 위 칸에서 바로 고치면 됩니다.</div>`,
   [{t:'다음 ▶',p:1,fn:()=>{const a=$('ldgD0'),b=$('ldgD1');try{localStorage.setItem('geo-ldgd',(a&&a.value||'')+'~'+(b&&b.value||''))}catch(_){}return ($('ldgNos')||{}).value||''}},{t:'취소',v:null}]);
  setTimeout(()=>{fill();['ldgD0','ldgD1'].forEach(id=>{const e=$(id);if(e)e.addEventListener('change',fill)});const t=$('ldgDt');if(t)t.addEventListener('click',()=>{$('ldgD0').value=td;$('ldgD1').value=td;fill()})},0);
  const v=await p;return v==null||!String(v).trim()?null:v}
