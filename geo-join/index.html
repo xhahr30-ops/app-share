@@ -581,6 +581,10 @@ html.chipOn.chipV .shdraw .shdt{top:10px}
 .chtip{position:fixed;z-index:100004;background:#1e293b;color:#fff;font:700 13px 'Noto Sans KR',sans-serif;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .chtip::before{content:'';position:absolute;left:-5px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:0;border-right-color:#1e293b}
 html.chipOn .chipbar .chord a{background:#f1f5f9}
+/* 로그아웃 칩: 아이콘 정리 바로 옆, 빨강 바탕으로 다른 칩과 구분 */
+html.chipOn .chipbar .chout a{background:#dc2626!important;color:#fff!important}
+html.chipOn .chipbar .chout a:hover{background:#b91c1c!important}
+html.chipOn .chipbar .chnm a{background:#eef2ff;color:#3730a3}
 /* 아이콘 끄기(아이콘 정리 창) · 왼쪽 세로 줄 옆으로 숨기기 */
 html.chipOn .chipbar>.chOff{display:none!important}
 html.chipOn:not(.chipV) .chipbar>.chhide{display:none!important}
@@ -4752,7 +4756,7 @@ function chipOff(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipoff')
 function chipOffApply(){const bar=chipBar();if(!bar)return;const off=chipOff();for(const x of bar.children)x.classList.toggle('chOff',off.includes(x.dataset.ck))}
 function chipHidWant(){try{return localStorage.getItem('geo-chiphid')==='1'}catch(_){return false}}
 function chipHidSet(v){try{localStorage.setItem('geo-chiphid',v?'1':'0')}catch(_){}chipTipHide();chipVApply()}
-function chipIx(k){if(k==='hide')return 10000;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
+function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k==='nm')return 9999.6;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
 function chipVWant(){try{return localStorage.getItem('geo-chipv')==='l'}catch(_){return false}}
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
  if(el.querySelector('#shutBtn'))return 'shut';if(el.querySelector('#lockBtn'))return 'lock';if(c.contains('phedbtn'))return 'phed';if(c.contains('febtn'))return 'fe';
@@ -4814,6 +4818,17 @@ function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUti
  a.href='#';a.dataset.lb='아이콘 정리';a.title='아이콘 순서 바꾸기 · 줄 위치(위/왼쪽)';a.setAttribute('role','button');a.setAttribute('aria-label',a.title);
  a.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#475569"><path d="'+CHV_SVG+'"/></svg>';
  L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chipOrdOpen()});
+ /* 👤 이름 칩(로그아웃 다음): 지금 로그인한 이름을 보이고, 누르면 이름 바꾸기 */
+ const nd=L.DomUtil.create('div','leaflet-bar leaflet-control chnm np',bar),na=L.DomUtil.create('a','',nd);nd.dataset.ck='nm';
+ na.href='#';na.setAttribute('role','button');
+ na.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#4f46e5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>';
+ L.DomEvent.on(na,'click',e=>{L.DomEvent.preventDefault(e);if(window.nameAsk)nameAsk(true)});chipNmSync();
+ /* 로그아웃 칩(아이콘 정리 바로 옆, chipIx로 자리 정함): 이 기기의 시작 비밀번호 기억(geo-lock)을 지우고 잠금 화면으로. 현장 자료·내 이름은 그대로 */
+ const od=L.DomUtil.create('div','leaflet-bar leaflet-control chout np',bar),oa=L.DomUtil.create('a','',od);od.dataset.ck='out';
+ oa.href='#';oa.dataset.lb='로그아웃';oa.title='로그아웃 (시작 비밀번호 화면으로)';oa.setAttribute('role','button');oa.setAttribute('aria-label',oa.title);
+ oa.innerHTML='<svg class="ci" viewBox="0 0 24 24" aria-hidden="true" style="color:#fff"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
+ L.DomEvent.on(oa,'click',e=>{L.DomEvent.preventDefault(e);appLogout()});
+ bar.insertBefore(od,nd);/* 순서: 아이콘 정리 → 로그아웃 → 이름 */
  /* ◀ 옆으로 숨기기(왼쪽 세로 줄일 때만 보임) → 줄이 화면 왼쪽 밖으로 들어가고 가장자리 손잡이만 남음. 손잡이를 누르거나 오른쪽으로 밀면 다시 나옴 */
  const hd=L.DomUtil.create('div','leaflet-bar leaflet-control chhide np',bar),ha=L.DomUtil.create('a','',hd);hd.dataset.ck='hide';
  ha.href='#';ha.dataset.lb='옆으로 숨기기';ha.title='아이콘 줄을 화면 옆으로 숨기기';ha.setAttribute('role','button');ha.setAttribute('aria-label',ha.title);
@@ -4824,8 +4839,13 @@ function chipOrdChip(bar){if(bar.querySelector('.chord'))return;const d=L.DomUti
  let sx=null;h.addEventListener('pointerdown',e=>{sx=e.clientX;try{h.setPointerCapture(e.pointerId)}catch(_){}});
  h.addEventListener('pointerup',e=>{if(sx!=null&&e.clientX-sx>-10)chipHidSet(false);sx=null});h.addEventListener('pointercancel',()=>{sx=null});
  h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chipHidSet(false)}})}
+/* 로그아웃: geo-lock만 지우고 새로 고침 → 시작 비밀번호 화면. 자료·설정·이름(geo-user)은 이 기기에 그대로 남음 */
+function chipNmSync(){const a=document.querySelector('.chipbar .chnm a');if(!a)return;let n='';try{n=localStorage.getItem('geo-user')||''}catch(_){}
+ a.dataset.lb=n||'이름 넣기';a.title=(n?'로그인 이름: '+n+' · 누르면 이름 바꾸기':'내 이름 넣기');a.setAttribute('aria-label',a.title)}
+function appLogout(){if(!confirm('로그아웃할까요?\n시작 비밀번호 화면으로 돌아갑니다. 다시 열려면 비밀번호를 넣어야 합니다.\n이 기기의 자료·설정은 그대로 남습니다.'))return;
+ try{localStorage.removeItem('geo-lock')}catch(_){}try{sessionStorage.setItem('geo-lockmsg','로그아웃했습니다. 다시 열려면 비밀번호를 넣어 주세요.')}catch(_){}location.reload()}
 function chipBar(){return map&&map._controlContainer&&map._controlContainer.querySelector('.chipbar')}
-function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks=chipOrd();ks.push('ord','hide');
+function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks=chipOrd();ks.push('ord','out','nm','hide');
  const now=[...bar.children].map(x=>x.dataset.ck),want=ks.filter(k=>now.includes(k)).concat(now.filter(k=>!ks.includes(k)));
  if(now.join()===want.join())return;for(const k of want){const el=[...bar.children].find(x=>x.dataset.ck===k);if(el)bar.appendChild(el)}}
 /* 전체화면이고 '왼쪽 세로'를 골랐으면 html.chipV. 세로 줄 폭은 --chw로 넣어 ＋/−·범례·설정 창을 그만큼 오른쪽으로 비킴 */
@@ -9993,7 +10013,7 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
  SH.timer=setTimeout(async()=>{if(document.visibilityState==='visible')await shSync();shTimer()},sec*1000)}
 // 화면 연결
 (function(){const u=$('shUrl');if(!u)return;$('shUrl').value=SH.cfg.url||'';$('shKey').value=SH.cfg.key||'';$('shBy').value=SH.cfg.by||'';$('shAuto').checked=SH.cfg.auto!==false;shIvUI();
- const read=()=>{const old=SH.cfg.url;SH.cfg.url=shUrlFix($('shUrl').value);$('shUrl').value=SH.cfg.url;SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();if(SH.cfg.by)try{localStorage.setItem('geo-user',SH.cfg.by)}catch(_){}SH.cfg.auto=$('shAuto').checked;SH.cfg.iv=$('shIv').value;
+ const read=()=>{const old=SH.cfg.url;SH.cfg.url=shUrlFix($('shUrl').value);$('shUrl').value=SH.cfg.url;SH.cfg.key=$('shKey').value.trim();SH.cfg.by=$('shBy').value.trim();if(SH.cfg.by)try{localStorage.setItem('geo-user',SH.cfg.by);chipNmSync()}catch(_){}SH.cfg.auto=$('shAuto').checked;SH.cfg.iv=$('shIv').value;
   if(old&&old!==SH.cfg.url){SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}PH.list.forEach(m=>{delete m.shUp;delete m.shSig});SH.del.clear();shSaveDel();SH.res.clear();shSaveRes()}
   shSaveCfg();shTimer();shStatus();aiUi()};
  ['shUrl','shKey','shBy'].forEach(id=>$(id).addEventListener('change',read));$('shAuto').onchange=read;$('shIv').onchange=read;
@@ -18895,14 +18915,15 @@ html.dark #hqOv .hqMap{--hq-sea:#0b2440;--hq-land:#1e293b;--hq-ln:#475569;--hq-p
   const nw=siteMake(id),keys=['name','short','col','region','c','crs','alias','gc','cw'];
   if(old&&keys.some(k=>!same(nw[k],SITE[k])))toast('🏢 '+SITE.name+' 현장 정보(이름·지도 위치·서버 주소 등)가 바뀌었습니다. 앱을 다시 열면 반영됩니다.')}
  /* 이름이 없는 기기(이미 열려 있던 기기)는 한 번만 물음 — 관리자 사용자 현황에 나옴 */
- function nameAsk(){if(document.getElementById('nmAsk')||SSg('geo-nmask'))return;SSs('geo-nmask','1');
+ /* ed=true: 👤 이름 칩에서 연 '이름 바꾸기'(지금 이름을 채워 보여 주고, 공유 칸 올린 사람 이름도 같이 바꿈) */
+ function nameAsk(ed){ed=ed===true;if(document.getElementById('nmAsk')||(!ed&&SSg('geo-nmask')))return;if(!ed)SSs('geo-nmask','1');
   const d=document.createElement('div');d.id='nmAsk';d.style.cssText='position:fixed;inset:0;z-index:2147482600;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px';
-  d.innerHTML='<form style="width:100%;max-width:320px;background:#fff;color:#1e293b;border-radius:14px;padding:20px 18px;box-shadow:0 20px 50px #0006;text-align:center;font-family:inherit"><div style="font-size:30px">👤</div><div style="font-weight:800;font-size:16px;margin-top:4px">내 이름을 넣어 주세요</div><div style="font-size:12.5px;color:#64748b;margin-top:4px">관리자가 보는 사용자 현황과 사진·변경 기록의 올린 사람에 나옵니다. 고객 정보·위치는 보내지 않습니다.</div><input maxlength="20" placeholder="예: 홍길동" style="display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:11px;font-size:16px;border:1.5px solid #c7d2fe;border-radius:10px;text-align:center"><div class="m" style="min-height:16px;font-size:12px;color:#dc2626;margin-top:4px"></div><div style="display:flex;gap:6px;margin-top:4px"><button type="button" data-n="0" style="flex:1;padding:11px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;font:inherit;cursor:pointer">나중에</button><button type="submit" style="flex:2;padding:11px;border:0;background:#4f46e5;color:#fff;font-weight:700;border-radius:10px;font:inherit;cursor:pointer">저장</button></div></form>';
-  document.body.appendChild(d);const f=d.querySelector('form'),i=f.querySelector('input');setTimeout(()=>{try{i.focus()}catch(_){}},50);
+  d.innerHTML='<form style="width:100%;max-width:320px;background:#fff;color:#1e293b;border-radius:14px;padding:20px 18px;box-shadow:0 20px 50px #0006;text-align:center;font-family:inherit"><div style="font-size:30px">👤</div><div style="font-weight:800;font-size:16px;margin-top:4px">'+(ed?'이름 바꾸기':'내 이름을 넣어 주세요')+'</div><div style="font-size:12.5px;color:#64748b;margin-top:4px">관리자가 보는 사용자 현황과 사진·변경 기록의 올린 사람에 나옵니다. 고객 정보·위치는 보내지 않습니다.</div><input maxlength="20" placeholder="예: 홍길동" style="display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:11px;font-size:16px;border:1.5px solid #c7d2fe;border-radius:10px;text-align:center"><div class="m" style="min-height:16px;font-size:12px;color:#dc2626;margin-top:4px"></div><div style="display:flex;gap:6px;margin-top:4px"><button type="button" data-n="0" style="flex:1;padding:11px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;font:inherit;cursor:pointer">'+(ed?'취소':'나중에')+'</button><button type="submit" style="flex:2;padding:11px;border:0;background:#4f46e5;color:#fff;font-weight:700;border-radius:10px;font:inherit;cursor:pointer">저장</button></div></form>';
+  document.body.appendChild(d);const f=d.querySelector('form'),i=f.querySelector('input');if(ed){i.value=LSg('geo-user')||'';setTimeout(()=>{try{i.select()}catch(_){}},60)}setTimeout(()=>{try{i.focus()}catch(_){}},50);
   ['pointerdown','touchstart','mousedown','keydown'].forEach(t=>d.addEventListener(t,e=>e.stopPropagation()));
   f.querySelector('[data-n]').onclick=()=>d.remove();
   f.onsubmit=e=>{e.preventDefault();const v=i.value.trim().replace(/\s+/g,' ').slice(0,20);if(v.length<2){f.querySelector('.m').textContent='2자 이상 넣어 주세요.';return}
-   LSs('geo-user',v);try{if(SH&&SH.cfg&&!SH.cfg.by){SH.cfg.by=v;shSaveCfg();const b=document.getElementById('shBy');if(b)b.value=v}}catch(_){}d.remove();last=0;hqSync()}}
+   const was=LSg('geo-user')||'';LSs('geo-user',v);try{if(SH&&SH.cfg&&(!SH.cfg.by||(ed&&SH.cfg.by!==v))){SH.cfg.by=v;shSaveCfg();const b=document.getElementById('shBy');if(b)b.value=v}}catch(_){}d.remove();try{chipNmSync()}catch(_){}if(ed&&was!==v)toast('👤 이름을 '+v+'(으)로 바꿨습니다.\n관리자 사용자 현황과 앞으로 올리는 사진·기록에 새 이름이 나옵니다.');last=0;hqSync()}}
  window.nameAsk=nameAsk;
  window.hqSync=hqSync;
  setTimeout(hqSync,3000);
