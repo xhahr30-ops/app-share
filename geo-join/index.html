@@ -16835,11 +16835,16 @@ async function ldgAskNos(pre,tk,sink){if(pre)return pre;
   [{t:'다음 ▶',p:1,fn:()=>{const a=$('ldgD0'),b=$('ldgD1');try{localStorage.setItem('geo-ldgd',(a&&a.value||'')+'~'+(b&&b.value||''))}catch(_){}return ($('ldgNos')||{}).value||''}},{t:'취소',v:null}]);
  setTimeout(()=>{fill();['ldgD0','ldgD1'].forEach(id=>{const e=$(id);if(e)e.addEventListener('change',fill)});const t=$('ldgDt');if(t)t.addEventListener('click',()=>{$('ldgD0').value=td;$('ldgD1').value=td;fill()})},0);
  const v=await p;return v==null||!String(v).trim()?null:v}
+/* 대장 현장주소가 비었으면 위치도(빨간 점) → 없으면 사진 GPS·현장 일지 위치로 카카오 좌표→주소, 앞 '경북 포항시' 같은 시도·시 이름은 대장처럼 뺌(이 기기 geo-ldvx에만 저장) */
+const ldgAddrTrim=a=>String(a||'').trim().replace(/^(\S+(도|특별시|광역시|특별자치시|특별자치도)|서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)\s+/,'').replace(/^\S+시\s+(?=\S+구\s)/,'');
+async function ldgAddrFill(nos,btn){for(const no of nos){try{if(ldxOf(no).addr)continue;const P=ldgPhotos(no);let ll=P.loc&&P.loc.lat!=null?L.latLng(+P.loc.lat,+P.loc.lng):null;if(!ll){const s=ldgLocSrc(no);ll=s&&s.ll}if(!ll)continue;
+ if(btn)btn.textContent=`📍 ${no} 주소 찾는 중…`;const a=ldgAddrTrim(await shutAddrOf(ll));if(a)ldxPut(no,'addr',a)}catch(_){}}}
 async function ldgPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==='undefined'){alert('ZIP·엑셀 도구를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
  const ans=await ldgAskNos(pre,'민원',sink);if(ans==null)return;
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
+ await ldgAddrFill(nos,btn);
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
   const blobs=await ldgBlobs(items.map(o=>o.m),btn);
   const z=sink||new JSZip(),miss=[];let n=0;
@@ -16849,7 +16854,7 @@ async function ldgPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX=
   const recOf=new Map();fldAll().filter(r=>r.src!=='탐사'&&r.no).forEach(r=>{const k=String(r.no).trim().normalize('NFC');const o=recOf.get(k);if(!o||(r.d||'')>(o.d||''))recOf.set(k,r)});
   const nm=v=>v===''||v==null?'':(isNaN(+v)?v:+v),ymd=m=>m&&m.dt?String(m.dt).slice(0,10):'';
   const L=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(P.map((p,i)=>{const r=recOf.get(p.no)||{},d=r.d||ymd(p.loc)||ymd((p.out.find(o=>o.kind==='현장사진')||{}).m);
-   const X=ldxOf(p.no);return [i+1,d,nm(p.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'',X.agent,X.addr,r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',d?+d.slice(5,7):'',d?+d.slice(0,4):'']}));
+   const X=ldxOf(p.no);return [i+1,d,nm(p.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'',X.agent,ldgAddrTrim(X.addr),r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',d?+d.slice(5,7):'',d?+d.slice(0,4):'']}));
   const C=[['접수번호','위치도(번호.png)','현장사진 수','넣은 파일','현장 일지','확인']].concat(P.map(p=>[nm(p.no),p.loc?'있음':'없음',p.nPh,p.out.map(o=>o.fn).join(', '),recOf.has(p.no)?'있음':'없음',[!p.loc?'위치 캡처 필요':'',p.nPh<4?`현장사진 ${4-p.nPh}장 모자람`:'',p.nPh>4?`대장 칸은 4장(-1~-4)만 씀`:'',!recOf.has(p.no)?'시각·원인은 대장에서 직접':''].filter(Boolean).join(' · ')||'OK']));
   if(sink)return{P,L,C,n,miss};
   const wb=XLSX.utils.book_new();[['리스트 줄',L,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['사진 확인',C,[10,14,10,60,10,40]]].forEach(([nn,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,nn)});
@@ -17095,6 +17100,7 @@ async function lkPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==
  const nos=[...new Set(ans.split(/[,\s]+/).map(v=>v.trim().normalize('NFC')).filter(Boolean))];if(!nos.length)return;
  const t0=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='⏳ 사진 모으는 중…'}
  for(const no of nos)if(!ldgPhotos(no).loc&&ldgLocSrc(no)){if(btn)btn.textContent=`📸 ${no} 위치도 자동 캡처…`;await ldgAutoLoc(no,true)}
+ await ldgAddrFill(nos,btn);
  try{const crs=($('shpCrs')&&$('shpCrs').value)||'EPSG:5186',P=nos.map(no=>Object.assign({no},ldgPhotos(no))),items=P.flatMap(p=>p.out);
   const blobs=await ldgBlobs(items.map(o=>o.m),btn);const z=sink||new JSZip(),miss=[];let n=0;
   for(let i=0;i<items.length;i++){const o=items[i],b=blobs[i];if(!b){miss.push(o.fn);continue}if(btn)btn.textContent=`⏳ 이름 맞추는 중… ${i+1}/${items.length}`;
@@ -17103,7 +17109,7 @@ async function lkPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==
   const nm=v=>v===''||v==null?'':(isNaN(+v)?v:+v),ymd=m=>m&&m.dt?String(m.dt).slice(0,10):'',xd=s=>{if(!s)return '';const t=Date.parse(s+'T00:00:00Z');return isFinite(t)?t/864e5+25569:s};
   const L=[['탐사연번','블록명','탐사일자','공사일자','복구결과','주소','도로폭','추정관경','포장종류','현장내용','구경','관종','누수원인','누수부위','수선내용','공사업체','비고(조치계획)','탐사자','공사업체','X','Y']].concat(P.map(p=>{const r=ldvRecOf(p.no,'lk')||{},X=ldxOf(p.no),d=r.d||ymd(p.loc)||ymd((p.out.find(o=>o.kind==='현장사진')||{}).m),
    lat=p.loc&&p.loc.lat!=null?+p.loc.lat:r.lat?+r.lat:null,lng=p.loc&&p.loc.lng!=null?+p.loc.lng:r.lng?+r.lng:null,blk=r.blk||(()=>{try{const gg=p.loc&&PH.gOf.get(p.loc.id);return gg?phGBlk(gg):''}catch(_){return ''}})();
-   return [nm(p.no),blk,xd(d),xd(r.cd||''),r.res||'',X.addr,nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'',lng!=null?+lng.toFixed(7):'',lat!=null?+lat.toFixed(7):'']}));
+   return [nm(p.no),blk,xd(d),xd(r.cd||''),r.res||'',ldgAddrTrim(X.addr),nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'',lng!=null?+lng.toFixed(7):'',lat!=null?+lat.toFixed(7):'']}));
   const C=[['탐사연번','위치도(번호.png)','원경·근경','누수사진','넣은 파일','현장 일지','확인']].concat(P.map(p=>{const ks=new Set(p.out.filter(o=>o.kind==='현장사진').map(o=>o.k)),r=ldvRecOf(p.no,'lk'),lack=[1,2,3,4,5,6,7,8].filter(k=>!ks.has(k)).map(k=>LK_LAB(k));
    return [nm(p.no),p.loc?'있음':'없음',[1,2].filter(k=>ks.has(k)).length+'/2',[3,4,5,6,7,8].filter(k=>ks.has(k)).length+'/6',p.out.map(o=>o.fn).join(', '),r?'있음':'없음',[!p.loc?'위치 캡처 필요':'',lack.length?'빠짐: '+lack.join('·'):'',p.nPh>8?'9장째부터 대장 칸 없음(추가사진)':'',!r?'블록명·원인은 대장에서 직접':''].filter(Boolean).join(' · ')||'OK']}));
   if(sink)return{P,L,C,n,miss};
@@ -17122,7 +17128,7 @@ async function lkPack(btn,pre,sink){if(typeof JSZip==='undefined'||typeof XLSX==
       같은 번호 줄 = 빈칸만 채움(수식 칸·값 있는 칸 안 건드림) / 새 번호 = 마지막 줄 아래에 이어 씀(순번 이어 매김, 서식은 윗줄)
       고친 줄의 수식은 캐시 값을 지우고 workbook calcPr fullCalcOnLoad=1 → 엑셀이 열 때 다시 계산(사진 이름 칸 BB=C&".png" 등) */
 const LDD={cfg:{
- mw:{sh:'리스트(매크로용)',key:'C',r0:6,n:19,seq:'A',dt:['B'],tm:['E','F','G','H'],ym:{R:'m',S:'y'},yr:'B',fn:/민원/,nm:'민원 대장',w:'민원'},
+ mw:{sh:'리스트(매크로용)',key:'C',r0:6,n:19,seq:'A',dt:['B'],tm:['E','F','G','H'],ag:['D','I'],ym:{R:'m',S:'y'},yr:'B',fn:/민원/,nm:'민원 대장',w:'민원'},
  lk:{sh:'누수탐사총괄표',key:'A',r0:3,n:21,dt:['C','D'],tm:[],ym:{},yr:'',fn:/누수|탐사/,nm:'누수탐사 대장',w:'누수'}}};
 const lddColN=s=>{let n=0;for(const ch of String(s).toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n};
 const lddColL=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-1-m)/26}return s};
@@ -17155,19 +17161,21 @@ async function lddPatch(zip,ty,rows){const C=LDD.cfg[ty];
  const yOf=v=>{const n=+v;if(isFinite(n)&&n>20000&&n<80000)return new Date(Math.round((n-25569)*864e5)).getUTCFullYear();const m=/^(\d{4})-/.exec(String(v||''));return m?+m[1]:0};
  const conv=(col,v)=>{if(v==null||v==='')return null;const L=lddColL(col);
   if(C.dt.includes(L)&&typeof v==='string'){const m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v);if(m)return{n:Date.UTC(+m[1],+m[2]-1,+m[3])/864e5+25569}}
-  if(C.tm.includes(L)&&typeof v==='string'){const m=/^(\d{1,2}):(\d{2})/.exec(v);if(m)return{n:Math.round((+m[1]*60+ +m[2])/1440*1e10)/1e10}}
+  if(C.tm.includes(L)&&typeof v==='string'){const m=/^(\d{1,2}):(\d{2})/.exec(v);if(m)return txt(col)?{s:m[1].padStart(2,'0')+':'+m[2]}:{n:Math.round((+m[1]*60+ +m[2])/1440*1e10)/1e10}}
   if(typeof v==='number'&&isFinite(v))return{n:v};return{s:String(v)}};
  const cellX=(ref,s,val)=>{const sa=s!=null?` s="${s}"`:'';return val.n!=null?`<${pf}c r="${ref}"${sa}><${pf}v>${val.n}</${pf}v></${pf}c>`:`<${pf}c r="${ref}"${sa} t="inlineStr"><${pf}is><${pf}t xml:space="preserve">${lddX(val.s)}</${pf}t></${pf}is></${pf}c>`};
  const stripV=c=>c.xml.replace(new RegExp('<'+pf+'v\\s*/>|<'+pf+'v>[\\s\\S]*?</'+pf+'v>'),'').replace(/\st="(str|s|b|e|n)"/,'');
- const styleRow=last||R.filter(r=>r.r<C.r0).pop()||null,stRows=R.filter(o=>o.r>=C.r0&&(!last||o.r<=last.r)).slice(-40).reverse(),stC=new Map(),styleOf=col=>{if(stC.has(col))return stC.get(col);let s=null;for(const o of stRows){const c=cellsOf(o).get(col);if(c&&c.s!=null){s=c.s;break}}stC.set(col,s);return s};
+ const styleRow=last||R.filter(r=>r.r<C.r0).pop()||null,stRows=R.filter(o=>o.r>=C.r0&&(!last||o.r<=last.r)).slice(-40).reverse(),stC=new Map(),styleOf=col=>{if(stC.has(col))return stC.get(col);let s=null,s2=null;for(const o of stRows){const c=cellsOf(o).get(col);if(c&&c.s!=null){if(c.v!==''){s=c.s;break}if(s2==null)s2=c.s}}s=s??s2;stC.set(col,s);return s};
+ const txC=new Map(),txt=col=>{if(txC.has(col))return txC.get(col);let a=0,b=0;for(const o of stRows){const c=cellsOf(o).get(col);if(!c||c.v==='')continue;if(c.t==='s'||c.t==='inlineStr'||c.t==='str')a++;else b++}const r=a>b;txC.set(col,r);return r};
  const rowX=(r,attrs,M,ch,fill)=>{let any=false;const out=new Map(M),fil=[];
-  for(const [col,val] of ch){const c=M.get(col);if(c&&c.hasF)continue;if(fill&&c&&c.v!=='')continue;const s=c&&c.s!=null?c.s:styleOf(col);out.set(col,{col,xml:cellX(lddColL(col)+r,s,val),nw:1});any=true;fil.push(lddColL(col))}
+  for(const [col,val] of ch){const c=M.get(col);if(c&&c.hasF)continue;if(fill&&c&&c.v!=='')continue;const s=fill?(c&&c.s!=null?c.s:styleOf(col)):(styleOf(col)??(c?c.s:null));out.set(col,{col,xml:cellX(lddColL(col)+r,s,val),nw:1});any=true;fil.push(lddColL(col))}
   if(!any)return null;for(const [col,c] of out)if(!c.nw&&c.hasF)out.set(col,Object.assign({},c,{xml:stripV(c)}));
   const at=String(attrs||'').replace(/\s(r|spans)="[^"]*"/g,'');return{xml:`<${pf}row r="${r}"${at}>${[...out.values()].sort((a,b)=>a.col-b.col).map(c=>c.xml).join('')}</${pf}row>`,fil}};
  const rowsAt=new Map(R.map(o=>[o.r,o])),rep=[],ins=[],added=[],filled=[],same=[];let nextR=(last?last.r:C.r0-1)+1;const nrAttr=styleRow?styleRow.a:'';
  const seen=new Set();for(const vals of rows){const kv=lddKey(vals[kc-1]);if(!kv||seen.has(kv))continue;seen.add(kv);const ch=new Map();
   for(let i=0;i<Math.min(vals.length,C.n);i++){const v=conv(i+1,vals[i]);if(v)ch.set(i+1,v)}
   let cand=(byK.get(kv)||[]);if(yc&&ch.get(yc)){const y=yOf(ch.get(yc).n);const c2=cand.filter(rw=>{const yy=yOf((cellsOf(rw).get(yc)||{}).v);return !yy||!y||yy===y});cand=c2}
+  if(C.ag){const [cc,ac]=C.ag.map(lddColN),co=ch.get(cc);if(co&&co.s!=null&&!ch.get(ac)){const nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사/g,''),k=nz(co.s);for(let i=R.length-1;i>=0;i--){const o=R[i];if(o.r<C.r0)break;const M=cellsOf(o),a=(M.get(ac)||{}).v;if(a&&nz((M.get(cc)||{}).v||'')===k){ch.set(ac,{s:a});break}}}}
   const hit=cand[cand.length-1];
   if(hit){const res=rowX(hit.r,hit.a,cellsOf(hit),ch,true);if(res){rep.push([hit.i0,hit.i1,res.xml]);filled.push({no:kv,r:hit.r,cols:res.fil})}else same.push({no:kv,r:hit.r});continue}
   const r=nextR++;if(sc)ch.set(sc,{n:++seqMax});const dv=ch.get(yc||lddColN((C.dt[0]||'A')));
