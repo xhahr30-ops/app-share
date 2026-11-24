@@ -1002,6 +1002,7 @@ html.phls-off .phcd{display:none!important}
 /* 🔔 변경 기록 (2026-10-22) */
 .chgw .chgf .btn.on{background:var(--ind);color:#fff;border-color:var(--ind)}
 /* 🍚 현장 맛집 (2026-11-24) */
+@media print{.fdmk,.leaflet-popup:has(.fdpop),.fdw{display:none!important}}
 .fdmk{background:none;border:0}.fdmk span{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#fff7ed;border:2px solid #ea580c;box-shadow:0 1px 4px rgba(0,0,0,.35);font-size:15px;line-height:1}
 .fdmk.top span{background:#ffedd5;border-color:#c2410c}.fdmk i{position:absolute;left:18px;top:-7px;font:800 10px/14px 'Noto Sans KR',sans-serif;font-style:normal;color:#fff;background:#ea580c;border-radius:7px;padding:0 4px;white-space:nowrap}
 .fdpop{font-size:12.5px;line-height:1.55;min-width:200px}.fdpop .nm{font-size:14px}.fdcat{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;border-radius:999px;padding:0 6px;background:#ffedd5;color:#9a3412}
@@ -10814,6 +10815,7 @@ async function mapShotDom(S,zMin,zMax){const {g,k,W,Hm}=S,mc=map.getContainer(),
   onclone:d=>{const c=d.querySelector('[data-mshot]');if(c)c.style.cssText+=';background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important'},
   ignoreElements:el=>{if(el===mc||el===mp||el.contains&&el.contains(mc))return false;if(!mc.contains(el))return !(el.tagName==='HEAD'||el.tagName==='STYLE'||el.tagName==='LINK');
    if(el.parentElement===mc)return el!==mp;if(el.parentElement===mp)return !keep.has(el);if(el.tagName==='CANVAS')return true;
+   /* 2026-11-24 🍚 현장 맛집 아이콘·정보창은 출력·캡처 그림에 넣지 않음 (사용자 요청) */if(el.classList&&(el.classList.contains('fdmk')||el.classList.contains('leaflet-popup')&&el.querySelector('.fdpop')))return true;
    if(el.classList&&(el.classList.contains('leaflet-control-container')||el.classList.contains('leaflet-popup')&&mshotPii(el)))return true;return false}})}finally{mc.removeAttribute('data-mshot')}
  g.drawImage(cv,0,0,W,Hm);
  masks.forEach(r=>{const x=(r.left-R.left)*k,y=(r.top-R.top)*k,w=r.width*k,h=Math.max(40*k,r.height*k-12*k);g.save();g.fillStyle='rgba(241,245,249,.97)';g.strokeStyle='#94a3b8';g.lineWidth=1.5*k;
