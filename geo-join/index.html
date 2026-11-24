@@ -653,7 +653,7 @@ html.chipTb .chipbar a[data-lb]::after{font-size:13.5px}
 html.chipTb .leaflet-top{top:52px}
 html.chipTb .uiset:not(.shutp){top:56px;max-height:calc(100% - 66px)}
 html.chipTb .shdraw .shdt{top:58px}
-/* 2026-11-24 ⚙ 설정 › 아이콘 줄 크기(geo-chipz 80~130%, 기기별): 칩만 zoom, 줄 높이(--chbh)를 재서 아래 버튼·창 자리를 맞춤 */
+/* 2026-11-24 ⚙ 설정 › 아이콘 줄 크기(geo-chipz 80~130%, 기기별): 칩만 zoom, 줄 높이(--chbh, PC 글씨 85% zoom까지 든 화면 높이)를 재서 아래 버튼·창 자리를 맞춤 */
 html.chz.chipOn .chipbar .leaflet-bar a{zoom:var(--chz,1)}
 html.chz.chipOn:not(.chipV) .leaflet-top{top:calc(var(--chbh,46px) + 2px)!important}
 html.chz.chipOn:not(.chipV) .uiset:not(.shutp){top:calc(var(--chbh,46px) + 6px)!important;max-height:calc(100% - var(--chbh,46px) - 16px)!important}
@@ -1414,6 +1414,13 @@ html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
 #gwStat .who{color:var(--gw-tx2);font-size:11px}
 /* 작업 화면에서 띄우는 헤더 창(주소찾기설정·내보내기)은 리본 아래에 */
 html.gwOn .afp{top:150px}
+/* 2026-11-24 PC 작업 화면 글씨 85%(B안): Windows 150% 배율에서 글씨가 커 산만함 → 바깥 틀(제목줄·탭·리본·레이어 창·지도 도구줄·칩·하단 탭·상태줄)만 줄임. 지도 안 글씨·정보창·폰은 그대로 */
+@media (min-width:901px) and (hover:hover){
+html.gwOn{--pcz:.85}
+html.gwOn #gwTitle,html.gwOn #gwMenu,html.gwOn #gwRibW,html.gwOn #gwLeft,html.gwOn .gw-dt,html.gwOn #gwStat,html.gwOn #gwMapSlot>#mapBox>h3,html.gwOn.chipPc .chipbar,html.gwOn #gwWin .gw-wh{zoom:var(--pcz)}
+html.gwOn.chipPc:not(.chipV) .leaflet-top{top:calc(48px * var(--pcz))}
+html.gwOn #mapBox.fsL>#gwLeft{width:calc(var(--gwL,270px) / var(--pcz))}
+}
 @media(max-width:900px){
  #gwSearch,#gwSrchSlot,#gwTitle .tt small,#gwStat .f{display:none!important}
  #gwTitle .tt{text-align:left;padding-left:4px}
@@ -2548,7 +2555,7 @@ function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classLi
 /* 2026-11-24 전체화면(PC 작업 화면)에서도 왼쪽 레이어 창: 창(#gwLeft)을 전체화면 지도 상자(#mapBox) 안으로 옮겨 왼쪽에 붙이고, 가장자리 ◀▶ 손잡이로 접고 펼침(기기별 geo-gwFsL). 끝나면 제자리로 */
 const FSL={on:false,home:null};
 function fsLayC(){return LS.get('geo-gwFsL')==='0'}
-function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop;l.style.top=t+'px';l.style.bottom='auto';l.style.height=m.offsetHeight+'px';const b=$('gwFsT');if(b){b.style.top=(t+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
+function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop,z=parseFloat(getComputedStyle(l).zoom)||1;/* PC 글씨 85%(zoom) 때 창 안 px는 줄어 보임 → 나눠 맞춤 */l.style.top=(t/z)+'px';l.style.bottom='auto';l.style.height=(m.offsetHeight/z)+'px';const b=$('gwFsT');if(b){b.style.top=(t+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
 function fsLay(){const mb=$('mapBox'),l=$('gwLeft');if(!mb||!l)return;
  const want=S.on&&document.body.classList.contains('fsOn')&&innerWidth>900&&mb.contains($('map'));
  if(want&&!FSL.on){FSL.on=true;FSL.home=l.nextElementSibling;mb.insertBefore(l,$('map'));
@@ -4932,7 +4939,7 @@ function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k===
 /* 아이콘 줄 칩 크기 (⚙ 설정 › 아이콘 줄, geo-chipz %, 기기별) */
 function chipZGet(){let z=100;try{z=+localStorage.getItem('geo-chipz')||100}catch(_){}return Math.max(80,Math.min(130,Math.round(z/5)*5))}
 function chipZApply(){const H=document.documentElement,z=chipZGet();{const r=document.getElementById('uiChZ'),v=document.getElementById('uiChZv');if(r&&+r.value!==z)r.value=z;if(v)v.textContent=z+'%'}H.classList.toggle('chz',z!==100);H.style.setProperty('--chz',String(z/100));
- const bar=document.querySelector('.leaflet-control-container .chipbar');requestAnimationFrame(()=>{if(bar&&bar.offsetHeight)H.style.setProperty('--chbh',bar.offsetHeight+'px');try{chipVApply()}catch(_){}try{zpApply()}catch(_){}})}
+ const bar=document.querySelector('.leaflet-control-container .chipbar');requestAnimationFrame(()=>{if(bar&&bar.offsetHeight)H.style.setProperty('--chbh',Math.round(bar.getBoundingClientRect().height)+'px');try{chipVApply()}catch(_){}try{zpApply()}catch(_){}})}
 function chipZSet(z,save){z=Math.max(80,Math.min(130,Math.round((+z||100)/5)*5));try{localStorage.setItem('geo-chipz',z===100?'':String(z))}catch(_){}chipZApply()}
 function chipVWant(){try{return localStorage.getItem('geo-chipv')==='l'}catch(_){return false}}
 function chipKey(el){const c=el.classList;if(el.dataset.ck)return el.dataset.ck;
@@ -4973,8 +4980,9 @@ function chipScrollInit(bar){if(bar._cs)return;bar._cs=1;const root=bar.parentNo
  bl=mk('l','‹',-1),br=mk('r','›',1);
  const upd=()=>{const H=document.documentElement,hz=!H.classList.contains('chipV')&&getComputedStyle(bar).display!=='none',mx=bar.scrollWidth-bar.clientWidth,x=bar.scrollLeft;
   const sl=hz&&mx>2&&x>2,sr=hz&&mx>2&&x<mx-2;bl.classList.toggle('on',sl);br.classList.toggle('on',sr);if(!sl&&!sr)return;
-  const t=Math.round(bar.offsetTop+(bar.offsetHeight-32)/2)+'px';for(const b of [bl,br])if(b.style.top!==t)b.style.top=t;
-  bl.style.left=(bar.offsetLeft+3)+'px';br.style.left=(bar.offsetLeft+bar.offsetWidth-35)+'px'};
+  const z=parseFloat(getComputedStyle(bar).zoom)||1;/* PC 글씨 85%(zoom) 때 칩 줄 offset 값은 줄기 전 크기 → 곱해 맞춤 */
+  const t=Math.round((bar.offsetTop+bar.offsetHeight/2)*z-16)+'px';for(const b of [bl,br])if(b.style.top!==t)b.style.top=t;
+  bl.style.left=Math.round(bar.offsetLeft*z+3)+'px';br.style.left=Math.round((bar.offsetLeft+bar.offsetWidth)*z-35)+'px'};
  bar.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);try{new ResizeObserver(upd).observe(bar)}catch(_){}
  new MutationObserver(upd).observe(bar,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});new MutationObserver(upd).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
  if(map&&map.on)map.on('resize',upd);
@@ -5034,7 +5042,7 @@ function chipResort(){const bar=chipBar();if(!bar)return;chipOffApply();const ks
 /* 전체화면이고 '왼쪽 세로'를 골랐으면 html.chipV. 세로 줄 폭은 --chw로 넣어 ＋/−·범례·설정 창을 그만큼 오른쪽으로 비킴 */
 function chipVApply(){const H=document.documentElement;if(!H.classList.contains('chipOn'))return;const on=document.body.classList.contains('fsOn')&&chipVWant(),hid=on&&chipHidWant();
  const was=H.classList.contains('chipV'),wasH=H.classList.contains('chipHid');H.classList.toggle('chipV',on);H.classList.toggle('chipHid',hid);const bar=chipBar();
- const w=on&&!hid&&bar?bar.offsetWidth+'px':'0px';if(H.style.getPropertyValue('--chw')!==w)H.style.setProperty('--chw',w);
+ const w=on&&!hid&&bar?Math.round(bar.getBoundingClientRect().width)+'px':'0px';if(H.style.getPropertyValue('--chw')!==w)H.style.setProperty('--chw',w);
  if(was!==on||wasH!==hid){if(bar){bar.scrollLeft=0;bar.scrollTop=0}chipTipHide();setTimeout(()=>{try{mapCornerFix()}catch(_){}try{zpApply()}catch(_){}},60)}}
 let CHTIP=null,CHTIPT=0;
 function chipTipHide(){clearTimeout(CHTIPT);if(CHTIP){CHTIP.remove();CHTIP=null}}
@@ -5054,7 +5062,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('click',e=>{if(ate){ate=false;e.preventDefault();e.stopPropagation()}},true);
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
- chipVApply();chipZApply();try{const cb=document.querySelector('.leaflet-control-container .chipbar');if(cb)new ResizeObserver(()=>{if(cb.offsetHeight&&!document.documentElement.classList.contains('chipV'))document.documentElement.style.setProperty('--chbh',cb.offsetHeight+'px')}).observe(cb)}catch(_){}}
+ chipVApply();chipZApply();try{const cb=document.querySelector('.leaflet-control-container .chipbar');if(cb)new ResizeObserver(()=>{if(cb.offsetHeight&&!document.documentElement.classList.contains('chipV'))document.documentElement.style.setProperty('--chbh',Math.round(cb.getBoundingClientRect().height)+'px')}).observe(cb)}catch(_){}}
 function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',rp:'교체 완료',sel:'관로 선택',phed:'사진 편집',fe:'편집',fd:'맛집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
@@ -5096,7 +5104,7 @@ const ZP={el:null,g:null};
 function zpLoad(){try{return JSON.parse(localStorage.getItem('geo-zpos')||'{}')||{}}catch(_){return {}}}
 function zpKey(){const s=map.getSize();return s.x>s.y?'l':'p'}
 function zpRange(side){const mc=map.getContainer(),M=mc.getBoundingClientRect(),z=ZP.el,h=z.offsetHeight,w=z.offsetWidth,C=map._controlCorners;
- const bar=map._controlContainer.querySelector('.chipbar'),cv=document.documentElement.classList.contains('chipV'),cw=cv&&bar?bar.offsetWidth:0;let t=10;if(bar&&bar.offsetHeight&&!cv)t=Math.round(bar.getBoundingClientRect().bottom-M.top)+8;
+ const bar=map._controlContainer.querySelector('.chipbar'),cv=document.documentElement.classList.contains('chipV'),cw=cv&&bar?bar.getBoundingClientRect().width:0;let t=10;if(bar&&bar.offsetHeight&&!cv)t=Math.round(bar.getBoundingClientRect().bottom-M.top)+8;
  let b=M.height-h-10;
  if(side){const x0=side==='r'?M.width-w-10:10+cw,x1=x0+w,box=e=>{if(!e||!e.offsetHeight||e.hidden)return null;const q=e.getBoundingClientRect();return q.right-M.left>x0-4&&q.left-M.left<x1+4?q:null};
   /* 위: 오른쪽 위 주소찾기·레이어 버튼 아래부터 */
