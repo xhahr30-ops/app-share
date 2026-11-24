@@ -47,7 +47,7 @@
  /* ── 현장별 기능 묶음: 관리자가 본부에서 끈 기능은 <html class="ft-코드">로 메뉴·칩·리본·왼쪽 칸을 숨김 (자료는 지우지 않음) ── */
  var FEATS=window.FEATS=[
   {k:'addr',n:'주소 매칭·대시보드',d:'① 주소 · 부과량 연동 · 주소찾기 설정 · 변환 시작',css:['.sec:has(#f1)','.bsec','#afBtn'],a:['win:addr','win:bill','af','start','stop']},
-  {k:'photo',n:'현장 사진',d:'📷 사진 올리기·편집·갤러리 · 🎬 동영상',css:['.sec.ph:not(#vdSec)>:not(#shBox)','#vdSec','.fmctl .cam','.fmctl .tcam','[data-ck="phed"]','#phZip2','#uiSet .uitabs [data-t="ph"]','.uig:has(+#uiPhSzBox)','#uiPhSzBox'],a:['win:ph','phAdd','tcam','phEd','gal','win:vid','phZip','ui:ph'],lay:['ph','vid']},
+  {k:'photo',n:'현장 사진',d:'📷 사진 올리기·편집·갤러리 · 🎬 동영상',css:['.sec.ph:not(#vdSec)>:not(#shBox)','#vdSec','.fmctl .cam','.fmctl .tcam','[data-ck="phed"]','#phZip2','#uiSet .uitabs [data-t="ph"]','.uig:has(+#uiPhSzBox)','#uiPhSzBox'],a:['win:ph','phAdd','tcam','phEd','gal','win:vid','phZip','ui:ph','phAll'],lay:['ph','vid']},
   {k:'share',n:'직원 공유',d:'☁️ 받기·올리기 · 공유 키 칸',css:['#shBox','#uiShBox','.uig:has(+#uiShBox)','[data-ck="ref"]','[data-ck="up"]'],a:['ck:ref','ck:up']},
   {k:'edit',n:'관로·시설물 편집',d:'🛠 편집 · ☑ 관로 선택 · 소블록 경계 고치기',css:['[data-ck="fe"]','[data-ck="sel"]'],a:['fe','sel:*']},
   {k:'shut',n:'단수구역',d:'💧 단수구역 · 안내문 · 연락처',css:['[data-ck="shut"]'],a:['shut','tb'],lay:['tb']},
@@ -2325,7 +2325,7 @@ const TABS=[
   {n:'글자 크기',x:[['uiLblPx','라벨 글자']]},
   {n:'라벨',b:[['lblOff','eyeoff','라벨 모두 끄기',1],['lblW','tag','라벨 창',1]]}]},
  {k:'field',n:'현장',g:[
-  {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['tcam','tag','글자 넣어 찍기'],['phEd','phed','사진 편집 모드'],['gal','grid','사진 갤러리'],['ui:ph','gear','사진 보기 설정']]},
+  {n:'현장 사진',b:[['win:ph','cam','현장 사진',1],['phAdd','plus','사진 찍기·올리기'],['tcam','tag','글자 넣어 찍기'],['phEd','phed','사진 편집 모드'],['gal','grid','사진 갤러리'],['ui:ph','gear','사진 보기 설정'],['phAll','cloud','사진 처음부터 다시 받기']]},
   {n:'탐사 · 기록',b:[['ck:trk','walk','탐사기록',1],['tp','user','팀 탐사 관로',1],['ck:chg','bell','변경 기록',1]]},
   {n:'동영상',b:[['win:vid','vid','동영상 연결',1]]},
   {n:'현장 모드',b:[['fm','phone','현장 모드',1]]}]},
@@ -2342,7 +2342,7 @@ const TABS=[
  {k:'help',n:'도움말',g:[
   {n:'안내',b:[['ck:help','book','사용법 · 묻기',1],['kb','lib','백과사전',1],['win:help','help','작업 화면 안내',1],['win:keys','key','단축키 목록',1],['vdHelp','play','사용법 영상',1],['frd','doc','자료 양식 FRD',1]]}]}];
 /* 비활성 기준: 원래 버튼이 꺼져 있으면 리본도 꺼짐 */
-const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',tcam:'tcBtn',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
+const SRC={bkSave:'bkSave',xl:'xl',lkXl:'lkXl',phZip:'phZip2',pdf:'hpr',start:'start',gal:'phGalBtn',kv:'kvBtn',shut:'shutBtn',lock:'lockBtn',phEd:'phEdA',phAdd:'phFile',tcam:'tcBtn',phAll:'shAll',fm:'fmBtn',mk:'mkA',ax:'axA',vdHelp:'vdHelpBtn',ex:'exBtn',af:'afBtn',mapfs:'mapFsBtn'};
 const WIN={bk:()=>$('bkSave'),bill:()=>$('bFile'),addr:()=>$('f1'),blk:()=>$('f2'),pipe:()=>$('pPanel'),fac:()=>$('fPanel'),elev:()=>$('ePanel'),leak:()=>$('lqPrepF'),cw:()=>$('cwWyF'),rs:()=>$('rsRun'),pg:()=>$('pgRun'),sb:()=>$('sbRun'),st:()=>$('stRun'),wr:()=>{window.wrSetMode&&wrSetMode('w');return $('wrRun')},wrd:()=>{window.wrSetMode&&wrSetMode('w');const b=$('wrDayBox');if(b&&!b.open)b.open=true;return b},wrm:()=>{window.wrSetMode&&wrSetMode('m');return $('wrRun')},rp:()=>$('rpOn'),ph:()=>$('phGalBtn'),vid:()=>$('vdSec')};
 const WT={bk:'💾 기준자료 백업 · 다른 PC로 옮기기',bill:'📥 부과량 연동',addr:'① 주소 데이터',blk:'② 소블록 폴리곤',pipe:'②-1 상수관로',fac:'②-2 상수도 시설물',leak:'②-4 💧 누수 지점 예측',cw:'🏗 공사 추천 (유수율 낮고 PVC 많은 곳)',rs:'📐 적정 관경 검토 (관망해석 유속)',pg:'🧭 관망도 업데이트 구간 (점검 · 현장 확인 · 보고서)',sb:'🔀 급수관 묶음 → 메인관 검토',st:'🪜 단계시험 계획',wr:'📋 주간공정보고',wrm:'📋 월간공정보고',wrd:'📅 일일 보고 메일',rp:'✅ 노후관 교체 완료 관로',elev:'②-3 표고·수압 (관망해석)',keys:'⌨ 단축키 목록',ph:'📷 현장 사진',vid:'🎬 동영상',help:'❓ 작업 화면 안내'};
 const S={on:false,tab:LS.get('geo-gwT')||'data',ph:[],win:null,winEl:null,winPh:null,dock:LS.get('geo-gwD'),tall:LS.get('geo-gwDT')==='1',ro:null,tm:0,lblLast:'both'};
@@ -10351,8 +10351,10 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
   try{const ai=await shReq('aiinfo');AI.info=ai;m.insertAdjacentHTML('beforeend',ai.ai?`<br>🤖 AI 도우미 켜짐 · 오늘 ${ai.used}/${ai.limit}회`:'<br><small class="mute">🤖 AI 도우미 꺼짐 — 관리자가 서버 스크립트 속성에 AI_KEY를 넣으면 켜집니다.</small>')}catch(e2){if(/알 수 없는 요청/.test(e2.message))m.insertAdjacentHTML('beforeend','<br><small class="mute">🤖 AI 도우미를 쓰려면 서버 코드를 2026-11-07 판으로 바꿔 새 버전으로 배포하세요.</small>')}
  }catch(e){m.innerHTML='<span class="c-rd">⚠️ '+esc(e.message)+'</span>'}};
  $('shNow').onclick=()=>{read();if(!SH.on()){$('shMsg').textContent='공유 서버 주소와 공유 키를 넣어 주세요.';return}shSync(true)};
- $('shAll').onclick=()=>{read();if(!SH.on()){$('shMsg').textContent='공유 서버 주소와 공유 키를 넣어 주세요.';return}if(!PH.ld){$('shMsg').textContent=PH.ldErr?'⚠️ 저장된 사진 목록을 읽지 못해 받을 수 없습니다 — 앱을 다시 열어 주세요.':'저장된 사진 목록을 읽는 중입니다. 잠시 뒤 다시 눌러 주세요.';return}if(SH.busy){$('shMsg').textContent='동기화 중입니다. 끝난 뒤 다시 눌러 주세요.';return}
-  /* since=0 → 서버 목록 전체. 이미 있는 사진은 건너뛰고(같은 id) 빠진 사진만 목록에 넣음, 작은 사진은 보일 때 받음 */SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}$('shMsg').textContent='☁️ 서버 사진 목록을 처음부터 받는 중…';shSync(true)};
+ $('shAll').onclick=async()=>{read();/* 리본 현장 › 현장 사진에서도 누름(☁️ 창이 닫혀 있을 수 있어 알림으로도 보여 줌) */const say=(t,o)=>{$('shMsg').textContent=t;try{phToast(t,o||{ms:6000})}catch(_){}};
+  if(!SH.on()){say('☁️ 공유 서버 주소와 공유 키가 없습니다 — 현장 › ☁️ 직원 공유에서 넣어 주세요.');return}if(!PH.ld){say(PH.ldErr?'⚠️ 저장된 사진 목록을 읽지 못해 받을 수 없습니다 — 앱을 다시 열어 주세요.':'저장된 사진 목록을 읽는 중입니다. 잠시 뒤 다시 눌러 주세요.');return}if(SH.busy){say('동기화 중입니다. 끝난 뒤 다시 눌러 주세요.');return}
+  /* since=0 → 서버 목록 전체. 이미 있는 사진은 건너뛰고(같은 id) 빠진 사진만 목록에 넣음, 작은 사진은 보일 때 받음 */const n0=PH.list.length;SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}say('☁️ 서버 사진 목록을 처음부터 받는 중…',{ms:4000});await shSync(true);
+  if(SH.err)say('⚠️ 다시 받기 실패: '+SH.err,{ms:8000});else{const d=PH.list.length-n0;say(d>0?`☁️ 빠진 사진 ${d.toLocaleString()}장을 받았습니다 · 이 기기 사진 ${PH.list.length.toLocaleString()}장`:`☁️ 빠진 사진이 없습니다 · 이 기기 사진 ${PH.list.length.toLocaleString()}장`,{ms:8000})}};
  $('shCodeDl').onclick=e=>{e.preventDefault();const t=$('shCode').textContent.replace(/^\n/,'');dlBlob(new Blob([t],{type:'text/plain;charset=utf-8'}),'스마트물길주소_사진공유서버_Code.gs')};
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')shKick()});
  // 사진 올리기·메모 저장 뒤 자동 동기화
