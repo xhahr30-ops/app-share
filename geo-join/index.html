@@ -2123,7 +2123,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin:2px 0 6px"><label class="ck" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="shAuto" checked> 자동 동기화</label>
     <select id="shIv" title="자동: 바뀐 것이 있으면 30초마다, 5분 동안 없으면 2분, 15분 동안 없으면 5분마다 확인 (데이터·서버 사용량 절약). 사진을 올리거나 메모를 고치면 간격과 관계없이 바로 올립니다."><option value="auto">간격 자동 (30초~5분)</option><option value="30">30초마다</option><option value="60">1분마다</option><option value="300">5분마다</option></select>
     <small id="shIvMsg" style="color:var(--mute)"></small></div>
-   <div class="sbtns"><button id="shTest" type="button" class="btn ol">🔌 연결 테스트</button><button id="shNow" type="button" class="btn em">🔄 지금 동기화</button></div>
+   <div class="sbtns"><button id="shTest" type="button" class="btn ol">🔌 연결 테스트</button><button id="shNow" type="button" class="btn em">🔄 지금 동기화</button><button id="shAll" type="button" class="btn ol" title="서버에 있는 공유 사진 목록을 처음부터 전부 다시 받습니다. 이 기기에 있는 사진은 그대로 두고, 빠진 사진만 채웁니다 (예: PC에만 사진이 적게 보일 때)">☁️ 사진 처음부터 다시 받기</button></div>
    <p class="hint" id="shMsg" style="margin:4px 0 0"></p>
    <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:6px">
     <b style="font-size:12.5px">🗺️ 기준자료 공유</b> <small style="color:var(--mute)">소블록 경계 · 상수관로 · 상수도 시설물</small>
@@ -8484,7 +8484,9 @@ async function phDecode(file,max,dot){let src,W,H,close=()=>{};
    const dr=x=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(src,0,0,w,h)};if(typeof OffscreenCanvas!=='undefined'){const c=new OffscreenCanvas(w,h);dr(c.getContext('2d'));return c.convertToBlob({type:'image/jpeg',quality:q})}
    const c=document.createElement('canvas');c.width=w;c.height=h;dr(c.getContext('2d'));return new Promise(r=>c.toBlob(r,'image/jpeg',q))};
   const th=await mk(220,.7),big=max>0&&Math.max(W,H)>max?await mk(max,.86):file;return{th,big,w:W,h:H,dot:dot?phRedDot(src,W,H,dot==='png'):null}}finally{close()}}
-function phSaveMeta(now){clearTimeout(PH.saveT);const go=async()=>{try{await IDB.set('photos',PH.list)}catch(e){$('phMsg').textContent='사진 목록을 저장하지 못했습니다: '+((e&&e.message)||e)}};if(now)return go();PH.saveT=setTimeout(go,500);return Promise.resolve()}
+function phSaveMeta(now){clearTimeout(PH.saveT);/* 2026-11-24 PC 사진 16장 사고 대책: 시작 때 저장된 사진 목록(IDB photos)을 다 읽기 전에 저장하면 예전 목록이 몇 장으로 덮어써짐 → 읽기 끝날 때까지 미룸(읽은 뒤 합쳐서 저장) */
+ if(!PH.ld){PH.ldSave=1;return Promise.resolve()}
+ const go=async()=>{if(!PH.ld)return;try{await IDB.set('photos',PH.list)}catch(e){$('phMsg').textContent='사진 목록을 저장하지 못했습니다: '+((e&&e.message)||e)}};if(now)return go();PH.saveT=setTimeout(go,500);return Promise.resolve()}
 function phIndex(){PH.byId=new Map(PH.list.map(m=>[m.id,m]))}
 /* ---------- 묶기: 거리(격자 색인) + 시간 + 파일명 ---------- */
 /* 분류 번호 (예: 긴급208) — 파일명(없으면 메모)에서 "분류 이름 + 숫자"를 찾음. 같은 번호는 거리와 상관없이 한 묶음 */
@@ -10028,9 +10030,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&PH.place){phPlaceEn
 window.addEventListener('beforeunload',()=>{try{PH.win&&PH.win.w.close()}catch(_){}});
 new MutationObserver(()=>{clearTimeout(PH.refT);PH.refT=setTimeout(()=>{if(PH.list.length){PH.G.forEach(g=>{g.blk=undefined;g.lbl=undefined});phView();phDraw();PH.views.forEach(x=>{try{x.refresh()}catch(_){}})}},300)}).observe($('shpMsg'),{childList:true,characterData:true,subtree:true});
 /* 저장된 사진 불러오기 (이전 판의 썸네일 형식은 자동으로 옮김) */
-setTimeout(async()=>{try{phRefSet(await IDB.get('phref'))}catch(_){}try{const r=await IDB.get('phrcp');if(Array.isArray(r)&&r.length){PH.rcp=new Map(r.map(([k,v])=>[k,Array.isArray(v)?v:[{d:null,t:String(v)}]]));$('phRcpMsg').textContent=`접수 리스트 사용 중: ${phRcpInfo().ys} — 같은 접수번호 사진의 빈 메모에 현장내용이 자동으로 들어갑니다.`}}catch(_){}try{const v=await IDB.get('photos');if(!Array.isArray(v)||!v.length){phStats();return}
+setTimeout(async()=>{try{phRefSet(await IDB.get('phref'))}catch(_){}try{const r=await IDB.get('phrcp');if(Array.isArray(r)&&r.length){PH.rcp=new Map(r.map(([k,v])=>[k,Array.isArray(v)?v:[{d:null,t:String(v)}]]));$('phRcpMsg').textContent=`접수 리스트 사용 중: ${phRcpInfo().ys} — 같은 접수번호 사진의 빈 메모에 현장내용이 자동으로 들어갑니다.`}}catch(_){}let v,ok=false,err=null;for(let i=0;i<4&&!ok;i++){try{v=await IDB.get('photos');ok=true}catch(e){err=e;await new Promise(r=>setTimeout(r,800*(i+1)))}}
+ if(!ok){/* 읽지 못함 → 저장 막은 채로 둠(빈 목록으로 덮어쓰지 않게). 다시 열면 다시 읽음 */PH.ldErr=1;$('phMsg').textContent='⚠️ 저장된 사진 목록을 읽지 못했습니다 — 지우지 않도록 사진 목록 저장을 멈췄습니다. 앱을 다시 열어 주세요. ('+((err&&err.message)||err)+')';try{phToast('⚠️ 저장된 사진 목록을 읽지 못했습니다. 사진 목록을 지키려고 저장을 멈췄습니다 — 앱을 다시 열어 주세요.',{ms:10000})}catch(_){}phStats();return}
+ try{if(!Array.isArray(v))v=[];const vid=new Set(v.map(x=>x.id)),pre=PH.list.filter(m=>!vid.has(m.id)); /* 읽기 전에 들어온 사진(동기화·새로 찍은 것)은 합침 */
  const old=v.filter(m=>m.th);if(old.length){for(const m of old){try{const b=await (await fetch(m.th)).blob();await IDB.set('pt:'+m.id,b)}catch(_){}delete m.th}}
- v.forEach(m=>{if(m.ts==null)m.ts=phTs(m.dt)});PH.list=v;if(old.length)await phSaveMeta(true);phRefresh();$('phMsg').textContent=`💾 저장된 현장 사진 ${v.length.toLocaleString()}장을 불러왔습니다.`}catch(_){phStats()}},250);
+ v.forEach(m=>{if(m.ts==null)m.ts=phTs(m.dt)});PH.list=v.concat(pre);phIndex();PH.ld=1;if(old.length||pre.length||PH.ldSave)await phSaveMeta(true);PH.ldSave=0;if(!PH.list.length){phStats();return}phRefresh();$('phMsg').textContent=`💾 저장된 현장 사진 ${v.length.toLocaleString()}장을 불러왔습니다.`}catch(_){PH.ld=1;phStats()}},250);
 /* ===== [추가] 🔗 유수율 연동 엑셀 — 관리번호 기준, 주소·이름 제외 (공유·포항시 유수율 분석 앱 연동용) ===== */
 function lkRows(){const ks=out.length?Object.keys(out[0]):[],mk=ks.find(k=>/^관리번호$/.test(k))||'',ck=ks.find(k=>/^수용가번호$/.test(k))||'',ob=BILLMODE?'소블록':CMPK;
  return out.map((o,i)=>({'관리번호':mk?String(o[mk]??''):'','수용가번호':ck?String(o[ck]??''):'','기존 소블록':ob&&o[ob]!=null?String(o[ob]):'','위치상 소블록':String((cmpOn()?o['_위치블록']:o['_결합블록'])||''),'블록 대조':o['_블록일치']||'','사용자 지정블록':o['_사용자블록']||'','결합 방식':o['_결합방식']||'','변환 방식':o['_방식'],'이상 유형':o['이상유형']||'','위도':o['_위도']===''?'':+(+o['_위도']).toFixed(6),'경도':o['_경도']===''?'':+(+o['_경도']).toFixed(6),'관로거리(m)':o['_관로거리m']??''}))}
@@ -10279,7 +10283,7 @@ async function shThumbPump(){SHT.t=0;
   shFetchMany(ids,'th').then(got=>{ids.forEach((id,k)=>{SHT.fly.delete(id);const b=got[id];let u='';if(b){u=URL.createObjectURL(b);TC.m.set(id,u)}else SHT.fail.set(id,Date.now());ws[k].forEach(o=>o.r(u))});
    while(TC.m.size>900){const [k,u]=TC.m.entries().next().value;TC.m.delete(k);URL.revokeObjectURL(u)}})
   .finally(()=>{SHT.run--;if(SHT.q.size&&!SHT.t)SHT.t=setTimeout(shThumbPump,0)})}}
-async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy){shKick();return}
+async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy||!PH.ld){if(!PH.ldErr)setTimeout(()=>shSync(manual),2000);return}
  SH.busy=true;SH.err='';shStatus();const msg=$('shMsg'),say=t=>{if(msg)msg.textContent=t};let changed=false,upN=0,dnN=0,delN=0;
  try{
   // 1) 먼저 받기: 서버에 이미 있는 사진(같은 사진을 백업 파일로 넣은 경우 등)은 id로 짝지어 다시 올리지 않음
@@ -10347,6 +10351,8 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
   try{const ai=await shReq('aiinfo');AI.info=ai;m.insertAdjacentHTML('beforeend',ai.ai?`<br>🤖 AI 도우미 켜짐 · 오늘 ${ai.used}/${ai.limit}회`:'<br><small class="mute">🤖 AI 도우미 꺼짐 — 관리자가 서버 스크립트 속성에 AI_KEY를 넣으면 켜집니다.</small>')}catch(e2){if(/알 수 없는 요청/.test(e2.message))m.insertAdjacentHTML('beforeend','<br><small class="mute">🤖 AI 도우미를 쓰려면 서버 코드를 2026-11-07 판으로 바꿔 새 버전으로 배포하세요.</small>')}
  }catch(e){m.innerHTML='<span class="c-rd">⚠️ '+esc(e.message)+'</span>'}};
  $('shNow').onclick=()=>{read();if(!SH.on()){$('shMsg').textContent='공유 서버 주소와 공유 키를 넣어 주세요.';return}shSync(true)};
+ $('shAll').onclick=()=>{read();if(!SH.on()){$('shMsg').textContent='공유 서버 주소와 공유 키를 넣어 주세요.';return}if(!PH.ld){$('shMsg').textContent=PH.ldErr?'⚠️ 저장된 사진 목록을 읽지 못해 받을 수 없습니다 — 앱을 다시 열어 주세요.':'저장된 사진 목록을 읽는 중입니다. 잠시 뒤 다시 눌러 주세요.';return}if(SH.busy){$('shMsg').textContent='동기화 중입니다. 끝난 뒤 다시 눌러 주세요.';return}
+  /* since=0 → 서버 목록 전체. 이미 있는 사진은 건너뛰고(같은 id) 빠진 사진만 목록에 넣음, 작은 사진은 보일 때 받음 */SH.since=0;try{localStorage.removeItem('geo-share-since')}catch(_){}$('shMsg').textContent='☁️ 서버 사진 목록을 처음부터 받는 중…';shSync(true)};
  $('shCodeDl').onclick=e=>{e.preventDefault();const t=$('shCode').textContent.replace(/^\n/,'');dlBlob(new Blob([t],{type:'text/plain;charset=utf-8'}),'스마트물길주소_사진공유서버_Code.gs')};
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')shKick()});
  // 사진 올리기·메모 저장 뒤 자동 동기화
