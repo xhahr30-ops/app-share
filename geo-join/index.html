@@ -8958,8 +8958,9 @@ const kdHidG=g=>{const h=UI.kdHid;return !!(h&&h.length&&h.includes(g.kd||'mw'))
 function kdHidSet(k,hide){if(!PH_KD[k])return;const h=new Set(UI.kdHid||[]);if(hide)h.add(k);else h.delete(k);UI.kdHid=h.size?[...h]:undefined;uiSave();PH.yrKey='';if(map)map.closePopup();phDraw()}
 function mwHidSet(k,hide){if(!MW_ST[k]&&k!=='0')return;const h=new Set(UI.mwHid||[]);if(hide)h.add(k);else h.delete(k);UI.mwHid=h.size?[...h]:undefined;uiSave();PH.yrKey='';if(map)map.closePopup();phDraw()}
 function mwCnt(){const c=new Map();if($('phShow').value==='off')return c;for(const g of (PH.KG||PH.G))if(g.kd==='mw'&&g.lat!=null){const k=mwStG(g)||'0';c.set(k,(c.get(k)||0)+g.n)}return c}
-/* 사진 아이콘 크기: 전체(UI.phSz) × 종류별(UI.phKs) — 시설물 −/＋와 같은 단계 (2026-11-11) */
-function phSzOf(g){const a=(+UI.phSz||1)*(PH.bpK||1),b=g&&!g.ref&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
+/* 사진 아이콘 크기: 전체(UI.phSz) × 종류별(UI.phKs) — 시설물 −/＋와 같은 단계 (2026-11-11)
+   위치도 빨간 점·기준 위치 파일로 자리 잡은 묶음(g.ref)도 종류별 크기를 따름 (2026-11-24, 긴급76 안 커지던 원인) */
+function phSzOf(g){const a=(+UI.phSz||1)*(PH.bpK||1),b=g&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
 function phLsApply(){try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1))}catch(_){}}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
