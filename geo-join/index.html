@@ -291,6 +291,13 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .uiset .uib{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.uiset .uib .btn{flex:1 1 auto;width:auto;padding:6px 10px;font-size:12px}
 .uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
 .uiset .uidis{opacity:.5}
+#bqDlg{position:absolute;z-index:1150;top:64px;left:50%;transform:translateX(-50%);width:min(760px,calc(100% - 20px));max-height:calc(100% - 80px);display:flex;flex-direction:column;background:var(--card,#fff);color:var(--ink,#0f172a);border:1px solid var(--line,#e2e8f0);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.3);font-size:13px}#bqDlg[hidden]{display:none}
+#bqDlg .bqh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line,#e2e8f0);background:linear-gradient(90deg,#4f46e5,#2563eb);color:#fff;border-radius:12px 12px 0 0}#bqDlg .bqh b{flex:1;font-size:14px}#bqDlg .bqh button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;cursor:pointer}
+#bqDlg .bqb{overflow:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}#bqDlg .bqp{margin-bottom:12px}#bqDlg .bqp h4{margin:4px 0 6px;font-size:14px}#bqDlg .bqp img{display:block;width:100%;height:auto;border:1px solid var(--line,#e2e8f0);border-radius:6px;background:#fff;margin-bottom:3px}
+#bqDlg .bqs{display:block;color:var(--sub,#64748b);font-size:11px;margin-bottom:8px}#bqDlg .bqm{color:var(--sub,#64748b);margin:6px 0}#bqDlg .bqn{border:1px solid #f59e0b;background:#fffbeb;color:#92400e;border-radius:6px;padding:6px 8px;margin:6px 0;font-size:12px}#bqDlg .bqa{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:640px){#bqDlg{top:auto;bottom:0;left:0;right:0;transform:none;width:auto;max-height:82%;border-radius:16px 16px 0 0}#bqDlg .bqh{border-radius:16px 16px 0 0}#bqDlg .bqb{padding-bottom:calc(10px + env(safe-area-inset-bottom))}}
+@media print{#bqDlg{display:none!important}}
+.chgbk{display:inline-flex;white-space:nowrap;max-width:100%;align-items:center;gap:6px;background:#ecfeff;color:#0e7490;border:1px solid #67e8f9;border-radius:999px;padding:2px 4px 2px 10px;margin-bottom:4px}.chgbk .btn{padding:2px 8px;font-size:11.5px}
 .vpset{left:auto;right:10px;width:330px}.bpset{width:360px}.bpset .bplist{max-height:230px;overflow:auto;border:1px solid var(--line2);border-radius:8px;padding:4px 6px;margin-top:4px}.bpset .bpg{margin:2px 0 4px}.bpset .bpg>label{display:flex;gap:5px;align-items:center;font-weight:700;font-size:12px;cursor:pointer}.bpset .bpg>label small{color:var(--mute);font-weight:500}.bpset .bpg>div{display:flex;flex-wrap:wrap;gap:3px 4px;padding-left:18px}.bpset .bpi{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line2);border-radius:7px;padding:1px 4px 1px 3px}.bpset .bpi.on{border-color:#2563eb;background:rgba(37,99,235,.1)}.bpset .bpi input{margin:0;width:14px;height:14px}.bpset .bpi button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer;padding:1px 2px}.bpset .bpi small{color:var(--mute);font-size:10.5px}.leaflet-bpPane-pane,.leaflet-bpPane-pane *{pointer-events:none!important}.vpset .uif select{max-width:62%}.vpset .uib .btn{padding:6px 10px;font-size:12px}.vpfrm{position:absolute;z-index:1000;pointer-events:none;border:2px dashed #2563eb;box-shadow:0 0 0 9999px rgba(15,23,42,.28);border-radius:2px}.vpfrm[hidden]{display:none}.vpfrm b{position:absolute;left:0;top:-1px;transform:translateY(-100%);background:#2563eb;color:#fff;font:700 11px/1.5 sans-serif;padding:1px 7px;border-radius:4px 4px 0 0;white-space:nowrap}.vpfrm.big{border-color:#dc2626}.vpfrm.big b{background:#dc2626}.vpcov{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center}.vpcov div{background:#fff;color:#111827;padding:14px 22px;border-radius:12px;font:700 15px sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 .lblset .uif select{max-width:62%}.lblset .lbw{margin:2px 0 4px;color:#b45309;font-weight:600}
 .uiset .uitop{position:sticky;top:-10px;z-index:2;background:var(--card);margin:-10px -12px 4px;padding:10px 12px 6px;border-bottom:1px solid var(--line2)}
@@ -3116,7 +3123,7 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
  /* 현황표 + 관경·재질 100% 막대 */
  safe('블록 현황',sb,()=>{if(sb){const r=R(sb);card(r);head(r,'블록 현황',info.cu!=null?`수용가 ${info.cu.toLocaleString()}전 (Y열)`:'수용가 '+need);
   const rows=[['관로연장',ps?`${f2(ps.km)} km  (급수관 ${f2(ps.svc)} km 별도)`:need],['노후관 30년 초과',ps?(ps.known?`${f2(ps.old)} km (${Math.round(ps.old/ps.known*100)}%)${ps.known<ps.km*.98?' · 연도 모름 '+f2(ps.km-ps.known)+' km':''}`:'설치연도 없음 · '+need):need],
-   ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['유량계 · 경계밸브',(S.mt==null?need:S.mt.length?`유량계 ${S.mt.length}개 (${[...new Set(S.mt)].slice(0,3).join(', ')})`:'유량계 없음 (시설물 자료) — 확인 필요')+(S.bA?` · 경계 위 닫힌 밸브 ${S.bA}개`:'')],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
+   ['누수 (탐사·민원)',lk?`${lk.tam+lk.civ}건 (탐사 ${lk.tam} · 민원 ${lk.civ})${ps&&ps.km>0?' · '+f2((lk.tam+lk.civ)/ps.km)+'건/km':''}`:need+' (②-4 📒 대장)'],['유량계 · 경계밸브',(!S||S.mt==null?need:S.mt.length?`유량계 ${S.mt.length}개 (${[...new Set(S.mt)].slice(0,3).join(', ')})`:'유량계 없음 (시설물 자료) — 확인 필요')+(S&&S.bA?` · 경계 위 닫힌 밸브 ${S.bA}개`:'')],['비고 (제고계획)',bpMemoOf(b.n)||'-']];
   const lh=X(3.9*s),kw=r.w*.3;let y=r.y+X(7.5*s);
   rows.forEach(([a,v])=>{txt(a,r.x+X(2.5*s),y+lh/2,kw-X(3*s),{w:600,pt:6.2,c:mute});txt(v,r.x+kw,y+lh/2,r.w-kw-X(2.5*s),{pt:6.4,c:/확인 필요/.test(v)?'#b45309':ink});g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(r.x+X(2*s),y+lh);g.lineTo(r.x+r.w-X(2*s),y+lh);g.stroke();y+=lh});
   const bars=[];if(ps){const DB=G('DIA_BANDS')||[],DC=['#bae6fd','#7dd3fc','#3b82f6','#1d4ed8','#1e3a8a'];bars.push(['관경별',DB.map((d,i)=>[d[1].replace(' 이하','↓').replace(' 이상','↑'),ps.band[i],DC[i]||'#64748b'])]);
@@ -3271,6 +3278,35 @@ function bpRepPanel(n,part){try{const o=bpRepInfo(n);if(!o)return null;const {b,
  M.ph=y;const dpm=200/25.4,cv=bpCompose(b,null,info,1,M,dpm);let lr=null,lm='';if(info.nrw){const SE=bpSeries(info.nrw);for(let j=SE.Yr.length-1;j>=0&&lr==null;j--){const a=SE.f('r',j);for(let m=12;m>=1;m--)if(a[m]!=null){lr=bpPct(a[m]);lm=`${SE.Yr[j]}.${m}월`;break}}}
  return{r:lr,m:lm,u:cv.toDataURL('image/jpeg',.92),w:cv.width,h:cv.height,src:[info.nrw?`유수율 '${BP.nrw.f||BP.nrw.sn||'유수율(소블록별)'}'`:'유수율 확인 필요',info.cs&&info.cs.n?`수용가 ${info.cs.src}`:'',info.lk?'누수 📒 대장':'누수 확인 필요'].filter(Boolean).join(' · '),g:BP_G()}}catch(err){console.warn('보고서 현황 칸',n,part,err);return null}}
 window.bpRep={prep:bpRepPrep,panel:bpRepPanel,g:BP_G,nrwParse:bpNrwParse,billOf:a=>bpBillOf(a),sysParse:a=>bpSysParse(a),set:R=>{BP.nrw=R}};
+/* 2026-11-24 🔍 블록 찾기 ③ '소블록 현황 보기': 현황도·개략공사비 보고서와 같은 칸(bpRepPanel 'blk'·'cu')을 지도 위 창에 바로 보여 줌. 출력 창으로 이어 가기 */
+async function bpQuick(names){const m=G('map');if(!m)return;const all=bpBlocks();if(!all.length){msg('소블록 경계(② 소블록)를 먼저 넣어 주세요.');return}
+ const ns=(names||[]).map(n=>{const b=all.find(x=>x.n===n)||all.find(x=>bpK(x.n)===bpK(n));return b?b.n:null}).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,6);
+ if(!ns.length){msg('이 이름의 소블록을 경계 자료에서 찾지 못했습니다.');return}
+ let w=document.getElementById('bqDlg');const mc=m.getContainer();
+ if(!w){w=document.createElement('div');w.id='bqDlg';w.className='np';w.setAttribute('role','dialog');w.setAttribute('aria-label','소블록 현황');
+  mc.appendChild(w);try{L.DomEvent.disableClickPropagation(w);L.DomEvent.disableScrollPropagation(w)}catch(_){}
+  w.addEventListener('click',e=>{const b=e.target.closest('[data-bq]');if(!b)return;const a=b.dataset.bq;
+   if(a==='x'){w.hidden=true;return}
+   if(a==='out'){w.hidden=true;const n=b.dataset.n;bpOpen();if(BP.el&&!BP.el.hidden&&n){BP.sel.add(n);bpShow(n);bpList()}return}
+   if(a==='big'){const im=b.closest('.bqp').querySelector('img');if(im){const u=im.src,o=window.open('','_blank');if(o){o.document.write(`<title>${bpE(im.alt)}</title><body style="margin:0;background:#334155"><img src="${u}" style="width:100%;max-width:1400px;display:block;margin:auto">`);o.document.close()}}}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
+ if(w.parentNode!==mc)mc.appendChild(w);
+ const T=ns.length>1?`${ns.slice(0,3).join(', ')}${ns.length>3?' 외':''}`:ns[0];
+ w.innerHTML=`<div class="bqh"><b>📊 ${bpE(T)} 소블록 현황</b><button type="button" data-bq="x" aria-label="닫기">✕</button></div><div class="bqb"><p class="bqm">⏳ 현황을 만드는 중… (관로가 많으면 처음 한 번은 몇 초 걸립니다)</p></div>`;w.hidden=false;
+ const body=w.querySelector('.bqb');await new Promise(r=>setTimeout(r,60));
+ try{const LRo=G('LR');if(LRo&&!LRo.recs.length&&typeof G('lrInit')==='function')F('lrInit')}catch(_){}
+ try{await bpRepPrep()}catch(err){console.warn('소블록 현황 준비',err)}
+ if(w.hidden)return;let h='';
+ for(const n of ns){const P=bpRepPanel(n,'blk'),C=bpRepPanel(n,'cu'),o=bpRepInfo(n),I=o?o.info:{};
+  h+=`<section class="bqp">${ns.length>1?`<h4>${bpE(n)}</h4>`:''}`;
+  if(P)h+=`<img src="${P.u}" alt="${bpE(n)} 소블록 현황" loading="lazy"><small class="bqs">자료: ${bpE(P.src)}${P.r!=null?` · 최근 유수율 ${P.r.toFixed(1)}% (${bpE(P.m)})`:''}</small>`;
+  if(C)h+=`<img src="${C.u}" alt="${bpE(n)} 수용가 현황" loading="lazy"><small class="bqs">수용가 현황 — 이름·주소 없이 관리번호만 씁니다.</small>`;
+  const need=[];if(!I.ps)need.push('상수관로(③ 관로 SHP)');if(!I.nrw)need.push("유수율 엑셀 '유수율(소블록별)' 시트 (🗺 소블록별 출력 창의 📥 또는 ① 주소 칸 부과량 연동)");if(!(I.cs&&I.cs.n)&&I.cu==null)need.push('부과량(수용가) 자료');if(!I.lk)need.push('누수탐사·민원 📒 대장');
+  if(!P&&!C)h+=`<p class="bqm">이 소블록은 보여 줄 현황 자료가 아직 없습니다 (확인 필요).</p>`;
+  if(need.length)h+=`<p class="bqn">📥 넣으면 채워지는 자료: ${need.map(bpE).join(' · ')}</p>`;
+  h+=`<div class="bqa"><button type="button" class="btn ol" data-bq="out" data-n="${bpE(n)}" title="소블록별 현황도 출력 창에서 이 소블록을 골라 둠">🖨 현황도 출력 창</button>${P||C?`<button type="button" class="btn ol" data-bq="big" title="새 창에서 크게 보기">🔍 크게 보기</button>`:''}</div></section>`}
+ body.innerHTML=h+`<p class="bqm" style="font-size:11px">현황도 출력과 같은 자료·계산입니다. 숫자는 넣은 자료에서만 가져오며, 없는 칸은 '확인 필요'로 나옵니다.</p>`}
+window.bpQuick=bpQuick;
 window.bpOpen=bpOpen;window.BPR=BP;window.bpCust=bpCust;
 })();
 </script>
@@ -5180,8 +5216,13 @@ function initSearch(){
   q('ok').onclick=()=>{const v=sm.value,k=ki.value.trim();if(gm.value!==v){gm.value=v;gm.onchange()}if(v!=='osm'){$('kakao').value=k;$('kakao').onchange()}
    lst.innerHTML='';if(inp.value.trim())run();else msg('✅ 주소찾기 설정을 저장했습니다: '+esc(gm.options[gm.selectedIndex].textContent))}}
  box.querySelector('.gsc').onclick=()=>{if(lst.querySelector('.gscf'))lst.innerHTML='';else cfgShow('')};
- const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569']};
- function show(){const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
+ const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569'],bst:['현황','#1d4ed8'],bch:['업데이트','#0e7490']};
+ /* 2026-11-24 블록을 정확히 찾으면 '블록·시설물' 다음에 ③ 소블록 현황 보기 ④ 그 소블록 최근 업데이트 내용 줄을 붙임 */
+ function addBst(){const i=list.findIndex(r=>r.k==='blk'&&r.ex);if(i<0||list.some(r=>r.k==='bst'))return;const B=list[i],nm=B.names.length>1?B.t:B.names[0];
+  let p=i+1;while(p<list.length&&list[p].k==='fac'&&B.names.some(n=>(list[p].s||'').includes('소블록 '+n)))p++;
+  let cs='관로·시설물·사진 변경 (최근 30일)';try{if(window.chgBlkCount){const c=chgBlkCount(B.names);if(c!=null)cs=`최근 30일 ${c.toLocaleString()}건 · 관로·시설물·사진 변경`}}catch(_){}
+  list.splice(p,0,{k:'bst',names:B.names,t:nm+' 소블록 현황 보기',s:'유수율·관로·수용가·누수 현황 (현황도와 같은 자료)'},{k:'bch',names:B.names,t:nm+' 최근 업데이트 내용',s:cs});if(sel>=p)sel+=2}
+ function show(){addBst();const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
  lst.onclick=e=>{const b=e.target.closest('.gsi');if(!b)return;L.DomEvent.stop(e);go(list[+b.dataset.k]);gsAfterPick()}; // 목록을 다시 그리면 누른 줄이 문서에서 빠져 Leaflet이 지도 클릭으로 보고 관로 정보창을 열던 것 막음
  inp.onkeydown=e=>{if(!list.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+list.length)%list.length;show();const o=lst.querySelector('.on');o&&o.scrollIntoView({block:'nearest'})}
@@ -5189,6 +5230,7 @@ function initSearch(){
   else if(e.key==='Escape'){lst.innerHTML='';list=[]}};
  function go(r){if(!r)return;sel=list.indexOf(r);show();
   if(r.k==='blk'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);gsFlashBlk(r.t);return}
+  if(r.k==='bst'||r.k==='bch'){if(pin){map.removeLayer(pin);pin=null}hlBlock(r.names);if(r.k==='bst'){if(window.bpQuick)bpQuick(r.names);else msg('소블록 현황 기능을 불러오지 못했습니다.')}else if(window.chgOpenBlk)chgOpenBlk(r.names);return}
   if(r.k==='fac'){if(pin){map.removeLayer(pin);pin=null}const i=r.i,ll=L.latLng(FAC.y[i],FAC.x[i]);map.setView(ll,Math.max(map.getZoom(),17));
    setTimeout(()=>{try{const h={H:[{t:'fac',i}],cur:0,ll,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true);hitMark(h.H[0])}catch(_){}},300);gsFlash(ll,'#ea580c','🔧 '+r.t);return}
   if(r.k==='ph'){if(pin){map.removeLayer(pin);pin=null}if(r.gid){phFind(r.gid);const g=PH.gById&&PH.gById.get(r.gid);if(g&&g.lat!=null)gsFlash([g.lat,g.lng],'#7c3aed','📷 '+r.t)}else phGalOpen(r.pid);return}
@@ -13126,7 +13168,17 @@ function chgInit(){chgLoad();if(!map||document.getElementById('chgBtn'))return;
   a.href='#';a.id='chgBtn';a.setAttribute('role','button');a.setAttribute('aria-label','변경 기록');a.title='변경 기록 (관로·시설물·사진)';a.innerHTML='🔔<span class="chgn" hidden></span>';
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);chgOpen()});return d}});
  map.addControl(new Ctl());chgBadge()}
-function chgOpen(){chgLoad().then(()=>{let w=document.getElementById('chgW');
+/* 2026-11-24 🔍 블록 찾기 ④ '최근 업데이트 내용': 기록마다 소블록(e.bk, 없으면 사진·관로·시설 위치로)을 구해 그 소블록 것만 보여 줌 */
+const CHG_BK=new WeakMap();
+function chgBlkOf(e){if(e.bk)return [e.bk];if(CHG_BK.has(e))return CHG_BK.get(e);const S=new Set(),at=(lat,lng)=>{try{const b=blkAt(lng,lat);if(b)S.add(b)}catch(_){}};
+ try{if(e.ids&&e.ids.length&&typeof PH!=='undefined'&&PH.byId)e.ids.slice(0,300).forEach(id=>{const m=PH.byId.get(id);if(m&&m.lat!=null)at(m.lat,m.lng)});
+  else if(e.pid&&typeof PED!=='undefined'){const r=PED.recs.find(x=>x.id===e.pid);if(r){const I=chgPipeInfo(r);if(I&&I.ll)at(I.ll[0],I.ll[1])}}
+  else if(e.fid&&typeof FAC!=='undefined'){const f=(FAC.feats||[]).find(x=>x.p&&x.p._fid===e.fid);if(f&&f.c)at(f.c[1],f.c[0])}}catch(_){}
+ const r=[...S];if(poly)CHG_BK.set(e,r);return r}
+const chgInBk=(e,bk)=>{const s=chgBlkOf(e);return s.some(x=>bk.includes(x))};
+window.chgBlkCount=names=>{if(!CHG.loaded||!names||!names.length)return null;const from=Date.now()-30*864e5;return CHG.list.filter(e=>e.at>=from&&chgInBk(e,names)).length};
+window.chgOpenBlk=names=>{chgOpen(names)};
+function chgOpen(bk){CHG.bk=Array.isArray(bk)&&bk.length?bk.slice():null;if(CHG.bk&&CHG.d<30)CHG.d=30;if(CHG.bk){CHG.f='all';CHG.oth=false;CHG.sum=false}chgLoad().then(()=>{let w=document.getElementById('chgW');
  if(!w){w=document.createElement('div');w.id='chgW';w.className='phtr chgw np';w.setAttribute('role','dialog');w.setAttribute('aria-label','변경 기록');
   w.innerHTML=`<div><div class="th"><b>🔔 변경 기록</b><button type="button" data-t="x" aria-label="닫기">✕</button></div>
    <div class="tb chgf">${[['all','전체'],['pipe','🚰 관로'],['fac','🔧 시설물'],['photo','📷 사진'],['mk','🖍️ 그리기'],['ref','🗺️ 기준자료']].map(([k,t])=>`<button type="button" class="btn ol" data-f="${k}">${t}</button>`).join('')}</div>
@@ -13137,7 +13189,7 @@ function chgOpen(){chgLoad().then(()=>{let w=document.getElementById('chgW');
   document.body.appendChild(w);
   w.onclick=e=>{if(e.target===w){w.hidden=true;return}const f=e.target.closest('[data-f]');if(f){CHG.f=f.dataset.f;CHG.max=300;chgRender();return}
    const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
-   if(t==='x')w.hidden=true;else if(t==='xl')chgXlsx();else if(t==='sum'){CHG.sum=!CHG.sum;chgRender()}else if(t==='more'){CHG.max+=300;chgRender()}
+   if(t==='x')w.hidden=true;else if(t==='bkx'){CHG.bk=null;chgRender()}else if(t==='xl')chgXlsx();else if(t==='sum'){CHG.sum=!CHG.sum;chgRender()}else if(t==='more'){CHG.max+=300;chgRender()}
    else if(t==='go'){const x=CHG.list.find(y=>y.c===b.dataset.c);if(x)chgGo(x)}
    else if(t==='hx'){HL.clr=Date.now();hlCfgSave();hlRefresh()}};
   w.querySelector('[data-t="hd"]').onchange=e=>{HL.d=+e.target.value;hlCfgSave();hlRefresh()};
@@ -13149,15 +13201,16 @@ function chgOpen(){chgLoad().then(()=>{let w=document.getElementById('chgW');
  {const t=document.getElementById('phToast');if(t&&/^🔔/.test(t.textContent||''))t.hidden=true}
  CHG.max=300;w.hidden=false;chgRender()})}
 function chgPick(){const now=new Date(),from=CHG.d===1?new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime():Date.now()-CHG.d*864e5;
- return CHG.list.filter(e=>e.at>=from&&(CHG.f==='all'||e.k===CHG.f)&&(!CHG.oth||!e.mine)).sort((a,b)=>b.at-a.at)}
+ return CHG.list.filter(e=>e.at>=from&&(CHG.f==='all'||e.k===CHG.f)&&(!CHG.oth||!e.mine)&&(!CHG.bk||chgInBk(e,CHG.bk))).sort((a,b)=>b.at-a.at)}
 function chgCanGo(e){return !!(e.pid||e.fid||e.ll||(e.ids&&e.ids.length))}
 function chgRender(){const w=document.getElementById('chgW');if(!w||w.hidden)return;
  w.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===CHG.f));
  const L2=chgPick(),tl=w.querySelector('.tl'),nw=L2.filter(e=>!e.mine&&e.at>CHG.prev).length;
- w.querySelector('[data-t="inf"]').textContent=`${L2.length.toLocaleString()}건${nw?` · 새로 받은 것 ${nw}건`:''} · 이 기기에서 고친 것과 공유 서버에서 받은 것을 ${CHG_DAYS}일 동안 보관합니다. 줄을 누르면 지도에서 위치를 보여 줍니다.`;
+ {const bn=CHG.bk?(CHG.bk.length>3?CHG.bk.slice(0,3).join(', ')+` 외 ${CHG.bk.length-3}개`:CHG.bk.join(', ')):'';
+  w.querySelector('[data-t="inf"]').innerHTML=(CHG.bk?`<span class="chgbk"><b>🧩 소블록 ${esc(bn)}만</b> <button type="button" class="btn ol" data-t="bkx" title="모든 소블록 변경 보기">✕ 전체 보기</button></span><br>`:'')+esc(`${L2.length.toLocaleString()}건${nw?` · 새로 받은 것 ${nw}건`:''} · 이 기기에서 고친 것과 공유 서버에서 받은 것을 ${CHG_DAYS}일 동안 보관합니다. 줄을 누르면 지도에서 위치를 보여 줍니다.`)+(CHG.bk?esc(' 소블록은 고친 자리(사진은 찍은 자리) 기준이고, 위치 없는 기록은 빠집니다.'):'')}
  w.querySelector('[data-t="xl"]').disabled=!L2.length;hlUi(w);{const sb=w.querySelector('[data-t="sum"]');if(sb){sb.classList.toggle('on',!!CHG.sum);sb.textContent=CHG.sum?'📜 목록 보기':'📊 주간 집계'}}
  if(CHG.sum&&L2.length){tl.innerHTML=chgSumHtml(L2);return}
- if(!L2.length){tl.innerHTML=`<div class="empty">${CHG.list.length?'이 조건에 맞는 변경이 없습니다.':'아직 기록이 없습니다. 관로·시설물을 고치거나 사진을 올리고 받으면 여기에 쌓입니다.'}</div>`;return}
+ if(!L2.length){tl.innerHTML=`<div class="empty">${CHG.bk?`최근 ${CHG.d===1?'오늘':CHG.d+'일'} 이 소블록에서 바뀐 관로·시설물·사진이 없습니다.`:CHG.list.length?'이 조건에 맞는 변경이 없습니다.':'아직 기록이 없습니다. 관로·시설물을 고치거나 사진을 올리고 받으면 여기에 쌓입니다.'}</div>`;return}
  let day='',h='';const wk='일월화수목금토';
  L2.slice(0,CHG.max).forEach(e=>{const d=new Date(e.at),dk=d.toDateString();
   if(dk!==day){if(day)h+='</div>';day=dk;h+=`<div class="dg"><small>${d.getMonth()+1}월 ${d.getDate()}일 (${wk[d.getDay()]})</small>`}
