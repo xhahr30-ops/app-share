@@ -394,7 +394,7 @@ html.dark .hxp .hxref{background:#312e81;color:#c7d2fe}html.dark .hxp .hxck{back
 .gsrch .gsx{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--mute);cursor:pointer;font-size:13px;padding:2px 4px}
 .gsrch .gsb{border:0;border-radius:7px;background:#4f46e5;color:#fff;font-weight:700;font-size:12.5px;padding:7px 11px;cursor:pointer;white-space:nowrap;font-family:inherit}
 .gsrch .gsb:hover{background:#4338ca}.gsrch .gsb:disabled{opacity:.6;cursor:wait}
-.gsrch .gsl{max-height:300px;overflow:auto;border-top:1px solid var(--line);font-size:12.5px}
+.gsrch .gsl{max-height:min(460px,60vh);overflow:auto;border-top:1px solid var(--line);font-size:12.5px}
 .gsrch .gsl:empty{display:none}
 .gsrch .gsi{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 10px;cursor:pointer;font-family:inherit;font-size:12.5px;line-height:1.35}
 .gsrch .gsi:hover,.gsrch .gsi.on{background:#eef2ff}
@@ -506,7 +506,7 @@ html.chipOn .chipbar .leaflet-bar a{display:inline-flex!important;align-items:ce
 html.chipOn .chipbar .leaflet-bar a+a{margin-left:8px}
 html.chipOn .chipbar a[data-lb]::after{content:attr(data-lb);font-size:13.5px}
 /* 칩 아이콘 = 리본과 같은 색 선 아이콘(GICO) */
-.chipbar svg.ci{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}html.chipPc .chipbar svg.ci{width:18px;height:18px}
+.chipbar svg.ci{flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}html.chipPc .chipbar svg.ci{width:16px;height:16px}
 html.chipOn .chipbar .chsrch a.on{background:#e0e7ff}
 html.chipOn .leaflet-top{top:52px}
 html.chipOn .gsrch.min{display:none!important}
@@ -639,7 +639,7 @@ html.chipOn .chipbar a{-webkit-touch-callout:none;-webkit-user-select:none;user-
 #chOrdBox .cof button{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:9px;padding:7px 12px;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}
 #chOrdBox .cof .ok{background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
 
-html.chipPc .chipbar .leaflet-bar a{height:32px!important;line-height:32px!important;padding:0 11px!important;font-size:14px!important;cursor:pointer}
+/* 2026-11-24 PC 칩 크기 카카오맵 비율(높이 30·글자 13·아이콘 16·간격 6) */html.chipPc .chipbar .leaflet-bar a{height:30px!important;line-height:30px!important;padding:0 10px!important;font-size:13px!important;cursor:pointer}html.chipPc:not(.chipV) .chipbar{gap:6px}
 html.chipPc .chipbar .leaflet-bar a:hover{filter:brightness(.94)}
 html.chipPc .chipbar a[data-lb]::after{font-size:12.5px}
 html.chipPc .leaflet-top{top:48px}
@@ -1357,6 +1357,12 @@ html.gwOn #gwMapSlot>#mapBox>h3>*{font-size:11.5px}
 html.gwOn #gwMapSlot>#mapBox>h3 .hideBtn,html.gwOn #gwMapSlot>#mapBox>h3 .dwBtn{display:none!important}
 html.gwOn #gwMapSlot>#mapBox #map{flex:1;height:auto!important;min-height:0!important;border-radius:0}
 html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
+/* 2026-11-24 전체화면 왼쪽 레이어 창(fsL) + ◀▶ 손잡이(#gwFsT), 접으면 fsLc */
+#mapBox.fsL{position:relative}#mapBox.fsL>#gwLeft{position:absolute;left:0;bottom:0;top:0;width:var(--gwL,270px);z-index:1200;border-width:0 1px 0 0;box-shadow:2px 0 10px rgba(15,23,42,.12);display:flex}
+#mapBox.fsL>#map{margin-left:var(--gwL,270px)}#mapBox.fsL.fsLc>#gwLeft{display:none}#mapBox.fsL.fsLc>#map{margin-left:0}
+#gwFsT{display:none}#mapBox.fsL>#gwFsT{display:flex;align-items:center;justify-content:center;position:absolute;z-index:1201;left:var(--gwL,270px);width:22px;height:52px;margin-top:-26px;padding:0;border:1px solid var(--gw-bd,#cbd5e1);border-left:0;border-radius:0 8px 8px 0;background:var(--gw-pn,#fff);color:var(--gw-tx2,#475569);font-size:11px;cursor:pointer;box-shadow:2px 1px 6px rgba(15,23,42,.18)}
+#mapBox.fsL.fsLc>#gwFsT{left:0}html.chipV #mapBox.fsL>#gwFsT{left:calc(var(--gwL,270px) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLc>#gwFsT{left:var(--chw,0px)}#mapBox.fsL>#gwFsT:hover{color:#fff;background:#4f46e5;border-color:#4f46e5}
+#mapBox.fsL>#gwLeft #gwLRs{display:block}
 /* 오른쪽 작업 창: 왼쪽 카드(자료 등록 등)를 같은 id 그대로 옮겨 띄움 */
 #gwWin{position:absolute;top:0;right:0;bottom:0;width:min(400px,100%);z-index:1200;display:flex;flex-direction:column;background:var(--gw-pn);border-left:1px solid var(--gw-bd);box-shadow:-6px 0 18px rgba(0,0,0,.14)}
 #gwWin[hidden]{display:none}
@@ -2501,7 +2507,7 @@ function layMw(){const C=F('mwCnt'),S=G('MW_ST'),K=G('MW_SK'),U=G('UI')||{};if(!
  return `<div class="tip">📷 민원 원인 (📒 대장 · 체크 = 지도에 보이기)</div>`+K.filter(k=>C.get(k)).map(k=>{const off=h.includes(k);return `<label class="gwl-ck${off?' off':''}"><input type="checkbox" data-mws="${k}"${off?'':' checked'}><i style="flex:none;display:inline-block;width:11px;height:11px;border-radius:50%;background:${S[k].c};border:1px solid #fff;box-shadow:0 0 0 1px #0003"></i><span class="nm">${escH(S[k].n)}</span><small>${C.get(k).toLocaleString()}장</small></label>`}).join('')}
 function layTs(){const C=F('tsCnt'),S=G('TS_ST'),K=G('TS_SK'),U=G('UI')||{};if(!C||!C.size||!S)return'';const h=U.tsHid||[];
  return `<div class="tip">⭐ 누수탐사 상태 (체크 = 지도에 보이기)</div>`+K.filter(k=>C.get(k)).map(k=>{const off=h.includes(k);return `<label class="gwl-ck${off?' off':''}"><input type="checkbox" data-tss="${k}"${off?'':' checked'}>${F('tsStar',S[k].c,'gwl-y')||''}<span class="nm">${escH(S[k].n)}</span><small>${C.get(k).toLocaleString()}장</small></label>`}).join('')}
-function layRender(){const tb=$('gwLayB');if(!tb||gw.querySelector('#gwLay').hidden)return;
+function layRender(){const tb=$('gwLayB');if(!tb||$('gwLay').hidden)return;
  const rows=LAY.filter(r=>r.g||!window.FEAT||!FEAT.layOk||FEAT.layOk(r.k)).map(r=>{if(r.g)return{g:r.g};/* 관리자가 끈 기능의 레이어 항목은 뺌 */let c=null,on=false,ok=true;try{c=r.c();on=r.on();ok=r.ok?r.ok():(c==null||c>0)}catch(_){ok=false}
   const can=LX_K.has(r.k)&&ok,sub=can&&LX.has(r.k)?laySub(r.k):'';return{r,c,on,ok,can,sub,sym:laySym(r.k)}});
  const key=JSON.stringify(rows.map(x=>x.g||[x.r.k,x.c,x.on,x.ok,x.can,LX.has(x.r.k),x.sub,x.sym]));if(key===layKey)return;layKey=key;
@@ -2533,12 +2539,29 @@ const LW0=270,lwMax=()=>Math.max(LW0,Math.min(640,Math.round(innerWidth*.6))),lw
  h.addEventListener('dblclick',()=>lwSet(LW0,true));
  h.addEventListener('keydown',e=>{const d=e.key==='ArrowLeft'?-20:e.key==='ArrowRight'?20:0;if(!d)return;e.preventDefault();lwSet($('gwLeft').getBoundingClientRect().width+d,true)})}
 function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classList.remove('nol')}else{gw.classList.toggle('nol');LS.set('geo-gwL',gw.classList.contains('nol')?'0':'1')}}
-gw.querySelectorAll('.gw-ph .lt').forEach(b=>b.onclick=()=>{const t=b.dataset.lt;gw.querySelectorAll('.gw-ph .lt').forEach(x=>x.classList.toggle('on',x===b));b.classList.remove('new');$('gwLay').hidden=t!=='lay';$('gwProp').hidden=t!=='prop';$('gwLbl').hidden=t!=='lbl';if(t==='lbl')F('lstRender');layKey='';layRender()});
+/* 2026-11-24 전체화면(PC 작업 화면)에서도 왼쪽 레이어 창: 창(#gwLeft)을 전체화면 지도 상자(#mapBox) 안으로 옮겨 왼쪽에 붙이고, 가장자리 ◀▶ 손잡이로 접고 펼침(기기별 geo-gwFsL). 끝나면 제자리로 */
+const FSL={on:false,home:null};
+function fsLayC(){return LS.get('geo-gwFsL')==='0'}
+function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop;l.style.top=t+'px';l.style.bottom='auto';l.style.height=m.offsetHeight+'px';const b=$('gwFsT');if(b){b.style.top=(t+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
+function fsLay(){const mb=$('mapBox'),l=$('gwLeft');if(!mb||!l)return;
+ const want=S.on&&document.body.classList.contains('fsOn')&&innerWidth>900&&mb.contains($('map'));
+ if(want&&!FSL.on){FSL.on=true;FSL.home=l.nextElementSibling;mb.insertBefore(l,$('map'));
+  let b=$('gwFsT');if(!b){b=document.createElement('button');b.type='button';b.id='gwFsT';b.className='np';b.onclick=()=>{LS.set('geo-gwFsL',fsLayC()?'':'0');fsLaySet()}}
+  mb.appendChild(b);mb.classList.add('fsL');fsLaySet();if($('gwLay')&&!$('gwLay').hidden){layKey='';layRender()}}
+ else if(!want&&FSL.on){FSL.on=false;mb.classList.remove('fsL','fsLc');l.style.top=l.style.bottom=l.style.height='';const h=$('gwBody');if(FSL.home&&FSL.home.parentNode===h)h.insertBefore(l,FSL.home);else h.insertBefore(l,h.firstChild);const b=$('gwFsT');if(b)b.remove();const m=G('map');if(m)setTimeout(()=>m.invalidateSize({pan:false}),60)}
+ else if(FSL.on)fsLayPos()}
+function fsLaySet(){const mb=$('mapBox');if(!mb)return;mb.classList.toggle('fsLc',fsLayC());fsLayPos();const m=G('map');if(m){m.invalidateSize({pan:false});setTimeout(()=>{m.invalidateSize({pan:false});fsLayPos()},80)}}
+new MutationObserver(()=>setTimeout(fsLay,0)).observe(document.body,{attributes:true,attributeFilter:['class']});
+new MutationObserver(()=>setTimeout(fsLay,0)).observe(R,{attributes:true,attributeFilter:['class']});
+addEventListener('resize',()=>setTimeout(fsLay,50));
+/* 전체화면 안에서 레이어 창 ✕ = 접기 (작업 화면 레이어 끄기와 따로) */
+$('gwLeft').addEventListener('click',e=>{if(!FSL.on)return;const x=e.target.closest('.gw-ph .x');if(!x)return;e.preventDefault();e.stopPropagation();LS.set('geo-gwFsL','0');fsLaySet()},true);
+gw.querySelectorAll('.gw-ph .lt').forEach(b=>b.onclick=()=>{const t=b.dataset.lt;document.querySelectorAll('#gwLeft .gw-ph .lt').forEach(x=>x.classList.toggle('on',x===b));b.classList.remove('new');$('gwLay').hidden=t!=='lay';$('gwProp').hidden=t!=='prop';$('gwLbl').hidden=t!=='lbl';if(t==='lbl')F('lstRender');layKey='';layRender()});
 
 /* ── 속성 탭: 지도 정보창 내용을 읽기 전용으로 복사 ── */
 function propCopy(pp){setTimeout(()=>{const el=pp&&pp.getElement&&pp.getElement(),c=el&&el.querySelector('.leaflet-popup-content');if(!c)return;
  const d=document.createElement('div');d.innerHTML=c.innerHTML;d.querySelectorAll('button,input,select,textarea,script,.hitTabs').forEach(x=>x.remove());d.querySelectorAll('[onclick]').forEach(x=>x.removeAttribute('onclick'));d.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));
- $('gwPropB').replaceChildren(...d.childNodes);const t=gw.querySelector('.lt[data-lt="prop"]');if($('gwProp').hidden)t.classList.add('new')},30)}
+ $('gwPropB').replaceChildren(...d.childNodes);const t=document.querySelector('#gwLeft .lt[data-lt="prop"]');if(t&&$('gwProp').hidden)t.classList.add('new')},30)}
 
 /* ── 오른쪽 작업 창: 왼쪽 카드(같은 id)를 옮겨 띄우고, 닫으면 제자리로 ── */
 function winBack(){if(S.winEl&&S.winPh&&S.winPh.parentNode){S.winPh.parentNode.replaceChild(S.winEl,S.winPh)}S.winEl=S.winPh=null}
@@ -5305,7 +5328,7 @@ function initSearch(){
  const TAG={blk:['블록','#15803d'],fac:['시설물','#b45309'],ph:['사진','#7c3aed'],ref:['민원지점','#be123c'],row:['자료','#0f766e'],addr:['주소','#4f46e5'],place:['장소','#c2410c'],xy:['좌표','#475569'],bst:['현황','#1d4ed8'],bch:['업데이트','#0e7490']};
  /* 2026-11-24 블록을 정확히 찾으면 '블록·시설물' 다음에 ③ 소블록 현황 보기 ④ 그 소블록 최근 업데이트 내용 줄을 붙임 */
  function addBst(){const i=list.findIndex(r=>r.k==='blk'&&r.ex);if(i<0||list.some(r=>r.k==='bst'))return;const B=list[i],nm=B.names.length>1?B.t:B.names[0];
-  let p=i+1;while(p<list.length&&list[p].k==='fac'&&B.names.some(n=>(list[p].s||'').includes('소블록 '+n)))p++;
+  let p=i+1;if(p<list.length&&list[p].k==='fac'&&B.names.some(n=>(list[p].s||'').includes('소블록 '+n)))p++; // 늘 3·4번째(시설물이 여러 개면 나머지는 그 아래로) — 목록 높이 300px에 가려 안 보이던 것 막음
   let cs='관로·시설물·사진 변경 (최근 30일)';try{if(window.chgBlkCount){const c=chgBlkCount(B.names);if(c!=null)cs=`최근 30일 ${c.toLocaleString()}건 · 관로·시설물·사진 변경`}}catch(_){}
   list.splice(p,0,{k:'bst',names:B.names,t:nm+' 소블록 현황 보기',s:'유수율·관로·수용가·누수 현황 (현황도와 같은 자료)'},{k:'bch',names:B.names,t:nm+' 최근 업데이트 내용',s:cs});if(sel>=p)sel+=2}
  function show(){addBst();const nt=inPhs.miss&&list.length&&!list.some(r=>r.k==='ph'||r.k==='ref')&&nsp(inp.value)?`<div class="gsm">${inPhs.miss}</div>`:'';lst.innerHTML=nt+list.map((r,k)=>{const t=TAG[r.k];return `<button type="button" class="gsi${k===sel?' on':''}" data-k="${k}" role="option"><span class="tg" style="background:${t[1]}">${t[0]}</span>${esc(r.t)}${r.s?`<small>${esc(r.s)}</small>`:''}</button>`}).join('')}
@@ -7349,7 +7372,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
+const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
