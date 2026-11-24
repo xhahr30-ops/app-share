@@ -9680,14 +9680,14 @@ async function pcpNumber(n0,no,keep){if(!no)return;let k=pcpNextSeq(no),n=0;cons
 function pcpCapOf(no){return PH.list.filter(m=>m&&!m.del&&m.map&&m.src==='위치캡처'&&String(m.cd||'')===no).sort((a,b)=>(b.at||0)-(a.at||0))[0]||null}
 function pcpGalIn(){let i=$('pcpGalIn');if(!i){i=document.createElement('input');i.type='file';i.id='pcpGalIn';i.hidden=true;i.multiple=true;i.accept='image/jpeg,image/png,image/heic,image/heif,image/*';document.body.appendChild(i);
   i.onchange=async e=>{const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)try{await pcpGalAdd(fs)}catch(er){alert('사진을 넣지 못했습니다: '+((er&&er.message)||er))}}}return i}
-function pcpGal(){if(!pcpRunNo()){alert('먼저 📸 위치 캡처로 번호를 정해 주세요. (📷 → 번호 넣고 📸 위치 캡처)');return}pcpGalIn().click()}
-async function pcpGalAdd(fs){const no=pcpRunNo();if(!no)return;const cap=pcpCapOf(no),t0=cap?(cap.ts||cap.at||0):0;
+function pcpGal(){PCP.galLL=null;if(!pcpRunNo()){alert('먼저 📸 위치 캡처로 번호를 정해 주세요. (📷 → 번호 넣고 📸 위치 캡처)');return}pcpGalIn().click()}
+async function pcpGalAdd(fs){const no=pcpRunNo(),gl=PCP.galLL;PCP.galLL=null;if(!no&&!gl)return;const cap=gl?null:pcpCapOf(no),t0=cap?(cap.ts||cap.at||0):0;
  const tm=await Promise.all(fs.map(async f=>{let t=0;try{const ex=await exifRead(f);t=phTs(phDt(ex&&ex.dt))||0}catch(_){}return{f,t:t||f.lastModified||0}}));tm.sort((a,b)=>a.t-b.t);
  const old=t0?tm.filter(x=>x.t&&x.t<t0-10*60e3).length:0;
  if(old&&!confirm(`고른 사진 ${tm.length}장 중 ${old}장은 위치 캡처(${fmtDT(t0)})보다 10분 넘게 먼저 찍은 사진입니다.\n그래도 ${no} 묶음에 넣을까요?`))return;
- const files=tm.map(x=>x.f),ll=cap&&cap.lat!=null?L.latLng(+cap.lat,+cap.lng):null;files.forEach(f=>{try{PH_CAM.add(f)}catch(_){}});
+ const files=tm.map(x=>x.f),ll=gl||(cap&&cap.lat!=null?L.latLng(+cap.lat,+cap.lng):null);files.forEach(f=>{try{PH_CAM.add(f)}catch(_){}});
  const got=[];for(const f of files){const had=new Set(PH.list.map(m=>m.id));await phAdd([f],ll,{all:true});PH.list.forEach(m=>{if(!had.has(m.id)&&!m.map)got.push(m)})} /* 한 장씩 → 찍은 시각 순서대로 번호 */
- await pcpNumber(got,no,true)}
+ if(no)await pcpNumber(got,no,true);else if(got.length){try{phRefresh()}catch(_){}phToast(`📥 사진 ${got.length}장을 빨간 점 자리에 넣었습니다.`,{ms:5000})}}
 function pcpCamApp(){PCP.appAt=Date.now();const and=/Android/i.test(navigator.userAgent);
  if(and){const t=setTimeout(()=>{if(document.visibilityState==='visible')try{phToast('📷 카메라 앱이 안 열리면 폰에서 카메라를 직접 여세요. 다 찍고 돌아와 📥 갤러리에서 고르기',{ms:6000})}catch(_){}},1800);document.addEventListener('visibilitychange',function h(){if(document.visibilityState==='hidden'){clearTimeout(t);document.removeEventListener('visibilitychange',h)}});
   try{location.href='intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end'}catch(_){}}
@@ -9726,6 +9726,7 @@ function pcpStart(next,force){if(!map||!pcpOn()){pcpGo(next);return}
   <div class="pcb"><button type="button" class="btn ol" data-a="me">🎯 내 위치로</button><button type="button" class="btn ol" data-a="snap" disabled>🧲 관로에 붙이기</button></div>
   <label class="pcno">🔢 사진 번호 <input data-a="no" type="text" inputmode="text" autocomplete="off" placeholder="예: 1956 → 1956.jpg, 1956-1…"></label>
   <div class="pcb"><button type="button" class="btn" data-a="cap">📸 위치 캡처</button><button type="button" class="btn ol" data-a="skip">${next==='tcam'?'📝':'📷'} 캡처 없이 찍기</button></div>
+  <div class="pcb"><button type="button" class="btn ol" data-a="galx" title="폰 갤러리에 있는 사진을 골라 지금 빨간 점 자리에 넣습니다 (사진 번호를 넣었으면 번호-1, -2… 이름)">📥 내 폰에서 사진 골라 넣기</button></div>
   <details class="pcmore"><summary>⚙ 캡처 설정</summary>
   <label class="pck"><input type="checkbox" data-a="wide"${pcpWide()?' checked':''}> 🖼 가로 사진으로 캡처 (대장용 4:3 · 폰을 세로로 들어도)</label>
   <label class="pck pc43">📐 세로로 찍은 사진 <select class="ph43s" data-a="p43" aria-label="세로로 찍은 사진">${ph43Opts(ph43Mode())}</select></label>
@@ -9737,6 +9738,7 @@ function pcpStart(next,force){if(!map||!pcpOn()){pcpGo(next);return}
   if(a==='x')pcpClose();else if(a==='zi'||a==='zo'){const z=map.getZoom()+(a==='zi'?1:-1);map.setZoomAround(pcpXY(),Math.max(map.getMinZoom(),Math.min(map.getMaxZoom(),z)),{animate:false})}else if(a==='me'){if(PCP.ll)pcpGoLL(PCP.ll,Math.max(map.getZoom(),19))}
   else if(a==='snap'){if(PCP.snap)pcpGoLL([PCP.snap.lat,PCP.snap.lng])}
   else if(a==='skip'){pcpRunSet(pcpNo());pcpClose();pcpGo(next)}
+  else if(a==='galx'){const c=pcpCtr();PCP.galLL=L.latLng(c.lat,c.lng);pcpRunSet(pcpNo());pcpClose();pcpGalIn().click()}
   else if(a==='cap')pcpCapture(b);
   else if(a==='go'){pcpClose();pcpGo(next)}
   else if(a==='gal'){pcpClose(true);pcpGal()}
