@@ -558,6 +558,9 @@ html.chipOn .legbox .lgb>.pleg:not(.lgon){display:none!important}
 html.chipOn .legbox .lgb>.pleg>b:first-child{display:none}
 html.chipOn .legbox .lgb>.pleg.min>:not(b):not([hidden]){display:block!important}
 html.chipOn .legbox .lgt:only-child{margin:0}
+/* 2026-11-24 범례 상자: 탭(관경·촬영 연도·사용량 증감)이 230px 폭을 넘어 가로 스크롤 막대가 생기던 것 → 넘치면 다음 줄로, 가로 스크롤 없앰 */
+html.chipOn .legbox{overflow-x:hidden}html.chipOn .legbox .lgt{flex-wrap:wrap;row-gap:3px}
+@media (min-width:901px) and (hover:hover){html.gwOn.chipOn .legbox{max-width:min(380px,calc(100vw - 100px));zoom:var(--pcz,.85)}}
 html.chipOn .leaflet-bottom.leaflet-right .fmctl button{width:54px;height:54px;border-radius:16px;font-size:25px}
 /* 오른쪽 아래 📷·📍·🖼️: 카카오맵식 흰 동그라미 + 회색 선 아이콘 */
 html body .leaflet-container .fmctl button{border-radius:50%!important;border:0;background:#fff;color:#3f3f46;box-shadow:0 2px 8px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.04)}
@@ -4989,7 +4992,7 @@ function chipInit(){if(!map||!map._controlCorners||document.documentElement.clas
    v.setAttribute('class','ci');v.setAttribute('viewBox','0 0 24 24');v.setAttribute('aria-hidden','true');v.style.color=c[0];v.innerHTML='<path d="'+GI.I[k]+'"/>';t.parentNode.replaceChild(v,t)}};
  icoFix();new MutationObserver(icoFix).observe(bar,{childList:true,subtree:true,characterData:true});
  if(ph||tb)shutDodgeInit(C);/* 태블릿도 📷·📍·🖼️가 오른쪽 아래에 있어 단수구역 창과 겹치지 않게 비킴 */
- if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const v=Math.max(70,map.getSize().y-80)+'px';if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);fit();
+ if(!ph){const lb=C.bottomleft.querySelector('.legbox'),fit=()=>{if(!lb)return;const z=parseFloat(getComputedStyle(lb).zoom)||1,v=Math.round(Math.max(70,map.getSize().y-80)/z)+'px';/* PC 글씨 크기(zoom) 때는 나눠서 화면 높이에 맞춤 */if(lb.style.maxHeight!==v)lb.style.maxHeight=v};map.on('resize',fit);window.addEventListener('resize',fit);fit();
   bar.addEventListener('wheel',e=>{if(bar.scrollWidth<=bar.clientWidth+1)return;const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;bar.scrollLeft+=d;e.preventDefault()},{passive:false})}
  chipOrdChip(bar);chipVInit(bar);if(!ph)chipScrollInit(bar)}
 /* PC·태블릿 칩 줄: 아이콘이 화면보다 많으면 오른쪽(왼쪽)으로 넘길 ‹ › 버튼을 보이고, 마우스로 줄을 끌어도 넘어감. 끌고 놓으면 그 칩은 눌리지 않음 */
