@@ -5411,11 +5411,22 @@ function setRows(data,name){
   s.value=keys.find(k=>/^소블록$/.test(k))||keys.find(k=>!/^_/.test(k)&&/소블록|블록명|^블록$/.test(k))||'';CMPK=s.value;billModeUi()}
  $('src').textContent=`${name}: ${rows.length}행, ${keys.length}열`;hStat(`${rows.length}행 불러옴`);$('start').disabled=false;
 }
+/* 2026-11-24: 유수율분석(부과량) xlsm을 ① 주소 칸에 넣으면 첫 시트 '대시보드'(24행 안팎)를 주소표로 읽어 주소가 안 바뀌던 문제
+   → '부과량' 시트가 있으면 부과량 연동(Y열 소블록·U열 관리번호)으로 읽고 전체 수용가를 변환 대상으로 만든 뒤 저장본과 변경분 대조 */
+async function f1Bill(f,sEl){sEl.textContent=`${f.name}: 유수율분석(부과량) 파일로 인식 → '부과량' 시트(소블록 Y열·관리번호 U열)로 읽는 중… (30초 이상 걸릴 수 있습니다)`;hStat('부과량 읽는 중','run');
+ const at0=BILL.at;await billLoadFile(f);
+ if(!BILL.R.length||BILL.at===at0||BILL.name!==f.name){sEl.textContent=`${f.name}: 부과량 시트를 읽지 못했습니다. ${$('bMsg').textContent}`;hStat('읽기 실패','warn');return}
+ $('bTarget').value='all';$('bBlk').value='';billTargetInfo();billMake();
+ sEl.textContent=`${f.name}: 부과량 시트 전체 수용가 ${rows.length.toLocaleString()}명을 변환 대상으로 만들었습니다 (소블록 Y열 기준). ⚡ 변환 시작을 누르면 주소 데이터가 바뀝니다.`;
+ await resDiffShow(rows,fname)}
 $('f1').onchange=async e=>{const f=e.target.files[0];if(!f)return;BILLMODE=false;billModeUi();
  const mb=(f.size/1048576).toFixed(1),sEl=$('src');$('start').disabled=true;sEl.textContent=`${f.name} (${mb}MB) 읽는 중… 큰 파일은 수십 초 걸릴 수 있습니다 (화면은 멈추지 않습니다)`;hStat('엑셀 읽는 중','run');
  try{const buf=await f.arrayBuffer();const t0=Date.now();
+  if(/\.xls[mxb]?$/i.test(f.name)){let sn=[];try{sn=XLSX.read(new Uint8Array(buf),{type:'array',bookSheets:true}).SheetNames||[]}catch(_){}
+   if(!sn.includes('결과')&&sn.some(n=>/^\s*부과량\s*$/.test(n))){await f1Bill(f,sEl);return}}
   const d=await xlsxJson(buf,{prefer:'결과',defval:''},m=>{sEl.textContent=`${f.name} (${mb}MB) ${m} ${Math.round((Date.now()-t0)/1000)}초`});
   const p=stripPrev(d.rows);setRows(p.list,f.name);await resDiffShow(p.list,f.name);
+  if(p.list.length){const ks=Object.keys(p.list[0]);if(!ks.some(k=>/지번|구주소|도로명|신주소|주소/.test(k)))sEl.textContent+=` · ⚠️ '${d.sheet||'첫'}' 시트에서 주소 열(지번·도로명)을 찾지 못했습니다. 주소가 든 시트를 맨 앞에 두거나, 1순위·2순위 열을 직접 고르세요.`}
   if(p.isPrev)sEl.textContent+=` · ♻️ 이전 결과 파일로 인식: 좌표 있는 ${p.n.toLocaleString()}행은 다시 검색하지 않고 그대로 사용합니다 (이전 결합·관로 열은 정리 후 새로 결합)`}
  catch(err){sEl.textContent='엑셀 읽기 실패: '+((err&&err.message)||err);hStat('읽기 실패','warn')}finally{e.target.value=''}};
 $('pasteBtn').onclick=()=>{const t=$('paste').value.trim();if(!t)return;BILLMODE=false;billModeUi();const wb=XLSX.read(t,{type:'string'});setRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]),'붙여넣은 표')};
