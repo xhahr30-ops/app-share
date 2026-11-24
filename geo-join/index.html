@@ -1419,6 +1419,12 @@ html.gwOn .afp{top:150px}
 html.gwOn{--pcz:.85}
 html.gwOn #gwTitle,html.gwOn #gwMenu,html.gwOn #gwRibW,html.gwOn #gwLeft,html.gwOn .gw-dt,html.gwOn #gwStat,html.gwOn #gwMapSlot>#mapBox>h3,html.gwOn.chipPc .chipbar,html.gwOn #gwWin .gw-wh{zoom:var(--pcz)}
 html.gwOn.chipPc:not(.chipV) .leaflet-top{top:calc(48px * var(--pcz))}
+/* 2026-11-24 ＋/− 확대·축소 막대·지도 설정(레이어) 단추·칩 › 넘기기 단추도 글씨 크기(--pcz)를 따라감. zoom 대신 크기 값만 바꿔 ⠿ 끌기 자리 계산은 그대로 */
+html.gwOn .leaflet-control-zoom a{width:calc(30px * var(--pcz))!important;height:calc(30px * var(--pcz))!important;line-height:calc(30px * var(--pcz))!important;font-size:calc(22px * var(--pcz))!important}
+html.gwOn .leaflet-control-zoom .zlv{height:calc(18px * var(--pcz));line-height:calc(18px * var(--pcz));font-size:calc(11px * var(--pcz))}
+html.gwOn .leaflet-control-zoom .zgrip{height:calc(22px * var(--pcz));line-height:calc(22px * var(--pcz));font-size:calc(15px * var(--pcz))}
+html.gwOn .leaflet-control-layers-toggle{width:calc(44px * var(--pcz))!important;height:calc(44px * var(--pcz))!important;background-size:calc(26px * var(--pcz)) calc(26px * var(--pcz))!important}
+html.gwOn.chipPc:not(.chipV) .chscr.on{width:calc(32px * var(--pcz));height:calc(32px * var(--pcz));font-size:calc(24px * var(--pcz))}
 html.gwOn #mapBox.fsL>#gwLeft{width:calc(var(--gwL,270px) / var(--pcz))}
 }
 @media(max-width:900px){
@@ -4942,7 +4948,7 @@ function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k===
 /* PC 메뉴 글씨 크기 (⚙ 설정 › 🖥 PC 메뉴 글씨 크기, geo-pcz 50~110%, 기기별, 처음 85): html --pcz를 바꾸고 칩 줄 높이·전체화면 레이어 창 자리를 다시 맞춤 */
 function pcZGet(){let z=85;try{const v=localStorage.getItem('geo-pcz');if(v)z=+v||85}catch(_){}return Math.max(50,Math.min(110,Math.round(z/5)*5))}
 function pcZApply(){const H=document.documentElement,z=pcZGet();if(z===85)H.style.removeProperty('--pcz');else H.style.setProperty('--pcz',String(z/100));
- requestAnimationFrame(()=>{try{chipZApply()}catch(_){}try{fsLayPos()}catch(_){}try{window.dispatchEvent(new Event('resize'))}catch(_){}try{const m=G('map');if(m)m.invalidateSize({pan:false})}catch(_){}})}
+ requestAnimationFrame(()=>{try{chipZApply()}catch(_){}try{fsLayPos()}catch(_){}try{zpApply()}catch(_){}try{const cb=document.querySelector('.leaflet-control-container .chipbar');if(cb)cb.dispatchEvent(new Event('scroll'))}catch(_){}try{window.dispatchEvent(new Event('resize'))}catch(_){}try{const m=G('map');if(m)m.invalidateSize({pan:false})}catch(_){}})}
 function pcZSet(z){z=Math.max(50,Math.min(110,Math.round((+z||85)/5)*5));try{localStorage.setItem('geo-pcz',z===85?'':String(z))}catch(_){}pcZApply()}
 /* 아이콘 줄 칩 크기 (⚙ 설정 › 아이콘 줄, geo-chipz %, 기기별) */
 function chipZGet(){let z=100;try{z=+localStorage.getItem('geo-chipz')||100}catch(_){}return Math.max(80,Math.min(130,Math.round(z/5)*5))}
@@ -4989,8 +4995,8 @@ function chipScrollInit(bar){if(bar._cs)return;bar._cs=1;const root=bar.parentNo
  const upd=()=>{const H=document.documentElement,hz=!H.classList.contains('chipV')&&getComputedStyle(bar).display!=='none',mx=bar.scrollWidth-bar.clientWidth,x=bar.scrollLeft;
   const sl=hz&&mx>2&&x>2,sr=hz&&mx>2&&x<mx-2;bl.classList.toggle('on',sl);br.classList.toggle('on',sr);if(!sl&&!sr)return;
   const z=parseFloat(getComputedStyle(bar).zoom)||1;/* PC 글씨 85%(zoom) 때 칩 줄 offset 값은 줄기 전 크기 → 곱해 맞춤 */
-  const t=Math.round((bar.offsetTop+bar.offsetHeight/2)*z-16)+'px';for(const b of [bl,br])if(b.style.top!==t)b.style.top=t;
-  bl.style.left=Math.round(bar.offsetLeft*z+3)+'px';br.style.left=Math.round((bar.offsetLeft+bar.offsetWidth)*z-35)+'px'};
+  const bw=br.offsetWidth||bl.offsetWidth||32,t=Math.round((bar.offsetTop+bar.offsetHeight/2)*z-bw/2)+'px';for(const b of [bl,br])if(b.style.top!==t)b.style.top=t;
+  bl.style.left=Math.round(bar.offsetLeft*z+3)+'px';br.style.left=Math.round((bar.offsetLeft+bar.offsetWidth)*z-bw-3)+'px'};
  bar.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);try{new ResizeObserver(upd).observe(bar)}catch(_){}
  new MutationObserver(upd).observe(bar,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});new MutationObserver(upd).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
  if(map&&map.on)map.on('resize',upd);
