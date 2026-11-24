@@ -883,6 +883,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phyl span{display:inline-block;margin-right:9px;white-space:nowrap}
 .phleg div{cursor:pointer;white-space:nowrap;border-radius:4px;padding:0 3px}.phleg div:hover{background:#94a3b833}.phleg div.on{font-weight:800;background:#facc1544}
 .phcd.no{color:#0f766e;border-color:#0f766e}
+html.phls-off .phcd{display:none!important}
 .phcd{position:absolute;left:50%;top:calc(100% - 1px);transform:translateX(-50%);background:#fff;color:#b91c1c;border:1px solid #dc2626;border-radius:4px;font:800 calc(10.5px * var(--phls,1))/1.3 'Noto Sans KR',sans-serif;padding:0 4px;white-space:nowrap;font-style:normal;pointer-events:none}.phb.sel{box-shadow:0 0 0 4px #facc15,0 1px 5px #0007}
 .phb b{position:absolute;right:-11px;top:-9px;background:#f59e0b;color:#111;border-radius:999px;font-size:10px;padding:0 4px;line-height:15px;border:1px solid #fff;font-weight:800;min-width:9px;text-align:center}
 .pha{position:absolute;inset:-13px;pointer-events:none}
@@ -2517,7 +2518,7 @@ function laySub(k){try{
    if(x==='mw'&&MS){const S2=Object.assign({},MS,{'0':{n:'대장 없음',c:'#1d4ed8'}});h+=sub(MC,S2,G('MW_SK').concat('0'),U.mwHid||[],'mws',c=>`<i class="gwl-dt" style="background:${c}"></i>`)}
    return h};
   return yr+`<div class="tip">사진 종류 · 상태 (체크 = 지도에 보이기)</div>`+`<div class="gwl-kr"><span class="gwl-kn" style="cursor:default"><span style="flex:none;width:14px;text-align:center">📷</span>전체 크기</span>${szB('*','전체')}</div>`+kds.map(kRow).join('')
-   +`<div class="gwl-kr" style="border-top:1px solid var(--gw-ch);margin-top:3px;padding-top:3px"><span class="gwl-kn" style="cursor:default"><span style="flex:none;width:14px;text-align:center">🏷️</span>번호 글자</span>${szB('L','번호 글자')}</div><div class="gwl-bb"><button type="button" data-psz="0">↺ 크기 처음대로</button></div>`}
+   +`<div class="gwl-kr" style="border-top:1px solid var(--gw-ch);margin-top:3px;padding-top:3px"><input type="checkbox" data-phls="1"${U.phLsOff?'':' checked'} aria-label="사진 번호 글자 보이기" title="사진 번호 글자(접수 1956·268 등) 보이기/끄기"><span class="gwl-kn" style="cursor:default${U.phLsOff?';opacity:.45':''}"><span style="flex:none;width:14px;text-align:center">🏷️</span>번호 글자</span>${szB('L','번호 글자')}</div><div class="gwl-bb"><button type="button" data-psz="0">↺ 크기 처음대로</button></div>`}
  if(k==='cl'){/* 자세한 라벨 설정(내용·대상·시작 줌)은 🏷️ 라벨 창(LBLM)으로 나눔 — 레이어 창은 켜고 끄기만 */return `<div class="gwl-bb"><button type="button" data-lblm="1">🏷️ 라벨 창에서 내용·대상·시작 줌 고르기</button></div><div class="tip">이름·주소·연락처는 넣지 않습니다</div>`}
  if(k==='elev'){const el=$('eLeg');if(!el||!el.textContent.trim())return'';const d=document.createElement('div');d.innerHTML=el.innerHTML;
   const sp=[...d.querySelectorAll('span')];if(!sp.length)return'';
@@ -2540,7 +2541,7 @@ function layFill(tb){tb.querySelectorAll('.gwl-fk').forEach(el=>{F('facKindsUi',
 const laySync=()=>setTimeout(()=>{F('facKindsUi');layKey='';layRender()},0);
 $('gwLayB').addEventListener('change',e=>{if(e.target.closest('.gwl-fk'))laySync()});
 /* 소블록·관로 항목·수용가 구분 켜고 끄기 (지도 그리는 함수는 앱 쪽 blkHidSet·pipeHidSet·ptHidSet) */
-$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
+$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.phls!=null)F('phLsOffSet',!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.mir==null)return;e.stopPropagation();mir(t.dataset.mir,t.value);layKey='';setTimeout(layRender,60)},true);
 $('gwLayB').addEventListener('click',e=>{if(!e.target.closest('button[data-lblm]'))return;e.preventDefault();e.stopPropagation();const m=G('LBLM');if(m&&m.open)m.open()},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-rpw]');if(!b)return;e.preventDefault();e.stopPropagation();F('rpWStep',+b.dataset.rpw);layKey='';setTimeout(layRender,40)},true);
@@ -4875,7 +4876,7 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uir"><input type="checkbox" id="uiVid"> 🎬 동영상 위치 <small style="color:var(--mute)">줌 13부터</small></label>
 <div class="uig">🔎 사진 아이콘 크기</div>
 <label class="uif">📷 사진 아이콘 (전체)<select id="uiPhSz" class="msel">${opt(PH_SZ.map(v=>[String(v),Math.round(v*100)+'%'+(v===1?' (보통)':'')]))}</select></label>
-<label class="uif">🏷️ 사진 번호 글자 (No.·접수번호)<select id="uiPhLs" class="msel">${opt(PH_SZ.filter(v=>v>=.75).map(v=>[String(v),Math.round(v*100)+'%'+(v===1?' (보통)':'')]))}</select></label>
+<label class="uif">🏷️ 사진 번호 글자 (No.·접수번호)<select id="uiPhLs" class="msel">${opt(PH_SZ.filter(v=>v>=.75).map(v=>[String(v),Math.round(v*100)+'%'+(v===1?' (보통)':'')]).concat([['off','끄기 (번호 안 보임)']]))}</select></label>
 <p class="uin">사진이 많아 묶음 원(📷 장수)으로 보일 때는 원 크기가 그대로이고, 낱개 아이콘만 바뀝니다. 종류별(민원·누수탐사 등) 크기는 PC 작업 화면 왼쪽 레이어 창 › 현장 사진 ▸ 의 −/＋로 바꿉니다.</p>
 <div class="uig">사진 보기 설정</div>
 <div id="uiPhBox"></div>
@@ -4924,7 +4925,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiClZ').onchange=e=>{UI.clZ=+e.target.value||18;uiSave();ptDraw();uiClHint()};
  q('uiBigMk').onchange=e=>{UI.bigMk=e.target.checked;uiSave();ptDraw();mLegend()};
  q('uiPhSz').onchange=e=>phSzSet('*',+e.target.value||1);
- q('uiPhLs').onchange=e=>phSzSet('L',+e.target.value||1);phLsApply();
+ q('uiPhLs').onchange=e=>{if(e.target.value==='off'){phLsOffSet(true);return}UI.phLsOff=undefined;phSzSet('L',+e.target.value||1)};phLsApply();if(UI.phLsOff)q('uiPhLs').value='off';
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
@@ -8964,7 +8965,9 @@ function mwCnt(){const c=new Map();if($('phShow').value==='off')return c;for(con
 /* 사진 아이콘 크기: 전체(UI.phSz) × 종류별(UI.phKs) — 시설물 −/＋와 같은 단계 (2026-11-11)
    위치도 빨간 점·기준 위치 파일로 자리 잡은 묶음(g.ref)도 종류별 크기를 따름 (2026-11-24, 긴급76 안 커지던 원인) */
 function phSzOf(g){const a=(+UI.phSz||1)*(PH.bpK||1),b=g&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
-function phLsApply(){try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1))}catch(_){}}
+function phLsApply(){try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1));document.documentElement.classList.toggle('phls-off',!!UI.phLsOff)}catch(_){}}
+/* 사진 번호 글자(접수 1956·268·No.) 끄기(2026-11-24) — UI.phLsOff, 레이어 창 번호 글자 체크·⚙ 사진 번호 글자 '끄기' */
+function phLsOffSet(off){UI.phLsOff=off?1:undefined;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=off?'off':String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phLs||1))<Math.abs(b-(+UI.phLs||1))?x:b))}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
 function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
