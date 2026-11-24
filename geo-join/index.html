@@ -9481,15 +9481,33 @@ function pcpRunSet(no){PCP.run=no?{no}:null;try{no?localStorage.setItem('geo-pcp
 function pcpRunBar(){let el=document.getElementById('pcpRun');const no=pcpRunNo();
  if(!no){if(el)el.remove();return}
  if(!el){el=document.createElement('div');el.id='pcpRun';el.setAttribute('role','status');
-  el.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='new')pcpStart(PCP.next||'cam',true);else{pcpRunSet('');phToast&&phToast('🔢 번호 이어 찍기를 끝냈습니다.')}}}
+  el.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='new')pcpStart(PCP.next||'cam',true);else if(b.dataset.a==='gal')pcpGal();else{pcpRunSet('');phToast&&phToast('🔢 번호 이어 찍기를 끝냈습니다.')}}}
  const par=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(el.parentNode!==par)par.appendChild(el);
- el.innerHTML=`<span title="${esc(no)} 번호 이어 찍기 (새 위치 캡처 때까지)">🔢 다음 사진 <b>${esc(no)}-${pcpNextSeq(no)}</b></span><button type="button" data-a="new">📍 새 위치</button><button type="button" data-a="end" aria-label="번호 이어 찍기 끝">끝</button>`;
+ el.innerHTML=`<span title="${esc(no)} 번호 이어 찍기 (새 위치 캡처 때까지)">🔢 <b>${esc(no)}-${pcpNextSeq(no)}</b></span><button type="button" data-a="gal" title="폰 카메라로 찍은 사진을 갤러리에서 골라 이 번호에 넣기">📥 갤러리</button><button type="button" data-a="new">📍 새 위치</button><button type="button" data-a="end" aria-label="번호 이어 찍기 끝">끝</button>`;
 }
 function pcpRunNo(){return PCP.run&&PCP.run.no||''}
 try{const j=JSON.parse(localStorage.getItem('geo-pcprun')||'null');if(j&&j.no)PCP.run={no:String(j.no)}}catch(_){}setTimeout(()=>{try{pcpRunBar()}catch(_){}},1500);
 function pcpNextSeq(no){let k=0;const re=new RegExp('^'+no.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*-\\s*(\\d{1,3})(?:\\.[^.]+)?$','i');for(const m of PH.list){const x=re.exec(String(m.name||'').normalize('NFC'));if(x&&+x[1]>k)k=+x[1]}return k+1}
-async function pcpNumber(n0,no){if(!no)return;let k=pcpNextSeq(no),n=0;for(const m of PH.list.slice(n0)){if(m.map)continue;const ext=((/\.(jpe?g|png)$/i.exec(m.name)||['.jpg'])[0]).toLowerCase();m.name=`${no}-${k++}${ext}`;m.cd=no;n++}if(n)setTimeout(pcpRunBar,0);
+async function pcpNumber(n0,no,keep){if(!no)return;let k=pcpNextSeq(no),n=0;const nw=(Array.isArray(n0)?n0:PH.list.slice(n0)).filter(m=>!m.map);if(!keep)nw.sort((a,b)=>(a.ts||a.at||0)-(b.ts||b.at||0));for(const m of nw){const ext=((/\.(jpe?g|png)$/i.exec(m.name)||['.jpg'])[0]).toLowerCase();m.name=`${no}-${k++}${ext}`;m.cd=no;n++}if(n)setTimeout(pcpRunBar,0);
  if(n){await phSaveMeta(true);try{phRefresh()}catch(_){}phToast(`🔢 사진 ${n}장을 ${no} 묶음에 넣었습니다 (${no}-${k-n}${n>1?' ~ '+no+'-'+(k-1):''}).`,{ms:5000})}}
+/* 2026-11-24 B안: 📸 위치 캡처 뒤 폰 카메라 앱으로 찍으면 갤러리에 자동 저장 → 📥 갤러리에서 고르기로 쓸 사진만 첨부.
+   찍은 시각(EXIF, 없으면 파일 시각) 순서로 번호-1, -2…, 위치는 사진 GPS(없으면 빨간 점), 번호 묶음(cd)으로 빨간 점 자리에 모임 */
+function pcpCapOf(no){return PH.list.filter(m=>m&&!m.del&&m.map&&m.src==='위치캡처'&&String(m.cd||'')===no).sort((a,b)=>(b.at||0)-(a.at||0))[0]||null}
+function pcpGalIn(){let i=$('pcpGalIn');if(!i){i=document.createElement('input');i.type='file';i.id='pcpGalIn';i.hidden=true;i.multiple=true;i.accept='image/jpeg,image/png,image/heic,image/heif,image/*';document.body.appendChild(i);
+  i.onchange=async e=>{const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)try{await pcpGalAdd(fs)}catch(er){alert('사진을 넣지 못했습니다: '+((er&&er.message)||er))}}}return i}
+function pcpGal(){if(!pcpRunNo()){alert('먼저 📸 위치 캡처로 번호를 정해 주세요. (📷 → 번호 넣고 📸 위치 캡처)');return}pcpGalIn().click()}
+async function pcpGalAdd(fs){const no=pcpRunNo();if(!no)return;const cap=pcpCapOf(no),t0=cap?(cap.ts||cap.at||0):0;
+ const tm=await Promise.all(fs.map(async f=>{let t=0;try{const ex=await exifRead(f);t=phTs(phDt(ex&&ex.dt))||0}catch(_){}return{f,t:t||f.lastModified||0}}));tm.sort((a,b)=>a.t-b.t);
+ const old=t0?tm.filter(x=>x.t&&x.t<t0-10*60e3).length:0;
+ if(old&&!confirm(`고른 사진 ${tm.length}장 중 ${old}장은 위치 캡처(${fmtDT(t0)})보다 10분 넘게 먼저 찍은 사진입니다.\n그래도 ${no} 묶음에 넣을까요?`))return;
+ const files=tm.map(x=>x.f),ll=cap&&cap.lat!=null?L.latLng(+cap.lat,+cap.lng):null;files.forEach(f=>{try{PH_CAM.add(f)}catch(_){}});
+ const got=[];for(const f of files){const had=new Set(PH.list.map(m=>m.id));await phAdd([f],ll,{all:true});PH.list.forEach(m=>{if(!had.has(m.id)&&!m.map)got.push(m)})} /* 한 장씩 → 찍은 시각 순서대로 번호 */
+ await pcpNumber(got,no,true)}
+function pcpCamApp(){PCP.appAt=Date.now();const and=/Android/i.test(navigator.userAgent);
+ if(and){const t=setTimeout(()=>{if(document.visibilityState==='visible')try{phToast('📷 카메라 앱이 안 열리면 폰에서 카메라를 직접 여세요. 다 찍고 돌아와 📥 갤러리에서 고르기',{ms:6000})}catch(_){}},1800);document.addEventListener('visibilitychange',function h(){if(document.visibilityState==='hidden'){clearTimeout(t);document.removeEventListener('visibilitychange',h)}});
+  try{location.href='intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end'}catch(_){}}
+ else try{phToast('📷 잠금 화면·제어 센터의 카메라로 찍은 뒤 이 앱으로 돌아와 📥 갤러리에서 고르기를 누르세요.',{ms:7000})}catch(_){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&PCP.appAt&&Date.now()-PCP.appAt<30*60e3&&pcpRunNo()){PCP.appAt=0;setTimeout(()=>{try{phToast(`📥 ${pcpRunNo()} 사진을 다 찍었으면 위쪽 🔢 칩의 「📥 갤러리」를 눌러 고르세요.`,{ms:7000})}catch(_){}},600)}});
 function pcpGo(next){if(next==='tcam')tcStart();else{PCP.camAt=Date.now();$('phFile').click()}}
 /* 📐 세로로 찍은 사진 → 가로 4:3 (대장용). 폰 기본 카메라는 비율을 정해 열 수 없어 찍은 뒤 바꿈.
    crop = 가운데 가로 4:3 잘라 냄(기본, 위아래가 잘림) · pad = 사진 전체를 살리고 양옆을 흐린 여백으로 채움 · off = 그대로.
@@ -9536,6 +9554,8 @@ function pcpStart(next,force){if(!map||!pcpOn()){pcpGo(next);return}
   else if(a==='skip'){pcpRunSet(pcpNo());pcpClose();pcpGo(next)}
   else if(a==='cap')pcpCapture(b);
   else if(a==='go'){pcpClose();pcpGo(next)}
+  else if(a==='gal'){pcpClose(true);pcpGal()}
+  else if(a==='camapp'){pcpCamApp()}
   else if(a==='re'){const c=PCP.cap;PCP.cap=null;if(c){c.caps.forEach(x=>{try{URL.revokeObjectURL(x.url)}catch(_){}});try{phDelete(c.caps.map(x=>x.id)).catch(()=>{})}catch(_){}}pcpForm()}};
  o.onchange=e=>{const a=e.target.dataset.a;if(a==='off')pcpOnSet(!e.target.checked);else if(a==='wide')try{localStorage.setItem('geo-pcpw',e.target.checked?'1':'0')}catch(_){}else if(a==='p43')ph43Set(e.target.value)};
  map.on('move zoomend resize',pcpMove);setTimeout(pcpMove,50);try{PCP.ro=new ResizeObserver(()=>pcpMove());PCP.ro.observe(o)}catch(_){}
@@ -9596,7 +9616,10 @@ function pcpForm(){const o=PCP.o;if(!o)return;const c=PCP.cap;
  document.documentElement.classList.remove('pcpOn');
  o.innerHTML=`<div class="pch"><b>✅ 현장 위치를 캡처했습니다</b><button type="button" data-a="x" aria-label="닫기">✕</button></div>
   ${c.caps.map(x=>`<img class="pci" src="${x.url}" alt="현장 위치 캡처">`).join('')}<small class="mute">${esc(c.caps.map(x=>x.name).join(', '))} · 사진 묶음 맨 앞에 넣었습니다. ${pcpRunNo()?`이제 찍는 사진은 <b>${esc(pcpRunNo())}-${pcpNextSeq(pcpRunNo())}</b>부터 번호가 붙어 같은 묶음에 들어갑니다.`:'이제 찍은 사진은 이 자리 묶음으로 들어갑니다.'}${c.masked?' 고객 정보 창은 가렸습니다.':''}${c.note?' '+esc(c.note):''}</small>
-  <div class="pcb"><button type="button" class="btn" data-a="go">${PCP.next==='tcam'?'📝 이제 글자 사진 찍기':'📷 이제 사진 찍기'}</button><button type="button" class="btn ol" data-a="re">↺ 다시 맞추기</button></div>`}
+  ${PCP.next==='tcam'?`<div class="pcb"><button type="button" class="btn" data-a="go">📝 이제 글자 사진 찍기</button><button type="button" class="btn ol" data-a="re">↺ 다시 맞추기</button></div>`
+  :`<div class="pcb"><button type="button" class="btn ol" data-a="camapp">📷 카메라 앱 열기</button><button type="button" class="btn" data-a="gal">📥 갤러리에서 고르기</button></div>
+  <small class="mute">💡 폰 카메라 앱으로 찍으면 사진이 갤러리에 자동 저장됩니다. 다 찍고 이 앱으로 돌아와 📥 갤러리에서 고르기로 쓸 사진만 고르세요. 찍은 시각 순서대로 ${pcpRunNo()?esc(pcpRunNo())+'-1, -2…':'번호'}가 붙고 빨간 점 묶음에 들어갑니다.</small>
+  <div class="pcb"><button type="button" class="btn ol" data-a="go">📷 앱 안 카메라로 찍기</button><button type="button" class="btn ol" data-a="re">↺ 다시 맞추기</button></div>`}`}
 function pcpClose(keep){map&&map.off('move zoomend resize',pcpMove);try{PCP.ro&&PCP.ro.disconnect()}catch(_){}PCP.ro=null;if(PCP.wid!=null)try{navigator.geolocation.clearWatch(PCP.wid)}catch(_){}PCP.wid=null;
  if(PCP.me){try{map.removeLayer(PCP.me)}catch(_){}PCP.me=null}document.documentElement.classList.remove('pcpOn');
  if(PCP.o){PCP.o.remove();PCP.o=null}if(PCP.cap&&!keep){(PCP.cap.caps||[]).forEach(x=>{try{URL.revokeObjectURL(x.url)}catch(_){}})}}
