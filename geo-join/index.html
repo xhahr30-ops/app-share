@@ -2892,7 +2892,7 @@ async function bpNrwLoad(file){const st=BP.el.querySelector('[data-bp-nrw]');if(
  st.textContent='⏳ '+file.name+' 여는 중… (파일이 크면 몇십 초 걸립니다)';try{const buf=await file.arrayBuffer(),d=await bpNrwRead(buf,p=>{st.textContent='⏳ '+p});
   if(d.err){st.textContent=d.err==='NOSHEET'?`⚠ '유수율(소블록별)' 시트를 찾지 못했습니다. 시트: ${(d.names||[]).slice(0,8).join(', ')}`:'⚠ 읽지 못했습니다: '+d.err;return}
   const R=bpNrwParse(d.A);if(!R){st.textContent='⚠ 시트에서 연도 머리글(2025 등)이나 소블록 줄을 찾지 못했습니다.';return}
-  R.f=file.name;R.sn=d.sn;R.at=Date.now();R.sys=bpSysParse(d.A2);R.bill=bpBillOf(d.A3);BP.nrw=R;try{await G('IDB').set('nrw_blk',R)}catch(_){}bpNrwInfo();bpList()}
+  R.f=file.name;R.sn=d.sn;R.at=Date.now();R.sys=bpSysParse(d.A2);R.bill=bpBillOf(d.A3);BP.nrw=R;try{await G('IDB').set('nrw_blk',R);try{const u=G('refUpOne');if(u)u('nrw').catch(()=>{})}catch(_){}}catch(_){}bpNrwInfo();bpList()}
  catch(e){st.textContent='⚠ 읽지 못했습니다: '+(e&&e.message||e)}}
 function bpNrwOf(n){const R=BP.nrw;if(!R)return null;if(R.B[n])return R.B[n];const k=bpK(n);for(const x in R.B)if(bpK(x)===k)return R.B[x];
  const al=F('aliasMap');if(al){const to=al.get(bpK(n));if(to&&R.B[to])return R.B[to]}return null}
@@ -6691,7 +6691,7 @@ async function billLoadFile(f){const msg=$('bMsg');msg.textContent=`${f.name} �
   const aoa=n=>wb.Sheets[n]?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}):null;
   msg.textContent='부과량 시트 정리 중…';await sleep(10);const P=billParse(aoa('부과량')),A1=aoa('유수율(소블록별)'),WY=wyParse(A1);
   /* 2026-11-15: 같은 엑셀이면 🗺 소블록 현황도·개략공사비 보고서용 유수율 자료(야간최소·계통 포함)도 함께 저장 → 현황도 창에 따로 안 넣어도 됨 */
-  try{if(A1&&window.bpRep){const R=bpRep.nrwParse(A1);if(R){R.f=f.name;R.sn='유수율(소블록별)';R.at=Date.now();try{R.sys=bpRep.sysParse(aoa('유수율(계통별)'))}catch(_){R.sys=null}R.bill={M:P.M,R:P.R.map(r=>({b:r[9],u:r[3],d:r[4],h:r[5],mg:r[11],q:r.slice(12)}))};bpRep.set(R);try{await IDB.set('nrw_blk',R)}catch(_){}}}}catch(err){console.warn('현황도 유수율 자료',err)}
+  try{if(A1&&window.bpRep){const R=bpRep.nrwParse(A1);if(R){R.f=f.name;R.sn='유수율(소블록별)';R.at=Date.now();try{R.sys=bpRep.sysParse(aoa('유수율(계통별)'))}catch(_){R.sys=null}R.bill={M:P.M,R:P.R.map(r=>({b:r[9],u:r[3],d:r[4],h:r[5],mg:r[11],q:r.slice(12)}))};bpRep.set(R);try{await IDB.set('nrw_blk',R);refUpOne('nrw').catch(_=>{})}catch(_){}}}}catch(err){console.warn('현황도 유수율 자료',err)}
   wb=null;
   const v={name:f.name,at:Date.now(),M:P.M,R:P.R,WY,ver:P.ver};let saved=true;try{await IDB.set('bill',v)}catch(_){saved=false}
   const nTel=Object.keys(P.tel||{}).length;try{await IDB.set('tel',{name:f.name,at:Date.now(),cols:P.telH||[],map:P.tel||{}})}catch(_){}if(typeof TEL!=='undefined'){TEL.src=null;TEL.ld=null;TEL.ldDone=0}
@@ -10285,10 +10285,25 @@ function shTimer(){clearTimeout(SH.timer);SH.timer=null;const m=$('shIvMsg');
 
 /* ===================== 🗺️ 기준자료 공유: 사진 공유 서버(공유 키)에 소블록 경계·상수관로·시설물을 올리고, 다른 기기는 열 때 새 버전만 받음 ===================== */
 /* 버전 = 기준자료의 저장 시각(at). 서버 버전이 이 기기 것보다 새것일 때만 받고, 이 기기 것이 더 새것이면 받지 않고 '올리기 필요'로 알림 */
-const REF={busy:false,PART:3e6,L:[['kb','📚 백과사전 자료실',v=>v&&Array.isArray(v.ch)?v.ch.length:0],['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['pedit','상수관로 현장 수정',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0],['vids','동영상 연결',v=>v&&Array.isArray(v.list)?v.list.length:0],['marks','지도 그리기',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0],['trkp','팀 탐사 관로',v=>v&&Array.isArray(v.list)?v.list.length:0],['food','🍚 현장 맛집',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0]]};
+const REF={busy:false,PART:3e6,L:[['kb','📚 백과사전 자료실',v=>v&&Array.isArray(v.ch)?v.ch.length:0],['blocks','소블록 경계',v=>v&&v.fc&&v.fc.features?v.fc.features.length:0],['pipes','상수관로',v=>v&&v.feats?v.feats.length:0],['pedit','상수관로 현장 수정',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['facs','상수도 시설물',v=>v&&v.feats?v.feats.length:0],['elev','표고',v=>v&&v.z?v.z.length:0],['phref','사진 기준 위치(민원지점)',v=>v&&Array.isArray(v.ent)?v.ent.reduce((s,e)=>s+(e[1]||[]).length,0):0],['vids','동영상 연결',v=>v&&Array.isArray(v.list)?v.list.length:0],['marks','지도 그리기',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0],['trkp','팀 탐사 관로',v=>v&&Array.isArray(v.list)?v.list.length:0],['food','🍚 현장 맛집',v=>v&&Array.isArray(v.list)?v.list.filter(x=>!x.del).length:0],['ldg','📒 누수·민원 대장',v=>v&&Array.isArray(v.recs)?v.recs.length:0],['nrw','📊 유수율 자료',v=>v?(v.blk&&v.blk.B?Object.keys(v.blk.B).length:0)+(v.cw&&v.cw.W?Object.keys(v.cw.W).length:0):0]]};
 const refMB=b=>(b/1048576).toFixed(1)+'MB';
 function refSay(t){const m=$('shRefMsg');if(m)m.innerHTML=t}
-async function refLocal(){const o={};for(const [n] of REF.L){try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
+async function refLocal(){const o={};for(const [n] of REF.L){if(n==='ldg'||n==='nrw'){try{o[n]=await refShLocal(n)}catch(_){o[n]=null}continue}try{o[n]=await IDB.get(n)}catch(_){o[n]=null}}return o}
+/* 📒 누수·민원 대장 · 📊 유수율 자료 직원 공유(B안, 2026-11-24): 관리자가 넣으면 자동으로 올리고, 직원 기기는 열 때 자동으로 받음.
+   대장은 주소·현장내용·비고 칸을 빼고(좌표는 넣음) 보냄. 유수율 = 소블록별 유수율(nrw_blk, 이름·주소 없음) + 공사 추천 유수율(cw_wy) */
+async function refShLocal(n){if(n==='ldg'){const v=await IDB.get('leak_ledger');if(!v||!Array.isArray(v.recs)||!v.recs.length)return null;
+  return {at:Date.parse(v.at)||0,names:v.names||[],recs:v.recs.map(o=>{const x=Object.assign({},o);delete x.addr;delete x.memo;delete x.note;return x})}}
+ const b=await IDB.get('nrw_blk'),c=await IDB.get('cw_wy');if(!(b&&b.B)&&!(c&&c.W))return null;return {at:Math.max(b&&b.at||0,c&&c.at||0),blk:b&&b.B?b:null,cw:c&&c.W?c:null}}
+async function refShApply(n,v){if(n==='ldg'){const at=new Date(v.at).toISOString();await IDB.set('leak_ledger',{recs:v.recs,names:v.names||[],at,sh:1});LR.recs=v.recs;LR.names=v.names||[];LR.at=at;LR.st=null;try{LQ.rkKey='';lrShow()}catch(_){}if(PH.list.length)phDraw();return}
+ if(v.blk){await IDB.set('nrw_blk',v.blk);try{bpRep.set(v.blk)}catch(_){}}if(v.cw){await IDB.set('cw_wy',v.cw);try{CW.WY=v.cw.W;CW.wyName=v.cw.name||'';cwWyShow()}catch(_){}}}
+/* 한 가지만 바로 올리기 — 대장·유수율 자료를 넣은 뒤 자동(공유 서버·공유 키가 있을 때만) */
+async function refUpOne(n){if(typeof SH!=='object'||!SH.on||!SH.on()||typeof JSZip==='undefined')return;for(let i=0;REF.busy&&i<60;i++)await new Promise(r=>setTimeout(r,1000));if(REF.busy)return;
+ const L=REF.L.find(x=>x[0]===n);if(!L)return;const [,t,cnt]=L;REF.busy=true;try{const v=await refShLocal(n),c=cnt(v);if(!c||!v.at)return;const info=(await shReq('refinfo')).ref||{};if(info[n]&&info[n].v>=v.at)return;
+  const z=new JSZip();z.file('d.json',JSON.stringify(v));const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+  for(let p=0;p<parts;p++)await shReq('refput',{name:n,v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
+  if(typeof phToast==='function')phToast(`☁️ ${t}을(를) 공유 서버에 올렸습니다 — 직원 앱은 열 때 자동으로 받습니다.`)}
+ catch(e){const m=String((e&&e.message)||e);if(typeof phToast==='function')phToast(/알 수 없는 기준자료/.test(m)?`⚠️ ${t} 공유 안 됨: 공유 서버 Code.gs를 2026-11-24 판으로 바꾸고 새 버전으로 배포해 주세요.`:`⚠️ ${t} 공유 실패: ${m} — 🗺️ 기준자료 공유에서 ⏫ 올리기를 다시 눌러 주세요.`,{ms:8000})}
+ finally{REF.busy=false}}
 /* 서버·이 기기 상태 한 줄씩 */
 function refState(info,loc){return REF.L.map(([n,t,cnt])=>{const s=info[n],l=loc[n],lc=cnt(l);
   if(!s)return `${t}: 서버에 없음${lc?' · <b>이 기기 것 올리기 필요</b>':''}`;
@@ -10309,7 +10324,7 @@ async function refUp(){if(REF.busy)return;if(!SH.on()){refSay('⚙️ 설정 ›
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    try{for(let p=0;p<parts;p++){refSay(`⏫ ${t} 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);
     await shReq('refput',{name:n,v:v.at,part:p,parts,size:u8.length,cnt:c,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}}
-   catch(e){if((n==='elev'||n==='phref'||n==='kb')&&/알 수 없는 기준자료/.test(String(e&&e.message))){(REF.oldN=REF.oldN||[]).push(t);REF.old=true;continue}throw e}up++}
+   catch(e){if((n==='elev'||n==='phref'||n==='kb'||n==='ldg'||n==='nrw')&&/알 수 없는 기준자료/.test(String(e&&e.message))){(REF.oldN=REF.oldN||[]).push(t);REF.old=true;continue}throw e}up++}
   const info2=(await shReq('refinfo')).ref||{};refSay((REF.old?`<span class="c-am">${esc(REF.oldN.join('·'))}은(는) 공유 서버가 예전 판이라 올리지 못했습니다. 공유 서버 Code.gs를 최신 판으로 바꾸고 새 버전으로 배포해 주세요.</span><br>`:'')+(up?`✅ 기준자료 ${up}종을 올렸습니다. 다른 기기는 앱을 열 때 자동으로 받습니다.`:'✅ 서버와 같은 버전이라 올릴 것이 없습니다.')+'<br><small>'+refState(info2,loc)+'</small>')}
  catch(e){refSay('<span class="c-rd">⚠️ 기준자료 올리기 실패: '+esc((e&&e.message)||e)+'</span>'+(/알 수 없는 요청/.test(String(e&&e.message))?'<br><small>공유 서버 Code.gs를 2026-10-13 판으로 바꾸고 새 버전으로 다시 배포해 주세요.</small>':''))}
  finally{REF.busy=false}}
@@ -10395,6 +10410,7 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
    refSay(`${t} 푸는 중…`);const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error(t+' 압축 파일이 비었습니다.');
    const v=JSON.parse(await e.async('string'));if(cnt(v)!==s.cnt||v.at!==s.v)throw new Error(t+' 받은 자료 개수가 서버 정보와 다릅니다. 다시 받아 주세요.');
    if(n==='kb'){await IDB.set('kb',v);kbSet(v);stoKeep();got.push(`${t} 자료 ${v.docs.length}종`);continue}
+   if(n==='ldg'||n==='nrw'){await refShApply(n,v);stoKeep();got.push(`${t} ${s.cnt.toLocaleString()}${n==='ldg'?'줄':'개'}`);continue}
    if(n==='blocks'){const p=await blkSnap();if(p)try{await IDB.set('blocks_prev',p)}catch(_){}await IDB.set('blocks',v);rawFC=null;BLK_HIST=[];await blkRestore()}
    else if(n==='pipes'){if(l)try{await IDB.set('pipes_prev',l)}catch(_){}await IDB.set('pipes',v);await pipeRestore(true)}
    else if(n==='elev'){if(l)try{await IDB.set('elev_prev',l)}catch(_){}{const h=!v.hyd&&hydKeep(l);if(h)v.hyd=h}await IDB.set('elev',v);await elevRestore(true)}
@@ -15198,7 +15214,7 @@ async function lrLoad(files){const msg=$('lqLrMsg');if(typeof XLSX==='undefined'
  for(const f of files){try{msg.textContent=f.name+' 읽는 중…';const buf=await f.arrayBuffer(),R=await lrLrSafe(buf,p=>msg.textContent=f.name+' · '+p);const r=lrParse(R.O||{},f.name);if(!r.length){msg.textContent=f.name+': 누수탐사총괄표나 민원 리스트(매크로용) 시트를 못 찾았습니다.';continue}
   LR.recs=LR.recs.filter(o=>o.f!==f.name);add.push(...r);LR.names=[...new Set([...LR.names.filter(n=>n!==f.name),f.name])]}catch(e){msg.textContent=f.name+' 읽기 실패: '+(e&&e.message||e)}}
  if(!add.length)return;LR.recs.push(...add);LR.at=new Date().toISOString();lrLocate();LR.st=null;try{await IDB.set('leak_ledger',{recs:LR.recs,names:LR.names,at:LR.at})}catch(_){}
- if(add.length&&typeof wdLdgPush==='function')wdLdgPush(true).catch(_=>{});
+ if(add.length&&typeof wdLdgPush==='function')wdLdgPush(true).catch(_=>{});if(add.length)refUpOne('ldg').catch(_=>{});
  LQ.rkKey='';lrShow();try{lqRenderTbl();if(LQ.sel)lqShow(LQ.sel);if($('pBy')&&$('pBy').value==='risk'&&PIPE.fc)renderPipes()}catch(_){}}
 const lrLrSafe=(buf,cb)=>lqLrRead(buf,cb);
 /* 발생율: 재질(앱 재질 분류)·관경·경과연수(가까운 관로 설치연도)·소블록. 분모 = 지금 올린 상수관로 길이 */
@@ -15814,7 +15830,7 @@ async function cwWyLoad(f){const m=$('cwWyMsg');m.textContent=f.name+' 읽는 �
   const ord=[...wb.SheetNames].sort((a,b)=>(/유수율/.test(b)?1:0)-(/유수율/.test(a)?1:0));
   for(const n of ord){const w=cwWyParse(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}));if(Object.keys(w).length>Object.keys(W).length){W=w;sn=n}}
   if(!Object.keys(W).length){m.textContent='⚠ 유수율 줄을 찾지 못했습니다. 연·월 머리글, 블록 이름 칸, "유수율" 줄이 있는 시트인지 확인하세요.';return}
-  CW.WY=W;CW.wyName=f.name+' · '+sn;try{await IDB.set('cw_wy',{W,name:CW.wyName,at:Date.now()})}catch(_){}
+  CW.WY=W;CW.wyName=f.name+' · '+sn;try{await IDB.set('cw_wy',{W,name:CW.wyName,at:Date.now()});refUpOne('nrw').catch(_=>{})}catch(_){}
   cwWyShow();if(CW.rows.length)cwRun()}catch(e){m.textContent='⚠ 읽기 실패: '+e.message}}
 function cwWyShow(){const m=$('cwWyMsg');if(!m)return;const W=CW.WY;if(W&&Object.keys(W).length){const ks=[...new Set(Object.values(W).flatMap(o=>Object.keys(o)))].sort();m.textContent=`📊 ${CW.wyName} · ${Object.keys(W).length}개 블록 · ${ks[0]}~${ks[ks.length-1]}`}
  else m.textContent=(BILL.WY&&Object.keys(BILL.WY).length)?`📥 부과량 연동의 유수율 시트 사용 (${Object.keys(BILL.WY).length}개 블록)`:'유수율 자료 없음 — 엑셀을 넣거나 아래 표에 직접 입력하세요.'}
@@ -19118,7 +19134,7 @@ function meta(items, by) {
 // ---------- 기준자료 공유 (소블록 경계·상수관로·상수관로 현장 수정·상수도 시설물·표고·사진 기준 위치) ----------
 // 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
 // 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
-const REF_NAMES = ['blocks', 'pipes', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp', 'kb', 'food'];
+const REF_NAMES = ['blocks', 'pipes', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp', 'kb', 'food', 'ldg', 'nrw'];
 function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
 function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
 function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
