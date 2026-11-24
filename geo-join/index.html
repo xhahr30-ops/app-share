@@ -638,6 +638,14 @@ html.chipOn .chipbar a{-webkit-touch-callout:none;-webkit-user-select:none;user-
 #chOrdBox li button.sw{width:52px;font:700 11.5px 'Noto Sans KR',sans-serif;border-radius:999px;background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
 #chOrdBox li.off button.sw{background:none;border-color:var(--line2,#cbd5e1);color:var(--mute,#64748b)}
 #chOrdBox li.off svg,#chOrdBox li.off .cnm{opacity:.4}#chOrdBox li.off .cnm{text-decoration:line-through}
+#chOrdBox li.cgh{background:rgba(99,102,241,.14);margin:10px 0 4px;padding:4px 6px 4px 4px;gap:6px;cursor:pointer}#chOrdBox li.cgh:first-child{margin-top:4px}
+#chOrdBox li.cgh .cgf{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:0;background:none;color:inherit;width:auto;height:auto;padding:4px 2px;font:900 13.5px 'Noto Sans KR',sans-serif;text-align:left;cursor:pointer}
+#chOrdBox li.cgh .cga{width:14px;flex:none;font-size:11px;color:var(--mute,#64748b)}#chOrdBox li.cgh .cgn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chOrdBox li.cgh .cgt{flex:none;font:700 10.5px 'Noto Sans KR',sans-serif;color:var(--ind,#4f46e5);border:1px solid currentColor;border-radius:6px;padding:0 5px;opacity:.85}
+#chOrdBox li.cgh .cgc{flex:none;font:700 11px 'Noto Sans KR',sans-serif;color:var(--mute,#64748b);white-space:nowrap}
+#chOrdBox li.cgh button.cgs{flex:none;width:auto;height:28px;padding:0 9px;border-radius:999px;font:700 11.5px 'Noto Sans KR',sans-serif;white-space:nowrap}
+#chOrdBox li[hidden]{display:none}
+html.dark #chOrdBox li.cgh .cgt{color:#a5b4fc}html.dark #chOrdBox li.cgh{background:rgba(99,102,241,.2)}
 #chOrdBox .cof{display:flex;gap:8px;padding:8px 14px 12px;justify-content:space-between}
 #chOrdBox .cof button{border:1px solid var(--line2,#cbd5e1);background:none;color:inherit;border-radius:9px;padding:7px 12px;font:700 13px 'Noto Sans KR',sans-serif;cursor:pointer}
 #chOrdBox .cof .ok{background:var(--ind,#4f46e5);border-color:var(--ind,#4f46e5);color:#fff}
@@ -4947,7 +4955,11 @@ function uiInit(){if(!map)return;plblInit();
 /* 폰·태블릿(터치)과 PC(마우스): 왼쪽 세로 버튼을 지도 위쪽 칩 한 줄로 옮김(태블릿은 PC 배치에 폰 크기 칩)(버튼 자체를 옮기므로 기능·상태 표시는 그대로). 나중에 붙는 버튼도 MutationObserver로 따라 옮김 */
 const CHIP_ORD=['srch','ref','up','trk','bk','chg','shut','em','hx','step','mk','ax','rp','sel','phed','fe','fd','lock','lbl','ui','bg','fs','help'];
 /* 아이콘 순서(⇅ 아이콘 정리 창에서 바꿈, 이 기기에만 기억 geo-chipord). 저장된 순서에 없는 새 칩은 기본 순서 자리로 끼워 넣음 */
-function chipOrd(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
+/* 2026-11-24 아이콘 정리 기능별 묶음(A안): 리본 탭과 맞춘 묶음. 칩 줄·정리 창 모두 묶음 순서 → 묶음 안에서는 저장 순서(geo-chipord) 그대로 */
+const CHIP_GRP=[['map','찾기·지도 보기','지도',['srch','lock','bg','fs','lbl','ui']],['data','자료 받기·올리기','파일·자료',['ref','up','bk','chg']],['field','현장 작업','현장',['trk','em','shut','phed','mk','step']],['rev','검토·계산','검토',['hx','ax','rp']],['sel','선택·편집','선택',['sel','fe']],['etc','도움·기타','도움말',['help','fd']]].map(a=>({k:a[0],n:a[1],t:a[2],ks:a[3]}));
+function chipGrpOf(k){const i=CHIP_GRP.findIndex(g=>g.ks.includes(k));return i<0?CHIP_GRP.length-1:i}
+function chipOrd(){return chipOrdRaw().map((k,i)=>[k,i]).sort((a,b)=>chipGrpOf(a[0])-chipGrpOf(b[0])||a[1]-b[1]).map(a=>a[0])}
+function chipOrdRaw(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipord')||'[]')}catch(_){}if(!Array.isArray(u))u=[];u=u.filter((k,i)=>CHIP_ORD.includes(k)&&u.indexOf(k)===i);
  for(const k of CHIP_ORD){if(u.includes(k))continue;const i=CHIP_ORD.indexOf(k);let at=u.length;for(let j=i-1;j>=0;j--){const q=u.indexOf(CHIP_ORD[j]);if(q>=0){at=q+1;break}}if(i===0)at=0;u.splice(at,0,k)}return u}
 function chipOff(){let u=[];try{u=JSON.parse(localStorage.getItem('geo-chipoff')||'[]')}catch(_){}return Array.isArray(u)?u.filter(k=>CHIP_ORD.includes(k)):[]}
 function chipOffApply(){const bar=chipBar();if(!bar)return;const off=chipOff();for(const x of bar.children)x.classList.toggle('chOff',off.includes(x.dataset.ck))}
@@ -5091,35 +5103,49 @@ function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
  w.innerHTML='<div class="cob" role="dialog" aria-label="아이콘 정리"><div class="coh"><span>⇅ 아이콘 정리</span><button type="button" class="cox" aria-label="닫기">✕</button></div>'+
   '<div class="cop"><b>전체화면 줄 위치</b><button type="button" data-v="t">위 가로</button><button type="button" data-v="l">왼쪽 세로</button></div>'+
-  '<p class="con">왼쪽 세로는 전체화면일 때만 쓰이고, 이름은 마우스를 올리거나 길게 누르면 보입니다. 세로 줄 맨 아래 ◀를 누르면 줄이 옆으로 숨고, 왼쪽 가장자리 손잡이를 누르면 다시 나옵니다. 순서는 ≡를 끌거나 ▲▼로 바꾸고, 켜짐·꺼짐으로 아이콘을 보이거나 숨깁니다. 이 기기에만 기억합니다.</p>'+
+  '<p class="con">왼쪽 세로는 전체화면에서만 쓰입니다(이름은 마우스를 올리거나 길게 누르면 보이고, 맨 아래 ◀로 숨김). 머리글을 누르면 묶음을 접고 펴며, 「모두 켜기·끄기」로 한 번에 바꿉니다. 순서는 묶음 안에서 ≡ 끌기·▲▼로 바꾸고, 지도 아이콘 줄도 같은 순서를 따릅니다. 이 기기에만 기억합니다.</p>'+
   '<ul></ul><div class="cof"><button type="button" class="rs">↺ 처음 순서</button><button type="button" class="ok">닫기</button></div></div>';
  document.body.appendChild(w);const ul=w.querySelector('ul');
  const ico=k=>{const el=bar&&[...bar.children].find(x=>x.dataset.ck===k),s=el&&el.querySelector('svg.ci');if(s){const c=s.cloneNode(true);c.removeAttribute('class');return c.outerHTML}
   const a=el&&el.querySelector('a');return '<span style="width:20px;text-align:center">'+(a?(a.textContent||'').trim().slice(0,2):'')+'</span>'};
  const have=k=>(!bar||[...bar.children].some(x=>x.dataset.ck===k))&&(!window.FEAT||!FEAT.ckOk||FEAT.ckOk(k));/* 관리자가 이 현장에서 끈 기능의 칩은 목록에도 안 보임 */
  const save=ks=>{try{localStorage.setItem('geo-chipord',JSON.stringify(ks))}catch(_){}chipResort()};
- const draw=()=>{const ks=chipOrd().filter(have),off=chipOff();ul.innerHTML=ks.map((k,i)=>'<li data-k="'+k+'"'+(off.includes(k)?' class="off"':'')+'><span class="cog" title="끌어서 옮기기">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="sw" aria-pressed="'+(!off.includes(k))+'" title="지도 아이콘 줄에 보이기·숨기기">'+(off.includes(k)?'꺼짐':'켜짐')+'</button><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<ks.length-1?'':' disabled')+'>▼</button></li>').join('');
+ const gcGet=()=>{try{const u=JSON.parse(localStorage.getItem('geo-chipgc')||'[]');return Array.isArray(u)?u:[]}catch(_){return []}};
+ const draw=()=>{const ks=chipOrd().filter(have),off=chipOff(),gc=gcGet();let h='';
+  CHIP_GRP.forEach((g,gi)=>{const gk=ks.filter(k=>chipGrpOf(k)===gi);if(!gk.length)return;const on=gk.filter(k=>!off.includes(k)).length,cl=gc.includes(g.k);
+   h+='<li class="cgh" data-g="'+g.k+'"><button type="button" class="cgf" aria-expanded="'+!cl+'" title="접기·펴기"><span class="cga">'+(cl?'▶':'▼')+'</span><span class="cgn">'+g.n+'</span><span class="cgt">'+g.t+'</span></button><span class="cgc">켜짐 '+on+'/'+gk.length+'</span><button type="button" class="cgs" title="이 묶음 아이콘을 한 번에 보이기·숨기기">'+(on===gk.length?'모두 끄기':'모두 켜기')+'</button></li>';
+   h+=gk.map((k,i)=>'<li data-k="'+k+'" data-gi="'+gi+'"'+(off.includes(k)?' class="off"':'')+(cl?' hidden':'')+'><span class="cog" title="끌어서 옮기기(같은 묶음 안)">≡</span>'+ico(k)+'<span class="cnm">'+(NM[k]||k)+'</span><button type="button" class="sw" aria-pressed="'+(!off.includes(k))+'" title="지도 아이콘 줄에 보이기·숨기기">'+(off.includes(k)?'꺼짐':'켜짐')+'</button><button type="button" class="up" aria-label="위로"'+(i?'':' disabled')+'>▲</button><button type="button" class="dn" aria-label="아래로"'+(i<gk.length-1?'':' disabled')+'>▼</button></li>').join('')});
+  ul.innerHTML=h;
   const v=chipVWant()?'l':'t';w.querySelectorAll('.cop button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))};
  /* 전체 순서(지금 안 보이는 칩 포함)에서 보이는 칩끼리만 자리를 바꿈 */
  const commit=vis=>{const all=chipOrd(),slots=all.map((k,i)=>have(k)?i:-1).filter(i=>i>=0);slots.forEach((s,j)=>{all[s]=vis[j]});save(all);draw()};
- const cur=()=>[...ul.children].map(li=>li.dataset.k);
- ul.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const li=b.closest('li');
+ const cur=()=>[...ul.children].filter(li=>li.dataset.k).map(li=>li.dataset.k);
+ ul.addEventListener('click',e=>{const hd=e.target.closest('li.cgh');
+  if(hd){const gk=hd.dataset.g,G=CHIP_GRP.find(g=>g.k===gk);
+   if(e.target.closest('.cgs')){const ks=cur().filter(k=>CHIP_GRP[chipGrpOf(k)]===G),o=chipOff(),allOn=ks.every(k=>!o.includes(k));
+    let n=o.filter(k=>!ks.includes(k));if(allOn)n=n.concat(ks);try{localStorage.setItem('geo-chipoff',JSON.stringify(n))}catch(_){}chipOffApply();chipVApply();draw();
+    const f=ul.querySelector('li.cgh[data-g="'+gk+'"] .cgs');if(f)f.focus();return}
+   const gc=gcGet(),i=gc.indexOf(gk);if(i>=0)gc.splice(i,1);else gc.push(gk);try{localStorage.setItem('geo-chipgc',JSON.stringify(gc))}catch(_){}draw();
+   const f=ul.querySelector('li.cgh[data-g="'+gk+'"] .cgf');if(f)f.focus();return}
+  const b=e.target.closest('button');if(!b)return;const li=b.closest('li');
   if(b.classList.contains('sw')){const k=li.dataset.k,o=chipOff(),i=o.indexOf(k);if(i>=0)o.splice(i,1);else o.push(k);try{localStorage.setItem('geo-chipoff',JSON.stringify(o))}catch(_){}chipOffApply();chipVApply();draw();
    const n=ul.querySelector('li[data-k="'+k+'"] .sw');if(n)n.focus();return}
-  const ks=cur(),i=ks.indexOf(li.dataset.k),j=b.classList.contains('up')?i-1:i+1;if(j<0||j>=ks.length)return;[ks[i],ks[j]]=[ks[j],ks[i]];commit(ks);
+  const ks=cur(),i=ks.indexOf(li.dataset.k),j=b.classList.contains('up')?i-1:i+1;if(j<0||j>=ks.length||chipGrpOf(ks[j])!==chipGrpOf(ks[i]))return;[ks[i],ks[j]]=[ks[j],ks[i]];commit(ks);
   const n=ul.querySelector('li[data-k="'+ks[j]+'"] .'+(b.classList.contains('up')?'up':'dn'));if(n&&!n.disabled)n.focus()});
  let dg=null;
  ul.addEventListener('pointerdown',e=>{const g=e.target.closest('.cog');if(!g)return;e.preventDefault();const li=g.closest('li');dg={li,id:e.pointerId,y:e.clientY};li.classList.add('drag');try{g.setPointerCapture(e.pointerId)}catch(_){}});
- ul.addEventListener('pointermove',e=>{if(!dg||e.pointerId!==dg.id)return;e.preventDefault();const li=dg.li;
-  const sib=[...ul.children].filter(x=>x!==li),y=e.clientY;let bf=null;for(const x of sib){const r=x.getBoundingClientRect();if(y<r.top+r.height/2){bf=x;break}}
-  if((bf||null)!==li.nextElementSibling||(bf===null&&ul.lastElementChild!==li))ul.insertBefore(li,bf);
-  const R=ul.getBoundingClientRect();if(y<R.top+24)ul.scrollTop-=8;else if(y>R.bottom-24)ul.scrollTop+=8});
+ const mv=e=>{if(!dg||e.pointerId!==dg.id)return;e.preventDefault();const li=dg.li;
+  const gi=li.dataset.gi,sib=[...ul.children].filter(x=>x!==li&&x.dataset.gi===gi),y=e.clientY;if(!sib.length)return;let bf=null;for(const x of sib){const r=x.getBoundingClientRect();if(y<r.top+r.height/2){bf=x;break}}
+  if(!bf)bf=sib[sib.length-1].nextElementSibling;
+  if(bf!==li.nextElementSibling)ul.insertBefore(li,bf);
+  const R=ul.getBoundingClientRect();if(y<R.top+24)ul.scrollTop-=8;else if(y>R.bottom-24)ul.scrollTop+=8};
  const end=e=>{if(!dg||e.pointerId!==dg.id)return;dg.li.classList.remove('drag');dg=null;commit(cur())};
- ul.addEventListener('pointerup',end);ul.addEventListener('pointercancel',end);
+ /* 줄을 옮기면(insertBefore) 포인터 잡기가 풀려 ul에 pointerup이 안 올 수 있음 → window에서 받음 */
+ window.addEventListener('pointermove',mv,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
  w.querySelectorAll('.cop button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('geo-chipv',b.dataset.v)}catch(_){}chipVApply();draw();
   if(b.dataset.v==='l'&&!document.body.classList.contains('fsOn')&&typeof phToast==='function')phToast('⇅ 왼쪽 세로 줄은 전체화면에서 보입니다',2500)});
- w.querySelector('.rs').onclick=()=>{try{localStorage.removeItem('geo-chipord');localStorage.removeItem('geo-chipoff')}catch(_){}chipResort();chipVApply();draw()};
- const close=()=>{w.remove();document.removeEventListener('keydown',kd)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
+ w.querySelector('.rs').onclick=()=>{try{localStorage.removeItem('geo-chipord');localStorage.removeItem('geo-chipoff');localStorage.removeItem('geo-chipgc')}catch(_){}chipResort();chipVApply();draw()};
+ const close=()=>{w.remove();document.removeEventListener('keydown',kd);window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end)},kd=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
  w.querySelector('.cox').onclick=close;w.querySelector('.ok').onclick=close;w.addEventListener('click',e=>{if(e.target===w)close()});document.addEventListener('keydown',kd);
  draw()}
 /* ＋/− 확대·축소 버튼 옮기기: 위 ⠿ 손잡이를 끌어 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙음. 세로·가로 화면 따로 이 기기에 기억(geo-zpos, 백업 제외) */
@@ -7415,7 +7441,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
+const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|chipgc|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
