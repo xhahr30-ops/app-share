@@ -9756,7 +9756,7 @@ function pcpStart(next,force){if(!map||!pcpOn()){pcpGo(next);return}
   <details class="pcmore"><summary>⚙ 캡처 설정</summary>
   <label class="pck"><input type="checkbox" data-a="wide"${pcpWide()?' checked':''}> 🖼 가로 사진으로 캡처 (대장용 4:3 · 폰을 세로로 들어도)</label>
   <label class="pck pc43">📐 세로로 찍은 사진 <select class="ph43s" data-a="p43" aria-label="세로로 찍은 사진">${ph43Opts(ph43Mode())}</select></label>
-  <label class="pck"><input type="checkbox" data-a="off"> 다음부터 바로 찍기 (📷 사진 칸에서 다시 켬)</label></details>`;
+  <label class="pck"><input type="checkbox" data-a="off"> 다음부터 위치 캡처 없이 바로 찍기 (📷 누르면 나오는 「📍 지점 캡처하고 찍기」로 다시 켬)</label></details>`;
  (document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(o);
  const mc=map.getContainer();let cr=mc.querySelector('.pcpX');if(!cr){cr=document.createElement('div');cr.className='pcpX';cr.innerHTML='<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="15" fill="rgba(255,0,0,.22)"/><path d="M30 4v10M30 46v10M4 30h10M46 30h10" stroke="#e11d48" stroke-width="2" stroke-linecap="round" opacity=".8"/><circle cx="30" cy="30" r="9" fill="#ff0000" stroke="#fff" stroke-width="2.5"/></svg>';mc.appendChild(cr)}
  document.documentElement.classList.add('pcpOn');
@@ -9836,8 +9836,8 @@ function pcpForm(){const o=PCP.o;if(!o)return;const c=PCP.cap;
 /* 📷 하나로 (B안, 2026-11-24): 오른쪽 아래 🅃 단추를 없애고 📷 하나로 — 위치 캡처 뒤 창에서 카메라 앱·갤러리·📝 글자 사진·앱 카메라를 고름. 위치 캡처를 끈 경우엔 작은 고르기 창 */
 function pcpCamBtn(){if(map&&pcpOn()){pcpStart('cam');return}
  let o=$('pcpPick');if(o){o.remove();return}o=document.createElement('div');o.id='pcpPick';o.setAttribute('role','dialog');o.setAttribute('aria-label','사진 찍기 고르기');
- o.innerHTML='<b>📷 현장 사진</b><button type="button" class="btn" data-a="cam">📷 사진 찍기·올리기</button><button type="button" class="btn ol" data-a="tcam">📝 글자 넣어 찍기</button><button type="button" class="btn ol" data-a="x" aria-label="닫기">✕ 닫기</button>';
- o.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;o.remove();if(b.dataset.a!=='x')pcpGo(b.dataset.a)};
+ o.innerHTML='<b>📷 현장 사진</b><button type="button" class="btn" data-a="pcp" title="찍기 전 지점(위치) 캡처를 다시 켜고 지금 엽니다">📍 지점 캡처하고 찍기</button><button type="button" class="btn ol" data-a="cam">📷 캡처 없이 찍기·올리기</button><button type="button" class="btn ol" data-a="tcam">📝 글자 넣어 찍기</button><button type="button" class="btn ol" data-a="x" aria-label="닫기">✕ 닫기</button>';
+ o.onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;o.remove();const a=b.dataset.a;if(a==='pcp'){pcpOnSet(true);pcpStart('cam');try{phToast('📍 지점 캡처를 다시 켰습니다. 다음부터 📷 누르면 위치 캡처가 먼저 나옵니다.',{ms:5000})}catch(_){}}else if(a!=='x')pcpGo(a)};
  (document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(o)}
 function pcpTxKd(){const c=PCP.cap;if(!c)return;let kd='';try{kd=phKdOf(tcCfg().kd)||''}catch(_){}if(!kd||kd==='mw')return;let ch=0;
  for(const x of c.caps||[]){const m=PH.byId.get(x.id);if(m&&m.kd!==kd){m.kd=kd;ch=1}}if(ch)phSaveMeta(true)}
