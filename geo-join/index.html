@@ -658,7 +658,7 @@ html.chz.chipOn .chipbar .leaflet-bar a{zoom:var(--chz,1)}
 html.chz.chipOn:not(.chipV) .leaflet-top{top:calc(var(--chbh,46px) + 2px)!important}
 html.chz.chipOn:not(.chipV) .uiset:not(.shutp){top:calc(var(--chbh,46px) + 6px)!important;max-height:calc(100% - var(--chbh,46px) - 16px)!important}
 html.chz.chipOn:not(.chipV) .shdraw .shdt{top:calc(var(--chbh,46px) + 8px)!important}
-.chzRow{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-weight:700}.chzRow>span{flex:none}#uiChZ{flex:1;min-width:0;width:auto!important;margin:0;accent-color:#4f46e5}#uiChZv{flex:none;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}#uiChZ0{flex:none;width:auto!important;padding:2px 10px!important;margin:0!important}
+.chzRow{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-weight:700}.chzRow>span{flex:none}#uiChZ{flex:1;min-width:0;width:auto!important;margin:0;accent-color:#4f46e5}#uiChZv{flex:none;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}#uiChZ0{flex:none;width:auto!important;padding:2px 10px!important;margin:0!important}#uiPcZ{flex:1;min-width:0;width:auto!important;margin:0;accent-color:#4f46e5}#uiPcZv{flex:none;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}#uiPcZ0{flex:none;width:auto!important;padding:2px 10px!important;margin:0!important}html.gwOn .uiset .chzRow.gwonly{display:flex}
 @media print{.chipbar{display:none!important}}
 body.touch .dwBtn,body.touch #phWinBtn{display:none!important}
 
@@ -4880,6 +4880,9 @@ function uiInit(){if(!map)return;plblInit();
 <div class="uib"><button type="button" id="uiChOrd" class="btn ol">⇅ 아이콘 순서 · 줄 위치(위/왼쪽)</button></div>
 <div class="chzRow" title="지도 위 아이콘 줄 칩 크기 (이 기기만)"><span>아이콘 크기</span><input type="range" id="uiChZ" min="80" max="130" step="5" aria-label="아이콘 크기"><b id="uiChZv">100%</b><button type="button" id="uiChZ0" class="btn ol" title="100%로">↺</button></div>
 <p class="uin">지도 위 아이콘 줄의 순서를 바꾸고, 전체화면에서 줄을 위 가로 또는 왼쪽 세로로 놓습니다. 아이콘 줄 맨 끝 <b>⇅ 아이콘 정리</b>를 눌러도 됩니다.</p>
+<div class="uig gwonly">🖥 PC 메뉴 글씨 크기</div>
+<div class="chzRow gwonly" title="PC 작업 화면 제목줄·메뉴·리본·레이어 창·칩·하단 탭·상태줄 크기 (이 기기만)"><span>글씨 크기</span><input type="range" id="uiPcZ" min="50" max="110" step="5" aria-label="PC 메뉴 글씨 크기"><b id="uiPcZv">85%</b><button type="button" id="uiPcZ0" class="btn ol" title="처음(85%)으로">↺</button></div>
+<p class="uin gwonly">PC 작업 화면의 메뉴·리본·레이어 창·아이콘 줄·상태줄 글씨를 50~110%로 맞춥니다(처음 85%). 지도 안 글씨·정보창·폰은 그대로입니다.</p>
 <div class="uig">➕ 확대·축소 버튼 자리</div>
 <div class="uib"><button type="button" id="uiZpos" class="btn ol">↩ 처음 자리로</button></div>
 <p class="uin">지도 ＋/− 버튼 위 <b>⠿ 손잡이</b>를 끌어 원하는 곳에 놓으면 가까운 왼쪽·오른쪽 가장자리에 붙고, 이 기기에 세로·가로 화면 따로 기억합니다. 손잡이를 두 번 눌러도 처음 자리로 돌아갑니다.</p>
@@ -4913,7 +4916,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
  q('uiPw').onchange=e=>{UI.pw=+e.target.value||1;uiSave();if(PIPE.fc)renderPipes()};
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
- q('uiAll').onclick=uiAllToggle;q('uiZpos').onclick=()=>zpReset(true);q('uiChOrd').onclick=()=>chipOrdOpen();{const r=q('uiChZ'),v=q('uiChZv'),sh=()=>{const z=chipZGet();r.value=z;v.textContent=z+'%'};sh();r.oninput=()=>{chipZSet(+r.value,false);sh()};r.onchange=()=>{chipZSet(+r.value,true);sh()};q('uiChZ0').onclick=()=>{chipZSet(100,true);sh()}}
+ q('uiAll').onclick=uiAllToggle;{const r=q('uiPcZ'),v=q('uiPcZv'),sh=()=>{const z=pcZGet();r.value=z;v.textContent=z+'%'};sh();r.oninput=()=>{pcZSet(+r.value,false);sh()};r.onchange=()=>{pcZSet(+r.value,true);sh()};q('uiPcZ0').onclick=()=>{pcZSet(85,true);sh()}}q('uiZpos').onclick=()=>zpReset(true);q('uiChOrd').onclick=()=>chipOrdOpen();{const r=q('uiChZ'),v=q('uiChZv'),sh=()=>{const z=chipZGet();r.value=z;v.textContent=z+'%'};sh();r.oninput=()=>{chipZSet(+r.value,false);sh()};r.onchange=()=>{chipZSet(+r.value,true);sh()};q('uiChZ0').onclick=()=>{chipZSet(100,true);sh()}}
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
  q('uiSite').onclick=()=>siteSwitch();{const hb=q('uiHq');if(hb)hb.onclick=()=>{if(window.hqAdmin)hqAdmin()}}q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
@@ -4936,6 +4939,11 @@ function chipOffApply(){const bar=chipBar();if(!bar)return;const off=chipOff();f
 function chipHidWant(){try{return localStorage.getItem('geo-chiphid')==='1'}catch(_){return false}}
 function chipHidSet(v){try{localStorage.setItem('geo-chiphid',v?'1':'0')}catch(_){}chipTipHide();chipVApply()}
 function chipIx(k){if(k==='hide')return 10000;if(k==='out')return 9999.3;if(k==='nm')return 9999.6;if(k==='rl')return 9999.8;if(k==='ord')return 9999;const i=chipOrd().indexOf(k);return i<0?5000:i}
+/* PC 메뉴 글씨 크기 (⚙ 설정 › 🖥 PC 메뉴 글씨 크기, geo-pcz 50~110%, 기기별, 처음 85): html --pcz를 바꾸고 칩 줄 높이·전체화면 레이어 창 자리를 다시 맞춤 */
+function pcZGet(){let z=85;try{const v=localStorage.getItem('geo-pcz');if(v)z=+v||85}catch(_){}return Math.max(50,Math.min(110,Math.round(z/5)*5))}
+function pcZApply(){const H=document.documentElement,z=pcZGet();if(z===85)H.style.removeProperty('--pcz');else H.style.setProperty('--pcz',String(z/100));
+ requestAnimationFrame(()=>{try{chipZApply()}catch(_){}try{fsLayPos()}catch(_){}try{window.dispatchEvent(new Event('resize'))}catch(_){}try{const m=G('map');if(m)m.invalidateSize({pan:false})}catch(_){}})}
+function pcZSet(z){z=Math.max(50,Math.min(110,Math.round((+z||85)/5)*5));try{localStorage.setItem('geo-pcz',z===85?'':String(z))}catch(_){}pcZApply()}
 /* 아이콘 줄 칩 크기 (⚙ 설정 › 아이콘 줄, geo-chipz %, 기기별) */
 function chipZGet(){let z=100;try{z=+localStorage.getItem('geo-chipz')||100}catch(_){}return Math.max(80,Math.min(130,Math.round(z/5)*5))}
 function chipZApply(){const H=document.documentElement,z=chipZGet();{const r=document.getElementById('uiChZ'),v=document.getElementById('uiChZv');if(r&&+r.value!==z)r.value=z;if(v)v.textContent=z+'%'}H.classList.toggle('chz',z!==100);H.style.setProperty('--chz',String(z/100));
@@ -5062,7 +5070,7 @@ function chipVInit(bar){if(bar._cv)return;bar._cv=1;const isV=()=>document.docum
  bar.addEventListener('click',e=>{if(ate){ate=false;e.preventDefault();e.stopPropagation()}},true);
  bar.addEventListener('contextmenu',e=>{if(e.target.closest('a'))e.preventDefault()});/* 칩을 길게 눌러도 크롬 링크 메뉴(링크 주소 복사 등)가 뜨지 않게 */
  bar.addEventListener('scroll',chipTipHide,{passive:true});
- chipVApply();chipZApply();try{const cb=document.querySelector('.leaflet-control-container .chipbar');if(cb)new ResizeObserver(()=>{if(cb.offsetHeight&&!document.documentElement.classList.contains('chipV'))document.documentElement.style.setProperty('--chbh',Math.round(cb.getBoundingClientRect().height)+'px')}).observe(cb)}catch(_){}}
+ chipVApply();chipZApply();pcZApply();try{const cb=document.querySelector('.leaflet-control-container .chipbar');if(cb)new ResizeObserver(()=>{if(cb.offsetHeight&&!document.documentElement.classList.contains('chipV'))document.documentElement.style.setProperty('--chbh',Math.round(cb.getBoundingClientRect().height)+'px')}).observe(cb)}catch(_){}}
 function chipNames(){const LB={srch:'주소찾기',ref:'지금 받기',up:'지금 올리기',trk:'탐사기록',bk:'파일 넣기',chg:'변경 기록',shut:'단수구역',em:'긴급 점검',hx:'수리 계산',step:'단계시험',mk:'그리기',ax:'개략공사비',rp:'교체 완료',sel:'관로 선택',phed:'사진 편집',fe:'편집',fd:'맛집',lock:'화면 고정',lbl:'라벨',ui:'설정 · 표시 끄기',bg:'배경',fs:'전체화면',help:'사용법'};return LB}
 function chipOrdOpen(){if(document.getElementById('chOrdBox'))return;chipTipHide();const bar=chipBar(),NM=chipNames();
  const w=document.createElement('div');w.id='chOrdBox';w.className='np';
@@ -7392,7 +7400,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
+const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
