@@ -9304,7 +9304,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
    `<button type="button" data-a="place">📍 ${m.lat!=null?'위치 고치기':'위치 찍기'}</button><button type="button" data-a="goto" title="접수번호(긴급88·1956)를 넣으면 그 민원지점으로, 주소·좌표를 넣으면 그 자리로 옮깁니다">🔢 번호·주소로</button>`+(loc&&doc===document?`<button type="button" data-a="lm" title="이 사진 자리 위치도(배경지도·관로 라벨·빨간 점·번호 상자) 만들기 — 사진과 같이 공유하거나 묶음에 넣어 일일 보고 메일에 같이 보냄">🗺 위치도</button>`:'')+(phFcKd(m)&&FAC.n?`<button type="button" data-a="fcl" title="이 사진을 붙일 시설물(경계밸브·시설물) 고르기">🔧 시설물</button>`:'')+
    (doc===document&&map&&m.lat!=null||doc===document&&g&&g.lat!=null?`<button type="button" data-a="mg" title="같은 현장의 다른 사진 아이콘과 하나로 합치기 (고르기 모드로 들어감)">🔗 합치기</button>`:'')+
    ((g&&g.n>1)||m.solo?`<button type="button" data-a="solo">${m.solo?'🔗 다시 묶기':'✂️ 묶음에서 빼기'}</button>`:'')+
-   (doc===document&&typeof ldvOpen==='function'&&(m.cd||g&&g.code)?`<button type="button" data-a="ldv" title="이 묶음 번호(${esc(String(m.cd||g.code))})의 ${phKd(m)==='ts'?'누수탐사':'민원'} 대장 미리보기 (대장작성 창)">📄 대장 보기</button>`:'')+
+   (doc===document&&typeof ldvOpen==='function'&&phLdvNo(m,g)?`<button type="button" data-a="ldv" title="이 묶음 번호(${esc(phLdvNo(m,g))})의 ${phKd(m)==='ts'?'누수탐사':'민원'} 대장 미리보기 (대장작성 창${phKd(m)==='ts'?' · 📒 넣은 누수 대장 엑셀 줄도 씀':''})">📄 ${phKd(m)==='ts'?'탐사대장 보기':'대장 보기'}</button>`:'')+
    (doc===document?(n=>`<button type="button" data-a="vid" title="이 사진 묶음에 연결한 유튜브 영상 보기·붙이기">🎬 ${n?'영상 '+n:'영상 붙이기'}</button>`)(vidFind(phVidT(g,m)).length):'')+(doc===document&&aiOn()?`<button type="button" data-a="ai" title="AI가 사진을 보고 종류를 추천하고, 사진 속 글자와 한 줄 설명을 메모 초안으로 만듭니다 (GPS·촬영 정보는 빼고 보냄)">🤖 사진 읽기</button><button type="button" data-a="air" title="이 사진 묶음의 종류·일시·소블록·메모로 현장 보고 초안을 만듭니다">🤖 보고 초안</button>`:'')+`<button type="button" data-a="dl">⬇ 저장</button><button type="button" class="del" data-a="del">🗑 삭제</button>`+(g&&g.n>1?`<button type="button" class="del" data-a="delg">🗑 이 묶음 ${g.n}장 모두</button>`:'')};
  q('.nav.p').onclick=e=>{e.stopPropagation();v.go(v.i-1)};q('.nav.n').onclick=e=>{e.stopPropagation();v.go(v.i+1)};
  strip.onclick=async e=>{const x=e.target.closest('[data-x]');if(x){e.stopPropagation();const id=x.dataset.x,mm=PH.byId.get(id);if(!mm)return;
@@ -9346,7 +9346,7 @@ function phViewer(doc,box,opts){opts=opts||{};const v={doc,box,pid:null,ids:[],i
    v.show(m.id)}
   else if(a==='mg')phMgStart(m.id);
   else if(a==='lr'){const g=OF().get(m.id),ids=(g&&g.n>1?g.ids:[m.id]).filter(id=>{const x=PH.byId.get(id);return x&&phKd(x)==='ts'}),on=!phLrG({kd:'ts',ids});await phSetLr(ids,on);v.show(m.id)}
-  else if(a==='ldv'){const g=OF().get(m.id),no=String(m.cd||g&&g.code||'');if(no){try{if(map)map.closePopup()}catch(_){}ldvOpen(no,phKd(m)==='ts'?'lk':'mw')}}
+  else if(a==='ldv'){const g=OF().get(m.id),no=phLdvNo(m,g);if(no){try{if(map)map.closePopup()}catch(_){}ldvOpen(no,phKd(m)==='ts'?'lk':'mw',g&&g.yr||(m.ts?new Date(m.ts).getFullYear():0))}}
   else if(a==='solo'){m.solo=!m.solo;phSaveMeta();phRefresh();v.show(m.id)}
   else if(a==='dl'){let bl=null;try{bl=await IDB.get('ph:'+m.id)}catch(_){}if(!bl&&typeof shFetchBig==='function')bl=await shFetchBig(m.id);if(bl)dlBlob(bl,m.name.replace(/\.[^.]+$/,'')+(/png/.test(bl.type)?'.png':'.jpg'))}
   else if(a==='del'){if(!W.confirm((m.shUp&&SH.on()?`사진 "${m.name}"은(는) 직원 공유 중입니다.\n지우면 모든 직원의 화면과 공유 드라이브(휴지통으로 이동)에서도 지워집니다. 지울까요?`:`사진 "${m.name}"을(를) 이 PC에서 지울까요?`)+'\n\n지운 사진은 🗂️ 휴지통에서 7일 안에 되살릴 수 있습니다.'))return;await phDelete([m.id]);phEdUndoDel([m.id])}
@@ -17687,11 +17687,11 @@ async function fldSave(r,del,msg){if(FLD.busy)return;if(!r.d){msg('⚠ 날짜를
    → ZIP: 사진/(이 이름들 + 위치도 월드 파일 .pgw·.prj) + 리스트 줄 엑셀(리스트(매크로용) A~S 칸, 주소·대리인 빈칸) + 읽어보기 */
 /* 같은 번호를 해마다 다시 씀(2229가 2025·2026 모두) → 현장 일지 접수날짜 기준으로 그 건 사진만 (2026-11-23 작년 사진 섞임 고침)
    촬영시각 있으면 접수일 3일 전 ~ 120일 뒤, 연도만 알면 같은 해, 날짜를 모르면 그대로 둠. 일지가 없으면 사진 중 가장 최근 해 */
-function ldgPhYear(ms,no,ty){if(!ms.length)return ms;const rec=ldvRecOf(no,ty||'mw')||(!ty?ldvRecOf(no,'lk'):null),dm=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(rec&&rec.d||''));
+function ldgPhYear(ms,no,ty){if(!ms.length)return ms;const rec=ldvRecOf(no,ty||'mw')||(!ty?ldvRecOf(no,'lk'):null),dm=rec&&rec._lr?null:/^(\d{4})-(\d{2})-(\d{2})/.exec(String(rec&&rec.d||''));
  const yOf=m=>{if(m.ts)return new Date(m.ts).getFullYear();if(+m.yr)return +m.yr;const g=PH.gOf&&PH.gOf.get(m.id);if(g&&(g.code||g.kc)&&g.yr)return g.yr;if(m.map&&m.at)return new Date(m.at).getFullYear();return 0};
  if(dm){const D=new Date(+dm[1],+dm[2]-1,+dm[3]).getTime(),Y=+dm[1],day=864e5;
   return ms.filter(m=>{if(m.ts&&!m.map)return m.ts>=D-3*day&&m.ts<=D+121*day;const y=yOf(m);return !y||y===Y||(m.map&&m.at&&m.at>=D-3*day)})}
- const Y=Math.max(0,...ms.map(yOf));return Y?ms.filter(m=>{const y=yOf(m);return !y||y===Y}):ms}
+ const Y=rec&&rec._lr&&/^\d{4}/.test(rec.d||'')?+rec.d.slice(0,4):Math.max(0,...ms.map(yOf));return Y?ms.filter(m=>{const y=yOf(m);return !y||y===Y}):ms}
 function ldgPhotos(no,ty){const re=s=>new RegExp('^'+no.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+s,'i'),r6=re('-6-(\\d{1,2})\\.(jpe?g|png)$'),rk=re('-(\\d{1,3})\\.(jpe?g|png|heic)$');
  const all0=PH.list.filter(m=>m&&!m.del&&(m.cd===no||(PH.code&&PH.code.get(m.id)===no)||r6.test(String(m.name||'').normalize('NFC'))||rk.test(String(m.name||'').normalize('NFC')))),all=ldgPhYear(all0,no,ty);
  const maps=all.filter(m=>m.map&&m.src!=='단수밸브').sort((a,b)=>(b.src==='위치캡처')-(a.src==='위치캡처')||(b.at||0)-(a.at||0)),loc=maps[0]||null;
@@ -17815,14 +17815,27 @@ async function vcCapture(btn){if(VC.busy)return;const no=VC.no;if(!no){vcRender(
   await phSaveMeta(true);phRefresh();try{chgPhMine(ids)}catch(_){}
   vcRender(`✓ ${no}-6-1${ids.length>1?'~'+ids.length:''}.png ${ids.length}장을 ${esc(no)} 사진 묶음에 넣었습니다${del.length?` (예전 캡처 ${del.length}장 바꿈)`:''}. 📄 대장 미리보기에서 확인하세요.`)}
  catch(e){alert('밸브 상세도를 만들지 못했습니다: '+((e&&e.message)||e));vcRender()}finally{VC.busy=false;w.style.visibility='';btn.disabled=false}}
-const LDV={no:'',cv:null,pk:null,ty:'mw'};
+const LDV={no:'',cv:null,pk:null,ty:'mw',yr:0};
 /* 주소·대리인 (2026-11-19 사용자 요청): 이 기기에만 저장(geo-ldvx, 서버로 안 보냄). 주소 = 📸 위치 캡처 때 빨간 점 자리 주소(카카오 좌표→주소)·직접 입력, 대리인 = 민원대응 대리인 직접 입력(없으면 PC 대장에 확인불가, 2026-11-23) */
 function ldxGet(){try{const j=JSON.parse(localStorage.getItem('geo-ldvx')||'{}');j.nos=j.nos||{};j.ag=j.ag||{};return j}catch(_){return{nos:{},ag:{}}}}
 function ldxSet(j){try{localStorage.setItem('geo-ldvx',JSON.stringify(j))}catch(_){}}
 function ldxOf(no){const j=ldxGet(),x=j.nos[no]||{},r=ldvRecOf(no,'mw')||{},co=String(r.co||'').trim(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,'');let ag=x.agent||'';return{addr:x.addr||'',agent:ag}}
 function ldxPut(no,k,v){const j=ldxGet();j.nos[no]=Object.assign(j.nos[no]||{},{[k]:v});ldxSet(j)}
 function ldvIsT(r,ty){return (ty||LDV.ty)==='lk'?r.src==='탐사':r.src!=='탐사'}
-function ldvRecOf(no,ty){let o=null;fldAll().filter(r=>ldvIsT(r,ty)&&String(r.no||'').trim().normalize('NFC')===no).forEach(r=>{if(!o||(r.d||'')>(o.d||''))o=r});return o}
+function ldvRecOf(no,ty){let o=null;fldAll().filter(r=>ldvIsT(r,ty)&&String(r.no||'').trim().normalize('NFC')===no).forEach(r=>{if(!o||(r.d||'')>(o.d||''))o=r});return o||((ty||LDV.ty)==='lk'?lkLrRec(no):mwLrRec(no))}
+/* 2026-11-25 탐사대장 보기: 현장 일지(💧 누수탐사)가 없으면 ②-4·기준자료로 넣은 📒 누수 대장 엑셀(누수탐사총괄표) 줄로 채움. 같은 연번이 여러 해면 사진 묶음 연도(LDV.yr) 줄만(그 해 줄이 없으면 안 씀 — 다른 해 대장과 섞임 방지), 연도 모르면 가장 최근. 주소는 대장 엑셀에서 가져오지 않음(대장 창 주소 칸 그대로) */
+const lkNoN=v=>{const x=/(\d+)\s*$/.exec(String(v??''));return x?String(+x[1]):''};
+function lkLrRec(no){const n=lkNoN(no);if(!n)return null;let R=[];try{R=LR.recs||[]}catch(_){}
+ const a=R.filter(o=>o&&o.src==='탐사'&&lkNoN(o.no)===n);if(!a.length)return null;
+ const y=+LDV.yr||0,b=y?a.filter(o=>+String(o.d||'').slice(0,4)===y):a;if(!b.length)return null;const o=b.slice().sort((p,q)=>String(p.d||'').localeCompare(String(q.d||''))).pop();
+ return{no:String(o.no),src:'탐사',d:o.d||'',cd:o.cd||'',blk:o.blk||'',res:o.res||'',dia:o.dia??'',mat:o.mat||'',cause:o.cause||'',part:o.part||'',fixd:o.fixd||'',edia:o.edia??'',memo:o.memo||'',note:o.note||'',co:o.co||'',_lr:1}}
+/* 민원도 같게: 현장 일지가 없으면 📒 민원 대장 엑셀(리스트(매크로용)) 같은 접수번호 줄(사진 연도 줄만). 현장주소·대리인은 가져오지 않음(대장 창 칸 그대로) */
+function mwLrRec(no){const n=mwKey(no);if(!n)return null;let R=[];try{R=LR.recs||[]}catch(_){}
+ const a=R.filter(o=>o&&o.src==='민원'&&o.no!=null&&mwKey(o.no)===n);if(!a.length)return null;
+ const y=+LDV.yr||0,b=y?a.filter(o=>+String(o.d||'').slice(0,4)===y):a;if(!b.length)return null;const o=b.slice().sort((p,q)=>String(p.d||'').localeCompare(String(q.d||''))).pop();
+ return{no:String(o.no),src:'민원',d:o.d||'',tA:o.tA||'',tB:o.tB||'',tC:o.tC||'',tD:o.tD||'',co:o.co||'',res:o.res||'',dia:o.dia??'',mat:o.mat||'',cause:o.cause||'',part:o.part||'',fix:o.fix||'',memo:o.memo||'',_lr:1}}
+/* 사진 묶음 → 대장 번호: 민원 = 접수번호(code), 누수탐사 = 사진 번호(kc, 103-4.jpg → 103) */
+function phLdvNo(m,g){return String(m&&m.cd||g&&(g.code||(phKd(m)==='ts'?g.kc:''))||'').trim()}
 function ldvNos(){const m=new Map(),now=Date.now(),D60=60*864e5;fldAll().filter(r=>ldvIsT(r)&&r.no).forEach(r=>{const k=String(r.no).trim().normalize('NFC');m.set(k,Math.max(m.get(k)||0,Date.parse(r.d||'')||0))});
  PH.list.forEach(x=>{if(!x||!x.cd)return;const t=x.ts||x.at||0;if(now-t<D60)m.set(String(x.cd).normalize('NFC'),Math.max(m.get(String(x.cd))||0,t))});
  return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(e=>e[0]).slice(0,80)}
@@ -17862,7 +17875,7 @@ function ldvTyUi(){const w=$('ldvW');if(!w)return;const T=LDV.ty==='lk';w.queryS
  w.querySelector('.ldvChk summary').textContent=T?'🔎 점검: 최근 60일 탐사연번별 위치도·사진':'🔎 점검: 최근 60일 번호별 위치도·사진';
  w.querySelector('.ldvPv').innerHTML=`<p class="hint">${T?'탐사연번':'접수번호'}을 넣고 📄 미리보기를 누르세요. 아래 점검 목록의 번호를 눌러도 됩니다.</p>`;
  w.querySelectorAll('.ldvOut [data-a="pr"],.ldvOut [data-a="hw"],.ldvOut [data-a="im"]').forEach(b=>b.disabled=true)}
-async function ldvOpen(no,ty){const w=ldvWin();w.hidden=false;try{if(typeof fldQLoad==='function')fldQLoad()}catch(_){}
+async function ldvOpen(no,ty,yr){LDV.yr=+yr||0;const w=ldvWin();w.hidden=false;try{if(typeof fldQLoad==='function')fldQLoad()}catch(_){}
  if(ty&&ty!==LDV.ty){LDV.ty=ty;LDV.no='';LDV.cv=null;w.querySelector('[data-a="no"]').value=''}ldvTyUi();
  const fill=ldvFill;fill();
  try{if(fldSrvOk()&&(!FLD.at||Date.now()-FLD.at>120e3)){await fldLoad();fill()}}catch(_){}
@@ -17893,7 +17906,7 @@ async function ldvShow(no){const w=ldvWin(),pv=w.querySelector('.ldvPv');const n
  pv.innerHTML='<p class="hint">⏳ 대장 그리는 중…</p>';
  if(!ldgPhotos(no,LDV.ty==='lk'?'lk':'mw').loc&&ldgLocSrc(no,LDV.ty==='lk'?'lk':'mw')&&!LDA.tried.has(no)){pv.innerHTML='<p class="hint">📸 위치도가 없어 사진 위치로 위치 캡처를 만드는 중…</p>';const ok=await ldgAutoLoc(no,false,LDV.ty==='lk'?'lk':'mw');if(ok)try{ldvFill()}catch(_){}if(LDV.no!==no)return;if(ok&&!ldxOf(no).addr)setTimeout(()=>ldvAddr(no,null,false),1500);pv.innerHTML='<p class="hint">⏳ 대장 그리는 중…</p>'}
  try{const T=LDV.ty==='lk',cvs=await (T?lkDraw:ldvDraw)(no);if(LDV.no!==no)return;LDV.cvs=cvs;LDV.cv=cvs[0];pv.innerHTML='';cvs.forEach((c,i)=>{const im=new Image();im.alt=`${T?'누수탐사 대장':'민원 대응관리 일지'} ${no} ${i+1}쪽`;im.src=c.toDataURL('image/jpeg',.85);pv.appendChild(im)});
-  const p=LDV.info||{},nd=T?8:4,t=[p.loc?'':(ldgLocSrc(no)?'위치도 자동 캡처 실패 → 📸 위치 캡처로 직접':'위치도 없음(사진에 GPS도 없음) → 📸 위치 캡처'),p.nPh<nd?`${T?'원경·근경·누수사진':'현장사진'} ${p.nPh}/${nd}장`:'',p.rec?'':(T?'📋 현장 일지(💧 누수탐사) 없음 → 블록명·관종·원인 빈칸':'📋 현장 일지 없음 → 시각·원인 빈칸')].filter(Boolean);if(p.ext)pv.insertAdjacentHTML('beforeend',`<p class="hint">📎 추가사진 ${p.ext}장 → ${cvs.length-1}쪽 더 (모두 ${cvs.length}쪽)</p>`);
+  const p=LDV.info||{},nd=T?8:4,t=[p.loc?'':(ldgLocSrc(no)?'위치도 자동 캡처 실패 → 📸 위치 캡처로 직접':'위치도 없음(사진에 GPS도 없음) → 📸 위치 캡처'),p.nPh<nd?`${T?'원경·근경·누수사진':'현장사진'} ${p.nPh}/${nd}장`:'',p.rec?'':(T?'📋 현장 일지(💧 누수탐사) 없음 → 블록명·관종·원인 빈칸':'📋 현장 일지 없음 → 시각·원인 빈칸')].filter(Boolean);if(p.lr)pv.insertAdjacentHTML('beforeend',`<p class="hint">📒 현장 일지가 없어 넣은 ${T?'누수 대장(엑셀 누수탐사총괄표)':'민원 대장(엑셀 리스트(매크로용))'} 줄로 칸을 채웠습니다. ${T?'주소는':'현장주소·대리인은'} 위 칸 값을 씁니다.</p>`);if(p.ext)pv.insertAdjacentHTML('beforeend',`<p class="hint">📎 추가사진 ${p.ext}장 → ${cvs.length-1}쪽 더 (모두 ${cvs.length}쪽)</p>`);
   pv.insertAdjacentHTML('beforeend',`<p class="hint" style="color:${t.length?'#b45309':'#15803d'}">${t.length?'⚠ '+esc(t.join(' · ')):'✓ 칸이 모두 찼습니다.'}</p>`);
   w.querySelectorAll('.ldvOut [data-a]').forEach(b=>b.disabled=false)}
  catch(e){pv.innerHTML=`<p class="hint" style="color:#b91c1c">대장을 그리지 못했습니다: ${esc((e&&e.message)||String(e))}</p>`}}
@@ -17901,7 +17914,7 @@ async function ldvDraw(no){const P=ldgPhotos(no),rec=ldvRecOf(no)||{},W=1240,H=1
  const loc=P.loc,phs=P.out.filter(o=>o.kind==='현장사진'&&o.k>=1&&o.k<=4),det=P.out.filter(o=>o.kind==='상세도'),ext=P.out.filter(o=>o.kind==='현장사진'&&o.k>4).sort((a,b)=>a.k-b.k).concat(P.out.filter(o=>o.kind==='추가사진')),ms=[loc,...phs.map(o=>o.m),...det.map(o=>o.m),...ext.map(o=>o.m)].filter(Boolean);
  const bl=await ldgBlobs(ms),img=new Map();for(let i=0;i<ms.length;i++)img.set(ms[i].id,await ldvImgOf(bl[i]));
  const blk=(()=>{try{const gg=loc&&PH.gOf.get(loc.id);return gg?phGBlk(gg):''}catch(_){return ''}})();
- LDV.info={loc:!!loc,nPh:phs.length,rec:!!rec.no,ext:ext.length};
+ LDV.info={loc:!!loc,nPh:phs.length,rec:!!rec.no,lr:!!rec._lr,ext:ext.length};
  const FN=(w,sz)=>`${w} ${sz}px "Noto Sans KR","Malgun Gothic",sans-serif`,ln='#334155';g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textBaseline='middle';
  const box=(x,y,w,h,fill)=>{if(fill){g.fillStyle=fill;g.fillRect(x,y,w,h)}g.strokeStyle=ln;g.lineWidth=1.5;g.strokeRect(x,y,w,h)};
  const txt=(t,x,y,w,h,o={})=>{t=String(t??'');g.fillStyle=o.c||'#0f172a';let sz=o.sz||22;g.font=FN(o.b?700:400,sz);while(sz>11&&g.measureText(t).width>w-14){sz--;g.font=FN(o.b?700:400,sz)}g.textAlign=o.al||'center';g.fillText(t,o.al==='left'?x+10:x+w/2,y+h/2+1,w-12)};
@@ -17949,7 +17962,7 @@ async function lkDraw(no){const P=ldgPhotos(no,'lk'),rec=ldvRecOf(no,'lk')||{},W
  const loc=P.loc,phs=P.out.filter(o=>o.kind==='현장사진'&&o.k>=1&&o.k<=8),ext=P.out.filter(o=>o.kind==='현장사진'&&o.k>8).sort((a,b)=>a.k-b.k).concat(P.out.filter(o=>o.kind==='상세도'||o.kind==='추가사진')),ms=[loc,...phs.map(o=>o.m),...ext.map(o=>o.m)].filter(Boolean);
  const bl=await ldgBlobs(ms),img=new Map();for(let i=0;i<ms.length;i++)img.set(ms[i].id,await ldvImgOf(bl[i]));
  const blk=rec.blk||(()=>{try{const gg=loc&&PH.gOf.get(loc.id);return gg?phGBlk(gg):''}catch(_){return ''}})(),X=ldxOf(no);
- LDV.info={loc:!!loc,nPh:phs.length,rec:!!rec.no,ext:ext.length};
+ LDV.info={loc:!!loc,nPh:phs.length,rec:!!rec.no,lr:!!rec._lr,ext:ext.length};
  const FN=(w,sz)=>`${w} ${sz}px "Noto Sans KR","Malgun Gothic",sans-serif`,ln='#334155',LB='#eef2ff';g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textBaseline='middle';
  const box=(x,y,w,h,fill)=>{if(fill){g.fillStyle=fill;g.fillRect(x,y,w,h)}g.strokeStyle=ln;g.lineWidth=1.5;g.strokeRect(x,y,w,h)};
  const txt=(t,x,y,w,h,o={})=>{t=String(t??'');g.fillStyle=o.c||'#0f172a';let sz=o.sz||20;g.font=FN(o.b?700:400,sz);while(sz>10&&g.measureText(t).width>w-12){sz--;g.font=FN(o.b?700:400,sz)}g.textAlign=o.al||'center';g.fillText(t,o.al==='left'?x+9:x+w/2,y+h/2+1,w-10)};
