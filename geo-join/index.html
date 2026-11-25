@@ -2829,18 +2829,24 @@ function vpOpen(){const m=G('map');if(!m){msg('지도가 아직 준비되지 않
 <p class="uin" style="margin:0 0 4px">파란 점선 틀 안이 종이에 들어갑니다. 지도를 끌어 틀에 맞추세요.</p>
 <label class="uif">용지<select data-vo="p">${op(['A4','A3'],VP.o.p)}</select></label>
 <label class="uif">방향<select data-vo="ori"><option value="l"${VP.o.ori!=='p'?' selected':''}>가로</option><option value="p"${VP.o.ori==='p'?' selected':''}>세로</option></select></label>
-<label class="uif">축척<select data-vo="sc">${op(VP_SC,VP.o.sc,x=>x?'1:'+vpFmt(x):'화면 그대로')}</select></label>
-<label class="uif">화질<select data-vo="hq"><option value="1"${VP.o.hq?' selected':''}>선명 (지도를 2배로 다시 그림)</option><option value="0"${VP.o.hq?'':' selected'}>보통 (빠름)</option></select></label>
+<label class="uif">축척<select data-vo="sc">${op(VP_SC,VP_SC.includes(+VP.o.sc)?VP.o.sc:'u',x=>x?'1:'+vpFmt(x):'화면 그대로')}<option value="u"${VP_SC.includes(+VP.o.sc)?'':' selected'}>사용자 축척 (직접 입력)</option></select></label>
+<label class="uif" data-vp-scw${VP_SC.includes(+VP.o.sc)?' style="display:none"':''}>사용자 축척<span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;max-width:66%"><b>1 :</b><input data-vp-scu type="text" inputmode="numeric" maxlength="9" placeholder="예: 3500" value="${VP_SC.includes(+VP.o.sc)?(VP.o.scU||''):VP.o.sc}" style="flex:1;min-width:0"></span></label>
+<label class="uif">화질<select data-vo="hq"><option value="1"${VP.o.hq?' selected':''}>선명 (화면 그대로 · 해상도 2배)</option><option value="0"${VP.o.hq?'':' selected'}>보통 (빠름)</option></select></label>
 <label class="uif">제목<input data-vp-ttl type="text" maxlength="60" style="flex:1;min-width:0;max-width:66%"></label>
 <label class="uif">비고<input data-vp-memo type="text" maxlength="80" placeholder="예: 11월 누수 보수 구간" style="flex:1;min-width:0;max-width:66%"></label>
 <label class="uir"><input type="checkbox" data-vo="leg"${VP.o.leg?' checked':''}> 범례 넣기 (켜진 레이어 · 틀 안 시설물)</label>
+<label class="uir"><input type="checkbox" data-vo="me"${VP.o.me?' checked':''}> 내 위치 파란 점 넣기</label>
 <div class="uib"><button type="button" class="btn" data-vp="pdf">🖨 PDF · 인쇄</button><button type="button" class="btn" data-vp="png">🖼 그림(PNG)</button><button type="button" class="btn" data-vp="hwpx">📝 한글(HWPX)</button></div>
 <p class="uin" data-vp-st></p>
 <p class="uin">고객 이름·연락처가 든 정보창은 가려서 나갑니다. 관로가 보이면 '대외비'가 붙습니다. 만든이: 구병순</p>`;
   mc.appendChild(p);VP.el=p;try{L.DomEvent.disableClickPropagation(p);L.DomEvent.disableScrollPropagation(p)}catch(_){}
   const fr=document.createElement('div');fr.className='vpfrm np';fr.innerHTML='<b></b>';mc.appendChild(fr);VP.fr=fr;
-  p.addEventListener('change',e=>{const s=e.target.closest('[data-vo]');if(!s)return;const k=s.dataset.vo;VP.o[k]=s.type==='checkbox'?(s.checked?1:0):(k==='sc'||k==='hq')?+s.value:s.value;vpSave();if(k==='sc'||k==='p'||k==='ori')vpFitZoom();vpDraw()});
-  p.addEventListener('input',e=>{if(e.target.matches('[data-vp-ttl]'))VP.ttlEd=!!e.target.value.trim()});
+  p.addEventListener('change',e=>{const s=e.target.closest('[data-vo]');if(!s)return;const k=s.dataset.vo;
+   /* 2026-11-25 사용자 축척(직접 입력): 고르면 입력 칸을 보이고, 처음엔 지금 틀 축척을 100 단위로 넣어 둠 */
+   if(k==='sc'){const w=p.querySelector('[data-vp-scw]'),u=s.value==='u';w.style.display=u?'':'none';if(u){const I=p.querySelector('[data-vp-scu]');let v=+VP.o.scU||Math.max(100,Math.round(vpScaleOf(vpRect())/100)*100);VP.o.scU=v;I.value=v;VP.o.sc=v;vpSave();vpFitZoom();vpDraw();I.focus();I.select();return}}
+   VP.o[k]=s.type==='checkbox'?(s.checked?1:0):(k==='sc'||k==='hq')?+s.value:s.value;vpSave();if(k==='sc'||k==='p'||k==='ori')vpFitZoom();vpDraw()});
+  p.addEventListener('input',e=>{if(e.target.matches('[data-vp-ttl]'))VP.ttlEd=!!e.target.value.trim();
+   if(e.target.matches('[data-vp-scu]')){const v=parseInt(String(e.target.value).replace(/[^\d]/g,''),10);if(v>=100&&v<=500000){VP.o.sc=v;VP.o.scU=v;vpSave();clearTimeout(VP.scT);VP.scT=setTimeout(()=>{vpFitZoom();vpDraw()},400)}}});
   p.addEventListener('click',e=>{const b=e.target.closest('[data-vp]');if(!b)return;const a=b.dataset.vp;if(a==='x')vpClose();else vpOut(a)});
   VP.ev=()=>vpDraw()}
  VP.el.hidden=false;VP.fr.hidden=false;VP.ttlEd=false;m.on('move zoom resize',VP.ev);vpFitZoom();vpDraw();msg('🖨 지금 화면 출력: 틀 안이 종이에 들어갑니다.')}
@@ -2870,11 +2876,13 @@ async function vpMake(st){const m=G('map'),mc=m.getContainer(),M=vpMM(),dpm=(VP.
  const c0=m.getCenter(),z0=m.getZoom(),r0=vpRect();const nw=m.containerPointToLatLng([r0.x,r0.y]),se=m.containerPointToLatLng([r0.x+r0.w,r0.y+r0.h]),fc=m.containerPointToLatLng([r0.x+r0.w/2,r0.y+r0.h/2]);
  const cover=document.createElement('div');cover.className='vpcov';cover.innerHTML='<div>🖨 출력 그림 만드는 중…</div>';document.body.appendChild(cover);
  VP.el.style.visibility='hidden';VP.fr.style.visibility='hidden';m.off('move zoom resize',VP.ev);
- const st0=mc.getAttribute('style');let big=false;
- try{let need=!r0.fit?Math.ceil(Math.log2(Math.max(r0.w/vpAvail().w,r0.h/vpAvail().h))*2)/2:0;
-  if(VP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);
-   m.invalidateSize({pan:false});need-=1}
-  m.setView(fc,z0-need,{animate:false});st('배경지도·관로를 다시 그리는 중…');await vpWait(need||big?1800:300);
+ /* 2026-11-25 화면과 똑같이(A안): 예전 '선명'은 지도 칸을 2배로 키우고 확대 단계를 +1 해서 다시 그려 라벨 수·배경 글씨·아이콘 크기가 화면과 달라졌음.
+    이제 확대 단계·칸 크기는 그대로 두고, 관로·시설물·라벨 캔버스만 해상도를 2배로 다시 그리고 핀·아이콘은 html2canvas 배율로 찍음 */
+ const rt0=L.Browser&&L.Browser.retina;let hi=false;window.SHOT_NOME=!VP.o.me;
+ try{const need=!r0.fit?Math.ceil(Math.log2(Math.max(r0.w/vpAvail().w,r0.h/vpAvail().h))*2)/2:0;
+  if(need)m.setView(fc,z0-need,{animate:false});
+  if(VP.o.hq){hi=true;window.SHOT_DPR=2;try{L.Browser.retina=true}catch(_){}}
+  if(need||hi){st('관로·시설물을 선명하게 다시 그리는 중…');m.fire('moveend');await vpWait(need?1800:700)}else await vpWait(200);
   const p1=m.latLngToContainerPoint(nw),p2=m.latLngToContainerPoint(se),fw=p2.x-p1.x,fh=p2.y-p1.y,tw=M.mw*dpm,kk=Math.max(1,Math.min(3,tw/fw));
   st('지도를 찍는 중…');const B=await F('mapShotBase',[],0,null,kk,{dom:true});if(!B)throw new Error('지도 캡처 함수를 찾지 못했습니다');
   const P=G('PIPE'),secret=!!P&&[P.layer,P.layerS].some(l=>l&&m.hasLayer(l)),scale=fw*vpMpp(m.getZoom(),m.getCenter().lat)/(M.mw/1000);
@@ -2882,8 +2890,8 @@ async function vpMake(st){const m=G('map'),mc=m.getContainer(),M=vpMM(),dpm=(VP.
   let blk='';try{const cc=m.containerPointToLatLng([p1.x+fw/2,p1.y+fh/2]);blk=F('blkAt',cc.lng,cc.lat)||'';bb.c=cc}catch(_){}
   const leg=VP.o.leg?await vpLegend(bb):[];
   return vpCompose(B,{x:p1.x*B.k,y:p1.y*B.k,w:fw*B.k,h:fh*B.k},{secret,scale,blk,leg,bb,dpm,M})}
- finally{if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}
-  m.setView(c0,z0,{animate:false});cover.remove();VP.el.style.visibility='';VP.fr.style.visibility='';m.on('move zoom resize',VP.ev);vpDraw()}}
+ finally{window.SHOT_NOME=false;if(hi){window.SHOT_DPR=0;try{L.Browser.retina=rt0}catch(_){}}
+  m.setView(c0,z0,{animate:false});if(hi)m.fire('moveend');cover.remove();VP.el.style.visibility='';VP.fr.style.visibility='';m.on('move zoom resize',VP.ev);vpDraw()}}
 function vpCompose(B,src,o){const {M,dpm}=o,X=v=>Math.round(v*dpm),W=X(M.pw),H=X(M.ph),cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
  const s=M.s,FT=(w,pt)=>`${w} ${Math.round(pt*.3528*dpm*s)}px "Noto Sans KR","Malgun Gothic",sans-serif`,ink='#111827',mute='#475569',ac='#2563eb';
  g.fillStyle='#fff';g.fillRect(0,0,W,H);
@@ -5400,7 +5408,8 @@ const BG_FILL=()=>document.documentElement.classList.contains('dark')?'#111827':
 let baseOsm=null,map=null,shpL,mkL,lblL,rawFC=null,lyrCtl=null,vwL=[];const pks=[];
 /* PC 큰 화면 지도 끊김 줄이기: ① PC도 폰처럼 배경 타일은 손 뗀 뒤 받기 ② 큰 화면(약 1280×800 이상)은 지도 캔버스 배율을 낮춰 메모리·다시 그리기 부담을 줄임 (폰은 그대로) */
 function mapBig(){return(innerWidth||0)*(innerHeight||0)>=1e6}
-function mapDpr(cap){const d=window.devicePixelRatio||1;if(mapBig())return d>=2&&innerWidth*innerHeight<1.6e6?Math.min(d,2):1;return cap?Math.min(d,cap):d}
+/* 🖨 지금 화면 출력 '선명': 확대 단계는 그대로, 지도 캔버스만 잠깐 해상도 N배 (window.SHOT_DPR, 2026-11-25) */
+function mapDpr(cap){if(window.SHOT_DPR)return window.SHOT_DPR;const d=window.devicePixelRatio||1;if(mapBig())return d>=2&&innerWidth*innerHeight<1.6e6?Math.min(d,2):1;return cap?Math.min(d,cap):d}
 try{if(L.GridLayer)L.GridLayer.prototype.options.updateWhenIdle=true;if(L.Browser&&mapBig())L.Browser.retina=mapDpr()>=2}catch(_){}
 try{
  map=L.map('map',{preferCanvas:true,maxZoom:MAP_MAXZ,zoomSnap:.5}).setView(V0?[V0[0],V0[1]]:SITE.c,V0?V0[2]:11);
@@ -11027,10 +11036,13 @@ async function mapShotDom(S,zMin,zMax){const {g,k,W,Hm}=S,mc=map.getContainer(),
  if(!panes.length)return 0;
  panes.forEach(p=>p.querySelectorAll('.leaflet-popup').forEach(pp=>{if(mshotPii(pp)){const r=pp.getBoundingClientRect();masks.push(r)}}));
  const keep=new Set(panes);mc.setAttribute('data-mshot','1');let cv;try{cv=await html2canvas(mc,{backgroundColor:null,scale:k,logging:false,useCORS:true,imageTimeout:8000,
-  onclone:d=>{const c=d.querySelector('[data-mshot]');if(c)c.style.cssText+=';background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important'},
+  onclone:d=>{const c=d.querySelector('[data-mshot]');if(c)c.style.cssText+=';background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important'
+   /* 2026-11-25 지도 칸 둘레(리본·패널 등)를 빼고 복제하면 칸이 0 크기로 줄어 핀·사진·소블록 이름이 통째로 빠지던 것: 복제본 칸 크기를 화면 그대로 고정 */
+   +`;position:fixed!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;margin:0!important;transform:none!important;width:${R.width}px!important;height:${R.height}px!important;max-width:none!important;max-height:none!important`},
   ignoreElements:el=>{if(el===mc||el===mp||el.contains&&el.contains(mc))return false;if(!mc.contains(el))return !(el.tagName==='HEAD'||el.tagName==='STYLE'||el.tagName==='LINK');
    if(el.parentElement===mc)return el!==mp;if(el.parentElement===mp)return !keep.has(el);if(el.tagName==='CANVAS')return true;
-   /* 2026-11-24 🍚 현장 맛집 아이콘·정보창은 출력·캡처 그림에 넣지 않음 (사용자 요청) */if(el.classList&&(el.classList.contains('fdmk')||el.classList.contains('leaflet-popup')&&el.querySelector('.fdpop')))return true;
+   /* 2026-11-24 🍚 현장 맛집 아이콘·정보창은 출력·캡처 그림에 넣지 않음 (사용자 요청) */if(el.classList&&window.SHOT_NOME&&el.classList.contains('fm-me'))return true;/* 2026-11-25 출력에서 내 위치 파란 점 빼기(기본) */
+   if(el.classList&&(el.classList.contains('fdmk')||el.classList.contains('leaflet-popup')&&el.querySelector('.fdpop')))return true;
    if(el.classList&&(el.classList.contains('leaflet-control-container')||el.classList.contains('leaflet-popup')&&mshotPii(el)))return true;return false}})}finally{mc.removeAttribute('data-mshot')}
  g.drawImage(cv,0,0,W,Hm);
  masks.forEach(r=>{const x=(r.left-R.left)*k,y=(r.top-R.top)*k,w=r.width*k,h=Math.max(40*k,r.height*k-12*k);g.save();g.fillStyle='rgba(241,245,249,.97)';g.strokeStyle='#94a3b8';g.lineWidth=1.5*k;
@@ -15363,7 +15375,7 @@ function mkVis(){if(typeof UI!=='undefined'&&UI.allOff&&!MK.on)return[];const dg
 function mkBB(m){let b=MK.bb.get(m);if(!b||b.n!==m.p.length||b.u!==m.u){b={n:m.p.length,u:m.u,b:L.latLngBounds(m.p)};MK.bb.set(m,b)}return b.b}
 function mkPaint(){mkPane();const cv=MK.cv;if(!cv)return;const L0=mkVis(),dr=MK.dr;
  if(!L0.length&&!dr){if(cv.width){cv.width=0;cv.height=0}MK.tl=null;return}
- const sz=map.getSize(),dpr=Math.min(window.devicePixelRatio||1,sz.x*sz.y>1.2e6?1.5:2),W=Math.round(sz.x*dpr),H=Math.round(sz.y*dpr);
+ const sz=map.getSize(),dpr=window.SHOT_DPR||Math.min(window.devicePixelRatio||1,sz.x*sz.y>1.2e6?1.5:2),W=Math.round(sz.x*dpr),H=Math.round(sz.y*dpr);
  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;cv.style.width=sz.x+'px';cv.style.height=sz.y+'px'}
  L.DomUtil.setPosition(cv,map.containerPointToLayerPoint([0,0]));MK.tl=map.containerPointToLatLng([0,0]);
  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,sz.x,sz.y);
