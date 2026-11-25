@@ -5093,6 +5093,11 @@ function uiInit(){if(!map)return;plblInit();
 <label class="uif">앱을 열 때<select id="uiFsStart" class="msel">${opt([['auto','자동 (휴대폰은 전체 지도)'],['on','항상 전체 지도'],['off','평소 화면']])}</select></label>
 <label class="uif">주소창 숨기기 (브라우저 전체화면)<select id="uiFsNat" class="msel">${opt([['on','씀 — 들어갈 때 크롬 안내 문구가 뜸'],['off','쓰지 않음 — 문구 없음, 주소창은 보임']])}</select></label>
 <p class="uin">전체 지도로 시작하면 화면을 처음 누를 때 주소창까지 숨긴 전체화면이 됩니다 (브라우저 규칙상 누르기 전에는 못 켬). 처음 쓰는 기기는 자료 등록을 위해 평소 화면으로 시작합니다.<br>📲 크롬 메뉴 ⋮ › <b>홈 화면에 추가</b>(앱 설치)로 만든 아이콘으로 열면 안내 문구 없이 처음부터 꽉 찬 화면이 됩니다.</p>
+<div class="uig">🎄 계절 장식</div>
+<label class="uif">머리글 장식<select id="uiSzn" class="msel">${opt([['auto','자동 — 날짜 따라 바뀜'],['off','끄기'],['winter','❄ 겨울'],['xmas','🎄 성탄'],['newyear','🌅 새해'],['seol','🧧 설날'],['spring','🌸 봄'],['summer','☀ 여름'],['autumn','🍁 가을'],['chuseok','🌕 한가위']])}</select></label>
+<label class="uif">계절 현장 안내 카드<select id="uiSznCard" class="msel">${opt([['on','하루 한 번 띄움'],['off','띄우지 않음']])}</select></label>
+<div class="uib"><button type="button" id="uiSznNow" class="btn ol">👀 지금 안내 카드 보기</button></div>
+<p class="uin">안내 카드는 8초 뒤 저절로 닫힙니다. 제목 옆 계절 배지와 머리글 아래 장식 줄만 바뀌고 지도에는 아무것도 그리지 않습니다. 자동이면 겨울(12~2월)·성탄(12/18~26)·새해(12/29~1/5)·설날·한가위(전 3일~뒤 2일)·봄·여름·가을로 바뀝니다.</p>
 <div class="uig">⇅ 아이콘 줄</div>
 <div class="uib"><button type="button" id="uiChOrd" class="btn ol">⇅ 아이콘 순서 · 줄 위치(위/왼쪽)</button></div>
 <div class="chzRow" title="지도 위 아이콘 줄 칩 크기 (이 기기만)"><span>아이콘 크기</span><input type="range" id="uiChZ" min="80" max="130" step="5" aria-label="아이콘 크기"><b id="uiChZv">100%</b><button type="button" id="uiChZ0" class="btn ol" title="100%로">↺</button></div>
@@ -5141,7 +5146,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiLblPx').onchange=e=>{UI.lblPx=+e.target.value||11;uiSave();plblSoon();facDraw();ptDraw()};
  q('uiAll').onclick=uiAllToggle;{const r=q('uiPcZ'),v=q('uiPcZv'),sh=()=>{const z=pcZGet();r.value=z;v.textContent=z+'%'};sh();r.oninput=()=>{pcZSet(+r.value,false);sh()};r.onchange=()=>{pcZSet(+r.value,true);sh()};q('uiPcZ0').onclick=()=>{pcZSet(85,true);sh()}}q('uiZpos').onclick=()=>zpReset(true);q('uiChOrd').onclick=()=>chipOrdOpen();{const r=q('uiChZ'),v=q('uiChZv'),sh=()=>{const z=chipZGet();r.value=z;v.textContent=z+'%'};sh();r.oninput=()=>{chipZSet(+r.value,false);sh()};r.onchange=()=>{chipZSet(+r.value,true);sh()};q('uiChZ0').onclick=()=>{chipZSet(100,true);sh()}}
  q('uiFs').onclick=()=>{if(mapFsToggle)mapFsToggle();setTimeout(uiPanelSync,200)};
- q('uiSite').onclick=()=>siteSwitch();{const hb=q('uiHq');if(hb)hb.onclick=()=>{if(window.hqAdmin)hqAdmin()}}q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};
+ q('uiSite').onclick=()=>siteSwitch();{const hb=q('uiHq');if(hb)hb.onclick=()=>{if(window.hqAdmin)hqAdmin()}}q('uiFsNat').value=UI.fsNat==='off'?'off':'on';q('uiFsNat').onchange=e=>{UI.fsNat=e.target.value;uiSave()};q('uiFsStart').value=UI.fsStart||'auto';q('uiFsStart').onchange=e=>{UI.fsStart=e.target.value;uiSave()};if(q('uiSzn')){q('uiSzn').value=UI.szn||'auto';q('uiSzn').onchange=e=>{UI.szn=e.target.value;uiSave();if(window.szn)szn.apply()};q('uiSznCard').value=UI.sznCard==='off'?'off':'on';q('uiSznCard').onchange=e=>{UI.sznCard=e.target.value;uiSave()};q('uiSznNow').onclick=()=>{if(window.szn)szn.card(true)}}
  const tb=q('uiBtn');if(tb)tb.onclick=()=>uiPanel();
  document.addEventListener('keydown',e=>{if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.code==='KeyH'||e.key==='h'||e.key==='H'||e.key==='ㅗ')){e.preventDefault();uiAllToggle()}
   else if(e.key==='Escape'&&!p.hidden&&!document.body.classList.contains('fsOn'))uiPanel(false)});
@@ -7662,7 +7667,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|chipgc|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs)$/;
+const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|chipgc|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs|szn-day|szn-skip)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
@@ -20403,6 +20408,99 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   ov.addEventListener('input',e=>{const f=e.target.dataset.f;if(!f)return;const[i,k]=f.split(':'),d=D.dr[+i];if(!d)return;if(k[0]==='w')d.x[3][+k[1]]=e.target.value;else d.x[+k]=e.target.value});
   ['pointerdown','touchstart','mousedown','wheel'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));
   kbLoad().then(()=>{if(D.st)render()});load()};
+})();
+</script>
+<script>/* 🎄 계절 장식 C안 (2026-11-25): 날짜에 따라 머리글 장식이 저절로 바뀜 + 하루 한 번 계절 현장 안내 카드.
+ 지도 위에는 아무것도 그리지 않음(CSS 몇 줄·카드 하나라 속도 영향 없음). ⚙ 앱 설정 › 🎄 계절 장식에서 끄기·계절 고르기.
+ 설정 UI.szn(auto|off|테마 id)·UI.sznCard(on|off)는 백업에 따라감. 오늘 카드 본 날 geo-szn-day·이번 계절 안 보기 geo-szn-skip은 기기만(BK_SKIP).
+ 설날·추석 양력 날짜는 한국천문연구원 음력 기준 표(2026~2031). 그 뒤 해는 표에 넣어야 함(없으면 계절 장식만). */
+(function(){
+ var SEOL=['2026-02-17','2027-02-07','2028-01-27','2029-02-13','2030-02-03','2031-01-23'],
+     CHUS=['2026-09-25','2027-09-15','2028-10-03','2029-09-22','2030-09-12','2031-10-01'];
+ var T={
+  winter:{n:'겨울',ic:'❄',c:['#ffffff'],snow:1,tip:['계량기·노출관 <b>동파 주의</b> — 보온재·보호통 뚜껑 점검','새벽 <b>빙판길</b>·맨홀 뚜껑 미끄럼 조심','동파 민원 사진은 📷 찍을 때 <b>민원대응</b>으로 분류']},
+  xmas:{n:'성탄',ic:'🎄',c:['#ef4444','#facc15','#22c55e','#3b82f6'],hat:1,tip:['연말 마무리 — 💾 <b>백업</b> 한 번 만들어 두기','계량기·노출관 <b>동파 주의</b>, 새벽 빙판길 조심','즐거운 성탄 보내세요 🎅']},
+  newyear:{n:'새해',ic:'🌅',c:['#f59e0b','#fde68a','#f97316','#fbbf24'],tip:['새해 복 많이 받으세요','새해 첫 💾 <b>백업</b>으로 지난해 자료 지키기','한파 — 계량기 <b>동파</b>·도로 결빙 주의']},
+  seol:{n:'설날',ic:'🧧',c:['#dc2626','#facc15','#dc2626','#2563eb'],tip:['연휴 <b>비상근무</b> 연락처·당번 확인','연휴 전 💾 <b>백업</b>·⬇ 지금 받기','귀성 차량 많은 길 — 굴착·현장 작업 안전 표지 확인']},
+  spring:{n:'봄',ic:'🌸',c:['#f9a8d4','#fbcfe8','#86efac','#f472b6'],tip:['<b>해빙기</b> — 땅이 녹으며 관 이음부 누수가 늘 수 있음, 누수 탐사 점검','겨울 보온재 걷기·계량기함 정리','황사·미세먼지 심한 날 마스크']},
+  summer:{n:'여름',ic:'☀',c:['#38bdf8','#0ea5e9','#7dd3fc','#22d3ee'],tip:['장마 전 맨홀·밸브실 <b>침수</b>·배수 점검','<b>폭염</b> — 한낮 작업 피하고 물·그늘 쉼','낙뢰·정전 때 가압장 상태 확인']},
+  autumn:{n:'가을',ic:'🍁',c:['#f97316','#dc2626','#facc15','#b45309'],tip:['<b>동절기 대비</b> — 계량기 보온재·보호통 미리 점검','해가 짧아짐 — 저녁 작업 반사 조끼·경광등','낙엽 덮인 밸브실·맨홀 뚜껑 확인']},
+  chuseok:{n:'한가위',ic:'🌕',c:['#facc15','#fde68a','#f59e0b','#a3e635'],tip:['연휴 <b>비상근무</b> 연락처·당번 확인','연휴 전 💾 <b>백업</b>·⬇ 지금 받기','넉넉한 한가위 보내세요']}
+ };
+ var ORD=['winter','xmas','newyear','seol','spring','summer','autumn','chuseok'];
+ function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+ function near(d,list,a,b){for(var i=0;i<list.length;i++){var t=new Date(list[i]+'T00:00:00'),k=Math.round((d-t)/864e5);if(k>=-a&&k<=b)return k}return null}
+ function auto(d){var m=d.getMonth()+1,day=d.getDate();d=new Date(d.getFullYear(),m-1,day);
+  if(m===12&&day>=18&&day<=26)return 'xmas';
+  if((m===12&&day>=29)||(m===1&&day<=5))return 'newyear';
+  if(near(d,SEOL,3,2)!=null)return 'seol';
+  if(near(d,CHUS,3,2)!=null)return 'chuseok';
+  return m===12||m<=2?'winter':m<=5?'spring':m<=8?'summer':'autumn'}
+ function U(){var u=window.UI;if(!u){try{u=JSON.parse(localStorage.getItem('geo-ui')||'{}')}catch(_){u={}}}return u||{}}
+ function LG(k){try{return localStorage.getItem(k)||''}catch(_){return ''}}
+ function LS(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+ function cur(){var s=U().szn||'auto';if(s==='off')return null;return T[s]?s:auto(new Date())}
+ /* 머리글 배지 글: 성탄 앞 12월은 D-n, 설날 앞은 D-n */
+ function badge(id){var d=new Date(),t=T[id],tx=t.ic+' '+t.n,sh=t.ic+' '+t.n;
+  var xm=new Date(d.getFullYear(),11,25),k=Math.ceil((xm-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+  if((id==='winter'||id==='xmas')&&d.getMonth()===11&&k>0){tx+=' · 성탄 D-'+k;sh=t.ic+' D-'+k}
+  else if(id==='xmas'&&k===0){tx='🎄 메리 크리스마스';sh='🎄 성탄'}
+  else if(id==='seol'){var s=near(new Date(d.getFullYear(),d.getMonth(),d.getDate()),SEOL,3,2);if(s<0){tx+=' D'+s;sh=tx}}
+  return [tx,sh]}
+ var css=document.createElement('style');css.textContent=
+ '.szBd{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:-.2px;color:#0c4a6e;background:#f0f9ff;border:1px solid #7dd3fc;vertical-align:middle;white-space:nowrap;line-height:1.5;font-family:inherit}'+
+ 'header h1 .szBd{font-size:11px;padding:0 7px}html.dark .szBd{color:#e0f2fe;background:#0c4a6e;border-color:#38bdf8}'+
+ '.szBd .s{display:none}@media(max-width:600px){.szBd .l{display:none}.szBd .s{display:inline}}@media(max-width:379px){header h1 .szBd{display:none}}'+
+ '.szSt{position:absolute;left:0;right:0;bottom:-6px;height:9px;pointer-events:none;z-index:5}'+
+ '.szSt.snow{bottom:-7px;height:10px;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2760%27 height=%2710%27%3E%3Cpath d=%27M0 0h60v3c-6 0-6 6-12 6s-6-4-12-4-7 5-13 5-6-6-12-6S5 3 0 3z%27 fill=%27%23fff%27/%3E%3C/svg%3E") 0 0/60px 10px repeat-x;filter:drop-shadow(0 1px 1.5px rgba(30,64,120,.4))}'+
+ '.szSt.lt::before{content:"";position:absolute;left:0;right:0;top:-2px;height:6px;border-bottom:1.2px solid rgba(100,116,139,.55);border-radius:0 0 50% 50%/0 0 100% 100%}'+
+ '.szHw{position:relative;display:inline-flex;flex:none}.szHat{position:absolute;left:10%;top:-20%;width:56%;transform:rotate(-14deg);pointer-events:none}'+
+ '.szCard{position:fixed;left:50%;bottom:46px;transform:translateX(-50%);z-index:9000;width:min(430px,calc(100% - 24px));background:#fff;color:#1e293b;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,.28);border:1px solid #bae6fd;overflow:hidden;font-family:"Noto Sans KR",system-ui,sans-serif}'+
+ '@media(max-width:600px){.szCard{bottom:auto;top:calc(64px + env(safe-area-inset-top))}}'+
+ '.szCard .h{display:flex;align-items:center;gap:8px;padding:9px 12px;color:#fff;background:linear-gradient(135deg,#0369a1,#4338ca)}.szCard .h i{font-style:normal;font-size:20px}.szCard .h b{font-size:14.5px}.szCard .h small{margin-left:auto;font-size:11.5px;opacity:.9}'+
+ '.szCard ul{margin:0;padding:9px 14px 4px 30px;font-size:13px;line-height:1.7}'+
+ '.szCard .f{display:flex;gap:6px;justify-content:flex-end;padding:6px 10px 10px}.szCard .f button{font:inherit;font-size:12px;padding:5px 11px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#334155;cursor:pointer;min-height:30px}.szCard .f button.p{background:#4f46e5;border-color:#4f46e5;color:#fff}'+
+ '.szCard .bar{height:3px;background:#4f46e5;transform-origin:left;animation:szBar 8s linear forwards}.szCard:hover .bar,.szCard.hold .bar{animation-play-state:paused}@keyframes szBar{to{transform:scaleX(0)}}'+
+ 'html.dark .szCard{background:#1e293b;color:#e2e8f0;border-color:#334155}html.dark .szCard .f button{background:#334155;border-color:#475569;color:#e2e8f0}'+
+ '@media(prefers-reduced-motion:reduce){.szCard .bar{animation:none}}@media print{.szBd,.szSt,.szHat,.szCard{display:none!important}}';
+ document.head.appendChild(css);
+ var HAT='<svg class="szHat" viewBox="0 0 40 34" aria-hidden="true"><path d="M5 26C9 12 18 4 30 5c3 0 5 3 4 7-2-3-5-3-7-2 0 6 1 11 3 16z" fill="#dc2626"/><rect x="2" y="24" width="32" height="8" rx="4" fill="#fff" stroke="#e2e8f0"/><circle cx="34.5" cy="12.5" r="4.2" fill="#fff" stroke="#e2e8f0"/></svg>';
+ function strip(host,t){var s=document.createElement('div');s.className='szSt'+(t.snow?' snow':' lt');s.setAttribute('aria-hidden','true');
+  if(!t.snow){var c=t.c,g=[];for(var i=0;i<4;i++)g.push('radial-gradient(circle at 50% 65%,'+c[i%c.length]+' 2.4px,transparent 3px) '+(i*12)+'px 0/48px 9px repeat-x');s.style.background=g.join(',')}
+  if(getComputedStyle(host).position==='static')host.style.position='relative';host.appendChild(s)}
+ function hat(img,on){if(!img)return;var w=img.parentNode&&img.parentNode.classList&&img.parentNode.classList.contains('szHw')?img.parentNode:null;
+  if(on&&!w){w=document.createElement('span');w.className='szHw';img.parentNode.insertBefore(w,img);w.appendChild(img);w.insertAdjacentHTML('beforeend',HAT);img.addEventListener('load',hatVis)}
+  else if(!on&&w){w.parentNode.insertBefore(img,w);w.remove()}}
+ function hatVis(){document.querySelectorAll('.szHw').forEach(function(w){var i=w.querySelector('img'),h=w.querySelector('.szHat');if(h)h.style.display=i&&i.offsetWidth>0?'':'none'})}
+ function clear(){document.querySelectorAll('.szBd,.szSt').forEach(function(e){e.remove()});['gwmL','mL'].forEach(function(id){hat(document.getElementById(id),false)})}
+ function apply(){clear();var id=cur();document.documentElement.dataset.szn=id||'';if(!id)return;var t=T[id],b=badge(id);
+  function bd(){var e=document.createElement('span');e.className='szBd';e.title='계절 장식 · ⚙ 앱 설정 › 🎄 계절 장식에서 끄기';e.innerHTML='<span class="l">'+b[0]+'</span><span class="s">'+b[1]+'</span>';return e}
+  var gt=document.getElementById('gwTitle');if(gt){var sm=gt.querySelector('small');if(sm)sm.after(bd());strip(gt,t)}
+  var hd=document.querySelector('header'),sn=document.getElementById('siteNm');if(hd){if(sn)sn.after(bd());strip(hd,t)}
+  if(t.hat){hat(document.getElementById('gwmL'),true);hat(document.getElementById('mL'),true);hatVis()}}
+ /* 하루 한 번 현장 안내 카드: 8초 뒤 닫힘(누르고 있거나 마우스 올리면 멈춤). 잠금·퀴즈·자료 없음 카드가 닫힌 뒤 띄움 */
+ function skipKey(id){var d=new Date(),y=d.getFullYear();if(id==='winter'&&d.getMonth()<2)y--;return id+'|'+y}
+ function box(){return document.fullscreenElement||document.webkitFullscreenElement||document.body}
+ function card(force){var id=cur();if(!id)return;var u=U();if(!force&&(u.sznCard==='off'||LG('geo-szn-day')===ymd(new Date())||LG('geo-szn-skip')===skipKey(id)))return;
+  var o=document.querySelector('.szCard');if(o)o.remove();var t=T[id],m=new Date().getMonth()+1;
+  var c=document.createElement('div');c.className='szCard';c.setAttribute('role','status');
+  c.innerHTML='<div class="h"><i>'+t.ic+'</i><b>'+(/^(봄|여름|가을|겨울)$/.test(t.n)?m+'월 '+t.n+'철':t.n)+' 현장 안내</b><small>하루 한 번</small></div><ul>'+t.tip.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul><div class="f"><button type="button" data-a="skip">이번 '+(t.snow||/^(spring|summer|autumn)$/.test(id)?'계절':t.n)+' 안 보기</button><button type="button" class="p" data-a="ok">확인</button></div><div class="bar"></div>';
+  ['pointerdown','touchstart','mousedown','keydown'].forEach(function(e){c.addEventListener(e,function(ev){ev.stopPropagation();if(e!=='keydown')c.classList.add('hold')})});
+  var tm=null;function close(){clearTimeout(tm);c.remove()}
+  c.addEventListener('click',function(e){e.stopPropagation();var a=e.target.closest('[data-a]');if(a&&a.dataset.a==='skip')LS('geo-szn-skip',skipKey(id));if(a)close()});
+  c.querySelector('.bar').addEventListener('animationend',close);
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)tm=setTimeout(function(){if(!c.classList.contains('hold')&&!c.matches(':hover'))close()},8000);
+  LS('geo-szn-day',ymd(new Date()));box().appendChild(c)}
+ window.szn={apply:apply,card:card,cur:cur,auto:auto,T:T,ORD:ORD};
+ function boot(){apply();var t0=Date.now();(function wait(){
+   var busy=document.documentElement.classList.contains('locked')||document.getElementById('lockBox')||document.getElementById('qzBox')||document.querySelector('.pcm:not([hidden]),#rcvCard');
+   if(!busy&&Date.now()-t0>4000){card();return}if(Date.now()-t0<18e4)setTimeout(wait,1500)})();
+  try{var mo=new MutationObserver(function(){if(document.querySelector('.szHw'))hatVis()});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});mo.observe(document.body,{attributes:true,attributeFilter:['class']})}catch(_){}
+  window.addEventListener('resize',function(){if(document.querySelector('.szHw'))hatVis()});
+  /* 날짜가 바뀌면(밤새 켜 둔 기기) 장식 다시 */
+  var day=ymd(new Date());setInterval(function(){var d=ymd(new Date());if(d!==day){day=d;apply()}},6e5)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+ document.addEventListener('fullscreenchange',function(){var c=document.querySelector('.szCard');if(c&&c.parentNode!==box())box().appendChild(c)});
 })();
 </script>
 <script>/* 📲 홈 화면 추가 안내 띠 A안 (2026-11-21): 폰·태블릿에서 브라우저로 열면 아래쪽에 한 줄 띠.
