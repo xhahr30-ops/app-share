@@ -2726,7 +2726,7 @@ window.__restoreOrSample=async()=>{try{const r=await get();if(r&&r.text){quiet=t
 }catch(e){console.error(e);window.__errs&&__errs.push("patch6: "+(e&&e.message));setTimeout(()=>{try{toast("⚠️ 편집강화 오류(6): "+(e&&e.message),20000)}catch(_){}},1500)}
 /* ── v4: 진단 표시 · 말풍선 보강 · 도구줄 잠금 버튼 ── */
 try{(()=>{
-const bd=document.createElement('div');bd.textContent='스마트 물길해석 v43 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
+const bd=document.createElement('div');bd.textContent='스마트 물길해석 v44 ✔';bd.style.cssText='position:fixed;left:6px;bottom:34px;z-index:99;font:11px sans-serif;padding:1px 7px;border-radius:8px;background:#4f46e5;color:#fff;opacity:.9;pointer-events:none';document.body.appendChild(bd);setTimeout(()=>{bd.style.opacity=.35},8000);
 setTimeout(()=>{try{toast('지도 편집 강화 v8 적용됨 · 요소를 누르면 말풍선에 ⚡ 빠른 편집이 나옵니다.',5000)}catch(e){}},1800);
 // 말풍선이 어떤 경로로 다시 그려져도 빠른 편집을 다시 붙임
 const pop=$('pop');if(pop&&window.MutationObserver){const ob=new MutationObserver(()=>{if(!S.pop||pop.classList.contains('hidden')||pop.querySelector('.qe')||!window.__qeInject)return;ob.disconnect();try{window.__qeInject()}catch(e){console.error(e)}ob.observe(pop,{childList:true})});ob.observe(pop,{childList:true})}
@@ -6029,6 +6029,7 @@ async function rgeo(lon,lat){const ck=lat.toFixed(5)+','+lon.toFixed(5);if(CA.ca
  if(!r)throw er||new Error('주소를 찾지 못했습니다.');if(CA.cache.size>300)CA.cache.clear();CA.cache.set(ck,r);return r}
 // ── 말풍선
 function body(){const [mx,my]=CA.xy,ll=CA.ll,nr=near(mx,my),bk=blkAt(mx,my,nr),ep=crsCode();let h='<div class="ca-h"><b>📍 이 지점 주소</b><button type="button" class="ca-x" aria-label="닫기">✕</button></div>';
+ if(CA.ext&&CA.ext.x===mx&&CA.ext.y===my){try{h+=CA.ext.fn(mx,my,nr,bk)}catch(e){console.warn('ext',e)}}
  if(!ll)h+='<div class="ca-m">좌표계(EPSG)를 몰라 주소를 찾을 수 없습니다. 레이어 창에서 좌표계를 고르세요.</div>';
  else if(CA.err==='nokey')h+='<div class="ca-m">주소를 보려면 카카오 키나 브이월드 키가 필요합니다. <a href="#" class="ca-key">🔑 키 넣기</a></div>';
  else if(CA.err)h+=`<div class="ca-m ca-rd">${esc(CA.err)}</div>`;
@@ -6068,7 +6069,7 @@ function place(){if(!CA.pin)return;const c=MAP.cv;if(!CA.xy||!S.view||!c||CA.net
  if(!CA.open||!inV){CA.card.style.display='none';return}CA.card.style.display='';const w=CA.card.offsetWidth,h=CA.card.offsetHeight;
  const T0=c.offsetTop+4,B0=c.offsetTop+H-4;let l=x-w/2,t=y-40-h;if(t<T0){if(y+8+h<=B0)t=y+8;else{t=y-h/2;l=x+18+w<=c.offsetLeft+W-4?x+18:x-18-w}}l=Math.max(c.offsetLeft+4,Math.min(c.offsetLeft+W-w-4,l));t=Math.max(c.offsetTop+4,Math.min(c.offsetTop+H-h-4,t));
  CA.card.style.transform=`translate(${Math.round(l)}px,${Math.round(t)}px)`}
-function clear(){CA.xy=null;CA.ll=null;CA.r=null;CA.seq++;if(CA.pin){CA.pin.style.display='none';CA.card.style.display='none'}}
+function clear(){CA.ext=null;CA.xy=null;CA.ll=null;CA.r=null;CA.seq++;if(CA.pin){CA.pin.style.display='none';CA.card.style.display='none'}}
 async function show(mx,my){if(!S.view||!S.net)return;CA.xy=[mx,my];CA.net=S.net;CA.r=null;CA.err='';CA.open=true;const P=crs();let ll=null;
  if(P){try{const q=P.toLL(mx,my);if(q&&isFinite(q[0])&&isFinite(q[1])&&q[0]>=-180&&q[0]<=180&&q[1]>=-90&&q[1]<=90)ll=q}catch(e){}}
  CA.ll=ll;const my0=++CA.seq;render();if(!ll)return;
@@ -6105,6 +6106,51 @@ const st=document.createElement('style');st.textContent=`#map.m-addr{cursor:cros
 #gpMT [data-m="addr"] span{margin-left:2px;font-size:12px}`;document.head.appendChild(st);
 window.__gw41={CA,show,clear,rgeo,near,blkAt};
 })()}catch(e){console.warn('v41',e)}
+
+/* ════ v44 물길주소에서 위치 받기 (2026-11-25 B안) ════
+   스마트 물길주소 지도 길게 누르기(PC 오른쪽 클릭) 말풍선 '🌊 물길해석에서 보기' →
+   ① 이 탭이 열려 있으면 BroadcastChannel 'mulgil-goto' {go:{lat,lng,blk,site,sn,t}} → 이 탭이 그 위치로 이동, {ack:t} 답
+   ② 없으면 물길주소가 새 탭(이름 'mulgil-pn')을 ?lat=&lng=&blk=&site=&sn=&from=mulgil 로 엶 → 마지막 모델 복원 뒤 이동
+   이동: 경위도 → 지금 모델 좌표계(crs().fromLL) → 반경 약 120 m로 확대 → v41 주소 핀·말풍선 + '물길주소에서 온 위치' 줄
+   (물길주소 소블록, 가까운 관로, 모델 범위 밖이면 경고). 좌표·소블록만 주고받고 주소·고객 정보는 넘기지 않음. */
+try{(()=>{
+const G={ch:null,id:Math.random().toString(36).slice(2,9),pend:null};
+function seg(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy;let t=L?((px-ax)*dx+(py-ay)*dy)/L:0;t=Math.max(0,Math.min(1,t));return Math.hypot(px-ax-t*dx,py-ay-t*dy)}
+function nearLink(mx,my){const N=S.net&&S.net.nodes,LL=S.net&&S.net.links;if(!N||!LL)return null;let bi=-1,bd=1/0;
+ for(let i=0;i<LL.length;i++){const l=LL[i],a=N[l.n1-1],b=N[l.n2-1];if(!a||!b)continue;const xs=[a.x,...(l.vs||[]).map(v=>v[0]),b.x],ys=[a.y,...(l.vs||[]).map(v=>v[1]),b.y];
+  for(let j=0;j<xs.length-1;j++){if(!isFinite(xs[j])||!isFinite(xs[j+1]))continue;const d=seg(mx,my,xs[j],ys[j],xs[j+1],ys[j+1]);if(d<bd){bd=d;bi=i}}}
+ return bi<0?null:{i:bi,d:bd*geoK()}}
+function inModel(mx,my){const N=S.net.nodes;let x0=1/0,y0=1/0,x1=-1/0,y1=-1/0;N.forEach(n=>{if(!isFinite(n.x))return;x0=Math.min(x0,n.x);x1=Math.max(x1,n.x);y0=Math.min(y0,n.y);y1=Math.max(y1,n.y)});
+ if(!isFinite(x0))return false;const m=500/geoK();return mx>=x0-m&&mx<=x1+m&&my>=y0-m&&my<=y1+m}
+function line(g,inside){return(mx,my)=>{let h=`<div class="ca-mg"><b>🌊 물길주소에서 온 위치</b>${g.sn?` <small>(${esc(g.sn)})</small>`:''}`;
+ if(g.blk)h+=`<div>물길주소 소블록: <b>${esc(g.blk)}</b></div>`;
+ if(!inside)h+=`<div class="ca-rd">⚠ 지금 열린 모델(${esc(S.name||'이름 없음')}) 범위 밖입니다. 다른 현장·다른 구역 모델일 수 있으니 이 위치의 inp를 열어 주세요.</div>`;
+ else{const k=nearLink(mx,my);if(k){const l=S.net.links[k.i];h+=`<div>가까운 관로: <a href="#" class="ca-lk" data-i="${k.i}">${esc(l.id)}</a>${l.dia?` · ${Math.round(l.dia)}mm`:''} · ${Math.round(k.d)}m</div>`}}
+ return h+'</div>'}}
+function go(g){if(!S.net||!S.view){G.pend=g;return false}
+ const P=crs();if(!P){toast('지금 모델의 좌표계(EPSG)를 몰라 물길주소 위치로 갈 수 없습니다. 레이어 창에서 좌표계를 고르세요.',7000);return true}
+ let xy=null;try{xy=P.fromLL(+g.lng,+g.lat)}catch(e){}if(!xy||!isFinite(xy[0])||!isFinite(xy[1])){toast('위치를 모델 좌표로 바꾸지 못했습니다.',5000);return true}
+ const [mx,my]=xy,inside=inModel(mx,my),r=120/geoK();
+ zoomTo([mx-r,mx+r],[my-r,my+r],20);
+ const W=window.__gw41;if(W){W.CA.ext={x:mx,y:my,fn:line(g,inside)};W.show(mx,my)}
+ toast(inside?'🌊 물길주소에서 누른 위치로 왔습니다':'⚠ 물길주소 위치가 지금 모델 범위 밖입니다',inside?3000:7000);
+ try{window.focus()}catch(_){}return true}
+function wait(){if(!G.pend)return;let n=0;const t=setInterval(()=>{n++;if(!G.pend){clearInterval(t);return}if(S.net&&S.view){const g=G.pend;G.pend=null;clearInterval(t);setTimeout(()=>go(g),250)}else if(n>2000){clearInterval(t);G.pend=null}},300)}
+// 말풍선 안 관로 링크 → 그 관로 선택
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('#caPop .ca-lk');if(!a)return;e.preventDefault();const i=+a.dataset.i,l=S.net&&S.net.links[i];if(!l)return;
+ const N=S.net.nodes,A=N[l.n1-1],B=N[l.n2-1];S.sel={t:'l',i};S.pop={t:'l',i,x:(A.x+B.x)/2,y:(A.y+B.y)/2};try{const W=window.__gw41;W.CA.open=false;W.CA.card.style.display='none'}catch(_){}renderPop();refreshSel();requestDraw()},true);
+// ① 열린 탭으로 받기
+try{G.ch=new BroadcastChannel('mulgil-goto');G.ch.onmessage=e=>{const d=e.data||{};
+ if(d.ping){try{G.ch.postMessage({pong:1,id:G.id,nm:window.name||'',net:!!S.net})}catch(_){}return}
+ if(d.go&&d.go.lat!=null){try{G.ch.postMessage({ack:d.go.t,id:G.id})}catch(_){}if(!go(d.go))wait()}};
+ G.ch.postMessage({pong:1,id:G.id,nm:window.name||'',net:false})}catch(_){}
+// ② 주소(?lat=&lng=)로 받기
+try{const q=new URLSearchParams(location.search),la=parseFloat(q.get('lat')),lo=parseFloat(q.get('lng'));
+ if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){G.pend={lat:la,lng:lo,blk:(q.get('blk')||'').slice(0,40),sn:(q.get('sn')||'').slice(0,20),site:q.get('site')||'',t:Date.now()};
+  try{history.replaceState(null,'',location.pathname+location.hash)}catch(_){}wait()}}catch(e){console.warn('v44 url',e)}
+const st=document.createElement('style');st.textContent=`#caPop .ca-mg{margin:2px 0 4px;padding:4px 6px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.08);border-radius:2px}`;document.head.appendChild(st);
+window.__gw44={go};
+})()}catch(e){console.warn('v44',e)}
 
 /* ════ v42 상류·하류 추적 범위 일괄입력: 결과표 조건 검색에 '범위'(전체/추적 범위/지도 선택) · 추적 창에서 바로 일괄입력 ════ */
 try{(()=>{
