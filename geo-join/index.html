@@ -1949,7 +1949,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   <div id="pPanel" hidden>
    <div class="g2"><label class="f">관경 필드<select id="pDia" disabled></select></label><label class="f">재질 필드<select id="pMat" disabled></select></label>
    <label class="f">설치일 필드<select id="pYmd" disabled></select></label><label class="f">용도 필드<select id="pUse" disabled></select></label>
-   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="yr">매설년도 (설치연도 구간)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option><option value="risk">파손 위험 점수 (누수 예측)</option></select></label><label class="f" id="pYrL" style="display:none">매설년도 구간<select id="pYrSt"><option value="10">10년 단위</option><option value="5">5년 단위</option><option value="c">직접 경계 넣기</option></select><input id="pYrCut" placeholder="경계 연도, 예: 1990,2000,2010" style="display:none;margin-top:3px" title="쉼표로 나눈 연도. 예: 1990,2000,2010 → 1990년 이전 / 1990~1999년 / 2000~2009년 / 2010년 이후"></label>
+   <label class="f">관리번호 필드<select id="pId" disabled></select></label><label class="f">색상 기준<select id="pBy"><option value="mat">재질</option><option value="age">경과연수 (30년 노후)</option><option value="yr">매설년도 (설치연도 구간)</option><option value="dia">관경</option><option value="use">용도</option><option value="vel">유속 (관망해석)</option><option value="flow">유량 (관망해석)</option><option value="risk">파손 위험 점수 (누수 예측)</option><option value="bw">삽도용 (검정 흑백)</option></select></label><label class="f" id="pYrL" style="display:none">매설년도 구간<select id="pYrSt"><option value="10">10년 단위</option><option value="5">5년 단위</option><option value="c">직접 경계 넣기</option></select><input id="pYrCut" placeholder="경계 연도, 예: 1990,2000,2010" style="display:none;margin-top:3px" title="쉼표로 나눈 연도. 예: 1990,2000,2010 → 1990년 이전 / 1990~1999년 / 2000~2009년 / 2010년 이후"></label>
    <label class="f">지도 표시<select id="pShow"><option value="auto">표시 (확대 시)</option><option value="on">항상 표시</option><option value="off">숨김</option></select></label><label class="f">원거리 기준(m)<input id="pFar" type="number" value="50" min="1"></label></div>
    <p class="hint" id="pZoomHint" hidden>관로가 많아 지도를 더 확대하면(줌 15 이상) 표시됩니다.</p>
    <span class="ck"><input type="checkbox" id="pPrint" checked> PDF 인쇄에 관로 포함</span>
@@ -6422,7 +6422,7 @@ const MAT_COL={'덕타일주철관(DCIP)':'#2563eb','회주철관(CIP)':'#7c3aed
 const USE_COL={'취수관':'#0f766e','도수관':'#7c3aed','송수관':'#db2777','배수관':'#2563eb','급수관':'#16a34a','소방관':'#ea580c','불탐관':'#64748b'};
 const AGE_BANDS=[[10,'10년 이하','#16a34a'],[20,'10~20년','#84cc16'],[30,'20~30년','#f59e0b'],[1e9,'30년 초과 (노후)','#dc2626']];
 /* 색 기준 이름 (지도 범례·레이어 창·출력 범례 공용) */
-const PBY_NM={mat:'재질',age:'경과연수',yr:'매설년도',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수'};
+const PBY_NM={mat:'재질',age:'경과연수',yr:'매설년도',dia:'관경',use:'용도',vel:'유속',flow:'유량',risk:'파손 위험 점수',bw:'삽도용'};
 /* 매설년도 색: 설치연도는 attrOf(f).year 하나만 씀(설치일자·IST_YMD, parseYear 1940~올해 — '1900'·'SA00'은 미상). 구간 = 10년·5년·직접 경계, localStorage geo-pyr {st,cut}
    색은 오래될수록 진한 빨강 → 최근일수록 파랑·보라 (구간 수에 맞춰 고르게 뽑음) */
 const PYR={st:'10',cut:'1990,2000,2010',k:'',b:null};
@@ -6532,9 +6532,9 @@ function pipeStyle(f){const a=attrOf(f),by=$('pBy').value;let col='#64748b';
  else if(by==='yr')col=a.year==null?'#94a3b8':band(pyrBands(),a.year)[2];
  else if(by==='dia')col=a.dia==null?'#94a3b8':band(DIA_BANDS,a.dia)[2];
  else if(by==='use')col=USE_COL[a.use]||catCol(a.use);
- else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else if(by==='risk')col=a.rk==null?'#cbd5e1':band(RISK_BANDS,a.rk)[2];else col=MAT_COL[a.mat]||catCol(a.mat);
+ else if(by==='vel'||by==='flow'){const b=pipeHydBand(a,by);col=b?b[2]:'#cbd5e1'}else if(by==='risk')col=a.rk==null?'#cbd5e1':band(RISK_BANDS,a.rk)[2];else if(by==='bw')col='#000';else col=MAT_COL[a.mat]||catCol(a.mat);
  /* 유속·유량 색일 때 굵기 = 유량 (결과 없는 관로는 가늘게) */
- const hq=(by==='vel'||by==='flow')?pipeHyd(a):null,w=(hq?band(FLOW_BANDS,Math.abs(hq.q))[3]:by==='vel'||by==='flow'?1.2:a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};{const g=tbAllG(a);if(g)return{color:g===3?'#7c2d12':'#ca8a04',weight:Math.max(w,2.6),opacity:.95}}return{color:col,weight:w,opacity:.9}}
+ const hq=(by==='vel'||by==='flow')?pipeHyd(a):null,w=(hq?band(FLOW_BANDS,Math.abs(hq.q))[3]:by==='vel'||by==='flow'?1.2:a.dia==null?1.8:band(DIA_BANDS,a.dia)[3])*(+UI.pw||1);if(f.properties&&f.properties._폐관)return by==='bw'?{color:'#000',weight:Math.max(w,1.5),opacity:.8,dashArray:'5 6'}:{color:'#dc2626',weight:Math.max(w,2),opacity:.6,dashArray:'5 6'};if(SHUT_PL)return{color:'#94a3b8',weight:w,opacity:.75};if(by==='bw')return{color:col,weight:w,opacity:1};{const g=tbAllG(a);if(g)return{color:g===3?'#7c2d12':'#ca8a04',weight:Math.max(w,2.6),opacity:.95}}return{color:col,weight:w,opacity:.9}}
 const catMap=new Map();function catCol(k){if(k==='미상')return '#94a3b8';if(!catMap.has(k))catMap.set(k,OTHER_COL[catMap.size%OTHER_COL.length]);return catMap.get(k)}
 function pipePopup(f){const a=attrOf(f),P=f.properties;
  const rows=[['레이어',a.layer||'-'],['관리번호',a.id||P._임시번호||''],['관경',a.dia!=null?a.dia+'mm':'-'],['재질',a.mat+(a.matRaw&&a.matRaw!==a.mat?` <small>(${esc(a.matRaw)})</small>`:'')],['용도',a.use],['설치연도',a.year??'-'],['경과연수',a.age!=null?a.age+'년'+(a.age>30?' ⚠️ 노후':''):'-'],['연장(계산)',(f._len||0).toFixed(1)+'m']];if(f._rk!=null)rows.push(['파손 위험',`<b>${f._rk}</b>점 · 누수 이력 ${f._rkn||0}건`]);
@@ -6628,14 +6628,14 @@ function pipeShow(){if(!map||!PIPE.layer)return;const m=$('pShow').value,z=map.g
  const h=$('pZoomHint');if(h){h.hidden=!st;h.innerHTML=st}plblSoon()}
 /* 관로 범례 항목(지도 범례·작업 화면 레이어 창 공용): 색 기준 by, 항목 [이름,색], 항목별 연장 cnt */
 /* 관로 한 개가 지금 색 기준에서 어느 항목인지 (범례·레이어 창 켜고 끄기 공용) */
-function pipeCat(a,by){return by==='yr'?(a.year==null?'미상':band(pyrBands(),a.year)[1]):by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
+function pipeCat(a,by){return by==='bw'?'상수관로':by==='yr'?(a.year==null?'미상':band(pyrBands(),a.year)[1]):by==='age'?(a.age==null?'미상':band(AGE_BANDS,a.age)[1]):by==='dia'?(a.dia==null?'미상':band(DIA_BANDS,a.dia)[1]):by==='use'?a.use:by==='vel'||by==='flow'?((b=>b?b[1]:HYD_NO)(pipeHydBand(a,by))):by==='risk'?(a.rk==null?'미상':band(RISK_BANDS,a.rk)[1]):a.mat}
 /* 관로 항목별 켜고 끄기: 색 기준마다 따로 기억 (UI.pHid[색 기준] = 끈 항목). 끈 관로는 그리지 않고 누르기·라벨에서도 뺌 */
 function pipeHidList(){return ((UI.pHid||{})[$('pBy').value])||[]}
 function pipeHidMask(){const by=$('pBy').value,s=new Set(pipeHidList());PIPE.hidS=s.size?s:null;PIPE.hidBy=by;if(!s.size){PIPE.hm=null;return}const m=new Uint8Array(PIPE.feats.length);PIPE.feats.forEach((f,i)=>{if(s.has(pipeCat(attrOf(f),by)))m[i]=1});PIPE.hm=m}
 function pipeHidSet(n,hide){const by=$('pBy').value;UI.pHid=UI.pHid||{};const s=new Set(UI.pHid[by]||[]);hide?s.add(n):s.delete(n);if(s.size)UI.pHid[by]=[...s];else delete UI.pHid[by];uiSave();if(map)map.closePopup();if(PIPE.fc)pipeRecolor();PLB.key='';plblSoon()}
 function pipeLegData(){
  const by=$('pBy').value,cnt=new Map();if(by==='risk'&&typeof lqRiskEnsure==='function')lqRiskEnsure();PIPE.feats.forEach(f=>{const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))});
- let items;if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='yr')items=pyrBands().filter(b=>cnt.get(b[1])).map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
+ let items;if(by==='bw')items=[['상수관로','#000']];else if(by==='risk')items=RISK_BANDS.map(b=>[b[1],b[2]]);else if(by==='age')items=AGE_BANDS.map(b=>[b[1],b[2]]);else if(by==='yr')items=pyrBands().filter(b=>cnt.get(b[1])).map(b=>[b[1],b[2]]);else if(by==='dia')items=DIA_BANDS.map(b=>[b[1],b[2]]);else if(by==='vel'||by==='flow'){items=(by==='vel'?VEL_BANDS:FLOW_BANDS).map(b=>[b[1],b[2]]);if(cnt.get(HYD_NO))items.push([HYD_NO,'#cbd5e1'])}
  else items=[...cnt.keys()].filter(k=>k!=='미상').sort((a,b)=>cnt.get(b)-cnt.get(a)).slice(0,9).map(k=>[k,(by==='use'?USE_COL[k]:MAT_COL[k])||catCol(k)]);
  if(cnt.get('미상'))items.push(['미상','#94a3b8']);
  return{by,cnt,items}}
