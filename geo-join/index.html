@@ -725,6 +725,7 @@ td .rt{width:auto;padding:5px 10px;font-size:12px}
 .bkpk{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:auto;flex:1;min-height:0}.bkpk li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.bkpk li:last-child{border-bottom:0}.bkpk li.no{opacity:.45}.bkpk li b{font-weight:700}.bkpk li small{margin-left:auto;color:var(--mute);font-size:11.5px;text-align:right;white-space:nowrap}.bkpk input{width:16px;height:16px;flex:none}.bkqk{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.bkqk button{border:1px solid var(--line2);background:var(--sub2);color:var(--ink);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;min-height:30px}
 .axcost{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:6px 10px}.axcost summary{cursor:pointer;font-weight:700;font-size:13.5px;min-height:28px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.axcost summary small{font-weight:400;color:var(--mute);font-size:11.5px}
 .axcOk{color:#15803d}html.dark .axcOk{color:#4ade80}.axcnae{margin:6px 0 0;font-size:12px}.axcnae summary{cursor:pointer;font-weight:600;font-size:12.5px}.axcnae table{margin-top:4px}
+.axcrp{margin-top:8px;border:1px dashed var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px}.axcrp small{font-weight:400;color:var(--mute);font-size:11px}.axcrp .ck{display:flex;align-items:center;gap:6px;margin:3px 0;min-height:26px}.axcrpb{margin:2px 0 0 22px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.axcrpb .ck{margin:0}
 .axcost textarea{width:100%;font:12px/1.4 ui-monospace,Consolas,monospace}.axct{width:100%;border-collapse:collapse;font-size:12.5px}.axct th,.axct td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}.axct .r{text-align:right;white-space:nowrap}.axct tr.tot td{background:var(--sub2);font-size:13.5px}.axctot{color:#4338ca}html.dark .axctot{color:#a5b4fc}
 .axrb{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}.axrb button{border:1px solid var(--line2);background:var(--sub2);color:var(--ink);border-radius:10px;padding:8px 4px;font:700 12.5px/1.25 'Noto Sans KR',sans-serif;cursor:pointer;min-height:40px}
 .axrb button.on{border-color:#6366f1;background:#eef2ff;color:#4338ca}html.dark .axrb button.on{background:rgba(99,102,241,.25);color:#c7d2fe}
@@ -3599,6 +3600,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <label class="f axcS">관경 모를 때 단가 (원/m) <small style="font-weight:400">비우면 빼고 셈</small><input id="axcUnit" type="number" min="0" step="1000"></label>
   <label class="f axcS">시설물 단가표 (원/개) <small style="font-weight:400">한 줄에 "종류=단가" 또는 "종류:구경=단가" · 종류는 이름(제수밸브)이나 코드(SA200) · 구경 사이는 바로 위 구경 값 · 없는 종류는 확인 필요</small><textarea id="axcFac" rows="4" spellcheck="false"></textarea></label>
   <div id="axcOut" style="margin-top:6px"></div>
+  <div id="axcRpBox" class="axcrp"><b>📝 보고서에 넣을 내용</b> <small>요약·범위 지도·공사비(원가계산서)는 늘 들어감 · PDF·한글·엑셀 같은 선택</small>
+   <label class="ck"><input type="checkbox" data-rp="tgt"> 공사 대상 관로 현황 <small>관종·관경 · 경과연수 · 소블록별 표</small></label>
+   <label class="ck"><input type="checkbox" data-rp="bp"> 소블록 관로 현황 <small>관종 그림·매설년대 그래프·경과연수 표</small></label>
+   <label class="ck"><input type="checkbox" data-rp="bn"> 소블록 현황 <small>소블록 정보창 📝 보고서와 같은 유수율 판정·지표 카드·월별 표·그래프</small></label>
+   <label class="ck"><input type="checkbox" data-rp="mt"> 소블록 수도미터 현황</label>
+   <label class="ck"><input type="checkbox" data-rp="fac"> 시설물 (개수)</label>
+   <div id="axcRpBlk" class="axcrpb"></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="axcXl" type="button" class="btn ol" style="width:auto">📊 공사비 엑셀</button><button id="axcRep" type="button" class="btn ol" style="width:auto">📄 공사비 보고서 (A4·PDF)</button><button id="axcHw" type="button" class="btn ol" style="width:auto" title="같은 보고서를 한글 문서(.hwpx)로 저장 · 한글 2014 이후에서 열고 고칠 수 있음">📝 한글(HWPX)</button></div>
   <span class="ck" style="margin-top:6px"><input type="checkbox" id="axcZip" checked> 💾 내보내기 zip에도 공사비 엑셀 넣기</span>
  </details>
@@ -12189,8 +12197,14 @@ try{axInit()}catch(e){console.warn('범위 내보내기',e)}
 /* ── 💰 범위 개략공사비 (2026-11-12 C안): 범위 안 관로(경계에서 잘라 안쪽 길이)×관경별 단가 + 시설물 단가 + 포장 복구 + 제경비 + 부가세 ──
    관로 단가표는 🏗 공사 추천과 같은 CW.c.price(cwPT·cwUnitOf, 관경 모를 때 CW.c.unit). 시설물 단가·비율은 자료에 없어 사용자가 넣음(빈칸 = 확인 필요).
    설정은 이 기기에만(geo-axc). 결과물은 관리번호·소블록만(고객 정보 없음). */
-const AXC={c:{mode:'YG08',mat:'all',dia:'',use:'all',pave:'',over:'',vat:'',fac:'',zip:true},r:null};
-try{const v=JSON.parse(localStorage.getItem('geo-axc')||'null');if(v)Object.assign(AXC.c,v)}catch(_){}
+const AXC={c:{mode:'YG08',mat:'all',dia:'',use:'all',pave:'',over:'',vat:'',fac:'',zip:true,rp:{tgt:1,bp:1,bn:1,mt:1,fac:1},rpX:[]},r:null};
+try{const v=JSON.parse(localStorage.getItem('geo-axc')||'null');if(v)Object.assign(AXC.c,v,{rp:Object.assign({tgt:1,bp:1,bn:1,mt:1,fac:1},v.rp||{}),rpX:Array.isArray(v.rpX)?v.rpX:[]})}catch(_){}
+/* 📝 보고서에 넣을 내용(2026-11-25 사용자 '소블록 현황은 보고서 작성에 선택해서 넣기'): AXC.c.rp 장별 켜기, AXC.c.rpX 뺄 소블록 이름(소블록 관로 현황·소블록 현황·수도미터에 같이 적용) */
+const axcRp=k=>!!(AXC.c.rp&&AXC.c.rp[k]);
+function axcRpUi(){const c=AXC.c;document.querySelectorAll('#axcRpBox [data-rp]').forEach(i=>{i.checked=axcRp(i.dataset.rp)});
+ const r=AXC.r,ns=r?axcBlkNames(r):[],box=$('axcRpBlk');if(!box)return;const on=axcRp('bp')||axcRp('bn')||axcRp('mt');
+ box.innerHTML=ns.length?`<small>└ 넣을 소블록:</small>`+ns.map(n=>`<label class="ck"><input type="checkbox" data-rpb="${esc(n)}"${c.rpX.includes(n)?'':' checked'}${on?'':' disabled'}> ${esc(n)}</label>`).join(''):'<small>└ 범위를 그리면 걸친 소블록을 고를 수 있음</small>'}
+function axcRpRead(ev){const t=ev&&ev.target;if(!t)return;if(t.dataset.rp){AXC.c.rp[t.dataset.rp]=t.checked?1:0}else if(t.dataset.rpb!=null){const n=t.dataset.rpb,X=AXC.c.rpX.filter(x=>x!==n);if(!t.checked)X.push(n);AXC.c.rpX=X}else return;axcSave();axcRpUi()}
 function axcSave(){try{localStorage.setItem('geo-axc',JSON.stringify(AXC.c))}catch(_){}}
 const axcNum=v=>{const n=parseFloat(String(v??'').replace(/,/g,''));return isFinite(n)&&n>=0?n:null};
 const axcWon=v=>v==null||!isFinite(v)?'확인 필요':Math.round(v).toLocaleString()+'원';
@@ -12275,7 +12289,7 @@ function axcNaeSheets(r){const N=r.nae,A=N.A,B=N.B,P=N.P,n=v=>v==null?'':Math.ro
  const s4=axcNaeChg(r).map(o=>({'현 관경(mm)':o.D,'적정 관경(mm)':o.Dn,'구분':o.Dn<o.D?'줄임':'키움','관 수':o.n,'연장(m)':+o.L.toFixed(1)}));
  const s5=r.rows.map(x=>({'관리번호':x.id,'소블록':x.blk,'용도':x.use,'재질':x.mat,'관경(mm)':x.dia??'','설치년도':x.year??'','범위 안 연장(m)':+x.L.toFixed(2),'📐 판정':x.rk||'','적정 관경(mm)':x.Dn||x.dia||'','기준 관경(현)':axcNaeBk(P,x.dia)??'확인 필요','기준 관경(적정)':axcNaeBk(P,x.Dn||x.dia)??'확인 필요','현장 표시':x.ed}));
  const s6=r.FS.map(o=>({'종류코드':o.k,'종류':o.nm,'구경(mm)':o.dia??'','개수':o.n}));
- return [['요약',s1],['원가계산서 비교',s2],['소블록 관로 현황',axcBlkRows(r)],['소블록 수도미터 현황',axcMtrRows(r)],['관경별 비교',s3],['관경 변경 집계',s4],['관로 목록',s5],['시설물 집계',s6]]}
+ return axcRpSheets([['요약',s1],['원가계산서 비교',s2],['공사 대상 관로 현황',axcTgtRows(r)],['소블록 관로 현황',axcBlkRows(r)],['소블록 수도미터 현황',axcMtrRows(r)],['관경별 비교',s3],['관경 변경 집계',s4],['관로 목록',s5],['시설물 집계',s6]])}
 function axcNaeSec(r,sec,o){const{img,e,kpi,T,cond,blks,km,f0}=o,N=r.nae,A=N.A,B=N.B,P=N.P,dd=(b,a)=>B?`<td class="r">${axcDf(b-a)}</td>`:'<td class="r">—</td>';
  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('범위',e(r.addr||r.how),'면적 '+Math.round(r.area).toLocaleString()+'㎡')}${kpi('교체 연장 (범위 안)',km(A.Lall)+' km',r.rows.length.toLocaleString()+'개 · '+e(cond))}${kpi('총공사비 · 현 관경',axcEok(A.T),'m당 '+(A.Lall?axcWon(A.T/A.Lall):'—'))}${kpi('총공사비 · 적정 관경',B?axcEok(B.T):'확인 필요',B?'m당 '+axcWon(B.T/B.Lall):'관망해석 결과 없음','tot')}${kpi('차이 (적정−현)',B?axcDE(B.T-A.T):'—',B?`줄임 ${km(N.LO)}km · 키움 ${km(N.LS)}km`:'')}</div>${blks.length?`<p class="n">소블록: ${blks.map(e).join(', ')}</p>`:''}<p class="n">계산 기준: ${e(N.key)} 설계내역서(${e(P.nm)}) — 설계 연장 ${axcF(P.L)}m, 총공사비 ${axcF(P.tot)}원(m당 ${axcF(P.tot/P.L)}원)</p>`);
  sec.push(`<h2>2. 범위 지도</h2>${img?`<img class="map axm" src="${img}" alt="범위 지도" data-hmm="172">`:'<p class="n">지도 캡처를 만들지 못했습니다(배경 지도를 못 불러오면 생김). 앱 화면의 📷 지도 캡처로 따로 붙이세요.</p>'}<p class="n">파란 점선 = 그린 범위, 범위 밖은 흐리게 표시 · 위 INDEX = 범위에 걸친 소블록 안 공사 범위 위치</p>`);
@@ -12350,7 +12364,7 @@ function axcRead(){const g=id=>$(id).value;Object.assign(AXC.c,{mode:g('axcMode'
 function axcModeUi(){const nae=!!AXC_NAE[$('axcMode').value];document.querySelectorAll('#axCostBox .axcS').forEach(e=>e.style.display=nae?'none':'');$('axcNaeInfo').style.display=nae?'':'none';if(nae)$('axcNaeTbl').innerHTML=axcNaeInfoHtml($('axcMode').value)}
 function axcNaeInfoHtml(key){const P=axcNaeP(key),r=P.r;return `<table class="axct"><thead><tr><th>관경</th><th>교체 관종</th><th class="r">부설+사급(원/m)</th><th class="r">관급 관값(원/m)</th></tr></thead><tbody>${P.ks.slice().reverse().map(k=>`<tr><td style="white-space:nowrap">${k}mm 이하</td><td>${AXC_PT(k)}${P.note[k]?` <small class="c-am">${esc(P.note[k])}</small>`:''}</td><td class="r">${axcF(P.pin[k])}</td><td class="r">${axcF(P.pout[k])}</td></tr>`).join('')}</tbody></table>
  <p class="hint" style="margin:4px 0 0">${esc(P.nm)} · 연장 ${esc(P.Lsrc)}<br>공통 직접비 ${axcF(P.cin)}원/m · 관급 아스콘 등 ${axcF(P.cgw)}원/m · 폐기물 ${axcF(P.wm)}원/m · 야적장 ${axcF(P.yardm)}원/m<br>요율: 간접노무 ${r.ind}% · 산재 ${r.san}% · 고용 ${r.emp}% · 건강 ${r.hea}% · 연금 ${r.pen}% · 요양 ${r.care}% · 퇴직공제 ${r.ret}% · 안전보건 ${r.safe}% · 환경 ${r.env}% · 기타경비 ${r.etc}% · 일반관리 ${r.gen}% · 이윤 ${r.prof}% · 부가세 ${r.vat}%<br>200mm 넘는 관은 내역서에 없어 관 자재 단가 확인 필요.</p>`}
-function axcShow(){if(!$('axCostBox').open)return;try{if(axcAddrKey()&&axcAddrKey()!==AXA.k){if(!AXA.man)$('axcAddr').value='';AXA.man=false;axcAddrFind()}}catch(_){}$('axcOut').innerHTML=axcHtml(axcCalc());const ok=!!AXC.r;try{const w=AXC.r&&AXC.r.nae&&AXC.r.nae.why;if(w==='inp'||w==='none')hydZipAsk('개략공사비 · 현 관경 ↔ 적정 관경 비교',1)}catch(_){}$('axcXl').disabled=!ok;$('axcRep').disabled=!ok;
+function axcShow(){if(!$('axCostBox').open)return;try{if(axcAddrKey()&&axcAddrKey()!==AXA.k){if(!AXA.man)$('axcAddr').value='';AXA.man=false;axcAddrFind()}}catch(_){}$('axcOut').innerHTML=axcHtml(axcCalc());try{axcRpUi()}catch(_){}const ok=!!AXC.r;try{const w=AXC.r&&AXC.r.nae&&AXC.r.nae.why;if(w==='inp'||w==='none')hydZipAsk('개략공사비 · 현 관경 ↔ 적정 관경 비교',1)}catch(_){}$('axcXl').disabled=!ok;$('axcRep').disabled=!ok;
  const kinds=AX.cache?[...AX.cache.byK.keys()].filter(k=>!AX.off.has(k)).map(k=>facKindInfo(k).name||k):[];$('axcFac').placeholder='예) '+(kinds.length?kinds.slice(0,3).map((n,i)=>i?n+'=':n+':100=').join('\n'):'제수밸브:100=\n소화전=')}
 function axcSheets(r){if(r.nae)return axcNaeSheets(r);const day=fmtDT(r.at),n=v=>v==null?'확인 필요':Math.round(v);
  const s1=[{'항목':'범위','값':`${r.addr?r.addr+' · ':''}${r.how} · 면적 ${Math.round(r.area).toLocaleString()}㎡`},{'항목':'작성','값':day},
@@ -12364,8 +12378,52 @@ function axcSheets(r){if(r.nae)return axcNaeSheets(r);const day=fmtDT(r.at),n=v=
  const s2=r.DS.map(o=>({'관경(mm)':o.dia,'관 수':o.n,'연장(m)':+o.L.toFixed(1),'단가(원/m)':o.unit??'확인 필요','금액(원)':Math.round(o.amt),'단가 없는 연장(m)':+o.noU.toFixed(1)}));
  const s3=r.rows.map(x=>({'관리번호':x.id,'소블록':x.blk,'용도':x.use,'재질':x.mat,'관경(mm)':x.dia??'','설치년도':x.year??'','범위 안 연장(m)':+x.L.toFixed(2),'단가(원/m)':x.unit??'확인 필요','금액(원)':x.amt!=null?Math.round(x.amt):'확인 필요','현장 표시':x.ed}));
  const s4=r.FS.map(o=>({'종류코드':o.k,'종류':o.nm,'구경(mm)':o.dia??'','개수':o.n,'단가(원/개)':o.unit??'확인 필요','금액(원)':o.amt!=null?Math.round(o.amt):'확인 필요','적용 단가 줄':o.src||''}));
- return [['요약',s1],['관경별 집계',s2],['소블록 관로 현황',axcBlkRows(r)],['소블록 수도미터 현황',axcMtrRows(r)],['관로 목록',s3],['시설물 집계',s4]]}
+ return axcRpSheets([['요약',s1],['관경별 집계',s2],['공사 대상 관로 현황',axcTgtRows(r)],['소블록 관로 현황',axcBlkRows(r)],['소블록 수도미터 현황',axcMtrRows(r)],['관로 목록',s3],['시설물 집계',s4]])}
 function axcWb(r){const wb=XLSX.utils.book_new();axcSheets(r).forEach(([nm,rows])=>{const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{'내용':'자료 없음'}]);ws['!cols']=Object.keys(rows[0]||{a:1}).map(k=>({wch:k==='값'?60:Math.max(10,k.length*2)}));XLSX.utils.book_append_sheet(wb,ws,nm)});return wb}
+/* 📋 공사 대상 관로 현황(2026-11-25 사용자 '개략공사비 산정에 대상관로 현황을 표로 만들어서 보고서에' · 샘플대로): 범위 안(경계에서 자른) 대상 관로를
+   ① 관종×관경 ② 관종×경과연수(10·20·30년) ③ 소블록별로 셈. 관종은 소블록 관로 현황과 같은 AXB_K(MOP 코드표·HIVP 따로), 내역서 기준이면 급수관은 공사비처럼 뺌 */
+const AXT_AG=[['10년 이하',a=>a<=10],['10~20년',a=>a<=20],['20~30년',a=>a<=30],['30년 초과',()=>true]];
+function axcTgtStat(r){if(!r||!r.rows)return null;if(r._ts!==undefined)return r._ts;const sv=r.nae?r.rows.filter(x=>x.use==='급수관'):[],R=r.nae?r.rows.filter(x=>x.use!=='급수관'):r.rows;if(!R.length)return r._ts=null;
+ const Y=new Date().getFullYear(),M=new Map(),D=new Set(),B=new Map(),add=(m,k,v)=>m.set(k,(m.get(k)||0)+v);let tot=0,dU=0;
+ for(const x of R){let mt;try{mt=x.f?AXB_K(attrOf(x.f)):String(x.mat||'미상')}catch(_){mt=String(x.mat||'미상')}
+  const o=M.get(mt)||{mt,L:0,n:0,byD:new Map(),byA:new Map()};const d=x.dia!=null&&x.dia>0?x.dia:'미상';if(d!=='미상')D.add(d);
+  const ag=x.year?Y-x.year:null,ak=ag==null||ag<0?'미상':AXT_AG.find(z=>z[1](ag))[0];
+  o.L+=x.L;o.n++;add(o.byD,d,x.L);add(o.byA,ak,x.L);M.set(mt,o);tot+=x.L;if(d==='미상')dU+=x.L;
+  const bk=x.blk||'(경계 밖)',b=B.get(bk)||{n:bk,L:0,c:0,M:new Map()};b.L+=x.L;b.c++;add(b.M,mt,x.L);B.set(bk,b)}
+ const mats=[...M.values()].sort((a,b)=>AXB_ORD(a.mt)-AXB_ORD(b.mt)||b.L-a.L),dias=[...D].sort((a,b)=>b-a);if(dU>0)dias.push('미상');
+ return r._ts={mats,dias,ages:[...AXT_AG.map(z=>z[0]),'미상'],blks:[...B.values()].sort((a,b)=>b.L-a.L),tot,n:R.length,svN:sv.length,svL:sv.reduce((s,x)=>s+x.L,0),Y}}
+function axcTgtSec(r,o){const S=axcTgtStat(r);if(!S)return '';const{e,T}=o,f=v=>v>0?v.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1}):'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—',sm=(fn)=>S.mats.reduce((s,m)=>s+fn(m),0);
+ let h=`<h2>3. 공사 대상 관로 현황</h2><p class="n">범위 경계에서 자른 안쪽 연장 기준, 공사 대상 ${r.nae?'본관(배수관·송수관·소방관 등)':'관로'} ${S.n.toLocaleString()}개 ${(S.tot/1000).toFixed(2)}km.${S.svN?` 급수관 ${S.svN.toLocaleString()}개 ${f(S.svL)}m는 가정분기로 공통 직접비에 들어 있어 아래 표에서 뺐습니다(엑셀 관로 목록에는 있음).`:''} 관종은 상수도 GIS 재질 코드표(MOP001~010)로 나누고 HI-VP·HI-3P는 PVC와 따로 'HIVP', 표에 없는 코드는 미분류입니다.</p>`;
+ /* ① 관종×관경: 관경이 10개 넘으면 표가 넓어져 관경을 줄로 돌림 */
+ const dT=v=>v==='미상'?'미상':v;
+ h+=`<h3>관종·관경별 연장</h3><p class="n ur" style="text-align:right;margin:0 0 3px">(단위: m)</p>`;
+ if(S.dias.length<=10){h+=T(['관종 \\ 관경(mm)',...S.dias.map(dT),'합계','비율'],[...S.mats.map(m=>`<tr><td style="white-space:nowrap"><b>${e(m.mt)}</b></td>${S.dias.map(d=>`<td class="r">${f(m.byD.get(d)||0)}</td>`).join('')}<td class="r"><b>${f(m.L)}</b></td><td class="r">${pc(m.L,S.tot)}</td></tr>`),
+   `<tr class="tot"><td>합계</td>${S.dias.map(d=>`<td class="r">${f(sm(m=>m.byD.get(d)||0))}</td>`).join('')}<td class="r">${f(S.tot)}</td><td class="r">100%</td></tr>`])}
+ else{h+=T(['관경(mm) \\ 관종',...S.mats.map(m=>e(m.mt)),'합계','비율'],[...S.dias.map(d=>{const L=sm(m=>m.byD.get(d)||0);return `<tr><td style="white-space:nowrap"><b>${dT(d)}</b></td>${S.mats.map(m=>`<td class="r">${f(m.byD.get(d)||0)}</td>`).join('')}<td class="r"><b>${f(L)}</b></td><td class="r">${pc(L,S.tot)}</td></tr>`}),
+   `<tr class="tot"><td>합계</td>${S.mats.map(m=>`<td class="r">${f(m.L)}</td>`).join('')}<td class="r">${f(S.tot)}</td><td class="r">100%</td></tr>`])}
+ /* ② 관종×경과연수 */
+ const o20=m=>(m.byA.get('20~30년')||0)+(m.byA.get('30년 초과')||0),kn=m=>m.L-(m.byA.get('미상')||0);
+ h+=`<h3>관종·경과연수별 연장 (${S.Y}년 기준)</h3><p class="n ur" style="text-align:right;margin:0 0 3px">(단위: m)</p>`+T(['관종 \\ 경과연수',...S.ages,'합계','20년 초과 비율'],[...S.mats.map(m=>`<tr><td style="white-space:nowrap"><b>${e(m.mt)}</b></td>${S.ages.map(a=>`<td class="r">${f(m.byA.get(a)||0)}</td>`).join('')}<td class="r"><b>${f(m.L)}</b></td><td class="r">${pc(o20(m),kn(m))}</td></tr>`),
+  `<tr class="tot"><td>합계</td>${S.ages.map(a=>`<td class="r">${f(sm(m=>m.byA.get(a)||0))}</td>`).join('')}<td class="r">${f(S.tot)}</td><td class="r">${pc(sm(o20),sm(kn))}</td></tr>`]);
+ h+=`<p class="n">경과연수 = ${S.Y} − 설치연도. 설치연도 없는 관은 '미상'이며, 20년 초과 비율은 설치연도를 아는 관 중 비율입니다(노후관 판단 기준 연수는 노후상수도 정비사업 업무처리지침 원문 확인 필요).</p>`;
+ /* ③ 소블록별 */
+ h+=`<h3>소블록별 대상 연장</h3>`+T(['소블록','관 수','대상 연장(m)','비율','주 관종'],[...S.blks.map(b=>`<tr><td style="white-space:nowrap">${e(b.n)}</td><td class="r">${b.c.toLocaleString()}</td><td class="r">${f(b.L)}</td><td class="r">${pc(b.L,S.tot)}</td><td>${[...b.M].sort((x,y)=>y[1]-x[1]).slice(0,2).map(([k,v])=>`${e(k)} ${(v/b.L*100).toFixed(0)}%`).join(', ')}</td></tr>`),
+  `<tr class="tot"><td>합계</td><td class="r">${S.n.toLocaleString()}</td><td class="r">${f(S.tot)}</td><td class="r">100%</td><td></td></tr>`]);
+ /* 검토 의견: 표 숫자만으로 */
+ const top=S.mats.slice().sort((a,b)=>b.L-a.L)[0],aU=sm(m=>m.byA.get('미상')||0),a30=sm(m=>m.byA.get('30년 초과')||0),dU=sm(m=>m.byD.get('미상')||0),mU=S.mats.filter(m=>/^(미분류|미상)$/.test(m.mt)).reduce((s,m)=>s+m.L,0);
+ const op=[`대상 관로의 주 관종은 ${e(top.mt)}(${pc(top.L,S.tot)})이며, 교체 관종·접합 방식 검토 때 기존 관종과의 연결부(이형관·신축관) 수량을 현장에서 확인해야 합니다.`,
+  a30>0?`설치 30년을 넘은 관이 ${f(a30)}m(설치연도 아는 관의 ${pc(a30,sm(kn))})로, 이 구간은 관체 상태(부식·누수 이력)를 먼저 확인해 교체 우선순위에 반영합니다.`:'',
+  aU>0?`설치연도 미상 ${f(aU)}m(${pc(aU,S.tot)})는 매설년도 자료 보완(관망도·준공도서 대조)이 필요합니다.`:'',
+  mU>0?`관종 미분류·미상 ${f(mU)}m(${pc(mU,S.tot)})는 굴착 전 시험굴 등으로 관종 확인이 필요합니다.`:'',
+  dU>0?`관경 미상 ${f(dU)}m는 공사비에서 관 자재 단가를 적용하지 못하므로 관경 확인이 필요합니다.`:''].filter(Boolean);
+ return h+`<p class="n"><b>검토 의견</b><br>${op.map(x=>'· '+x).join('<br>')}</p>`}
+function axcTgtRows(r){const S=axcTgtStat(r);if(!S)return [{'안내':'대상 관로 없음'}];const out=[],m1=v=>+v.toFixed(1);
+ S.mats.forEach(m=>{S.dias.forEach(d=>{const v=m.byD.get(d)||0;if(v>0)out.push({'표':'관종·관경','관종':m.mt,'구분':d==='미상'?'관경 미상':d+'mm','연장(m)':m1(v),'비율(%)':+(v/S.tot*100).toFixed(1)})})});
+ S.mats.forEach(m=>{S.ages.forEach(a=>{const v=m.byA.get(a)||0;if(v>0)out.push({'표':`관종·경과연수(${S.Y}년 기준)`,'관종':m.mt,'구분':a,'연장(m)':m1(v),'비율(%)':+(v/S.tot*100).toFixed(1)})})});
+ S.blks.forEach(b=>out.push({'표':'소블록별','관종':[...b.M].sort((x,y)=>y[1]-x[1]).slice(0,2).map(([k,v])=>`${k} ${(v/b.L*100).toFixed(0)}%`).join(', '),'구분':b.n,'연장(m)':m1(b.L),'비율(%)':+(b.L/S.tot*100).toFixed(1),'관 수':b.c}));
+ out.push({'표':'합계','관종':'','구분':`${S.n}개`,'연장(m)':m1(S.tot),'비율(%)':100});if(S.svN)out.push({'표':'뺀 급수관','관종':'','구분':`${S.svN}개`,'연장(m)':m1(S.svL),'비율(%)':''});return out}
+/* 보고서·엑셀 선택 반영: 시트 목록에서 끈 장 빼기 */
+function axcRpSheets(L){const off={'공사 대상 관로 현황':!axcRp('tgt'),'소블록 관로 현황':!axcRp('bp'),'소블록 수도미터 현황':!axcRp('mt'),'시설물 집계':!axcRp('fac')};return L.filter(([nm])=>!off[nm])}
 /* 📊 소블록 관로 현황(2026-11-15 사용자 B안 + 그래프·관종 그림): 범위에 걸친 소블록마다 그 소블록 전체 관로를 관종×매설년대 + 경과연수 + 교체 범위 안 연장·비율.
    관종 = 재질 분류 약어(DCIP·PVC·PE…), 이름 없는 MOP00□ 코드는 PE(axcMopPE), 그 밖에 분류 못 한 코드는 원래 코드 그대로(확인 필요), 설치연도 없으면 '미상' */
 /* 2026-11-15 사용자 'PVC와 HIVP는 다른 관종': 원래 재질 값이 HI-VP·HI-3P(HIVP·HI3P)이면 PVC와 따로 'HIVP' */
@@ -12374,8 +12432,9 @@ const AXB_K=a=>(MAT_SHORT[a.mat]==='PVC'&&AXB_HI(a)?'HIVP':MAT_SHORT[a.mat])||(a
 const AXB_NM={DCIP:'덕타일주철관',CIP:'회주철관',SP:'강관',STS:'스테인리스관',GSP:'아연도강관',PVC:'PVC관',HIVP:'수도용 내충격 PVC관(HI-VP·HI-3P)',PE:'PE관',PC:'콘크리트관',GRP:'GRP관',ACP:'석면시멘트관','동관':'동관','미상':'재질 미상'};
 const AXB_ORD=k=>{const i=['DCIP','CIP','PE','PVC','HIVP'].indexOf(k);return i>=0?i:k==='미상'||k==='미분류'?9:5};
 const AXB_COL=k=>{if(k==='HIVP')return '#0ea5e9';const n=Object.keys(MAT_SHORT).find(x=>MAT_SHORT[x]===k);return n?MAT_COL[n]:k==='미상'?'#94a3b8':'#64748b'};
-function axcBlkStat(r){if(!r||!r.rows)return [];if(r._bs)return r._bs;const inB=new Map();r.rows.forEach(x=>{if(!x.blk)return;inB.set(x.blk,(inB.get(x.blk)||0)+x.L)});
- const names=[...inB].filter(([,L])=>L>=10).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);if(!names.length||!poly)return r._bs=[];
+function axcBlkNames(r){const inB=new Map();(r&&r.rows||[]).forEach(x=>{if(!x.blk)return;inB.set(x.blk,(inB.get(x.blk)||0)+x.L)});return [...inB].filter(([,L])=>L>=10).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0])}
+function axcBlkStat(r){if(!r||!r.rows)return [];if(r._bs)return r._bs;
+ const inB=new Map();r.rows.forEach(x=>{if(!x.blk)return;inB.set(x.blk,(inB.get(x.blk)||0)+x.L)});const X=AXC.c.rpX||[],names=axcBlkNames(r).filter(n=>!X.includes(n));if(!names.length||!poly)return r._bs=[];
  const fld=$('blkField').value,G=new Map();for(const g of poly.features){const n=String(g.properties[fld]??'');if(names.includes(n))G.set(n,g)}
  const Y=new Date().getFullYear(),out=[],mk=mt=>({mt,L:0,byD:new Map(),a:0,b:0,c:0,u:0,inL:0});
  for(const n of names){const g=G.get(n);if(!g)continue;const b=g.properties._bbox||turf.bbox(g),M=new Map(),dec=new Set();let tot=0;
@@ -12468,11 +12527,13 @@ const w=axcBlkNrw(n),f1=v=>v==null?'확인 필요':v.toFixed(1),f0=v=>v==null?'�
  const G2=window.bpRep?bpRep.g():[85,70],g=w.r<G2[1]?['심각','#b91c1c']:w.r<G2[0]?['주의','#b45309']:['양호','#15803d'];
  const fg=axcNrwFig(n);return (fg?`<img class="map" src="${fg}" alt="${e(n)} 유수율 그래프" style="border:0;margin-top:6px">`:'')+`<p class="n ur" style="text-align:right;margin:4px 0 3px">(유수율 %, 수량 ㎥/일 · ${e(w.src)} ${e(w.from)}~${e(w.to)} ${w.n}개월 평균)</p>`+T(['구분','평균 유수율','최근 달 유수율','전년 같은 기간','공급량','부과량','무수량(공급−부과)','판정'],
   [`<tr><td style="white-space:nowrap">${e(n)}</td><td class="r"><b>${f1(w.r)}</b></td><td class="r">${f1(w.last)} (${e(w.to)})</td><td class="r">${f1(w.prev)}</td><td class="r">${f0(w.sup)}</td><td class="r">${f0(w.bil)}</td><td class="r">${f0(w.nrw)}</td><td style="color:${g[1]};font-weight:700">${g[0]}</td></tr>`])}
-function axcBlkSec(r,o){const S=axcBlkStat(r);if(!S.length)return '';const{e,T}=o,k=v=>v>0?(v/1000).toFixed(2):'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
- let h=`<h2>3. 소블록 관로 현황</h2><p class="n">범위에 걸친 소블록 ${S.length}곳의 <b>소블록 전체</b> 관로(급수관 포함)를 관종·매설년대(그래프)·경과연수(표)별로 셌고, 소블록 현황도와 같은 모양의 소블록 현황(유수율 판정·지표 카드·블록 현황·월별 공급·부과·야간최소·유수율 표와 그래프)을 함께 붙였습니다. 경과연수는 ${new Date().getFullYear()}년 기준, 설치연도 없는 관은 '미상'. 관종은 재질 값이 HI-VP·HI-3P인 관을 PVC와 따로 'HIVP'로 나눴습니다. 관종 사진은 덕타일·회주철관·도복장강관·스테인리스(STS)·PE·GRP·PVC·HIVP만 실제 사진이고 나머지는 관 모양을 그린 것이며, 재질 코드는 상수도 GIS 코드표(MOP001 DCIP·002 SP·003 아연도강관·004 PVC·005 PE·006 STS·007 동관·008 CIP·009 석면시멘트관·010 PC관)로 나누고, 표에 없는 코드는 미분류로 둡니다.</p>`;
+function axcBlkSec(r,o){const S=axcBlkStat(r);if(!S.length)return '';const{e,T}=o,k=v=>v>0?(v/1000).toFixed(2):'—',pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—',bp=o.bp!==false,bn=o.bn!==false;if(!bp&&!bn)return '';
+ if(!bp){let h=`<h2>3. 소블록 현황</h2><p class="n">범위에 걸친 소블록 ${S.length}곳(${S.map(B=>e(B.n)).join(', ')})의 소블록 현황 — 소블록 정보창 📝 보고서·소블록 현황도와 같은 모양(유수율 판정·지표 카드·블록 현황·월별 공급·부과·야간최소·유수율 표와 그래프).</p>`;
+  for(const B of S){const wy=axcBlkNrw(B.n),P=window.bpRep&&bpRep.panel(B.n,'blk'),ry=P&&P.r!=null?`${P.r.toFixed(1)}% (${P.m})`:wy?wy.r.toFixed(1)+'%':'확인 필요';h+=`<h3>${e(B.n)} — 유수율 ${ry}</h3>`+axcNrwTbl(B.n,e,T,B,P)}return h}
+ let h=`<h2>3. 소블록 관로 현황</h2><p class="n">범위에 걸친 소블록 ${S.length}곳의 <b>소블록 전체</b> 관로(급수관 포함)를 관종·매설년대(그래프)·경과연수(표)별로 셌고, ${bn?'소블록 현황도와 같은 모양의 소블록 현황(유수율 판정·지표 카드·블록 현황·월별 공급·부과·야간최소·유수율 표와 그래프)을 함께 붙였습니다. ':''}경과연수는 ${new Date().getFullYear()}년 기준, 설치연도 없는 관은 '미상'. 관종은 재질 값이 HI-VP·HI-3P인 관을 PVC와 따로 'HIVP'로 나눴습니다. 관종 사진은 덕타일·회주철관·도복장강관·스테인리스(STS)·PE·GRP·PVC·HIVP만 실제 사진이고 나머지는 관 모양을 그린 것이며, 재질 코드는 상수도 GIS 코드표(MOP001 DCIP·002 SP·003 아연도강관·004 PVC·005 PE·006 STS·007 동관·008 CIP·009 석면시멘트관·010 PC관)로 나누고, 표에 없는 코드는 미분류로 둡니다.</p>`;
  for(const B of S){const sum=f=>B.mats.reduce((s,m)=>s+f(m),0),cU=sum(m=>m.byD.get('u')||0),old=sum(m=>m.c),fig=axcBlkFig(B);
   const wy=axcBlkNrw(B.n),P=window.bpRep&&bpRep.panel(B.n,'blk'),ry=P&&P.r!=null?`${P.r.toFixed(1)}% (${P.m})`:wy?wy.r.toFixed(1)+'%':'확인 필요';h+=`<h3>${e(B.n)} — 관로 ${k(B.tot)} km · 30년 초과 ${k(old)} km (${pc(old,B.tot)}) · 이번 범위 안 ${k(B.inL)} km (${pc(B.inL,B.tot)}) · 유수율 ${ry}</h3>`;
-  h+=axcNrwTbl(B.n,e,T,B,P);
+  if(bn)h+=axcNrwTbl(B.n,e,T,B,P);
   if(fig)h+=`<img class="map" src="${fig}" alt="${e(B.n)} 관로 현황 그래프" style="border:0">`;
   h+=`<p class="n ur" style="text-align:right;margin:6px 0 3px">(단위: km)</p>`+T(['관종','20년 이하','20~30년','30년 초과','미상','계','이번 범위 안','범위 안 비율'],[...B.mats.map(m=>`<tr><td>${e(m.mt)}</td><td class="r">${k(m.a)}</td><td class="r">${k(m.b)}</td><td class="r">${k(m.c)}</td><td class="r">${k(m.u)}</td><td class="r"><b>${k(m.L)}</b></td><td class="r">${k(m.inL)}</td><td class="r">${pc(m.inL,m.L)}</td></tr>`),
    `<tr class="tot"><td>계</td><td class="r">${k(sum(m=>m.a))}</td><td class="r">${k(sum(m=>m.b))}</td><td class="r">${k(old)}</td><td class="r">${k(sum(m=>m.u))}</td><td class="r">${k(B.tot)}</td><td class="r">${k(B.inL)}</td><td class="r">${pc(B.inL,B.tot)}</td></tr>`])}
@@ -12613,7 +12674,8 @@ async function axcReport(mode){const hw=mode==='hwpx';axcRead();const r=axcCalc(
   sec.push(`<h2>5. 시설물</h2>${T(['종류','구경(mm)','개수','단가(원/개)','금액(원)'],r.FS.map(o=>`<tr><td>${e(o.nm)} <small>${e(o.k)}</small></td><td>${o.dia??''}</td><td class="r">${o.n}</td><td class="r">${o.unit!=null?o.unit.toLocaleString():'<span class="am">확인 필요</span>'}</td><td class="r">${o.amt!=null?f0(o.amt):'<span class="am">확인 필요</span>'}</td></tr>`))}`);
   sec.push(`<h2>6. 계산 조건</h2><p class="n">대상 관로: ${e(cond)} · 범위에 걸친 관 ${r.nP.toLocaleString()}개 중 조건에 맞는 ${r.rows.length.toLocaleString()}개, 길이는 범위 경계에서 자른 안쪽만.<br>관경별 단가(원/m): ${r.T.map(t=>`${t[0]}=${t[1]!=null?t[1].toLocaleString():'확인 필요'}`).join(' · ')||'없음'} (🏗 공사 추천과 같은 표, 표보다 가는 관은 가장 가는 관경 값, 사이는 바로 위 관경 값)<br>시설물 단가(원/개): ${axcFT().map(x=>`${e(x.k)}${x.d!=null?':'+x.d:''}=${x.v!=null?x.v.toLocaleString():'확인 필요'}`).join(' · ')||'없음'}</p>`);}
   try{await axcPipeImgs()}catch(_){}try{if(window.bpRep)await bpRep.prep()}catch(_){}
-  try{const bs=axcBlkSec(r,{e,T}),ms=(()=>{try{return axcMtrSec(r,{e,T})}catch(err){console.warn('수도미터 현황',err);return ''}})();if(bs||ms){const i=sec.findIndex(x=>/^<h2[^>]*>3\./.test(x));sec.splice(i+1,0,...[bs,ms].filter(Boolean));let n=0;for(let j=0;j<sec.length;j++)sec[j]=sec[j].replace(/^(<h2[^>]*>)\d+\./,(m,h)=>h+(++n)+'.')}}catch(err){console.warn('소블록 관로 현황',err)}
+  if(!axcRp('fac')){const j=sec.findIndex(x=>/^<h2[^>]*>\d+\. 시설물/.test(x));if(j>=0)sec.splice(j,1)}
+  try{const tg=axcRp('tgt')?(()=>{try{return axcTgtSec(r,{e,T})}catch(err){console.warn('대상 관로 현황',err);return ''}})():'',bs=axcRp('bp')||axcRp('bn')?axcBlkSec(r,{e,T,bp:axcRp('bp'),bn:axcRp('bn')}):'',ms=axcRp('mt')?(()=>{try{return axcMtrSec(r,{e,T})}catch(err){console.warn('수도미터 현황',err);return ''}})():'';if(tg||bs||ms){const i=sec.findIndex(x=>/^<h2[^>]*>3\./.test(x));sec.splice(i+1,0,...[tg,bs,ms].filter(Boolean));let n=0;for(let j=0;j<sec.length;j++)sec[j]=sec[j].replace(/^(<h2[^>]*>)\d+\./,(m,h)=>h+(++n)+'.')}}catch(err){console.warn('소블록 관로 현황',err)}
   const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(axcFn('pdf').replace(/\.pdf$/,''))}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
@@ -12652,7 +12714,7 @@ function axcAddrAlt(){try{const pt=axcAddrPt();if(!pt)return '';const L=[];if(Ar
 function axcAddrNow(){const el=$('axcAddr');return el?el.value.trim():''}
 $('axcAddr').addEventListener('input',()=>{AXA.man=!!$('axcAddr').value.trim()});
 $('axcAddrBtn').onclick=()=>{AXA.man=false;axcAddrFind(true)};
-$('axcXl').onclick=axcXl;$('axcRep').onclick=()=>axcReport();$('axcHw').onclick=()=>axcReport('hwpx');
+$('axcRpBox').addEventListener('change',axcRpRead);$('axcXl').onclick=axcXl;$('axcRep').onclick=()=>axcReport();$('axcHw').onclick=()=>axcReport('hwpx');
 /* ── 📝 한글(HWPX) 저장 공용 (2026-11-12 B안) ──
    HWPX = 한글 2014 이후 공개 형식(OWPML XML을 zip으로 묶음). 서버 없이 JSZip으로 만듦.
    머리 정보(글꼴·글자·문단·테두리 모양)는 #hwpxHead 틀(한글 기본 서식 + 이 앱용 모양 추가)을 씀:
