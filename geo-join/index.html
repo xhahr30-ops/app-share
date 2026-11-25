@@ -294,6 +294,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .uiset .uib{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.uiset .uib .btn{flex:1 1 auto;width:auto;padding:6px 10px;font-size:12px}
 .uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
 .uiset .uidis{opacity:.5}
+.bpPopA{display:flex;flex-wrap:wrap;gap:4px;min-width:250px;margin-top:8px;padding-top:7px;border-top:1px solid #e2e8f0}.bpPopA button{flex:1 1 auto;min-height:32px;padding:4px 8px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;color:#3730a3;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}.bpPopA button:hover{background:#e0e7ff}.bpPopA button[data-bpa="set"]{flex:0 0 auto;background:#fff;color:#475569;border-color:#cbd5e1}.bpPopA button[data-bpa="rephw"]{flex:0 0 auto}
 #bqDlg{position:absolute;z-index:1150;top:64px;left:50%;transform:translateX(-50%);width:min(760px,calc(100% - 20px));max-height:calc(100% - 80px);display:flex;flex-direction:column;background:var(--card,#fff);color:var(--ink,#0f172a);border:1px solid var(--line,#e2e8f0);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.3);font-size:13px}#bqDlg[hidden]{display:none}
 #bqDlg .bqh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line,#e2e8f0);background:linear-gradient(90deg,#4f46e5,#2563eb);color:#fff;border-radius:12px 12px 0 0}#bqDlg .bqh b{flex:1;font-size:14px}#bqDlg .bqh button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:6px;width:30px;height:30px;font-size:15px;cursor:pointer}
 #bqDlg .bqb{overflow:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}#bqDlg .bqp{margin-bottom:12px}#bqDlg .bqp h4{margin:4px 0 6px;font-size:14px}#bqDlg .bqp img{display:block;width:100%;height:auto;border:1px solid var(--line,#e2e8f0);border-radius:6px;background:#fff;margin-bottom:3px}
@@ -3473,6 +3474,91 @@ async function bpQuick(names){const m=G('map');if(!m)return;const all=bpBlocks()
   h+=`<div class="bqa"><button type="button" class="btn ol" data-bq="out" data-n="${bpE(n)}" title="소블록별 현황도 출력 창에서 이 소블록을 골라 둠">🖨 현황도 출력 창</button>${P||C?`<button type="button" class="btn ol" data-bq="big" title="새 창에서 크게 보기">🔍 크게 보기</button>`:''}</div></section>`}
  body.innerHTML=h+`<p class="bqm" style="font-size:11px">현황도 출력과 같은 자료·계산입니다. 숫자는 넣은 자료에서만 가져오며, 없는 칸은 '확인 필요'로 나옵니다.</p>`}
 window.bpQuick=bpQuick;
+/* 2026-11-25 사용자 '블록을 클릭하면 블록현황도·보고서 내보내기' (B안): 소블록 정보창 단추 → 📊 현황 보기 · 🖨 현황도(PDF) · 📝 소블록 보고서(PDF·한글) · ⚙ 출력 설정 */
+function bpFind(n){const all=bpBlocks();return all.find(x=>x.n===n)||all.find(x=>bpK(x.n)===bpK(n))||null}
+/* 한 블록 현황도 캔버스(출력 창 없이). ov = 잠깐 바꿀 설정(용지·방향), 끝나면 원래 설정으로 되돌림(저장 안 함) */
+async function bpOneCv(b,ov){const m=G('map'),o0=Object.assign({},BP.o),c0=m.getCenter(),z0=m.getZoom(),hl=G('hlL'),pv=BP.lay;
+ const cover=document.createElement('div');cover.className='vpcov';cover.innerHTML=`<div>🗺 ${bpE(b.n)} 현황도 만드는 중…</div>`;document.body.appendChild(cover);
+ const elV=BP.el?BP.el.style.visibility:null;if(BP.el)BP.el.style.visibility='hidden';
+ try{Object.assign(BP.o,ov||{});if(pv)m.removeLayer(pv);if(hl&&m.hasLayer(hl))m.removeLayer(hl);
+  const M=bpMM(),dpm=150/25.4,ps=bpPipeStats(),tq=(nm,f)=>{try{return f()}catch(e){console.error('현황도 자료',nm,e);return null}};
+  let cu=null;const ou=G('out')||[];if(ou.length){cu=0;ou.forEach(o=>{if(o['_결합블록']===b.n)cu++})}
+  const info={ps:ps?ps.get(b.n)||{km:0,svc:0,old:0,known:0,band:(G('DIA_BANDS')||[]).map(()=>0),mat:{}}:null,lk:tq('누수',()=>bpLeaks(b)),cu,nrw:tq('유수율',()=>bpNrwOf(b.n))};
+  info.mo=info.lk?info.lk.mo:null;info.cs=BP.o.cu!==0?tq('수용가',()=>bpCust(b.n)):null;info.sy=BP.o.sys!==0?tq('급수계통',()=>bpSysOf(b)):null;if(info.cs&&info.cs.n&&!info.cu)info.cu=info.cs.n;BP.fc=[];
+  const S=await bpShot(b,M.map,dpm,info,M.s),cv=bpCompose(b,S,info,+BP.o.no||1,M,dpm);return{cv,info,S}}
+ finally{for(const k of Object.keys(BP.o))delete BP.o[k];Object.assign(BP.o,o0);try{m.setView(c0,z0,{animate:false})}catch(_){}cover.remove();if(BP.el)BP.el.style.visibility=elV||'';if(hl)try{hl.addTo(m)}catch(_){}if(pv)try{pv.addTo(m)}catch(_){}}}
+/* 전체 소블록 중 순위(값이 클수록 1위). 자료로만 비교하므로 기준 수치를 지어내지 않음 */
+function bpRank(map,n,f){const a=[];map.forEach((v,k)=>{const x=f(v);if(x!=null&&isFinite(x))a.push([k,x])});a.sort((p,q)=>q[1]-p[1]);const i=a.findIndex(x=>bpK(x[0])===bpK(n));return i<0?null:{r:i+1,n:a.length}}
+/* 유수율 최근 달·전년 같은 달·연 평균, 야간최소 */
+function bpNrwSum(N){if(!N||!BP.nrw)return null;const Y=BP.nrw.years||[],last=(k)=>{for(let j=Y.length-1;j>=0;j--){const a=(N[k]||[])[j]||[];for(let m=12;m>=1;m--)if(a[m]!=null)return{j,m,v:a[m]}}return null};
+ const L=last('r');if(!L)return null;const g=(k,j,m)=>{const a=(N[k]||[])[j];return a&&a[m]!=null?a[m]:null},av=(k,j)=>{const a=(N[k]||[])[j];return a&&a[0]!=null?a[0]:null};
+ return{y:Y[L.j],m:L.m,r:bpPct(L.v),rPy:L.j>0?bpPct(g('r',L.j-1,L.m)):null,rAvg:bpPct(av('r',L.j)),rAvgPy:L.j>0?bpPct(av('r',L.j-1)):null,s:g('s',L.j,L.m),b:g('b',L.j,L.m),n:g('n',L.j,L.m),nPy:L.j>0?g('n',L.j-1,L.m):null,nAvgPy:L.j>0?av('n',L.j-1):null,py:L.j>0?Y[L.j-1]:null}}
+async function bpReport(n,mode){const b=bpFind(n);if(!b){msg('이 이름의 소블록을 경계 자료에서 찾지 못했습니다.');return}const hw=mode==='hwpx';
+ const w=hw?null:window.open('','bpReport','width=900,height=1000');if(!hw&&!w){alert('팝업이 막혀 보고서 창을 못 열었습니다. 팝업을 허용해 주세요.');return}
+ if(w){w.document.open();w.document.write('<!doctype html><meta charset="utf-8"><title>소블록 보고서</title><p style="font-family:sans-serif;padding:20px">⏳ '+bpE(b.n)+' 소블록 보고서 만드는 중… (현황도 지도 캡처, 창을 닫지 마세요)</p>');w.document.close()}
+ try{try{const LRo=G('LR');if(LRo&&!LRo.recs.length&&typeof G('lrInit')==='function')F('lrInit')}catch(_){}try{await bpRepPrep()}catch(_){}
+  const one=await bpOneCv(b,{p:'A4',ori:'p'}),I=one.info,img=one.cv.toDataURL('image/jpeg',.88),P=bpRepPanel(b.n,'blk'),C=bpRepPanel(b.n,'cu');
+  const e=bpE,f1=v=>v==null||!isFinite(v)?'확인 필요':(+v).toFixed(1),f0=v=>v==null||!isFinite(v)?'확인 필요':Math.round(v).toLocaleString(),[g1,g2]=BP_G();
+  const BL=G('BILL'),bs=BL&&BL.BS?BL.BS[F('bNorm',b.n)]:null,ns=bpNrwSum(I.nrw),gr=ns?bpGrade(ns.r):null,ps=I.ps,DB=G('DIA_BANDS')||[];
+  const oldR=ps&&ps.known?ps.old/ps.known*100:null,lk=I.lk,lkN=lk?lk.tam+lk.civ:null,lkY=lk?[...lk.mo.keys()].filter(k=>/^y\d{4}$/.test(k)).map(k=>k.slice(1)).sort():[],lkKm=lk&&ps&&ps.km>0?lkN/ps.km:null;
+  const PSall=BPR_C.ps||bpPipeStats(),rkOld=PSall?bpRank(PSall,b.n,v=>v.known>.05?v.old/v.known:null):null;
+  let rkNrw=null;if(BP.nrw&&BP.nrw.B){const M2=new Map();for(const k in BP.nrw.B){const s=bpNrwSum(BP.nrw.B[k]);if(s&&s.r!=null)M2.set(k,-s.r)}rkNrw=bpRank(M2,ns?Object.keys(BP.nrw.B).find(k=>BP.nrw.B[k]===I.nrw)||b.n:b.n,v=>v)}
+  const mnf=ns&&ns.n!=null&&ns.s?ns.n*24/ns.s*100:null,mnfD=ns&&ns.n!=null&&ns.nPy?(ns.n-ns.nPy)/ns.nPy*100:null;
+  const kpi=(t,v,s,c)=>`<div class="k"><small>${t}</small><b${c?` style="color:${c}"`:''}>${v}</b>${s?`<i>${s}</i>`:''}</div>`;
+  const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${h.length}">자료 없음 (확인 필요)</td></tr>`}</tbody></table>`;
+  const sec=[];
+  sec.push(`<h2>1. 요약</h2><div class="kp">${kpi('유수율 (최근)',ns?f1(ns.r)+'%':'확인 필요',ns?`${ns.y}.${ns.m}월 · ${ns.r>100?'100% 초과 · 자료 확인':gr?gr.t:''}`:'유수율 엑셀 필요',ns&&ns.r>100?'#b91c1c':gr?gr.c:'')}${kpi('배수관 연장',ps?f1(ps.km)+' km':'확인 필요',ps?'급수관 '+f1(ps.svc)+' km 별도':'관로 SHP 필요')}${kpi('노후관 비율',oldR!=null?f1(oldR)+'%':'확인 필요','경과 30년 초과 / 설치연도 있는 관')}${kpi('수용가',I.cu!=null?f0(I.cu)+'전':'확인 필요',I.cs&&I.cs.n?'가구 '+f0(I.cs.hh):'')}${kpi('누수·민원',lkN!=null?f0(lkN)+'건':'확인 필요',lk?`탐사 ${lk.tam} · 민원 ${lk.civ}${lkY.length?' ('+lkY[0]+(lkY.length>1?'~'+lkY[lkY.length-1]:'')+')':''}`:'📒 대장 필요')}</div>
+<p class="n">${[b.big||(bs&&bs.b2)?'대블록 '+e(b.big||bs.b2):'',b.mid?'중블록 '+e(b.mid):''].filter(Boolean).map(x=>x+' · ').join('')}유수율 판정 기준: 양호 ${g1}% 이상, 주의 ${g2}~${g1}%, 심각 ${g2}% 미만 (현황도 출력 창 설정값)</p>`);
+  sec.push(`<h2 class="pgb">2. 소블록 현황도</h2><img src="${img}" alt="${e(b.n)} 현황도" data-hmm="225" style="display:block;width:100%;max-height:225mm;object-fit:contain"><p class="n">소블록 밖은 흐리게, 위치는 INDEX에 표시. 관로가 보이는 그림은 대외비입니다(외부 반출 금지).</p>`);
+  if(P||C)sec.push(`<h2 class="pgb">3. 블록 현황 · 수용가 현황</h2>${P?`<img src="${P.u}" alt="블록 현황" data-hmm="${Math.round(178*P.h/P.w)}" style="display:block;width:100%">`:''}${C?`<img src="${C.u}" alt="수용가 현황" data-hmm="${Math.round(178*C.h/C.w)}" style="display:block;width:100%;margin-top:4px">`:''}<p class="n">${e(P?P.src:'')} · 수용가는 관리번호만 씁니다.</p>`);
+  else sec.push(`<h2>3. 블록 현황 · 수용가 현황</h2><p class="n">유수율·관로·부과량 자료가 없어 그림을 만들지 못했습니다 (확인 필요).</p>`);
+  const rows=[];const R=(a,v,s)=>rows.push(`<tr><td>${a}</td><td class="r">${v}</td><td>${s||''}</td></tr>`);
+  if(ns){R(`유수율 ${ns.y}.${ns.m}월`,f1(ns.r)+'%',ns.rPy!=null?`전년 같은 달 ${f1(ns.rPy)}% (${ns.r-ns.rPy>=0?'▲':'▼'}${f1(Math.abs(ns.r-ns.rPy))}%p)`:'');R(`유수율 ${ns.y} 평균`,f1(ns.rAvg)+'%',ns.rAvgPy!=null?`${ns.py} 평균 ${f1(ns.rAvgPy)}%`:'');
+   R('공급량 / 부과량 (㎥/일)',`${f0(ns.s)} / ${f0(ns.b)}`,`${ns.y}.${ns.m}월`);R('야간최소유량 (㎥/h)',ns.n!=null?f1(ns.n):'확인 필요',mnf!=null?`일 공급량 대비 ${f1(mnf)}% (야간최소×24÷일공급)${mnfD!=null?` · 전년 같은 달 대비 ${mnfD>=0?'▲':'▼'}${f1(Math.abs(mnfD))}%`:''}`:'');
+   if(rkNrw)R('유수율 순위 (낮은 순)',`${rkNrw.r} / ${rkNrw.n}`,'유수율 엑셀 소블록 중')}else R('유수율','확인 필요',"유수율 엑셀 '유수율(소블록별)' 시트 필요");
+  if(bs){R(`부과량 ${e(BL.M[BL.mi]||'')}`,f0(bs.qm)+' ㎥',bs.dm!=null?`전월 ${bs.dm>0?'▲':'▼'}${f1(Math.abs(bs.dm))}%`:'');R('부과 등급 · 현장확인',`${e((G('B_GR')||{})[bs.gr]?G('B_GR')[bs.gr][0]:bs.gr)} (${f1(bs.sc)}점)`,`현장확인 대상 ${f0(bs.abn)}명 (${f1(bs.pct)}%)`)}
+  if(ps){R('배수관 / 급수관 연장',`${f1(ps.km)} / ${f1(ps.svc)} km`,'관로 가운데 점이 든 소블록 기준');R('노후관 (경과 30년 초과)',oldR!=null?`${f1(ps.old)} km (${f1(oldR)}%)`:'확인 필요',`설치연도 있는 관 ${f1(ps.known)} km 중${rkOld?` · 전체 ${rkOld.n}개 소블록 중 ${rkOld.r}위`:''}`)}
+  if(lk)R('누수탐사 / 누수민원',`${lk.tam} / ${lk.civ} 건`,`${lkKm!=null?'배수관 1km당 '+lkKm.toFixed(2)+'건 · ':''}대장 ${lkY.join('·')||'기간 확인 필요'}`);
+  if(I.cs&&I.cs.n)R('대수용가',`${I.cs.big.length}곳`,`월평균 ${f0(I.cs.bq)}㎥ 이상 · 관리번호 ${I.cs.big.slice(0,5).map(x=>e(x.mg||'-')).join(', ')||'-'}`);
+  sec.push(`<h2>4. 주요 지표</h2>${T(['항목','값','비고'],rows)}`);
+  if(ps){const tk=ps.km||0;sec.push(`<h2>5. 관경·재질별 배수관 연장</h2>${T(['관경','연장(km)','비율'],DB.map((d,i)=>`<tr><td>${e(d[1])}</td><td class="r">${f1(ps.band[i])}</td><td class="r">${tk?f1(ps.band[i]/tk*100)+'%':'-'}</td></tr>`))}${T(['재질','연장(km)','비율'],Object.entries(ps.mat||{}).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${e(k||'미상')}</td><td class="r">${f1(v)}</td><td class="r">${tk?f1(v/tk*100)+'%':'-'}</td></tr>`))}`)}
+  /* 검토 의견 및 조치 방향(전문가 관점, 수치는 자료에서만) */
+  const op=[],pr=(hi,mid)=>hi?'<b style="color:#b91c1c">1순위</b>':mid?'<b style="color:#b45309">2순위</b>':'3순위',top=(rk,q)=>rk&&rk.r<=Math.ceil(rk.n*q);
+  if(ns&&ns.r>100)op.push([`유수율 ${f1(ns.r)}% (100% 초과)`,'부과량이 공급량보다 많아 실제 효율이 아니라 자료 이상으로 봐야 함. 가능한 원인: 유입 유량계 과소 계측·고장, 경계밸브 개방으로 이웃 블록 물이 들어옴(블록 고립 불량), 부과량 소블록 배정(Y열) 오류, 검침 기간 차이',
+   '유입 유량계 검·교정·기록 누락, 경계밸브 닫힘(무압 확인), 이웃 블록 유수율 동시 변동, 부과량 Y열 소블록 배정','유량계·경계 확인 뒤 공급량 바로잡아 유수율 다시 산정 (그 전까지 효율 판단 보류)','<b style="color:#b91c1c">1순위 (자료 확인)</b>']);
+  else if(ns){const bad=ns.r<g2,warn=ns.r<g1;op.push([`유수율 ${f1(ns.r)}% (${gr?gr.t:''})`,bad?'무수수량이 많아 누수·계량 손실 가능성이 큼. 가능한 원인: 배수관·급수관 누수, 계량기 불감·노후, 경계밸브 개방에 따른 블록 고립 불량, 유입 유량계 오차':warn?'목표에 못 미침. 누수 증가 또는 계량 손실이 진행 중일 수 있음':'양호. 현 상태 유지 관리',
+   '경계밸브 닫힘(무압 확인), 유입 유량계 검·교정 이력, 야간최소유량 추이, 대수용가 계량기 상태',bad?'블록 전체 누수탐사 우선 시행, 수리 후 유수율·야간최소 재측정':warn?'야간최소 상승 구간 중심 누수탐사, 계량기 교체 대상 점검':'월별 감시 유지',pr(bad,warn)])}
+  else op.push(['유수율 자료 없음','블록 효율을 판단할 수 없음',"유수율 엑셀 '유수율(소블록별)' 시트 확보",'자료를 넣어 다시 작성','-']);
+  if(mnf!=null)op.push([`야간최소유량 ${f1(ns.n)}㎥/h (일 공급 대비 ${f1(mnf)}%)`,'야간최소유량은 대부분 누수량에 가까움. 전년보다 크게 늘면 새 누수 발생 가능성'+(mnfD!=null?` (전년 같은 달 대비 ${mnfD>=0?'▲':'▼'}${f1(Math.abs(mnfD))}%)`:''),'야간 사용 대수용가 유무, 유량계 0점·기록 누락','야간최소 상승 시 음청·상관식 누수탐사, 단계시험으로 구간 좁히기',pr(mnfD!=null&&mnfD>20,mnfD!=null&&mnfD>0)]);
+  if(oldR!=null)op.push([`노후관 ${f1(oldR)}% (${f1(ps.old)}km)`,'경과 연수가 긴 관은 부식·이음부 누수와 관 내면 녹(적수·혼탁수) 위험이 큼'+(rkOld?`. 전체 ${rkOld.n}개 소블록 중 ${rkOld.r}위`:''),'노후관 구간 누수 이력·민원 위치와 겹침 여부, 재질(주철·강관·PVC) 확인','누수·민원이 겹치는 노후관부터 교체 계획(개략공사비로 사업비 산정)',pr(top(rkOld,.2),top(rkOld,.5))]);
+  if(lk)op.push([`누수·민원 ${lkN}건${lkKm!=null?` (1km당 ${lkKm.toFixed(2)}건)`:''}`,'같은 구간 반복 누수는 관 상태 불량 또는 수압 과다 가능성','누수 지점 몰림 구간(현황도 별표), 수리 결과·재발 여부, 수압','반복 구간은 부분 교체 검토, 수압이 높으면 감압 운영 검토',pr(false,lkN>0)]);
+  if(bs&&bs.dm!=null&&Math.abs(bs.dm)>=10)op.push([`부과량 전월 ${bs.dm>0?'▲':'▼'}${f1(Math.abs(bs.dm))}%`,'부과량 급변은 계절 요인 외에 계량기 고장·검침 오류·대수용가 사용 변화 가능성','현장확인 대상 수용가(📋) 계량기 상태','검침·계량기 확인 후 유수율 재계산',pr(false,true)]);
+  sec.push(`<h2 class="pgb">6. 검토 의견 및 조치 방향</h2>${T(['항목 (진단)','의미 · 가능한 원인','현장 확인','조치','우선순위'],op.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`))}
+<p class="n">우선순위는 이 소블록 자료(유수율 판정 기준·전체 소블록 중 순위·전년 대비)로만 매겼습니다. 참고 기준: 상수도설계기준(KDS 57 00 00, 2025 개정), 상수도관망진단 매뉴얼(환경부 2021), 노후상수도 정비사업 업무처리지침 — 노후관 판정 연수·누수 기준치 등 조항 수치는 원문 확인 필요.</p>`);
+  const miss=[];if(!ns)miss.push("유수율 엑셀 '유수율(소블록별)' 시트");if(!ps)miss.push('상수관로 SHP');if(!lk)miss.push('②-4 📒 누수탐사·민원 대장');if(!(I.cs&&I.cs.n)&&I.cu==null)miss.push('부과량(수용가) 자료');
+  sec.push(`<h2>7. 자료 출처</h2><p class="n">유수율: ${e(BP.nrw?(BP.nrw.f||'')+' / '+(BP.nrw.sn||''):'없음')} · 관로: 앱에 넣은 상수관로 SHP · 누수: ${lk?'📒 대장 '+lk.files+'개':'없음'} · 수용가: ${I.cs&&I.cs.n?e(I.cs.src):'없음'}${miss.length?`<br>📥 더 넣으면 채워지는 자료: ${miss.map(e).join(' · ')}`:''}<br>고객 이름·주소·연락처는 넣지 않았습니다(관리번호·소블록만).</p>`);
+  const d=new Date(),pd=v=>String(v).padStart(2,'0'),fn=`소블록보고서_${b.n.replace(/[\\/:*?"<>|]/g,'_')}_${d.getFullYear()}${pd(d.getMonth()+1)}${pd(d.getDate())}`;
+  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:12px}
+.pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 10mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:14px 18px}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.9;font-size:11.5px}
+main{padding:4px 16px}section{break-inside:avoid;page-break-inside:avoid}.pgb{break-before:page;page-break-before:always}thead{display:table-header-group}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:8px;margin:14px 0 6px}
+.kp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.k{border:1px solid #e2e8f0;border-radius:10px;padding:6px 8px}.k small{display:block;color:#64748b;font-size:10px}.k b{font-size:14px}.k i{display:block;font-style:normal;color:#64748b;font-size:9.5px}
+table{border-collapse:collapse;width:100%;font-size:10.5px;margin-bottom:6px}th{background:#eef2ff;color:#3730a3;text-align:left}th,td{border:1px solid #e2e8f0;padding:3px 6px;vertical-align:top}tr{break-inside:avoid}td.r{text-align:right;white-space:nowrap}.n{color:#64748b;font-size:10px;margin:3px 0;line-height:1.5}
+footer{margin-top:14px;padding:8px 16px;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px;display:flex;justify-content:space-between}.bar{position:sticky;top:0;background:#1e293b;padding:8px;text-align:center}.bar button{font:inherit;font-weight:700;padding:6px 14px;border-radius:8px;border:0;background:#4f46e5;color:#fff;cursor:pointer;margin:0 4px}
+@media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}header,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}@media(max-width:700px){.kp{grid-template-columns:repeat(2,1fr)}}</style></head><body>
+<div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${G('HWPX_BTN')(fn+'.hwpx')}<button onclick="close()">닫기</button></div>
+<div class="pg"><header><h1>${e(b.n)} 소블록 현황 보고서</h1><p>작성 ${G('fmtDT')(Date.now())} · ${e((G('SITE')||{}).name||'')} · 스마트 물길주소</p></header><main>${sec.map(x=>`<section>${x}</section>`).join('\n')}</main>
+<footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
+  if(hw)await F('hwpxFromHtml',html,fn+'.hwpx');else{if(w.closed)throw new Error('보고서 창이 닫혔습니다');w.document.open();w.document.write(html);w.document.close()}}
+ catch(err){console.warn('소블록 보고서',err);try{if(w&&!w.closed)w.close()}catch(_){}alert('소블록 보고서를 만들지 못했습니다: '+(err&&err.message||err))}}
+/* 현황도 바로 PDF: 출력 창 설정(용지·방향·스타일)을 그대로 쓰고 이 블록만 골라 출력 */
+function bpOutOne(n,kind){const b=bpFind(n);if(!b){msg('이 이름의 소블록을 경계 자료에서 찾지 못했습니다.');return}bpOpen();if(!BP.el||BP.el.hidden)return;BP.sel.clear();BP.sel.add(b.n);bpShow(b.n);if(kind)bpOut(kind)}
+/* 정보창 단추 */
+function bpPopAct(el){const a=el.dataset.bpa,n=el.dataset.n,m=G('map');if(!n)return;try{m.closePopup()}catch(_){}
+ if(a==='quick'){try{F('hlBlock',n)}catch(_){}bpQuick([n])}else if(a==='pdf')bpOutOne(n,'pdf');else if(a==='set')bpOutOne(n,'');else if(a==='rep')bpReport(n);else if(a==='rephw')bpReport(n,'hwpx')}
+const bpPopBtns=n=>`<div class="bpPopA"><button type="button" data-bpa="quick" data-n="${bpE(n)}" onclick="bpPopAct(this)" title="현황도와 같은 칸을 지도 위 창에 바로 보기">📊 현황 보기</button><button type="button" data-bpa="pdf" data-n="${bpE(n)}" onclick="bpPopAct(this)" title="이 소블록 현황도를 바로 인쇄·PDF (출력 창 설정 그대로)">🖨 현황도</button><button type="button" data-bpa="rep" data-n="${bpE(n)}" onclick="bpPopAct(this)" title="현황도·현황표·검토 의견을 담은 A4 보고서 (PDF·한글)">📝 보고서</button><button type="button" data-bpa="rephw" data-n="${bpE(n)}" onclick="bpPopAct(this)" title="보고서를 한글(HWPX) 파일로 바로 저장">한글</button><button type="button" data-bpa="set" data-n="${bpE(n)}" onclick="bpPopAct(this)" title="소블록별 현황도 출력 창 (용지·스타일 고르기)" aria-label="출력 설정">⚙</button></div>`;
+window.bpPopAct=bpPopAct;window.bpPopBtns=bpPopBtns;window.bpReport=bpReport;
 window.bpOpen=bpOpen;window.BPR=BP;window.bpCust=bpCust;
 })();
 </script>
@@ -6958,8 +7044,10 @@ function blkLegClick(e){const nb=e.target.closest('.lbn button');if(nb){hlBlock(
  d.innerHTML=L2.length?L2.map(n=>`<button type="button" data-n="${esc(n)}">${esc(n)}</button>`).join(''):'<small>해당 블록 없음</small>';
  row.after(d);row.querySelector('small').textContent='▾'}
 function polyPopup(f){const P=f.properties,fld=$('blkField').value,nm=String(P[fld]??'').trim(),s=BILL.BS&&BILL.BS[bNorm(nm)];
- const base=Object.entries(P).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>');if(!s)return base;
- return `<b>${esc(nm)}</b> · ${esc(s.b2||'')}<br>등급 <b style="color:${B_GR[s.gr][1]}">${B_GR[s.gr][0]}</b> (${s.sc.toFixed(1)}점) · 수용가 ${s.n.toLocaleString()}<br>부과량 ${Math.round(s.qm).toLocaleString()}㎥ (${BILL.M[BILL.mi]})${s.dm!=null?` · 전월 ${s.dm>0?'▲':'▼'}${Math.abs(s.dm).toFixed(1)}%`:''}<br>현장확인 ${s.abn.toLocaleString()}명 (${s.pct.toFixed(1)}%)${s.wy?` · 유수율 ${s.wy.v.toFixed(1)}% (${s.wy.m})`:''}<details style="margin-top:4px"><summary>SHP 속성</summary>${base}</details>`}
+ const base=Object.entries(P).filter(([k])=>k!=='_bbox').map(([k,v])=>`${esc(k)}: ${esc(v)}`).join('<br>');if(!s)return nm?`<b>${esc(nm)}</b><details style="margin-top:4px"><summary>SHP 속성</summary>${base}</details>${bpPopA(nm)}`:base;
+ return `<b>${esc(nm)}</b> · ${esc(s.b2||'')}<br>등급 <b style="color:${B_GR[s.gr][1]}">${B_GR[s.gr][0]}</b> (${s.sc.toFixed(1)}점) · 수용가 ${s.n.toLocaleString()}<br>부과량 ${Math.round(s.qm).toLocaleString()}㎥ (${BILL.M[BILL.mi]})${s.dm!=null?` · 전월 ${s.dm>0?'▲':'▼'}${Math.abs(s.dm).toFixed(1)}%`:''}<br>현장확인 ${s.abn.toLocaleString()}명 (${s.pct.toFixed(1)}%)${s.wy?` · 유수율 ${s.wy.v.toFixed(1)}% (${s.wy.m})`:''}<details style="margin-top:4px"><summary>SHP 속성</summary>${base}</details>${bpPopA(nm)}`}
+/* 소블록 정보창 아래 현황도·보고서 단추(2026-11-25) */
+const bpPopA=nm=>nm&&typeof window.bpPopBtns==='function'?window.bpPopBtns(nm):'';
 /* ---------- 블록 현황표: 부과·유수율 보기 ---------- */
 let bSort={k:'sc',d:-1};
 function renderBillBlk(){const S=billBlocks(),rows=Object.values(S),{k,d}=bSort,val=r=>k==='b'?r.b:k==='wy'?(r.wy?r.wy.v:-1):k==='gr'?{A:3,B:2,C:1,V:0}[r.gr]*1000+r.sc:(r[k]??-1e9);
