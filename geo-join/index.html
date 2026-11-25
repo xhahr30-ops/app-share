@@ -11106,7 +11106,7 @@ function shutWarnTxt(){const W=SHUT.wf;if(!W||!W.length)return '';const g=t=>W.f
  return `⚠️ 단수 주의: 단수 관로에 ${[p.length?`가압장 ${p.length}곳(${f(p)})`:'',v.length?`감압밸브 ${v.length}곳(${f(v)})`:''].filter(Boolean).join(' · ')} — 가압장 정지·감압밸브 앞뒤 수압 변화를 확인하고 단수 범위를 다시 검토하세요`}
 function shutWarnHtml(){const W=SHUT.wf;if(!W||!W.length)return '';
  return `<div class="shwarn"><b>⚠️ 단수 주의 — 다시 검토하세요</b><div>단수 관로에 ${W.map(x=>`<button type="button" data-a="v" data-i="${x.i}" title="지도에서 보기">${x.t==='가압장'?'🏭':'🔻'} ${esc(x.t)} ${esc(x.nm)}</button>`).join(' ')}</div><small>가압장을 세우거나 감압밸브 앞뒤 수압이 바뀌면 단수·수압 저하 범위가 자료와 달라질 수 있습니다. 가압장 운영·감압밸브 설정을 확인하고 닫을 밸브를 다시 정하세요.</small></div>`}
-function shutLayer(){if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=396;p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}}
+function shutLayer(){if(!SHUT.L){const p=map.createPane('shut');p.style.zIndex=394;/* 2026-11-25 관로 라벨(plbl 395) 아래로: 빨간 단수 관로가 라벨을 덮던 것 */p.style.pointerEvents='none';SHUT.rd=L.canvas({pane:'shut',padding:.3});SHUT.L=L.layerGroup().addTo(map)}}
 /* 지도 범례 상자의 💧 단수 탭(2026-11-02): 단수 관로·혼탁수 선 모양·밸브 번호 색. 단수구역을 끄면 숨김 */
 function shutLeg(){if(!map)return;if(!SHUT.leg){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const d=L.DomUtil.create('div','pleg shleg');L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}});SHUT.leg=new C().addTo(map)}
  const d=SHUT.leg.getContainer();if(!SHUT.on||!SHUT.res){d.style.display='none';return}
@@ -11120,13 +11120,13 @@ function shutDraw(){if(!map)return;shutLayer();shutLeg();
  const w=+UI.pw||1;
  /* 그린 범위: 남색 점선 (캡처에도 들어감) */
  if(SHUT.area)L.polygon(SHUT.area.ll,{...o,color:'#4338ca',weight:2.5*w,dashArray:'8 6',fillColor:'#6366f1',fillOpacity:.07}).addTo(SHUT.L);
- if(ls.length||la.length||lo.length||lde.length)L.polyline(ls.concat(la,lo,lde),{...o,color:'#fff',weight:10*w,opacity:.85}).addTo(SHUT.L);
+ if(ls.length||la.length||lo.length||lde.length)L.polyline(ls.concat(la,lo,lde),{...o,color:'#fff',weight:7*w,opacity:.85}).addTo(SHUT.L);
  /* 🌿 하류 관말(수지상): 진한 빨강 긴 점선 · 넣지 않은 막다른 가지(확인 필요·뺌): 주황 점선 */
- if(lde.length)L.polyline(lde,{...o,color:'#7f1d1d',weight:5*w,opacity:.95,dashArray:'10 6'}).addTo(SHUT.L);
+ if(lde.length)L.polyline(lde,{...o,color:'#7f1d1d',weight:3*w,opacity:.95,dashArray:'10 6'}).addTo(SHUT.L);
  if(ldx.length)L.polyline(ldx,{...o,color:'#d97706',weight:3*w,opacity:.9,dashArray:'2 6'}).addTo(SHUT.L);
- if(ls.length)L.polyline(ls,{...o,color:'#dc2626',weight:5*w,opacity:.95}).addTo(SHUT.L);
- if(lo.length)L.polyline(lo,{...o,color:'#ea580c',weight:5*w,opacity:.95}).addTo(SHUT.L);
- if(la.length)L.polyline(la,{...o,color:'#9333ea',weight:5*w,opacity:.95,dashArray:'9 6'}).addTo(SHUT.L);
+ if(ls.length)L.polyline(ls,{...o,color:'#dc2626',weight:3*w,opacity:.95}/* 2026-11-25 5→3 얇게(사용자: 빨간색으로 구분되니 얇게) */).addTo(SHUT.L);
+ if(lo.length)L.polyline(lo,{...o,color:'#ea580c',weight:3*w,opacity:.95}).addTo(SHUT.L);
+ if(la.length)L.polyline(la,{...o,color:'#9333ea',weight:3*w,opacity:.95,dashArray:'9 6'}).addTo(SHUT.L);
  tbDraw(o,w);
  /* 단수 주의 시설물(가압장·감압밸브): 빨간 점선 고리 — 캡처에도 들어감 */
  (SHUT.wf||[]).forEach(x=>L.circleMarker([FAC.y[x.i],FAC.x[x.i]],{...o,radius:15*w,color:'#dc2626',weight:3*w,dashArray:'5 4',fill:true,fillColor:'#fecaca',fillOpacity:.25}).addTo(SHUT.L));
@@ -11579,7 +11579,7 @@ function tbDraw(o,w){const T=SHUT.tb;if(!T||!SHUT.L)return;const L1=[],L2=[],L3=
 /* 혼탁수·단수 선 모양 한곳에서 — 지도·단수 창 범례·캡처 범례가 같은 모양을 씀 */
 const TB_ST={hi:{c:'#7c2d12',w:6},mid:{c:'#facc15',b:'#7c2d12',w:5},lo:{c:'#7c2d12',w:4,d:'10 7'}};
 /* 범례 줄 목록: [이름, 선 모양] — 혼탁수 결과가 없으면 단수 관로만 */
-function tbLegItems(){const T=SHUT.tb,on=T&&T.hi+T.mid+T.down>=1,S=TB_ST,it=[['단수 관로',{c:'#dc2626',w:5}]],DE=SHUT.de;
+function tbLegItems(){const T=SHUT.tb,on=T&&T.hi+T.mid+T.down>=1,S=TB_ST,it=[['단수 관로',{c:'#dc2626',w:3}]],DE=SHUT.de;
  if(DE&&DE.on&&DE.n)it.push(['하류 관말(수지상)',{c:'#7f1d1d',w:5,d:'10 6'}]);if(DE&&DE.on&&DE.B.some(b=>!b.on))it.push(['막다른 가지 확인 필요·뺌',{c:'#d97706',w:3,d:'2 6'}]);
  if(!on)return it;if(T.iHi+T.iMid>=1)it.push(['구역 안 혼탁수',{c:'#dc2626',w:5,in:'#451a03'}]);
  if(T.oHi>=1)it.push(['혼탁수 높음',S.hi]);if(T.oMid>=1)it.push(['혼탁수 보통',S.mid]);if(T.oLo>=1)it.push(['밸브 하류',S.lo]);return it}
