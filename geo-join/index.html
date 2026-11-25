@@ -5413,20 +5413,22 @@ function vCands(alts){/* 인식 후보마다: 원문 뗀 것, 말 맞춤, 한 �
 /* 🔍 찾은 자리 깜빡이(2026-11-17 B안): 이동이 끝난 뒤 그 자리에 계속 깜빡이는 링+가운데 점+이름표
    (주소·자료 빨강, 시설물 주황, 사진 보라), 블록은 경계 굵기·안쪽 채움 깜빡+가운데 이름표.
    ✕ 지우기·다른 검색·📍 핀 지우기에서만 멈춤 (지도를 끌어도 계속 — 돌아와서도 찾게) */
-const GSF={m:null,tt:null,bl:null,t0:0,svg:null};
-function gsFlashStop(){clearTimeout(GSF.t0);GSF.t0=0;if(map)[GSF.m,GSF.tt,GSF.bl].forEach(l=>{if(l)map.removeLayer(l)});GSF.m=GSF.tt=GSF.bl=null}
+const GSF={m:null,tt:null,bl:null,t0:0,t5:0,svg:null,hb:null};
+function gsFlashStop(){clearTimeout(GSF.t0);GSF.t0=0;clearTimeout(GSF.t5);GSF.t5=0;GSF.hb=null;if(map)[GSF.m,GSF.tt,GSF.bl].forEach(l=>{if(l)map.removeLayer(l)});GSF.m=GSF.tt=GSF.bl=null}
 function gsFlashRun(fn){if(!map)return;gsFlashStop();let done=false;const go=()=>{if(done)return;done=true;clearTimeout(GSF.t0);fn()};
  GSF.t0=setTimeout(go,700);map.once('moveend',()=>setTimeout(go,60))}
+/* 찾은 자리 강조는 5초 뒤 저절로 지움(링·이름표·블록 채움 + 검색이 그린 블록 점선) */
+function gsFlashAuto(){clearTimeout(GSF.t5);GSF.t5=setTimeout(()=>{const hb=GSF.hb;gsFlashStop();if(hb&&typeof hlL!=='undefined'&&hlL===hb&&typeof hlBlock==='function')hlBlock(null)},5000)}
 function gsTip(ll,txt,c,ctr){if(!txt)return;txt=String(txt);if(txt.length>26)txt=txt.slice(0,25)+'…';
  GSF.tt=L.tooltip({permanent:true,interactive:false,direction:ctr?'center':'bottom',offset:ctr?[0,0]:[0,30],className:'gsflb'}).setLatLng(ll).setContent(esc(txt)).addTo(map);
  const e=GSF.tt.getElement();if(e)e.style.setProperty('--c',c)}
 function gsFlash(ll,c,txt){if(!map||!ll)return;c=c||'#dc2626';gsFlashRun(()=>{
  GSF.m=L.marker(ll,{interactive:false,keyboard:false,zIndexOffset:900,icon:L.divIcon({className:'gsfl',html:'<i></i>',iconSize:[72,72],iconAnchor:[36,36]})}).addTo(map);
- const e=GSF.m.getElement();if(e)e.style.setProperty('--c',c);gsTip(ll,txt,c)})}
+ const e=GSF.m.getElement();if(e)e.style.setProperty('--c',c);gsTip(ll,txt,c);gsFlashAuto()})}
 function gsFlashBlk(txt){if(!map)return;gsFlashRun(()=>{if(typeof hlL==='undefined'||!hlL)return;
  if(!GSF.svg)GSF.svg=L.svg({padding:.5});
  GSF.bl=L.geoJSON(hlL.toGeoJSON(),{interactive:false,renderer:GSF.svg,className:'gsblk',style:{color:'#f59e0b',weight:4,fill:true,fillColor:'#f59e0b',fillOpacity:.08}}).addTo(map);
- try{gsTip(GSF.bl.getBounds().getCenter(),txt?'🔲 '+txt:'','#d97706',1)}catch(_){}})}
+ try{gsTip(GSF.bl.getBounds().getCenter(),txt?'🔲 '+txt:'','#d97706',1)}catch(_){}GSF.hb=hlL;gsFlashAuto()})}
 function initSearch(){
  window.__gsFlashStop=gsFlashStop;
  let pin=null,list=[],sel=-1,busy=false;
