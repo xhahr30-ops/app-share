@@ -4599,14 +4599,14 @@ function ptDia(g,x,y,r){g.moveTo(x,y-r);g.lineTo(x+r,y);g.lineTo(x,y+r);g.lineTo
    저장 geo-lsty {cl:수용가, pl:관로, bl:소블록 이름, fac:시설물 전체, k:{종류코드:{…}}}. 빈 값 = 원래 모양. geo-* 라서 백업 '화면 설정'에 같이 감 ===== */
 var LSTY=null;
 var LS_FONT={'':['본고딕 (기본)','"Noto Sans KR"'],mg:['맑은 고딕','"Malgun Gothic","맑은 고딕"'],ng:['나눔고딕','"NanumGothic","Nanum Gothic","나눔고딕"'],gu:['굴림','Gulim,"굴림"'],dt:['돋움','Dotum,"돋움"'],bt:['바탕','Batang,"바탕",serif']};
-var LS_DEF={cl:'#0f172a',pl:'#0f172a',bl:'#0e4f60',fac:'#0f172a'};
+var LS_DEF={cl:'#0f172a',pl:'#0f172a',bl:'#0e4f60',fac:'#0f172a',ph:'#b91c1c'},LS_HDEF={ph:'#dc2626'};
 function lsAll(){if(!LSTY){try{LSTY=JSON.parse(localStorage.getItem('geo-lsty')||'{}')||{}}catch(_){LSTY={}}if(!LSTY.k||typeof LSTY.k!=='object')LSTY.k={}}return LSTY}
 function lsSave(){try{localStorage.setItem('geo-lsty',JSON.stringify(lsAll()))}catch(_){}}
 function lsOf(g,k){const A=lsAll(),o=Object.assign({},A[g]||{}),K=k&&A.k[k];if(K)for(const x in K)if(K[x]!==''&&K[x]!=null)o[x]=K[x];return o}
 function lsFam(o){return (LS_FONT[o.f]||LS_FONT[''])[1]+',"Noto Sans KR","Malgun Gothic",sans-serif'}
 function lsFont(o,px,w){return `${+o.w||w||700} ${px}px ${lsFam(o)}`}
 function lsHalo(o,a){return o.h==='none'?'rgba(0,0,0,0)':o.h||a||'rgba(255,255,255,.95)'}
-function lsRedraw(){try{ptDraw()}catch(_){}try{plblSoon()}catch(_){}try{facDraw()}catch(_){}try{drawLabels()}catch(_){}}
+function lsRedraw(){try{phLbStyle()}catch(_){}try{ptDraw()}catch(_){}try{plblSoon()}catch(_){}try{facDraw()}catch(_){}try{drawLabels()}catch(_){}}
 function ptBigLabels(g,bl,R){const K=clKeys();if(!K.mg)return;const lo=lsOf('cl'),fp=+lo.px||+UI.lblPx||11,occ=new Set(),CS=8;let n=0;
  g.font=lsFont(lo,fp,700);g.textAlign='left';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=3;g.strokeStyle=lsHalo(lo);
  for(let j=0;j<bl.length&&n<600;j+=3){const o=out[bl[j+2]];if(!o)continue;const t=String(o[K.mg]??'').trim();if(!t)continue;const x0=bl[j]+R+3,y=bl[j+1],k=Math.floor(x0/CS)+','+Math.floor(y/CS);if(occ.has(k))continue;
@@ -4749,6 +4749,9 @@ function uiSelPut(id){const el=document.getElementById(id),v=UI.sel[id];if(!el||
  if(el.type==='checkbox'){el.checked=!!v;return}if(!el.options){el.value=v;return}if([...el.options].some(o=>o.value===v&&!o.hidden))el.value=v}
 /* 소블록 경계 색: 파랑 계열 관로(관경 색)와 겹치지 않는 주황이 기본 */
 const PH_SZ=[.5,.75,1,1.25,1.5,2,2.5];/* 사진 아이콘 크기 단계 (phSzSet) */
+/* 📷 사진 라벨 내용·보이기 시작 (phLbHtml·phLbStyle) */
+const PHLB_T=[['','번호 (접수 1956 · No.12)'],['n','번호만 (1956 · 12)'],['ny','번호 + 찍은 해 (접수 1956 · 2025)']];
+const PHLB_Z=[['','처음부터 (낱개 사진이 보이면)']].concat([14,15,16,17,18,19].map(v=>[String(v),'줌 '+v+'부터']));
 const BCOL={hc:{name:'고대비 (주황 · 흰 테)',color:'#ea580c',halo:'#ffffff'},sat:{name:'위성용 (노랑 · 검은 테)',color:'#facc15',halo:'#111827'},old:{name:'예전 색 (청록)',color:'#1b8aa6',halo:null}};
 function blkBase(){const b=BCOL[UI.bcol]||BCOL.hc;return b.halo?{color:b.color,weight:2.5,opacity:1,fillColor:b.color,fillOpacity:.06}:{color:b.color,weight:2,opacity:1,fillColor:b.color,fillOpacity:.15}}
 /* 경계 아래 테두리(흰/검은 선)를 따로 한 겹 깔아 어떤 배경에서도 선이 보이게 함 (블록 100여 개라 부담 없음) */
@@ -4915,6 +4918,8 @@ function uiInit(){if(!map)return;plblInit();
 <div class="uig">🔎 사진 아이콘 크기</div>
 <label class="uif">📷 사진 아이콘 (전체)<select id="uiPhSz" class="msel">${opt(PH_SZ.map(v=>[String(v),Math.round(v*100)+'%'+(v===1?' (보통)':'')]))}</select></label>
 <label class="uif">🏷️ 사진 번호 글자 (No.·접수번호)<select id="uiPhLs" class="msel">${opt(PH_SZ.filter(v=>v>=.75).map(v=>[String(v),Math.round(v*100)+'%'+(v===1?' (보통)':'')]).concat([['off','끄기 (번호 안 보임)']]))}</select></label>
+<label class="uif">🏷️ 사진 번호 글자 내용<select id="uiPhLbT" class="msel">${opt(PHLB_T)}</select></label>
+<label class="uif">🏷️ 사진 번호 글자 보이기 시작<select id="uiPhLbZ" class="msel">${opt(PHLB_Z)}</select></label>
 <p class="uin">사진이 많아 묶음 원(📷 장수)으로 보일 때는 원 크기가 그대로이고, 낱개 아이콘만 바뀝니다. 종류별(민원·누수탐사 등) 크기는 PC 작업 화면 왼쪽 레이어 창 › 현장 사진 ▸ 의 −/＋로 바꿉니다.</p>
 <div class="uig">사진 보기 설정</div>
 <div id="uiPhBox"></div>
@@ -4963,6 +4968,7 @@ function uiInit(){if(!map)return;plblInit();
  q('uiClZ').onchange=e=>{UI.clZ=+e.target.value||18;uiSave();ptDraw();uiClHint()};
  q('uiBigMk').onchange=e=>{UI.bigMk=e.target.checked;uiSave();ptDraw();mLegend()};
  q('uiPhSz').onchange=e=>phSzSet('*',+e.target.value||1);
+ q('uiPhLbT').value=UI.phLbT||'';q('uiPhLbZ').value=String(UI.phLbZ||'');q('uiPhLbT').onchange=e=>{UI.phLbT=e.target.value||undefined;uiSave();phDraw()};q('uiPhLbZ').onchange=e=>{UI.phLbZ=+e.target.value||undefined;uiSave();phLbStyle()};
  q('uiPhLs').onchange=e=>{if(e.target.value==='off'){phLsOffSet(true);return}UI.phLsOff=undefined;phSzSet('L',+e.target.value||1)};phLsApply();if(UI.phLsOff)q('uiPhLs').value='off';
  q('uiBcol').onchange=e=>{UI.bcol=e.target.value;uiSave();if(polyL)blkColorApply();else blkHaloSync()};
  q('uiFsz').onchange=e=>{UI.fsz=+e.target.value||1;uiSave();if(typeof facDraw==='function')facDraw()};
@@ -8078,16 +8084,17 @@ addEventListener('resize',()=>{if(LYM.el&&!LYM.el.hidden&&!LYM.el.classList.cont
 /* ===== 🏷️ 라벨 탭(작업 화면 왼쪽 창 [레이어][속성][라벨]) + 🏷️ 라벨 창(폰) 안 같은 목록 — 2026-11-16 C안
    위: 라벨 창과 같은 켜고 끄기·내용 칸(data-lm, 값 이어짐) / 아래: 줄마다 글자 색·테두리 색, ▸ 펼치면 크기·굵기·글꼴·테두리·시작 줌·(시설물 종류) 내용 */
 const LST={open:new Set(),ct:0};
-const LST_G=[['cl','👥 수용가 라벨',[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기 시작']]],['pl','🚰 관로 라벨',[['uiLbl','내용'],['uiLblZ','보이기 시작']]],['bl','🟩 소블록 이름',[['lblMode','표시']]],['fac','🔧 시설물 라벨 (전체)',[['fLbl','내용']]]];
-function lstPv(g,k){const o=lsOf(g,k),c=o.c||LS_DEF[g],h=o.h==='none'?'':o.h||'#fff';return `color:${c};font-family:${lsFam(o).replace(/"/g,"'")};font-weight:${+o.w||700};${h?`text-shadow:-1px -1px 0 ${h},1px -1px 0 ${h},-1px 1px 0 ${h},1px 1px 0 ${h}`:''}`}
-function lstRow(g,k,nm,ic,extra){const A=lsAll(),own=k?A.k[k]||{}:A[g]||{},o=lsOf(g,k),id=g+'|'+(k||''),op=LST.open.has(id),hc=o.h&&o.h!=='none'?o.h:'#ffffff',set=Object.keys(own).length;
+const LST_G=[['cl','👥 수용가 라벨',[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기 시작']]],['pl','🚰 관로 라벨',[['uiLbl','내용'],['uiLblZ','보이기 시작']]],['bl','🟩 소블록 이름',[['lblMode','표시']]],['fac','🔧 시설물 라벨 (전체)',[['fLbl','내용']]],['ph','📷 사진 라벨 (번호 글자)',[['uiPhLbT','내용'],['uiPhLs','크기'],['uiPhLbZ','보이기 시작']]]];
+function lstPv(g,k){const o=lsOf(g,k),c=o.c||LS_DEF[g],h=o.h==='none'?'':o.h||LS_HDEF[g]||'#fff';if(g==='ph')return `color:${c};font-family:${lsFam(o).replace(/"/g,"'")};font-weight:${+o.w||800};background:#fff;border:1px solid ${h||'transparent'};flex:0 1 auto`;return `color:${c};font-family:${lsFam(o).replace(/"/g,"'")};font-weight:${+o.w||700};${h?`text-shadow:-1px -1px 0 ${h},1px -1px 0 ${h},-1px 1px 0 ${h},1px 1px 0 ${h}`:''}`}
+function lstRow(g,k,nm,ic,extra){const A=lsAll(),own=k?A.k[k]||{}:A[g]||{},o=lsOf(g,k),id=g+'|'+(k||''),op=LST.open.has(id),hc=o.h&&o.h!=='none'?o.h:LS_HDEF[g]||'#ffffff',set=Object.keys(own).length;
  const sel=(p,opts,cur)=>`<select data-p="${p}">${opts.map(([v,t])=>`<option value="${esc(v)}"${String(cur??'')===String(v)?' selected':''}>${esc(t)}</option>`).join('')}</select>`;
- const pxO=[['',k?'시설물 전체 따름':g==='bl'?'⚙ 블록명 크기 따름':'⚙ 라벨 글자 크기 따름']].concat([9,10,11,12,13,14,16,18,20,24].map(v=>[v,v+'px']));
+ const pxO=[['',k?(g==='ph'?'사진 라벨 전체 따름':'시설물 전체 따름'):g==='bl'?'⚙ 블록명 크기 따름':g==='ph'?'위 크기(%) 따름':'⚙ 라벨 글자 크기 따름']].concat([9,10,11,12,13,14,16,18,20,24].map(v=>[v,v+'px']));
  const zO=[['','기본 (종류마다 정한 줌)']].concat([13,14,15,16,17,18,19].map(v=>[v,'줌 '+v+'부터']));
  return `<div class="lst-r${set?' set':''}" data-g="${g}"${k?` data-k="${esc(k)}"`:''}><div class="lst-t">${ic||''}<span class="lst-pv" style="${lstPv(g,k)}" title="${esc(nm)}">${esc(nm)}</span>${set?'<i class="lst-dot" title="따로 정한 모양 있음"></i>':''}
 <label class="lst-c" title="글자 색"><input type="color" data-p="c" value="${esc(o.c||LS_DEF[g])}" aria-label="${esc(nm)} 글자 색"><span>글자</span></label><label class="lst-c" title="테두리(외곽) 색"><input type="color" data-p="h" value="${esc(hc)}" aria-label="${esc(nm)} 테두리 색"><span>테두리</span></label><button type="button" class="lst-x" data-x aria-expanded="${op}" title="크기·굵기·글꼴·시작 줌">${op?'▾':'▸'}</button></div>
-<div class="lst-d"${op?'':' hidden'}>${extra||''}<label>크기${sel('px',pxO,own.px)}</label><label>굵기${sel('w',[['','굵게 (기본)'],['400','보통'],['700','굵게'],['900','아주 굵게']],own.w)}</label><label>글꼴${sel('f',Object.entries(LS_FONT).map(([v,a])=>[v,a[0]]),own.f)}</label><label>테두리${sel('hn',[['','있음'],['none','없음']],own.h==='none'?'none':'')}</label>${g==='fac'&&k?`<label>보이기 시작${sel('z',zO,own.z)}</label>`:''}<button type="button" class="lst-0" data-reset>↺ 처음대로</button></div></div>`}
-function lstHtml(lm){let h=LST_G.map(([g,nm,f])=>`<div class="lst-gh">${nm}</div>`+(lm?`<div class="lst-m">${f.map(([id,n])=>`<label>${n}<select data-lm="${id}" class="msel"></select></label>`).join('')}</div>`:'')+lstRow(g,'','가나다 123 · 미리보기')).join('');
+<div class="lst-d"${op?'':' hidden'}>${extra||''}<label>크기${sel('px',pxO,own.px)}</label><label>굵기${sel('w',[['','굵게 (기본)'],['400','보통'],['700','굵게'],['900','아주 굵게']],own.w)}</label><label>글꼴${sel('f',Object.entries(LS_FONT).map(([v,a])=>[v,a[0]]),own.f)}</label><label>테두리${sel('hn',[['','있음'],['none','없음']],own.h==='none'?'none':'')}</label>${(g==='fac'||g==='ph')&&k?`<label>보이기 시작${sel('z',g==='ph'?[['','사진 라벨 전체 따름']].concat(PHLB_Z.slice(1)):zO,own.z)}</label>`:''}<button type="button" class="lst-0" data-reset>↺ 처음대로</button></div></div>`}
+function lstHtml(lm){let h=LST_G.map(([g,nm,f])=>`<div class="lst-gh">${nm}</div>`+(lm?`<div class="lst-m">${f.map(([id,n])=>`<label>${n}<select data-lm="${id}" class="msel"></select></label>`).join('')}</div>`:'')+lstRow(g,'',g==='ph'?'접수 1956 · 미리보기':'가나다 123 · 미리보기')).join('');
+ {const KL=UI.phKl||{},have=new Set((PH.G||[]).map(phLbKd)),ks=PH_KDS.filter(k=>have.has(k));h+=`<div class="lst-gh">📷 사진 종류별 <small>(비우면 위 '사진 라벨'을 따름)</small></div>`+(ks.length?ks.map(k=>lstRow('ph','ph:'+k,PH_KD[k].n+' 1956',`<span style="flex:none;width:16px;text-align:center">${PH_KD[k].ic}</span>`,`<label>내용<select data-p="pkl"><option value=""${KL[k]?'':' selected'}>보이기</option><option value="off"${KL[k]==='off'?' selected':''}>끄기 (이 종류 번호 안 보임)</option></select></label>`)).join(''):`<p class="lst-n">현장 사진을 불러오면 종류별(민원·누수탐사 등) 줄이 나옵니다.</p>`)}
  if(lm)h+=`<div class="lst-gh">🔤 라벨 글자 크기 <small>(관로·시설물·수용가 같이)</small></div><div class="lst-m"><label>글자<select data-lm="uiLblPx" class="msel"></select></label><label>소블록<select data-lm="lblSize" class="msel"></select></label></div>`;
  if(FAC.kinds&&FAC.kinds.length){const KL=FAC.klbl||{};h+=`<div class="lst-gh">🔧 시설물 종류별 <small>(비우면 위 '시설물 라벨 (전체)'를 따름)</small></div>`+FAC.kinds.filter(k=>!FAC.feats.some(f=>f.k===k&&f.a)).map(k=>{const I=facKindInfo(k);
    return lstRow('fac',k,I.name,facSym(I,14),`<label>내용<select data-p="kl">${FKL_OPT.map(([v,t])=>`<option value="${v}"${(KL[k]||'')===v?' selected':''}>${t}</option>`).join('')}</select></label>`)}).join('')}
@@ -8102,8 +8109,9 @@ function lstEv(e){const r=e.target.closest('.lst-r');const box=e.target.closest(
   if(e.target.closest('[data-x]')){LST.open.has(id)?LST.open.delete(id):LST.open.add(id);lstRender();return}
   if(e.target.closest('[data-reset]')){const A=lsAll();if(k)delete A.k[k];else delete A[g];lsSave();lsRedraw();lstRender();return}return}
  const t=e.target;if(!r||!t.dataset||!t.dataset.p)return;const g=r.dataset.g,k=r.dataset.k||'',p=t.dataset.p;
- if(p==='c'||p==='h'){lstSet(g,k,p,t.value.toLowerCase()===(p==='c'?LS_DEF[g]:'#ffffff')?'':t.value);const pv=r.querySelector('.lst-pv');if(pv)pv.setAttribute('style',lstPv(g,k));if(e.type==='change')lstRender();return}
+ if(p==='c'||p==='h'){lstSet(g,k,p,t.value.toLowerCase()===(p==='c'?LS_DEF[g]:LS_HDEF[g]||'#ffffff')?'':t.value);const pv=r.querySelector('.lst-pv');if(pv)pv.setAttribute('style',lstPv(g,k));if(e.type==='change')lstRender();return}
  if(e.type!=='change')return;
+ if(p==='pkl'){const kd=k.slice(3),o=Object.assign({},UI.phKl||{});if(t.value)o[kd]=t.value;else delete o[kd];UI.phKl=Object.keys(o).length?o:undefined;uiSave();phLbStyle();lstRender();return}
  if(p==='kl'){FAC.klbl=FAC.klbl||{};if(t.value)FAC.klbl[k]=t.value;else delete FAC.klbl[k];facCfgSave();facDraw();lymRefresh();lstRender();return}
  if(p==='hn'){const A=lsAll(),o=k?A.k[k]||{}:A[g]||{};lstSet(g,k,'h',t.value==='none'?'none':(o.h==='none'?'':o.h||''))}
  else lstSet(g,k,p,t.value);lstRender()}
@@ -8758,6 +8766,20 @@ function phCodeOf(m,re){if(m.cd)return m.cd;const nm=String(m.name||'').normaliz
  if(re){const x=re.exec(nm)||re.exec(String(m.memo||'').normalize('NFC'));if(x)return x[1]+(+x[2])}
  const y=PH_RCP.exec(nm.replace(/\.[^.]+$/,'').trim());return y?String(+y[1]):''}
 const phRcpLbl=c=>/^\d+$/.test(c)?'접수 '+c:c;
+/* ===== 📷 사진 라벨(번호 글자) — 2026-11-25 라벨 설정에 사진 라벨 넣기
+   내용 UI.phLbT(''=접수 1956·No.12 / n=번호만 / ny=번호+찍은 해) · 보이기 시작 UI.phLbZ · 종류별 끄기 UI.phKl{종류:'off'}
+   글자·테두리 색·크기·굵기·글꼴·종류별 시작 줌은 라벨 모양 geo-lsty의 ph / k['ph:종류'] (라벨 탭·🏷️ 라벨 창). 크기 %·끄기는 그대로 UI.phLs·UI.phLsOff */
+const phLbKd=g=>PH_KD[g.kd]?g.kd:'mw';
+function phLbHtml(g){const t=UI.phLbT||'',kd=phLbKd(g);let x='',no=0;
+ if(g.code)x=t?g.code:phRcpLbl(g.code);else if(g.kc)x=g.kc;else if(g.no){x=t?String(g.no):'No.'+g.no;no=1}else return '';
+ if(t==='ny'){const y=phYr(g);if(y)x+=' · '+y}
+ return `<em class="phcd k-${kd}${no?' no':''}">${esc(x)}</em>`}
+function phLbStyle(){let el=document.getElementById('phLbSt');if(!el){el=document.createElement('style');el.id='phLbSt';document.head.appendChild(el)}
+ let z=99;try{if(map)z=map.getZoom()}catch(_){}const KL=UI.phKl||{},A=lsAll(),G=A.ph||{},r=[];
+ const css=o=>{const a=[];if(o.c)a.push(`color:${o.c}`);if(o.h==='none')a.push('border-color:transparent');else if(o.h)a.push(`border-color:${o.h}`);if(+o.px)a.push(`font-size:${+o.px}px`);if(+o.w)a.push(`font-weight:${+o.w}`);if(o.f)a.push(`font-family:${lsFam(o)}`);return a.join(';')};
+ const g0=css(G);if(g0)r.push(`.phcd,.phcd.no{${g0}}`);
+ for(const kd of PH_KDS){const K=A.k['ph:'+kd]||{},c=css(K);if(c)r.push(`.phcd.k-${kd}{${c}}`);const zz=+K.z||+UI.phLbZ||0;if(KL[kd]==='off'||zz&&z<zz)r.push(`.phcd.k-${kd}{display:none!important}`)}
+ const t=r.join('\n');if(el.textContent!==t)el.textContent=t}
 const phCodeNum=c=>{const x=/(\d+)$/.exec(c||'');return x?+x[1]:Infinity};
 function phGroup(){
  const re=phCodeRe(),code=new Map();for(const m of PH.list){if(m.solo||phKd(m)!=='mw')continue;const c=phCodeOf(m,re);if(c)code.set(m.id,c)}PH.code=code;
@@ -9021,18 +9043,18 @@ function mwCnt(){const c=new Map();if($('phShow').value==='off')return c;for(con
 /* 사진 아이콘 크기: 전체(UI.phSz) × 종류별(UI.phKs) — 시설물 −/＋와 같은 단계 (2026-11-11)
    위치도 빨간 점·기준 위치 파일로 자리 잡은 묶음(g.ref)도 종류별 크기를 따름 (2026-11-24, 긴급76 안 커지던 원인) */
 function phSzOf(g){const a=(+UI.phSz||1)*(PH.bpK||1),b=g&&UI.phKs?+UI.phKs[g.kd||'mw']||1:1;return Math.max(.4,Math.min(4,a*b))}
-function phLsApply(){try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1));document.documentElement.classList.toggle('phls-off',!!UI.phLsOff)}catch(_){}}
+function phLsApply(){try{phLbStyle()}catch(_){}try{document.documentElement.style.setProperty('--phls',String(+UI.phLs||1));document.documentElement.classList.toggle('phls-off',!!UI.phLsOff)}catch(_){}}
 /* 사진 번호 글자(접수 1956·268·No.) 끄기(2026-11-24) — UI.phLsOff, 레이어 창 번호 글자 체크·⚙ 사진 번호 글자 '끄기' */
 function phLsOffSet(off){UI.phLsOff=off?1:undefined;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=off?'off':String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phLs||1))<Math.abs(b-(+UI.phLs||1))?x:b))}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
 function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
- return L.divIcon({className:'ph-ic',iconSize:[S,S],iconAnchor:[S/2,S/2],html:`<div class="phb${yc?' yc':''}${ts?' tss st-'+ts:''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${st?` style="${st}"`:''}${ts?` title="누수탐사 ${TS_ST[ts].n}"`:ms?` title="민원 ${MW_ST[ms].n}"`:''}>${ts?tsStar(TS_ST[ts].c):''}${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}${ts||g.kd==='mw'&&!g.fac?'':`<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>`}${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${g.code?`<em class="phcd">${esc(phRcpLbl(g.code))}</em>`:g.kc?`<em class="phcd">${esc(g.kc)}</em>`:g.no?`<em class="phcd no">No.${g.no}</em>`:''}`})}
+ return L.divIcon({className:'ph-ic',iconSize:[S,S],iconAnchor:[S/2,S/2],html:`<div class="phb${yc?' yc':''}${ts?' tss st-'+ts:''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${st?` style="${st}"`:''}${ts?` title="누수탐사 ${TS_ST[ts].n}"`:ms?` title="민원 ${MW_ST[ms].n}"`:''}>${ts?tsStar(TS_ST[ts].c):''}${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}${ts||g.kd==='mw'&&!g.fac?'':`<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>`}${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${phLbHtml(g)}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
 function phToggle(){const sh=$('phShow');sh.value=sh.value==='off'?'on':'off';if(sh.value==='off'&&PH.pop&&map)map.closePopup();sh.dispatchEvent(new Event('change'))}
-function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);try{facPhSync(MG)}catch(_){}if(!map)return;if(!PH.L)PH.L=L.layerGroup();
+function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH.G,on=$('phShow').value!=='off'&&MG.length>0;phYrLeg(MG);try{facPhSync(MG)}catch(_){}if(!map)return;if(!PH.lbz){PH.lbz=1;map.on('zoomend',phLbStyle);phLbStyle()}if(!PH.L)PH.L=L.layerGroup();
  if(!on){if(map.hasLayer(PH.L))map.removeLayer(PH.L);return}if(!map.hasLayer(PH.L))PH.L.addTo(map);PH.L.clearLayers();
  const z=map.getZoom(),b=map.getBounds().pad(.25),vis=MG.filter(g=>g.lat!=null&&b.contains([g.lat,g.lng])&&!phFacHid(g,z)&&!tsHidG(g)&&!mwHidG(g)&&!kdHidG(g));
  const ed=PH.ed&&PH.ed.on;if(ed)PH.ed.clu=false;
@@ -14545,12 +14567,14 @@ try{hlpChipInit()}catch(e){console.warn('사용법 칩',e)}
 /* ---------- 🏷️ 라벨 설정 (2026-11-11 C안): 위쪽 칩 '라벨'·작업 화면 리본 '라벨' 탭·지도 탭 버튼에서 한 곳에 모아 바꿈.
    새 저장값은 없음: 원래 칸(⚙ 설정 창·②-2 시설물 칸·② 블록명 칸)의 값을 보여 주고, 바꾸면 원래 칸 값을 바꾸고 change를 보내
    그 칸의 처리(저장·다시 그리기)를 그대로 탐 → ⚙ 설정 창·레이어 창과 언제나 같은 값. 원래 칸 id만 보므로 칸이 다른 창으로 옮겨져도 됨 */
-const LBLM_UI={uiCl:()=>UI.cl||'off',uiClR:()=>UI.clR||'all',uiClZ:()=>String(UI.clZ||18),uiLbl:()=>UI.lbl||'off',uiLblZ:()=>String(UI.lblZ||17),
+const LBLM_UI={uiCl:()=>UI.cl||'off',uiClR:()=>UI.clR||'all',uiClZ:()=>String(UI.clZ||18),uiLbl:()=>UI.lbl||'off',uiLblZ:()=>String(UI.lblZ||17),uiPhLbT:()=>UI.phLbT||'',uiPhLbZ:()=>String(UI.phLbZ||''),
+ uiPhLs:()=>UI.phLsOff?'off':String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phLs||1))<Math.abs(b-(+UI.phLs||1))?x:b)),
  uiLblPx:()=>{const e=$('uiLblPx'),v=+UI.lblPx||11;if(!e||!e.options.length)return String(v);return [...e.options].reduce((b,x)=>Math.abs(+x.value-v)<Math.abs(+b.value-v)?x:b).value}};
 const LBLM_G=[{n:'👥 수용가 라벨',s:'이름·주소·연락처는 넣지 않음',f:[['uiCl','내용'],['uiClR','대상'],['uiClZ','보이기 시작']],h:'uiClHint'},
  {n:'🚰 관로 라벨',s:'관종·구경·매설년도',f:[['uiLbl','내용'],['uiLblZ','보이기 시작']],h:'uiLblHint'},
  {n:'🔧 시설물 라벨',s:'이름 = 유량계·가압장·배수지·정수장 · 설치년도 = 모든 시설물(줌 17부터)',f:[['fLbl','내용']]},
  {n:'🟩 소블록 이름',f:[['lblMode','표시'],['lblSize','글자 크기']]},
+ {n:'📷 사진 라벨',s:'누수탐사·민원 등 사진 번호 글자',f:[['uiPhLbT','내용'],['uiPhLs','크기'],['uiPhLbZ','보이기 시작']]},
  {n:'🔤 라벨 글자 크기',s:'관로·시설물·수용가 라벨 같이',f:[['uiLblPx','글자']]}];
 const LBLM_IDS=new Set(LBLM_G.flatMap(g=>g.f.map(f=>f[0])));
 function lmVal(id){const f=LBLM_UI[id];if(f)return f();const e=$(id);return e?e.value:''}
