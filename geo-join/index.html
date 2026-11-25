@@ -11071,11 +11071,13 @@ function needH2C(){if(window.html2canvas)return Promise.resolve(true);if(H2C_P)r
 /* 고객 정보 정보창: 수용가(👤)·전화번호가 든 창 */
 const mshotPii=el=>{const t=el.textContent||'';return /👤/.test(t)||!!el.querySelector('a[href^="tel:"]')};
 /* 지도 칸 중 zMin ≤ z < zMax 인 칸의 HTML 표시만 그림 (캔버스는 따로 복사하므로 뺌) */
+const SHOT_NOPOP=true;/* true = 정보창 빼고 찍기 */
 async function mapShotDom(S,zMin,zMax){const {g,k,W,Hm}=S,mc=map.getContainer(),mp=map.getPane('mapPane'),masks=[];
  const R=mc.getBoundingClientRect(),zOf=e=>+getComputedStyle(e).zIndex||0;
  const panes=[...mp.children].filter(p=>p!==map.getPane('tilePane')&&zOf(p)>=zMin&&zOf(p)<zMax&&p.querySelector(':not(canvas)'));
  if(!panes.length)return 0;
- panes.forEach(p=>p.querySelectorAll('.leaflet-popup').forEach(pp=>{if(mshotPii(pp)){const r=pp.getBoundingClientRect();masks.push(r)}}));
+ /* 2026-11-26 정보창(흰 사각 상자)은 캡처·출력 그림에 넣지 않음 (사용자 요청 "사각박스 안보이게"): 고객 정보 가림 상자도 필요 없어짐 */
+ if(!SHOT_NOPOP)panes.forEach(p=>p.querySelectorAll('.leaflet-popup').forEach(pp=>{if(mshotPii(pp)){const r=pp.getBoundingClientRect();masks.push(r)}}));
  const keep=new Set(panes);mc.setAttribute('data-mshot','1');let cv;try{cv=await html2canvas(mc,{backgroundColor:null,scale:k,logging:false,useCORS:true,imageTimeout:8000,
   onclone:d=>{const c=d.querySelector('[data-mshot]');if(c)c.style.cssText+=';background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important'
    /* 2026-11-25 지도 칸 둘레(리본·패널 등)를 빼고 복제하면 칸이 0 크기로 줄어 핀·사진·소블록 이름이 통째로 빠지던 것: 복제본 칸 크기를 화면 그대로 고정 */
@@ -11083,6 +11085,7 @@ async function mapShotDom(S,zMin,zMax){const {g,k,W,Hm}=S,mc=map.getContainer(),
   ignoreElements:el=>{if(el===mc||el===mp||el.contains&&el.contains(mc))return false;if(!mc.contains(el))return !(el.tagName==='HEAD'||el.tagName==='STYLE'||el.tagName==='LINK');
    if(el.parentElement===mc)return el!==mp;if(el.parentElement===mp)return !keep.has(el);if(el.tagName==='CANVAS')return true;
    /* 2026-11-24 🍚 현장 맛집 아이콘·정보창은 출력·캡처 그림에 넣지 않음 (사용자 요청) */if(el.classList&&window.SHOT_NOME&&el.classList.contains('fm-me'))return true;/* 2026-11-25 출력에서 내 위치 파란 점 빼기(기본) */
+   if(SHOT_NOPOP&&el.classList&&el.classList.contains('leaflet-popup'))return true;
    if(el.classList&&(el.classList.contains('fdmk')||el.classList.contains('leaflet-popup')&&el.querySelector('.fdpop')))return true;
    if(el.classList&&(el.classList.contains('leaflet-control-container')||el.classList.contains('leaflet-popup')&&mshotPii(el)))return true;return false}})}finally{mc.removeAttribute('data-mshot')}
  g.drawImage(cv,0,0,W,Hm);
