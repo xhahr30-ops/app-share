@@ -1143,7 +1143,7 @@ html.chipOn.chipV .chipbar .upb .upn,.leaflet-top .upb .upn{position:absolute;to
 .mkbar .mkgb{display:inline-flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto;max-width:200px}.mkbar .mkgn1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .mkbar .mkgb em{font-style:normal;background:#db2777;color:#fff;border-radius:999px;padding:0 6px;font-size:10.5px;flex:none}.mkbar .mkend{margin-left:auto}
 .mkbar .mkm:empty{display:none}.mkbar .mkm{color:#be185d;font-weight:700}
-@media (max-width:640px),(max-height:500px){.mkbar .mkts,.mkbar .mkis{flex-wrap:nowrap;overflow-x:auto}.mkbar .lb,.mkbar .lb2{display:none}.mkbar .mkt{min-width:38px;padding:7px 6px;font-size:16px}.mkbar .mki{padding:5px 7px}.mkbar .mki img{width:24px;height:24px}.mkbar .mkgb{max-width:none}}
+@media (max-width:640px),(max-height:500px){.mkbar .mkts,.mkbar .mkis{flex-wrap:nowrap;overflow-x:auto}.mkbar .lb,.mkbar .lb2{display:none}.mkbar .mkt{min-width:38px;padding:7px 6px;font-size:16px}.mkbar .mki{padding:5px 7px}.mkbar .mki img{width:24px;height:24px}.mkbar .mkgb{max-width:none}.mkbar .mkop{flex-wrap:nowrap;overflow-x:auto;padding:4px 3px}.mkbar .mkop button{flex:none}}
 .mktx{position:absolute;z-index:1001;left:50%;top:62px;transform:translateX(-50%);width:min(340px,calc(100% - 20px));box-sizing:border-box;background:var(--card);color:var(--ink);border:2px solid #db2777;border-radius:12px;box-shadow:0 4px 16px rgba(15,23,42,.3);padding:8px;font:12px/1.4 'Noto Sans KR',sans-serif}
 .mktx textarea{display:block;width:100%;box-sizing:border-box;font:15px 'Noto Sans KR',sans-serif;padding:6px 8px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);margin:5px 0;resize:vertical}
 .mktx .r{display:flex;gap:6px;flex-wrap:wrap}.mktx button{font:700 12px 'Noto Sans KR',sans-serif;padding:6px 12px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink);cursor:pointer}
@@ -15297,7 +15297,7 @@ function frdText(id,md,fn){const box=$(id);if(!box)return;box.hidden=false;box.i
    IDB 'marks' = {at, base, gs:[{id,nm,by,c,u,del}], list:[{id,g,t,c,w,p:[[lat,lng]…],tx,fs,k,r,s,by,u,del}]}
    t: pen 펜 · ln 직선 · ar 화살표 · rc 네모 · ci 원(p[0] 가운데·p[1] 가장자리) · tx 글자(p[0] 가운데) · ic 아이콘(p[0], k 종류, r 회전°, s 크기px)
    at·base는 동영상 연결과 같음(이 기기 버전 / 공유 서버와 맞춘 버전). 글자·묶음 이름에 전화번호·주민번호 모양은 못 넣음 */
-var MK={at:0,base:0,gs:[],list:[],on:false,tool:'pen',c:'#dc2626',w:5,fs:18,ik:'gate',is:30,cur:'',hide:new Set(),undo:[],busy:false,tm:0,cv:null,ov:null,bar:null,a:null,dr:null,tl:null,raf:0,added:new Map(),tx:null,erN:[],msg:'',bb:new WeakMap(),img:new Map(),mc:null};
+var MK={at:0,base:0,gs:[],list:[],on:false,tool:'pen',c:'#dc2626',w:5,fs:18,ik:'gate',is:30,cur:'',hide:new Set(),undo:[],redo:[],llb:'',busy:false,tm:0,cv:null,ov:null,bar:null,a:null,dr:null,tl:null,raf:0,added:new Map(),tx:null,erN:[],msg:'',bb:new WeakMap(),img:new Map(),mc:null};
 const MK_C=[['#dc2626','빨강'],['#facc15','노랑'],['#2563eb','파랑'],['#16a34a','초록'],['#111827','검정'],['#ffffff','흰색']];
 const MK_W=[[3,'가늘게'],[5,'보통'],[9,'굵게']],MK_FS=[[14,'작게'],[18,'보통'],[26,'크게']],MK_IS=[[22,'작게'],[30,'보통'],[42,'크게']];
 const MK_T=[['hand','✋','이동'],['pen','✏️','펜'],['ln','／','직선'],['ar','➜','화살표'],['rc','⬜','네모'],['ci','◯','원'],['tx','🔤','글자'],['ic','🔧','아이콘'],['er','🧽','지우개']];
@@ -15314,16 +15314,26 @@ const mkGLive=()=>MK.gs.filter(g=>!g.del);
 const mkG=id=>MK.gs.find(g=>g.id===id);
 const mkLive=()=>MK.list.filter(m=>!m.del);
 const mkGN=id=>mkLive().filter(m=>m.g===id).length;
-try{const o=JSON.parse(localStorage.getItem('geo-mk')||'{}');['tool','c','w','fs','ik','is','cur'].forEach(k=>{if(o[k]!=null&&o[k]!=='')MK[k]=o[k]});
+/* 🔒 나만 보기 묶음: 공유 서버에 올리지 않음(이 기기에만) */
+const mkPvG=id=>{const g=mkG(id);return!!(g&&g.pv)};
+const mkPvX=x=>!!x&&(x.t?mkPvG(x.g):!!x.pv);
+function mkPushU(a){MK.undo.push(a);if(MK.undo.length>100)MK.undo.shift();MK.redo=[]}
+/* 아이콘 옆 글씨(예: 밸브1(75mm)) */
+const mkLbFs=m=>Math.max(12,Math.round((m.s||30)*.55));
+function mkLbBox(m,p){if(!MK.mc)MK.mc=document.createElement('canvas').getContext('2d');const fs=mkLbFs(m),ls=String(m.lb||'').split('\n'),lh=fs*1.2;MK.mc.font=mkFont(fs);
+ const w=Math.max(...ls.map(t=>MK.mc.measureText(t).width)),h=ls.length*lh,x=p.x+(m.s||30)/2+4;return[x,p.y-h/2,x+w,p.y+h/2]}
+/* 다음 번호 글씨: 밸브1(75mm) → 밸브2(75mm) */
+const mkLbNext=v=>{const m=/\d+/.exec(v||'');return m?v.slice(0,m.index)+(+m[0]+1)+v.slice(m.index+m[0].length):''};
+try{const o=JSON.parse(localStorage.getItem('geo-mk')||'{}');['tool','c','w','fs','ik','is','cur','llb'].forEach(k=>{if(o[k]!=null&&o[k]!=='')MK[k]=o[k]});
  (JSON.parse(localStorage.getItem('geo-mk-hide')||'[]')||[]).forEach(x=>MK.hide.add(x))}catch(_){}
 if(!MK_T.some(t=>t[0]===MK.tool))MK.tool='pen';
-function mkCfgSave(){try{localStorage.setItem('geo-mk',JSON.stringify({tool:MK.tool,c:MK.c,w:MK.w,fs:MK.fs,ik:MK.ik,is:MK.is,cur:MK.cur}));localStorage.setItem('geo-mk-hide',JSON.stringify([...MK.hide]))}catch(_){}}
+function mkCfgSave(){try{localStorage.setItem('geo-mk',JSON.stringify({tool:MK.tool,c:MK.c,w:MK.w,fs:MK.fs,ik:MK.ik,is:MK.is,cur:MK.cur,llb:MK.llb}));localStorage.setItem('geo-mk-hide',JSON.stringify([...MK.hide]))}catch(_){}}
 async function mkLoad(){try{const v=await IDB.get('marks');if(v&&Array.isArray(v.list)){MK.at=v.at||0;MK.base=v.base||0;MK.list=v.list;MK.gs=Array.isArray(v.gs)?v.gs:[]}}catch(_){}mkDraw(true);mkUi()}
 /* 지운 지 7일 지난 표시는 좌표를 비워 용량을 줄임(지운 기록 자체는 남겨 다른 기기에서 되살아나지 않게) */
 async function mkStore(){const old=Date.now()-7*864e5;MK.list.forEach(m=>{if(m.del&&(m.u||0)<old&&m.p&&m.p.length){m.p=[];delete m.tx}});
  try{await IDB.set('marks',{at:MK.at,base:MK.base,gs:MK.gs,list:MK.list})}catch(e){console.warn('그리기 저장',e)}}
 async function mkSave(){MK.at=Date.now();await mkStore();mkDraw(true);mkUi();mkGrpRender();clearTimeout(MK.tm);
- if(typeof SH!=='undefined'&&SH.on())MK.tm=setTimeout(()=>mkSync(true).then(r=>{if(r&&r.old)mkMsg('⚠️ 공유 서버 Code.gs가 예전 판이라 그린 것을 올리지 못했습니다. 2026-10-29 판으로 바꾸고 새 버전으로 배포해 주세요.');else if(r&&r.sent)mkMsg('☁️ 공유 서버에 올렸습니다.')}).catch(e=>console.warn('그리기 공유',e)),3000)}
+ if(typeof SH!=='undefined'&&SH.on())MK.tm=setTimeout(()=>mkSync(true).then(r=>{if(r&&r.old)mkMsg('⚠️ 공유 서버 Code.gs가 예전 판이라 그린 것을 올리지 못했습니다. 2026-10-29 판으로 바꾸고 새 버전으로 배포해 주세요.');else if(r&&r.sent){const g=mkCurG(false);mkMsg(g&&g.pv?'🔒 나만 보기 묶음 — 이 기기에만 저장했습니다.':'☁️ 공유 서버에 올렸습니다.')}}).catch(e=>console.warn('그리기 공유',e)),3000)}
 function mkMsg(t){MK.msg=t||'';const h=MK.bar&&MK.bar.querySelector('.mkm');if(h)h.textContent=MK.msg}
 /* 지금 그리는 묶음 (없으면 새로 만듦) */
 function mkCurG(make){let g=mkG(MK.cur);if(g&&!g.del)return g;if(!make)return null;
@@ -15359,7 +15369,11 @@ function mkStroke(g,m,P,draft){g.save();const c=m.c||'#dc2626',lt=c==='#ffffff'|
  if(m.t==='ic'){const s=m.s||30,im=mkIcImg(m.k);g.translate(P[0].x,P[0].y);g.rotate((m.r||0)*Math.PI/180);if(draft)g.globalAlpha=.75;
   if(im)g.drawImage(im,-s/2,-s/2,s,s);else{g.fillStyle='#fff';g.strokeStyle='#dc2626';g.lineWidth=2;g.beginPath();g.arc(0,0,s/2-1,0,7);g.fill();g.stroke()}
   if(draft&&m.r){g.rotate(-(m.r||0)*Math.PI/180);g.strokeStyle='#db2777';g.lineWidth=2;g.setLineDash([4,3]);g.beginPath();g.arc(0,0,s/2+5,0,7);g.stroke()}
-  g.restore();return}
+  g.restore();
+  if(m.lb){g.save();const fs=mkLbFs(m),ls=String(m.lb).split('\n'),lh=fs*1.2,lc=m.lc||'#111827',lt=lc==='#ffffff'||lc==='#facc15',x=P[0].x+s/2+4,y0=P[0].y-(ls.length-1)*lh/2;
+   g.font=mkFont(fs);g.textAlign='left';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=Math.max(3,fs/4.5);g.strokeStyle=lt?'rgba(15,23,42,.6)':'rgba(255,255,255,.92)';g.fillStyle=lc;
+   ls.forEach((t,i)=>{g.strokeText(t,x,y0+i*lh);g.fillText(t,x,y0+i*lh)});g.restore()}
+  return}
  const path=()=>{g.beginPath();if(m.t==='rc'){const a=P[0],b=P[1];g.rect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(b.x-a.x),Math.abs(b.y-a.y))}
   else if(m.t==='ci'){g.arc(P[0].x,P[0].y,P[0].distanceTo(P[1]),0,Math.PI*2)}
   else{g.moveTo(P[0].x,P[0].y);for(let i=1;i<P.length;i++)g.lineTo(P[i].x,P[i].y);if(P.length===1||(P.length===2&&P[0].distanceTo(P[1])<.5))g.lineTo(P[0].x+.1,P[0].y)}};
@@ -15373,18 +15387,18 @@ function mkStroke(g,m,P,draft){g.save();const c=m.c||'#dc2626',lt=c==='#ffffff'|
 function mkSegD(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;let t=l?((p.x-a.x)*dx+(p.y-a.y)*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy)}
 function mkHit(cp,tol,only){const L0=mkVis();for(let i=L0.length-1;i>=0;i--){const m=L0[i];if(only&&m.t!==only)continue;const P=m.p.map(q=>map.latLngToContainerPoint(q)),t=(tol||12)+(m.w||5)/2;
   if(m.t==='tx'){const b=mkTxBox(m,P[0]);if(cp.x>=b[0]-6&&cp.x<=b[2]+6&&cp.y>=b[1]-6&&cp.y<=b[3]+6)return m;continue}
-  if(m.t==='ic'){if(cp.distanceTo(P[0])<=(m.s||30)/2+6)return m;continue}
+  if(m.t==='ic'){if(cp.distanceTo(P[0])<=(m.s||30)/2+6)return m;if(m.lb){const b=mkLbBox(m,P[0]);if(cp.x>=b[0]-4&&cp.x<=b[2]+4&&cp.y>=b[1]-4&&cp.y<=b[3]+4)return m}continue}
   if(m.t==='ci'){if(Math.abs(cp.distanceTo(P[0])-P[0].distanceTo(P[1]))<=t)return m;continue}
   if(m.t==='rc'){const a=P[0],b=P[1],c=[a,L.point(b.x,a.y),b,L.point(a.x,b.y)];if(c.some((q,k)=>mkSegD(cp,q,c[(k+1)%4])<=t))return m;continue}
   if(P.length===1&&cp.distanceTo(P[0])<=t)return m;for(let k=0;k<P.length-1;k++)if(mkSegD(cp,P[k],P[k+1])<=t)return m}return null}
 /* ---- 덮개: 그리는 손가락·마우스 받기 (지도 끌기·화면 고정과 따로 움직임) ---- */
 function mkOv(){if(MK.ov)return MK.ov;const mc=map.getContainer(),ov=L.DomUtil.create('div','mkov',mc);ov.hidden=true;L.DomEvent.disableClickPropagation(ov);
  let pid=null,last=null,two=false,down=null;const cp=e=>{const r=mc.getBoundingClientRect();return L.point(e.clientX-r.left,e.clientY-r.top)},ll=p=>{const q=map.containerPointToLatLng(p);return[mkR(q.lat),mkR(q.lng)]};
- ov.addEventListener('pointerdown',e=>{if(e.button>0)return;e.preventDefault();if(MK.tx)mkTxClose();
+ ov.addEventListener('pointerdown',e=>{if(e.button>0)return;e.preventDefault();if(MK.tx){if(MK.tx.ok)MK.tx.ok(true);else mkTxClose()}
   if(pid!=null){two=true;MK.dr=null;mkDraw(true);mkMsg('두 손가락은 그리기를 멈춥니다. 지도를 옮기려면 ✋ 이동을 고르세요.');return}
   pid=e.pointerId;two=false;try{ov.setPointerCapture(pid)}catch(_){}const p=cp(e);last=p;down=p;const t=MK.tool;
   if(t==='er'){MK.erN=[];mkErase(p);return}if(t==='tx')return;
-  if(t==='ic'){MK.dr={t:'ic',k:MK.ik,s:+MK.is||30,r:0,p:[ll(p)]};mkDraw();return}
+  if(t==='ic'){MK.dr={t:'ic',k:MK.ik,s:+MK.is||30,r:0,p:[ll(p)],ex:mkHit(p,2,'ic')};mkDraw();return}
   MK.dr={t,c:MK.c,w:+MK.w||5,p:t==='pen'?[ll(p)]:[ll(p),ll(p)]};mkDraw()});
  ov.addEventListener('pointermove',e=>{if(e.pointerId!==pid||two)return;e.preventDefault();const p=cp(e);
   if(MK.tool==='er'){if(p.distanceTo(last)>=4){last=p;mkErase(p)}return}
@@ -15395,32 +15409,43 @@ function mkOv(){if(MK.ov)return MK.ov;const mc=map.getContainer(),ov=L.DomUtil.c
   if(MK.tool==='er'){mkEraseEnd();return}
   if(MK.tool==='tx'){if(e.type==='pointerup')mkTextAt(p);return}
   const d=MK.dr;MK.dr=null;if(!d||e.type==='pointercancel'){mkDraw(true);return}
-  if(d.t==='ic'){mkAdd(d);mkMsg(`${mkIcName(d.k)} 넣음${d.r?' (방향 '+d.r+'°)':''}`);return}
+  if(d.t==='ic'){if(d.ex&&!d.r&&p.distanceTo(down)<8){mkDraw(true);mkIcText(d.ex,false);return}
+   delete d.ex;const m=mkAdd(d);mkMsg(`${mkIcName(d.k)} 넣음${d.r?' (방향 '+d.r+'°)':''}`);mkIcText(m,true);return}
   if(d.t!=='pen'){const a=map.latLngToContainerPoint(d.p[0]),b=map.latLngToContainerPoint(d.p[1]);if(a.distanceTo(b)<6){mkDraw(true);mkMsg('조금 더 길게 끌어 그려 주세요.');return}}
   if(d.t==='pen'&&d.p.length<2)d.p.push(d.p[0].slice());mkAdd(d)};
  ov.addEventListener('pointerup',up);ov.addEventListener('pointercancel',up);ov.addEventListener('contextmenu',e=>e.preventDefault());
  MK.ov=ov;return ov}
 function mkAdd(d){const g=mkCurG(true),now=Date.now(),m={id:mkUid('m'),g:g.id,t:d.t,p:d.p,by:chgMe(),u:now};
  if(d.t==='tx'){m.c=d.c;m.tx=d.tx;m.fs=d.fs}else if(d.t==='ic'){m.k=d.k;m.s=d.s;if(d.r)m.r=d.r}else{m.c=d.c;m.w=d.w}
- MK.list.push(m);g.u=now;MK.undo.push({k:'add',ids:[m.id]});if(MK.undo.length>100)MK.undo.shift();MK.added.set(g.id,(MK.added.get(g.id)||0)+1);mkSave();return m}
+ MK.list.push(m);g.u=now;mkPushU({k:'add',ids:[m.id]});MK.added.set(g.id,(MK.added.get(g.id)||0)+1);mkSave();return m}
 function mkErase(p){const m=mkHit(p,10);if(!m)return;m.del=1;m.u=Date.now();MK.erN.push(m.id);mkDraw()}
-function mkEraseEnd(){const ids=MK.erN;MK.erN=[];if(!ids.length){mkMsg('지울 표시를 정확히 누르거나 문질러 주세요.');return}MK.undo.push({k:'del',ids});mkSave();mkMsg(`🧽 ${ids.length}개 지웠습니다 · ↩️ 되돌리기로 살릴 수 있습니다.`)}
-function mkUndo(){const a=MK.undo.pop();if(!a){mkMsg('되돌릴 것이 없습니다.');return}const now=Date.now(),f=id=>MK.list.find(x=>x.id===id);
- if(a.k==='add')a.ids.forEach(id=>{const m=f(id);if(m){m.del=1;m.u=now}});
- else if(a.k==='del')a.ids.forEach(id=>{const m=f(id);if(m&&m.p&&m.p.length){delete m.del;m.u=now}});
- else if(a.k==='ed'){const m=f(a.id);if(m){Object.assign(m,a.prev);m.u=now}}
- mkSave();mkMsg('↩️ 되돌렸습니다.')}
+function mkEraseEnd(){const ids=MK.erN;MK.erN=[];if(!ids.length){mkMsg('지울 표시를 정확히 누르거나 문질러 주세요.');return}mkPushU({k:'del',ids});mkSave();mkMsg(`🧽 ${ids.length}개 지웠습니다 · ↩️ 되돌리기로 살릴 수 있습니다.`)}
+/* 되돌리기·다시 하기: add=넣은 것, del=지운 것, ed=고친 것(prev 앞 값) */
+function mkUndoDo(a,back){const now=Date.now(),f=id=>MK.list.find(x=>x.id===id),off=(a.k==='add')===back;
+ if(a.k==='ed'){const m=f(a.id);if(!m)return false;const cur={};Object.keys(a.prev).forEach(k=>cur[k]=m[k]);Object.keys(a.prev).forEach(k=>{if(a.prev[k]==null)delete m[k];else m[k]=a.prev[k]});a.prev=cur;m.u=now;return true}
+ let n=0;a.ids.forEach(id=>{const m=f(id);if(!m)return;if(off){if(!m.del){m.del=1;m.u=now;n++}}else if(m.p&&m.p.length&&m.del){delete m.del;m.u=now;n++}});return n>0}
+function mkUndo(){const a=MK.undo.pop();if(!a){mkMsg('되돌릴 것이 없습니다.');return}mkUndoDo(a,true);MK.redo.push(a);mkSave();mkMsg('↩️ 되돌렸습니다.'+(MK.undo.length?` (더 되돌릴 것 ${MK.undo.length}개)`:'')+' · ↪️ 다시 하기로 살릴 수 있습니다.')}
+function mkRedo(){const a=MK.redo.pop();if(!a){mkMsg('다시 할 것이 없습니다.');return}mkUndoDo(a,false);MK.undo.push(a);mkSave();mkMsg('↪️ 다시 했습니다.')}
 /* ---- 글자 넣기·고치기 (지도 위쪽 작은 창) ---- */
 function mkTextAt(p){const ex=mkHit(p,8,'tx');mkTxClose();const mc=map.getContainer(),q=ex?null:map.containerPointToLatLng(p);
  const b=L.DomUtil.create('div','mktx np',mc);L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);
  b.innerHTML=`<b>${ex?'🔤 글자 고치기':'🔤 글자 넣기'}</b><textarea rows="2" maxlength="200" placeholder="예: 누수 지점, 밸브 잠금, 굴착 2m (줄바꿈 Shift+Enter)">${ex?esc(ex.tx||''):''}</textarea><div class="r"><button type="button" class="on" data-x="ok">✓ ${ex?'고치기':'넣기'}</button>${ex?'<button type="button" class="del" data-x="del">🗑 지우기</button>':''}<button type="button" data-x="no">취소</button></div><small class="mkte"></small>`;
  const ta=b.querySelector('textarea'),ok=()=>{const v=ta.value.replace(/\s+$/,'').replace(/^\s+/,'');
   if(!v){mkTxClose();return}if(vidBad(v)){b.querySelector('.mkte').textContent='전화번호·주민번호 같은 개인정보는 넣을 수 없습니다.';return}
-  if(ex){if(v!==ex.tx){MK.undo.push({k:'ed',id:ex.id,prev:{tx:ex.tx}});ex.tx=v;ex.u=Date.now();mkSave()}}
+  if(ex){if(v!==ex.tx){mkPushU({k:'ed',id:ex.id,prev:{tx:ex.tx}});ex.tx=v;ex.u=Date.now();mkSave()}}
   else mkAdd({t:'tx',c:MK.c,fs:+MK.fs||18,tx:v,p:[[mkR(q.lat),mkR(q.lng)]]});mkTxClose()};
  ta.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();ok()}else if(e.key==='Escape'){e.preventDefault();mkTxClose()}});
- b.onclick=e=>{const x=e.target.closest('[data-x]');if(!x)return;const k=x.dataset.x;if(k==='ok')ok();else if(k==='del'){ex.del=1;ex.u=Date.now();MK.undo.push({k:'del',ids:[ex.id]});mkSave();mkTxClose()}else mkTxClose()};
+ b.onclick=e=>{const x=e.target.closest('[data-x]');if(!x)return;const k=x.dataset.x;if(k==='ok')ok();else if(k==='del'){ex.del=1;ex.u=Date.now();mkPushU({k:'del',ids:[ex.id]});mkSave();mkTxClose()}else mkTxClose()};
  MK.tx={b};if(!ex)MK.dr={t:'tx',c:MK.c,fs:+MK.fs||18,tx:'',p:[[q.lat,q.lng]]};mkDraw(true);setTimeout(()=>{try{ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}catch(_){}},30)}
+function mkIcText(m,isNew){mkTxClose();const mc=map.getContainer(),b=L.DomUtil.create('div','mktx np',mc);L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);
+ const nx=isNew?mkLbNext(MK.llb):'',old=m.lb||'';
+ b.innerHTML=`<b>🏷 ${esc(mkIcName(m.k))} 글씨 ${isNew?'넣기':'고치기'}</b><textarea rows="1" maxlength="60" placeholder="예: 밸브1(75mm) · 비우면 아이콘만 (줄바꿈 Shift+Enter)">${esc(old)}</textarea><div class="r"><button type="button" class="on" data-x="ok">✓ ${old?'고치기':'넣기'}</button>${nx?`<button type="button" data-x="nx" title="지난번 글씨의 번호 +1">＋ ${esc(nx)}</button>`:''}${MK.llb&&isNew&&MK.llb!==nx?`<button type="button" data-x="same" title="지난번과 같은 글씨">= ${esc(MK.llb)}</button>`:''}${old?'<button type="button" class="del" data-x="clr">글씨 지우기</button>':''}${isNew?'':'<button type="button" class="del" data-x="del">🗑 아이콘 지우기</button>'}<button type="button" data-x="no">${isNew?'글씨 없이':'닫기'}</button></div><small class="mkte"></small>`;
+ const ta=b.querySelector('textarea'),set=v=>{if(v===(m.lb||''))return;if(!isNew)mkPushU({k:'ed',id:m.id,prev:{lb:m.lb,lc:m.lc}});if(v){m.lb=v;m.lc=MK.c;MK.llb=v;mkCfgSave()}else{delete m.lb;delete m.lc}m.u=Date.now();mkSave()},
+  ok=force=>{const v=ta.value.trim();if(v&&vidBad(v)){if(force){mkTxClose();return}b.querySelector('.mkte').textContent='전화번호·주민번호 같은 개인정보는 넣을 수 없습니다.';return}set(v);mkTxClose();if(v)mkMsg(`🏷 "${v.replace(/\n/g,' ')}" 글씨를 붙였습니다. 아이콘을 누르면 고칩니다.`)};
+ ta.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();ok()}else if(e.key==='Escape'){e.preventDefault();mkTxClose()}});
+ b.onclick=e=>{const x=e.target.closest('[data-x]');if(!x)return;const k=x.dataset.x;if(k==='ok')ok();else if(k==='nx'){ta.value=nx;ok()}else if(k==='same'){ta.value=MK.llb;ok()}else if(k==='clr'){set('');mkTxClose()}
+  else if(k==='del'){m.del=1;m.u=Date.now();mkPushU({k:'del',ids:[m.id]});mkSave();mkTxClose()}else mkTxClose()};
+ MK.tx={b,ok};mkDraw(true);setTimeout(()=>{try{ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}catch(_){}},30)}
 function mkTxClose(){if(!MK.tx)return;MK.tx.b.remove();MK.tx=null;if(MK.dr&&MK.dr.t==='tx')MK.dr=null;mkDraw(true)}
 /* ---- 켜기·끄기 ---- */
 function mkSet(on){if(!map)return;on=!!on;if(on===MK.on){if(on)mkUi();return}
@@ -15435,7 +15460,7 @@ function mkBar(){if(MK.bar)return MK.bar;const bar=L.DomUtil.create('div','phed 
  L.DomEvent.disableClickPropagation(bar);L.DomEvent.disableScrollPropagation(bar);
  bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.t){MK.tool=d.t;mkTxClose();MK.msg=''}else if(d.c)MK.c=d.c;else if(d.w)MK.w=+d.w;else if(d.f)MK.fs=+d.f;else if(d.ik){MK.ik=d.ik;if(MK.tool!=='ic')MK.tool='ic'}else if(d.is)MK.is=+d.is;
-  else if(d.m==='undo'){mkUndo();return}else if(d.m==='grp'){mkGrpOpen();return}else if(d.m==='end'){mkSet(false);return}else if(d.m==='shot'){mapShot(b);return}
+  else if(d.m==='undo'){mkUndo();return}else if(d.m==='redo'){mkRedo();return}else if(d.m==='grp'){mkGrpOpen();return}else if(d.m==='end'){mkSet(false);return}else if(d.m==='shot'){mapShot(b);return}
   mkCfgSave();mkUi()};
  MK.bar=bar;return bar}
 function mkUi(){const a=MK.a;if(a){a.classList.toggle('on',MK.on);a.setAttribute('aria-pressed',String(MK.on))}
@@ -15443,50 +15468,59 @@ function mkUi(){const a=MK.a;if(a){a.classList.toggle('on',MK.on);a.setAttribute
  const bar=MK.bar;if(!bar||!MK.on)return;const t=MK.tool,g=mkCurG(false),lk=typeof MLOCK!=='undefined'&&MLOCK.on,B=(on,attr,html,ti,cl)=>`<button type="button" ${attr} class="${(cl||'')+(on?' on':'')}" aria-pressed="${!!on}"${ti?` title="${ti}"`:''}>${html}</button>`;
  const HINT={hand:'지도를 끌어 옮기거나 확대하세요.'+(lk?' 🔒 화면 고정 중이라 지금은 움직이지 않습니다.':''),
   pen:'손가락(마우스)으로 그리세요.',ln:'시작점에서 끝점까지 끌어 그리세요.',ar:'시작점에서 화살표 끝까지 끄세요.',rc:'모서리에서 맞은편 모서리까지 끄세요.',ci:'가운데에서 바깥쪽으로 끄세요.',
-  tx:'글자 넣을 곳을 누르세요. 넣은 글자를 누르면 고칩니다.',ic:MK_ROT.has(MK.ik)?'놓을 곳을 누르세요. 누른 채 끌면 관로 방향으로 돌립니다.':'놓을 곳을 누르세요.',er:'지울 표시를 누르거나 문지르세요.'};
+  tx:'글자 넣을 곳을 누르세요. 넣은 글자를 누르면 고칩니다.',ic:(MK_ROT.has(MK.ik)?'놓을 곳을 누르세요. 누른 채 끌면 관로 방향으로 돌립니다.':'놓을 곳을 누르세요.')+' 놓으면 🏷 글씨 창이 뜹니다(색 = 글씨 색). 놓은 아이콘을 누르면 글씨를 고칩니다.',er:'지울 표시를 누르거나 문지르세요.'};
  const T=MK_T.find(x=>x[0]===t)||MK_T[1],lb=s=>`<span class="lb">${s}</span>`;
  const opt=t==='tx'?MK_FS.map(([v,n])=>B(+MK.fs===v,`data-f="${v}"`,n,'글자 크기','mksz')).join(''):t==='ic'?MK_IS.map(([v,n])=>B(+MK.is===v,`data-is="${v}"`,n,'아이콘 크기','mksz')).join(''):t==='er'||t==='hand'?'':MK_W.map(([v,n])=>B(+MK.w===v,`data-w="${v}"`,`<s style="height:${Math.max(2,v-1)}px"></s>`,'선 굵기: '+n,'mkwd')).join('');
- bar.innerHTML=`<div class="r mkr1"><b>🖍️<span class="lb"> 그리기</span></b>${B(false,'data-m="grp"',`📁 <span class="mkgn1">${esc(g?g.nm:'새 묶음')}</span>${g?`<em>${mkGN(g.id)}</em>`:''}`,'그리기 묶음: 고르기·이름·보이기·지우기·공유','mkgb')}${B(false,'data-m="undo"','↩️'+lb(' 되돌리기'),'되돌리기 (Ctrl+Z)')}${B(false,'data-m="shot"','🖼️'+lb(' 캡처'),'그린 것과 함께 지도 화면 캡처')}${B(false,'data-m="end"','✕'+lb(' 끝내기'),'그리기 끝내기 (Esc)','mkend')}</div>
+ bar.innerHTML=`<div class="r mkr1"><b>🖍️<span class="lb"> 그리기</span></b>${B(false,'data-m="grp"',`${g&&g.pv?'🔒':'📁'} <span class="mkgn1">${esc(g?g.nm:'새 묶음')}</span>${g?`<em>${mkGN(g.id)}</em>`:''}`,'그리기 묶음: 고르기·이름·보이기·지우기·공유','mkgb')}${B(false,'data-m="undo"'+(MK.undo.length?'':' disabled'),'↩️'+lb(' 되돌리기'),'되돌리기 — 방금 그린 것 취소 (Ctrl+Z)')}${B(false,'data-m="redo"'+(MK.redo.length?'':' disabled'),'↪️'+lb(' 다시'),'다시 하기 — 되돌린 것 살리기 (Ctrl+Y)')}${B(false,'data-m="shot"','🖼️'+lb(' 캡처'),'그린 것과 함께 지도 화면 캡처')}${B(false,'data-m="end"','✕'+lb(' 끝내기'),'그리기 끝내기 (Esc)','mkend')}</div>
 <div class="r mkts">${MK_T.map(([k,ic,n])=>B(t===k,`data-t="${k}" aria-label="${n}"`,ic+lb(' '+n),n,'mkt')).join('')}</div>
 ${t==='ic'?`<div class="r mkis">${MK_IC.map(([k,n])=>{const u=mkIcUrl(k);return B(MK.ik===k,`data-ik="${k}" aria-label="${n}"`,`${u?`<img src="${u}" alt="">`:''}<span class="lb2">${n}</span>`,n,'mki')}).join('')}</div>`:''}
-${opt||t!=='ic'&&t!=='er'&&t!=='hand'?`<div class="r mkop">${t==='ic'||t==='er'||t==='hand'?'':MK_C.map(([c,n])=>B(MK.c===c,`data-c="${c}" style="background:${c}" aria-label="${n}"`,'',n,'mksw')).join('')}${opt}</div>`:''}
+${opt||t!=='ic'&&t!=='er'&&t!=='hand'?`<div class="r mkop">${t==='er'||t==='hand'?'':MK_C.map(([c,n])=>B(MK.c===c,`data-c="${c}" style="background:${c}" aria-label="${n}"`,'',n,'mksw')).join('')}${opt}</div>`:''}
 <div class="h"><b>${T[1]} ${t==='ic'?esc(mkIcName(MK.ik)):T[2]}</b> · ${HINT[t]||''}${lk&&t!=='hand'?' 🔒 화면 고정 중에도 그려집니다.':''}</div>
 <div class="h mkm">${esc(MK.msg)}</div>`}
 /* ---- 📁 그리기 묶음 창 ---- */
 function mkGrpOpen(){let w=$('mkGw');
  if(!w){w=document.createElement('div');w.id='mkGw';w.className='phtr mkgw np';w.setAttribute('role','dialog');w.setAttribute('aria-label','그리기 묶음');
   w.innerHTML=`<div><div class="th"><b>📁 그리기 묶음</b><button type="button" data-g="x" aria-label="닫기">✕</button></div>
-<div class="tb"><button type="button" class="btn em" data-g="new">＋ 새 묶음</button><button type="button" class="btn ol" data-g="sync">☁️ 공유 맞추기</button><span style="flex:1"></span><button type="button" class="btn ol" data-g="all">👁 모두 보이기</button></div>
+<div class="tb"><button type="button" class="btn em" data-g="new">＋ 새 묶음</button><button type="button" class="btn ol" data-g="newp" title="공유 서버에 올리지 않고 이 기기에만 남는 메모 그림">＋ 🔒 나만 보기</button><button type="button" class="btn ol" data-g="sync">☁️ 공유 맞추기</button><span style="flex:1"></span><button type="button" class="btn ol" data-g="all">👁 모두 보이기</button></div>
 <p class="hint mkgm" style="margin:6px 14px 0"></p><div class="tl"></div></div>`;
   w.onclick=e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-g]');if(!b)return;const k=b.dataset.g,r=b.closest('[data-id]'),g=r&&mkG(r.dataset.id),now=Date.now();
    if(k==='x')w.hidden=true;else if(k==='new'){MK.cur='';mkCurG(true);mkSave();mkGM('＋ 새 묶음을 만들었습니다. 이제 그리는 것은 이 묶음에 들어갑니다.')}
+   else if(k==='newp'){MK.cur='';const ng=mkCurG(true);ng.pv=1;ng.nm=ng.nm.replace(/^그리기/,'메모');mkSave();mkGM('🔒 나만 보기 묶음을 만들었습니다. 여기에 그린 것은 이 기기에만 남고 직원에게 안 보입니다.')}
    else if(k==='all'){MK.hide.clear();mkCfgSave();mkDraw(true);mkGrpRender()}
    else if(k==='sync')mkSyncBtn();
    else if(!g)return;else if(k==='use'){MK.cur=g.id;MK.hide.delete(g.id);mkCfgSave();mkUi();mkDraw(true);mkGrpRender()}
    else if(k==='vis'){if(MK.hide.has(g.id))MK.hide.delete(g.id);else MK.hide.add(g.id);mkCfgSave();mkDraw(true);mkGrpRender()}
    else if(k==='go'){const ps=mkLive().filter(m=>m.g===g.id&&m.p&&m.p.length).flatMap(m=>m.p);if(!ps.length){mkGM('이 묶음에는 아직 그린 것이 없습니다.');return}
     MK.hide.delete(g.id);mkCfgSave();w.hidden=true;map.fitBounds(L.latLngBounds(ps).pad(.25),{maxZoom:19});mkDraw(true)}
+   else if(k==='pv')mkPvSet(g,!g.pv);
    else if(k==='ren'){const nm=r.querySelector('.mkgn'),old=g.nm;nm.innerHTML=`<input type="text" maxlength="40" value="${esc(old)}" aria-label="묶음 이름"><button type="button" data-g="rok">✓</button>`;const i=nm.querySelector('input');i.focus();i.select();
     i.onkeydown=ev=>{ev.stopPropagation();if(ev.key==='Enter'&&!ev.isComposing){ev.preventDefault();nm.querySelector('[data-g="rok"]').click()}else if(ev.key==='Escape')mkGrpRender()}}
    else if(k==='rok'){const v=(r.querySelector('.mkgn input')||{}).value||'',s=v.trim();if(!s){mkGrpRender();return}if(vidBad(s)){mkGM('⚠️ 이름에 전화번호·주민번호 같은 개인정보는 넣을 수 없습니다.');return}if(s!==g.nm){g.nm=s;g.u=now;mkSave()}else mkGrpRender()}
    else if(k==='del'){const n=mkGN(g.id);if(!confirm(`"${g.nm}" 묶음${n?`과 그 안의 표시 ${n}개`:''}를 지울까요?\n공유 중이면 다른 직원 화면에서도 지워집니다.`))return;
-    g.del=1;g.u=now;const ids=[];MK.list.forEach(m=>{if(m.g===g.id&&!m.del){m.del=1;m.u=now;ids.push(m.id)}});if(MK.cur===g.id)MK.cur='';mkCfgSave();MK.undo=MK.undo.filter(a=>!(a.ids||[]).some(id=>ids.includes(id)));mkSave();mkGM('🗑 지웠습니다.')}};
+    g.del=1;g.u=now;const ids=[];MK.list.forEach(m=>{if(m.g===g.id&&!m.del){m.del=1;m.u=now;ids.push(m.id)}});if(MK.cur===g.id)MK.cur='';mkCfgSave();MK.undo=MK.undo.filter(a=>!(a.ids||[]).some(id=>ids.includes(id)));MK.redo=[];mkSave();mkGM('🗑 지웠습니다.')}};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)w.hidden=true})}
  (document.fullscreenElement||document.webkitFullscreenElement||document.body).appendChild(w);w.hidden=false;MK.gmsg='';mkGrpRender();
  if(typeof SH!=='undefined'&&SH.on())mkSync(true).then(r=>{if(r&&r.got)mkGM(`☁️ 다른 직원이 그린 것 ${r.got}건을 받았습니다.`)}).catch(()=>{})}
+/* 🔒 나만 보기 ⇄ 👥 공유. 공유→나만 보기: 새 id로 옮기고 예전 것은 지운 기록으로 올려 직원 화면에서도 빠지게 함 */
+function mkPvSet(g,pv){const now=Date.now();
+ if(!pv){if(!confirm(`"${g.nm}" 묶음을 직원과 공유할까요?\n공유 서버에 올라가 다른 직원 화면에도 보입니다.`))return;delete g.pv;g.u=now;MK.list.forEach(m=>{if(m.g===g.id&&!m.del)m.u=now});mkSave();mkGM(`👥 "${g.nm}" 묶음을 공유합니다.`);return}
+ const ng=Object.assign({},g,{id:mkUid('g'),pv:1,u:now});delete ng.del;MK.gs.push(ng);g.del=1;g.u=now;let n=0;
+ MK.list.forEach(m=>{if(m.g!==g.id||m.del)return;const c=Object.assign({},m,{id:mkUid('m'),g:ng.id,u:now});MK.list.push(c);m.del=1;m.u=now;n++});
+ if(MK.cur===g.id)MK.cur=ng.id;if(MK.hide.has(g.id)){MK.hide.delete(g.id);MK.hide.add(ng.id)}MK.undo=[];MK.redo=[];mkCfgSave();mkSave();
+ mkGM(`🔒 "${ng.nm}" 묶음(표시 ${n}개)을 나만 보기로 바꿨습니다. 공유 중이었으면 다른 직원 화면에서는 빠집니다.`)}
 function mkGM(t){MK.gmsg=t;const m=document.querySelector('#mkGw .mkgm');if(m)m.textContent=t;mkGrpRender()}
 function mkGrpRender(){const w=$('mkGw');if(!w||w.hidden)return;const GS=mkGLive().sort((a,b)=>(b.u||0)-(a.u||0)),cnt=new Map();mkLive().forEach(m=>cnt.set(m.g,(cnt.get(m.g)||0)+1));
- w.querySelector('.mkgm').textContent=MK.gmsg||`묶음 ${GS.length}개 · 표시 ${mkLive().length.toLocaleString()}개 · ${typeof SH!=='undefined'&&SH.on()?'공유 서버로 직원과 함께 봅니다. 👁 숨기기는 이 기기에서만.':'이 기기에만 저장됩니다.'}`;
+ w.querySelector('.mkgm').textContent=MK.gmsg||`묶음 ${GS.length}개 · 표시 ${mkLive().length.toLocaleString()}개 · ${typeof SH!=='undefined'&&SH.on()?'공유 서버로 직원과 함께 봅니다. 🔒 나만 보기 묶음은 올리지 않습니다. 👁 숨기기는 이 기기에서만.':'이 기기에만 저장됩니다.'}`;
  w.querySelector('.tl').innerHTML=GS.length?GS.map(g=>{const cur=g.id===MK.cur,hd=MK.hide.has(g.id),n=cnt.get(g.id)||0;
-  return `<div class="mkgr${cur?' on':''}${hd?' hd':''}" data-id="${g.id}"><div class="mkgn"><b>${esc(g.nm)}</b><small>표시 ${n}개${g.by?' · '+esc(g.by):''} · ${fmtDT(g.u||g.c)}</small></div><span>
-<button type="button" data-g="use" title="이 묶음에 그리기"${cur?' disabled':''}>${cur?'✔ 그리는 중':'✏️ 여기에 그리기'}</button><button type="button" data-g="vis" title="${hd?'보이기':'숨기기 (이 기기만)'}">${hd?'🙈':'👁'}</button><button type="button" data-g="go" title="지도에서 보기">📍</button><button type="button" data-g="ren" title="이름 고치기">✏️</button><button type="button" data-g="del" class="del" title="묶음 지우기">🗑</button></span></div>`}).join('')
+  return `<div class="mkgr${cur?' on':''}${hd?' hd':''}" data-id="${g.id}"><div class="mkgn"><b>${g.pv?'🔒 ':''}${esc(g.nm)}</b><small>${g.pv?'나만 보기 · ':''}표시 ${n}개${g.by?' · '+esc(g.by):''} · ${fmtDT(g.u||g.c)}</small></div><span>
+<button type="button" data-g="use" title="이 묶음에 그리기"${cur?' disabled':''}>${cur?'✔ 그리는 중':'✏️ 여기에 그리기'}</button><button type="button" data-g="vis" title="${hd?'보이기':'숨기기 (이 기기만)'}">${hd?'🙈':'👁'}</button><button type="button" data-g="pv" title="${g.pv?'나만 보기 → 직원과 공유':'공유 → 나만 보기 (이 기기에만)'}">${g.pv?'🔒':'👥'}</button><button type="button" data-g="go" title="지도에서 보기">📍</button><button type="button" data-g="ren" title="이름 고치기">✏️</button><button type="button" data-g="del" class="del" title="묶음 지우기">🗑</button></span></div>`}).join('')
   :'<div class="empty">아직 그린 것이 없습니다. 🖍️ 그리기에서 펜·글자·아이콘으로 표시하면 여기에 묶음으로 모입니다.</div>'}
 async function mkSyncBtn(){if(typeof SH==='undefined'||!SH.on()){mkGM('⚙️ 앱 설정(또는 📷 현장 사진 › ☁️ 직원 공유)에 공유 서버 주소와 공유 키를 먼저 넣어 주세요.');return}mkGM('공유 서버와 맞추는 중…');
  try{const r=await mkSync(false);mkGM(r.old?'⚠️ 공유 서버 Code.gs가 예전 판입니다. 2026-10-29 판으로 바꾸고 새 버전으로 배포해 주세요.':r.busy?'이미 맞추는 중입니다.':`✅ 받은 것 ${r.got||0}건 · 올린 것 ${r.sent?'있음':'없음(같은 버전)'}`)}catch(e){mkGM('⚠️ 실패: '+((e&&e.message)||e))}}
 /* ---- 공유: 먼저 받기 → 나중에 올리기 (동영상 연결과 같은 기준자료 방식, 이름 marks) ---- */
 function mkMergeArr(loc,srv){const M=new Map(loc.map(x=>[x.id,x]));let got=0,extra=0;const S=new Set(),nw=[];
  for(const s of srv){if(!s||!s.id)continue;S.add(s.id);const l=M.get(s.id);if(!l||(s.u||0)>(l.u||0)){M.set(s.id,s);got++;nw.push([s,l])}else if((l.u||0)>(s.u||0))extra++}
- for(const x of loc)if(!S.has(x.id))extra++;return{arr:[...M.values()],got,extra,nw}}
+ for(const x of loc)if(!S.has(x.id)&&!mkPvX(x))extra++;return{arr:[...M.values()],got,extra,nw}}
 function mkMerge(v,first){const a=mkMergeArr(MK.gs,Array.isArray(v.gs)?v.gs:[]),b=mkMergeArr(MK.list,Array.isArray(v.list)?v.list:[]);MK.gs=a.arr;MK.list=b.arr;
  try{mkLogIn(b.nw,first)}catch(e){console.warn('그리기 기록',e)}return{got:a.got+b.got,extra:a.extra+b.extra}}
 function mkLogIn(nw,first){const me=chgMe(),by=new Map();
@@ -15500,7 +15534,7 @@ async function mkSync(quiet){if(typeof SH==='undefined'||!SH.on())return{};if(MK
    const z=await JSZip.loadAsync(new Blob(bufs)),e=z.file('d.json');if(!e)throw new Error('그리기 압축 파일이 비었습니다.');
    const v=JSON.parse(await e.async('string')),r=mkMerge(v,!MK.base);got=r.got;
    MK.base=s.v;MK.at=r.extra?Date.now():s.v;await mkStore();mkDraw(true);mkUi();mkGrpRender()}
-  if((MK.list.length||MK.gs.length)&&MK.at&&MK.at!==MK.base){const v={at:MK.at,gs:MK.gs,list:MK.list},z=new JSZip();z.file('d.json',JSON.stringify(v));
+  if((MK.list.length||MK.gs.length)&&MK.at&&MK.at!==MK.base){const v={at:MK.at,gs:MK.gs.filter(g=>!g.pv),list:MK.list.filter(m=>!mkPvG(m.g))},z=new JSZip();z.file('d.json',JSON.stringify(v));
    const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
    for(let p=0;p<parts;p++)await shReq('refput',{name:'marks',v:v.at,part:p,parts,size:u8.length,cnt:v.list.filter(x=>!x.del).length,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))});
    MK.base=v.at;await mkStore();sent=v.list.length}
@@ -15514,7 +15548,7 @@ function mkInit(){if(!map||$('mkA'))return;mkPane();
   L.DomEvent.disableClickPropagation(d);L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);mkSet(!MK.on)});return d}});
  map.addControl(new Ctl());
  document.addEventListener('keydown',e=>{if(!MK.on||e.key!=='Escape')return;if(MK.tx){mkTxClose();return}const w=$('mkGw');if(w&&!w.hidden)return;if(MK.dr){MK.dr=null;mkDraw(true);return}mkSet(false)});
- document.addEventListener('keydown',e=>{if(!MK.on||!(e.ctrlKey||e.metaKey)||e.key.toLowerCase()!=='z'||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;e.preventDefault();mkUndo()});
+ document.addEventListener('keydown',e=>{const k=(e.key||'').toLowerCase();if(!MK.on||!(e.ctrlKey||e.metaKey)||(k!=='z'&&k!=='y')||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;e.preventDefault();if(k==='y'||e.shiftKey)mkRedo();else mkUndo()});
  mkLoad();
  /* 앱을 연 동안 3분마다 서버 버전만 물어보고 새것이면 받음 (화면이 보일 때만) */
  setInterval(()=>{if(typeof SH!=='undefined'&&SH.on()&&document.visibilityState==='visible'&&!MK.busy)mkSync(true).catch(()=>{})},180000)}
