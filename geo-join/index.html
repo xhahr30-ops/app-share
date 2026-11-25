@@ -11910,6 +11910,32 @@ if(map){
   el.onchange=()=>{SHUT.opt[k]=+el.value;shutSave();if(k==='bigQ')ptBigReset();if(re&&SHUT.on&&SHUT.area)shutStartArea(SHUT.area.ll);else if(re&&SHUT.on&&SHUT.ll)shutStartAt(SHUT.ll);else if(SHUT.on)shutRender()}};
  bind('shTol','tol',1);bind('shVtol','vtol',1);bind('shBigQ','bigQ',0);bind('shBigD','bigD',0);tbBind(q);
  {const el=q('shDeL');if(el){el.value=String(SHUT.opt.deL||2000);if(el.value!==String(SHUT.opt.deL||2000))el.value='2000';el.onchange=()=>{SHUT.opt.deL=+el.value;shutSave();if(SHUT.on&&SHUT.net)shutUpdate()}}}}
+/* ===== 🌊 물길해석에서 보기 (2026-11-25 B안) =====
+   길게 누르기·오른쪽 클릭 말풍선 → 스마트 물길해석(pipe-network)을 이 위치로.
+   열린 물길해석 탭이 있으면(BroadcastChannel 'mulgil-goto' ping→pong) {go} 보내 그 탭이 이동, 없으면 새 탭(이름 'mulgil-pn', ?lat=&lng=&blk=&site=&sn=).
+   우리가 연 탭('mulgil-pn')은 window.open('', 'mulgil-pn')으로 앞으로 가져옴. 좌표·소블록·현장 이름만 넘김(주소·고객 정보 없음).
+   BroadcastChannel은 같은 주소(github.io)끼리만 됨 → Apps Script 주소로 열면 늘 새 탭. */
+const PNG={ch:null,alive:new Map(),wait:0,tm:0};
+function pnUrl(q){let b='https://xhahr30-ops.github.io/app-share/pipe-network/';try{if(/\.github\.io$/i.test(location.hostname)&&/\/geo-join\//.test(location.pathname))b=new URL('../pipe-network/',location.href).href}catch(_){}return b+'?'+q}
+try{PNG.ch=new BroadcastChannel('mulgil-goto');PNG.ch.onmessage=e=>{const d=e.data||{};
+ if(d.pong&&d.id){PNG.alive.set(d.id,{t:Date.now(),nm:d.nm||''});return}
+ if(d.ack&&PNG.wait&&d.ack===PNG.wait){PNG.wait=0;clearTimeout(PNG.tm)}}}catch(_){}
+function pnToast(t){try{phToast(t,{ms:5000})}catch(_){console.log(t)}}
+function pnPing(){try{if(PNG.ch){PNG.alive.clear();PNG.ch.postMessage({ping:1})}}catch(_){}}
+window.pnGo=(lat,lng,blk)=>{try{blk=decodeURIComponent(blk||'')}catch(_){blk=''}
+ const t=Date.now(),sn=(window.SITE&&(SITE.short||SITE.name))||'',sid=(window.SITE&&SITE.id)||'',
+  go={lat:+(+lat).toFixed(7),lng:+(+lng).toFixed(7),blk,site:sid,sn,t},
+  q=`lat=${go.lat}&lng=${go.lng}&blk=${encodeURIComponent(blk)}&site=${encodeURIComponent(sid)}&sn=${encodeURIComponent(sn)}&from=mulgil`,
+  al=[...PNG.alive.values()].filter(x=>t-x.t<10*60e3);
+ if(PNG.ch&&al.length){
+  let w=null;if(al.some(x=>x.nm==='mulgil-pn')){try{w=window.open('','mulgil-pn')}catch(_){w=null}
+   let blank=false;try{blank=!!w&&w.location.href==='about:blank'}catch(_){}
+   if(blank){w.location.href=pnUrl(q);pnToast('🌊 물길해석을 이 위치로 엽니다');return}}
+  PNG.wait=t;PNG.ch.postMessage({go});clearTimeout(PNG.tm);
+  PNG.tm=setTimeout(()=>{if(PNG.wait!==t)return;PNG.wait=0;PNG.alive.clear();pnToast('물길해석 탭이 답하지 않습니다. 한 번 더 누르면 새 탭으로 엽니다.')},1500);
+  pnToast(w?'🌊 물길해석 탭이 이 위치로 이동했습니다':'🌊 열려 있는 물길해석 탭을 이 위치로 옮겼습니다 — 그 탭으로 가 보세요');return}
+ const w=window.open(pnUrl(q),'mulgil-pn');
+ if(!w)pnToast('새 탭이 막혔습니다. 브라우저 주소창의 팝업 차단을 풀어 주세요.');else pnToast('🌊 물길해석을 이 위치로 엽니다 — 마지막에 연 관망 모델로 갑니다')};
 /* 지도 길게 누르기(PC 오른쪽 클릭) → 그 지점 주소 핀: 지번·도로명, 소블록, 표고, 좌표. 주소는 화면에만 보이고 저장·내보내기 안 함 */
 const LPA={pin:null,at:0,cache:new Map()};
 function lpaBusy(){return(typeof FE!=='undefined'&&FE&&FE.on)||(typeof PH!=='undefined'&&(PH.ed&&PH.ed.on||PH.place))||(typeof SHUT!=='undefined'&&(SHUT.drawing||SHUT.pick||SHUT.mode))||(typeof MLOCK!=='undefined'&&MLOCK.on)||document.querySelector('#map.mkon,.mkon #map')}
@@ -11931,8 +11957,8 @@ function lpaBody(ll,r,err){const xy=ll.lat.toFixed(6)+', '+ll.lng.toFixed(6),blk
  else if(!r.j&&!r.d)h+='<span style="color:#64748b">주소 없음(산·바다·도로 위 등)</span><br>';
  else{if(r.d)h+=`도로명: <b>${esc(r.d)}</b>${cp(r.d)}<br>`;if(r.j)h+=`지번: <b>${esc(r.j)}</b>${cp(r.j)}<br>`}
  h+=`소블록: <b>${blk?esc(blk):(poly?'블록 밖':'(SHP 미등록)')}</b><br>좌표: ${xy}${cp(xy)}`;
- h+=(typeof elevPop==='function'?elevPop(ll.lat,ll.lng):'')+`<div class="acts" style="margin-top:6px">${kvBtns(ll.lat,ll.lng,'📍 '+(r&&(r.d||r.j)||'선택 지점'),blk?'소블록 '+blk:'',true)}${vidBtns('pt','ll:'+ll.lat.toFixed(6)+','+ll.lng.toFixed(6),ll.lat,ll.lng,'📍 지도 위치'+(blk?' · 소블록 '+blk:''))}</div>`+`<a href="#" class="lpafd" onclick="fdNew({lat:${ll.lat},lng:${ll.lng}});return false" style="display:inline-block;margin:4px 10px 0 0;font-weight:700">🍚 여기 맛집 등록</a>`+'<a href="#" onclick="lpaClear();return false" style="display:inline-block;margin-top:4px">핀 지우기</a></div>';return h}
-async function lpaShow(ll){if(!map||lpaBusy())return;LPA.at=Date.now();lpaClear();
+ h+=(typeof elevPop==='function'?elevPop(ll.lat,ll.lng):'')+`<div class="acts" style="margin-top:6px">${kvBtns(ll.lat,ll.lng,'📍 '+(r&&(r.d||r.j)||'선택 지점'),blk?'소블록 '+blk:'',true)}${vidBtns('pt','ll:'+ll.lat.toFixed(6)+','+ll.lng.toFixed(6),ll.lat,ll.lng,'📍 지도 위치'+(blk?' · 소블록 '+blk:''))}</div>`+`<a href="#" class="lpapn" onclick="pnGo(${ll.lat},${ll.lng},'${encodeURIComponent(blk||'')}');return false" title="스마트 물길해석(관망해석)을 이 위치로 엽니다. 열려 있으면 그 탭이 이동합니다" style="display:inline-block;margin:4px 10px 0 0;font-weight:700">🌊 물길해석에서 보기</a>`+`<a href="#" class="lpafd" onclick="fdNew({lat:${ll.lat},lng:${ll.lng}});return false" style="display:inline-block;margin:4px 10px 0 0;font-weight:700">🍚 여기 맛집 등록</a>`+'<a href="#" onclick="lpaClear();return false" style="display:inline-block;margin-top:4px">핀 지우기</a></div>';return h}
+async function lpaShow(ll){if(!map||lpaBusy())return;LPA.at=Date.now();lpaClear();pnPing();
  const p=LPA.pin=L.marker(ll,{icon:L.divIcon({className:'gs-pin',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,26],popupAnchor:[0,-24]}),zIndexOffset:1000}).addTo(map);
  p.bindPopup(lpaBody(ll,null),{maxWidth:300,autoPan:true}).openPopup();
  let r=null,err='';try{r=await lpaAddr(ll)}catch(e){err=e.message||String(e)}
