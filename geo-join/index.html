@@ -1649,8 +1649,8 @@ html.qzon,html.qzon body{overflow:hidden!important}
  var QB={ver:QZ_VER,bank:Q};
  function useBank(c){if(c&&c.ver&&Array.isArray(c.bank)&&c.bank.length>=N){Q=c.bank;QZ_VER=c.ver}else{Q=QB.bank;QZ_VER=QB.ver}}
  try{useBank(JSON.parse(LG(K+'-bank')||'null'))}catch(e){}
- /* 문제 번호: 문제 글자로 만든 짧은 id(본부 통계용) */
- function qid(q){var h=5381,t=String(q&&q[1]||'');for(var j=0;j<t.length;j++)h=((h<<5)+h+t.charCodeAt(j))>>>0;return h.toString(36)}
+ /* 문제 번호: 문제 글+정답으로 만든 짧은 id(본부 통계용) */
+ function qid(q){var h=5381,t=String(q&&q[1]||'')+'|'+String(q&&q[2]||'');/* 문제 글+정답(기출은 '다음 중 옳은 것은?'처럼 문제 글만 같은 게 많음) */for(var j=0;j<t.length;j++)h=((h<<5)+h+t.charCodeAt(j))>>>0;return h.toString(36)}
  function send(o){try{if(!window.hqPost||!window.HQ_URL||navigator.onLine===false)return;var S=window.SITE||{};
   o.op='qz_res';o.id=S.id||'';o.u=window.__uid?window.__uid():'';o.n=LG('geo-user')||'';o.v=QZ_VER;o.pass=PASS;window.hqPost(o).catch(function(){})}catch(e){}}
  /* 본부 판 확인: 바뀌었으면 받아 두고, 퀴즈 창이 아직 안 떴으면 바로 씀 */
@@ -1659,14 +1659,17 @@ html.qzon,html.qzon body{overflow:hidden!important}
    if(!v){try{localStorage.removeItem(K+'-bank')}catch(e){}if(!box)useBank(null);return}
    return window.hqPost({op:'qz_bank'}).then(function(b){if(!b||b.ver!==v||!Array.isArray(b.bank)||b.bank.length<N)return;var o={ver:v,bank:b.bank};LS(K+'-bank',JSON.stringify(o));if(!box)useBank(o)})}).catch(function(){})}catch(e){}}
  setTimeout(bankSync,800);
- window.__qz={ver:function(){return QZ_VER},bank:function(){return Q},builtin:QB,id:qid,isK:isK,N:N,PASS:PASS,sync:bankSync};
+ window.__qz={ver:function(){return QZ_VER},bank:function(){return Q},builtin:QB,id:qid,isK:isK,isG:isG,N:N,PASS:PASS,sync:bankSync};
  function E(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
  function mix(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
  /* 5문제: 관망운영관리사 1급 교안 시험형 3 + 📚 백과사전 정의 1 + 바른 용어 1, 같은 분류 겹침 줄이기 */
  function isK(q){return /^1급 교안/.test(q[4])}
+ /* 관망운영관리사 기출(문제은행 1,400제·통합 50문제, 2026-11-25): 있으면 5문제 중 2 */
+ function isG(q){return /^관망운영관리사 (문제은행|통합)/.test(q[4])}
  function take(arr,n,out){var seen={};arr.forEach(function(q){if(n>0&&!seen[q[0]]){seen[q[0]]=1;out.push(q);n--}});arr.forEach(function(q){if(n>0&&out.indexOf(q)<0){out.push(q);n--}})}
- function pick(){var k=mix(Q.filter(isK)),w=mix(Q.filter(function(q){return q[0]==='바른 용어'})),d=mix(Q.filter(function(q){return !isK(q)&&q[0]!=='바른 용어'})),out=[];
-  var nk=k.length?3:0,nw=w.length?1:0;take(k,nk,out);take(w,nw,out);take(d,N-out.length,out);
+ function pick(){var g=mix(Q.filter(isG)),k=mix(Q.filter(isK)),w=mix(Q.filter(function(q){return q[0]==='바른 용어'})),d=mix(Q.filter(function(q){return !isK(q)&&!isG(q)&&q[0]!=='바른 용어'})),out=[];
+  /* 기출 있으면: 기출 2 + 교안 1 + 백과사전 1 + 바른 용어 1, 없으면 예전대로 교안 3 + 바른 용어 1 + 백과사전 1 */
+  var ng=g.length?2:0,nk=k.length?(ng?1:3):0,nw=w.length?1:0;take(g,ng,out);take(k,nk,out);take(w,nw,out);take(d,N-out.length,out);
   if(out.length<N)take(mix(Q.filter(function(q){return out.indexOf(q)<0})),N-out.length,out);
   return mix(out)}
  var box,set,i,score,wrong;
@@ -1693,12 +1696,12 @@ html.qzon,html.qzon body{overflow:hidden!important}
  function card(h){box.innerHTML='<div class="qzc">'+h+(h.indexOf('id="qzEnd"')<0?SK():'')+'<div class="qzf">만든이: 구병순 · 포항시 서용이·포항이</div></div>';var sk=box.querySelector('#qzSk');if(sk)sk.onclick=skip}
  function intro(){var nm=LG('geo-user')||'';
   card('<div style="font-size:36px;line-height:1;text-align:center">🎓</div><div style="font-size:18px;font-weight:800;margin-top:8px;text-align:center">앱 사용 전 용어 확인</div>'
-   +'<div class="qzm" style="margin-top:8px">'+(nm?E(nm)+' 님, ':'')+'상수도 용어 '+N+'문제를 풀어 주세요.<br>'+PASS+'개 이상 맞으면 이 기기에서는 다시 묻지 않습니다.<br>모르는 문제는 <b>📚 백과사전 찬스</b>를 '+KBMAX+'번까지 쓸 수 있습니다.<br><span style="font-size:12px;color:#64748b">문제는 상수도관망시설운영관리사 1급 교안(시험형), 📚 백과사전(상수도설계기준 2025·노후상수도 정비사업 지침·관망진단 매뉴얼), 회사 보고서 작성 요령에서 냅니다.</span></div>'
+   +'<div class="qzm" style="margin-top:8px">'+(nm?E(nm)+' 님, ':'')+'상수도 용어 '+N+'문제를 풀어 주세요.<br>'+PASS+'개 이상 맞으면 이 기기에서는 다시 묻지 않습니다.<br>모르는 문제는 <b>📚 백과사전 찬스</b>를 '+KBMAX+'번까지 쓸 수 있습니다.<br><span style="font-size:12px;color:#64748b">문제는 관망운영관리사 기출(본부 문제은행을 넣은 경우), 상수도관망시설운영관리사 1급 교안(시험형), 📚 백과사전(상수도설계기준 2025·노후상수도 정비사업 지침·관망진단 매뉴얼), 회사 보고서 작성 요령에서 냅니다.</span></div>'
    +'<button class="qzbtn" id="qzGo">시작</button>');
   box.querySelector('#qzGo').onclick=function(){set=pick();i=0;score=0;wrong=[];kbc=0;ask()};setTimeout(function(){var b=box&&box.querySelector('#qzGo');b&&b.focus()},30)}
  function ask(){var q=set[i],ops=mix([q[2]].concat(q[3]));
   card('<div class="qzh">🎓 용어 확인<small>'+(i+1)+' / '+N+' · 맞음 '+score+'</small></div><div class="qzbar"><i style="width:'+(i/N*100)+'%"></i></div>'
-   +'<div class="qzt">'+(isK(q)?'📝 관망운영관리사형 · ':'')+E(q[0])+'</div><div class="qzq">'+E(q[1])+'</div>'
+   +'<div class="qzt">'+(isG(q)?'📝 관망운영관리사 기출 · ':isK(q)?'📝 관망운영관리사형 · ':'')+E(q[0])+'</div><div class="qzq">'+E(q[1])+'</div>'
    +ops.map(function(o,k){return '<button class="qzo" data-k="'+k+'">'+(k+1)+'. '+E(o)+'</button>'}).join('')+KBB()+'<div id="qzX"></div>');
   var bs=box.querySelectorAll('.qzo'),kbB=box.querySelector('#qzKbB');if(kbB)kbB.onclick=function(){kbChance(q,kbB)};
   bs.forEach(function(b){b.onclick=function(){var pickd=ops[+b.dataset.k],ok=pickd===q[2];
@@ -19855,7 +19858,7 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
 (function(){
  const E=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const RATE_ALERT=.7,MIN_T=25,EASY=.9,EASY_N=3;
- const D={key:'',st:null,bank:null,ver:'',out:new Set(),dr:[],used:new Set(),busy:false,sv:''};
+ const D={key:'',st:null,bank:null,ver:'',out:new Set(),dr:[],used:new Set(),busy:false,sv:'',imp:[],impN:''};
  const pct=x=>x==null?'–':Math.round(x*100)+'%';
  const fmt=t=>t?new Date(t).toLocaleString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
  const nrm=t=>String(t||'').replace(/\s+/g,'').replace(/[·ㆍ‧]/g,'·');
@@ -19889,7 +19892,7 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   return `<div class="sec"><h4>📊 문제별 정답률 <small>${B.length}문제 · 빼기 ${D.out.size} · 정답률 높은 순 · 90% 이상·${EASY_N}번 넘게 나온 문제는 빼기에 미리 체크</small></h4>
   <div class="row"><button type="button" class="qdBtn" data-x="outauto">쉬운 문제 다시 고르기</button><button type="button" class="qdBtn" data-x="outnone">빼기 모두 풀기</button><button type="button" class="qdBtn" data-x="csv">⬇ 문제별 정답률 엑셀(CSV)</button></div>
   <div class="tb"><table><thead><tr><th>빼기</th><th>정답률</th><th>나옴</th><th>분류</th><th>문제 · 정답</th><th>출처</th></tr></thead><tbody>
-  ${L.map(o=>`<tr${D.out.has(o.k)?' class="out"':''}><td><input type="checkbox" data-out="${E(o.k)}"${D.out.has(o.k)?' checked':''} aria-label="이 문제 빼기"></td><td class="n"><span class="rate"><i style="width:${o.r==null?0:Math.round(o.r*100)}%;background:${col(o.r)}"></i></span>${pct(o.r)}</td><td class="n">${o.n}</td><td>${Z().isK&&Z().isK(o.x)?'📝 ':''}${E(o.x[0])}</td><td>${E(o.x[1])}<br><b style="color:#047857">→ ${E(o.x[2])}</b></td><td style="font-size:11.5px;color:var(--mu)">${E(o.x[4])} · ${E(o.x[5])}</td></tr>`).join('')}
+  ${L.map(o=>`<tr${D.out.has(o.k)?' class="out"':''}><td><input type="checkbox" data-out="${E(o.k)}"${D.out.has(o.k)?' checked':''} aria-label="이 문제 빼기"></td><td class="n"><span class="rate"><i style="width:${o.r==null?0:Math.round(o.r*100)}%;background:${col(o.r)}"></i></span>${pct(o.r)}</td><td class="n">${o.n}</td><td>${Z().isG&&Z().isG(o.x)?'📝기출 ':Z().isK&&Z().isK(o.x)?'📝 ':''}${E(o.x[0])}</td><td>${E(o.x[1])}<br><b style="color:#047857">→ ${E(o.x[2])}</b></td><td style="font-size:11.5px;color:var(--mu)">${E(o.x[4])} · ${E(o.x[5])}</td></tr>`).join('')}
   </tbody></table></div></div>`}
  function uHtml(){const U=(D.st&&D.st.users)||[],nm=id=>((window.SITE_HQ||{})[id]||(window.SITE_BI||{})[id]||{}).name||id;
   return `<div class="sec"><h4>👥 직원별 퀴즈 기록 <small>${U.length}대 · 이름은 직원이 적은 것</small></h4><div class="tb" style="max-height:30vh"><table><thead><tr><th>이름</th><th>현장</th><th>판</th><th>응시</th><th>통과</th><th>건너뛰기</th><th>최근</th><th>최고</th><th>마지막</th><th></th></tr></thead><tbody>
@@ -19909,13 +19912,20 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
    <div class="g2"><label class="l">오답 1<input data-f="${i}:w0" value="${E(d.x[3][0])}"></label><label class="l">오답 2<input data-f="${i}:w1" value="${E(d.x[3][1])}"></label><label class="l">오답 3<input data-f="${i}:w2" value="${E(d.x[3][2])}"></label></div>
    <div class="qt">📚 근거: 「${E(d.x[6])}」</div></div>`).join('')}</div>
   ${D.dr.length?`<div class="row"><span class="bd b">채택 ${ok} / ${D.dr.length}</span><button type="button" class="qdBtn" data-x="drclr">초안 모두 지우기</button></div>`:''}</div>`}
- function pubHtml(){const B=D.bank||[],out=B.filter(x=>D.out.has(Z().id(x))).length,add=D.dr.filter(d=>d.on).length,n=B.length-out+add;
+ function pubHtml(){const B=D.bank||[],out=B.filter(x=>D.out.has(Z().id(x))).length,add=D.dr.filter(d=>d.on).length+impNew().length,n=B.length-out+add;
   return `<div class="sec" style="border:2px solid #6366f1"><h4>🚀 새 판 적용 <small>모든 기기가 다음에 열 때 새 문제로 다시 풉니다</small></h4>
-  <div style="font-size:14px;margin-bottom:8px">지금 <b>${B.length}</b>문제 − 빼기 <b>${out}</b> + 채택 초안 <b>${add}</b> = 새 판 <b>${n}</b>문제 ${n<Math.max(10,Z().N)?'<span class="bd r">10문제 이상이어야 함</span>':''}</div>
+  <div class="row"><label class="l" style="flex:1;min-width:220px">📥 문제 파일 넣기 (.json · 기출 문제은행 등, 이 기기에서만 읽고 본부로 보냄)<input type="file" id="qdImp" accept=".json,application/json"></label>${D.imp.length?`<span class="bd b">${E(D.impN)} · ${D.imp.length}문제 중 새 문제 ${impNew().length}</span><button type="button" class="qdBtn" data-x="impclr">파일 빼기</button>`:''}</div>
+  <div style="font-size:14px;margin-bottom:8px">지금 <b>${B.length}</b>문제 − 빼기 <b>${out}</b> + 채택 초안·파일 <b>${add}</b> = 새 판 <b>${n}</b>문제 ${n<Math.max(10,Z().N)?'<span class="bd r">10문제 이상이어야 함</span>':''}</div>
   <div class="row"><label class="l" style="flex:1;min-width:200px">바꾼 까닭(메모)<input id="qdNote" placeholder="예: 정답률 74% → 쉬운 문제 20개 빼고 교안 새 문제 15개"></label><button type="button" class="qdBtn" data-x="bankcsv">⬇ 새 판 문제 엑셀(CSV)</button><button type="button" class="qdBtn pri" data-x="pub"${n<Math.max(10,Z().N)||(!out&&!add)?' disabled':''}>🚀 새 판 적용</button></div></div>`}
  function render(){const b=document.getElementById('qdBody');if(!b)return;const y=b.scrollTop;
   b.innerHTML=`<p class="msg${D.mc?' '+D.mc:''}" id="qdMsg">${E(D.m||'')}</p>`+(D.st?kpiHtml()+qHtml()+aiHtml()+pubHtml()+uHtml():'');b.scrollTop=y}
- function newBank(){const B=D.bank||[];return B.filter(x=>!D.out.has(Z().id(x))).concat(D.dr.filter(d=>d.on).map(d=>d.x))}
+ /* 파일로 넣은 문제 중 지금 문제은행에 없는 것(문제 글 같으면 뺌) */
+ const qk=x=>nrm(x[1])+'|'+nrm(x[2]);/* 같은 문제 = 문제 글+정답 같음('다음 중 옳은 것은?'처럼 문제 글만 같은 건 다른 문제) */
+ function impNew(){const have=new Set((D.bank||[]).map(qk));return D.imp.filter(x=>!have.has(qk(x)))}
+ function newBank(){const B=D.bank||[];return B.filter(x=>!D.out.has(Z().id(x))).concat(D.dr.filter(d=>d.on).map(d=>d.x)).concat(impNew())}
+ function impRead(f){const r=new FileReader();r.onload=()=>{try{let j=JSON.parse(r.result);if(j&&!Array.isArray(j))j=j.bank||j.ok||[];
+   const ok=j.filter(x=>Array.isArray(x)&&x.length>=6&&x[1]&&x[2]&&Array.isArray(x[3])&&x[3].length===3&&x[3].every(Boolean)).map(x=>[String(x[0]).slice(0,40),String(x[1]).slice(0,400),String(x[2]).slice(0,200),x[3].map(w=>String(w).slice(0,200)),String(x[4]).slice(0,80),String(x[5]).slice(0,40),String(x[6]||'').slice(0,200)]);
+   const seen=new Set();D.imp=ok.filter(x=>{const k=qk(x);if(seen.has(k))return false;seen.add(k);return true});D.impN=f.name;msg(`✓ ${f.name}: ${D.imp.length}문제 읽음`+(j.length-ok.length?` (형식 안 맞는 ${j.length-ok.length}문제 뺌)`:''),'ok');render()}catch(e){msg('문제 파일을 읽지 못했습니다: '+e.message,'err')}};r.readAsText(f)}
  function dl(name,rows){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',t='﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
  const day=()=>new Date().toISOString().slice(0,10).replace(/-/g,'');
@@ -19935,13 +19945,14 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
     if((D.bank||[]).some(b=>nrm(b[1])===nrm(x[1])))bad=bad||'같은 문제 이미 있음';
     D.dr.push({x,src:r.src,pg:r.pg,bad,on:!bad});k++});
    D.st.aiUsed=j.used;msg(`✓ 초안 ${k}개 (오늘 AI ${j.used}/${j.limit}번)`,'ok')}catch(e){msg(e.message,'err')}finally{D.busy=false;render()}}
- async function pub(btn){const nb=newBank(),out=(D.bank||[]).length-nb.length+D.dr.filter(d=>d.on).length;
-  if(!confirm(`새 판(${nb.length}문제)을 적용할까요?\n빼는 문제 ${out}개 · 더하는 문제 ${D.dr.filter(d=>d.on).length}개\n모든 직원 기기가 다음에 열 때 퀴즈를 다시 풉니다.`))return;
+ async function pub(btn){const nb=newBank(),out=(D.bank||[]).length-nb.length+D.dr.filter(d=>d.on).length+impNew().length;
+  if(!confirm(`새 판(${nb.length}문제)을 적용할까요?\n빼는 문제 ${out}개 · 더하는 문제 ${D.dr.filter(d=>d.on).length+impNew().length}개\n모든 직원 기기가 다음에 열 때 퀴즈를 다시 풉니다.`))return;
   btn.disabled=true;msg('적용하는 중…');try{const j=await window.hqPost({op:'adm_qz_pub',akey:D.key,bank:nb,by:me(),note:(document.getElementById('qdNote')||{}).value||'',from:D.ver});
-   D.dr=[];D.sv='';D.m='';await load();msg(`✓ 새 판 ${j.ver} 적용 (${j.n}문제). 직원 기기는 다음에 열 때 받습니다.`,'ok');try{Z().sync&&Z().sync()}catch(_){}}catch(e){btn.disabled=false;msg(e.message,'err')}}
+   D.dr=[];D.imp=[];D.impN='';D.sv='';D.m='';await load();msg(`✓ 새 판 ${j.ver} 적용 (${j.n}문제). 직원 기기는 다음에 열 때 받습니다.`,'ok');try{Z().sync&&Z().sync()}catch(_){}}catch(e){btn.disabled=false;msg(e.message,'err')}}
  function onClick(e){const b=e.target.closest('[data-x]');if(!b)return;const x=b.dataset.x;
   if(x==='close'){document.getElementById('qdOv').remove();return}
   if(x==='reload'){D.sv='';return load()}
+  if(x==='impclr'){D.imp=[];D.impN='';render();return}
   if(x==='outauto'){autoOut();render();return}if(x==='outnone'){D.out.clear();render();return}
   if(x==='ai')return ai(b);if(x==='pub')return pub(b);if(x==='drclr'){if(confirm('초안을 모두 지울까요?')){D.dr=[];render()}return}
   if(x==='off'){if(!confirm('본부 문제은행을 지우고 앱에 들어 있는 문제로 돌아갈까요? 모든 기기가 다시 풉니다.'))return;window.hqPost({op:'adm_qz_off',akey:D.key}).then(()=>{D.sv='';return load()}).catch(er=>msg(er.message,'err'));return}
@@ -19949,7 +19960,7 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   if(x==='csv'){const st=curStat(),q=st.q||{};dl('퀴즈_문제별정답률_'+(D.sv||D.ver)+'_'+day()+'.csv',[['분류','문제','정답','출처','쪽','나옴','맞음','정답률','빼기']].concat((D.bank||[]).map(o=>{const c=q[Z().id(o)]||[0,0];return[o[0],o[1],o[2],o[4],o[5],c[0],c[1],c[0]?Math.round(c[1]/c[0]*100)+'%':'',D.out.has(Z().id(o))?'빼기':'']})));return}
   if(x==='bankcsv'){dl('퀴즈_새판문제_'+day()+'.csv',[['분류','문제','정답','오답1','오답2','오답3','출처','쪽','근거']].concat(newBank().map(o=>[o[0],o[1],o[2],o[3][0],o[3][1],o[3][2],o[4],o[5],o[6]])));return}}
  window.qzDev=function(akey){if(!akey){alert('먼저 👑 현장 관리에서 관리자 키로 불러오기를 해 주세요.');return}
-  const o0=document.getElementById('qdOv');if(o0)o0.remove();D.key=akey;D.st=null;D.dr=[];D.sv='';D.m='';
+  const o0=document.getElementById('qdOv');if(o0)o0.remove();D.key=akey;D.st=null;D.dr=[];D.imp=[];D.impN='';D.sv='';D.m='';
   const ov=document.createElement('div');ov.id='qdOv';
   ov.innerHTML=`<div class="qdW" role="dialog" aria-modal="true" aria-label="개발자 모드 용어 퀴즈"><div class="qdH"><div><b>🛠 개발자 모드 · 🎓 용어 퀴즈</b><br><small>정답률 70% 넘으면 문제은행 새로 만들기 · AI 초안 · 새 판 적용</small></div><span class="sp"></span><button type="button" data-x="close" aria-label="닫기">✕</button></div>
   <div class="qdB" id="qdBody"><p class="msg" id="qdMsg"></p></div><div class="qdF">만든이: 구병순 · 서용이 · 문제는 출처(문서·쪽)와 근거 문장을 꼭 확인하고 채택하세요 · 고객 정보는 문제에 넣지 않습니다</div></div>`;
@@ -19959,7 +19970,7 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   ov.addEventListener('change',e=>{const t=e.target;if(t.id==='qdSv'){D.sv=t.value;render();return}
    if(t.dataset.out){t.checked?D.out.add(t.dataset.out):D.out.delete(t.dataset.out);render();return}
    if(t.dataset.on){D.dr[+t.dataset.on].on=t.checked;render();return}
-   if(t.id==='qdDoc'){D.doc=+t.value}if(t.id==='qdN'){D.n=+t.value}});
+   if(t.id==='qdDoc'){D.doc=+t.value}if(t.id==='qdN'){D.n=+t.value}if(t.id==='qdImp'&&t.files&&t.files[0])impRead(t.files[0])});
   ov.addEventListener('input',e=>{const f=e.target.dataset.f;if(!f)return;const[i,k]=f.split(':'),d=D.dr[+i];if(!d)return;if(k[0]==='w')d.x[3][+k[1]]=e.target.value;else d.x[+k]=e.target.value});
   ['pointerdown','touchstart','mousedown','wheel'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));
   kbLoad().then(()=>{if(D.st)render()});load()};
