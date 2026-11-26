@@ -6545,6 +6545,17 @@ function joinCheck(){if(!out.length)return;if(!JOIN.sig){joinAll(true);return}
  const t=`⚠️ ${bad.join('·')} 기준자료가 저장된 결합 결과와 다릅니다. 수용가의 소블록·관로 결과는 예전 기준입니다.`;
  $('diag').className='diag warn';$('diag').textContent=t+' 새 기준으로 맞추려면 🔗 블록 다시 결합을 누르세요.';
  if(typeof phToast==='function'){phToast(t,{ms:20000,btn:'🔗 다시 결합',fn:()=>joinAll()});const el=document.getElementById('phToast');if(el)el.dataset.jst='1'}}
+/* 2026-11-26 안동 '수용가 관리번호가 없어': 소블록 경계 SHP에도 '관리번호' 칸(경계 도형 번호, AM05=30)이 있어 결합 때 수용가 행에 '관리번호'로 붙음
+   → 수용가 관리번호처럼 보이고 💾 백업에도 그 값이 들어감. 경계 칸 중 관리번호·수용가번호는 SHP_ 를 붙여 따로 둠 */
+const CUST_IDK=/^(관리번호|수용가번호)$/;
+/* 수용가 번호 칸 찾기: 관리번호가 결합된 경계 도형의 '관리번호'와 거의 같으면(옛 결합·옛 백업) 수용가 번호가 아님 → 수용가번호로 대신 */
+function custIdKeys(src){src=src||out;const o0=src[0]||{},ks=Object.keys(o0);let mk=ks.find(k=>/^관리번호$/.test(k))||'';const ck=ks.find(k=>/^수용가번호$/.test(k))||'';
+ if(mk&&src===out&&JOIN.fi&&JOIN.fi.length===out.length&&JOIN.props&&JOIN.props.length){let n=0,same=0;const st=Math.max(1,Math.floor(out.length/2000));
+  for(let i=0;i<out.length;i+=st){const fi=JOIN.fi[i];if(fi<0)continue;const v=String(out[i][mk]??'').trim();if(!v)continue;n++;const bp=JOIN.props[fi]||{};if(bp['관리번호']!=null&&String(bp['관리번호']).trim()===v)same++}
+  if(n>=5&&same/n>=.8)mk=''}
+ return{mk,ck}}
+/* 관리번호 칸 값: 수용가 관리번호, 없으면 수용가번호(안동처럼 관리번호 = 수용가번호인 현장) */
+function custMg(o,K){K=K||custIdKeys();const a=K.mk?String(o[K.mk]??'').trim():'';return a||(K.ck?String(o[K.ck]??'').trim():'')}
 async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now();hayReset();joinStaleOff();const FI=new Int32Array(out.length).fill(-1);
  const tol=+$('tol').value||0,fld=$('blkField').value;let hit=0,near=0,empty=0,inBox=0;
  const pts=out.filter(o=>o['_위도']!=='').length,pb=poly?turf.bbox({type:'FeatureCollection',features:poly.features}):null;
@@ -6558,7 +6569,7 @@ async function joinAll(keep){keep=keep===true;const RUN=++JOIN_RUN,T0=Date.now()
    const r=pidxFind(x,y,tol);if(!r)continue;const f=poly.features[r.fi],how=r.how;FI[i]=r.fi;
    const p={...f.properties};delete p._bbox;const name=String(p[fld]??'').trim();if(!name)empty++;
    o['_결합블록']=name||'(이름없음)';o['_결합방식']=how;how==='내부'?hit++:near++;
-   Object.keys(p).forEach(k=>{const kk=k in o?'SHP_'+k:k;o[kk]=p[k];pks[i].push(kk)})}
+   Object.keys(p).forEach(k=>{const kk=k in o||CUST_IDK.test(k)?'SHP_'+k:k;o[kk]=p[k];pks[i].push(kk)})}
   if(big){prog(`블록 결합 ${Math.min(N,i0+CH).toLocaleString()}/${N.toLocaleString()}`);await tick();if(RUN!==JOIN_RUN)return}}
  out.forEach(billPostJoin);ubSync();
  const f0=out.find(o=>o['_위도']!==''),r3=a=>a.map(v=>(+v).toFixed(3)).join(', ');let msg,cls='warn';
@@ -8035,8 +8046,9 @@ async function bkLoad(f,quiet){const msg=$('bkMsg');msg.textContent='백업 파�
 /* 수용가 좌표 백업: 관리번호·소블록·좌표·변환방식 + 사용량 정보(월평균·최근 3·6개월·구경·업종·가구수·이상유형)
    → 직원 기기에서도 수용가 라벨·🏭 대수용가 ◆·💧 단수구역 대수용가가 됨. 이름·주소·연락처·수용가번호·검색주소·비고는 넣지 않음 */
 const BK_RES_KEEP=['관리번호','소블록','월평균(㎥)','최근3개월(㎥)','최근6개월(㎥)','구경','업종','가구수','이상유형','권장조치'],BK_RES_OUT=['_방식','_위도','_경도','_유형코드'];
-function bkResSnap(){const base=BK_RES_KEEP.filter(k=>out.some(o=>k in o)),cols=base.concat(BK_RES_OUT);
- return{v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,rows:out.map(o=>cols.map(k=>o[k]??''))}}
+function bkResSnap(){const K=custIdKeys(),hasMg=!!(K.mk||K.ck),base=BK_RES_KEEP.filter(k=>k==='관리번호'?hasMg:out.some(o=>k in o)),cols=base.concat(BK_RES_OUT);
+ /* 관리번호 = 수용가 관리번호, 없으면 수용가번호(경계 SHP의 관리번호는 넣지 않음, 2026-11-26) */
+ return{v:1,name:fname,bill:!!BILLMODE,at:Date.now(),cols,rows:out.map(o=>cols.map(k=>k==='관리번호'?custMg(o,K):o[k]??''))}}
 async function bkResLoad(res){const cols=res.cols||[],base=cols.filter(k=>!/^_/.test(k));
  const R=res.rows.map(a=>{const r={};base.forEach(k=>{r[k]=a[cols.indexOf(k)]??''});return r});
  BILLMODE=!!res.bill;setRows(R,(res.name||'백업')+' (백업 · 주소 제외)');
@@ -10612,8 +10624,8 @@ setTimeout(async()=>{try{phRefSet(await IDB.get('phref'))}catch(_){}try{const r=
  const old=v.filter(m=>m.th);if(old.length){for(const m of old){try{const b=await (await fetch(m.th)).blob();await IDB.set('pt:'+m.id,b)}catch(_){}delete m.th}}
  v.forEach(m=>{if(m.ts==null)m.ts=phTs(m.dt)});PH.list=v.concat(pre);phIndex();PH.ld=1;if(old.length||pre.length||PH.ldSave)await phSaveMeta(true);PH.ldSave=0;if(!PH.list.length){phStats();return}phRefresh();$('phMsg').textContent=`💾 저장된 현장 사진 ${v.length.toLocaleString()}장을 불러왔습니다.`}catch(_){PH.ld=1;phStats()}},250);
 /* ===== [추가] 🔗 유수율 연동 엑셀 — 관리번호 기준, 주소·이름 제외 (공유·포항시 유수율 분석 앱 연동용) ===== */
-function lkRows(){const ks=out.length?Object.keys(out[0]):[],mk=ks.find(k=>/^관리번호$/.test(k))||'',ck=ks.find(k=>/^수용가번호$/.test(k))||'',ob=BILLMODE?'소블록':CMPK;
- return out.map((o,i)=>({'관리번호':mk?String(o[mk]??''):'','수용가번호':ck?String(o[ck]??''):'','기존 소블록':ob&&o[ob]!=null?String(o[ob]):'','위치상 소블록':String((cmpOn()?o['_위치블록']:o['_결합블록'])||''),'블록 대조':o['_블록일치']||'','사용자 지정블록':o['_사용자블록']||'','결합 방식':o['_결합방식']||'','변환 방식':o['_방식'],'이상 유형':o['이상유형']||'','위도':o['_위도']===''?'':+(+o['_위도']).toFixed(6),'경도':o['_경도']===''?'':+(+o['_경도']).toFixed(6),'관로거리(m)':o['_관로거리m']??''}))}
+function lkRows(){const K=custIdKeys(),ck=K.ck,ob=BILLMODE?'소블록':CMPK;
+ return out.map((o,i)=>({'관리번호':custMg(o,K),'수용가번호':ck?String(o[ck]??''):'','기존 소블록':ob&&o[ob]!=null?String(o[ob]):'','위치상 소블록':String((cmpOn()?o['_위치블록']:o['_결합블록'])||''),'블록 대조':o['_블록일치']||'','사용자 지정블록':o['_사용자블록']||'','결합 방식':o['_결합방식']||'','변환 방식':o['_방식'],'이상 유형':o['이상유형']||'','위도':o['_위도']===''?'':+(+o['_위도']).toFixed(6),'경도':o['_경도']===''?'':+(+o['_경도']).toFixed(6),'관로거리(m)':o['_관로거리m']??''}))}
 $('lkXl').onclick=()=>xlBusy('lkXl','유수율 연동 엑셀',async st=>{ubSync();const R=lkRows(),g=new Map();
  R.forEach(r=>{const k=r['기존 소블록']||r['위치상 소블록']||'(미지정)';const a=g.get(k)||{'소블록':k,'수용가':0,'좌표 있음':0,'일치':0,'불일치':0,'위치 블록 없음':0,'사용자 지정':0};a['수용가']++;if(r['위도']!=='')a['좌표 있음']++;
   if(r['블록 대조']==='일치'||r['블록 대조']==='명칭 차이')a['일치']++;else if(r['블록 대조']==='불일치')a['불일치']++;else if(r['블록 대조']==='위치 블록 없음')a['위치 블록 없음']++;if(r['사용자 지정블록'])a['사용자 지정']++;g.set(k,a)});
@@ -19807,20 +19819,26 @@ function selAx(){const its=selFeats();if(!its.length)return;if(typeof axOpen!=='
  const pc=$('axPipe');if(pc&&!pc.checked){pc.checked=true}axList();axInfo()}
 /* 선택 관로에 딸린 수용가(2026-11-25): 그려서 고른 범위(네모·다각형·손·지금 화면·Shift+끌기)가 있으면 그 범위 안 수용가(➖ 뺀 범위는 뺌),
    눌러서만 골랐으면 가장 가까운 관로(500m 안, 단수구역과 같은 기준)가 고른 관로인 수용가. 관리번호·소블록·주소(사용자 요청, 내부용) — 이름·연락처 없음 */
+/* 수용가 주소: 지번·도로명 칸(부과량 연동) → 없으면 주소 변환에 고른 1순위·2순위 열(안동 '도로명주소' = '퇴계로 106-1(북문동 23-4)'은 도로명·지번으로 나눔) */
+function selCustAddr(o,co,cn){let ji=String(o['구주소(지번)']??'').trim(),rd=String(o['주소(도로명)']??'').trim();
+ const put=v=>{v=String(v??'').trim();if(!v)return;const m=/^(.+?)\s*\(([^()]*?\S(?:동|리|가)\d*\s*(?:산\s*)?\d[\d\-]*)\)\s*$/.exec(v);
+  if(m){if(!rd)rd=m[1].trim();if(!ji)ji=m[2].trim();return}if(/\S(로|길)\s*\d/.test(v)){if(!rd)rd=v}else if(!ji)ji=v};
+ if(!ji||!rd){[co,cn].forEach(c=>{if(c&&c in o)put(o[c])})}
+ return{ji,rd}}
 function selCust(its){const src=typeof shutSrc==='function'?shutSrc():out;if(!src||!src.length||!PIPE.segs)return null;
  const fs=new Set(its.map(o=>o.fi)),RG=(SEL.rg||[]).filter(r=>r&&r.ring&&r.ring.length>=3),byRg=RG.some(r=>!r.sub);
  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
  if(byRg)RG.forEach(r=>{if(r.sub)return;const b=r.bb;if(b[0]<x0)x0=b[0];if(b[1]<y0)y0=b[1];if(b[2]>x1)x1=b[2];if(b[3]>y1)y1=b[3]});
  else{its.forEach(({f})=>{const b=pcBox(f);if(b[0]<x0)x0=b[0];if(b[1]<y0)y0=b[1];if(b[2]>x1)x1=b[2];if(b[3]>y1)y1=b[3]});const pd=.006;x0-=pd;y0-=pd;x1+=pd;y1+=pd}
  const inRg=(ln,la)=>{let v=false;for(const r of RG){const b=r.bb;if(ln<b[0]||ln>b[2]||la<b[1]||la>b[3])continue;if(axPip(r.ring,ln,la))v=!r.sub}return v};
- const ks=Object.keys(src[0]||{}),mk=ks.find(k=>/^관리번호$/.test(k))||'',ck=ks.find(k=>/^수용가번호$/.test(k))||'',R=[],per=new Map(),P=[];
+ const K=custIdKeys(src),ck=K.ck,co=$('colOld')&&$('colOld').value||'',cn=$('colNew')&&$('colNew').value||'',R=[],per=new Map(),P=[];
  for(let i=0;i<src.length;i++){const o=src[i];if(o['_위도']===''||o['_위도']==null)continue;const la=+o['_위도'],ln=+o['_경도'];if(!isFinite(la)||!isFinite(ln)||ln<x0||ln>x1||la<y0||la>y1)continue;
   if(byRg&&!inRg(ln,la))continue;const r=nearestPipe(ln,la,500);if(!byRg&&(!r||!fs.has(r.fi)))continue;
   P.push([ln,la]);const on=r&&fs.has(r.fi);if(on)per.set(r.fi,(per.get(r.fi)||0)+1);const a=r?attrOf(PIPE.feats[r.fi]):{},q=o['월평균(㎥)'];
-  const ji=String(o['구주소(지번)']||'').trim(),rd=String(o['주소(도로명)']||'').trim(),sa=String(o['_검색주소']||'').trim();
-  R.push({'관리번호':mk?String(o[mk]??''):'','수용가번호':ck?String(o[ck]??''):'','지번 주소':ji||(!rd?sa:''),'도로명 주소':rd,'소블록(Y)':String(o['소블록']??o['_결합블록']??''),'위치상 소블록':String(o['_위치블록']||o['_결합블록']||''),'블록 대조':o['_블록일치']||'','가까운 관로':a.id||'','관로 관경(mm)':a.dia??'','관로 재질':a.matRaw||a.mat||'','관로거리(m)':r?Math.round(r.d*10)/10:'','고른 관로에 붙음':on?'예':'아니오','월평균(㎥)':q!=null&&q!==''?q:''})}
+  const ad=selCustAddr(o,co,cn),ji=ad.ji,rd=ad.rd,sa=String(o['_검색주소']||'').trim();
+  R.push({'관리번호':custMg(o,K),'수용가번호':ck?String(o[ck]??''):'','지번 주소':ji||(!rd?sa:''),'도로명 주소':rd,'소블록(Y)':String(o['소블록']??o['_결합블록']??''),'위치상 소블록':String(o['_위치블록']||o['_결합블록']||''),'블록 대조':o['_블록일치']||'','가까운 관로':a.id||'','관로 관경(mm)':a.dia??'','관로 재질':a.matRaw||a.mat||'','관로거리(m)':r?Math.round(r.d*10)/10:'','고른 관로에 붙음':on?'예':'아니오','월평균(㎥)':q!=null&&q!==''?q:''})}
  R.sort((a,b)=>String(a['소블록(Y)']).localeCompare(String(b['소블록(Y)']),'ko',{numeric:true})||String(a['관리번호']).localeCompare(String(b['관리번호']),'ko',{numeric:true}));
- return{R:R.map((r,k)=>({'순번':k+1,...r})),per,ck:!!ck,byRg,P}}
+ return{R:R.map((r,k)=>({'순번':k+1,...r})),per,ck:!!ck,byRg,P,noId:R.length>0&&R.every(r=>!r['관리번호']),noAd:R.length>0&&R.every(r=>!r['지번 주소']&&!r['도로명 주소'])}}
 async function selXl(){const its=selFeats();if(!its.length)return;if(typeof XLSX==='undefined'){alert('엑셀 라이브러리를 불러오지 못했습니다.');return}
  if(SEL.xlBusy)return;SEL.xlBusy=true;try{
  let C=null;try{C=selCust(its)}catch(e){console.warn('selCust',e)}
@@ -19831,6 +19849,7 @@ async function selXl(){const its=selFeats();if(!its.length)return;if(typeof XLSX
  const sum=[{'항목':'고른 관로','값':D.length},{'항목':'총 연장(km)','값':+(tot/1000).toFixed(3)}];
  if(C){sum.push({'항목':'⚠ 내부용','값':'수용가 시트에 주소가 들어 있습니다(2026-11-25 사용자 요청). 외부 공유 금지 · 이름·연락처는 넣지 않음'},{'항목':'딸린 수용가','값':C.R.length},{'항목':'수용가 기준','값':(C.byRg?'관로를 고를 때 그린 범위(네모·다각형·손·지금 화면) 안의 수용가 (➖ 뺀 범위 제외)':'가장 가까운 관로(500m 안)가 고른 관로인 수용가 — 단수구역과 같은 기준 (그린 범위 없이 눌러서 고름)')+'. 관리번호·소블록·주소만 넣고 이름·연락처는 넣지 않음'})}
  else sum.push({'항목':'딸린 수용가','값':'확인 필요 (부과량·주소 자료 또는 관로 자료가 없음)'});
+ if(C&&(C.noId||C.noAd))sum.push({'항목':'⚠ 확인 필요','값':`수용가 ${[C.noId&&'관리번호(수용가번호)',C.noAd&&'주소'].filter(Boolean).join('·')}가 지금 앱 자료에 없습니다 — 💾 백업에서 불러온 수용가 좌표는 주소·수용가번호를 담지 않습니다. 공간결합 결과 엑셀(또는 부과량 자료)을 ① 주소에 다시 넣은 뒤 내보내세요`});
  sum.push({'항목':'만든 날','값':fmtDT(Date.now())},{'항목':'현장','값':(window.SITE&&SITE.name)||''},{'항목':'만든이','값':'구병순 (스마트 물길주소)'});
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sum),'요약');
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(g('관경(mm)','관경(mm)')),'관경별');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(g('재질','재질')),'재질별');
