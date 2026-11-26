@@ -20556,6 +20556,24 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   chuseok:{n:'한가위',ic:'🌕',c:['#facc15','#fde68a','#f59e0b','#a3e635'],tip:['연휴 <b>비상근무</b> 연락처·당번 확인','연휴 전 💾 <b>백업</b>·⬇ 지금 받기','넉넉한 한가위 보내세요']}
  };
  var ORD=['winter','xmas','newyear','seol','spring','summer','autumn','chuseok'];
+ /* 다크 작업 화면 계절 배경 B안(2026-11-26): 제목줄 계절 바탕+옅은 무늬, 리본 오른쪽 빈자리에 계절 그림(왼쪽으로 흐려짐). 다크일 때만 보임 */
+ var ART={winter:{sky:['#0b1530','#14264d'],ic:['❄','❅','❆'],hill:['#e2e8f0',.28],moon:1},
+  xmas:{sky:['#0b1a14','#13261c'],ic:['⭐','❄','🎁'],hill:['#e2e8f0',.28],moon:1,tree:1},
+  newyear:{sky:['#1a1033','#2a1650'],ic:['✨','🎆','✨'],hill:['#f59e0b',.25],sun:1},
+  seol:{sky:['#2a0f14','#3d1520'],ic:['🧧','✨','🏮'],hill:['#dc2626',.3]},
+  spring:{sky:['#231a2a','#352040'],ic:['🌸','🌼','🌸'],hill:['#16a34a',.35]},
+  summer:{sky:['#082f49','#0c4a6e'],ic:['💧','🌊','☀'],hill:['#0ea5e9',.35]},
+  autumn:{sky:['#2a1a12','#3b2414'],ic:['🍁','🍂','🍁'],hill:['#7c2d12',.55]},
+  chuseok:{sky:['#1c1917','#2b2320'],ic:['🍂','✨','🌾'],hill:['#a16207',.4],moon:2}};
+ function scene(id){var a=ART[id],w=800,h=120,s=7,g='',i;function r(){s=(s*16807)%2147483647;return s/2147483647}
+  if(a.moon){g+='<circle cx="'+w*.84+'" cy="'+(a.moon>1?30:24)+'" r="'+(a.moon>1?20:13)+'" fill="#fef9c3" opacity=".9"/>';if(a.moon<2)g+='<circle cx="'+(w*.84+6)+'" cy="20" r="12" fill="'+a.sky[1]+'"/>'}
+  if(a.sun)g+='<circle cx="'+w*.8+'" cy="'+(h-14)+'" r="26" fill="#fbbf24" opacity=".75"/>';
+  for(i=0;i<34;i++){var x=r()*w,y=r()*h*.85,z=8+r()*13;g+='<text x="'+x.toFixed(0)+'" y="'+y.toFixed(0)+'" font-size="'+z.toFixed(0)+'" opacity="'+(.35+r()*.5).toFixed(2)+'" fill="#fff" transform="rotate('+((r()*60-30)|0)+' '+x.toFixed(0)+' '+y.toFixed(0)+')">'+a.ic[i%a.ic.length]+'</text>'}
+  g+='<path d="M0 '+h+'L0 '+(h-18)+'Q'+w*.15+' '+(h-34)+' '+w*.3+' '+(h-20)+'T'+w*.6+' '+(h-22)+'T'+w+' '+(h-26)+'L'+w+' '+h+'Z" fill="'+a.hill[0]+'" opacity="'+a.hill[1]+'"/>';
+  if(a.tree)[[.45,40],[.62,30],[.92,36]].forEach(function(t){var X=w*t[0],z=t[1];g+='<path d="M'+X+' '+(h-z-14)+'l'+z*.38+' '+z+'h-'+z*.76+'z" fill="#166534" opacity=".85"/><circle cx="'+X+'" cy="'+(h-z-15)+'" r="3" fill="#facc15"/>'});
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><defs><linearGradient id="szSkyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+a.sky[1]+'"/><stop offset="1" stop-color="'+a.sky[0]+'"/></linearGradient></defs><rect width="'+w+'" height="'+h+'" fill="url(#szSkyG)"/>'+g+'</svg>'}
+ function pat(id){var c=ART[id].ic[0];return 'url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="34"><text x="6" y="14" font-size="11" opacity=".22">'+c+'</text><text x="38" y="30" font-size="9" opacity=".16">'+c+'</text></svg>')+'")'}
+
  function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
  function near(d,list,a,b){for(var i=0;i<list.length;i++){var t=new Date(list[i]+'T00:00:00'),k=Math.round((d-t)/864e5);if(k>=-a&&k<=b)return k}return null}
  function auto(d){var m=d.getMonth()+1,day=d.getDate();d=new Date(d.getFullYear(),m-1,day);
@@ -20590,7 +20608,10 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
  '.szCard .f{display:flex;gap:6px;justify-content:flex-end;padding:6px 10px 10px}.szCard .f button{font:inherit;font-size:12px;padding:5px 11px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#334155;cursor:pointer;min-height:30px}.szCard .f button.p{background:#4f46e5;border-color:#4f46e5;color:#fff}'+
  '.szCard .bar{height:3px;background:#4f46e5;transform-origin:left;animation:szBar 8s linear forwards}.szCard:hover .bar,.szCard.hold .bar{animation-play-state:paused}@keyframes szBar{to{transform:scaleX(0)}}'+
  'html.dark .szCard{background:#1e293b;color:#e2e8f0;border-color:#334155}html.dark .szCard .f button{background:#334155;border-color:#475569;color:#e2e8f0}'+
- '@media(prefers-reduced-motion:reduce){.szCard .bar{animation:none}}@media print{.szBd,.szSt,.szHat,.szCard{display:none!important}}';
+ '.szScene{position:absolute;right:0;top:0;bottom:0;width:46%;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 35%);mask-image:linear-gradient(90deg,transparent,#000 35%);display:none}'+
+ 'html.dark .szScene{display:block}html.dark #gwRibW.szOn>#gwRib{position:relative;z-index:1}'+
+ 'html.dark #gwTitle.szOn{background-color:var(--szSky);background-image:var(--szPat)}html.dark .szSt.lt{filter:drop-shadow(0 0 2px rgba(255,255,255,.5)) drop-shadow(0 0 4px rgba(253,230,138,.5))}'+
+ '@media(prefers-reduced-motion:reduce){.szCard .bar{animation:none}}@media print{.szBd,.szSt,.szHat,.szCard,.szScene{display:none!important}}';
  document.head.appendChild(css);
  var HAT='<svg class="szHat" viewBox="0 0 40 34" aria-hidden="true"><path d="M5 26C9 12 18 4 30 5c3 0 5 3 4 7-2-3-5-3-7-2 0 6 1 11 3 16z" fill="#dc2626"/><rect x="2" y="24" width="32" height="8" rx="4" fill="#fff" stroke="#e2e8f0"/><circle cx="34.5" cy="12.5" r="4.2" fill="#fff" stroke="#e2e8f0"/></svg>';
  function strip(host,t){var s=document.createElement('div');s.className='szSt'+(t.snow?' snow':' lt');s.setAttribute('aria-hidden','true');
@@ -20600,10 +20621,11 @@ html.dark #qdOv .alert.r{background:#450a0a;color:#fecaca}html.dark #qdOv .alert
   if(on&&!w){w=document.createElement('span');w.className='szHw';img.parentNode.insertBefore(w,img);w.appendChild(img);w.insertAdjacentHTML('beforeend',HAT);img.addEventListener('load',hatVis)}
   else if(!on&&w){w.parentNode.insertBefore(img,w);w.remove()}}
  function hatVis(){document.querySelectorAll('.szHw').forEach(function(w){var i=w.querySelector('img'),h=w.querySelector('.szHat');if(h)h.style.display=i&&i.offsetWidth>0?'':'none'})}
- function clear(){document.querySelectorAll('.szBd,.szSt').forEach(function(e){e.remove()});['gwmL','mL'].forEach(function(id){hat(document.getElementById(id),false)})}
+ function clear(){document.querySelectorAll('.szBd,.szSt,.szScene').forEach(function(e){e.remove()});document.querySelectorAll('#gwTitle.szOn,#gwRibW.szOn').forEach(function(e){e.classList.remove('szOn')});['gwmL','mL'].forEach(function(id){hat(document.getElementById(id),false)})}
  function apply(){clear();var id=cur();document.documentElement.dataset.szn=id||'';if(!id)return;var t=T[id],b=badge(id);
   function bd(){var e=document.createElement('span');e.className='szBd';e.title='계절 장식 · ⚙ 앱 설정 › 🎄 계절 장식에서 끄기';e.innerHTML='<span class="l">'+b[0]+'</span><span class="s">'+b[1]+'</span>';return e}
   var gt=document.getElementById('gwTitle');if(gt){var sm=gt.querySelector('small');if(sm)sm.after(bd());strip(gt,t)}
+  var de=document.documentElement,rw=document.getElementById('gwRibW');if(ART[id]){de.style.setProperty('--szSky',ART[id].sky[1]);de.style.setProperty('--szPat',pat(id));if(gt)gt.classList.add('szOn');if(rw){var sc=document.createElement('div');sc.className='szScene';sc.innerHTML=scene(id);rw.insertBefore(sc,rw.firstChild);rw.classList.add('szOn')}}
   var hd=document.querySelector('header'),sn=document.getElementById('siteNm');if(hd){if(sn)sn.after(bd());strip(hd,t)}
   if(t.hat){hat(document.getElementById('gwmL'),true);hat(document.getElementById('mL'),true);hatVis()}}
  /* 하루 한 번 현장 안내 카드: 8초 뒤 닫힘(누르고 있거나 마우스 올리면 멈춤). 잠금·퀴즈·자료 없음 카드가 닫힌 뒤 띄움 */
