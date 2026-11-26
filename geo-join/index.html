@@ -295,7 +295,7 @@ html.dark .fsb{background:rgba(99,102,241,.2);color:#c7d2fe;border-color:rgba(12
 .uiset .uin{margin:8px 0 0;font-size:11px;color:var(--mute)}
 .uiset .uidis{opacity:.5}
 .bpPopA{display:flex;flex-wrap:wrap;gap:4px;min-width:250px;margin-top:8px;padding-top:7px;border-top:1px solid #e2e8f0}.bpPopA button{flex:1 1 auto;min-height:32px;padding:4px 8px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;color:#3730a3;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}.bpPopA button:hover{background:#e0e7ff}.bpPopA button[data-bpa="set"]{flex:0 0 auto;background:#fff;color:#475569;border-color:#cbd5e1}.bpPopA button[data-bpa="rephw"]{flex:0 0 auto}
-#nrwSh{position:fixed;left:0;right:0;bottom:0;z-index:1200;max-height:70vh;display:flex;flex-direction:column;background:var(--card,#fff);color:var(--ink,#0f172a);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(15,23,42,.28);padding:6px 10px calc(8px + env(safe-area-inset-bottom));font-family:'Noto Sans KR',sans-serif}#nrwSh[hidden]{display:none}
+#nrwSh{position:fixed;left:0;right:0;bottom:0;z-index:10020;max-height:70vh;display:flex;flex-direction:column;background:var(--card,#fff);color:var(--ink,#0f172a);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(15,23,42,.28);padding:6px 10px calc(8px + env(safe-area-inset-bottom));font-family:'Noto Sans KR',sans-serif}#nrwSh[hidden]{display:none}
 #nrwSh .nsH{display:flex;align-items:center;gap:8px;padding:2px 0 6px}#nrwSh .nsH b{flex:1;font-size:14px;color:#3730a3}html.dark #nrwSh .nsH b{color:#c7d2fe}#nrwSh .nsG{border:0;background:none;padding:6px 10px;cursor:pointer}#nrwSh .nsG i{display:block;width:36px;height:4px;border-radius:2px;background:#cbd5e1}#nrwSh .nsX{border:0;background:#f1f5f9;border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer}html.dark #nrwSh .nsX{background:#334155;color:#e2e8f0}
 #nrwSh .nsB{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}#nrwSh .nsB button{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 10px;font:600 12.5px 'Noto Sans KR',sans-serif;cursor:pointer}#nrwSh .nsB button.on{background:#4f46e5;color:#fff;border-color:#4f46e5}html.dark #nrwSh .nsB button{background:#1e293b;color:#c7d2fe;border-color:#475569}html.dark #nrwSh .nsB button.on{background:#6366f1;color:#fff}
 #nrwShB{overflow:auto;min-height:0;flex:1}#nrwSh.min #nrwShB,#nrwSh.min .nsB2{display:none}
@@ -3872,7 +3872,11 @@ function nrwSh(){let w=document.getElementById('nrwSh');if(w)return w;w=document
   const m=G('map');if(!m)return;const c=m.getCenter(),n=bpBlkAt(c.lng,c.lat);if(!n){msg('지도 가운데에 소블록이 없습니다 · 보고 싶은 소블록을 가운데로 옮겨 주세요');return}if(k==='3d')bp3dAt(n);else{F('hlBlock',n);F('bpQuick',[n])}});
  return w}
 function nrwShSync(){const w=document.getElementById('nrwSh');if(!w)return;const v=($('blkColor')||{}).value||'none';w.querySelectorAll('[data-ns]').forEach(b=>b.classList.toggle('on',b.dataset.ns===v||(b.dataset.ns==='off'&&v==='none')));const a=document.getElementById('nrwChA');if(a)a.classList.toggle('on',!w.hidden)}
-function nrwShOpen(){const w=nrwSh();w.hidden=false;w.classList.remove('min');nrwListRender(document.getElementById('nrwShB'));nrwShSync()}
+/* 2026-11-26 '모바일에는 유수율 추세 표 안보임': 폰은 지도 전체화면(#mapBox가 브라우저 전체화면 또는 .mapfs z 10000)으로 쓰는데 시트를 body에 붙여 전체화면 밖이라 안 보였음 → 전체화면이면 #mapBox 안으로 옮김 */
+function nrwShHost(){const w=document.getElementById('nrwSh');if(!w)return;const box=document.getElementById('mapBox'),on=!!box&&(document.fullscreenElement===box||document.webkitFullscreenElement===box||box.classList.contains('mapfs')),h=on?box:document.body;if(w.parentElement!==h)h.appendChild(w)}
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(nrwShHost,50)));
+setTimeout(()=>{const box=document.getElementById('mapBox');if(box)new MutationObserver(nrwShHost).observe(box,{attributes:true,attributeFilter:['class']})},0);
+function nrwShOpen(){const w=nrwSh();nrwShHost();w.hidden=false;w.classList.remove('min');nrwListRender(document.getElementById('nrwShB'));nrwShSync()}
 function nrwShClose(){const w=document.getElementById('nrwSh');if(w)w.hidden=true;nrwShSync()}
 function nrwShToggle(){const w=document.getElementById('nrwSh');if(w&&!w.hidden)nrwShClose();else nrwShOpen()}
 window.nrwShToggle=nrwShToggle;window.nrwShOpen=nrwShOpen;
