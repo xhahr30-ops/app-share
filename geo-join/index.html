@@ -928,6 +928,7 @@ select.msel{display:inline-block!important;width:auto!important;min-width:0!impo
 .phb.yc.man{border-style:dashed}
 /* ⭐ 누수탐사 사진 = 상태별 색 별(2026-11-24): 미수리 빨강·수리 완료 파랑·누수혐의 초록·수리불가 등 회색. 별·민원 동그라미 안 그림은 뺌(사용자 요청) — 시설물 누수 별보다 크고 번호 상자가 붙음 */
 .phb.tss{background:transparent!important;border:0;box-shadow:none;border-radius:0}.phb.tss .tsS{position:absolute;z-index:0;pointer-events:none;left:-5px;top:-5px;width:42px;height:42px;filter:drop-shadow(0 1px 2px #000b)}.phb.tss>span{position:relative;z-index:2;font-size:11px!important;line-height:1;top:1px}
+.phb.tss .kdS{position:absolute;z-index:0;pointer-events:none;left:-1px;top:-1px;width:34px;height:34px;filter:drop-shadow(0 1px 2px #000b)}.phb.kds.k-et .kdS{left:2px;top:2px;width:28px;height:28px}
 .phb.tss.st-u::after{content:'!';position:absolute;left:-6px;top:-6px;width:15px;height:15px;border-radius:50%;background:#fff;color:#dc2626;font:800 11px/15px sans-serif;text-align:center;box-shadow:0 0 0 1px #dc2626}
 .phks{display:inline-block;width:12px;height:12px;vertical-align:-2px;flex:none}i.phks.phkd{border-radius:50%;background:#dc2626;border:1px solid #fff;box-shadow:0 0 0 1px #0003;width:11px;height:11px;box-sizing:border-box}
 .phleg div.tsoff,.gwl-ck.off{opacity:.45;text-decoration:line-through}.tsLeg svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}.phc.yc{text-shadow:0 0 3px #000,0 0 2px #000}
@@ -2195,7 +2196,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   <div class="sbtns tcrow"><button type="button" id="tcBtn" class="btn em" title="폰 카메라로 찍은 뒤 사진명·날짜·시간·용역명·회사명·설명·로고를 사진에 넣어 저장">📝 글자 넣어 찍기</button><button type="button" id="tcAlb" class="btn ol" title="앨범에 있는 사진 한 장에 글자 넣기">🖼 앨범 사진에 글자 넣기</button></div>
   <div class="g2"><label class="f">📁 올릴 사진 종류<select id="phKdUp" title="이번에 올리는 사진의 종류. 파일명에 아래 '자동 구분' 글자가 있으면 그 종류가 먼저입니다"></select></label>
   <label class="f">📁 보기 종류<select id="phKF" title="지도·갤러리·내보내기에 이 종류 사진만 보입니다 (지도 왼쪽 아래 범례의 📁 사진 종류를 눌러도 됨)"></select></label></div>
-  <label class="f">📁 파일명 자동 구분 <small style="font-weight:400;color:var(--mute)">글자=종류, 쉼표로 여러 개 · 민원대응·누수탐사·경계밸브·시설물관리·기타</small><input id="phKdW" placeholder="예: 탐사=누수탐사, 경계=경계밸브" title="파일명에 이 글자가 있으면 올릴 때 그 종류로 정합니다 (예: 탐사_대이동_01.jpg → 누수탐사). 긴 글자부터 맞춥니다"></label>
+  <label class="f">📁 파일명 자동 구분 <small style="font-weight:400;color:var(--mute)">글자=종류, 쉼표로 여러 개 · 민원대응·누수탐사·경계밸브·시설물관리·누수징후·기타</small><input id="phKdW" placeholder="예: 탐사=누수탐사, 경계=경계밸브" title="파일명에 이 글자가 있으면 올릴 때 그 종류로 정합니다 (예: 탐사_대이동_01.jpg → 누수탐사). 긴 글자부터 맞춥니다"></label>
   <p class="hint" style="margin:0 0 4px">민원 기능(접수번호 묶음·민원지점 위치·접수 리스트 메모·📤 민원대장용·🔎 위치 점검)은 <b>민원대응</b> 사진에만 씁니다. 다른 종류는 번호가 있어도 거리·시간으로만 묶습니다.</p>
   <div class="g2"><label class="f">묶음 거리<select id="phR"><option value="10">10m 이내</option><option value="20" selected>20m 이내</option><option value="30">30m 이내</option><option value="50">50m 이내</option></select></label>
   <label class="f">촬영 시간 간격<select id="phT"><option value="30">30분 이내</option><option value="120" selected>2시간 이내</option><option value="1440">같은 날</option><option value="0">따지지 않음</option></select></label>
@@ -8932,9 +8933,12 @@ function phIndex(){PH.byId=new Map(PH.list.map(m=>[m.id,m]))}
 PH.ref=new Map();PH.refAt=0;PH.code=new Map();
 /* 사진 종류 — kd 칸이 없으면 민원대응(예전 사진 모두). 민원 전용 기능(접수번호 묶음·민원지점 위치·리스트 메모·민원대장 ZIP·위치 점검)은 민원대응 사진에만 씀.
    다른 종류는 번호가 있어도 위치(거리·시간)로만 묶고, 종류가 다르면 같은 자리라도 따로 묶음 */
-const PH_KD={mw:{n:'민원대응',ic:'📷'},ts:{n:'누수탐사',ic:'🎧'},bv:{n:'경계밸브',ic:'🔴'},fc:{n:'시설물관리',ic:'🛠️'},et:{n:'기타',ic:'📎'}};
+const PH_KD={mw:{n:'민원대응',ic:'🔴'},ts:{n:'누수탐사',ic:'⭐'},bv:{n:'경계밸브',ic:'⌛'},fc:{n:'시설물관리',ic:'🟩'},sg:{n:'누수징후',ic:'💧'},et:{n:'기타',ic:'⚪'}};
+/* 사진 종류별 지도 모양(B안): 경계밸브 빨간 테 흰 원+검은 나비(사용자 그림, 연도 색 안 따름)·시설물관리 ■·누수징후 물방울·기타 작은 회색 ● — 민원 ●·누수탐사 ★은 따로 */
+const KD_SH={bv:{c:'#dc2626',bv:1},fc:{c:'#16a34a',d:'<rect x="5" y="5" width="22" height="22" rx="4"'},sg:{c:'#0ea5e9',d:'<path d="M16 2.5C16 2.5 5.5 15 5.5 20.5a10.5 10.5 0 0 0 21 0C26.5 15 16 2.5 16 2.5Z"'},et:{c:'#94a3b8',d:'<circle cx="16" cy="16" r="9"'}};
+const kdShp=(k,c,cls)=>{const o=KD_SH[k];if(o&&o.bv)return `<svg class="${cls||'kdS'}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="#fff" stroke="${o.c}" stroke-width="3.2"/><path d="M10.2 8.8H21.8L16 16ZM10.2 23.2H21.8L16 16Z" fill="#111" stroke="#111" stroke-width="1" stroke-linejoin="round"/></svg>`;return o?`<svg class="${cls||'kdS'}" viewBox="0 0 32 32" aria-hidden="true">${o.d} fill="${c||o.c}" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>`:''};
 const PH_KDS=Object.keys(PH_KD),phKd=m=>m&&PH_KD[m.kd]?m.kd:'mw',phKdOf=v=>{v=String(v||'').normalize('NFC').trim();return PH_KD[v]?v:PH_KDS.find(k=>PH_KD[k].n===v)||''};
-const PH_KDW0='누수탐사=누수탐사, 탐사=누수탐사, 경계=경계밸브, 시설=시설물관리, 점검=시설물관리';
+const PH_KDW0='징후=누수징후, 누수탐사=누수탐사, 탐사=누수탐사, 경계=경계밸브, 시설=시설물관리, 점검=시설물관리';
 PH.kf='*';PH.fcL=new Map();PH.fcAmb=new Set();
 /* ---------- 시설물 연결: 경계밸브·시설물관리 사진 → 시설물 아이콘 ----------
    사진 m.fc = 시설물 열쇠(직접 연결, '-'는 연결 안 함). 직접 연결이 없으면 사진 GPS에서 15m 안 가장 가까운 시설물에 자동 연결
@@ -9082,7 +9086,7 @@ async function phFacSet(ids,key){const M=ids.map(id=>PH.byId.get(id)).filter(Boo
 function phKdRules(){const v=String(($('phKdW')||{}).value??PH_KDW0);if(PH.kdwV===v)return PH.kdwR;
  const r=v.split(/[,\n]+/).map(t=>t.split('=').map(x=>x.normalize('NFC').trim())).filter(([w,k])=>w&&phKdOf(k)).map(([w,k])=>[w.toLowerCase(),phKdOf(k)]).sort((a,b)=>b[0].length-a[0].length);
  PH.kdwV=v;PH.kdwR=r;return r}
-function phKdGuess(name){const nm=String(name||'').normalize('NFC').toLowerCase();for(const [w,k] of phKdRules())if(nm.includes(w))return k;return ''}
+function phKdGuess(name){const nm=String(name||'').normalize('NFC').toLowerCase();for(const [w,k] of phKdRules())if(nm.includes(w))return k;return nm.includes('징후')?'sg':''}
 const phKdUp=()=>phKdOf(($('phKdUp')||{}).value)||'mw';
 const phKdOpts=(sel,all)=>(all?`<option value="*">${all}</option>`:'')+PH_KDS.map(k=>`<option value="${k}"${k===sel?' selected':''}>${PH_KD[k].ic} ${PH_KD[k].n}</option>`).join('');
 function phKdCnt(){const c=new Map(PH_KDS.map(k=>[k,0]));for(const m of PH.list)c.set(phKd(m),c.get(phKd(m))+1);return c}
@@ -9380,7 +9384,7 @@ const tsResSt=r=>{r=String(r??'').replace(/\s/g,'');return !r||/혐의/.test(r)?
 const TS_PT='16,1.5 20.1,11.4 30.8,12.2 22.6,19.2 25.2,29.6 16,24 6.8,29.6 9.4,19.2 1.2,12.2 11.9,11.4';
 const tsStar=(c,cls)=>`<svg class="${cls||'tsS'}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="${TS_PT}" fill="${c}" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>`;
 /* 범례·레이어 창 종류 아이콘 = 지도 모양(2026-11-24): 누수탐사 = 별, 민원대응 = 빨간 동그라미, 그 밖은 이모지 */
-const phKdSym=k=>k==='ts'?tsStar('#dc2626','phks'):k==='mw'?'<i class="phks phkd"></i>':((PH_KD[k]||PH_KD.mw).ic);
+const phKdSym=k=>k==='ts'?tsStar('#dc2626','phks'):k==='mw'?'<i class="phks phkd"></i>':KD_SH[k]?kdShp(k,'','phks'):((PH_KD[k]||PH_KD.mw).ic);
 let TSL={k:'',m:new Map()};
 function tsLdg(){let R=[],at='';try{R=LR.recs||[];at=LR.at||''}catch(_){}const k=R.length+'|'+at;if(TSL.k===k)return TSL.m;const m=new Map();
  for(const o of R){if(o.src!=='탐사'||o.no==null||o.no==='')continue;const x=/(\d+)\s*$/.exec(String(o.no));if(!x)continue;const n=String(+x[1]);let a=m.get(n);if(!a)m.set(n,a=[]);a.push({y:+String(o.d||'').slice(0,4)||0,res:o.res})}TSL={k,m};return m}
@@ -9415,8 +9419,8 @@ function phLsApply(){try{phLbStyle()}catch(_){}try{document.documentElement.styl
 function phLsOffSet(off){UI.phLsOff=off?1:undefined;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=off?'off':String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phLs||1))<Math.abs(b-(+UI.phLs||1))?x:b))}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
-function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
- return L.divIcon({className:'ph-ic',iconSize:[S,S],iconAnchor:[S/2,S/2],html:`<div class="phb${yc?' yc':''}${ts?' tss st-'+ts:''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${st?` style="${st}"`:''}${ts?` title="누수탐사 ${TS_ST[ts].n}"`:ms?` title="민원 ${MW_ST[ms].n}"`:''}>${ts?tsStar(TS_ST[ts].c):''}${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}${ts||g.kd==='mw'&&!g.fac?'':`<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>`}${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${phLbHtml(g)}`})}
+function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,ks=!ts&&!g.ref&&!g.fac&&KD_SH[g.kd]?g.kd:'',sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
+ return L.divIcon({className:'ph-ic',iconSize:[S,S],iconAnchor:[S/2,S/2],html:`<div class="phb${yc?' yc':''}${ts?' tss st-'+ts:ks?' tss kds k-'+ks:''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${st?` style="${st}"`:''}${ts?` title="누수탐사 ${TS_ST[ts].n}"`:ks?` title="${PH_KD[ks].n}"`:ms?` title="민원 ${MW_ST[ms].n}"`:''}>${ts?tsStar(TS_ST[ts].c):ks?kdShp(ks,yc?phYC(phYr(g)):''):''}${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}${ts||ks||g.kd==='mw'&&!g.fac?'':`<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>`}${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${phLbHtml(g)}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
  b.textContent=off?'📷 사진 켜기':'📷 사진 끄기';b.setAttribute('aria-pressed',String(!off));b.style.opacity=off?'.7':'';uiPanelSync()}
