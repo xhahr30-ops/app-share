@@ -1146,6 +1146,14 @@ html.chipOn.chipV .chipbar .upb .upn,.leaflet-top .upb .upn{position:absolute;to
 .trkme{position:relative}.trkse span{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:2px solid #fff;color:#fff;font-size:9px;line-height:1;box-shadow:0 1px 3px #0006}
 .trkw .trko{align-items:center}.trkw .trko label{display:flex;gap:4px;align-items:center;font-weight:700}.trkw .trko select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}
 .trkw .btn.rd{background:#dc2626;border-color:#dc2626;color:#fff}
+#trkPk{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:default}#trkPk[hidden]{display:none}
+#trkPk .pkb{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:16px;max-width:92vw;transition:transform 1.5s;font-family:'Noto Sans KR',sans-serif}
+#trkPk .pkt{color:#6b7280;font:700 15px 'Noto Sans KR',sans-serif}#trkPk .pkw{color:#b45309;font-size:12.5px;line-height:1.5}#trkPk .pkw:empty{display:none}
+#trkPk .pkh{color:#4b5563;font-size:12px;line-height:1.6}
+#trkPk .pkk{position:relative;width:84px;height:84px;border-radius:50%;border:2px solid #374151;color:#4b5563;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer}
+#trkPk .pkk span{position:absolute;inset:-2px;border-radius:50%;background:conic-gradient(#6366f1 var(--p,0%),transparent 0);-webkit-mask:radial-gradient(circle,transparent 38px,#000 39px);mask:radial-gradient(circle,transparent 38px,#000 39px)}
+#trkPk .pkk.hold span{animation:trkpk 2s linear forwards}#trkPk .pkk.hold{color:#a5b4fc;border-color:#4f46e5}
+@property --p{syntax:'<percentage>';inherits:false;initial-value:0%}@keyframes trkpk{to{--p:100%}}
 .trkw .tpbox{padding:6px 14px;border-bottom:1px solid var(--line2)}.trkw .tpd>summary{font-size:12.5px}.trkw .tpo{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px}.trkw .tpo .ck{display:flex;gap:4px;align-items:center;font-weight:700;cursor:pointer}.trkw .tpo select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.trkw .tpo .btn{width:auto!important;padding:4px 8px;font-size:12px}.trkw .tpt{max-height:220px;overflow:auto;margin-top:4px}.trkw .tpt tr.no td{color:#b91c1c}.trkw .tpt tr[data-t]{cursor:pointer}.trkw .tpt tr[data-t]:hover td{background:rgba(6,182,212,.08)}.tpoff{font:700 13px 'Noto Sans KR',sans-serif;padding:7px 12px;border:0;border-radius:999px;background:#0e7490;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;margin-bottom:6px!important}.tpoff b{margin-left:4px}.tpsw{display:inline-block;width:14px;height:6px;border-radius:3px;margin:0 3px 1px 4px;vertical-align:middle}.trkw .tplg{font-size:11px;color:var(--mut,#64748b);margin:6px 0 0;line-height:1.7}
 .trkw .trki{display:flex;gap:8px;align-items:flex-start;padding:8px 6px;border-bottom:1px solid var(--line2)}.trkw .trki>input{margin-top:3px;width:18px;height:18px;flex:none}
 .trkw .trki .sw{flex:none;width:14px;height:14px;border-radius:4px;margin-top:3px}.trkw .trki .t{flex:1;min-width:0}.trkw .trki .t b{font-size:13px}.trkw .trki .t small{display:block;overflow-wrap:anywhere}
@@ -14372,8 +14380,62 @@ async function trkSave(){if(!TRK.D)return;TRK.nNew=0;TRK.saveT=Date.now();try{aw
 async function trkPurge(){const old=trkDay(Date.now()-TRK.cfg.keep*864e5),del=TRK.idx.filter(x=>x.d<old);if(!del.length)return;
  for(const x of del){try{await IDB.del('trk:'+x.d)}catch(_){}TRK.shown.delete(x.d)}TRK.idx=TRK.idx.filter(x=>x.d>=old);try{await IDB.set('trk_idx',TRK.idx)}catch(_){}}
 /* 화면 켜 두기: 기록 중에만. 화면이 다시 보이면 다시 요청(브라우저가 숨겨질 때 저절로 풀기 때문) */
-async function trkWake(on){try{if(on){if(TRK.wl||!navigator.wakeLock||document.visibilityState!=='visible')return;TRK.wl=await navigator.wakeLock.request('screen');TRK.wl.addEventListener('release',()=>{TRK.wl=null})}
+async function trkWake(on){try{if(on){if(TRK.wl||!navigator.wakeLock||document.visibilityState!=='visible')return;TRK.wl=await navigator.wakeLock.request('screen');TRK.wl.addEventListener('release',()=>{TRK.wl=null;trkPkUpd()})}
  else if(TRK.wl){const w=TRK.wl;TRK.wl=null;await w.release()}}catch(_){TRK.wl=null}}
+/* 2026-11-26 A안 🌙 주머니 모드: 폰 크롬은 화면이 꺼지거나 앱을 내리면 페이지를 멈춰 위치도 못 받음(웹 코드로 못 막음).
+   그래서 화면은 켜 둔 채(Wake Lock) 까만 화면+터치 잠금을 덮어 주머니에 넣어도 기록이 이어지게 함. 가운데 ●를 2초 길게 눌러 풂 */
+function trkPkHost(){const o=document.getElementById('trkPk');if(!o)return;const fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(o.parentNode!==fe)fe.appendChild(o)}
+function trkPocket(on){let o=document.getElementById('trkPk');
+ if(!on){if(o){o.hidden=true;clearInterval(TRK.pkT);TRK.pkT=0}TRK.pk=false;return}
+ if(!TRK.on){trkStart().then(()=>{if(TRK.on)trkPocket(true)});return}
+ if(!o){o=document.createElement('div');o.id='trkPk';o.className='np';o.setAttribute('role','dialog');o.setAttribute('aria-label','주머니 모드');
+  o.innerHTML='<div class="pkb"><div class="pkt" data-t="st"></div><div class="pkw" data-t="wl"></div><div class="pkk" data-t="key" role="button" aria-label="2초 길게 눌러 잠금 풀기"><span></span>●</div><div class="pkh">🌙 주머니 모드 · 풀려면 ● 를 2초 길게 누르세요<br>⚠ 전원 버튼·홈 버튼을 누르면 기록이 멈춥니다</div></div>';
+  const stop=e=>{e.stopPropagation();if(e.cancelable&&e.type!=='pointerdown')e.preventDefault()};
+  ['pointerdown','pointerup','pointermove','touchstart','touchmove','touchend','mousedown','mouseup','click','dblclick','contextmenu','wheel'].forEach(k=>o.addEventListener(k,stop,{passive:false}));
+  const key=o.querySelector('[data-t="key"]');let lt=0;const clr=()=>{clearTimeout(lt);lt=0;key.classList.remove('hold')};
+  key.addEventListener('pointerdown',e=>{clr();key.classList.add('hold');lt=setTimeout(()=>{clr();try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}trkPocket(false);phToast('🌙 주머니 모드를 풀었습니다 (기록은 계속).',{ms:4000})},2000)});
+  ['pointerup','pointercancel','pointerleave'].forEach(k=>key.addEventListener(k,clr));
+  ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(trkPkHost,60)));
+  document.body.appendChild(o)}
+ TRK.pk=true;o.hidden=false;trkPkHost();trkPkUpd();trkWake(true).then(()=>trkPkUpd());clearInterval(TRK.pkT);TRK.pkT=setInterval(()=>trkPkUpd(true),30000)}
+function trkPkUpd(mv){const o=document.getElementById('trkPk');if(!o||o.hidden)return;
+ const S=TRK.D?trkSum(TRK.D):{w:0,s:0},ac=TRK.last?TRK.last[3]:null,ago=TRK.last?Math.round((Date.now()-TRK.last[2])/1000):null;
+ o.querySelector('[data-t="st"]').textContent=`👣 기록 중 · ${trkKm(S.w)} · ${trkDur(S.s)}`+(ac!=null?` · GPS ±${ac}m`:' · GPS 찾는 중')+(ago!=null&&ago>90?` · 마지막 위치 ${trkDur(ago)} 전`:'');
+ o.querySelector('[data-t="wl"]').textContent=!navigator.wakeLock?'⚠ 이 브라우저는 화면 켜 두기를 못 합니다. 폰 설정 › 디스플레이 › 화면 자동 꺼짐 시간을 길게 해 주세요.':(TRK.wl?'':'⚠ 화면 켜 두기가 풀렸습니다. 화면이 꺼지면 기록이 멈춥니다.');
+ if(mv){const b=o.querySelector('.pkb');b.style.transform=`translate(${Math.round((Math.random()-.5)*40)}px,${Math.round((Math.random()-.5)*120)}px)`}/* 같은 자리 글자 번짐 막기 */}
+/* 2026-11-26 A안: 끊긴 구간(화면 꺼짐·다른 앱)을 관로를 따라 가장 짧은 길로 추정. 직선 15m 미만·2km 넘음·차량 속도·관로에서 40m 넘게 떨어지면 추정 안 함(곧은 점선).
+   추정 길은 탐사 거리·탐사 관로에 넣지 않음(보라 점선으로만 보여 줌) */
+const frM=(x,y)=>[y/110574+LY0,x/(LCOS*111320)+LX0];
+function trkGapPath(a,b){if(typeof PIPE==='undefined'||!PIPE.segs||!PIPE.grid||!PIPE.feats.length)return null;
+ const A=toM(a[1],a[0]),B=toM(b[1],b[0]),d=Math.hypot(B[0]-A[0],B[1]-A[1]),dt=(b[2]-a[2])/1000;
+ if(d<15||d>2000||(dt>0&&d/dt>TRK_CAR))return null;
+ const mg=Math.min(300,Math.max(80,d*.3)),C=100,x0=Math.floor((Math.min(A[0],B[0])-mg)/C),x1=Math.floor((Math.max(A[0],B[0])+mg)/C),y0=Math.floor((Math.min(A[1],B[1])-mg)/C),y1=Math.floor((Math.max(A[1],B[1])+mg)/C);
+ const ss=new Set();for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const g=PIPE.grid.get(x+','+y);if(g)g.forEach(si=>ss.add(si))}
+ const S=[];for(const si of ss){const s=PIPE.segs[si],f=PIPE.feats[s[4]];if(!f||f.properties._폐관||f.properties._빈)continue;if(s[0]===s[2]&&s[1]===s[3])continue;S.push(s)}
+ if(!S.length||S.length>80000)return null;
+ const near=P=>{let bd=41,bi=-1,bt=0;S.forEach((s,i)=>{const dd=segDist(P[0],P[1],s);if(dd<bd){bd=dd;bi=i;const dx=s[2]-s[0],dy=s[3]-s[1];bt=Math.max(0,Math.min(1,((P[0]-s[0])*dx+(P[1]-s[1])*dy)/(dx*dx+dy*dy)))}});return bi<0?null:{i:bi,t:bt}};
+ const nA=near(A),nB=near(B);if(!nA||!nB)return null;
+ /* 나누는 점: 시작·끝 붙는 자리 + 다른 관로 끝이 관로 가운데에 붙은 T자(2m 안) */
+ const sp=S.map(()=>[]);sp[nA.i].push([nA.t,'A']);sp[nB.i].push([nB.t,'B']);
+ const TC=20,tg=new Map();S.forEach((s,i)=>{const gx0=Math.floor(Math.min(s[0],s[2])/TC),gx1=Math.floor(Math.max(s[0],s[2])/TC),gy0=Math.floor(Math.min(s[1],s[3])/TC),gy1=Math.floor(Math.max(s[1],s[3])/TC);
+  if((gx1-gx0+1)*(gy1-gy0+1)>400)return;for(let x=gx0;x<=gx1;x++)for(let y=gy0;y<=gy1;y++){const k=x+','+y;let r=tg.get(k);if(!r)tg.set(k,r=[]);r.push(i)}});
+ const K=(x,y)=>Math.round(x*2)+','+Math.round(y*2),deg=new Map();S.forEach(s=>{const k1=K(s[0],s[1]),k2=K(s[2],s[3]);deg.set(k1,(deg.get(k1)||0)+1);deg.set(k2,(deg.get(k2)||0)+1)});
+ S.forEach((s,i)=>[[s[0],s[1]],[s[2],s[3]]].forEach(P=>{if(deg.get(K(P[0],P[1]))!==1)return;const r=tg.get(Math.floor(P[0]/TC)+','+Math.floor(P[1]/TC));if(!r)return;
+  for(const j of r){if(j===i)continue;const q=S[j];if(segDist(P[0],P[1],q)>2)continue;const dx=q[2]-q[0],dy=q[3]-q[1],t=((P[0]-q[0])*dx+(P[1]-q[1])*dy)/(dx*dx+dy*dy);if(t>.01&&t<.99){sp[j].push([t,K(P[0],P[1])]);break}}}));
+ const nd=new Map(),xy=[],adj=[];const id=(k,x,y)=>{let v=nd.get(k);if(v==null){v=xy.length;nd.set(k,v);xy.push([x,y]);adj.push([])}return v};
+ const ed=(u,v)=>{if(u===v)return;const w=Math.hypot(xy[u][0]-xy[v][0],xy[u][1]-xy[v][1]);adj[u].push([v,w]);adj[v].push([u,w])};
+ S.forEach((s,i)=>{const pts=[[0,K(s[0],s[1])],...sp[i].sort((p,q)=>p[0]-q[0]),[1,K(s[2],s[3])]];let pv=null;
+  for(const [t,k] of pts){const x=s[0]+(s[2]-s[0])*t,y=s[1]+(s[3]-s[1])*t,v=id(k,x,y);if(pv!=null)ed(pv,v);pv=v}});
+ const sA=nd.get('A'),sB=nd.get('B');if(sA==null||sB==null)return null;
+ const lim=Math.max(d*1.8,d+200),dist=new Float64Array(xy.length).fill(Infinity),prv=new Int32Array(xy.length).fill(-1),H=[];
+ const push=(v,w)=>{H.push([w,v]);let i=H.length-1;while(i){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p}};
+ const pop=()=>{const t=H[0],l=H.pop();if(H.length){H[0]=l;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<H.length&&H[a][0]<H[m][0])m=a;if(b<H.length&&H[b][0]<H[m][0])m=b;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m}}return t};
+ dist[sA]=0;push(sA,0);while(H.length){const [w,u]=pop();if(w>dist[u])continue;if(u===sB)break;if(w>lim)return null;for(const [v,c] of adj[u]){const nw=w+c;if(nw<dist[v]){dist[v]=nw;prv[v]=u;push(v,nw)}}}
+ if(!isFinite(dist[sB]))return null;const pa=[];for(let v=sB;v>=0;v=prv[v])pa.push(xy[v]);pa.reverse();
+ const m=dist[sB]+Math.hypot(pa[0][0]-A[0],pa[0][1]-A[1])+Math.hypot(pa[pa.length-1][0]-B[0],pa[pa.length-1][1]-B[1]);if(m>lim)return null;
+ return{m:Math.round(m),p:[[a[0],a[1]],...pa.map(q=>frM(q[0],q[1]).map(v=>+v.toFixed(7))),[b[0],b[1]]]}}
+function trkGapOf(D,a,b){const k=typeof PIPE!=='undefined'&&PIPE?PIPE.totalM:0;if(!D.gx||D.gxk!==k){D.gx={};D.gxk=k}const key=a[2]+'_'+b[2];
+ if(!(key in D.gx)){let r=null;try{r=trkGapPath(a,b)}catch(e){console.warn('끊긴 구간 추정',e)}D.gx[key]=r||0}return D.gx[key]||null}
 async function trkStart(){if(TRK.on)return;if(!navigator.geolocation){phToast('이 기기·브라우저는 위치 기능이 없어 길을 기록할 수 없습니다 (Wi-Fi 태블릿은 GPS가 없습니다).',{ms:7000});return}
  if(location.protocol==='file:'){phToast('파일로 연 앱(file://)에서는 위치를 쓸 수 없습니다. 깃허브 페이지(https) 주소로 여세요.',{ms:7000});return}
  let first=false;try{first=!localStorage.getItem('geo-trk-seen');localStorage.setItem('geo-trk-seen','1')}catch(_){}
@@ -14381,8 +14443,8 @@ async function trkStart(){if(TRK.on)return;if(!navigator.geolocation){phToast('�
  try{localStorage.setItem('geo-trk-on',d)}catch(_){}
  TRK.wid=navigator.geolocation.watchPosition(trkPos,e=>{if(e&&e.code===1){phToast('위치 권한이 거부되어 탐사기록을 멈췄습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.',{ms:9000});trkStop(true)}},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
  trkWake(true);trkChip();trkDrawSoon(0);
- phToast(first?'👣 탐사기록을 시작합니다. 이 기기에만 저장되고, 화면이 켜져 있는 동안만 기록됩니다 (주머니에 넣을 때는 🔒 화면 고정). 👣 칩을 누르면 기록 창이 열립니다.':'👣 탐사기록을 시작합니다.',{ms:first?12000:4000})}
-async function trkStop(quiet){if(!TRK.on)return;TRK.on=false;if(TRK.wid!=null)try{navigator.geolocation.clearWatch(TRK.wid)}catch(_){}TRK.wid=null;trkWake(false);
+ phToast(first?'👣 탐사기록을 시작합니다. 이 기기에만 저장되고, 화면이 켜져 있는 동안만 기록됩니다 (주머니에 넣을 때는 🌙 주머니 모드: 까만 화면+터치 잠금). 👣 칩을 누르면 기록 창이 열립니다.':'👣 탐사기록을 시작합니다.',{ms:first?12000:6000,btn:'🌙 주머니 모드',fn:()=>trkPocket(true)})}
+async function trkStop(quiet){if(!TRK.on)return;TRK.on=false;trkPocket(false);if(TRK.wid!=null)try{navigator.geolocation.clearWatch(TRK.wid)}catch(_){}TRK.wid=null;trkWake(false);
  try{localStorage.removeItem('geo-trk-on')}catch(_){}
  const D=TRK.D;if(D){D.segs=D.segs.filter(g=>g.length);try{D.pm=trkPipeCalc(D)}catch(e){console.warn('탐사 관로',e)}await trkSave();try{await tpAddDay(D)}catch(e){console.warn('팀 점검',e)}}
  if(TP.on){TP.on=false;tpCfgSave();tpDraw()}/* 2026-11-12 B안: 탐사 끝나면 팀 탐사 색도 끔 */
@@ -14393,9 +14455,9 @@ function trkPos(p){const c=p.coords,t=p.timestamp||Date.now(),pt=[+c.latitude.to
  trkMe(pt,c);if(!TRK.on||!TRK.D)return;if(c.accuracy>TRK_ACC)return;
  let g=TRK.D.segs[TRK.D.segs.length-1];const L0=TRK.last;
  if(L0){const dt=(t-L0[2])/1000,d=trkHav(L0,pt);if(dt<=0)return;
-  if(dt>TRK_GAP){if(g.length){g=[];TRK.D.segs.push(g)}TRK.D.gp=(TRK.D.gp||0)+1;TRK.gapAt=t;phToast(`👣 기록이 ${trkDur(dt)} 끊겼다가 이어집니다 (화면 꺼짐·다른 앱). 끊긴 구간은 점선입니다.`,{ms:6000})}
+  if(dt>TRK_GAP){if(g.length){g=[];TRK.D.segs.push(g)}TRK.D.gp=(TRK.D.gp||0)+1;TRK.gapAt=t;phToast(`👣 기록이 ${trkDur(dt)} 끊겼다가 이어집니다 (화면 꺼짐·다른 앱). 끊긴 구간은 점선(관로를 따라 갈 수 있으면 보라 점선으로 추정)입니다. 주머니에 넣을 때는 🌙 주머니 모드를 쓰세요.`,{ms:6000})}
   else{if(d/dt>TRK_JUMP)return;if(d<TRK_MIN_D&&dt<TRK_MIN_T)return}}
- g.push(pt);TRK.last=pt;TRK.nNew++;
+ g.push(pt);TRK.last=pt;TRK.nNew++;if(TRK.pk)trkPkUpd();
  if(TRK.nNew>=20||Date.now()-TRK.saveT>30000)trkSave();
  trkChip();trkDrawSoon(3000)}
 /* 내 위치 파란 점(📍과 같은 표시)을 움직이고, 가는 방향 부채꼴. 지도를 손으로 끌면 따라가기만 멈춤 */
@@ -14426,7 +14488,9 @@ async function trkDraw(){if(!map||typeof L==='undefined')return;if(!TRK.lg)TRK.l
  for(const d of want){if(TRK.dlg.has(d))continue;const D=await trkGet(d);if(!D||!TRK.shown.has(d))continue;const g=trkDayLayer(D);g._v=TRK.lgV;TRK.dlg.set(d,g);TRK.lg.addLayer(g)}}
 function trkColor(d){const days=TRK.idx.map(x=>x.d);if(TRK.D&&!days.includes(TRK.D.d))days.unshift(TRK.D.d);if(d===trkDay(Date.now()))return TRK_COL[0];const i=days.filter(x=>x!==trkDay(Date.now())).indexOf(d);return TRK_COL[1+((i<0?0:i)%(TRK_COL.length-1))]}
 function trkDayLayer(D){const g=L.featureGroup(),col=trkColor(D.d),segs=(D.segs||[]).filter(s=>s.length);let cum=0;const pts=[];
- segs.forEach((s,si)=>{if(si){const a=segs[si-1][segs[si-1].length-1],b=s[0];L.polyline([[a[0],a[1]],[b[0],b[1]]],{color:'#64748b',weight:3,dashArray:'4 7',opacity:.9,interactive:false}).addTo(g)}
+ segs.forEach((s,si)=>{if(si){const a=segs[si-1][segs[si-1].length-1],b=s[0],ge=trkGapOf(D,a,b);/* 2026-11-26 A안: 관로 따라 추정한 길이 있으면 보라 점선 */
+   if(ge)L.polyline(ge.p,{color:'#7c3aed',weight:3.5,dashArray:'2 6',lineCap:'round',opacity:.95}).bindTooltip(`끊긴 동안 관로를 따라 추정한 길 약 ${trkKm(ge.m)} (${trkDur((b[2]-a[2])/1000)} 끊김 · 탐사 거리에 안 넣음)`).addTo(g);
+   else L.polyline([[a[0],a[1]],[b[0],b[1]]],{color:'#64748b',weight:3,dashArray:'4 7',opacity:.9,interactive:false}).addTo(g)}
   let run=[[s[0][0],s[0][1]]],car=false;pts.push([s[0],cum]);
   const flush=()=>{if(run.length<2)return;if(car)L.polyline(run,{color:'#94a3b8',weight:3,opacity:.9}).addTo(g);else{L.polyline(run,{color:'#fff',weight:8,opacity:.85,interactive:false}).addTo(g);L.polyline(run,{color:col,weight:5,opacity:.95}).addTo(g)}};
   for(let i=1;i<s.length;i++){const d=trkHav(s[i-1],s[i]),dt=(s[i][2]-s[i-1][2])/1000,c=dt>0&&d/dt>TRK_CAR;if(!c)cum+=d;
@@ -14473,12 +14537,13 @@ async function trkPipeOf(d){const D=await trkGet(d);if(!D)return null;
 async function trkOpen(){let w=$('trkW');await trkIdxLoad();
  if(!w){w=document.createElement('div');w.id='trkW';w.className='phtr trkw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','탐사기록');
   w.innerHTML=`<div><div class="th"><b>👣 탐사기록</b><button type="button" data-t="x" aria-label="닫기">✕</button></div>
-   <div class="tb"><button type="button" class="btn" data-t="go"></button><button type="button" class="btn ol" data-t="all">모두 보기</button><button type="button" class="btn ol" data-t="none">모두 숨기기</button><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl" title="날짜별·소블록별 탐사 관로 m (주소·고객 정보 없음)">📋 엑셀</button></div>
+   <div class="tb"><button type="button" class="btn" data-t="go"></button><button type="button" class="btn ol" data-t="pk" title="까만 화면+터치 잠금. 화면은 켜 둔 채라 주머니에 넣어도 기록이 이어집니다">🌙 주머니 모드</button><button type="button" class="btn ol" data-t="all">모두 보기</button><button type="button" class="btn ol" data-t="none">모두 숨기기</button><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl" title="날짜별·소블록별 탐사 관로 m (주소·고객 정보 없음)">📋 엑셀</button></div>
    <div class="tb trko"><label>탐사 관로 범위 <select data-t="r" aria-label="탐사 관로 범위">${[5,10,15,20].map(v=>`<option value="${v}">탐사 선 ${v}m 안</option>`).join('')}</select></label><label>보관 <select data-t="keep" aria-label="보관 기간">${[[30,'30일'],[90,'90일'],[180,'180일'],[365,'1년']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label></div>
    <div class="tpbox"></div><p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
   w.onclick=async e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t,d=b.dataset.d;
    if(t==='x')w.hidden=true;
    else if(t==='go'){if(TRK.on){if(confirm('👣 탐사기록을 끝낼까요?'))await trkStop()}else{await trkStart();w.hidden=true}trkRender()}
+   else if(t==='pk'){w.hidden=true;trkPocket(true)}
    else if(t==='all'){TRK.idx.forEach(x=>TRK.shown.add(x.d));trkDrawSoon(0);trkRender()}
    else if(t==='none'){TRK.shown.clear();if(TRK.on)TRK.shown.add(TRK.day);trkDrawSoon(0);trkRender()}
    else if(t==='xl')trkXlsx();
@@ -14502,7 +14567,7 @@ async function trkOpen(){let w=$('trkW');await trkIdxLoad();
 async function trkRender(){const w=$('trkW');if(!w||w.hidden)return;const go=w.querySelector('[data-t="go"]');go.textContent=TRK.on?'■ 기록 끝내기':'▶ 기록 시작';go.classList.toggle('rd',TRK.on);
  if(TRK.on&&TRK.D)await trkIdxPut(TRK.D);
  const pOk=typeof PIPE!=='undefined'&&PIPE.segs;
- w.querySelector('[data-t="inf"]').innerHTML=`이 기기에만 저장됩니다(공유 서버로 안 보냄) · ${TRK.cfg.keep}일 지나면 저절로 지움 · 회색 선 = 차량 이동(시속 7km 넘음, 거리·탐사 관로에서 뺌) · 점선 = 기록이 끊긴 곳`+(pOk?'':' · <span class="c-am">상수관로가 없어 탐사 관로 m는 계산하지 않습니다</span>');
+ w.querySelector('[data-t="inf"]').innerHTML=`이 기기에만 저장됩니다(공유 서버로 안 보냄) · ${TRK.cfg.keep}일 지나면 저절로 지움 · 회색 선 = 차량 이동(시속 7km 넘음, 거리·탐사 관로에서 뺌) · 회색 점선 = 기록이 끊긴 곳 · 보라 점선 = 끊긴 동안 관로를 따라 추정한 길(탐사 거리에 안 넣음) · 화면이 꺼지거나 앱을 내리면 기록이 멈추니 주머니에 넣을 때는 🌙 주머니 모드`+(pOk?'':' · <span class="c-am">상수관로가 없어 탐사 관로 m는 계산하지 않습니다</span>');
  tpBox();const L2=w.querySelector('.tl');if(!TRK.idx.length){L2.innerHTML='<p class="hint" style="margin:14px">아직 기록이 없습니다. 위의 ▶ 기록 시작을 누르세요.</p>';return}
  L2.innerHTML=TRK.idx.map(x=>{const rec=TRK.on&&x.d===TRK.day;return `<div class="it trki" data-day="${x.d}"><input type="checkbox" data-t="sh" data-d="${x.d}" aria-label="${x.d} 지도에 보이기"${TRK.shown.has(x.d)?' checked':''}><span class="sw" style="background:${trkColor(x.d)}"></span>
   <div class="t"><b>${x.d}${rec?' <span class="c-rd">● 기록 중</span>':''}</b><small>탐사 거리 ${trkKm(x.w)} · ${trkDur(x.s)}${x.c>=50?` · 차량 ${trkKm(x.c)}`:''}${x.gap?` · 끊김 ${x.gap}번`:''}</small><small class="pm" data-pm="${x.d}">${pOk?'탐사 관로 계산 중…':''}</small></div>
@@ -14656,13 +14721,13 @@ function tpBox(msg){const w=$('trkW'),b=w&&w.querySelector('.tpbox');if(!b)retur
 b.innerHTML=tpHtml();if(msg){const m=b.querySelector('[data-t="tpmsg"]');if(m)m.textContent=msg}}
 async function trkInit(){trkCfgLoad();try{await tpInit()}catch(e){console.warn('팀 점검',e)}await trkIdxLoad();await trkPurge();trkChipInit();
  if(map){map.on('dragstart',()=>{if(TRK.on&&TRK.follow){TRK.follow=false;phToast('👣 따라가기를 멈췄습니다 (기록은 계속). 📍를 누르면 다시 따라갑니다.',{ms:4000})}})}
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(TRK.on)trkWake(true)}else if(TRK.on&&TRK.nNew)trkSave()});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(TRK.on)trkWake(true).then(()=>trkPkUpd())}else if(TRK.on&&TRK.nNew)trkSave()});
  window.addEventListener('pagehide',()=>{if(TRK.on&&TRK.nNew)trkSave()});
  let od='';try{od=localStorage.getItem('geo-trk-on')||''}catch(_){}
  if(od){try{localStorage.removeItem('geo-trk-on')}catch(_){}if(od===trkDay(Date.now()))setTimeout(()=>phToast('👣 오늘 탐사기록이 앱을 닫으면서 멈췄습니다.',{ms:15000,btn:'이어서 기록',fn:()=>trkStart()}),2500)}}
 try{trkInit()}catch(e){console.warn('탐사기록',e)}
 /* ---------- 📖 사용법 (2026-11-01, 웹 관망해석기 도움말과 같은 방식): 도움말 창(화면 구성 요약·자주 하는 일) + 📘 사용 매뉴얼(manual.html, 새 탭) + 🎬 사용법 영상. 머리글 📖 사용법·위쪽 칩 줄 맨 끝·F1 ---------- */
-const HLP_V='20261118a';/* 매뉴얼을 고치면 올려서 폰 캐시 대신 새 판을 엶 */
+const HLP_V='20261126a';/* 매뉴얼을 고치면 올려서 폰 캐시 대신 새 판을 엶 */
 function hlpUrl(h){const web=/^https?:$/.test(location.protocol)&&!/script\.google|googleusercontent/.test(location.hostname);
  return (web?'manual.html':'https://xhahr30-ops.github.io/app-share/geo-join/manual.html')+'?v='+HLP_V+(h?'#'+h:'')}
 function hlpOpen(){let w=$('hlpW');
