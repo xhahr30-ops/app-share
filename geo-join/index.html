@@ -507,6 +507,10 @@ html.vcShotOn .ph-ic{display:none!important}.ldvBox{width:min(760px,100%)}.fldBd
 .fldRow .m{flex:1;min-width:0;color:var(--mute,#64748b);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fldRow .ar{flex:none;color:var(--mute,#94a3b8);font-size:18px}
 .fldEmpty{color:var(--mute,#64748b);font-size:13px;text-align:center;padding:22px 8px}
 .fldInfo{background:var(--sub2,#f1f5f9);border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.6;color:var(--ink2,#475569);margin:4px 0}
+.fldLkB{display:flex;align-items:stretch;gap:3px;margin:6px 0 8px}.fldLkB>span{align-self:center;color:var(--mute,#94a3b8)}.fldLkB>div{flex:1;text-align:center;border-radius:8px;padding:5px 2px;background:var(--sub2,#f1f5f9);color:var(--mute,#64748b);font-size:12.5px;line-height:1.3}.fldLkB b{display:block;font-weight:800}.fldLkB small{font-size:11px}
+.fldLkB .d{background:#0e7490;color:#fff}.fldLkB .n{background:#4f46e5;color:#fff;box-shadow:0 0 0 2px #a5b4fc}.fldLkB .x{background:#6b7280;color:#fff}
+.fldPh{border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:8px;margin:6px 0}.fldPhS{display:flex;flex-wrap:wrap;gap:6px 12px;margin:6px 0;font-size:13px}.fldPhS .ok{color:#059669;font-weight:700}
+.fldLk2{display:flex;gap:6px;margin-top:8px}.fldLk2 .btn{flex:1}.fldFx{border:1px solid #86efac;border-radius:10px;padding:8px;margin-top:8px;background:rgba(22,163,74,.06)}
 .fldFab{position:sticky;bottom:10px;display:flex;justify-content:flex-end;gap:7px;padding:4px 0 10px;pointer-events:none}
 .fldFab .btn{pointer-events:auto;border-radius:999px;padding:11px 16px;font-size:14px;box-shadow:0 6px 16px #0004;width:auto}
 .fldBg{flex:0 0 auto;color:#fff;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;margin-top:1px}
@@ -17816,7 +17820,12 @@ function fldOpts(k){const base=FLD_L[k]||[],seen=new Map();const fld={mat:'mat',
 function fldGps(){return new Promise(res=>{if(!navigator.geolocation||location.protocol==='file:')return res(null);
  navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(7),lng:+p.coords.longitude.toFixed(7),acc:Math.round(p.coords.accuracy)}),()=>res(null),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
 const fldBlk=(lat,lng)=>{try{return typeof blkAt==='function'&&lat&&lng?blkAt(lng,lat)||'':''}catch(_){return ''}};
-function fldStage(r){if(r.src==='탐사')return r.cd?['공사 완료','#15803d']:[r.res||'탐사','#b45309'];return r.tD?['준공','#15803d']:r.tC?['착공','#2563eb']:r.tB?['도착','#7c3aed']:['접수','#b45309']}
+/* 💧 누수 3단계 공정 (2026-11-26 B안): ① 누수징후(위치·원경 번호-1·근경 번호-2) → ② 누수탐사(❌ 누수 아님 = 끝 / ✅ 누수적출 확인) → ③ 누수수리
+   같은 탐사연번 한 건. 단계는 복구결과(res)로 나타냄(서버 고칠 필요 없음): '누수징후' → 징후, '오탐' → 누수 아님(끝), 공사일자(cd) 있으면 수리, 그 밖 = 탐사.
+   징후 발견일 = sd(서버 Code.gs 2026-11-26 판부터 남음, 예전 판이면 첫 날짜 d로 대신) */
+const LK3={sg:['💧','누수징후','#0ea5e9'],ts:['🎧','누수탐사','#b45309'],fx:['🔧','누수수리','#15803d'],no:['❌','누수 아님','#6b7280']};
+const fldLk=r=>r.src!=='탐사'?'':r.res==='누수징후'?'sg':r.res==='오탐'?'no':r.cd?'fx':'ts';
+function fldStage(r){if(r.src==='탐사'){const k=fldLk(r);return k==='sg'?['누수징후','#0ea5e9']:k==='no'?['누수 아님','#6b7280']:r.cd?['수리 완료','#15803d']:[r.res||'탐사','#b45309']}return r.tD?['준공','#15803d']:r.tC?['착공','#2563eb']:r.tB?['도착','#7c3aed']:['접수','#b45309']}
 function fldWin(){let w=$('fldW');if(w)return w;w=document.createElement('div');w.id='fldW';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','현장 일지');
  w.innerHTML=`<div class="fldBox"><button type="button" class="fldGrip" aria-label="크게/작게"><i></i></button><div class="fldHd"><b>📋 현장 일지</b><span class="fldSt"></span><button type="button" class="fldHb fldMn" aria-label="메뉴" title="새로고침·대장 칸 엑셀·대장·안내">⋯</button><button type="button" class="fldX" aria-label="닫기">✕</button></div>
  <div class="fldMenu" hidden><button type="button" data-m="rl">🔄 서버에서 다시 받기</button><button type="button" data-m="xl">📊 대장 칸 엑셀 (주소·이름 칸은 빈칸)</button><button type="button" data-m="ldv">📄 대장 (민원 대응관리 일지)</button><button type="button" data-m="info">ⓘ 넣은 건은 어디로 가나요?</button><small>민원·누수탐사를 현장에서 바로 · 만든이: 구병순</small></div><div class="fldBd"></div></div>`;
@@ -17845,7 +17854,7 @@ async function fldFlush(){if(!FLD.q.length||!fldSrvOk())return;const left=[];for
 /* 서버 목록 + 아직 못 보낸 것 */
 function fldAll(){const m=new Map();FLD.recs.forEach(r=>m.set(r.id,r));FLD.q.forEach(it=>{if(it.del)m.delete(it.rec.id);else m.set(it.rec.id,Object.assign({},it.rec,{_q:1}))});return [...m.values()]}
 /* 거르기: 진행 중(민원 준공 전·탐사 정탐/미수리 공사 전, 오늘 건 포함) · 오늘 · 최근 60일 */
-function fldFlt(r,f,t){return f==='today'?(r.d===t||r.cd===t||fmtD(r.at||0)===t):f==='open'?(r.src==='탐사'?!r.cd&&/정탐|미수리/.test(r.res||''):!r.tD&&r.res!=='미누수')||r.d===t:true}
+function fldFlt(r,f,t){return f==='today'?(r.d===t||r.cd===t||fmtD(r.at||0)===t):f==='open'?(r.src==='탐사'?!r.cd&&/정탐|미수리|누수징후/.test(r.res||''):!r.tD&&r.res!=='미누수')||r.d===t:true}
 /* 한 줄 설명: 소블록 · 단계(시각) · 현장내용 — 고객 이름·주소·연락처는 넣지 않음 */
 function fldMeta(r,t){const [s]=fldStage(r),o=[];if(r.d&&r.d!==t)o.push(String(r.d).slice(5));if(r.blk)o.push(r.blk);
  if(r.src==='탐사')o.push(s+(r.cd&&r.cd!==t?' '+String(r.cd).slice(5):''));else{const k=r.tD?'tD':r.tC?'tC':r.tB?'tB':'tA';o.push(s+(r[k]?' '+r[k]:''));if(r.res&&r.res!=='누수')o.push(r.res)}
@@ -17859,28 +17868,36 @@ function fldList(){const w=fldWin(),bd=w.querySelector('.fldBd'),t=fldToday();if
  ${FLD.msg?`<p class="hint" style="color:#b45309;margin:4px 0">${esc(FLD.msg)}</p>`:''}${FLD.q.length?`<p class="hint" style="color:#b45309;margin:4px 0">📴 서버에 아직 못 보낸 건 ${FLD.q.length}개 — 연결되면 열 때 다시 보냅니다.</p>`:''}
  ${FLD.info?`<div class="fldInfo">ⓘ 넣은 건은 공유 서버에 모여 📅 일일 보고 메일(민원·누수탐사 시트, "입력" 칸 = 현장)에 들어가고, 대장에 같은 번호가 있으면 대장 칸이 우선이며 빈칸만 현장 값으로 채웁니다. 사무실에서는 ⋯ › 📊 대장 칸 엑셀을 내려받아 대장(xlsm)에 붙여 넣으세요. 고객 주소·이름·연락처는 넣지 않습니다(위치는 GPS·소블록). <button type="button" class="btn ol sm" data-info="0" style="margin-left:4px">접기</button></div>`:''}
  <div class="fldRows">${A.length?A.map(r=>{const [,c]=fldStage(r);
-  return `<button type="button" class="fldRow" data-id="${esc(r.id)}"><span class="dot" style="background:${c}"></span><b>${r.src==='탐사'?'💧':'📞'} ${esc(r.no||'번호 없음')}</b><span class="m">${esc(fldMeta(r,t))}${r._q?' · 📴':''}</span><span class="ar">›</span></button>`}).join(''):'<div class="fldEmpty">해당하는 건이 없습니다.<br>아래 ＋ 단추로 새 건을 넣으세요.</div>'}</div>
- <div class="fldFab"><button type="button" class="btn" data-new="민원">＋ 민원</button><button type="button" class="btn" data-new="탐사" style="background:#b45309">＋ 탐사</button></div>`;
- bd.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.flt){FLD.flt=b.dataset.flt;fldList()}else if(b.dataset.info){FLD.info=false;fldList()}else if(b.dataset.new)fldEdit({src:b.dataset.new});else if(b.dataset.id){const r=fldAll().find(x=>x.id===b.dataset.id);if(r)fldEdit(r)}}}
-function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id;w.classList.add('full');const r=Object.assign({d:fldToday(),gps:{}},r0,{});if(isN&&r.src!=='탐사')r.tA=fldNow();if(!r.gps)r.gps={};FLD.cur=r;
+  return `<button type="button" class="fldRow" data-id="${esc(r.id)}"><span class="dot" style="background:${c}"></span><b>${r.src==='탐사'?LK3[fldLk(r)][0]:'📞'} ${esc(r.no||'번호 없음')}</b><span class="m">${esc(fldMeta(r,t))}${r._q?' · 📴':''}</span><span class="ar">›</span></button>`}).join(''):'<div class="fldEmpty">해당하는 건이 없습니다.<br>아래 ＋ 단추로 새 건을 넣으세요.</div>'}</div>
+ <div class="fldFab"><button type="button" class="btn" data-new="민원">＋ 민원</button><button type="button" class="btn" data-new="징후" style="background:#0284c7">＋ 💧 징후</button><button type="button" class="btn" data-new="탐사" style="background:#b45309">＋ 탐사</button></div>`;
+ bd.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.flt){FLD.flt=b.dataset.flt;fldList()}else if(b.dataset.info){FLD.info=false;fldList()}else if(b.dataset.new)fldEdit(b.dataset.new==='징후'?{src:'탐사',res:'누수징후',sd:fldToday()}:{src:b.dataset.new});else if(b.dataset.id){const r=fldAll().find(x=>x.id===b.dataset.id);if(r)fldEdit(r)}}}
+function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id;w.classList.add('full');const r=Object.assign({d:fldToday(),gps:{}},r0,{});if(r.res==='누수징후'&&!r.sd)r.sd=r.d;if(isN&&r.src!=='탐사')r.tA=fldNow();if(!r.gps)r.gps={};FLD.cur=r;
  if(r.no&&r._addr==null){const x=ldxOf(String(r.no).trim().normalize('NFC'));r._addr=x.addr;r._agent=x.agent}
- const T=r.src==='탐사',dl=(id,k)=>`<datalist id="${id}">${fldOpts(k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
+ const T=r.src==='탐사',SG=T&&r.res==='누수징후',dl=(id,k)=>`<datalist id="${id}">${fldOpts(k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
  const inp=(k,n,o={})=>`<label class="f">${n}<input data-k="${k}" ${o.type?`type="${o.type}"`:''} ${o.list?`list="${o.list}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''} ${o.im?`inputmode="${o.im}"`:''} value="${esc(r[k]??'')}"></label>`;
  const sel=(k,n,a)=>`<label class="f">${n}<select data-k="${k}"><option value=""></option>${a.map(v=>`<option${String(r[k]??'')===String(v)?' selected':''}>${esc(v)}</option>`).join('')}${r[k]&&!a.map(String).includes(String(r[k]))?`<option selected>${esc(r[k])}</option>`:''}</select></label>`;
  const tmr=(k,n,g)=>`<div class="fldTm"><span>${n}</span><input type="time" data-k="${k}" value="${esc(r[k]||'')}"><button type="button" class="btn sm" data-now="${k}" data-g="${g||''}">지금${g?' 📍':''}</button></div>`;
  const loc=()=>r.lat&&r.lng?`📍 ${(+r.lat).toFixed(5)}, ${(+r.lng).toFixed(5)}${r.blk?' · 소블록 <b>'+esc(r.blk)+'</b>':''}`:'📍 위치 없음';
- bd.innerHTML=`<div class="sbtns"><button type="button" class="btn ol sm" data-back="1">← 목록</button><b style="align-self:center">${T?'💧 누수탐사':'📞 민원'} ${isN?'새 건':esc(r.no||'')}</b></div>
+ bd.innerHTML=`<div class="sbtns"><button type="button" class="btn ol sm" data-back="1">← 목록</button><b style="align-self:center">${T?LK3[fldLk(r)][0]+' '+LK3[fldLk(r)][1]:'📞 민원'} ${isN?'새 건':esc(r.no||'')}</b></div>${T?fldLkBar(r):''}
  ${dl('fldDlMat','mat')}${dl('fldDlDia','dia')}${dl('fldDlCause','cause')}${dl('fldDlPart','part')}${dl('fldDlCo','co')}${dl('fldDlPave','pave')}
- ${T?`<div class="g2">${inp('d',T?'탐사일자':'접수날짜',{type:'date'})}${inp('no','탐사연번',{im:'numeric'})}</div>
+ ${T&&SG?`<div class="g2">${inp('sd','징후 발견일',{type:'date'})}${inp('no','탐사연번',{im:'numeric',ph:'사진 번호 (예: 268)'})}</div>
+  ${inp('blk','블록명',{ph:'GPS로 자동'})}
+  <div class="fldPh"><b>📷 징후 사진</b> <small class="mute">(📸 위치 캡처 = 번호.png 위치도 → 이어 찍기 번호-1 원경 · 번호-2 근경)</small><div class="fldPhS">${fldLkPh(r)}</div>
+  <button type="button" class="btn ol sm" data-lkcam="1">📷 위치 캡처·원경·근경 찍기</button></div>
+  <label class="f">징후 내용<textarea data-k="memo" rows="2" placeholder="예: 도로 물 고임, 맨홀 물 흐름">${esc(r.memo||'')}</textarea></label>
+  <div class="fldLk2"><button type="button" class="btn ol" data-lk="no">❌ 누수 아님 (끝냄)</button><button type="button" class="btn" data-lk="ts" style="background:#059669">✅ 누수적출 확인</button></div>
+  <p class="hint">탐사로 확인한 뒤 누르세요. ❌ 누수 아님 = 이 건을 끝내고 징후 사진은 휴지통으로(지도에서 지움) · ✅ 누수적출 확인 = 탐사 칸이 열리고 사진이 🎧 누수탐사 ★(미수리)로 바뀝니다.</p>`
+ :T?`<div class="g2">${inp('d',T?'탐사일자':'접수날짜',{type:'date'})}${inp('no','탐사연번',{im:'numeric'})}</div>
   <div class="g2">${sel('res','복구결과',FLD_L.tres)}${inp('blk','블록명',{ph:'GPS로 자동'})}</div>
   <div class="g2">${inp('edia','추정관경(mm)',{list:'fldDlDia',im:'numeric'})}${inp('dia','구경(mm)',{list:'fldDlDia',im:'numeric'})}</div>
   <div class="g2">${inp('mat','관종',{list:'fldDlMat'})}${inp('road','도로폭(m)',{im:'decimal'})}</div>
   <div class="g2">${inp('pave','포장종류',{list:'fldDlPave'})}${inp('cause','누수원인',{list:'fldDlCause'})}</div>
   <div class="g2">${inp('part','누수부위',{list:'fldDlPart'})}${inp('co','공사업체',{list:'fldDlCo'})}</div>
   <label class="f">주소 <small class="mute">(이 기기에만 저장)</small><span class="fldAd"><input data-x="addr" value="${esc(r._addr??'')}" placeholder="📸 위치 캡처 때 자동으로 들어감 · 직접 고쳐도 됨"><button type="button" class="btn ol sm" data-adr="1">📍 주소 찾기</button></span><small class="c-ind">💡 📸 위치 캡처를 하면 빨간 점 자리 주소가 이 칸에 자동으로 들어갑니다(같은 탐사연번).</small></label>
-  ${inp('fixd','수선내용',{ph:'예: PE20mm 직관 교체'})}
-  <div class="fldTm"><span>공사일자</span><input type="date" data-k="cd" value="${esc(r.cd||'')}"><button type="button" class="btn sm" data-today="cd">오늘</button></div>
-  <label class="f">현장내용<textarea data-k="memo" rows="2">${esc(r.memo||'')}</textarea></label>${inp('note','비고(조치계획)')}`
+  <label class="f">현장내용<textarea data-k="memo" rows="2">${esc(r.memo||'')}</textarea></label>${inp('note','비고(조치계획)')}
+  ${r.res==='오탐'?'':r.cd||r.fixd||FLD.fxOpen===(r.id||'_new')?`<div class="fldFx"><b>🔧 누수수리</b>${inp('fixd','수선내용',{ph:'예: PE20mm 직관 교체'})}
+  <div class="fldTm"><span>공사일자</span><input type="date" data-k="cd" value="${esc(r.cd||'')}"><button type="button" class="btn sm" data-today="cd">오늘</button></div><small class="mute">공사일자를 넣고 저장하면 수리 완료(복구결과 정탐) · 사진 ★ 파랑</small></div>`
+  :`<button type="button" class="btn" data-lk="fx" style="width:100%;margin-top:6px">🔧 수리로 넘기기 (수선내용·공사일자 열림)</button>`}`
  :`<div class="g2">${inp('d','접수날짜',{type:'date'})}${inp('no','접수번호',{im:'numeric'})}</div>
   ${tmr('tA','접수')}${tmr('tB','도착','B')}${tmr('tC','착공','C')}${tmr('tD','준공','D')}
   <div class="g2">${sel('res','민원원인',FLD_L.res)}${inp('co','공사업체',{list:'fldDlCo'})}</div>
@@ -17906,17 +17923,49 @@ function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id;w.
   else if(b.dataset.adr){const no=String(r.no||'').trim().normalize('NFC'),P=no?ldgPhotos(no):null;let ll=P&&P.loc&&P.loc.lat!=null?L.latLng(P.loc.lat,P.loc.lng):r.lat&&r.lng?L.latLng(+r.lat,+r.lng):null;
    if(!ll){const g=await fldGps();if(g)ll=L.latLng(g.lat,g.lng)}if(!ll){msg('⚠ 위치 캡처·위치가 없어 주소를 못 찾습니다. 직접 넣어 주세요.');return}
    msg('📍 주소 찾는 중…'+(P&&P.loc?' (위치 캡처 빨간 점)':''));try{const a=await shutAddrOf(ll);if(a){r._addr=a;bd.querySelector('[data-x="addr"]').value=a;msg('📍 주소 넣음'+(P&&P.loc?' (위치 캡처 빨간 점 자리)':''))}else msg('주소를 찾지 못했습니다. 직접 넣어 주세요.')}catch(err){msg('⚠ '+((err&&err.message)||err))}}
+  else if(b.dataset.lkcam)fldLkCam(r,msg);
+  else if(b.dataset.lk)fldLkGo(r,b.dataset.lk,msg);
   else if(b.dataset.save)fldSave(r,false,msg);
   else if(b.dataset.del){if(confirm('이 건을 지울까요? (서버에서도 지워집니다)'))fldSave(r,true,msg)}};
- bd.oninput=e=>{const d=e.target.dataset||{},k=d.k;if(k)r[k]=e.target.value.trim();if(d.x)r['_'+d.x]=e.target.value.trim();
+ bd.oninput=e=>{const d=e.target.dataset||{},k=d.k;if(k)r[k]=e.target.value.trim();if(k==='sd'&&r.res==='누수징후')r.d=r.sd;if(d.x)r['_'+d.x]=e.target.value.trim();
   if(k==='co'&&r.src!=='탐사'){const ai=bd.querySelector('[data-x="agent"]');if(ai&&!ai.value){const j=ldxGet(),nz=t=>String(t).replace(/\s|㈜|\(주\)|주식회사|\(합\)|\(유\)|\(자\)/g,''),kk=Object.keys(j.ag).find(a=>nz(a)===nz(r.co));if(false&&kk){ai.value=j.ag[kk];r._agent=j.ag[kk]}}}
   if(k==='no'&&e.type==='change'&&r.no){const x=ldxOf(String(r.no).trim().normalize('NFC')),ad=bd.querySelector('[data-x="addr"]'),ag=bd.querySelector('[data-x="agent"]');if(ad&&!ad.value&&x.addr){ad.value=x.addr;r._addr=x.addr}if(ag&&!ag.value&&x.agent){ag.value=x.agent;r._agent=x.agent}}};bd.onchange=bd.oninput;
- if(isN&&T)setLoc('');try{bd.scrollTop=0;bd.parentElement.scrollTop=0}catch(_){}}
-async function fldSave(r,del,msg){if(FLD.busy)return;if(!r.d){msg('⚠ 날짜를 넣어 주세요.');return}
+ if(isN&&T)setLoc('');if(SG&&isN)setTimeout(()=>{const i=bd.querySelector('[data-k="no"]');if(i&&!i.value)i.focus()},50);try{bd.scrollTop=0;bd.parentElement.scrollTop=0}catch(_){}}
+/* 단계 줄: 💧 징후(발견일) › 🎧 탐사(탐사일자) › 🔧 수리(공사일자) — 누수 아님이면 탐사 칸에 ❌ */
+function fldLkBar(r){const k=fldLk(r),ix={sg:0,ts:1,no:1,fx:2}[k],md=v=>v?String(v).slice(5).replace('-','.'):'';
+ const st=[['💧 징후',md(r.sd||(r.res==='누수징후'?r.d:''))||(ix>0?'—':'')],k==='no'?['❌ 누수 아님',md(r.d)]:['🎧 탐사',ix>=1?md(r.d):''],['🔧 수리',md(r.cd)]];
+ return `<div class="fldLkB">${st.map(([n,d],i)=>`${i?'<span>›</span>':''}<div class="${i<ix?'d':i===ix?(k==='no'?'x':'n'):''}"><b>${n}</b><small>${esc(d)||'&nbsp;'}</small></div>`).join('')}</div>`}
+/* 이 건(탐사연번) 사진: 누수징후·누수탐사 종류만(같은 번호 민원 사진 섞이지 않게), 해는 일지 날짜 기준 */
+function fldLkPhs(r){const no=String(r.no||'').trim().normalize('NFC');if(!no||!PH.list.length)return null;try{const P=ldgPhotos(no,'lk'),ok=m=>m&&['sg','ts'].includes(phKd(m));
+ return {P,ids:[...new Set(P.out.map(o=>o.m).filter(ok).map(m=>m.id))],loc:ok(P.loc)?P.loc:null,k:n=>P.out.find(o=>o.k===n&&ok(o.m))}}catch(_){return null}}
+function fldLkPh(r){const X=fldLkPhs(r);if(!String(r.no||'').trim())return '<span class="mute">탐사연번(사진 번호)을 먼저 넣으세요.</span>';
+ const c=(n,o)=>`<span class="${o?'ok':''}">${o?'✅':'○'} ${n}</span>`;return c('위치도',X&&X.loc)+c('원경 -1',X&&X.k(1))+c('근경 -2',X&&X.k(2))+(X&&X.ids.length>3?`<span>그 밖 ${X.ids.length-3}장</span>`:'')}
+/* 📷 징후 사진 찍기: 사진 종류를 💧 누수징후로, 번호 = 탐사연번 → 📍 위치 캡처(번호.png) → 이어 찍기 -1 원경, -2 근경 */
+async function fldLkCam(r,msg){const no=pcpNoNorm(r.no);if(!no){msg('⚠ 탐사연번(사진 번호)을 먼저 넣으세요.');const i=$('fldW').querySelector('[data-k="no"]');if(i)i.focus();return}
+ if(!r.id){await fldSave(r,false,msg);if(!r.id)return}
+ const up=$('phKdUp');if(up){if(!up.options.length)try{phKdFill()}catch(_){}up.value='sg';try{localStorage.setItem('geo-phkdup','sg')}catch(_){}}
+ fldClose();if(typeof pcpStart!=='function'){alert('사진 찍기를 아직 쓸 수 없습니다.');return}
+ if(pcpRunNo()&&pcpRunNo()!==no)pcpRunSet('');pcpStart('cam',true);const i=PCP.o&&PCP.o.querySelector('[data-a="no"]');if(i){i.value=no;i.dispatchEvent(new Event('input',{bubbles:true}))}else pcpRunSet(no);
+ try{phToast(`💧 누수징후 ${no}: 빨간 점을 맞추고 📸 위치 캡처 → 원경(${no}-1) → 근경(${no}-2) 순서로 찍으세요.`,{ms:9000})}catch(_){}}
+/* 단계 넘기기: no = 누수 아님(끝, 징후 사진 휴지통) · ts = 누수적출 확인(탐사 칸, 사진 → 누수탐사 미수리) · fx = 수리 칸 열기 */
+async function fldLkGo(r,to,msg){
+ if(to==='fx'){FLD.fxOpen=r.id||'_new';fldEdit(r);setTimeout(()=>{const x=$('fldW').querySelector('.fldFx');if(x)x.scrollIntoView({block:'center'})},60);return}
+ const X=fldLkPhs(r),sg=X?X.ids.filter(id=>phKd(PH.byId.get(id))==='sg'):[];
+ if(to==='no'){if(!confirm(`누수 아님으로 이 건을 끝낼까요?${sg.length?`\n\n이 번호 💧 누수징후 사진 ${sg.length}장은 휴지통으로 옮겨 지도에서 지웁니다(휴지통에서 되살릴 수 있음).`:''}`))return;
+  r.res='오탐';r.d=fldToday();await fldSave(r,false,msg);if(sg.length){await phDelete(sg);try{phToast(`❌ 누수 아님 · 징후 사진 ${sg.length}장을 휴지통으로 옮겼습니다.`,{ms:6000})}catch(_){}}return}
+ if(to==='ts'){if(!String(r.no||'').trim()){msg('⚠ 탐사연번을 먼저 넣으세요(사진·대장과 맞출 번호).');return}
+  r.res='미수리';r.d=fldToday();await fldSave(r,false,()=>{});const n=r.id;const rr=fldAll().find(x=>x.id===n)||r;fldEdit(rr);
+  setTimeout(()=>{const m=$('fldW').querySelector('.fldMsg');if(m)m.textContent=`✅ 누수적출 확인 · 탐사일자 오늘${sg.length?` · 사진 ${sg.length}장 → 🎧 누수탐사 ★ 미수리`:''}. 아래 탐사 칸을 채우고 💾 저장하세요.`},80)}}
+/* 누수탐사 단계 사진 맞추기: 💧 징후 사진 → 🎧 누수탐사, 별 상태 = 수리 완료(공사일자)면 파랑 · 그 밖 미수리 빨강 */
+async function fldLkPhSet(r){const X=fldLkPhs(r);if(!X||!X.ids.length)return;const sg=X.ids.filter(id=>phKd(PH.byId.get(id))==='sg');if(sg.length)await phSetKd(sg,'ts',true);
+ const v=r.cd?'d':/정탐|수리완료/.test(r.res||'')?'d':/미수리/.test(r.res||'')?'u':'';if(!v)return;const ch=X.ids.filter(id=>{const m=PH.byId.get(id);return m&&m.ls!==v});if(ch.length)await phSetLs(ch,v)}
+async function fldSave(r,del,msg){if(FLD.busy)return;if(r.res==='누수징후'&&r.sd)r.d=r.d||r.sd;if(!r.d){msg('⚠ 날짜를 넣어 주세요.');return}
+ if(!del&&r.src==='탐사'&&r.cd&&(!r.res||/미수리|혐의/.test(r.res)))r.res='정탐';/* 공사일자 = 수리 끝 → 대장 복구결과 정탐 */
+ if(!del&&r.src==='탐사'&&r.no&&r.res!=='누수징후'&&r.res!=='오탐')try{await fldLkPhSet(r)}catch(e){console.warn('징후 사진',e)}
  if(!del&&r.no){const no=String(r.no).trim().normalize('NFC');if(r._addr!=null)ldxPut(no,'addr',r._addr);if(r.src!=='탐사'&&r._agent!=null)ldxPut(no,'agent',r._agent)}
  if(!del&&!r.no&&!confirm((r.src==='탐사'?'탐사연번':'접수번호')+'이 비어 있습니다. 번호 없이 저장할까요? (대장과 맞출 수 없어 따로 한 줄로 나갑니다)'))return;
  if(!r.id)r.id='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- const rec={};['id','src','d','no','res','mat','dia','cause','part','memo','co','blk','lat','lng','tA','tB','tC','tD','fix','gl','cd','edia','fixd','note','road','pave','gps'].forEach(k=>{if(r[k]!=null&&r[k]!=='')rec[k]=r[k]});
+ const rec={};['id','src','d','sd','no','res','mat','dia','cause','part','memo','co','blk','lat','lng','tA','tB','tC','tD','fix','gl','cd','edia','fixd','note','road','pave','gps'].forEach(k=>{if(r[k]!=null&&r[k]!=='')rec[k]=r[k]});
  const it={rec,base:r.at||0};if(del)it.del=true;FLD.busy=true;msg('⏳ 서버로 보내는 중…');
  try{if(!fldSrvOk())throw new Error('nosrv');const j=await shReq('fldput',it);const n=j.rec||rec;FLD.recs=FLD.recs.filter(x=>x.id!==n.id);if(!del)FLD.recs.push(n);FLD.q=FLD.q.filter(x=>x.rec.id!==rec.id);fldQSave();
   if(typeof phToast==='function')phToast(del?'🗑 현장 일지를 지웠습니다.':`💾 현장 일지 저장${n.warn?' · ⚠ '+n.warn:''}`)}
@@ -18393,7 +18442,7 @@ async function ldvOut(a,btn){const cv=LDV.cv,cvs=LDV.cvs||[cv],no=LDV.no,T=LDV.t
  if(a==='hw'){const t0=btn.textContent;btn.disabled=true;btn.textContent='⏳ 한글 만드는 중…';try{const D=hwpxNew(ttl+' '+no);for(const c0 of cvs){let c=c0;if(c0.width>c0.height){c=document.createElement('canvas');c.width=c0.height;c.height=c0.width;const q=c.getContext('2d');q.translate(c.width,0);q.rotate(Math.PI/2);q.drawImage(c0,0,0)}const bb=hwpxB64(c.toDataURL('image/jpeg',.9));if(!bb)throw new Error('그림 변환 실패');hwpxImg(D,bb.bytes,bb.ext,c.width,c.height,180)}await hwpxSave(D,base+'.hwpx')}catch(e){alert('한글 저장 실패: '+((e&&e.message)||e))}finally{btn.disabled=false;btn.textContent=t0}}}
 /* 📊 대장 칸 순서 엑셀: 민원 = '리스트(매크로용)' 순서(대리인·현장주소 빈칸), 누수탐사 = '누수탐사총괄표' 순서(주소·탐사자 빈칸) + 위치 시트 */
 function fldXl(){if(typeof XLSX==='undefined'){alert('엑셀 도구(XLSX)를 아직 못 불러왔습니다. 잠시 뒤 다시 눌러 주세요.');return}
- const A=fldAll().filter(r=>FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())),M=A.filter(r=>r.src!=='탐사').sort((a,b)=>(a.d+a.tA).localeCompare(b.d+b.tA)),T=A.filter(r=>r.src==='탐사').sort((a,b)=>(a.d||'').localeCompare(b.d||''));
+ const A=fldAll().filter(r=>FLD.flt==='all'||FLD.flt==='open'?true:(r.d===fldToday())),M=A.filter(r=>r.src!=='탐사').sort((a,b)=>(a.d+a.tA).localeCompare(b.d+b.tA)),T=A.filter(r=>r.src==='탐사'&&r.res!=='누수징후').sort((a,b)=>(a.d||'').localeCompare(b.d||''));
  const nm=v=>v===''||v==null?'':(isNaN(+v)?v:+v);
  const m=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(M.map((r,i)=>[i+1,r.d,nm(r.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'','','',r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',r.d?+r.d.slice(5,7):'',r.d?+r.d.slice(0,4):'']));
  const t=[['탐사연번','블록명','탐사일자','공사일자','복구결과','주소','도로폭','추정관경','포장종류','현장내용','구경','관종','누수원인','누수부위','수선내용','공사업체','비고(조치계획)','탐사자','공사업체']].concat(T.map(r=>[nm(r.no),r.blk||'',r.d||'',r.cd||'',r.res||'','',nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'']));
