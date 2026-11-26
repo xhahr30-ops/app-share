@@ -3457,7 +3457,8 @@ function bpCompose(b,S,info,no,M,dpm){const X=v=>Math.round(v*dpm),W=X(M.pw),H=X
    txt('야간최소(㎥/h) · 누수 건수',px0+X(1*s),t2+X(1.4*s),X(40*s),{w:700,pt:5.6,c:ink});
    g.strokeStyle='#eef2f7';g.lineWidth=X(.12);g.beginPath();g.moveTo(px0,t2+h2);g.lineTo(px1,t2+h2);g.stroke();
    lv.forEach((v,i)=>{if(!v)return;const hh=(v/lmx)*h2*.55;g.fillStyle='rgba(220,38,38,.55)';g.fillRect(px0+i*bw+bw*.3,t2+h2-hh,bw*.4,hh)});
-   line2(nv,yN,'#0d9488',.4,null,t2,t2+h2);txt(Math.round(nmx/1.5).toLocaleString(),px0-X(1*s),yN(nmx/1.5),X(9*s),{pt:5.2,c:'#0d9488',a:'right'});if(mo)txt('최대 '+lmx+'건',px1+X(1*s),t2+h2-h2*.55,X(9*s),{pt:5.2,c:'#dc2626'});
+   line2(nv,yN,'#0d9488',.4,null,t2,t2+h2);/* 2026-11-27 사용자 '야간최소유량 라벨은?': 점마다 값(㎥/h, 소수 1자리). 칸이 좁으면 최근 해만 */{g.font=FT(700,4.6);const ws=nv.map(v=>v==null?0:g.measureText(v.toFixed(1)).width),all=Math.max(0,...ws)<=bw*.98,i0=all?0:(Yr.length-1)*12;g.textAlign='center';g.textBaseline='bottom';g.lineJoin='round';
+    for(let i=i0;i<n;i++){const v=nv[i];if(v==null)continue;const x=px0+(i+.5)*bw,y=Math.max(t2+X(3.2*s),yN(v)-X(.9*s)),t=v.toFixed(1);g.lineWidth=X(.5*s);g.strokeStyle='rgba(255,255,255,.95)';g.strokeText(t,x,y);g.fillStyle='#0f766e';g.fillText(t,x,y)}g.textBaseline='middle';g.textAlign='left'}txt(Math.round(nmx/1.5).toLocaleString(),px0-X(1*s),yN(nmx/1.5),X(9*s),{pt:5.2,c:'#0d9488',a:'right'});if(mo)txt('최대 '+lmx+'건',px1+X(1*s),t2+h2-h2*.55,X(9*s),{pt:5.2,c:'#dc2626'});
    for(let i=0;i<n;i++){const m=i%12+1;if(m%3===1)txt(m===1?`${Yr[Math.floor(i/12)]}.1`:m+'',px0+(i+.5)*bw,t2+h2+X(2*s),bw*3,{pt:5,c:mute,a:'center'})}
    /* 범례 줄 */
    const LG=[['#bfdbfe','공급량','b'],['#6366f1','부과량','b'],['#dc2626','유수율','l'],...(tv.some(v=>v!=null)?[['#64748b','포항 전체','d']]:[]),['#0d9488','야간최소','l'],['rgba(220,38,38,.55)','누수','b']];
