@@ -1986,7 +1986,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   <h4>🟣 ②-1b 상수관로 (별도 관리) <small style="font-weight:400;color:var(--mute)">기존 관로와 따로 저장 · 지도에서 비교 · 분석은 ②-1 기존 관로로만</small></h4>
   <div id="p2Box" class="hint savebox" hidden></div>
   <label class="drop"><input type="file" id="p2File" accept=".zip"><div class="ic">🟣</div><b>별도 관리 상수관로 SHP 압축파일(.zip)</b><span>예: 포항시 상수관로 26년 11월 기준 · .prj가 없으면 기존 관로 범위로 좌표계를 고름 · ②-1 기존 관로는 바뀌지 않음</span></label>
-  <p style="margin:4px 0;font-size:12.5px;display:flex;flex-wrap:wrap;gap:4px 12px"><label><input type="checkbox" id="p2On"> 지도에 보이기 <span style="display:inline-block;width:18px;height:3px;background:#d946ef;vertical-align:middle"></span></label><label><input type="checkbox" id="p2Nw" checked> 🆕 새로 생긴 관 <span style="display:inline-block;width:18px;height:5px;background:#dc2626;vertical-align:middle"></span></label><label><input type="checkbox" id="p2Old" checked> ❌ 기존에만 있는 관 <span style="display:inline-block;width:18px;height:0;border-top:4px dashed #111827;vertical-align:middle"></span></label></p>
+  <p style="margin:4px 0;font-size:12.5px;display:flex;flex-wrap:wrap;gap:4px 12px"><label><input type="checkbox" id="p2On"> 지도에 보이기</label><label><input type="checkbox" id="p2Al" checked> 관로 <span style="display:inline-block;width:18px;height:3px;background:#d946ef;vertical-align:middle"></span></label><label><input type="checkbox" id="p2Nw" checked> 🆕 새로 생긴 관 <span style="display:inline-block;width:18px;height:5px;background:#dc2626;vertical-align:middle"></span></label><label><input type="checkbox" id="p2Old" checked> ❌ 기존에만 있는 관 <span style="display:inline-block;width:18px;height:0;border-top:4px dashed #111827;vertical-align:middle"></span></label></p>
   <div class="g2"><label class="f">같은 자리로 보는 거리(m)<input id="p2Tol" type="number" min="0.5" max="20" step="0.5" value="3"></label><label class="f" style="align-self:end"><span><input type="checkbox" id="p2Svc"> 기존 급수관도 비교</span><small style="font-weight:400">이 파일에 급수관이 없으면 끔</small></label></div>
   <div class="sbtns"><button id="p2Cmp" type="button" class="btn ol" disabled>🔍 기존관과 비교</button><button id="p2Xl" type="button" class="btn ol" disabled>📋 차이 목록 엑셀</button><button id="p2Up" type="button" class="btn ol" disabled title="🗺️ 기준자료 공유와 같은 공유 서버에 올림 — 직원 앱은 열 때 자동으로 받음">⏫ 직원에게 공유</button><button id="p2Del" type="button" class="btn ol" disabled>🗑 저장 지우기</button></div>
   <p class="hint" id="p2Msg">관로를 넣으면 지도에 자홍색 선으로 그리고(줌 13 이상), 기존 관로와 다른 곳을 🆕 빨강·❌ 검정 점선으로 보여 줍니다(줌 11 이상). 새로 생긴 관 = 점의 절반 이상이 기존 관로에서 위 거리보다 먼 관.</p>
@@ -2547,6 +2547,8 @@ const LAY=[
  {g:'기준자료'},
  {k:'blk',n:'소블록 경계',s:'#ea580c',c:()=>{const p=G('poly');return p&&p.features?p.features.length:0},on:()=>{const m=G('map'),l=G('polyL');return !!(m&&l&&m.hasLayer(l))},set:o=>{const m=G('map'),l=G('polyL');if(!m||!l)return;o?l.addTo(m):m.removeLayer(l)}},
  {k:'pipe',n:'상수관로',s:'#2563eb',c:()=>{const p=G('PIPE');return p?p.feats.length:0},on:()=>selOn('pShow'),set:o=>selSet('pShow',o,'auto'),ok:()=>!$('pPanel').hidden},
+ /* 2026-11-26 사용자 '레이어에서 최근관로 끄기': 🟣 별도 관리(최근) 관로를 상수관로 바로 아래로, ▸ 펼치면 관로·🆕·❌ 따로 켜고 끄기 */
+ {k:'p2',get n(){const p=G('P2'),v=p&&p.v;return '최근 관로 (별도'+(v&&v.base?' · '+v.base:'')+')'},s:'#d946ef',c:()=>F('p2Count')||0,on:()=>{const r=G('P2');return !!r&&!!r.on},set:o=>F('p2SetOn',!!o)},
  /* 2026-11-11 설정 창 정리 B안: ⚙ 설정에만 있던 켜고 끄기를 레이어 창에도 (설정 창과 같은 값을 바꿈) */
  {k:'hop',n:'관로 교차 반원',s:'#2563eb',c:()=>null,on:()=>{const u=G('UI');return !!u&&u.hop!=='off'},set:o=>mir('uiHop',o?'on':'off',()=>{const u=G('UI');u.hop=o?'on':'off';F('uiSave');F('hopRedraw')}),ok:()=>!$('pPanel').hidden},
  {k:'tb',n:'혼탁수 주의 (평소 표시)',s:'#92400e',c:()=>null,on:()=>{const t=G('SHUT');return !!t&&!!t.opt.tbAll},set:o=>{const t=G('SHUT');if(!t)return;t.opt.tbAll=!!o;F('shutSave');F('tbAllRedraw');const e=$('shTbAll');if(e)e.value=o?'1':'0'},ok:()=>!$('pPanel').hidden},
@@ -2555,7 +2557,6 @@ const LAY=[
  {k:'rs',n:'적정 관경 (과대·과소)',s:'#22d3ee',c:()=>{const r=G('RS');return r&&r.res?r.res.filter(x=>x.k==='over'||x.k==='small').length:null},on:()=>{const r=G('RS');return !!r&&!!r.on},set:o=>F('rsShow',!!o)},
  {k:'pg',n:'관망도 점검 후보',s:'#dc2626',c:()=>{const r=G('PG');return r&&r.res?r.res.length:null},on:()=>{const r=G('PG');return !!r&&!!r.on&&!!r.res},set:o=>F('pgShow',!!o)},
  {k:'rp',n:'교체 완료 관로',s:'#16a34a',c:()=>F('rpCount')||0,on:()=>{const r=G('RP');return !!r&&!!r.on},set:o=>F('rpSetOn',!!o)},
- {k:'p2',n:'상수관로 (별도 관리)',s:'#d946ef',c:()=>F('p2Count')||0,on:()=>{const r=G('P2');return !!r&&!!r.on},set:o=>F('p2SetOn',!!o)},
  {k:'fac',n:'상수도 시설물',s:'#0f766e',c:()=>{const f=G('FAC');return f?f.feats.length:0},on:()=>selOn('fShow'),set:o=>selSet('fShow',o,'auto'),ok:()=>!$('fPanel').hidden},
  /* 공업밸브·마을상수도 밸브는 따로 켜고 끔 (2026-11-06 사용자) — 시설물 목록의 같은 체크(#ind·#vil)와 함께 바뀜 */
  {k:'ind',n:'공업밸브',s:'#facc15',c:()=>F('facVCount','ind')||0,on:()=>{const f=G('FAC');return !!f&&!f.hidden.has('#ind')&&selOn('fShow')},set:o=>{if(o&&!selOn('fShow'))selSet('fShow',1,'auto');F('facHidSet','#ind',!o)},ok:()=>!$('fPanel').hidden},
@@ -2624,6 +2625,8 @@ function laySub(k){try{
   const T=(G('PBY_NM')||{})[by]||'';
   const PY=G('PYR')||{},yrH=by==='yr'?selH('pYrSt','년도 구간')+(PY.st==='c'?`<label class="gwl-sel"><span class="nm">경계 연도</span><input data-mir="pYrCut" value="${escH(PY.cut||'')}" placeholder="예: 1990,2000,2010" style="min-width:0;flex:1"></label>`:''):'';
   return selH('pBy','색 기준')+yrH+`<div class="tip">색 기준: ${T} · 체크 = 지도에 보이기${by==='yr'?' · 설치연도 없는 관로(1900·SA00 등)는 미상':''}</div>`+items.map(([n,c])=>{const b=by==='dia'&&DB.find(x=>x[1]===n),w=b?Math.max(2,Math.round(b[3])):3,h=H.has(n);return `<label class="gwl-ck${h?' off':''}"><input type="checkbox" data-phd="${escH(n)}"${h?'':' checked'}><span class="ln" style="height:${w}px;background:${c}"></span><span class="nm" title="${escH(n)}">${escH(n)}</span><small>${((cnt.get(n)||0)/1000).toFixed(1)}km</small></label>`}).join('')}
+ if(k==='p2'){const r=G('P2');if(!r||!r.feats||!r.feats.length)return'';const D=r.diff,ck=(p,on,sym,t,n)=>`<label class="gwl-ck${on?'':' off'}"><input type="checkbox" data-p2s="${p}"${on?' checked':''}>${sym}<span class="nm">${t}</span>${n!=null?`<small>${Number(n).toLocaleString()}</small>`:''}</label>`;
+  return ck('al',r.al!==false,'<span class="ln" style="height:3px;background:#d946ef"></span>','관로 (자홍, 줌 13↑)',r.feats.length)+ck('nw',r.nw,'<span class="ln" style="height:5px;background:#dc2626"></span>','🆕 새로 생긴 관',D?D.nw.size:null)+ck('old',r.old,'<span class="ln" style="height:0;border-top:4px dashed #111827;background:none"></span>','❌ 기존에만 있는 관',D?D.old.length:null)+(D?'':'<div class="tip">🔍 기존관과 비교 전 (②-1b 창)</div>')}
  if(k==='rp'){const r=G('RP');if(!r)return'';const pc=Math.round((+r.w||1)*100)+'%';return lxRow('<span class="ln" style="height:6px;background:#16a34a;flex:none;width:18px;border-radius:3px"></span>','교체 완료로 지정','')+lxRow('<span class="ln" style="height:5px;background:#4ade80;flex:none;width:18px;border-radius:3px"></span>','설치연도 기준'+(r.yr?' ('+r.yr+'년 이후)':' (꺼짐)'),'')+`<div class="gwl-psz"><span class="nm">초록 테두리 두께</span><button type="button" data-rpw="-1" title="가늘게" aria-label="교체 완료 테두리 가늘게">−</button><small>${pc}</small><button type="button" data-rpw="1" title="굵게" aria-label="교체 완료 테두리 굵게">＋</button></div><div class="gwl-bb"><button type="button" data-rpw="0">↺ 두께 처음대로</button></div><div class="tip">✅ 교체 완료 창의 두께 막대와 같이 바뀜</div>`}
  if(k==='fac'){const f=G('FAC');if(!f||!f.kinds||!f.kinds.length)return'';/* ⚙️ 시설물 탭과 같은 목록(켜고 끄기·크기·사진 있는 것만)을 그대로 그림 → layFill */
   return `<div class="gwl-fk" data-v="${escH(JSON.stringify([f.feats.length,f.kinds,[...(f.hidden||[])],f.ksz||{},!!f.phOnly,f.phc||0]))}"></div><div class="tip">체크 = 지도에 보이기 · −/＋ = 아이콘 크기 (⚙️ 시설물 탭과 같이 바뀜) · 줄에서 마우스 오른쪽 버튼 = 라벨·이름·투명도</div>`}
@@ -2657,7 +2660,7 @@ function laySub(k){try{
   const sp=[...d.querySelectorAll('span')];if(!sp.length)return'';
   return sp.map(x=>{const i=x.querySelector('i'),st=i?i.getAttribute('style')||'':'';if(i)i.remove();const sm=x.querySelector('small'),n=sm?sm.textContent:'';if(sm)sm.remove();return `<div><i style="${escH(st)}"></i><span class="nm">${escH(x.textContent.trim())}</span>${n?`<small>${escH(n)}</small>`:''}</div>`}).join('')}
 }catch(e){console.warn('gw laySub',k,e)}return''}
-const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl','rp','mk']);
+const LX_K=new Set(['blk','pipe','p2','fac','pt','ph','elev','cl','rp','mk']);
 /* ⭐ 누수탐사 상태별 켜고 끄기(2026-11-24) — 지도 범례와 같은 설정(UI.tsHid) */
 function layMw(){const C=F('mwCnt'),S=G('MW_ST'),K=G('MW_SK'),U=G('UI')||{};if(!C||!C.size||!S)return'';const h=U.mwHid||[];
  return `<div class="tip">📷 민원 원인 (📒 대장 · 체크 = 지도에 보이기)</div>`+K.filter(k=>C.get(k)).map(k=>{const off=h.includes(k);return `<label class="gwl-ck${off?' off':''}"><input type="checkbox" data-mws="${k}"${off?'':' checked'}><i style="flex:none;display:inline-block;width:11px;height:11px;border-radius:50%;background:${S[k].c};border:1px solid #fff;box-shadow:0 0 0 1px #0003"></i><span class="nm">${escH(S[k].n)}</span><small>${C.get(k).toLocaleString()}장</small></label>`}).join('')}
@@ -2674,7 +2677,7 @@ function layFill(tb){tb.querySelectorAll('.gwl-fk').forEach(el=>{F('facKindsUi',
 const laySync=()=>setTimeout(()=>{F('facKindsUi');layKey='';layRender()},0);
 $('gwLayB').addEventListener('change',e=>{if(e.target.closest('.gwl-fk'))laySync()});
 /* 소블록·관로 항목·수용가 구분 켜고 끄기 (지도 그리는 함수는 앱 쪽 blkHidSet·pipeHidSet·ptHidSet) */
-$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.phls!=null)F('phLsOffSet',!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.mkg!=null)F('mkGrpHid',d.mkg,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
+$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.phls!=null)F('phLsOffSet',!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.mkg!=null)F('mkGrpHid',d.mkg,!t.checked);else if(d.p2s!=null)F('p2Part',d.p2s,t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.mir==null)return;e.stopPropagation();mir(t.dataset.mir,t.value);layKey='';setTimeout(layRender,60)},true);
 $('gwLayB').addEventListener('click',e=>{if(!e.target.closest('button[data-lblm]'))return;e.preventDefault();e.stopPropagation();const m=G('LBLM');if(m&&m.open)m.open()},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-rpw]');if(!b)return;e.preventDefault();e.stopPropagation();F('rpWStep',+b.dataset.rpw);layKey='';setTimeout(layRender,40)},true);
@@ -20093,9 +20096,9 @@ try{fdInit()}catch(e){console.warn('현장 맛집',e)}
    기존 상수관로(PIPE, 분석·단수·공사 추천 기준)는 그대로 두고, 다른 관로 묶음(예: 포항시 상수관로 26년 11월 기준)을 IDB 'pipes2'에 따로 저장.
    지도에 자홍색 선으로 켜고 끄기 · 누르면 정보창 · 🔍 기존관과 비교(🆕 새로 생긴 관 = 빨강, ❌ 기존에만 있는 관 = 검정 점선) · 📋 차이 목록 엑셀 · 🗺️ 기준자료 공유(pipes2).
    .prj가 없으면 기존 관로 범위 안에 들어가는 좌표계를 고름(EPSG:5181 등). 칸 이름은 대소문자 상관없이 읽음(ftr_idn·std_dip…). 이름·비고 칸은 저장하지 않음. */
-const P2={on:false,nw:true,old:true,tol:3,svc:null,v:null,feats:[],bb:[],A:new WeakMap(),ix:null,diff:null,busy:false,key:'',L:null,cv:null,ev:0,x0:0,y0:0,cs:1};
-try{const c=JSON.parse(localStorage.getItem('geo-p2')||'null');if(c)Object.assign(P2,{on:!!c.on,nw:c.nw!==false,old:c.old!==false,tol:Math.max(.5,Math.min(20,+c.tol||3)),svc:c.svc==null?null:!!c.svc})}catch(_){}
-function p2Cfg(){try{localStorage.setItem('geo-p2',JSON.stringify({on:P2.on,nw:P2.nw,old:P2.old,tol:P2.tol,svc:P2.svc}))}catch(_){}}
+const P2={on:false,al:true,nw:true,old:true,tol:3,svc:null,v:null,feats:[],bb:[],A:new WeakMap(),ix:null,diff:null,busy:false,key:'',L:null,cv:null,ev:0,x0:0,y0:0,cs:1};
+try{const c=JSON.parse(localStorage.getItem('geo-p2')||'null');if(c)Object.assign(P2,{on:!!c.on,al:c.al!==false,nw:c.nw!==false,old:c.old!==false,tol:Math.max(.5,Math.min(20,+c.tol||3)),svc:c.svc==null?null:!!c.svc})}catch(_){}
+function p2Cfg(){try{localStorage.setItem('geo-p2',JSON.stringify({on:P2.on,al:P2.al,nw:P2.nw,old:P2.old,tol:P2.tol,svc:P2.svc}))}catch(_){}}
 const P2A={id:['관리번호','FTR_IDN'],use:['상수관용도','SAA_CDE'],dia:['구경','관경','STD_DIP','PIP_DIP'],mat:['관재질','MOP_CDE','PIP_MOP'],ymd:['설치일자','IST_YMD'],len:['연장','BYC_LEN'],blk:['소블록명','BLK_NM'],lbl:['PIP_LBL']};
 const P2_KEEP=new Set([...Object.values(P2A).flat(),'중블록명','대블록명','행정구역','FTR_CDE','HJD_CDE','BJD_CDE'].map(x=>x.toUpperCase()));
 const p2Keep=k=>P2_KEEP.has(String(k).toUpperCase());
@@ -20155,27 +20158,31 @@ async function p2Compare(quiet){const msg=$('p2Msg');if(P2.busy)return;if(!P2.fe
 /* 길이(m) */
 function p2Len(f){let s=0;lineParts(f.geometry).forEach(p=>{for(let k=1;k<p.length;k++){const a=p2M(p[k-1][0],p[k-1][1]),b=p2M(p[k][0],p[k][1]);s+=Math.hypot(b[0]-a[0],b[1]-a[1])}});return s}
 function p2Ui(){const b=$('p2Box');if(!b)return;const v=P2.v;
- ['p2On','p2Nw','p2Old'].forEach((id,k)=>{const e=$(id);if(e)e.checked=[P2.on,P2.nw,P2.old][k]});const t=$('p2Tol');if(t&&document.activeElement!==t)t.value=P2.tol;const sv=$('p2Svc');if(sv)sv.checked=p2Svc();
+ ['p2On','p2Al','p2Nw','p2Old'].forEach((id,k)=>{const e=$(id);if(e)e.checked=[P2.on,P2.al!==false,P2.nw,P2.old][k]});const t=$('p2Tol');if(t&&document.activeElement!==t)t.value=P2.tol;const sv=$('p2Svc');if(sv)sv.checked=p2Svc();
  ['p2Cmp','p2Xl','p2Up','p2Del'].forEach(id=>{const e=$(id);if(e)e.disabled=!v});
  if(!v){b.hidden=true;return}b.hidden=false;let km=0;P2.feats.forEach(f=>km+=p2Len(f));const D=P2.diff;
  b.innerHTML=`💾 <b>${esc(v.name)}</b> · ${esc(v.base)} 기준 · 관로 ${P2.feats.length.toLocaleString()}개 · ${(km/1000).toFixed(1)}km<br><small class="mute">저장 ${fmtDT(v.at)} · 레이어 ${(v.layers||[]).length}개 · 분석(단수구역·공사 추천 등)은 ②-1 기존 관로로만 합니다</small>`+
   (D?`<br>🔍 기존관(${D.n.toLocaleString()}개)과 비교 (${D.tol}m${D.svc?' · 급수관 포함':' · 기존 급수관 뺌'}): <b style="color:#dc2626">🆕 새로 생긴 관 ${D.nw.size.toLocaleString()}개</b> · <b>❌ 기존에만 있는 관 ${D.old.length.toLocaleString()}개</b> <small class="mute">(${(D.ms/1000).toFixed(1)}초)</small>`:'<br><small class="mute">🔍 기존관과 비교를 누르면 다른 곳을 색으로 보여 줍니다</small>')}
 function p2Count(){return P2.feats.length}
+/* 기준일: 파일 이름의 날짜(2026-11-18) → 없으면 '26년 11월'·'2026년 11월' 꼴 → 없으면 오늘 */
+function p2Base(nm){nm=String(nm||'');if(/(20\d{2})[-._]?(\d{2})[-._]?(\d{2})/.test(nm))return baseOf(nm);const m=nm.match(/(20\d{2}|\d{2})\s*년\s*(\d{1,2})\s*월/);return m?`${m[1].length===2?'20'+m[1]:m[1]}-${String(m[2]).padStart(2,'0')}`:baseOf(nm)}
 function p2SetOn(o){P2.on=!!o;p2Cfg();p2Ui();p2Draw(true)}
+/* 레이어 창 ▸ 항목별: al 관로 · nw 새로 생긴 관 · old 기존에만 있는 관 (하나라도 켜면 전체도 켬) */
+function p2Part(p,o){if(!['al','nw','old'].includes(p))return;P2[p]=!!o;if(o)P2.on=true;p2Cfg();p2Ui();p2Draw(true)}
 /* ── 지도: 관로 층(390) 위 392 캔버스. 지금 화면 둘레만, 색마다 선 하나로 묶어 그림(3만 개도 가볍게) ── */
 function p2Pane(){if(!map.getPane('p2Pane')){const p=map.createPane('p2Pane');p.style.zIndex=392;p.style.pointerEvents='none'}if(!P2.cv)P2.cv=L.canvas({pane:'p2Pane',padding:.3});return P2.cv}
 function p2Draw(force){if(typeof map==='undefined'||!map)return;if(!P2.ev){P2.ev=1;map.on('moveend zoomend',()=>{try{p2Draw()}catch(_){}})}
- const z=map.getZoom(),B=map.getBounds().pad(.3),D=P2.diff;const key=[P2.on,P2.nw,P2.old,P2.feats.length,D?D.at:0,z,B.toBBoxString()].join('|');if(!force&&key===P2.key)return;P2.key=key;
+ const z=map.getZoom(),B=map.getBounds().pad(.3),D=P2.diff;const key=[P2.on,P2.al,P2.nw,P2.old,P2.feats.length,D?D.at:0,z,B.toBBoxString()].join('|');if(!force&&key===P2.key)return;P2.key=key;
  const cv=p2Pane();if(!P2.L)P2.L=L.layerGroup().addTo(map);P2.L.clearLayers();if(!P2.on||!P2.feats.length)return;
  const w=B.getWest(),e=B.getEast(),s=B.getSouth(),n=B.getNorth(),inV=b=>!(b[2]<w||b[0]>e||b[3]<s||b[1]>n),ll=f=>lineParts(f.geometry).map(q=>q.map(c=>[c[1],c[0]]));
- const all=[],nw=[],old=[],zA=z>=13,zD=z>=11;
+ const all=[],nw=[],old=[],zA=z>=13&&P2.al!==false,zD=z>=11;
  P2.feats.forEach((f,i)=>{const isN=D&&P2.nw&&D.nw.has(i);if(!(isN?zD:zA))return;if(!inV(P2.bb[i]))return;(isN?nw:all).push(...ll(f))});
  if(D&&P2.old&&zD)D.old.forEach(o=>{if(inV(o.bb))old.push(...ll(o.f))});
  const wt=Math.max(2,Math.min(5,z-13)),put=(a,o)=>{if(a.length)L.polyline(a,Object.assign({renderer:cv,interactive:false,lineCap:'round'},o)).addTo(P2.L)};
  put(old,{color:'#111827',weight:wt+2.5,opacity:.85,dashArray:'8 6',lineCap:'butt'});put(all,{color:'#d946ef',weight:wt,opacity:.9});put(nw,{color:'#dc2626',weight:wt+2.5,opacity:.9})}
 /* 정보창: 누른 자리 7px 안 */
 function p2HitAt(ll){if(!P2.on||!P2.feats.length||!map||map.getZoom()<11)return -1;if(!P2.ix)P2.ix=p2Index(P2.feats);const r=156543.03392*Math.cos(ll.lat*Math.PI/180)/2**map.getZoom()*7,p=p2M(ll.lng,ll.lat),i=p2Nearest(P2.ix,p[0],p[1],r);
- if(i<0)return -1;const isN=P2.diff&&P2.nw&&P2.diff.nw.has(i);return(isN||map.getZoom()>=13)?i:-1}
+ if(i<0)return -1;const isN=P2.diff&&P2.nw&&P2.diff.nw.has(i);return(isN||(map.getZoom()>=13&&P2.al!==false))?i:-1}
 function p2Pop(i){const f=P2.feats[i];if(!f)return '';const a=p2Attr(f),P=f.properties||{},D=P2.diff;let bk=a.blk;
  if(!bk)try{const m=midXY(f.geometry);if(m&&poly)bk=blkAt(m[0],m[1])||''}catch(_){}
  const st=D?(D.nw.has(i)?`<div style="font-size:11.5px;color:#dc2626;font-weight:700">🆕 기존 관로(②-1)에 없는 자리 (${D.tol}m 기준)</div>`:'<div style="font-size:11.5px;color:#15803d">기존 관로와 같은 자리</div>'):'<div style="font-size:11px;color:#64748b">🔍 기존관과 비교 전</div>';
@@ -20208,7 +20215,7 @@ async function p2Load(file){const msg=$('p2Msg');if(!file)return;if(typeof shp==
    feats.push({type:'Feature',properties:P,geometry:{type:f.geometry.type,coordinates:p2Rd(tf(f.geometry.coordinates,f.geometry.type,used))}})});
   info.push(`${nm} ${fs.length.toLocaleString()}${used==='EPSG:4326'?'':' ('+used+')'}`);msg.textContent=`레이어 정리 중… ${info.length}/${layers.length}`;await sleep(0)}
  g=null;if(!feats.length){msg.textContent=bad.length?`좌표계를 판별하지 못했습니다(${bad.join(', ')}). .prj 파일을 함께 넣어 주세요.`:'선(관로) 도형이 없습니다. 상수관로 SHP인지 확인하세요.';return}
- const v={v:1,name:file.name,base:baseOf(file.name),at:Date.now(),layers:info,feats};
+ const v={v:1,name:file.name,base:p2Base(file.name),at:Date.now(),layers:info,feats};
  try{if(P2.v)await IDB.set('pipes2_prev',P2.v);await IDB.set('pipes2',v);stoKeep()}catch(e){msg.innerHTML='<span class="c-rd">이 기기에 저장하지 못했습니다: '+esc((e&&e.message)||e)+'</span>'}
  P2.on=true;p2Cfg();p2Set(v);try{chgAdd({k:'ref',tx:`🟣 별도 관리 상수관로 넣음: ${file.name} ${feats.length.toLocaleString()}개`})}catch(_){}
  msg.innerHTML=`✅ 넣었습니다: 관로 ${feats.length.toLocaleString()}개 (${Math.round((Date.now()-t0)/100)/10}초)<br><small>${info.map(esc).join(' · ')}</small>${bad.length?`<br><span class="c-rd">좌표계 판별 실패로 뺌: ${bad.map(esc).join(', ')}</span>`:''}<br><small>②-1 기존 상수관로·분석은 그대로입니다. 직원에게 보내려면 ⏫ 직원에게 공유.</small>`;
@@ -20228,7 +20235,7 @@ async function p2Restore(){let v=null;try{v=await IDB.get('pipes2')}catch(_){}p2
  if(P2.v){/* 기존 관로가 올라오면 한 번 비교 (화면이 먼저 뜨게 뒤에서) */let k=0;const go=()=>{if(PIPE.feats&&PIPE.feats.length)setTimeout(()=>p2Compare(true),1500);else if(++k<90)setTimeout(go,1000)};go()}}
 function p2Init(){if(!$('p2Sec'))return;
  $('p2File').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)p2Load(f)};
- $('p2On').onchange=e=>p2SetOn(e.target.checked);$('p2Nw').onchange=e=>{P2.nw=e.target.checked;p2Cfg();p2Draw(true)};$('p2Old').onchange=e=>{P2.old=e.target.checked;p2Cfg();p2Draw(true)};
+ $('p2On').onchange=e=>p2SetOn(e.target.checked);$('p2Al').onchange=e=>p2Part('al',e.target.checked);$('p2Nw').onchange=e=>{P2.nw=e.target.checked;p2Cfg();p2Draw(true)};$('p2Old').onchange=e=>{P2.old=e.target.checked;p2Cfg();p2Draw(true)};
  $('p2Tol').onchange=e=>{P2.tol=Math.max(.5,Math.min(20,+e.target.value||3));e.target.value=P2.tol;p2Cfg();if(P2.diff)p2Compare()};
  $('p2Svc').onchange=e=>{P2.svc=e.target.checked;p2Cfg();if(P2.diff)p2Compare()};
  $('p2Cmp').onclick=()=>p2Compare();$('p2Xl').onclick=p2Xlsx;$('p2Up').onclick=p2Share;
