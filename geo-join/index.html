@@ -3145,9 +3145,10 @@ function bpList(){if(!BP.el)return;const box=BP.el.querySelector('[data-bp-list]
 function bpMemoOf(n){return BP.memo[n]!=null?BP.memo[n]:((bpNrwOf(n)||{}).memo||'')}
 function bpMemoUI(){if(!BP.el)return;bpSysUI();const t=BP.el.querySelector('[data-bp-memo]'),l=BP.el.querySelector('[data-bp-mn]');if(!BP.cur){t.disabled=true;t.value='';l.textContent='소블록 이름을 누르세요';return}t.disabled=false;t.value=bpMemoOf(BP.cur);l.textContent=BP.cur}
 /* ---- 한 소블록 지도 찍기 → {B,src,rings,lk,scale,secret,leg} ---- */
+const BP_FW=900;/* 현황도 지도: 블록 칸 최소 너비(px) — 폰에서 아이콘이 크게 나오던 것(2026-11-26) */
 const BP_SYM=.5;/* 현황도 지도: 유량계·경계밸브 밖 심볼 크기(2026-11-13 사용자 0.5, 제수밸브 포함) */
 const BP_BND='#ea580c',BP_RC='#2563eb',BP_OC='#dc2626',BP_RY0=()=>new Date().getFullYear()-9;/* 소블록 경계 = 주황 점선(2026-11-12 사용자) */
-async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContainer(),st0=mc.getAttribute('style');let big=false;
+async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContainer(),st0=mc.getAttribute('style');let big=false,dpr0;
  /* 관로 검정 통일(2026-11-12): 화면 관로 레이어는 빼고 찍은 뒤, 블록 안 관로만 검정 선으로 직접 그림(배수관 = 급수관 × 1.5) */
  const PP=G('PIPE'),pOn=!!PP&&[PP.layer,PP.layerS].some(l=>l&&m.hasLayer(l)),pk=BP.o.pk!==0&&pOn,pRm=[];let tmp=null,zs0;
  if(pk)[PP.layer,PP.layerS].forEach(l=>{if(l&&m.hasLayer(l)){m.removeLayer(l);pRm.push(l)}});
@@ -3165,13 +3166,16 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
  const bAuto=[],mt=[];try{if(FA&&FA.n){for(const i of F('facQuery',bxs.reduce((a,z)=>Math.min(a,z[0]),180)-E,bxs.reduce((a,z)=>Math.min(a,z[1]),90)-E,bxs.reduce((a,z)=>Math.max(a,z[2]),-180)+E,bxs.reduce((a,z)=>Math.max(a,z[3]),-90)+E)||[])if(FA.sk[i]==='meter'&&!FA.dl[i]&&inF(FA.x[i],FA.y[i]))mt.push(F('facLblText',i)||'이름 없음')}}catch(e){console.error('현황도 유량계 찾기',e)}
  try{if(FA&&FA.n&&BP.o.bav!==0){const q=F('facQuery',bxs.reduce((a,z)=>Math.min(a,z[0]),180)-E,bxs.reduce((a,z)=>Math.min(a,z[1]),90)-E,bxs.reduce((a,z)=>Math.max(a,z[2]),-180)+E,bxs.reduce((a,z)=>Math.max(a,z[3]),-90)+E)||[];
   for(const i of q){if(FA.sk[i]!=='gateC'||FA.dl[i])continue;const pt=turf.point([FA.x[i],FA.y[i]]);if(lns.some(l=>{try{return turf.pointToLineDistance(pt,l,{units:'meters'})<=15}catch(_){return false}})){bAuto.push(i);FA.sk[i]='bndC'}}}}catch(e){console.error('현황도 경계밸브 자동',e)}
- const PHg=G('PH');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}
+ const PHg=G('PH'),MKg=G('MK');if(PT&&PT.n){PT.bpK=BP_SYM;try{F('ptDraw')}catch(_){}}if(PHg){PHg.bpK=BP_SYM;try{F('phDraw')}catch(_){}}if(MKg)MKg.bpK=.7; /* 🖍 그리기 아이콘(소화전 火 등)도 작게(2026-11-26) — 직접 찍은 표시라 시설물(0.5)보다 조금 크게 */
  if(FA){FA.bndAll=true;FA.bpLbl=1.35;FA.bpSm=BP_SYM;if(cl){const mem=new Map();FA.bpIn=i=>{let v=mem.get(i);if(v===undefined){v=inF(FA.x[i],FA.y[i]);mem.set(i,v)}return v}}} /* 경계밸브는 줌이 낮아 제수밸브가 숨는 큰 블록에서도 찍히게 */
- try{if(BP.o.hq){const R=mc.getBoundingClientRect();big=true;mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*2)}px!important;height:${Math.round(R.height*2)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}
+ /* 지도 칸 키우기(2026-11-26): 아이콘·사진 묶음·그리기 아이콘은 화면 픽셀 크기라, 폰처럼 지도 칸이 좁으면(블록 칸 350px 안팎) 출력 그림에서 몇 배로 크게 나옴.
+    블록 칸 너비가 BP_FW px 이상이 되게 지도 칸을 잠깐 키워서 찍음 → 기기와 상관없이 PC와 비슷한 비율. 선명(hq)은 2배 이상 */
+ try{{const R=mc.getBoundingClientRect(),a0=mm.w/mm.h,fw0=Math.max(50,Math.min(R.width-16,(R.height-16)*a0)),f=Math.min(4,Math.max(BP.o.hq?2:1,BP_FW/fw0));
+  if(f>1.05){big=true;dpr0=window.SHOT_DPR;window.SHOT_DPR=BP.o.hq?2:1.5; /* 칸이 커진 만큼 캔버스 해상도는 눌러 폰 메모리 넘침 막음 */mc.setAttribute('style',(st0||'')+`;position:fixed!important;left:0!important;top:0!important;width:${Math.round(R.width*f)}px!important;height:${Math.round(R.height*f)}px!important;z-index:880!important;max-width:none!important;max-height:none!important`);m.invalidateSize({pan:false})}}
   const cw=mc.clientWidth,ch=mc.clientHeight,asp=mm.w/mm.h,fw=Math.min(cw-16,(ch-16)*asp),fh=fw/asp,px=(cw-fw)/2,py=(ch-fh)/2,pad=Math.max(8,fw*.025);
   const bb=L.geoJSON({type:'FeatureCollection',features:b.fs}).getBounds();zs0=m.options.zoomSnap;m.options.zoomSnap=0; /* 블록이 칸에 꽉 차게: 줌을 0.5 단위로 끊지 않음(2026-11-13) */
   m.fitBounds(bb,{paddingTopLeft:[px+pad,py+pad],paddingBottomRight:[px+pad,py+pad],animate:false,maxZoom:18});
-  await vpWait(BP.o.hq?2200:1500);
+  await vpWait(big?2200:1500);
   const kk=Math.max(1,Math.min(3,mm.w*dpm/fw));
   /* 관로 검정 선·경계선은 지도 캡처 안(블록 칸 400 위·시설물 칸 440 아래, 420)에 그려 유량계·밸브 아이콘이 선 위에 오게 함 */
   if(pk){let pn=m.getPane('bpPk');if(!pn){pn=m.createPane('bpPk');pn.style.zIndex=420;pn.style.pointerEvents='none'}
@@ -3204,7 +3208,7 @@ async function bpShot(b,mm,dpm,info,sc){sc=sc||1;const m=G('map'),mc=m.getContai
    try{leg=await vpLegend({w:q.getWest()-E,e:q.getEast()+E,s:q.getSouth()-E,n:q.getNorth()+E,inF})}catch(e){console.error('현황도 범례',e);leg=[]}
    if(bAuto.length)leg.forEach(x=>{if(x.t==='경계밸브')x.t='경계밸브 (경계 위)'})}
   return{B,B0,src:{x:px*B.k,y:py*B.k,w:fw*B.k,h:fh*B.k},rings,lk,scale,secret,leg,pk,bigP,mt:FA&&FA.n?mt:null,bA:bAuto.length,ptC:ptOld.length>0}}
- finally{if(zs0!==undefined)m.options.zoomSnap=zs0;if(bAuto.length){bAuto.forEach(i=>{if(FA.sk[i]==='bndC')FA.sk[i]='gateC'})}const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
+ finally{if(zs0!==undefined)m.options.zoomSnap=zs0;if(bAuto.length){bAuto.forEach(i=>{if(FA.sk[i]==='bndC')FA.sk[i]='gateC'})}const PHg=G('PH');if(PT)PT.bpK=0;if(ptOld.length)ptOld.forEach(([i,f])=>PT.fill[i]=f);try{F('ptDraw')}catch(_){}if(PHg&&PHg.bpK){PHg.bpK=0;try{F('phDraw')}catch(_){}}const MKg=G('MK');if(MKg&&MKg.bpK){MKg.bpK=0;try{F('mkDraw',true)}catch(_){}}if(FA){FA.bndAll=false;FA.bpLbl=0;FA.bpIn=null;FA.bpSm=0;try{F('facRender')}catch(_){}}if(tmp)tmp.remove();pRm.forEach(l=>{try{l.addTo(m)}catch(_){}});if(big){window.SHOT_DPR=dpr0||0;if(st0==null)mc.removeAttribute('style');else mc.setAttribute('style',st0);m.invalidateSize({pan:false})}}}
 /* ---- 쪽 배치(mm) · 2026-11-12 B안: 범례는 지도 밖, 요약 카드, 아래 띠 = 표(왼쪽) + 그래프(오른쪽) ---- */
 function bpMM(){const [a,c]=VP_PAPER[BP.o.p]||VP_PAPER.A3,l=BP.o.ori!=='p',pw=l?a:c,ph=l?c:a,s=Math.min(pw,ph)/210,m=8*s,fh=6*s,gap=3*s,nr=!!BP.o.nrw,cu=BP.o.cu!==0,tH=nr?(l?(cu?50:40)*s:(cu?46*s+gap+44*s:46*s)):cu?(l?44:50)*s:0;
  const L0={pw,ph,s,m,l,gap,foot:{x:m,y:ph-m-fh,w:pw-2*m,h:fh}},sy=BP.o.sys!==0?11*s:0;L0.syH=sy;
@@ -9381,9 +9385,10 @@ function phDraw(){phTogSync();try{hlBuild()}catch(_){}const MG=PH.V?PH.V.mapG:PH
    k.on('click',()=>{if(ed&&PH.ed.mode==='sel')phEdPick(g);else{phPopOpen(g.id);hlSeenPh(g.ids)}});if(dr){k.on('dragstart',()=>map.closePopup());k.on('dragend',()=>phEdMove(g,k.getLatLng()))}k.addTo(PH.L)});if(ed)phEdHint();return}
  if(ed){PH.ed.clu=true;phEdHint()}
  const yc=phColOn(),cell=74,bk=new Map();for(const g of vis){const p=map.latLngToLayerPoint([g.lat,g.lng]),k=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);let c=bk.get(k);if(!c)bk.set(k,c={n:0,g:0,w:0,la:0,ln:0,b:L.latLngBounds([]),y:new Map()});c.n+=g.n;if(HL.p.size)c.w+=hlPhN(g);if(yc){const y=phYr(g);c.y.set(y,(c.y.get(y)||0)+g.n)}c.g++;c.la+=g.lat*g.n;c.ln+=g.lng*g.n;c.b.extend([g.lat,g.lng])}
- bk.forEach(c=>{const s=c.n<10?36:c.n<100?42:c.n<1000?50:58;let bg='';
-  if(yc){const ys=[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1));if(ys.length===1)bg=`;background:${phYC(ys[0])}`;else{let a=0;bg=';background:conic-gradient('+ys.map(y=>{const b=a+c.y.get(y)/c.n*360,t=`${phYC(y)} ${a.toFixed(1)}deg ${b.toFixed(1)}deg`;a=b;return t}).join(',')+')'}}
-  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc${yc?' yc':''}" style="width:${s}px;height:${s}px${bg}"><i>📷</i>${c.n.toLocaleString()}${c.w?`<b class="hlc">새 ${c.w>99?'99+':c.w}</b>`:''}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장${c.w?` (새로 받은 사진 ${c.w}장)`:''} · 위치 ${c.g.toLocaleString()}곳${yc&&c.y.size>1?' · '+[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1)).map(y=>(y?y+'년 ':'시각 없음 ')+c.y.get(y).toLocaleString()+'장').join(', '):''} — 눌러서 확대`});
+ const bq=PH.bpK?.62:1; /* 소블록 현황도 출력 때(2026-11-26): 묶음 원도 작게, 연도 색 원(conic-gradient)은 캡처에 안 찍혀 흰 테만 남던 것 → 가장 많은 연도 한 색 */
+ bk.forEach(c=>{const s=Math.round((c.n<10?36:c.n<100?42:c.n<1000?50:58)*bq);let bg='';
+  if(yc&&bq<1){const y=[...c.y.keys()].sort((a,b)=>c.y.get(b)-c.y.get(a))[0];bg=`;background:${phYC(y)}`}else if(yc){const ys=[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1));if(ys.length===1)bg=`;background:${phYC(ys[0])}`;else{let a=0;bg=';background:conic-gradient('+ys.map(y=>{const b=a+c.y.get(y)/c.n*360,t=`${phYC(y)} ${a.toFixed(1)}deg ${b.toFixed(1)}deg`;a=b;return t}).join(',')+')'}}
+  const k=L.marker([c.la/c.n,c.ln/c.n],{icon:L.divIcon({className:'ph-ic',iconSize:[s,s],iconAnchor:[s/2,s/2],html:`<div class="phc${yc?' yc':''}" style="width:${s}px;height:${s}px${bq<1?`;font-size:${(11.5*bq).toFixed(1)}px;border-width:2px`:''}${bg}"><i${bq<1?` style="font-size:${(12*bq).toFixed(1)}px"`:''}>📷</i>${c.n.toLocaleString()}${c.w?`<b class="hlc">새 ${c.w>99?'99+':c.w}</b>`:''}</div>`}),zIndexOffset:400,keyboard:false,title:`사진 ${c.n.toLocaleString()}장${c.w?` (새로 받은 사진 ${c.w}장)`:''} · 위치 ${c.g.toLocaleString()}곳${yc&&c.y.size>1?' · '+[...c.y.keys()].sort((a,b)=>(b||-1)-(a||-1)).map(y=>(y?y+'년 ':'시각 없음 ')+c.y.get(y).toLocaleString()+'장').join(', '):''} — 눌러서 확대`});
   k.on('click',()=>{if(c.g===1)map.setView(c.b.getCenter(),Math.max(z+2,17));else map.fitBounds(c.b,{padding:[40,40],maxZoom:19})});k.addTo(PH.L)})}
 function phDrawSoon(){clearTimeout(PH.drawT);PH.drawT=setTimeout(phDraw,60)}
 function phPopOpen(gid,pid){const g=PH.V.mapG.find(x=>x.id===gid);if(!g||!map)return;PH.sel=gid;const box=document.createElement('div');
@@ -15604,11 +15609,11 @@ function mkStroke(g,m,P,draft){g.save();const c=m.c||'#dc2626',lt=c==='#ffffff'|
   g.lineWidth=Math.max(3,fs/4.5);g.strokeStyle=halo;g.fillStyle=c;ls.forEach((s,i)=>{g.strokeText(s,P[0].x,y0+i*lh);g.fillText(s,P[0].x,y0+i*lh)});
   if(draft&&!m.tx){g.strokeStyle=c;g.lineWidth=2;g.beginPath();g.moveTo(P[0].x-9,P[0].y);g.lineTo(P[0].x+9,P[0].y);g.moveTo(P[0].x,P[0].y-9);g.lineTo(P[0].x,P[0].y+9);g.stroke()}
   g.restore();return}
- if(m.t==='ic'){const s=m.s||30,im=mkIcImg(m.k);g.translate(P[0].x,P[0].y);g.rotate((m.r||0)*Math.PI/180);if(draft)g.globalAlpha=.75;
+ if(m.t==='ic'){const s=(m.s||30)*(MK.bpK||1),im=mkIcImg(m.k);g.translate(P[0].x,P[0].y);g.rotate((m.r||0)*Math.PI/180);if(draft)g.globalAlpha=.75;
   if(im)g.drawImage(im,-s/2,-s/2,s,s);else{g.fillStyle='#fff';g.strokeStyle='#dc2626';g.lineWidth=2;g.beginPath();g.arc(0,0,s/2-1,0,7);g.fill();g.stroke()}
   if(draft&&m.r){g.rotate(-(m.r||0)*Math.PI/180);g.strokeStyle='#db2777';g.lineWidth=2;g.setLineDash([4,3]);g.beginPath();g.arc(0,0,s/2+5,0,7);g.stroke()}
   g.restore();
-  if(m.lb){g.save();const fs=mkLbFs(m),ls=String(m.lb).split('\n'),lh=fs*1.2,lc=m.lc||'#111827',lt=lc==='#ffffff'||lc==='#facc15',x=P[0].x+s/2+4,y0=P[0].y-(ls.length-1)*lh/2;
+  if(m.lb){g.save();const fs=mkLbFs(m)*(MK.bpK||1),ls=String(m.lb).split('\n'),lh=fs*1.2,lc=m.lc||'#111827',lt=lc==='#ffffff'||lc==='#facc15',x=P[0].x+s/2+4,y0=P[0].y-(ls.length-1)*lh/2;
    g.font=mkFont(fs);g.textAlign='left';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=Math.max(3,fs/4.5);g.strokeStyle=lt?'rgba(15,23,42,.6)':'rgba(255,255,255,.92)';g.fillStyle=lc;
    ls.forEach((t,i)=>{g.strokeText(t,x,y0+i*lh);g.fillText(t,x,y0+i*lh)});g.restore()}
   return}
