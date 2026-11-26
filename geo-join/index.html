@@ -3712,7 +3712,7 @@ function bpTrendMini(on){const m=G('map');if(!m)return;BT.on=!!on;if(!BT.L){btPa
   const mk=L.marker([pt[1],pt[0]],{pane:'btMini',keyboard:false,icon:L.divIcon({className:'btMini',iconSize:[120,0],iconAnchor:[60,-14],html:sv})});mk.on('click',()=>bp3dAt(b.n));mk.addTo(BT.L)})}
  btMiniVis()}
 function btMiniVis(){const m=G('map');if(!m||!BT.L)return;const on=BT.on&&m.getZoom()>=14;if(on&&!m.hasLayer(BT.L))BT.L.addTo(m);else if(!on&&m.hasLayer(BT.L))m.removeLayer(BT.L)}
-function t3Draw(){if(BT.day)return dayDraw();if(BT.d2)return m2Draw();{const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement(),nb=o&&o.querySelector('.b3d'),lg=o&&o.querySelector('.b3l');if(nb)nb.hidden=true;if(lg)lg.style.display=''}/* 2026-11-26 '유수율 최근 년도가 앞이야': 최근 연도 줄을 앞(월 숫자 쪽), 지난해를 뒤로 */const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)return;const cv=o.querySelector('canvas'),N=bpNrwOf(BT.n);if(!cv||!N)return;
+function t3Draw(){if(BT.day)return dayDraw();if(BT.d2)return m2Draw();{const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement(),lg=o&&o.querySelector('.b3l');if(lg&&lg.dataset.o!=null){lg.innerHTML=lg.dataset.o;delete lg.dataset.o}}{const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement(),nb=o&&o.querySelector('.b3d'),lg=o&&o.querySelector('.b3l');if(nb)nb.hidden=true;if(lg)lg.style.display=''}/* 2026-11-26 '유수율 최근 년도가 앞이야': 최근 연도 줄을 앞(월 숫자 쪽), 지난해를 뒤로 */const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)return;const cv=o.querySelector('canvas'),N=bpNrwOf(BT.n);if(!cv||!N)return;
  const dpr=Math.min(2,window.devicePixelRatio||1),CW=cv.clientWidth||400,CH=cv.clientHeight||260;if(cv.width!==Math.round(CW*dpr)){cv.width=Math.round(CW*dpr);cv.height=Math.round(CH*dpr)}
  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,CW,CH);
  const Y=BP.nrw.years||[],yi=Math.max(0,Y.length-3),Yr=Y.slice(yi),ny=Yr.length,nx=12,last=ny-1,FT='"Noto Sans KR","Malgun Gothic",sans-serif';
@@ -3745,14 +3745,14 @@ function t3Draw(){if(BT.day)return dayDraw();if(BT.d2)return m2Draw();{const o=B
 const DAY_JUMP=1.2;
 /* 2026-11-26 '2D 그래프 보기는?': 월별 평면 그래프 — 막대 유수율(올해 색·지난해 회색 나란히), 빨강 야간최소·파랑 공급량 선(지난해 회색 점선, 선은 각자 낮은 값~높은 값 높낮이), 막대 누르면 그 달 일별 */
 function m2Draw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)return;const cv=o.querySelector('canvas'),N=bpNrwOf(BT.n);if(!cv||!N)return;
- {const nb=o.querySelector('.b3d'),lg=o.querySelector('.b3l');if(nb)nb.hidden=true;if(lg)lg.style.display=''}
+ {const nb=o.querySelector('.b3d'),lg=o.querySelector('.b3l');if(nb)nb.hidden=true;if(lg){lg.style.display='';if(lg.dataset.o==null)lg.dataset.o=lg.innerHTML;const yy=(BP.nrw.years||[]).slice(-2);lg.innerHTML=`<i style="background:linear-gradient(90deg,#16a34a,#eab308,#dc2626)"></i>막대 유수율(왼쪽 %) <i style="background:#dc2626;height:3px"></i>야간최소 <i style="background:#2563eb;height:3px"></i>공급량(오른쪽 축) <i style="background:#a8b0bc"></i>${yy.length>1?yy[0]+' ':''}지난해(회색) <small>올해 ${yy[yy.length-1]||''} = 색 · 지난해 = 회색(야간 긴 점선 ▫ / 공급 짧은 점선 ○) · 공급량은 오른쪽 ㎥/일 축 · 야간최소는 높낮이만(마우스를 올리면 값) · 막대(달)를 누르면 그 달 일별</small>`}}
  const dpr=Math.min(2,window.devicePixelRatio||1),CW=cv.clientWidth||400,CH=cv.clientHeight||260;if(cv.width!==Math.round(CW*dpr)){cv.width=Math.round(CW*dpr);cv.height=Math.round(CH*dpr)}
  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,CW,CH);const FT='"Noto Sans KR","Malgun Gothic",sans-serif';
  const Y=BP.nrw.years||[],yi=Math.max(0,Y.length-3),Yr=Y.slice(yi),ny=Yr.length,last=ny-1;
  const row=(k,j)=>{const a=(N[k]||[])[yi+j]||[],r=[];for(let m=1;m<=12;m++){const x=a[m];r.push(x==null?null:k==='r'?bpPct(x):x)}return r};
  const V=Yr.map((_,j)=>row('r',j)),Ln={n:Yr.map((_,j)=>row('n',j)),s:Yr.map((_,j)=>row('s',j))};
  const vmax=Math.max(0,...V.flat().filter(v=>v!=null)),zmax=Math.max(100,Math.ceil(vmax/10)*10);
- const L=46,R=20,T=24,B=30,W=CW-L-R,Hh=CH-T-B,gw=W/12,X=i=>L+gw*i,Yv=v=>T+Hh*(1-Math.min(v,zmax)/zmax);
+ const L=46,R=62,T=24,B=30,W=CW-L-R,Hh=CH-T-B,gw=W/12,X=i=>L+gw*i,Yv=v=>T+Hh*(1-Math.min(v,zmax)/zmax);
  g.font=`10px ${FT}`;for(let z=0;z<=zmax;z+=20){const y=Yv(z);g.strokeStyle='rgba(148,163,184,.35)';g.lineWidth=1;g.beginPath();g.moveTo(L,y);g.lineTo(L+W,y);g.stroke();g.fillStyle='#475569';g.textAlign='right';g.fillText(z+'',L-4,y+3)}
  g.fillStyle='#334155';g.font=`bold 10px ${FT}`;g.textAlign='left';g.fillText('유수율 %',L-30,T-10);
  const g1=BP_G()[0];if(g1>0&&g1<=zmax){const y=Yv(g1);g.setLineDash([5,4]);g.strokeStyle='#16a34a';g.lineWidth=1.2;g.beginPath();g.moveTo(L,y);g.lineTo(L+W,y);g.stroke();g.setLineDash([]);g.fillStyle='#15803d';g.textAlign='right';g.font=`bold 10px ${FT}`;g.fillText(`양호 ${g1}%`,L+W,y-4)}
@@ -3760,11 +3760,16 @@ function m2Draw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)retu
  for(let i=0;i<12;i++)for(let j=0;j<ny;j++){const v=V[j][i];if(v==null)continue;const x=X(i)+gw*.1+bw*j,y=Yv(v);g.fillStyle=j===last?t3Col(v):'#a8b0bc';g.fillRect(x,y,bw*.92,T+Hh-y);
   if(j===last){g.fillStyle='#0f172a';g.font=`bold 9px ${FT}`;g.textAlign='center';g.fillText(Math.round(v)+'',x+bw*.46,y-3)}hit.push({x:x+bw*.46,y:Math.max(y,T+8),t:`${Yr[j]}.${i+1}월 유수율 ${v.toFixed(1)}% · 누르면 일별`,ym:[Yr[j],i+1]})}
  const rg=k=>{const a=Ln[k].flat().filter(v=>v!=null);return a.length?[Math.min(...a),Math.max(...a)]:[0,0]};
- [['n','#dc2626','야간최소',v=>v.toFixed(1)+'㎥/h'],['s','#2563eb','공급량',v=>Math.round(v).toLocaleString()+'㎥/일']].forEach(([k,c1,nm,fv])=>{const[lo,hi]=rg(k);if(!(hi>0))return;const sp=hi-lo||hi||1,Z=v=>T+Hh*(1-(.25+.7*(v-(hi>lo?lo:0))/sp));
-  Ln[k].forEach((a,j)=>{const cl=j===last?c1:'#9ca3af';g.strokeStyle=cl;g.lineWidth=j===last?2.2:1.4;g.setLineDash(j===last?[]:[4,3]);g.beginPath();let st=0;a.forEach((v,i)=>{if(v==null){st=0;return}const x=X(i)+gw/2;st?g.lineTo(x,Z(v)):g.moveTo(x,Z(v));st=1});g.stroke();g.setLineDash([]);
-   a.forEach((v,i)=>{if(v==null)return;const x=X(i)+gw/2;g.fillStyle='#fff';g.beginPath();g.arc(x,Z(v),j===last?2.8:2,0,7);g.fill();g.strokeStyle=cl;g.lineWidth=1.4;g.stroke();hit.push({x,y:Z(v),t:`${Yr[j]}.${i+1}월 ${nm} ${fv(v)}`,ym:[Yr[j],i+1]})})})});
+ /* 2026-11-26 사용자 '선그래프도 작년 회색, 최근년도는 색상, 오른쪽에는 공급량 보조지표': 공급량은 오른쪽 보조 축(0~실제 ㎥/일)에 그림 · 지난해 선은 회색(야간 긴 점선+네모 / 공급 짧은 점선+동그라미)으로 둘을 구분 · 야간최소는 높낮이만(낮은 값~높은 값) */
+ const nice=x=>{if(!(x>0))return 1;const q=10**Math.floor(Math.log10(x)),f=x/q;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*q};
+ const sHi=rg('s')[1],sMax=sHi>0?nice(sHi*1.08):0;
+ if(sMax>0){g.font=`10px ${FT}`;g.textAlign='left';g.fillStyle='#1d4ed8';for(let i=0;i<=5;i++){const v=sMax*i/5,y=T+Hh*(1-i/5);g.strokeStyle='#93c5fd';g.lineWidth=1;g.beginPath();g.moveTo(L+W,y);g.lineTo(L+W+4,y);g.stroke();g.fillText(v>=1e4?(v/1e3).toLocaleString()+'천':Math.round(v).toLocaleString(),L+W+6,y+3)}
+  g.strokeStyle='#93c5fd';g.beginPath();g.moveTo(L+W,T);g.lineTo(L+W,T+Hh);g.stroke();g.font=`bold 10px ${FT}`;g.textAlign='right';g.fillText('공급량 ㎥/일',L+W+R-2,T-10)}
+ [['n','#dc2626','야간최소',v=>v.toFixed(1)+'㎥/h',[6,3],'sq'],['s','#2563eb','공급량',v=>Math.round(v).toLocaleString()+'㎥/일',[2,3],'ci']].forEach(([k,c1,nm,fv,dash,mk])=>{const[lo,hi]=rg(k);if(!(hi>0))return;let Z;if(k==='s')Z=v=>T+Hh*(1-v/sMax);else{const sp=hi-lo||hi||1;Z=v=>T+Hh*(1-(.25+.7*(v-(hi>lo?lo:0))/sp))}
+  [...Ln[k].keys()].sort((a,b)=>(a===last)-(b===last)).forEach(j=>{const a=Ln[k][j],cl=j===last?c1:'#8b95a3';g.strokeStyle=cl;g.lineWidth=j===last?2.4:1.6;g.setLineDash(j===last?[]:dash);g.beginPath();let st=0;a.forEach((v,i)=>{if(v==null){st=0;return}const x=X(i)+gw/2;st?g.lineTo(x,Z(v)):g.moveTo(x,Z(v));st=1});g.stroke();g.setLineDash([]);
+   a.forEach((v,i)=>{if(v==null)return;const x=X(i)+gw/2,y=Z(v),r=j===last?3:2.4;g.fillStyle=j===last?'#fff':'#e5e7eb';g.beginPath();if(mk==='sq')g.rect(x-r,y-r,r*2,r*2);else g.arc(x,y,r,0,7);g.fill();g.strokeStyle=cl;g.lineWidth=1.4;g.stroke();hit.push({x,y,t:`${Yr[j]}.${i+1}월 ${nm} ${fv(v)}`,ym:[Yr[j],i+1]})})})});
  g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let i=0;i<12;i++)g.fillText((i+1)+'월',X(i)+gw/2,T+Hh+14);
- g.textAlign='right';g.font=`bold 10.5px ${FT}`;let lx=L+W;[...Yr].reverse().forEach((yy,k)=>{const j=last-k;const tw=g.measureText(String(yy)).width;g.fillStyle=j===last?'#3730a3':'#64748b';g.fillText(String(yy),lx,T-10);g.fillStyle=j===last?'#7c3aed':'#a8b0bc';g.fillRect(lx-tw-12,T-18,9,9);lx-=tw+22});
+ g.textAlign='right';g.font=`bold 10.5px ${FT}`;let lx=L+W-4;[...Yr].reverse().forEach((yy,k)=>{const j=last-k;const tw=g.measureText(String(yy)).width;g.fillStyle=j===last?'#3730a3':'#64748b';g.fillText(String(yy),lx,T-10);g.fillStyle=j===last?'#7c3aed':'#a8b0bc';g.fillRect(lx-tw-12,T-18,9,9);lx-=tw+22});
  BT.hit=hit;BT.m2c={L,gw,y:Yr[last]}}
 function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)return;const cv=o.querySelector('canvas'),D=bpDayOf(BT.n),nb=o.querySelector('.b3d');if(!cv)return;
  if(nb){const no=!!BT.day.none;nb.querySelectorAll('[data-b3="dp"],[data-b3="dn"]').forEach(b=>b.hidden=no);const di=nb.querySelector('[data-b3="din"]');if(di)di.hidden=!no}
