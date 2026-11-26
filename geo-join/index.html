@@ -879,6 +879,7 @@ progress{width:100%;height:10px;accent-color:#4f46e5}
  .lr-t{width:100%;table-layout:fixed;border-collapse:collapse;font-size:8.5pt;overflow-wrap:anywhere;word-break:keep-all}.lr-t th{background:#eef2ff;text-align:left}.lr-t th,.lr-t td{border:1px solid #cbd5e1;padding:1.2mm 2mm;vertical-align:top}.lr-t tr{break-inside:avoid}.lr-t small{color:#64748b}
  .lr-cover h1{font-size:24pt;margin:10mm 0 3mm;color:#1e1b4b}.lr-toc{max-width:150mm}.lr-sub{color:#475569;margin:0 0 6mm}.lr-sum{margin:0 0 5mm;font-size:10.5pt}
  .lr-lg{display:flex;gap:5mm;flex-wrap:wrap;font-size:9pt;margin:5mm 0 2mm}.lr-lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}.lr-note{font-size:8.5pt;color:#475569;line-height:1.6}}
+.mzLbl span{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font:700 11px 'Noto Sans KR',sans-serif;color:#15803d;text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 3px #fff;pointer-events:none}
 .blk-save{display:flex;flex-direction:column;gap:4px;padding:6px 8px;border:1px dashed var(--line2);border-radius:8px}
 #blkSaved,#resSaved{color:var(--emt);font-weight:600}#resSaved.c-sl{color:var(--mute);font-weight:400}
 .bsec{border-left:4px solid #0ea5e9}
@@ -1968,6 +1969,11 @@ html.qzon,html.qzon body{overflow:hidden!important}
    <div class="sbtns" id="bSaveBtns" hidden><label class="btn ol" title="바뀐 블록만 들어 있는 SHP(.zip)를 올리면 블록명 기준으로 추가·변경합니다">➕ 변경분 반영<input type="file" id="bUpd" accept=".zip" hidden></label><button id="bUndo" type="button" class="btn ol" hidden>↩ 되돌리기</button><button id="bHistBtn" type="button" class="btn ol">📜 이력</button></div>
    <div id="bHistBox" class="hint histbox" hidden></div>
    <button id="blkForget" type="button" class="btn ol" style="width:auto;padding:4px 10px;font-size:12px" hidden>🗑 저장된 경계 지우기</button></div>
+  <div class="blk-save" id="mzBox" style="margin-top:6px;border-color:#16a34a"><b style="font-size:13px">💧 유량계구역 경계 <small style="font-weight:400;color:var(--mute)">선택 · 지도에 초록 1점쇄선</small></b>
+   <div class="sbtns"><label class="btn ol" title="유량계구역(소블럭유량계구역 등) 면 SHP(.zip)를 올립니다. 이미 있으면 통째로 바꿉니다(이전 버전 1개 보관)">📂 SHP(.zip) 올리기<input type="file" id="mzFile" accept=".zip" hidden></label><button type="button" class="btn ol" id="mzEdit" disabled title="🛠 편집 › 🗺️ 소블록 탭에서 고칠 대상을 💧 유량계구역으로 열기">🛠 경계 고치기</button><button type="button" class="btn ol" id="mzUndoB" hidden>⏪ 이전 버전</button></div>
+   <div class="g2"><label class="f">구역 이름 칸<select id="mzField" disabled></select></label><label class="ck" style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:14px"><input type="checkbox" id="mzOn" checked> 지도에 보이기</label></div>
+   <p class="hint" id="mzMsg" style="margin:0">유량계구역 경계가 없습니다. 고친 경계는 소블록 경계와 함께 백업·직원 공유(기준자료)에 들어갑니다.</p>
+   <button id="mzForget" type="button" class="btn ol" style="width:auto;padding:4px 10px;font-size:12px" hidden>🗑 유량계구역 지우기</button></div>
  </div>
 
  <div class="sec">
@@ -2558,6 +2564,7 @@ const selSet=(id,on,def)=>{const e=$(id);if(!e)return;const v=on?(e.dataset.gwLa
 const LAY=[
  {g:'기준자료'},
  {k:'blk',n:'소블록 경계',s:'#ea580c',c:()=>{const p=G('poly');return p&&p.features?p.features.length:0},on:()=>{const m=G('map'),l=G('polyL');return !!(m&&l&&m.hasLayer(l))},set:o=>{const m=G('map'),l=G('polyL');if(!m||!l)return;o?l.addTo(m):m.removeLayer(l)}},
+ {k:'mz',n:'유량계구역 경계',s:'#16a34a',c:()=>{const m=G('MZ');return m&&m.fc?m.fc.features.length:0},on:()=>{const m=G('MZ');return !!m&&!!m.on},set:o=>F('mzSetOn',!!o)},
  {k:'pipe',n:'상수관로',s:'#2563eb',c:()=>{const p=G('PIPE');return p?p.feats.length:0},on:()=>selOn('pShow'),set:o=>selSet('pShow',o,'auto'),ok:()=>!$('pPanel').hidden},
  /* 2026-11-26 사용자 '레이어에서 최근관로 끄기': 🟣 별도 관리(최근) 관로를 상수관로 바로 아래로, ▸ 펼치면 관로·🆕·❌ 따로 켜고 끄기 */
  {k:'p2',get n(){const p=G('P2'),v=p&&p.v;return '최근 관로 (별도'+(v&&v.base?' · '+v.base:'')+')'},s:'#d946ef',c:()=>F('p2Count')||0,on:()=>{const r=G('P2');return !!r&&!!r.on},set:o=>F('p2SetOn',!!o)},
@@ -7237,12 +7244,12 @@ function blkFieldOk(k){const n=((poly&&poly.features)||[]).length;if(!k)return f
 function blkFieldAuto(keys){return keys.find(k=>/^(BLK_NM|WBB_NAM)$/i.test(k)&&blkFieldOk(k))||keys.find(k=>/소블록|블록|BLK|NM|NAME/i.test(k)&&blkFieldOk(k))||keys.find(k=>blkFieldOk(k))||keys.find(k=>/^(BLK_NM|WBB_NAM)$/i.test(k))||keys[0]||''}
 function blkFieldSet(k){const sel=$('blkField');if(!k||![...sel.options].some(o=>o.value===k))return false;if(!blkFieldOk(k)){if(sel.value!==k)$('shpMsg').textContent+=` · 저장된 블록명 칸 ${k}는 경계마다 이름이 갈리지 않아 ${sel.value}(으)로 바꿨습니다.`;return false}sel.value=k;drawLabels();return true}
 let blkPT=null;function blkPersist(){if(blkRestoring||!rawFC||!$('blkKeep').checked)return;clearTimeout(blkPT);blkPT=setTimeout(async()=>{
- const v={name:blkFile||(await IDB.get('blocks').catch(()=>null)||{}).name||'소블록 경계',at:Date.now(),crs:$('crs').value,field:$('blkField').value,fc:rawFC,hist:BLK_HIST};
+ const v={name:blkFile||(await IDB.get('blocks').catch(()=>null)||{}).name||'소블록 경계',at:Date.now(),crs:$('crs').value,field:$('blkField').value,fc:rawFC,hist:BLK_HIST};if(typeof MZ!=='undefined'&&MZ.rec)v.mz=MZ.rec;
  try{await IDB.set('blocks',v);blkSavedShow(v)}catch(e){$('blkSaved').hidden=false;$('blkSaved').textContent='이 브라우저에 저장하지 못했습니다: '+((e&&e.message)||e)}},400)}
 async function blkRestore(){let v=null;try{v=await IDB.get('blocks')}catch(_){return}if(!v||!v.fc||!v.fc.features||!v.fc.features.length||rawFC)return;
  let fx=false;blkRestoring=true;try{rawFC=v.fc;blkFile=v.name;BLK_HIST=v.hist||[];$('crs').value=v.crs||$('crs').value;buildPoly();
   fx=!!v.field&&!blkFieldSet(v.field)&&v.field!==$('blkField').value;
-  $('shpMsg').textContent='💾 저장된 소블록 경계를 불러왔습니다. '+$('shpMsg').textContent;blkSavedShow(v)}finally{blkRestoring=false}if(fx)blkPersist()}
+  $('shpMsg').textContent='💾 저장된 소블록 경계를 불러왔습니다. '+$('shpMsg').textContent;blkSavedShow(v)}finally{blkRestoring=false}if(fx)blkPersist();try{mzFromBlocks(v)}catch(e){console.warn('유량계구역',e)}}
 $('blkKeep').onchange=()=>{try{localStorage.setItem('geo-blkkeep',$('blkKeep').checked?'1':'0')}catch(_){}if($('blkKeep').checked)blkPersist()};
 $('blkForget').onclick=async()=>{if(!confirm('이 PC에 저장된 소블록 경계를 지울까요? 지금 화면의 경계는 그대로 남습니다.'))return;try{await IDB.del('blocks');await IDB.del('blocks_prev')}catch(_){}BLK_HIST=[];blkSavedShow(null)};
 try{if(localStorage.getItem('geo-blkkeep')==='0')$('blkKeep').checked=false}catch(_){}
@@ -8335,7 +8342,7 @@ async function shpCpg(buf){try{if(typeof JSZip==='undefined'||!buf)return buf;co
  return ch?await z.generateAsync({type:'arraybuffer'}):buf}catch(_){return buf}}
 const shpR=async b=>shp(await shpCpg(b));
 /* 워터넷 등 GIS 통째 추출 zip: 관로가 아닌 선 레이어(밸브실 테두리·폐관·가상연결관), 소블록 경계와 겹치는 다른 면 레이어(시군·읍면동·중블록·관리블록·단수안내용·_개별) */
-const WN_SKIP_LINE=/밸브실|폐관|가상연결|가상관/,WN_SKIP_POLY=/시군|읍면동|중블록|대블록|관리블록|단수안내|_개별$/;
+const WN_SKIP_LINE=/밸브실|폐관|가상연결|가상관/,WN_SKIP_POLY=/시군|읍면동|중블록|대블록|관리블록|단수안내|_개별$|유량계\s*구역|계량\s*구역|미터\s*구역/,MZ_RE=/유량계\s*구역|계량\s*구역|미터\s*구역/;
 /* ---------- SHP 읽기: Web Worker (속성 파일이 100MB가 넘어도 화면이 멈추지 않게), 안 되면 화면에서 직접 ---------- */
 let FW_URL=null;
 const SHP_URLS=['https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js','https://unpkg.com/shpjs@4.0.4/dist/shp.min.js'];
@@ -12398,7 +12405,7 @@ function feUi(){if(!FE.bar)return;const b=FE.bar,n=FAC.feats.filter(f=>f.p&&(f.p
  <div class="fem hint">${FE.sel>=0?'':FE.tool==='add'?(FE.cross?'지도를 움직여 십자선을 놓을 자리에 맞추고 📍 여기에 놓기를 누르세요.':'지도에서 놓을 자리를 누르세요. 관로 가까이 누르면 관로 위에 붙습니다.'):(FE.cross?'시설을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 여기에 놓기를 누르세요.':'시설을 눌러 고르세요. 고른 시설은 끌어서 옮길 수 있습니다.')}</div>${FE.sel>=0?feFormHtml(FE.sel):''}`;
  if(FE.cross)feCrossUpd()}
 async function feAct(e,btn){const E=btn.dataset.e,T=btn.dataset.t;
- if(btn.dataset.o){if(FE.obj==='blk'&&btn.dataset.o!=='blk'&&BE.draft.size&&!confirm(`반영하지 않은 소블록 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 넘어갈까요?`))return;if(btn.dataset.o!=='blk'){BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null}
+ if(btn.dataset.o){if(FE.obj==='blk'&&btn.dataset.o!=='blk'&&BE.draft.size&&!confirm(`반영하지 않은 ${beWho()} 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 넘어갈까요?`))return;if(btn.dataset.o!=='blk'){BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null}
   FE.obj=btn.dataset.o;FE.sel=-1;FE.last=null;PE.sel=-1;PE.v=null;PE.draw=[];feShow(null);feUi();facDraw();peMarks();peDraw();beDraw();return}
  if(FE.obj==='pipe'&&(btn.dataset.pe||btn.dataset.pt))return peAct(btn);
  if(FE.obj==='blk'&&btn.dataset.be)return beAct(btn);
@@ -13851,18 +13858,21 @@ window.peOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='pipe';PE.tool=
  고치는 동안은 BE.draft(블록 번호 → 새 좌표, WGS84)에만 담아 두고, ✔ 반영을 누르면 미리보기(바뀐 블록·블록이 바뀔 수용가 수) → 적용.
  적용 = 기존 변경분 반영과 같은 길(blkApply: 이전 버전 1개 보관 → ↶ 되돌리기, 이력, 수용가 다시 결합, 블록 바뀐 수용가 엑셀).
  이웃 블록과 같은 자리(0.3m 안)의 꼭짓점은 함께 움직여 틈·겹침이 생기지 않게 함(🔗 이웃 함께). 공유 = 기준자료 'blocks' 통째(자동 동기화면 20초 뒤 자동 올리기). */
-var BE={sel:-1,v:null,drag:null,draft:new Map(),undo:[],link:true,hL:null,tapAt:0,tm:0,raf:0};
+var BE={tg:'blk',sel:-1,v:null,drag:null,draft:new Map(),undo:[],link:true,hL:null,tapAt:0,tm:0,raf:0};
 const BE_VHIT=16,BE_MHIT=13,BE_LINK=.3;
-const beOk=()=>!!(poly&&poly.features&&poly.features.length);
-const beName=fi=>{const f=poly&&poly.features[fi];if(!f)return '';return String(f.properties[$('blkField').value]??'').trim()||('블록 '+(fi+1))};
-const beCo=fi=>BE.draft.get(fi)||poly.features[fi].geometry.coordinates;
+/* 2026-11-25 💧 유량계구역 경계도 같은 도구로 고침: BE.tg = 'blk'(소블록) | 'mz'(유량계구역) */
+const beFC=()=>BE.tg==='mz'?MZ.fc:poly;
+const beOk=()=>{const P=beFC();return !!(P&&P.features&&P.features.length)};
+const beName=fi=>{const P=beFC(),f=P&&P.features[fi];if(!f)return '';const mz=BE.tg==='mz';return String(f.properties[mz?(MZ.rec&&MZ.rec.field):$('blkField').value]??'').trim()||((mz?'구역 ':'블록 ')+(fi+1))};
+const beWho=()=>BE.tg==='mz'?'구역':'블록';
+const beCo=fi=>BE.draft.get(fi)||beFC().features[fi].geometry.coordinates;
 /* 블록의 고리(바깥·구멍) 목록: 닫힌 좌표 배열 그대로 (첫 점 = 끝 점) */
-function beRings(fi,co){const g=poly.features[fi].geometry,c=co||beCo(fi);return g.type==='Polygon'?c:g.type==='MultiPolygon'?c.flat():[]}
+function beRings(fi,co){const g=beFC().features[fi].geometry,c=co||beCo(fi);return g.type==='Polygon'?c:g.type==='MultiPolygon'?c.flat():[]}
 const beClone=c=>JSON.parse(JSON.stringify(c));
-function beEdit(fi){if(!BE.draft.has(fi))BE.draft.set(fi,beClone(poly.features[fi].geometry.coordinates));return BE.draft.get(fi)}
+function beEdit(fi){if(!BE.draft.has(fi))BE.draft.set(fi,beClone(beFC().features[fi].geometry.coordinates));return BE.draft.get(fi)}
 const beM=(a,b)=>{const c=Math.cos(a[1]*Math.PI/180);return Math.hypot((a[0]-b[0])*111320*c,(a[1]-b[1])*110574)};
 /* c 자리(0.3m 안)에 있는 모든 블록의 꼭짓점 [{fi,r,vi}] — 이웃 함께 꺼짐이면 고른 블록 것만 */
-function beLinks(c,only){const L2=[],fs=poly.features,dg=BE_LINK/100000;
+function beLinks(c,only){const L2=[],fs=beFC().features,dg=BE_LINK/100000;
  for(let fi=0;fi<fs.length;fi++){if(only!=null&&fi!==only)continue;const b=fs[fi].properties._bbox;if(b&&(c[0]<b[0]-dg*2||c[0]>b[2]+dg*2||c[1]<b[1]-dg||c[1]>b[3]+dg)&&!BE.draft.has(fi))continue;
   beRings(fi).forEach((ring,r)=>{for(let vi=0;vi<ring.length-1;vi++)if(Math.abs(ring[vi][0]-c[0])<dg*2&&Math.abs(ring[vi][1]-c[1])<dg&&beM(ring[vi],c)<=BE_LINK)L2.push({fi,r,vi})})}
  return L2}
@@ -13870,35 +13880,39 @@ function beSetV(l,c){const ring=beRings(l.fi,beEdit(l.fi))[l.r];ring[l.vi]=[c[0]
 function bePush(){BE.undo.push(new Map([...BE.draft].map(([k,v])=>[k,beClone(v)])));if(BE.undo.length>50)BE.undo.shift()}
 /* 누른 자리의 블록 (안쪽) */
 function beHit(cp){if(!beOk())return -1;const ll=map.containerPointToLatLng(cp),x=ll.lng,y=ll.lat,pt=turf.point([x,y]);let best=-1,ba=Infinity;
- poly.features.forEach((f,fi)=>{const b=f.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3])&&!BE.draft.has(fi))return;
+ beFC().features.forEach((f,fi)=>{const b=f.properties._bbox;if(b&&(x<b[0]||x>b[2]||y<b[1]||y>b[3])&&!BE.draft.has(fi))return;
   try{if(turf.booleanPointInPolygon(pt,{type:'Feature',geometry:{type:f.geometry.type,coordinates:beCo(fi)}})){const a=(b[2]-b[0])*(b[3]-b[1]);if(a<ba){ba=a;best=fi}}}catch(_){}});return best}
 /* 놓을 자리: 다른 블록 꼭짓점 > 다른 블록 경계선 > 시설물(밸브 등) > 관로 선 (자석 켜짐일 때) */
 function beSnapAt(cp,ex){const ll=map.containerPointToLatLng(cp),q=[ll.lng,ll.lat];if(!FE.snap)return{lat:ll.lat,lng:ll.lng,raw:1};const m=feMpp(),exs=new Set((ex||[]).map(l=>l.fi+'|'+l.r+'|'+l.vi));
  let bv=12*m,bvc=null,bvn='',be=10*m,bec=null,ben='';const c=Math.cos(ll.lat*Math.PI/180),kx=111320*c,ky=110574;
- poly.features.forEach((f,fi)=>{const b=f.properties._bbox,dg=bv/100000;if(b&&(q[0]<b[0]-dg*2||q[0]>b[2]+dg*2||q[1]<b[1]-dg||q[1]>b[3]+dg)&&!BE.draft.has(fi))return;
+ beFC().features.forEach((f,fi)=>{const b=f.properties._bbox,dg=bv/100000;if(b&&(q[0]<b[0]-dg*2||q[0]>b[2]+dg*2||q[1]<b[1]-dg||q[1]>b[3]+dg)&&!BE.draft.has(fi))return;
   beRings(fi).forEach((ring,r)=>{for(let vi=0;vi<ring.length-1;vi++){if(exs.has(fi+'|'+r+'|'+vi))continue;const d=beM(ring[vi],q);if(d<bv){bv=d;bvc=ring[vi];bvn=beName(fi)}}
    for(let vi=1;vi<ring.length;vi++){const A=ring[vi-1],B=ring[vi];if(exs.has(fi+'|'+r+'|'+(vi-1))||exs.has(fi+'|'+r+'|'+(vi%(ring.length-1))))continue;
     const bx=(B[0]-A[0])*kx,by=(B[1]-A[1])*ky,L2=bx*bx+by*by;if(!L2)continue;let t=((q[0]-A[0])*kx*bx+(q[1]-A[1])*ky*by)/L2;t=t<0?0:t>1?1:t;const d=Math.hypot((q[0]-A[0])*kx-t*bx,(q[1]-A[1])*ky-t*by);if(d<be){be=d;bec=[A[0]+t*(B[0]-A[0]),A[1]+t*(B[1]-A[1])];ben=beName(fi)}}})});
+ if(BE.tg==='mz'&&poly&&poly.features){const bf=$('blkField').value;poly.features.forEach(f=>{const b=f.properties._bbox,dg=Math.max(bv,be)/100000;if(b&&(q[0]<b[0]-dg*2||q[0]>b[2]+dg*2||q[1]<b[1]-dg||q[1]>b[3]+dg))return;const g=f.geometry,rs=g.type==='Polygon'?g.coordinates:g.type==='MultiPolygon'?g.coordinates.flat():[],nm='소블록 '+(String(f.properties[bf]??'').trim()||'');
+  rs.forEach(ring=>{for(let vi=0;vi<ring.length-1;vi++){const d=beM(ring[vi],q);if(d<bv){bv=d;bvc=ring[vi];bvn=nm}}
+   for(let vi=1;vi<ring.length;vi++){const A=ring[vi-1],B=ring[vi],bx=(B[0]-A[0])*kx,by=(B[1]-A[1])*ky,L2=bx*bx+by*by;if(!L2)continue;let t=((q[0]-A[0])*kx*bx+(q[1]-A[1])*ky*by)/L2;t=t<0?0:t>1?1:t;const d=Math.hypot((q[0]-A[0])*kx-t*bx,(q[1]-A[1])*ky-t*by);if(d<be){be=d;bec=[A[0]+t*(B[0]-A[0]),A[1]+t*(B[1]-A[1])];ben=nm}}})})}
  if(bvc)return{lat:bvc[1],lng:bvc[0],bv:bvn};if(bec)return{lat:bec[1],lng:bec[0],be:ben};
  const s=peSnapAt(cp,-1,false);if(!s.raw)return s;return{lat:ll.lat,lng:ll.lng,raw:1}}
 function beSnapTxt(s){if(!s)return '';if(s.bv)return `🧲 ${esc(s.bv)} 경계 꼭짓점에 붙음`;if(s.be)return `🧲 ${esc(s.be)} 경계선에 붙음`;if(s.raw)return FE.snap?'붙을 경계·시설물·관로가 가까이 없습니다':'🧲 자석 꺼짐';return peSnapTxt(s)}
 function beLayers(){if(!BE.hL)BE.hL=L.layerGroup().addTo(map)}
 /* 고친 블록(주황 실선)·고른 블록 꼭짓점(흰 점, 이웃과 같이 쓰는 점은 파란 점)·선 가운데 작은 점 */
 function beDraw(){if(!map)return;beLayers();BE.hL.clearLayers();if(!FE.on||FE.obj!=='blk'||!beOk())return;const o={pane:'fePane',interactive:false};
- for(const [fi,co] of BE.draft){const ty=poly.features[fi].geometry.type;L.geoJSON({type:ty,coordinates:co},{...o,style:{color:'#ea580c',weight:3,opacity:.95,fill:true,fillColor:'#fb923c',fillOpacity:.07}}).addTo(BE.hL)}
- if(BE.sel<0||!poly.features[BE.sel])return;const rings=beRings(BE.sel);
+ for(const [fi,co] of BE.draft){const ty=beFC().features[fi].geometry.type;L.geoJSON({type:ty,coordinates:co},{...o,style:{color:'#ea580c',weight:3,opacity:.95,fill:true,fillColor:'#fb923c',fillOpacity:.07}}).addTo(BE.hL)}
+ if(BE.sel<0||!beFC().features[BE.sel])return;const rings=beRings(BE.sel);
  rings.forEach(ring=>{const ll=ring.map(c=>[c[1],c[0]]);L.polyline(ll,{...o,color:'#facc15',weight:9,opacity:.5}).addTo(BE.hL);L.polyline(ll,{...o,color:'#f97316',weight:2.5,opacity:.95,dashArray:'6 4'}).addTo(BE.hL)});
  const z=map.getZoom(),many=rings.reduce((s,r)=>s+r.length,0)>400&&z<16;
  rings.forEach((ring,r)=>{if(!many)for(let vi=1;vi<ring.length;vi++){const a=ring[vi-1],b=ring[vi];L.circleMarker([(a[1]+b[1])/2,(a[0]+b[0])/2],{...o,radius:3.5,color:'#f97316',weight:1.2,fillColor:'#fff',fillOpacity:.75,dashArray:'2 2'}).addTo(BE.hL)}
   for(let vi=0;vi<ring.length-1;vi++){const c=ring[vi],on=BE.v&&BE.v.r===r&&BE.v.vi===vi,sh=BE.link&&beShared(c);
    L.circleMarker([c[1],c[0]],{...o,radius:on?7:5.5,color:on?'#dc2626':sh?'#2563eb':'#f97316',weight:on?3.5:2.2,fillColor:on?'#fecaca':sh?'#bfdbfe':'#fff',fillOpacity:1}).addTo(BE.hL)}})}
 const beShared=c=>beLinks(c).some(l=>l.fi!==BE.sel);
-function beUiHtml(){const ok=beOk(),cx=FE.cross,n=BE.draft.size;
- const msg=!ok?'소블록 경계 자료가 없습니다. ① 소블록 경계에서 SHP를 먼저 올리세요.':BE.sel<0?'고칠 블록 안쪽을 누르세요.'+(n?` 고친 블록 <b>${n}</b>개는 ✔ 반영을 눌러야 저장됩니다.`:'')
-  :(cx?'꼭짓점을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘어납니다. 파란 점은 이웃 블록과 같이 쓰는 점이라 '+(BE.link?'이웃 경계도 함께 움직입니다.':'(🔗 꺼짐: 이 블록만 움직임)')+' 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
- return `<div class="r"><button type="button" data-be="link" class="${BE.link?'on':''}" aria-pressed="${BE.link}" title="이웃 블록과 같은 자리의 꼭짓점을 함께 움직이기 (틈·겹침 방지)">🔗 이웃 함께 ${BE.link?'켜짐':'꺼짐'}</button><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="다른 블록 꼭짓점·경계선, 시설물, 관로에 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${cx?'on':''}" aria-pressed="${cx}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${cx&&BE.v?'<button type="button" data-be="place" class="on">📍 꼭짓점 여기로</button>':''}${BE.v?'<button type="button" data-be="vdel" class="del">✖ 꼭짓점 지우기</button>':''}</div>
- <div class="r"><button type="button" data-be="apply" class="on"${n?'':' disabled'} title="바뀐 블록과 블록이 바뀔 수용가를 미리 보고 저장">✔ 반영${n?` (${n})`:''}</button><button type="button" data-be="back"${BE.undo.length?'':' disabled'} title="반영 전 마지막 한 동작 취소">↶ 한 단계</button><button type="button" data-be="drop"${n?'':' disabled'}>✕ 고친 것 버리기</button><button type="button" data-be="prev" title="반영한 경계를 바로 이전 버전으로">⏪ 이전 버전으로</button></div>
- <div class="fem hint">${msg}</div>${BE.sel>=0&&ok?`<div class="fef"><div class="r"><b>🗺️ ${esc(beName(BE.sel))}</b>${BE.draft.has(BE.sel)?'<span class="feb">✏️ 고침 (반영 전)</span>':''}</div><div class="hint">꼭짓점 ${beRings(BE.sel).reduce((s,r)=>s+r.length-1,0)}개${BE.v?` · <b>고른 꼭짓점 ${BE.v.vi+1}번</b>`:''}</div><div class="r"><button type="button" data-be="desel">닫기</button></div></div>`:''}`}
+function beUiHtml(){const ok=beOk(),cx=FE.cross,n=BE.draft.size,mz=BE.tg==='mz',W=beWho();
+ const tg=`<div class="r"><span class="hint" style="margin:0">고칠 대상</span><button type="button" data-be="tg" data-v="blk" class="${mz?'':'on'}" aria-pressed="${!mz}">🗺️ 소블록 경계</button><button type="button" data-be="tg" data-v="mz" class="${mz?'on':''}" aria-pressed="${mz}" title="초록 1점쇄선 유량계구역 경계">💧 유량계구역</button></div>`;
+ const msg=!ok?(mz?'유량계구역 경계 자료가 없습니다. ② 소블록 경계 칸 아래 💧 유량계구역 경계에서 SHP(.zip)를 먼저 올리세요.':'소블록 경계 자료가 없습니다. ① 소블록 경계에서 SHP를 먼저 올리세요.'):BE.sel<0?`고칠 ${W} 안쪽을 누르세요.`+(mz?' 꼭짓점은 소블록 경계에도 붙습니다(🧲).':'')+(n?` 고친 ${W} <b>${n}</b>개는 ✔ 반영을 눌러야 저장됩니다.`:'')
+  :(cx?'꼭짓점을 눌러 고른 뒤 십자선을 새 자리에 맞추고 📍 꼭짓점 여기로를 누르세요.':'꼭짓점(흰 점)을 끌어 옮기세요. 선 가운데 작은 점을 끌면 꼭짓점이 늘어납니다. 파란 점은 이웃 '+W+'과 같이 쓰는 점이라 '+(BE.link?'이웃 경계도 함께 움직입니다.':'(🔗 꺼짐: 이 '+W+'만 움직임)')+' 꼭짓점을 누르면 골라져 ✖ 지울 수 있습니다.');
+ return tg+`<div class="r"><button type="button" data-be="link" class="${BE.link?'on':''}" aria-pressed="${BE.link}" title="이웃 ${W}과 같은 자리의 꼭짓점을 함께 움직이기 (틈·겹침 방지)">🔗 이웃 함께 ${BE.link?'켜짐':'꺼짐'}</button><button type="button" data-e="snap" class="${FE.snap?'on':''}" aria-pressed="${FE.snap}" title="다른 블록 꼭짓점·경계선, 시설물, 관로에 붙이기">🧲 자석 ${FE.snap?'켜짐':'꺼짐'}</button><button type="button" data-e="cross" class="${cx?'on':''}" aria-pressed="${cx}" title="지도 가운데 십자선에 맞춘 뒤 놓기 (폰에서 손가락에 가리지 않게)">⊕ 십자선</button>${cx&&BE.v?'<button type="button" data-be="place" class="on">📍 꼭짓점 여기로</button>':''}${BE.v?'<button type="button" data-be="vdel" class="del">✖ 꼭짓점 지우기</button>':''}</div>
+ <div class="r"><button type="button" data-be="apply" class="on"${n?'':' disabled'} title="바뀐 ${W}${mz?'':'과 블록이 바뀔 수용가'}를 미리 보고 저장">✔ 반영${n?` (${n})`:''}</button><button type="button" data-be="back"${BE.undo.length?'':' disabled'} title="반영 전 마지막 한 동작 취소">↶ 한 단계</button><button type="button" data-be="drop"${n?'':' disabled'}>✕ 고친 것 버리기</button><button type="button" data-be="prev" title="반영한 경계를 바로 이전 버전으로">⏪ 이전 버전으로</button></div>
+ <div class="fem hint">${msg}</div>${BE.sel>=0&&ok?`<div class="fef"><div class="r"><b>${mz?'💧':'🗺️'} ${esc(beName(BE.sel))}</b>${BE.draft.has(BE.sel)?'<span class="feb">✏️ 고침 (반영 전)</span>':''}</div><div class="hint">꼭짓점 ${beRings(BE.sel).reduce((s,r)=>s+r.length-1,0)}개${BE.v?` · <b>고른 꼭짓점 ${BE.v.vi+1}번</b>`:''}</div><div class="r"><button type="button" data-be="desel">닫기</button></div></div>`:''}`}
 function beCrossUpd(){const sz=map.getSize(),cp=L.point(sz.x/2,sz.y/2);const ex=BE.v?beLinks(beRings(BE.sel)[BE.v.r][BE.v.vi],BE.link?null:BE.sel):[];const s=beSnapAt(cp,ex);FE.last=s;feShow(s.raw?null:s);feMsg(beSnapTxt(s))}
 function beClick(cp){if(Date.now()-BE.tapAt<400)return;BE.sel=beHit(cp);BE.v=null;feUi();beDraw()}
 function beDown(e,cp){if(BE.sel<0||!beOk())return false;const rings=beRings(BE.sel);let best=null,bd=BE_VHIT;
@@ -13926,9 +13940,9 @@ function beVDel(){if(BE.sel<0||!BE.v)return;const c=beRings(BE.sel)[BE.v.r][BE.v
  if(ls.some(l=>beRings(l.fi)[l.r].length<=4)){feMsg('꼭짓점이 3개뿐인 경계라 지울 수 없습니다.');return}bePush();
  ls.sort((a,b)=>b.vi-a.vi).forEach(l=>{const rg=beRings(l.fi,beEdit(l.fi))[l.r];rg.splice(l.vi,1);if(l.vi===0)rg[rg.length-1]=[rg[0][0],rg[0][1]]});BE.v=null;feUi();beDraw();feMsg('✖ 꼭짓점을 지웠습니다. ✔ 반영을 눌러야 저장됩니다.')}
 /* ✔ 반영: 바뀐 블록·꼬인 경계·블록이 바뀔 수용가 수 미리보기 → 적용 */
-function beApply(){const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.draft.get(fi))!==JSON.stringify(poly.features[fi].geometry.coordinates));
+function beApply(){if(BE.tg==='mz')return mzApplyDraft();const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.draft.get(fi))!==JSON.stringify(beFC().features[fi].geometry.coordinates));
  if(!ch.length){BE.draft.clear();BE.undo=[];feUi();beDraw();feMsg('바뀐 경계가 없습니다.');return}
- const nf=fi=>({type:'Feature',properties:{},geometry:{type:poly.features[fi].geometry.type,coordinates:BE.draft.get(fi)}}),of=fi=>({type:'Feature',properties:{},geometry:poly.features[fi].geometry});
+ const nf=fi=>({type:'Feature',properties:{},geometry:{type:beFC().features[fi].geometry.type,coordinates:BE.draft.get(fi)}}),of=fi=>({type:'Feature',properties:{},geometry:beFC().features[fi].geometry});
  const kc=f=>{try{return turf.kinks(f).features.length}catch(_){return 0}},kink=ch.filter(fi=>kc(nf(fi))>kc(of(fi)));
  let moved=0,tot=0;if(out.length){const bb=ch.map(fi=>turf.bbox({type:'FeatureCollection',features:[nf(fi),of(fi)]}));
   const inF=(x,y,g)=>{try{return turf.booleanPointInPolygon([x,y],g)}catch(_){return false}};
@@ -13936,7 +13950,7 @@ function beApply(){const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.dr
    const a=ch.find(fi=>inF(x,y,of(fi))),b=ch.find(fi=>inF(x,y,nf(fi)));if(a!==b)moved++}}
  const area=fi=>{try{return turf.area(nf(fi))-turf.area(of(fi))}catch(_){return 0}};
  const html=`<p style="margin:0 0 6px">앱에서 고친 소블록 경계 <b>${ch.length}개</b>를 저장합니다.</p>
-  <table class="dft"><tr><th>블록</th><th class="r">꼭짓점</th><th class="r">넓이 변화</th></tr>${ch.slice(0,30).map(fi=>{const n0=beRings(fi,poly.features[fi].geometry.coordinates).reduce((s,r)=>s+r.length-1,0),n1=beRings(fi).reduce((s,r)=>s+r.length-1,0),d=Math.round(area(fi));return `<tr><td>${esc(beName(fi))}${kink.includes(fi)?' <span class="c-rd">⚠ 꼬임</span>':''}</td><td class="r">${n0}→${n1}</td><td class="r">${d>0?'+':''}${d.toLocaleString()}㎡</td></tr>`}).join('')}</table>
+  <table class="dft"><tr><th>블록</th><th class="r">꼭짓점</th><th class="r">넓이 변화</th></tr>${ch.slice(0,30).map(fi=>{const n0=beRings(fi,beFC().features[fi].geometry.coordinates).reduce((s,r)=>s+r.length-1,0),n1=beRings(fi).reduce((s,r)=>s+r.length-1,0),d=Math.round(area(fi));return `<tr><td>${esc(beName(fi))}${kink.includes(fi)?' <span class="c-rd">⚠ 꼬임</span>':''}</td><td class="r">${n0}→${n1}</td><td class="r">${d>0?'+':''}${d.toLocaleString()}㎡</td></tr>`}).join('')}</table>
   ${kink.length?`<p class="c-rd" style="margin:6px 0 0">⚠ 고치면서 경계선이 새로 꼬인 블록 ${kink.length}개(${kink.map(beName).map(esc).join(', ')}): 수용가 결합이 틀릴 수 있으니 취소하고 꼭짓점을 고쳐 주세요.</p>`:''}
   ${out.length?`<p style="margin:6px 0 0">블록이 바뀔 수용가(위치 기준) <b>${moved.toLocaleString()}</b>명 <small class="mute">(고친 블록 주변 ${tot.toLocaleString()}명 중)</small><br><small class="mute">부과량 Y열 소블록은 바뀌지 않습니다. 적용한 뒤 바뀐 수용가 목록 엑셀을 받을 수 있습니다.</small></p>`:''}
   <div class="dleg"><span style="--c:#f59e0b">고친 경계</span><span style="--c:#94a3b8">원래 경계</span></div>
@@ -13944,8 +13958,8 @@ function beApply(){const ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.dr
  diffOpen('🗺️ 소블록 경계 수정 반영 미리보기',html,[[ch.map(of),'#94a3b8','6 6'],[ch.map(nf),'#f59e0b']],async()=>{
   const names=ch.map(beName),merged=blkCur().map((f,fi)=>BE.draft.has(fi)?{...f,geometry:{type:f.geometry.type,coordinates:BE.draft.get(fi)}}:f);
   BE.draft.clear();BE.undo=[];BE.v=null;const sel=BE.sel;
-  BE.noFit=true;try{await blkApply(merged,'앱에서 경계 수정','',{upd:ch.length})}finally{BE.noFit=false}BE.sel=sel<poly.features.length?sel:-1;
-  try{const c=turf.center({type:'FeatureCollection',features:ch.map(fi=>poly.features[fi])}).geometry.coordinates;chgAdd({k:'ref',mine:1,by:chgMe(),n:ch.length,id:names.slice(0,3).join(', ')+(names.length>3?` 외 ${names.length-3}`:''),tx:`소블록 경계 수정 ${ch.length}개 (${names.slice(0,3).join(', ')}${names.length>3?' …':''})`,ll:[c[1],c[0]]})}catch(_){}
+  BE.noFit=true;try{await blkApply(merged,'앱에서 경계 수정','',{upd:ch.length})}finally{BE.noFit=false}BE.sel=sel<beFC().features.length?sel:-1;
+  try{const c=turf.center({type:'FeatureCollection',features:ch.map(fi=>beFC().features[fi])}).geometry.coordinates;chgAdd({k:'ref',mine:1,by:chgMe(),n:ch.length,id:names.slice(0,3).join(', ')+(names.length>3?` 외 ${names.length-3}`:''),tx:`소블록 경계 수정 ${ch.length}개 (${names.slice(0,3).join(', ')}${names.length>3?' …':''})`,ll:[c[1],c[0]]})}catch(_){}
   beShareSoon();feUi();beDraw();feMsg(`✅ 경계 ${ch.length}개를 저장했습니다.`+(moved?` 블록이 바뀐 수용가 목록은 ① 소블록 경계 카드에서 엑셀로 받을 수 있습니다.`:''))})}
 /* 자동 동기화 켜짐: 20초 뒤 소블록 경계만 공유 서버에 올림 (서버가 더 새것이면 덮지 않고 알림) */
 function beShareSoon(){try{localStorage.setItem('geo-blk-dirty','1')}catch(_){}clearTimeout(BE.tm);try{upBadge()}catch(_){}if(typeof SH==='undefined'||!SH.on()||!SH.cfg.auto)return;BE.tm=setTimeout(()=>beShare().catch(e=>console.warn('소블록 경계 올리기',e)),20000)}
@@ -13958,13 +13972,99 @@ async function beShare(){if(REF.busy){beShareSoon();return}let v=null;try{v=awai
   try{localStorage.setItem('geo-blk-sv',String(v.at));localStorage.removeItem('geo-blk-dirty')}catch(_){}if(typeof phToast==='function')phToast('🗺️ 고친 소블록 경계를 공유 서버에 올렸습니다.')}
  catch(e){feMsg('<span class="c-rd">소블록 경계 자동 올리기 실패: '+esc((e&&e.message)||e)+' · ⏫ 기준자료 올리기로 다시 올려 주세요.</span>')}finally{REF.busy=false}}
 function beAct(btn){const E=btn.dataset.be;
+ if(E==='tg'){const v=btn.dataset.v==='mz'?'mz':'blk';if(v===BE.tg)return;if(BE.draft.size&&!confirm(`반영하지 않은 ${beWho()} 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 넘어갈까요?`))return;
+  BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null;BE.tg=v;if(v==='mz'&&MZ.fc&&!MZ.on)mzSetOn(true);feShow(null);feUi();beDraw();return}
+ if(E==='prev'&&BE.tg==='mz'){if(BE.draft.size){alert('반영하지 않은 수정이 있습니다. 먼저 ✔ 반영하거나 ✕ 버리세요.');return}return mzUndo().then(()=>{BE.sel=-1;BE.v=null;feUi();beDraw()})}
  if(E==='link'){BE.link=!BE.link;feUi();beDraw();return}if(E==='place')return bePlace();if(E==='vdel')return beVDel();
  if(E==='desel'){BE.sel=-1;BE.v=null;feUi();beDraw();return}
  if(E==='back'){if(!BE.undo.length)return;BE.draft=BE.undo.pop();BE.v=null;feUi();beDraw();return}
- if(E==='drop'){if(BE.draft.size&&!confirm(`반영하지 않은 경계 수정 ${BE.draft.size}개를 버릴까요?`))return;BE.draft.clear();BE.undo=[];BE.v=null;feUi();beDraw();return}
+ if(E==='drop'){if(BE.draft.size&&!confirm(`반영하지 않은 ${beWho()} 경계 수정 ${BE.draft.size}개를 버릴까요?`))return;BE.draft.clear();BE.undo=[];BE.v=null;feUi();beDraw();return}
  if(E==='apply')return beApply();
  if(E==='prev'){if(BE.draft.size){alert('반영하지 않은 수정이 있습니다. 먼저 ✔ 반영하거나 ✕ 버리세요.');return}return blkUndo().then(()=>{BE.sel=-1;BE.v=null;feUi();beDraw()})}}
-window.beOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='blk';BE.sel=fi;BE.v=null;feUi();beDraw()};
+window.beOpen=fi=>{map.closePopup();if(!FE.on)feSet(true);FE.obj='blk';if(BE.tg!=='blk'){BE.draft.clear();BE.undo=[];BE.tg='blk'}BE.sel=fi;BE.v=null;feUi();beDraw()};
+/* ===================== 💧 유량계구역 경계 (2026-11-25 A안) =====================
+ 소블럭유량계구역 같은 면 SHP를 두 번째 경계 레이어로 올려 초록 1점쇄선으로 보이고, 🛠 편집 › 🗺️ 소블록 탭에서 고칠 대상 💧 유량계구역으로 고침.
+ 저장: IDB 'mzone'(이 기기) + 소블록 경계 기록(IDB 'blocks')의 mz 칸 → 백업·직원 공유(기준자료 blocks)에 함께 실려 감(공유 서버 고칠 것 없음).
+ 받을 때는 at(고친 시각)이 더 새것일 때만 바꿈. 이전 버전 1개 'mzone_prev'(이 기기). 수용가 결합에는 쓰지 않음. */
+var MZ={rec:null,fc:null,on:true,L:null,lb:null,lp:null};
+const MZ_C='#16a34a';
+try{MZ.on=localStorage.getItem('geo-mz-on')!=='0'}catch(_){}
+function mzPane(){if(!map)return;if(!map.getPane('mzhalo')){const p=map.createPane('mzhalo');p.style.zIndex=379;p.style.pointerEvents='none'}if(!map.getPane('mzPane')){const p=map.createPane('mzPane');p.style.zIndex=381;p.style.pointerEvents='none'}}
+function mzFieldOk(fs,k){const v=new Set(fs.map(f=>String(f.properties[k]??'').trim()).filter(Boolean));return fs.length<2?v.size>0:v.size>=fs.length*.5}
+function mzFieldAuto(fs){const ks=fs.length?Object.keys(fs[0].properties||{}).filter(k=>k!=='_bbox'):[];
+ return ks.find(k=>/구역명|유량계명|블록명|블럭명|BLK_NM|WBB_NAM/i.test(k)&&mzFieldOk(fs,k))||ks.find(k=>/명$|NAME|_NM$|NM$|구역|블록|블럭/i.test(k)&&mzFieldOk(fs,k))||ks.find(k=>mzFieldOk(fs,k))||ks[0]||''}
+const mzName=(f,i)=>String(f.properties[(MZ.rec&&MZ.rec.field)||'']??'').trim()||('구역 '+(i+1));
+function mzSetOn(o){MZ.on=!!o;try{localStorage.setItem('geo-mz-on',o?'1':'0')}catch(_){}const c=$('mzOn');if(c)c.checked=MZ.on;mzDraw()}
+function mzDraw(){if(!map)return;mzPane();if(!MZ.L){MZ.L=L.layerGroup().addTo(map);MZ.lb=L.layerGroup();map.on('zoomend',mzLblShow)}MZ.L.clearLayers();MZ.lb.clearLayers();
+ if(!MZ.on||!MZ.fc||!MZ.fc.features.length){mzLblShow();return}
+ L.geoJSON(MZ.fc,{pane:'mzhalo',interactive:false,style:{color:'#ffffff',weight:5,opacity:.55,fill:false}}).addTo(MZ.L);
+ L.geoJSON(MZ.fc,{pane:'mzPane',interactive:false,style:{color:MZ_C,weight:2.6,opacity:.95,dashArray:'14 5 2 5',lineCap:'butt',fill:false}}).addTo(MZ.L);
+ MZ.fc.features.forEach((f,i)=>{let c=null;try{c=turf.pointOnFeature(f).geometry.coordinates}catch(_){}if(!c)return;
+  L.marker([c[1],c[0]],{pane:'mzPane',interactive:false,keyboard:false,icon:L.divIcon({className:'mzLbl',html:'<span>💧 '+esc(mzName(f,i))+'</span>',iconSize:[0,0]})}).addTo(MZ.lb)});mzLblShow()}
+function mzLblShow(){if(!map||!MZ.lb)return;const on=MZ.on&&!!MZ.fc&&map.getZoom()>=14;if(on&&!map.hasLayer(MZ.lb))MZ.lb.addTo(map);else if(!on&&map.hasLayer(MZ.lb))map.removeLayer(MZ.lb)}
+/* rec = {name,at,crs,field,fc:{features(WGS84)},hist} → 화면용 MZ.fc(_bbox 붙임) */
+async function mzSet(rec,save){MZ.rec=rec||null;MZ.fc=rec&&rec.fc?{type:'FeatureCollection',features:rec.fc.features.map(f=>({type:'Feature',properties:{...(f.properties||{}),_bbox:turf.bbox(f)},geometry:f.geometry}))}:null;
+ if(save){try{rec?await IDB.set('mzone',rec):await IDB.del('mzone')}catch(e){mzMsg('이 기기에 저장하지 못했습니다: '+esc((e&&e.message)||e))}}
+ mzDraw();mzUi();try{layKey='';layRender()}catch(_){}}
+function mzMsg(h){const m=$('mzMsg');if(m)m.innerHTML=h}
+async function mzUi(){const r=MZ.rec,sel=$('mzField');if(!sel)return;
+ if(!r){sel.innerHTML='';sel.disabled=true;$('mzEdit').disabled=true;$('mzForget').hidden=true;$('mzUndoB').hidden=true;return}
+ const ks=r.fc.features.length?Object.keys(r.fc.features[0].properties||{}):[];sel.innerHTML=ks.map(k=>`<option${k===r.field?' selected':''}>${esc(k)}</option>`).join('');sel.disabled=!ks.length;
+ $('mzEdit').disabled=false;$('mzForget').hidden=false;let pv=false;try{pv=!!(await IDB.get('mzone_prev'))}catch(_){}$('mzUndoB').hidden=!pv;
+ const lc=(r.hist||[]).slice(-1)[0];mzMsg(`💧 ${esc(r.name||'유량계구역')} · 구역 <b>${r.fc.features.length}</b>개 · ${fmtDT(r.at)}${lc?` · 마지막: ${esc(lc.kind)}`:''}`)}
+async function mzRestore(){let v=null;try{v=await IDB.get('mzone')}catch(_){}if(!v||!v.fc)return mzUi();if(MZ.rec&&MZ.rec.at>=v.at)return;await mzSet(v,false)}
+/* 소블록 경계 기록(백업·공유 받기)에 실린 유량계구역: 더 새것일 때만 바꿈. 기록에 없으면 이 기기 것을 다시 실어 둠 */
+async function mzFromBlocks(v){if(!v)return;let cur=MZ.rec;if(!cur){try{cur=await IDB.get('mzone')}catch(_){}}
+ if(v.mz&&v.mz.fc&&(!cur||v.mz.at>cur.at)){const old=cur;await mzSet(v.mz,true);if(old)try{await IDB.set('mzone_prev',old)}catch(_){}mzUi();return}
+ if(!MZ.rec&&cur)await mzSet(cur,false);if(MZ.rec&&!v.mz)blkPersist()}
+function mzShareHint(){return poly?(typeof SH!=='undefined'&&SH.on()&&SH.cfg.auto?'자동 동기화가 켜져 있어 20초 뒤 소블록 경계와 함께 공유 서버에 올립니다.':'직원에게 퍼뜨리려면 ☁️ 직원 공유 › ⏫ 기준자료 올리기(소블록 경계에 함께 실림)를 누르세요.'):'소블록 경계가 없으면 이 기기에만 저장됩니다(공유·백업은 소블록 경계와 함께).'}
+function mzShared(){if(!poly)return;blkPersist();try{beShareSoon()}catch(_){}}
+$('mzFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];try{e.target.value=''}catch(_){}if(!f)return;
+ if(typeof shp==='undefined'){mzMsg('shpjs 라이브러리를 불러오지 못했습니다. 인터넷 연결 확인 후 새로고침하세요.');return}
+ if(MZ.rec&&!confirm(`저장된 유량계구역 경계(구역 ${MZ.rec.fc.features.length}개)를 이 파일로 통째로 바꿀까요?\n(이전 버전 1개는 ⏪ 이전 버전으로 되돌릴 수 있게 보관합니다)`))return;
+ mzMsg('유량계구역 SHP 읽는 중…');
+ try{const g=[].concat(await shpR(await f.arrayBuffer())),pn=ly=>String(ly.fileName||'').split('/').pop(),isP=ly=>(ly.features||[]).some(x=>x.geometry&&/Polygon/.test(x.geometry.type));
+  const ps=g.filter(isP),pref=ps.filter(ly=>MZ_RE.test(pn(ly))),use=pref.length?pref:ps,P=polyWgs(use.flatMap(x=>x.features||[]));
+  if(!P){mzMsg('<span class="c-rd">면(Polygon) 도형을 찾지 못했거나 좌표계를 판별하지 못했습니다. .shp·.dbf·.prj가 함께 든 zip인지 확인하세요.</span>');return}
+  const fs=P.feats,old=MZ.rec;if(old)try{await IDB.set('mzone_prev',old)}catch(_){}
+  const rec={name:f.name,at:Date.now(),crs:P.used,field:mzFieldAuto(fs),fc:{type:'FeatureCollection',features:fs},hist:((old&&old.hist)||[]).concat([{at:Date.now(),kind:old?'전체 교체':'전체 등록',file:f.name,n:fs.length}]).slice(-100)};
+  await mzSet(rec,true);mzSetOn(true);mzShared();
+  if(map&&!poly&&MZ.L)try{map.fitBounds(L.geoJSON(MZ.fc).getBounds())}catch(_){}
+  try{chgAdd({k:'ref',mine:1,by:chgMe(),n:fs.length,id:f.name,tx:`유량계구역 경계 ${old?'전체 교체':'등록'} ${fs.length}개`})}catch(_){}
+  mzMsg(`✅ 유량계구역 <b>${fs.length}</b>개를 불러왔습니다 · 좌표계 ${esc(P.used)} · 이름 칸 <b>${esc(rec.field||'없음')}</b>${pref.length&&ps.length>pref.length?` · 다른 면 레이어 ${ps.length-pref.length}개는 건너뜀`:''}<br><small class="mute">${mzShareHint()}</small>`)}
+ catch(err){mzMsg('<span class="c-rd">유량계구역 SHP 읽기 실패: '+esc((err&&err.message)||err)+'</span>')}};
+$('mzField').onchange=async()=>{if(!MZ.rec)return;MZ.rec={...MZ.rec,field:$('mzField').value};await mzSet(MZ.rec,true);mzShared()};
+$('mzOn').checked=MZ.on;$('mzOn').onchange=()=>mzSetOn($('mzOn').checked);
+window.mzOpen=()=>{if(!map||!MZ.fc)return;if(!FE.on)feSet(true);if(FE.obj==='blk'&&BE.tg!=='mz'&&BE.draft.size&&!confirm(`반영하지 않은 소블록 경계 수정 ${BE.draft.size}개가 있습니다. 버리고 넘어갈까요?`))return;
+ FE.obj='blk';if(BE.tg!=='mz'){BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null;BE.tg='mz'}if(!MZ.on)mzSetOn(true);feUi();beDraw();
+ try{const b=$('mapBox');if(b&&b.scrollIntoView&&!b.classList.contains('mapfs'))b.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}};
+$('mzEdit').onclick=()=>mzOpen();
+async function mzUndo(){let p=null;try{p=await IDB.get('mzone_prev')}catch(_){}if(!p||!p.fc){alert('되돌릴 유량계구역 이전 버전이 없습니다.');return}
+ if(!confirm(`유량계구역 경계를 바로 이전 버전(구역 ${p.fc.features.length}개, ${fmtDT(p.at)})으로 되돌릴까요?`))return;
+ const cur=MZ.rec,rec={...p,at:Date.now(),hist:((cur&&cur.hist)||p.hist||[]).concat([{at:Date.now(),kind:'되돌리기',n:p.fc.features.length}]).slice(-100)};
+ try{await IDB.del('mzone_prev')}catch(_){}await mzSet(rec,true);mzShared();mzMsg(`⏪ 유량계구역 경계를 이전 버전으로 되돌렸습니다 (구역 ${p.fc.features.length}개).<br><small class="mute">${mzShareHint()}</small>`)}
+$('mzUndoB').onclick=()=>{if(FE.on&&FE.obj==='blk'&&BE.tg==='mz'&&BE.draft.size){alert('반영하지 않은 수정이 있습니다. 먼저 ✔ 반영하거나 ✕ 버리세요.');return}mzUndo().then(()=>{if(BE.tg==='mz'){BE.sel=-1;BE.v=null;try{feUi();beDraw()}catch(_){}}})};
+$('mzForget').onclick=async()=>{if(!MZ.rec||!confirm('이 기기의 유량계구역 경계를 지울까요?\n(다른 직원 기기·공유 서버에 있는 것은 지워지지 않습니다)'))return;
+ if(BE.tg==='mz'){BE.draft.clear();BE.undo=[];BE.sel=-1;BE.v=null;BE.tg='blk';try{feUi();beDraw()}catch(_){}}
+ try{await IDB.del('mzone_prev')}catch(_){}await mzSet(null,true);if(poly)blkPersist();mzMsg('유량계구역 경계를 지웠습니다.')};
+/* ✔ 반영(유량계구역): 바뀐 구역·꼭짓점·넓이·새로 꼬임 미리보기 → 저장(이전 버전 1개 보관) */
+function mzApplyDraft(){const fs=MZ.fc.features,ch=[...BE.draft.keys()].filter(fi=>JSON.stringify(BE.draft.get(fi))!==JSON.stringify(fs[fi].geometry.coordinates));
+ if(!ch.length){BE.draft.clear();BE.undo=[];feUi();beDraw();feMsg('바뀐 경계가 없습니다.');return}
+ const nf=fi=>({type:'Feature',properties:{},geometry:{type:fs[fi].geometry.type,coordinates:BE.draft.get(fi)}}),of=fi=>({type:'Feature',properties:{},geometry:fs[fi].geometry});
+ const kc=f=>{try{return turf.kinks(f).features.length}catch(_){return 0}},kink=ch.filter(fi=>kc(nf(fi))>kc(of(fi)));
+ const area=fi=>{try{return turf.area(nf(fi))-turf.area(of(fi))}catch(_){return 0}};
+ const html=`<p style="margin:0 0 6px">앱에서 고친 💧 유량계구역 경계 <b>${ch.length}개</b>를 저장합니다.</p>
+  <table class="dft"><tr><th>구역</th><th class="r">꼭짓점</th><th class="r">넓이 변화</th></tr>${ch.slice(0,30).map(fi=>{const d=Math.round(area(fi)),g=fs[fi].geometry,rs=c=>(g.type==='Polygon'?c:c.flat()).reduce((s,r)=>s+r.length-1,0);return `<tr><td>${esc(beName(fi))}${kink.includes(fi)?' <span class="c-rd">⚠ 꼬임</span>':''}</td><td class="r">${rs(g.coordinates)}→${rs(BE.draft.get(fi))}</td><td class="r">${d>0?'+':''}${d.toLocaleString()}㎡</td></tr>`}).join('')}</table>
+  ${kink.length?`<p class="c-rd" style="margin:6px 0 0">⚠ 고치면서 경계선이 새로 꼬인 구역 ${kink.length}개(${kink.map(beName).map(esc).join(', ')}): 취소하고 꼭짓점을 고쳐 주세요.</p>`:''}
+  <div class="dleg"><span style="--c:#f59e0b">고친 경계</span><span style="--c:#94a3b8">원래 경계</span></div>
+  <p class="hint" style="margin:6px 0 0">유량계구역은 수용가 블록 결합에 쓰지 않아 수용가 블록은 바뀌지 않습니다. 적용하면 이전 버전 1개를 보관합니다(⏪ 이전 버전으로). ${mzShareHint()}</p>`;
+ diffOpen('💧 유량계구역 경계 수정 반영 미리보기',html,[[ch.map(of),'#94a3b8','6 6'],[ch.map(nf),'#f59e0b']],async()=>{
+  const names=ch.map(beName),old=MZ.rec;try{await IDB.set('mzone_prev',old)}catch(_){}
+  const rec={...old,at:Date.now(),fc:{type:'FeatureCollection',features:old.fc.features.map((f,fi)=>BE.draft.has(fi)?{...f,geometry:{type:f.geometry.type,coordinates:BE.draft.get(fi)}}:f)},hist:(old.hist||[]).concat([{at:Date.now(),kind:'앱에서 경계 수정',n:ch.length}]).slice(-100)};
+  BE.draft.clear();BE.undo=[];BE.v=null;await mzSet(rec,true);mzShared();
+  try{const c=turf.center({type:'FeatureCollection',features:ch.map(fi=>MZ.fc.features[fi])}).geometry.coordinates;chgAdd({k:'ref',mine:1,by:chgMe(),n:ch.length,id:names.slice(0,3).join(', ')+(names.length>3?` 외 ${names.length-3}`:''),tx:`유량계구역 경계 수정 ${ch.length}개 (${names.slice(0,3).join(', ')}${names.length>3?' …':''})`,ll:[c[1],c[0]]})}catch(_){}
+  feUi();beDraw();feMsg(`✅ 유량계구역 경계 ${ch.length}개를 저장했습니다.`)})}
+setTimeout(()=>{mzRestore().catch(e=>console.warn('유량계구역 불러오기',e))},80);
 try{feInit()}catch(e){console.warn('시설물 편집',e)}
 
 /* 휴대폰 상단 ☰ 메뉴: 열고 닫기 (바깥 누르기·Esc·항목 누르면 닫힘) */
@@ -15341,13 +15441,13 @@ try{bkChipInit()}catch(e){console.warn('백업 불러오기 칩',e)}
    판별은 파일 이름이 아니라 속을 봄: 백업·관망해석 결과(json app 키), SHP(zip 안 .shp 도형 + .dbf 칸 이름), 엑셀(시트 이름·머리글), inp, 사진.
    한 zip에 경계·관로·시설물이 섞이면 레이어별로 나눠 각 칸에 넘김. 기준자료가 이미 있으면 기본은 변경분 반영(미리보기), 확인 창에서 전체 교체로 바꿀 수 있음.
    폐관 목록은 관로를 지우므로 자동으로 고르지 않음. 실제 읽기·반영·되돌리기는 원래 칸의 코드를 그대로 씀 */
-const UNI_K={bk:['💾 백업 불러오기','bkLoad','bkMsg'],blk:['② 소블록 경계 · 전체 등록','f2','shpMsg'],blkU:['② 소블록 경계 · 변경분 반영','bUpd','shpMsg'],
+const UNI_K={bk:['💾 백업 불러오기','bkLoad','bkMsg'],blk:['② 소블록 경계 · 전체 등록','f2','shpMsg'],blkU:['② 소블록 경계 · 변경분 반영','bUpd','shpMsg'],mz:['② 💧 유량계구역 경계','mzFile','mzMsg'],
  pipe:['②-1 상수관로 · 전체 등록','f3','pMsg'],pipeU:['②-1 상수관로 · 변경분 반영','pUpd','pMsg'],pipeD:['②-1 상수관로 · 폐관 목록(관리번호)','pDelF','pMsg'],
  fac:['②-2 시설물 · 전체 등록','f4','fMsg'],facU:['②-2 시설물 · 변경분 반영','fUpd','fMsg'],elev:['②-3 관망해석 inp·결과','f5','eMsg'],leak:['②-4 누수 예측 준비 파일','lqPrepF','lqPrepMsg'],
  bill:['📥 부과량 연동','bFile','bMsg'],billX:['📥 부과량 연동 · FRD 양식으로 맞추기','bFile','bMsg'],addr:['① 주소 데이터','f1','src'],imp:['♻️ 이전 결과 엑셀','impFile','impMsg'],
  phRef:['📍 사진 기준 위치 (접수번호 좌표)','phRefFile','phRefMsg'],rcp:['📋 민원 접수 리스트 → 메모','phRcpFile','phRcpMsg'],ph:['📷 현장 사진','phFile','phMsg'],skip:['반영 안 함','','']};
 const UNI={busy:false};
-const UNI_ORD=['bk','blk','blkU','pipe','pipeU','pipeD','fac','facU','elev','leak','bill','billX','addr','imp','phRef','rcp','ph'];
+const UNI_ORD=['bk','blk','blkU','mz','pipe','pipeU','pipeD','fac','facU','elev','leak','bill','billX','addr','imp','phRef','rcp','ph'];
 const uniHas={blk:()=>!!poly,pipe:()=>!!(PIPE.raw&&PIPE.raw.length),fac:()=>!!(FAC.feats&&FAC.feats.length)};
 const uniExt=n=>(String(n).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1]||'';
 const uniSz=b=>b>=1048576?(b/1048576).toFixed(1)+'MB':Math.max(1,Math.round(b/1024))+'KB';
@@ -15377,6 +15477,8 @@ async function uniZip(f){if(typeof JSZip==='undefined')return[{f,k:'skip',why:'Z
   return[{f,k:'skip',why:'zip 안에 SHP(.shp)가 없습니다'}]}
  const L=[];for(const p of shps)L.push(await uniShpLayer(z,p));
  try{frdRuleShp(f.name,L)}catch(_){}L.forEach(l=>{if(l.k==='skip')l.k=''});
+ /* 2026-11-25 💧 유량계구역 면 레이어 → 유량계구역 경계 칸으로 */
+ L.forEach(l=>{if(l.gt%10===5&&MZ_RE.test(l.nm)){l.k='mz';l.why='면 + 이름에 유량계구역'}});
  /* 2026-11-14 워터넷형: 소블록 경계 말고 겹치는 면 레이어(시군·읍면동·중블록·관리블록·단수안내용·_개별)는 건너뜀 (다른 경계가 남을 때만) */
  {const bl=L.filter(l=>l.k==='blk');if(bl.length>1&&bl.some(l=>!WN_SKIP_POLY.test(l.nm)))bl.forEach(l=>{if(WN_SKIP_POLY.test(l.nm)){l.k='';l.why='소블록 경계와 겹치는 면 레이어 → 건너뜀'}})}
  const wnSk=L.filter(l=>!l.k&&/건너뜀/.test(l.why)).map(l=>l.nm),wnTx=wnSk.length?` · 건너뛴 레이어 ${wnSk.length}개(${wnSk.slice(0,6).join(', ')}${wnSk.length>6?' 등':''})`:'';
