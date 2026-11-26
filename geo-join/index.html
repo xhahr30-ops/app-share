@@ -64,7 +64,7 @@
   {k:'ex',n:'내보내기',d:'결과 엑셀 · SHP · 내보내기 창',css:['#exBtn'],a:['ex','xl','lkXl','phZip','sel:xl']},
   {k:'prt',n:'인쇄·현황도',d:'🖨 PDF · 지금 화면 출력 · 소블록별 현황도',css:['#hpr','.hlab:has(#po)'],a:['vp','bp','pdf','po']},
   {k:'ai',n:'AI 도우미',d:'🤖 AI 버튼 · 💬 묻기 AI 답',css:['.aib'],a:[]},
-  {k:'mk',n:'지도 그리기',d:'🖍 펜·도형·글자',css:['[data-ck="mk"]'],a:['mk']},
+  {k:'mk',n:'지도 그리기',d:'🖍 펜·도형·글자',css:['[data-ck="mk"]'],a:['mk'],lay:['mk']},
   {k:'food',n:'현장 맛집',d:'🍚 맛집 등록·별점·가까운 순',css:['[data-ck="fd"]','.lpafd'],a:['ck:fd'],lay:['fd']}];
  /* 새 현장 기본값: 기본 = 아래 6개만 켬, 전체 = 모두 켬 */
  window.FEAT_BASIC=['addr','photo','share','shut','em','chg','ex'];
@@ -2547,6 +2547,8 @@ const LAY=[
  {k:'vid',n:'동영상 위치',s:'#dc2626',c:()=>{const v=G('VID');return v&&v.list?v.list.filter(x=>!x.del).length:0},on:()=>{const u=G('UI');return !!u&&u.vid!==false},set:o=>{const u=G('UI');if(!u)return;u.vid=o;F('uiSave');F('vidDraw');const c=$('uiVid');if(c)c.checked=o}},
  {k:'fd',n:'현장 맛집',s:'#ea580c',c:()=>{const f=G('FD');return f?f.list.filter(x=>!x.del).length:0},on:()=>{const f=G('FD');return !!f&&!!f.on},set:o=>F('fdSetOn',!!o)},
  {k:'tp',n:'팀 탐사 구간',s:'#06b6d4',c:()=>{const t=G('TP');return t?t.list.length:0},on:()=>{const t=G('TP');return !!t&&!!t.on},set:o=>F('tpSetOn',!!o)},
+ /* 🖍️ 그리기(2026-11-26): 끄면 이 기기에서만 안 보임(공유·저장은 그대로), ▸ 묶음별 보이기·숨기기 = 📁 그리기 묶음 창의 👁 와 같은 값 */
+ {k:'mk',n:'그리기 (선·글자·아이콘)',s:'#dc2626',c:()=>{const f=G('mkLive');return f?f().length:0},on:()=>{const m=G('MK');return !!m&&!m.off},set:o=>F('mkOffSet',!o)},
  {g:'글자 · 배경'},
  {k:'bl',n:'소블록 이름',s:'#475569',c:()=>null,on:()=>selOn('lblMode'),set:o=>selSet('lblMode',o,'auto'),ok:()=>!!G('polyL')},
  {k:'cl',n:'수용가 라벨',s:'#475569',c:()=>null,on:()=>{const u=G('UI');return !!u&&!!u.cl&&u.cl!=='off'},set:o=>{const u=G('UI');if(u&&u.cl&&u.cl!=='off')S.clLast=u.cl;mir('uiCl',o?(S.clLast||'mg'):'off',()=>{u.cl=o?(S.clLast||'mg'):'off';F('uiSave');F('ptDraw')})},ok:()=>{const p=G('PT');return !!p&&p.n>0}},
@@ -2568,6 +2570,7 @@ function laySym(k){try{switch(k){
  case 'ind':return F('facSym',{sym:'ind'},16)||'';
  case 'vlv':return F('facSym',{sym:'vlv'},16)||'';
  case 'elev':{const e=G('ELB')||[];const c=[0,Math.floor(e.length/2),e.length-1].map(i=>(e[i]||[])[2]||'#a16207');return SV(20,14,c.map((x,i)=>`<circle cx="${4+i*6}" cy="7" r="3.2" fill="${x}" stroke="#fff" stroke-width="1"/>`).join(''))}
+ case 'mk':return SV(20,14,'<path d="M2 11C5 4 8 12 11 6S16 3 18 5" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><path d="M13 12.5l5-5 1.5 1.5-5 5h-1.5z" fill="#f59e0b" stroke="#fff" stroke-width=".6"/>');
  case 'fd':return SV(20,14,'<circle cx="10" cy="7" r="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/><path d="M6 7h8a4 3 0 0 1-8 0z" fill="#ea580c"/>');
  case 'pt':return SV(20,14,'<circle cx="6" cy="8" r="3.6" fill="#1f8a4c" stroke="#fff" stroke-width="1.2"/><circle cx="13.5" cy="5.5" r="3.6" fill="#1c5fa5" stroke="#fff" stroke-width="1.2"/>');
  case 'ph':return SV(20,14,'<rect x="3" y="1.5" width="14" height="11" rx="3" fill="#7c3aed" stroke="#fff" stroke-width="1"/><circle cx="10" cy="7.5" r="2.6" fill="none" stroke="#fff" stroke-width="1.4"/><rect x="7" y="2.6" width="3" height="1.6" fill="#fff"/>');
@@ -2625,12 +2628,14 @@ function laySub(k){try{
    return h};
   return yr+`<div class="tip">사진 종류 · 상태 (체크 = 지도에 보이기)</div>`+`<div class="gwl-kr"><span class="gwl-kn" style="cursor:default"><span style="flex:none;width:14px;text-align:center">📷</span>전체 크기</span>${szB('*','전체')}</div>`+kds.map(kRow).join('')
    +`<div class="gwl-kr" style="border-top:1px solid var(--gw-ch);margin-top:3px;padding-top:3px"><input type="checkbox" data-phls="1"${U.phLsOff?'':' checked'} aria-label="사진 번호 글자 보이기" title="사진 번호 글자(접수 1956·268 등) 보이기/끄기"><span class="gwl-kn" style="cursor:default${U.phLsOff?';opacity:.45':''}"><span style="flex:none;width:14px;text-align:center">🏷️</span>번호 글자</span>${szB('L','번호 글자')}</div><div class="gwl-bb"><button type="button" data-psz="0">↺ 크기 처음대로</button></div>`}
+ if(k==='mk'){const I=F('mkLayInfo');if(!I||!I.gs.length)return'';
+  return `<div class="tip">그린 묶음 (체크 = 이 기기 지도에 보이기 · 직원 화면은 그대로)</div><div class="gwl-bb"><button type="button" data-mka="1">모두 켜기</button><button type="button" data-mka="0">모두 끄기</button></div><div class="gwl-sc">`+I.gs.map(g=>`<label class="gwl-ck${g.hd?' off':''}"><input type="checkbox" data-mkg="${escH(g.id)}"${g.hd?'':' checked'}><span style="flex:none;width:16px;text-align:center">${g.pv?'🔒':'👥'}</span><span class="nm" title="${escH(g.nm)}${g.pv?' (나만 보기)':' (직원 공유)'}">${g.cur?'✏️ ':''}${escH(g.nm)}</span><small>${g.n.toLocaleString()}개</small></label>`).join('')+`</div><div class="gwl-bb"><button type="button" data-mkw="1">📁 그리기 묶음 창 (이름·공유·지우기)</button></div><div class="tip">🔒 나만 보기 · 👥 직원 공유 · ✏️ 지금 그리는 묶음</div>`}
  if(k==='cl'){/* 자세한 라벨 설정(내용·대상·시작 줌)은 🏷️ 라벨 창(LBLM)으로 나눔 — 레이어 창은 켜고 끄기만 */return `<div class="gwl-bb"><button type="button" data-lblm="1">🏷️ 라벨 창에서 내용·대상·시작 줌 고르기</button></div><div class="tip">이름·주소·연락처는 넣지 않습니다</div>`}
  if(k==='elev'){const el=$('eLeg');if(!el||!el.textContent.trim())return'';const d=document.createElement('div');d.innerHTML=el.innerHTML;
   const sp=[...d.querySelectorAll('span')];if(!sp.length)return'';
   return sp.map(x=>{const i=x.querySelector('i'),st=i?i.getAttribute('style')||'':'';if(i)i.remove();const sm=x.querySelector('small'),n=sm?sm.textContent:'';if(sm)sm.remove();return `<div><i style="${escH(st)}"></i><span class="nm">${escH(x.textContent.trim())}</span>${n?`<small>${escH(n)}</small>`:''}</div>`}).join('')}
 }catch(e){console.warn('gw laySub',k,e)}return''}
-const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl','rp']);
+const LX_K=new Set(['blk','pipe','fac','pt','ph','elev','cl','rp','mk']);
 /* ⭐ 누수탐사 상태별 켜고 끄기(2026-11-24) — 지도 범례와 같은 설정(UI.tsHid) */
 function layMw(){const C=F('mwCnt'),S=G('MW_ST'),K=G('MW_SK'),U=G('UI')||{};if(!C||!C.size||!S)return'';const h=U.mwHid||[];
  return `<div class="tip">📷 민원 원인 (📒 대장 · 체크 = 지도에 보이기)</div>`+K.filter(k=>C.get(k)).map(k=>{const off=h.includes(k);return `<label class="gwl-ck${off?' off':''}"><input type="checkbox" data-mws="${k}"${off?'':' checked'}><i style="flex:none;display:inline-block;width:11px;height:11px;border-radius:50%;background:${S[k].c};border:1px solid #fff;box-shadow:0 0 0 1px #0003"></i><span class="nm">${escH(S[k].n)}</span><small>${C.get(k).toLocaleString()}장</small></label>`}).join('')}
@@ -2647,11 +2652,12 @@ function layFill(tb){tb.querySelectorAll('.gwl-fk').forEach(el=>{F('facKindsUi',
 const laySync=()=>setTimeout(()=>{F('facKindsUi');layKey='';layRender()},0);
 $('gwLayB').addEventListener('change',e=>{if(e.target.closest('.gwl-fk'))laySync()});
 /* 소블록·관로 항목·수용가 구분 켜고 끄기 (지도 그리는 함수는 앱 쪽 blkHidSet·pipeHidSet·ptHidSet) */
-$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.phls!=null)F('phLsOffSet',!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
+$('gwLayB').addEventListener('change',e=>{const t=e.target,d=t.dataset;if(d.bh!=null)F('blkHidSet',[d.bh],!t.checked);else if(d.phd!=null)F('pipeHidSet',d.phd,!t.checked);else if(d.tss!=null)F('tsHidSet',d.tss,!t.checked);else if(d.kdh!=null)F('kdHidSet',d.kdh,!t.checked);else if(d.phls!=null)F('phLsOffSet',!t.checked);else if(d.mws!=null)F('mwHidSet',d.mws,!t.checked);else if(d.mkg!=null)F('mkGrpHid',d.mkg,!t.checked);else if(d.th!=null){const i=d.th.indexOf('|');F('ptHidSet',d.th.slice(0,i),d.th.slice(i+1),!t.checked)}else if(t.classList.contains('gwl-qb'))F('ptQBSet',t.value);else return;layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.mir==null)return;e.stopPropagation();mir(t.dataset.mir,t.value);layKey='';setTimeout(layRender,60)},true);
 $('gwLayB').addEventListener('click',e=>{if(!e.target.closest('button[data-lblm]'))return;e.preventDefault();e.stopPropagation();const m=G('LBLM');if(m&&m.open)m.open()},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-rpw]');if(!b)return;e.preventDefault();e.stopPropagation();F('rpWStep',+b.dataset.rpw);layKey='';setTimeout(layRender,40)},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-psz]');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.psz;if(k==='0'){const u=G('UI');if(u){u.phKs=undefined}F('phSzSet','L',1);F('phSzSet','*',1)}else F('phSzStep',k,+b.dataset.d);layKey='';setTimeout(layRender,40)},true);
+$('gwLayB').addEventListener('click',e=>{const b=e.target.closest('button[data-mka],button[data-mkw]');if(!b)return;e.preventDefault();e.stopPropagation();if(b.dataset.mkw!=null)F('mkGrpOpen');else F('mkGrpAll',b.dataset.mka==='1');layKey='';setTimeout(layRender,40)},true);
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('.gwl-bb button[data-ba]');if(!b)return;F('blkHidSet',F('blkNames')||[],b.dataset.ba==='1');layKey='';setTimeout(layRender,40)});
 $('gwLayB').addEventListener('click',e=>{if(e.target.closest('.gwl-fk button'))return laySync();const pk=e.target.closest('.gwl-pk');if(pk){const P=G('PH');if(pk.dataset.gyall!=null)F('phSetPer','year','*');else if(pk.dataset.gkd!=null)F('phSetKf',P&&P.kf===pk.dataset.gkd?'*':pk.dataset.gkd);else{const y=pk.dataset.gy,kk=y==='0'?'none':'Y'+y;F('phSetPer','year',(F('sel0')||'')===kk?'*':kk)}layKey='';setTimeout(layRender,50);return}});
 $('gwLayB').addEventListener('click',e=>{const b=e.target.closest('.gwl-x');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.x;if(LX.has(k))LX.delete(k);else{LX.add(k);delete LXC[k]}LS.set('geo-gwLx',[...LX].join(','));layKey='';layRender()},true);
@@ -15606,9 +15612,14 @@ function mkLbBox(m,p){if(!MK.mc)MK.mc=document.createElement('canvas').getContex
 /* 다음 번호 글씨: 밸브1(75mm) → 밸브2(75mm) */
 const mkLbNext=v=>{const m=/\d+/.exec(v||'');return m?v.slice(0,m.index)+(+m[0]+1)+v.slice(m.index+m[0].length):''};
 try{const o=JSON.parse(localStorage.getItem('geo-mk')||'{}');['tool','c','w','fs','ik','is','cur','llb'].forEach(k=>{if(o[k]!=null&&o[k]!=='')MK[k]=o[k]});
- (JSON.parse(localStorage.getItem('geo-mk-hide')||'[]')||[]).forEach(x=>MK.hide.add(x))}catch(_){}
+ (JSON.parse(localStorage.getItem('geo-mk-hide')||'[]')||[]).forEach(x=>MK.hide.add(x));MK.off=localStorage.getItem('geo-mk-off')==='1'}catch(_){}
 if(!MK_T.some(t=>t[0]===MK.tool))MK.tool='pen';
-function mkCfgSave(){try{localStorage.setItem('geo-mk',JSON.stringify({tool:MK.tool,c:MK.c,w:MK.w,fs:MK.fs,ik:MK.ik,is:MK.is,cur:MK.cur,llb:MK.llb}));localStorage.setItem('geo-mk-hide',JSON.stringify([...MK.hide]))}catch(_){}}
+function mkCfgSave(){try{localStorage.setItem('geo-mk',JSON.stringify({tool:MK.tool,c:MK.c,w:MK.w,fs:MK.fs,ik:MK.ik,is:MK.is,cur:MK.cur,llb:MK.llb}));localStorage.setItem('geo-mk-hide',JSON.stringify([...MK.hide]));localStorage.setItem('geo-mk-off',MK.off?'1':'0')}catch(_){}}
+/* 레이어 창 🖍️ 그리기: 전체 끄기(MK.off)·묶음별 숨기기(MK.hide, 📁 묶음 창 👁 와 같음) — 이 기기에서만, 공유·저장 내용은 안 바뀜 */
+function mkOffSet(o){MK.off=!!o;mkCfgSave();mkDraw(true);mkGrpRender()}
+function mkGrpHid(id,h){if(h)MK.hide.add(id);else MK.hide.delete(id);if(!h)MK.off=false;mkCfgSave();mkDraw(true);mkGrpRender()}
+function mkGrpAll(on){MK.hide.clear();if(!on)mkGLive().forEach(g=>MK.hide.add(g.id));else MK.off=false;mkCfgSave();mkDraw(true);mkGrpRender()}
+function mkLayInfo(){const cnt=new Map();mkLive().forEach(m=>cnt.set(m.g,(cnt.get(m.g)||0)+1));return{off:!!MK.off,gs:mkGLive().map(g=>({id:g.id,nm:g.nm||'',pv:!!g.pv,cur:g.id===MK.cur,hd:MK.hide.has(g.id),n:cnt.get(g.id)||0,u:g.u||g.c||0})).filter(g=>g.n||g.cur).sort((a,b)=>b.u-a.u)}}
 async function mkLoad(){try{const v=await IDB.get('marks');if(v&&Array.isArray(v.list)){MK.at=v.at||0;MK.base=v.base||0;MK.list=v.list;MK.gs=Array.isArray(v.gs)?v.gs:[]}}catch(_){}mkDraw(true);mkUi()}
 /* 지운 지 7일 지난 표시는 좌표를 비워 용량을 줄임(지운 기록 자체는 남겨 다른 기기에서 되살아나지 않게) */
 async function mkStore(){const old=Date.now()-7*864e5;MK.list.forEach(m=>{if(m.del&&(m.u||0)<old&&m.p&&m.p.length){m.p=[];delete m.tx}});
@@ -15626,7 +15637,7 @@ function mkPane(){if(MK.cv||!map)return;const p=map.getPane('drawPane')||map.cre
  map.on('move zoom resize viewreset',()=>mkDraw());map.on('moveend zoomend',()=>mkDraw(true));
  map.on('zoomanim',e=>{if(!MK.tl||!MK.cv.width)return;L.DomUtil.setTransform(MK.cv,map._latLngToNewLayerPoint(MK.tl,e.zoom,e.center),map.getZoomScale(e.zoom))})}
 function mkDraw(now){if(!map)return;if(now===true){if(MK.raf){cancelAnimationFrame(MK.raf);MK.raf=0}mkPaint();return}if(MK.raf)return;MK.raf=requestAnimationFrame(()=>{MK.raf=0;mkPaint()})}
-function mkVis(){if(typeof UI!=='undefined'&&UI.allOff&&!MK.on)return[];const dg=new Set(MK.gs.filter(g=>g.del).map(g=>g.id));
+function mkVis(){if(typeof UI!=='undefined'&&UI.allOff&&!MK.on)return[];if(MK.off&&!MK.on)return[];const dg=new Set(MK.gs.filter(g=>g.del).map(g=>g.id));
  return MK.list.filter(m=>!m.del&&m.p&&m.p.length&&!MK.hide.has(m.g)&&!dg.has(m.g))}
 function mkBB(m){let b=MK.bb.get(m);if(!b||b.n!==m.p.length||b.u!==m.u){b={n:m.p.length,u:m.u,b:L.latLngBounds(m.p)};MK.bb.set(m,b)}return b.b}
 function mkPaint(){mkPane();const cv=MK.cv;if(!cv)return;const L0=mkVis(),dr=MK.dr;
@@ -15732,7 +15743,7 @@ function mkTxClose(){if(!MK.tx)return;MK.tx.b.remove();MK.tx=null;if(MK.dr&&MK.d
 function mkSet(on){if(!map)return;on=!!on;if(on===MK.on){if(on)mkUi();return}
  if(on){if(typeof FE!=='undefined'&&FE.on)feSet(false);if(typeof PH!=='undefined'&&PH.ed&&PH.ed.on)phEdSet(false);
   if(typeof SHUT!=='undefined'){if(SHUT.drawX)SHUT.drawX();if(SHUT.pick||SHUT.mode){SHUT.pick=false;SHUT.mode='';try{shutRender()}catch(_){}}}map.closePopup()}
- MK.on=on;mkBar();mkOv();if(!on){mkTxClose();MK.dr=null;MK.msg='';mkLogMine()}
+ MK.on=on;if(on&&MK.off){MK.off=false;mkCfgSave()}mkBar();mkOv();if(!on){mkTxClose();MK.dr=null;MK.msg='';mkLogMine()}
  map.getContainer().classList.toggle('mkon',on);MK.bar.hidden=!on;mkUi();mkDraw(true);
  if(on&&typeof SH!=='undefined'&&SH.on())mkSync(true).catch(()=>{})}
 function mkLogMine(){MK.added.forEach((n,id)=>{const g=mkG(id),m=MK.list.find(x=>x.g===id&&!x.del&&x.p&&x.p.length);if(!g||g.del)return;
@@ -15767,7 +15778,7 @@ function mkGrpOpen(){let w=$('mkGw');
   w.onclick=e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-g]');if(!b)return;const k=b.dataset.g,r=b.closest('[data-id]'),g=r&&mkG(r.dataset.id),now=Date.now();
    if(k==='x')w.hidden=true;else if(k==='new'){MK.cur='';mkCurG(true);mkSave();mkGM('＋ 새 묶음을 만들었습니다. 이제 그리는 것은 이 묶음에 들어갑니다.')}
    else if(k==='newp'){MK.cur='';const ng=mkCurG(true);ng.pv=1;ng.nm=ng.nm.replace(/^그리기/,'메모');mkSave();mkGM('🔒 나만 보기 묶음을 만들었습니다. 여기에 그린 것은 이 기기에만 남고 직원에게 안 보입니다.')}
-   else if(k==='all'){MK.hide.clear();mkCfgSave();mkDraw(true);mkGrpRender()}
+   else if(k==='all'){MK.hide.clear();MK.off=false;mkCfgSave();mkDraw(true);mkGrpRender()}
    else if(k==='sync')mkSyncBtn();
    else if(!g)return;else if(k==='use'){MK.cur=g.id;MK.hide.delete(g.id);mkCfgSave();mkUi();mkDraw(true);mkGrpRender()}
    else if(k==='vis'){if(MK.hide.has(g.id))MK.hide.delete(g.id);else MK.hide.add(g.id);mkCfgSave();mkDraw(true);mkGrpRender()}
