@@ -9359,6 +9359,8 @@ function phLbStyle(){let el=document.getElementById('phLbSt');if(!el){el=documen
  const t=r.join('\n');if(el.textContent!==t)el.textContent=t}
 const phCodeNum=c=>{const x=/(\d+)$/.exec(c||'');return x?+x[1]:Infinity};
 function phGroup(){
+ /* 💧 누수징후(2026-11-26부터 생긴 종류) 사진인데 촬영 시각이 없으면 등록 시각(at)을 씀 → 연도·기간 보기에서 '시각 없음'으로 빠지지 않게(2026-11-27 PC에서 안 보임). 다른 종류의 옛 사진은 그대로 */
+ for(const m of PH.list)if(!m.ts&&m.at&&m.kd==='sg'&&!phTs(m.dt))m.ts=+m.at;
  const re=phCodeRe(),code=new Map();for(const m of PH.list){if(m.solo||phKd(m)!=='mw')continue;const c=phCodeOf(m,re);if(c)code.set(m.id,c)}PH.code=code;
  const FL=phFacLinks();
  /* 민원 외 종류(누수탐사·경계밸브·시설물관리·기타)도 파일명 번호로 묶음 — '종류|번호@연도'. 민원 접수번호·민원지점 기준 위치와는 섞지 않음 */
@@ -10045,7 +10047,9 @@ async function phAdd(files,dropLL,opt){files=[...files];const ALL=!!(opt&&opt.al
   const id='p'+phHash(f.name+'|'+f.size+'|'+f.lastModified);if(PH.byId.has(id)){dup++;R.push({n:f.name,r:'dup',w:'같은 파일이 이미 있음',o:id});return}
   const fp=await phFp(f);if(fp){if(DX.fp.has(fp)){dup++;const o=DX.fp.get(fp);R.push({n:f.name,r:'dup',w:'내용이 같은 사진이 이미 있음'+(nmOf(o)&&nmOf(o)!==f.name?' ('+nmOf(o)+')':''),o});return}DX.fp.set(fp,id)} /* 이름·수정 시각이 달라도 내용이 같으면 같은 사진 */
   try{const ex=await exifRead(f)||{},wf=WF.get(bn(f.name)),re=phCodeRe(),png=/png/i.test(f.type)||/\.png$/i.test(f.name),d=await phDecode(f,max,ex.lat==null&&(png?'png':!!(wf||(re&&re.test(f.name))))),dt=phDt(ex.dt);
-   const m={id,name:f.name,fp:fp||undefined,dt,ts:phTs(dt),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
+   /* 촬영 시각(EXIF)이 없는 사진(카톡·편집 앱으로 지운 경우 등): 파일 시각이 3시간 이내면 방금 찍은 사진으로 보고 그 시각을 씀(위치 대체와 같은 기준, 2026-11-27) */
+   let dt2=dt;if(!phTs(dt2)&&f.lastModified&&Math.abs(Date.now()-f.lastModified)<=3*3600e3){const q=new Date(f.lastModified),p2=v=>String(v).padStart(2,'0');dt2=`${q.getFullYear()}-${p2(q.getMonth()+1)}-${p2(q.getDate())} ${p2(q.getHours())}:${p2(q.getMinutes())}:${p2(q.getSeconds())}`}
+   const m={id,name:f.name,fp:fp||undefined,dt:dt2,ts:phTs(dt2),lat:ex.lat??null,lng:ex.lng??null,dir:ex.dir??null,alt:ex.alt??null,src:ex.lat!=null?'GPS':'없음',memo:'',w:d.w,h:d.h,at:Date.now()};
    const kd=opt&&opt.fc?KD0:(phKdGuess(f.name)||KD0);if(kd!=='mw')m.kd=kd;if(opt&&opt.fc)m.fc=opt.fc;if(opt&&opt.vr)m.vr=opt.vr; /* 파일명 자동 구분(탐사·경계·시설…) > 올릴 때 고른 종류 */
    if(d.dot){m.map=true;m.dot=d.dot;if(wf){const ll=phWorldLL(wf,d.dot[0]*d.w,d.dot[1]*d.h);if(ll){m.lat=ll.lat;m.lng=ll.lng;m.crs=ll.crs;m.src='지도'}}}
    if(m.lat==null&&dropLL&&(N===1||ALL)){m.lat=+dropLL.lat.toFixed(7);m.lng=+dropLL.lng.toFixed(7);m.src='수동'}
