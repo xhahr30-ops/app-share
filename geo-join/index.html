@@ -5191,7 +5191,7 @@ function popRelayout(pp){if(!pp||!pp.isOpen()||!pp._contentNode)return;popFit(pp
 document.addEventListener('toggle',e=>{const t=e.target;if(!t||!t.closest||!t.closest('.leaflet-popup'))return;const pp=map&&map._popup;if(pp&&pp._hit)setTimeout(()=>{popRelayout(pp);if(t.open)popScrollTo(t)},0)},true);
 /* 정보창 안에서만 밀어 펼친 칸이 보이게 (scrollIntoView는 지도까지 밀 수 있어 쓰지 않음) */
 function popScrollTo(el){const sc=el&&el.closest('.leaflet-popup-content');if(!sc||sc.scrollHeight<=sc.clientHeight)return;const d=el.getBoundingClientRect().top-sc.getBoundingClientRect().top-6;if(d>0)sc.scrollTop+=d}
-function hitShow(h,k,open){h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;popFit(pp);pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
+function hitShow(h,k,open){if(open&&typeof STH!=='undefined'&&STH&&STH.own.size&&h.H[k]&&h.H[k].t==='blk')return;h.cur=k;const x=h.H[k],pp=h.pp;pp._fi=x.t==='fac'?x.i:undefined;popFit(pp);pp.setLatLng(hitPos(x,h.ll)).setContent(hitHtml(h));if(open||!pp.isOpen())pp.openOn(map);
  hitMark(x.t==='pt'?null:x);if(x.t==='pt'&&typeof selectRow==='function')selectRow(x.i,'map')}
 /* 내용 바꾸기는 클릭 처리가 끝난 뒤에: 누른 버튼이 바로 사라지면 Leaflet이 지도 클릭으로 보고 정보창을 닫음 */
 window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout(()=>{if(pp.isOpen())hitShow(h,k)},0)};
@@ -16124,7 +16124,7 @@ function stHold(k,on){if(!map||typeof STH==='undefined'||!STH)return;const was=S
  const bq=document.getElementById('bqDlg'),ns=document.getElementById('nrwSh');
  if(!was&&now){const t3=typeof window.bp3dOpenN==='function'?window.bp3dOpenN():'';STH.rs={bq:!!(bq&&!bq.hidden),ns:!!(ns&&!ns.hidden),nsMin:!!(ns&&ns.classList.contains('min')),t3};
   if(bq)bq.hidden=true;if(ns&&!ns.hidden){ns.hidden=true;try{nrwShSync()}catch(_){}}if(t3&&window.bp3dClose)bp3dClose();
-  if(!STH.pg){STH.pg=1;map.on('popupopen',e=>{if(!STH.own.size)return;const src=e.popup&&e.popup._source;if(src&&typeof polyL!=='undefined'&&polyL&&polyL.hasLayer(src)){map.closePopup(e.popup);mkStatusOff()}})}
+  if(!STH.pg){STH.pg=1;map.on('popupopen',e=>{if(!STH.own.size)return;const pp=e.popup,src=pp&&pp._source,cn=pp&&pp._contentNode;/* 2026-11-27 '아직도 뜸': 어느 길로 열렸든 소블록 정보창(📊 현황 보기 단추 .bpPopA·통합 정보창 _hit)이면 닫음 */if((src&&typeof polyL!=='undefined'&&polyL&&polyL.hasLayer(src))||(pp&&pp._hit)||(cn&&cn.querySelector&&cn.querySelector('.bpPopA'))){setTimeout(()=>{try{map.closePopup(pp)}catch(_){}},0);try{map.closePopup(pp)}catch(_){}mkStatusOff()}})}
   return}
  if(was&&!now)STH.rs=null}
 function mkSet(on){if(!map)return;on=!!on;if(on===MK.on){if(on)mkUi();return}
