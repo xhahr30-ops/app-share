@@ -1458,6 +1458,15 @@ html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
 #gwFsT{display:none}#mapBox.fsL>#gwFsT{display:flex;align-items:center;justify-content:center;position:absolute;z-index:1201;left:var(--gwL,270px);width:22px;height:52px;margin-top:-26px;padding:0;border:1px solid var(--gw-bd,#cbd5e1);border-left:0;border-radius:0 8px 8px 0;background:var(--gw-pn,#fff);color:var(--gw-tx2,#475569);font-size:11px;cursor:pointer;box-shadow:2px 1px 6px rgba(15,23,42,.18)}
 #mapBox.fsL.fsLc>#gwFsT{left:0}html.chipV #mapBox.fsL>#gwFsT{left:calc(var(--gwL,270px) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLc>#gwFsT{left:var(--chw,0px)}#mapBox.fsL>#gwFsT:hover{color:#fff;background:#4f46e5;border-color:#4f46e5}
 #mapBox.fsL>#gwLeft #gwLRs{display:block}
+/* 2026-11-27 폰 전체화면: 레이어 창을 지도 위에 겹쳐 띄움(지도는 그대로 꽉 참) · 접으면 숨기고 왼쪽 가장자리 ▶ 손잡이만 */
+#mapBox.fsL.fsLn>#gwLeft{width:min(300px,82vw);z-index:1300;box-shadow:4px 0 18px rgba(15,23,42,.28);transition:transform .2s ease}
+#mapBox.fsL.fsLn>#map{margin-left:0}
+#mapBox.fsL.fsLn>#gwLeft #gwLRs{display:none}
+#mapBox.fsL.fsLn.fsLc>#gwLeft{display:flex;transform:translateX(-105%);box-shadow:none;pointer-events:none;visibility:hidden}
+#mapBox.fsL.fsLn>#gwFsT{z-index:1301;left:min(300px,82vw);width:26px;height:60px;margin-top:-30px;font-size:13px}
+#mapBox.fsL.fsLn.fsLc>#gwFsT{left:0}
+html.chipV #mapBox.fsL.fsLn>#gwFsT{left:calc(min(300px,82vw) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLn.fsLc>#gwFsT{left:var(--chw,0px)}
+html.chipV #mapBox.fsL.fsLn>#gwLeft{left:var(--chw,0px)}
 /* 오른쪽 작업 창: 왼쪽 카드(자료 등록 등)를 같은 id 그대로 옮겨 띄움 */
 #gwWin{position:absolute;top:0;right:0;bottom:0;width:min(400px,100%);z-index:1200;display:flex;flex-direction:column;background:var(--gw-pn);border-left:1px solid var(--gw-bd);box-shadow:-6px 0 18px rgba(0,0,0,.14)}
 #gwWin[hidden]{display:none}
@@ -2720,21 +2729,24 @@ const LW0=270,lwMax=()=>Math.max(LW0,Math.min(640,Math.round(innerWidth*.6))),lw
 function layToggle(){if(innerWidth<=900){gw.classList.toggle('lshow');gw.classList.remove('nol')}else{gw.classList.toggle('nol');LS.set('geo-gwL',gw.classList.contains('nol')?'0':'1')}}
 /* 2026-11-24 전체화면(PC 작업 화면)에서도 왼쪽 레이어 창: 창(#gwLeft)을 전체화면 지도 상자(#mapBox) 안으로 옮겨 왼쪽에 붙이고, 가장자리 ◀▶ 손잡이로 접고 펼침(기기별 geo-gwFsL). 끝나면 제자리로 */
 const FSL={on:false,home:null};
-function fsLayC(){return LS.get('geo-gwFsL')==='0'}
+/* 2026-11-27 폰(폭 900 이하)도 전체화면에서 왼쪽 레이어 창: 지도를 밀지 않고 위에 겹쳐 나오는 숨김 창(fsLn). 처음엔 접힘, 왼쪽 가장자리 ▶ 손잡이로 꺼냄(기기별 geo-gwFsLm). 보고서형 화면에서도 씀 */
+const fsLayN=()=>innerWidth<=900;
+function fsLayC(){return fsLayN()?LS.get('geo-gwFsLm')!=='1':LS.get('geo-gwFsL')==='0'}
+function fsLaySetC(c){if(fsLayN())LS.set('geo-gwFsLm',c?'':'1');else LS.set('geo-gwFsL',c?'0':'');fsLaySet()}
 function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop,z=parseFloat(getComputedStyle(l).zoom)||1;/* PC 글씨 85%(zoom) 때 창 안 px는 줄어 보임 → 나눠 맞춤 */l.style.top=(t/z)+'px';l.style.bottom='auto';l.style.height=(m.offsetHeight/z)+'px';const b=$('gwFsT');if(b){b.style.top=(t+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
 function fsLay(){const mb=$('mapBox'),l=$('gwLeft');if(!mb||!l)return;
- const want=S.on&&document.body.classList.contains('fsOn')&&innerWidth>900&&mb.contains($('map'));
+ const want=(S.on||fsLayN())&&document.body.classList.contains('fsOn')&&mb.contains($('map'));mb.classList.toggle('fsLn',want&&fsLayN());
  if(want&&!FSL.on){FSL.on=true;FSL.home=l.nextElementSibling;mb.insertBefore(l,$('map'));
-  let b=$('gwFsT');if(!b){b=document.createElement('button');b.type='button';b.id='gwFsT';b.className='np';b.onclick=()=>{LS.set('geo-gwFsL',fsLayC()?'':'0');fsLaySet()}}
+  let b=$('gwFsT');if(!b){b=document.createElement('button');b.type='button';b.id='gwFsT';b.className='np';b.onclick=()=>fsLaySetC(!fsLayC())}
   mb.appendChild(b);mb.classList.add('fsL');fsLaySet();if($('gwLay')&&!$('gwLay').hidden){layKey='';layRender()}}
- else if(!want&&FSL.on){FSL.on=false;mb.classList.remove('fsL','fsLc');l.style.top=l.style.bottom=l.style.height='';const h=$('gwBody');if(FSL.home&&FSL.home.parentNode===h)h.insertBefore(l,FSL.home);else h.insertBefore(l,h.firstChild);const b=$('gwFsT');if(b)b.remove();const m=G('map');if(m)setTimeout(()=>m.invalidateSize({pan:false}),60)}
- else if(FSL.on)fsLayPos()}
+ else if(!want&&FSL.on){FSL.on=false;mb.classList.remove('fsL','fsLc','fsLn');l.style.top=l.style.bottom=l.style.height='';const h=$('gwBody');if(FSL.home&&FSL.home.parentNode===h)h.insertBefore(l,FSL.home);else h.insertBefore(l,h.firstChild);const b=$('gwFsT');if(b)b.remove();const m=G('map');if(m)setTimeout(()=>m.invalidateSize({pan:false}),60)}
+ else if(FSL.on){mb.classList.toggle('fsLc',fsLayC());fsLayPos()}}
 function fsLaySet(){const mb=$('mapBox');if(!mb)return;mb.classList.toggle('fsLc',fsLayC());fsLayPos();const m=G('map');if(m){m.invalidateSize({pan:false});setTimeout(()=>{m.invalidateSize({pan:false});fsLayPos()},80)}}
 new MutationObserver(()=>setTimeout(fsLay,0)).observe(document.body,{attributes:true,attributeFilter:['class']});
 new MutationObserver(()=>setTimeout(fsLay,0)).observe(R,{attributes:true,attributeFilter:['class']});
 addEventListener('resize',()=>setTimeout(fsLay,50));
 /* 전체화면 안에서 레이어 창 ✕ = 접기 (작업 화면 레이어 끄기와 따로) */
-$('gwLeft').addEventListener('click',e=>{if(!FSL.on)return;const x=e.target.closest('.gw-ph .x');if(!x)return;e.preventDefault();e.stopPropagation();LS.set('geo-gwFsL','0');fsLaySet()},true);
+$('gwLeft').addEventListener('click',e=>{if(!FSL.on)return;const x=e.target.closest('.gw-ph .x');if(!x)return;e.preventDefault();e.stopPropagation();fsLaySetC(true)},true);
 gw.querySelectorAll('.gw-ph .lt').forEach(b=>b.onclick=()=>{const t=b.dataset.lt;document.querySelectorAll('#gwLeft .gw-ph .lt').forEach(x=>x.classList.toggle('on',x===b));b.classList.remove('new');$('gwLay').hidden=t!=='lay';$('gwProp').hidden=t!=='prop';$('gwLbl').hidden=t!=='lbl';$('gwNrw').hidden=t!=='nrw';if(t==='lbl')F('lstRender');if(t==='nrw')F('nrwListRender');layKey='';layRender()});
 
 /* ── 속성 탭: 지도 정보창 내용을 읽기 전용으로 복사 ── */
@@ -8054,7 +8066,7 @@ $('bUndo').onclick=blkUndo;$('bHistBtn').onclick=()=>{$('bHistBox').hidden=!$('b
 
 /* ---------- 백업 파일 (다른 PC·다른 주소로 옮기기) ---------- */
 const BK_KEYS=/^geo-(vw|kjs|keys|keysat|share)$/; // API 키·공유 서버 키 (나머지 geo-* = 화면 설정)
-const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|chipgc|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs|szn-day|szn-skip)$/;
+const BK_SKIP=/^geo-(lock|quiz|quiz|site|sites|hq|user|uid|keyv|skbad|cache-v1|usage|af|side|share-since|share-del|share-res|fm|gw|gwT|gwD|gwDT|gwL|gwLW|gwLx|gwFsL|gwFsLm|dskhint|legbox|bkpick|chg-seen|hl-off|zpos|chipord|chipv|chipz|pcz|chipoff|chiphid|chipgc|bkat|bkrem|stowarn|rcv-off|voice-ok|a2hs|szn-day|szn-skip)$/;
 /* 백업은 브라우저 메모리 안에서 ZIP을 통째로 만들기 때문에 사진이 많으면 메모리 부족으로 실패(탭 멈춤·꺼짐)할 수 있음
    → 사진은 압축 없이(STORE) 담고, 한 파일이 BK_PART를 넘으면 여러 파일(_1, _2 …)로 나눠 만듦. 불러오기는 여러 파일을 한 번에 고르면 됨 */
 const BK_PART=300*1048576;
