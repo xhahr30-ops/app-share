@@ -9625,7 +9625,7 @@ function phLsApply(){try{phLbStyle()}catch(_){}try{document.documentElement.styl
 function phLsOffSet(off){UI.phLsOff=off?1:undefined;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=off?'off':String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phLs||1))<Math.abs(b-(+UI.phLs||1))?x:b))}
 function phSzSet(kd,v){v=+v||1;if(kd==='L'){UI.phLs=v===1?undefined:v;uiSave();phLsApply();const e=document.getElementById('uiPhLs');if(e)e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b));return}if(kd==='*'){UI.phSz=v===1?undefined:v}else{const o=Object.assign({},UI.phKs||{});if(v===1)delete o[kd];else o[kd]=v;UI.phKs=Object.keys(o).length?o:undefined}uiSave();phDraw();const e=document.getElementById('uiPhSz');if(e&&kd==='*')e.value=String(PH_SZ.reduce((b,x)=>Math.abs(x-(+UI.phSz||1))<Math.abs(b-(+UI.phSz||1))?x:b))}
 function phSzStep(kd,d){const c=kd==='*'?+UI.phSz||1:kd==='L'?+UI.phLs||1:+((UI.phKs||{})[kd])||1,i=PH_SZ.reduce((b,x,j)=>Math.abs(x-c)<Math.abs(PH_SZ[b]-c)?j:b,0);phSzSet(kd,d?PH_SZ[Math.max(0,Math.min(PH_SZ.length-1,i+d))]:1)}
-function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,ks=!ts&&!g.ref&&!g.fac&&KD_SH[g.kd]?g.kd:'',sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
+function phIcon(g){const m=PH.byId.get(g.ids[0]),one=g.n===1&&m.dir!=null&&m.lat!=null&&!m.map,yc=phColOn(),ts=tsStG(g),ms=ts?'':mwStG(g),lr=false,ks=!ts&&!g.fac&&KD_SH[g.kd]?g.kd:''/* 위치 캡처로 자리 잡은 묶음(g.ref)도 종류 모양으로(2026-11-27: 누수징후가 🎯로 보이던 것) */,sz=phSzOf(g),S=Math.round(32*sz),st=[ms?`background:${MW_ST[ms].c}`:yc&&!ts?`background:${phYC(phYr(g))}`:'',sz!==1?`transform:scale(${sz});transform-origin:0 0`:''].filter(Boolean).join(';');
  return L.divIcon({className:'ph-ic',iconSize:[S,S],iconAnchor:[S/2,S/2],html:`<div class="phb${yc?' yc':''}${ts?' tss st-'+ts:ks?' tss kds k-'+ks:''}${g.ref?' ref':g.man?' man':''}${PH.sel===g.id?' sel':''}${PH.ed&&PH.ed.on&&PH.ed.pick.has(g.ids[0])?' pick':''}"${st?` style="${st}"`:''}${ts?` title="누수탐사 ${TS_ST[ts].n}"`:ks?` title="${PH_KD[ks].n}"`:ms?` title="민원 ${MW_ST[ms].n}"`:''}>${ts?tsStar(TS_ST[ts].c):ks?kdShp(ks,yc?phYC(phYr(g)):''):''}${one?`<i class="pha" style="transform:rotate(${m.dir}deg)"></i>`:''}${ts||ks||g.kd==='mw'&&!g.fac?'':`<span>${g.ref?'🎯':(PH_KD[g.kd]||PH_KD.mw).ic}</span>`}${g.n>1?`<b>${g.n>999?'999+':g.n}</b>`:''}</div>${phLbHtml(g)}`})}
 /* 지도 위 📷 사진 전체 끄기/켜기 — 현장 사진 › 지도 표시(표시/숨김)와 같은 설정 */
 function phTogSync(){const b=$('phTog');if(!b)return;const has=PH.list.length>0,off=$('phShow').value==='off';b.hidden=!has;b.disabled=!has;
@@ -10742,6 +10742,9 @@ function shUrlFix(u){u=String(u||'').trim();const m=u.match(/https?:\/\/script\.
 SH.cfg.url=shUrlFix(SH.cfg.url);
 setTimeout(()=>{if(!SH.cfg.url){const m=document.getElementById('shMsg');if(m&&!m.textContent)m.textContent='⚠ '+SITE.name+' 공유 서버 주소가 아직 없습니다. 관리자가 👑 현장 관리에 이 현장의 공유 서버 주소를 저장하면 앱을 열 때 자동으로 채워집니다.'}},0);
 try{SH.since=+localStorage.getItem('geo-share-since')||0}catch(_){}
+/* 사진 종류가 새로 생기면(2026-11-26 💧 누수징후 sg) 예전 판일 때 받아 둔 사진은 모르는 종류를 버리고 민원으로 저장돼 있음 — 받기는 바뀐 줄만 오므로(since) 판이 바뀐 뒤 한 번 처음부터 다시 받아 종류를 바로잡음 */
+const SH_KDV=Object.keys(PH_KD).join(',');try{SH.kdNeed=localStorage.getItem('geo-shkd')!==SH_KDV;if(SH.kdNeed)SH.since=0}catch(_){}
+const shKdDone=()=>{if(!SH.kdNeed)return;SH.kdNeed=false;try{localStorage.setItem('geo-shkd',SH_KDV)}catch(_){}};
 try{(JSON.parse(localStorage.getItem('geo-share-del')||'[]')||[]).forEach(id=>SH.del.add(id))}catch(_){}
 /* 휴지통에서 되살린 공유 사진 (서버에 '되살리기'를 보낼 것) · 지운 시각(10초 동안은 서버에 안 보내 되돌리기 가능) */
 SH.res=new Set();SH.delAt=new Map();try{(JSON.parse(localStorage.getItem('geo-share-res')||'[]')||[]).forEach(id=>SH.res.add(id))}catch(_){}
@@ -10973,7 +10976,7 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy||!PH.ld){if
   if(rm.length){await phDelete(rm,{remote:1,log:1});delN=rm.length;if(typeof phToast==='function')phToast(`☁️ 다른 직원이 사진 ${rm.length.toLocaleString()}장을 지웠습니다`+(rmEd?` (이 기기에서 고친 내용이 있던 ${rmEd}장 포함)`:'')+' — 🗂️ 휴지통에서 7일 안에 되살릴 수 있습니다.',{btn:'🗂️ 휴지통',fn:()=>phTrashOpen()})}
   if(dnN||delN)SH.act=Date.now();
   // 받은 목록은 바로 저장 → 중간에 끊겨도 다음엔 이어서 받음
-  SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
+  SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}shKdDone();
   if(changed){await phSaveMeta(true);phRefresh(dnN>0&&manual);changed=false;if(dnN)say(`☁️ 새 사진 ${dnN.toLocaleString()}장 목록 받음 · 작은 사진은 화면에 보이는 것부터 받습니다`)}
   // 2) 새 사진 올리기 (한 번에 최대 약 8MB)
   const news=PH.list.filter(m=>!m.shUp),t0=Date.now();
@@ -10993,7 +10996,7 @@ async function shSync(manual){if(!SH.on()||SH.busy)return;if(PH.busy||!PH.ld){if
    if(ress.length){if(!Array.isArray(r.restored)){/* 예전 공유 서버: 되살리기를 모름 → 다시 휴지통으로 */ress.forEach(x=>SH.res.delete(x.id));shSaveRes();await phDelete(ress.map(x=>x.id),{remote:1});
       if(typeof phToast==='function')phToast('⚠️ 공유 서버가 예전 버전이라 공유 사진을 되살리지 못했습니다. 서버 코드(Code.gs)를 새 버전으로 다시 배포해 주세요. 사진은 휴지통에 그대로 있습니다.',{ms:15000})}
     else{const ok=new Set(r.restored);ress.forEach(x=>{SH.res.delete(x.id);if(!ok.has(x.id)){const m=PH.byId.get(x.id);if(m){delete m.shUp;delete m.shSig}}});shSaveRes()}}}
-  SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}
+  SH.since=Math.max(0,(+r.now||Date.now())-30000);try{localStorage.setItem('geo-share-since',String(SH.since))}catch(_){}shKdDone();
   try{const pg=await shReq('ping');SH.n=pg.n||0}catch(_){}
   SH.last=Date.now();
   if(changed){SH.act=Date.now();await phSaveMeta(true);phRefresh()}
