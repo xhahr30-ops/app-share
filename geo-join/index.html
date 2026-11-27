@@ -3814,8 +3814,11 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
  const at=(a,yy,mm,d)=>{if(!a)return null;const k=bpSer(yy,mm,d)-D0;return k>=0&&k<a.length?a[k]:null};
  const S=[],N=[],PS=[],PN=[],J=[];for(let d=1;d<=nd;d++){S.push(at(D&&D.s,y,m,d));N.push(at(D&&D.n,y,m,d));const pv=!(m===2&&d===29);PS.push(pv?at(D&&D.s,y-1,m,d):null);PN.push(pv?at(D&&D.n,y-1,m,d):null);
   let t=0,c=0;for(let k=1;k<=7;k++){const dt=new Date(Date.UTC(y,m-1,d-k)),v=at(D&&D.n,dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate());if(v!=null){t+=v;c++}}const v=N[d-1];J.push(v!=null&&c>=4&&v>=t/c*DAY_JUMP)}
- const L=56,R=52,T=26,B=30,W=CW-L-R,Hh=CH-T-B,bw=W/nd;
- g.fillStyle='#0f172a';g.font=`bold 12px ${FT}`;g.textAlign='left';g.fillText(`${BT.n} · ${y}년 ${m}월 일별 공급량·야간최소`,L,16);
+ /* 2026-11-27 사용자 '중간에 글자 겹침'(폰): 제목(왼쪽)과 급증 범례(오른쪽)를 같은 줄 y=16에 그려 좁은 폭에서 겹침 → 폭이 모자라면 범례를 둘째 줄로 내리고 그래프를 그만큼 아래로 */
+ const nj=J.filter(Boolean).length,ttl=`${BT.n} · ${y}년 ${m}월 일별 공급량·야간최소`,lgT=nj?`● 야간최소 급증 ${nj}일 (앞 7일 평균 ×${DAY_JUMP} 이상)`:`야간최소 급증일 없음 (기준: 앞 7일 평균 ×${DAY_JUMP})`;
+ const L=56,R=52,B=30,W=CW-L-R;g.font=`bold 12px ${FT}`;const tw0=g.measureText(ttl).width;g.font=`10.5px ${FT}`;const lw0=g.measureText(lgT).width,wrap=tw0+lw0+16>CW-L-8;
+ const T=wrap?40:26,Hh=CH-T-B,bw=W/nd;
+ g.fillStyle='#0f172a';g.font=`bold 12px ${FT}`;g.textAlign='left';g.fillText(ttl,L,16);
  if(![...S,...N].some(v=>v!=null)){g.fillStyle='#64748b';g.font=`13px ${FT}`;g.textAlign='center';g.fillText('이 달은 일별 자료가 없습니다 (확인 필요)',CW/2,CH/2);BT.hit=[];return}
  const sx=Math.max(1,...[...S,...PS].filter(v=>v!=null))*1.12,nx=Math.max(.1,...[...N,...PN].filter(v=>v!=null))*1.18,X=i=>L+bw*(i+.5),Ys=v=>T+Hh*(1-v/sx),Yn=v=>T+Hh*(1-v/nx);
  g.strokeStyle='rgba(148,163,184,.35)';g.lineWidth=1;g.font=`10px ${FT}`;for(let k=0;k<=4;k++){const yy=T+Hh*k/4;g.beginPath();g.moveTo(L,yy);g.lineTo(L+W,yy);g.stroke();g.fillStyle='#1d4ed8';g.textAlign='right';g.fillText(Math.round(sx*(1-k/4)).toLocaleString(),L-4,yy+3);g.fillStyle='#b91c1c';g.textAlign='left';g.fillText((nx*(1-k/4)).toFixed(1),L+W+4,yy+3)}
@@ -3825,7 +3828,7 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
  line(PS,Ys,'#9ca3af',1.4,[5,3]);line(PN,Yn,'#9ca3af',1.4,[2,3]);line(N,Yn,'#dc2626',2.2,[]);
  N.forEach((v,i)=>{if(v==null)return;g.beginPath();g.arc(X(i),Yn(v),J[i]?5:2.6,0,7);g.fillStyle=J[i]?'#dc2626':'#fff';g.fill();g.strokeStyle='#dc2626';g.lineWidth=1.4;g.stroke()});
  g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let d=1;d<=nd;d++)if(d===1||d%5===0||d===nd)g.fillText(String(d),X(d-1),T+Hh+13);g.fillText('일',L+W+12,T+Hh+13);
- const nj=J.filter(Boolean).length;g.textAlign='right';g.font=`10.5px ${FT}`;g.fillStyle=nj?'#b91c1c':'#64748b';g.fillText(nj?`● 야간최소 급증 ${nj}일 (앞 7일 평균 ×${DAY_JUMP} 이상)`:`야간최소 급증일 없음 (기준: 앞 7일 평균 ×${DAY_JUMP})`,L+W,16);
+ g.font=`10.5px ${FT}`;g.fillStyle=nj?'#b91c1c':'#64748b';if(wrap){g.textAlign='left';g.fillText(lgT,L,31)}else{g.textAlign='right';g.fillText(lgT,L+W,16)}
  const f0=v=>v==null?'-':Math.round(v).toLocaleString(),f1=v=>v==null?'-':v.toFixed(1);
  BT.hit=S.map((v,i)=>({x:X(i),y:Math.min(v!=null?Ys(v):T+Hh,N[i]!=null?Yn(N[i]):T+Hh),t:`${m}/${i+1} 공급 ${f0(v)}㎥/일 · 야간 ${f1(N[i])}㎥/h${J[i]?' ⚠급증':''} (지난해 ${f0(PS[i])} · ${f1(PN[i])})`}))}
 function bpDayGo(y,m){const D=BP.nrw&&BP.nrw.day;if(!D||!bpDayOf(BT.n)){BT.day={y:y||0,m:m||0,none:D?2:1};t3Draw();return false}
