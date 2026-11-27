@@ -16115,7 +16115,7 @@ function mkTxClose(){if(!MK.tx)return;MK.tx.b.remove();MK.tx=null;if(MK.dr&&MK.d
 /* ---- 켜기·끄기 ---- */
 /* 2026-11-27 사용자 '그리기 모드 사용시 현황보기 미활성화' + '편집 모드에서도 반영해': 🖍️ 그리기·🛠 편집·✏️ 사진 편집 중에는
    📊 소블록 현황 창·📈 유수율 보기 시트·3D 추세를 숨기고(✋ 이동 등으로 소블록을 눌러도 소블록 정보창·현황 보기·3D가 안 뜸),
-   모드를 모두 끝내면 켜 두었던 것만 다시 보여 줌. STH.own = 지금 켜진 모드(mk·fe·ph) */
+   모드를 끝내도 다시 띄우지 않음(2026-11-27 '끝내기 누르면 자동으로 블록현황보기가 되는거 개선해' → 되살리기 뺌, 필요하면 직접 다시 열기). STH.own = 지금 켜진 모드(mk·fe·ph) */
 var STH={own:new Set(),rs:null,pg:0};
 function mkStatusOff(){if(!STH.own.size)return false;try{phToast('🖍️ 그리기·🛠 편집 중에는 📊 현황 보기가 꺼집니다 · 모드를 끝내면 다시 됩니다',{ms:2200})}catch(_){}return true}
 function stHold(k,on){if(!map||typeof STH==='undefined'||!STH)return;const was=STH.own.size;if(on)STH.own.add(k);else STH.own.delete(k);const now=STH.own.size;
@@ -16124,10 +16124,7 @@ function stHold(k,on){if(!map||typeof STH==='undefined'||!STH)return;const was=S
   if(bq)bq.hidden=true;if(ns&&!ns.hidden){ns.hidden=true;try{nrwShSync()}catch(_){}}if(t3&&window.bp3dClose)bp3dClose();
   if(!STH.pg){STH.pg=1;map.on('popupopen',e=>{if(!STH.own.size)return;const src=e.popup&&e.popup._source;if(src&&typeof polyL!=='undefined'&&polyL&&polyL.hasLayer(src)){map.closePopup(e.popup);mkStatusOff()}})}
   return}
- if(!was||now)return;const r=STH.rs;STH.rs=null;if(!r)return;
- if(r.bq&&bq)bq.hidden=false;
- if(r.ns&&ns){try{nrwShHost()}catch(_){}ns.hidden=false;ns.classList.toggle('min',r.nsMin);try{nrwShSync()}catch(_){}}
- if(r.t3&&typeof window.bp3dAt==='function')setTimeout(()=>{if(!STH.own.size)bp3dAt(r.t3)},0)}
+ if(was&&!now)STH.rs=null}
 function mkSet(on){if(!map)return;on=!!on;if(on===MK.on){if(on)mkUi();return}
  stHold('mk',on);
  if(on){if(typeof FE!=='undefined'&&FE.on)feSet(false);if(typeof PH!=='undefined'&&PH.ed&&PH.ed.on)phEdSet(false);
