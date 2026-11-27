@@ -308,6 +308,12 @@ html.dark .btMini .btTx{background:rgba(15,23,42,.94);border-color:rgba(226,232,
 .b3o.b3land{border-radius:10px}.b3o.b3land:after{display:none}.b3o.b3land .b3l small{display:none}.b3o.b3land .b3h{padding:4px 8px 3px}.b3o.b3land .b3a{padding:3px 8px 5px}
 .b3o:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:#c7d2fe}
 .b3o .b3h{display:flex;gap:6px;align-items:flex-start;padding:6px 8px 4px;border-bottom:1px solid #e2e8f0}.b3o .b3h b{font-size:14px;white-space:nowrap;color:#3730a3}.b3o .b3h span{flex:1;line-height:1.4}.b3o .b3h small{color:#64748b}.b3o .b3h button{border:0;background:#eef2ff;color:#3730a3;border-radius:6px;width:26px;height:26px;cursor:pointer;flex:none}
+.b3o .b3h .b3adj{width:auto;padding:0 9px;font-size:12px;font-weight:700;white-space:nowrap;border:1px solid #c7d2fe;background:#fff}.b3o .b3h .b3adj.on{background:#4f46e5;color:#fff;border-color:#4f46e5}
+@media (max-width:600px){.b3o .b3h .b3adj .lg{display:none}.b3o .b3h .b3adj{padding:0 7px}}
+.b3n{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:4px 8px;border-bottom:1px solid #e2e8f0;font-size:12px}.b3n b{color:#3730a3;font-size:12px}.b3n small{color:#64748b;font-size:11px}
+.b3n button{display:inline-flex;align-items:center;gap:4px;border:1px solid #cbd5e1;background:#f8fafc;color:#94a3b8;border-radius:999px;padding:2px 9px;font-size:12px;cursor:pointer}.b3n button i{width:14px;height:3px;background:#cbd5e1;border-radius:2px}
+.b3n button.on{color:#0f172a;border-color:var(--c);background:#fff;font-weight:700}.b3n button.on i{background:var(--c)}.b3n button:disabled{cursor:default;opacity:.6}
+.b3o .b3h .b3nv{width:24px;height:24px;margin-top:-2px;border:1px solid #c7d2fe;background:#fff;border-radius:50%;font-size:17px;font-weight:700;line-height:1;padding:0}.b3o .b3h .b3nv:hover{background:#e0e7ff}
 .b3o .b3w{position:relative}.b3o .b3d{display:flex;align-items:center;gap:6px;padding:4px 8px 0}.b3o .b3d[hidden]{display:none}.b3o .b3d b{flex:1;text-align:center;color:#1e3a8a;font-size:13px}.b3o .b3d button,.b3o .b3a button{cursor:pointer}.b3o .b3d button[hidden]{display:none}.b3o .b3d button{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:6px;padding:2px 9px;font:inherit}.b3o canvas{display:block;width:100%;height:500px;touch-action:none;cursor:grab}.b3o canvas:active{cursor:grabbing}
 .b3o .b3tip{position:absolute;background:#0f172a;color:#fff;border-radius:6px;padding:3px 7px;font-size:11px;white-space:nowrap;pointer-events:none}.b3o .b3tip[hidden]{display:none}
 .b3o .b3l{padding:0 8px 2px;line-height:1.5;color:#334155}.b3o .b3l i{display:inline-block;width:14px;height:8px;border-radius:2px;margin:0 3px 0 6px;vertical-align:middle}.b3o .b3l i:first-child{margin-left:0}.b3o .b3l small{display:block;color:#64748b}
@@ -3750,6 +3756,23 @@ function btMiniVis(){const m=G('map');if(!m||!BT.L)return;const on=BT.on&&m.getZ
    3D·2D·일별 모두 같은 캔버스라 그린 뒤 b3Fit으로 높이를 맞추고 한 번 더 그림 */
 /* 2026-11-28 사용자 'Pc에서는 새창 띄우기 넣어': PC(마우스)에서 ⧉ 새 창 = 지금 창(같은 요소·같은 그리기)을 빈 새 창으로 옮겨 크게. 창 크기 따라 그래프도 커짐.
    ↩ 지도에서 보기 = 지도 위로 되돌림 · 새 창을 닫으면 추세 창도 닫힘 · 새 창이 열려 있으면 다른 소블록 3D도 그 창에 뜸 */
+/* 2026-11-28 사용자 '왼쪽 위 블록명 좌우 화살표로 블록 이동하여 보기': 머리글 블록명 양옆 ‹ › = 이전·다음 소블록(유수율 자료 있는 소블록, 이름 순·끝에서 처음으로 돌아감). 보던 화면(3D·2D·일별 같은 달)은 그대로. 달 이동 ◀▶와 헷갈리지 않게 모양·자리 다르게 */
+function b3List(){let A=[];try{A=[...bpTrendAll().keys()]}catch(_){}if(!A.length)try{A=bpBlocks().map(b=>b.n)}catch(_){}return[...new Set(A)].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true}))}
+async function b3Step(d){const A=b3List(),n=BT.n;if(!A.length||!n)return;let i=A.indexOf(n);if(i<0){i=A.findIndex(x=>x.localeCompare(n,'ko',{numeric:true})>0);if(i<0)i=A.length;if(d>0)i--}
+ const to=A[(i+d+A.length)%A.length];if(!to||to===n)return;const dy=BT.day?(BT.day.none?(BT.dm||{y:null,m:null}):{y:BT.day.y,m:BT.day.m}):null;if(dy&&dy.y)BT.dm=dy;await bp3dAt(to);if(dy&&BT.n===to)bpDayGo(dy.y||undefined,dy.m||undefined)}
+/* 2026-11-28 사용자 '오른쪽 위에 인접블록 비교 검토하기 창 … 인접블록의 공급량, 야간최소를 해당 블록과 같이 비교' + '전년도 대신 인접블록 그래프를 넣으면 돼':
+   머리글 오른쪽 🔀 인접블록 비교 = 일별 그래프에서 지난해(회색 면·점선) 대신 맞닿은 소블록 공급량(색 실선)·야간최소(같은 색 점선). 아래 칩 줄로 블록마다 켜고 끄기.
+   맞닿음 = 이 소블록 경계를 15m 넓힌 면과 겹치는 다른 소블록(경계 자료 기준, 틈·겹침 오차 흡수) */
+const B3_NBC=['#f59e0b','#059669','#8b5cf6','#db2777','#0891b2','#a16207','#4d7c0f','#7c2d12'];
+function b3Nbrs(n){BT.nbC=BT.nbC||new Map();if(BT.nbC.has(n))return BT.nbC.get(n);const out=[];
+ try{const A=bpBlocks(),me=A.find(b=>b.n===n);if(me){const bf=me.fs.map(f=>{try{return turf.buffer(f,.015,{units:'kilometers'})}catch(_){return f}}).filter(Boolean),bb=bf.map(f=>turf.bbox(f));
+  A.forEach(b=>{if(b.n===n)return;if(b.fs.some(f=>{let q;try{q=turf.bbox(f)}catch(_){return false}return bf.some((g,i)=>{const r=bb[i];if(q[0]>r[2]||q[2]<r[0]||q[1]>r[3]||q[3]<r[1])return false;try{return turf.booleanIntersects(g,f)}catch(_){return false}})}))out.push(b.n)})}}catch(_){}
+ BT.nbC.set(n,out);return out}
+function b3AdjRow(o,at,nd){const rw=o.querySelector('.b3n');if(!BT.adj){if(rw)rw.hidden=true;return null}const nb=b3Nbrs(BT.n),off=BT.adjOff||new Set(),AJ=[];
+ const ch=nb.map((k,i)=>{const c=B3_NBC[i%B3_NBC.length],DD=bpDayOf(k),on=!off.has(k)&&!!DD;if(on&&at){const s2=[],n2=[];for(let d=1;d<=nd;d++){s2.push(at(DD.s,d));n2.push(at(DD.n,d))}AJ.push({n:k,c,S:s2,N:n2})}
+  return `<button type="button" data-b3="nb" data-n="${bpE(k)}" class="${on?'on':''}" ${DD?'':'disabled title="일별 자료 없음 (확인 필요)"'} style="--c:${c}"><i></i>${bpE(k)}${DD?'':' (자료 없음)'}</button>`});
+ if(rw){rw.hidden=false;rw.innerHTML=nb.length?`<b>🔀 맞닿은 소블록</b>${ch.join('')}<small>실선 공급량 · 점선 야간최소 · 눌러서 켜고 끄기</small>`:'<b>🔀 맞닿은 소블록을 경계 자료에서 찾지 못했습니다 (확인 필요)</b>'}return AJ}
+function b3AdjUi(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)return;const b=o.querySelector('[data-b3="adj"]');if(b){b.classList.toggle('on',!!BT.adj);b.setAttribute('aria-pressed',String(!!BT.adj))}const r=o.querySelector('.b3n');if(r&&!BT.adj)r.hidden=true}
 function b3PopOk(){try{return matchMedia('(pointer:fine)').matches&&innerWidth>=900}catch(_){return false}}
 function b3InPop(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();return!!(o&&BT.pop&&!BT.pop.closed&&o.ownerDocument===BT.pop.document)}
 function b3PopBtn(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement(),b=o&&o.querySelector('[data-b3="pop"]');if(b)b.textContent=b3InPop()?'↩ 지도에서 보기':'⧉ 새 창'}
@@ -3840,20 +3863,21 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
   {const lg=o.querySelector('.b3l');if(lg)lg.style.display='none'}if(nb){nb.hidden=false;const t=nb.querySelector('b');if(t)t.textContent='일별 자료 없음 (확인 필요)'}
   g.textAlign='center';g.fillStyle='#0f172a';g.font=`bold 15px ${FT}`;g.fillText(BT.day.none===1?'일별 자료가 아직 없습니다':`${BT.n} 일별 자료가 '공급량' 시트에 없습니다`,CW/2,CH/2-24);
   g.fillStyle='#475569';g.font=`13px ${FT}`;g.fillText(BT.day.none===1?"위 📥 유수율 엑셀 넣기로 유수율 엑셀을 한 번 다시 넣어 주세요 ('공급량' 시트의 날마다 공급량·야간최소를 읽습니다)":"'공급량' 시트 1행 블록명에 이 소블록 이름이 있는지 확인해 주세요",CW/2,CH/2+4);
-  g.fillText('예전에 넣은 엑셀은 월별만 읽어서, 새 판에서 다시 넣어야 일별이 나옵니다',CW/2,CH/2+26);BT.hit=[];return}
+  g.fillText('예전에 넣은 엑셀은 월별만 읽어서, 새 판에서 다시 넣어야 일별이 나옵니다',CW/2,CH/2+26);b3AdjRow(o,null,0);BT.hit=[];return}
  const {y,m}=BT.day,nd=new Date(y,m,0).getDate(),dpr=Math.min(2,window.devicePixelRatio||1),CW=cv.clientWidth||400,CH=cv.clientHeight||260;if(cv.width!==Math.round(CW*dpr)){cv.width=Math.round(CW*dpr);cv.height=Math.round(CH*dpr)}
  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,CW,CH);const FT='"Noto Sans KR","Malgun Gothic",sans-serif',D0=BP.nrw.day.d0;
  {const lg=o.querySelector('.b3l');if(lg)lg.style.display='none'}if(nb){nb.hidden=false;const t=nb.querySelector('b');if(t)t.textContent=`${y}년 ${m}월 일별`}
  const at=(a,yy,mm,d)=>{if(!a)return null;const k=bpSer(yy,mm,d)-D0;return k>=0&&k<a.length?a[k]:null};
  const S=[],N=[],PS=[],PN=[],J=[];for(let d=1;d<=nd;d++){S.push(at(D&&D.s,y,m,d));N.push(at(D&&D.n,y,m,d));const pv=!(m===2&&d===29);PS.push(pv?at(D&&D.s,y-1,m,d):null);PN.push(pv?at(D&&D.n,y-1,m,d):null);
   let t=0,c=0;for(let k=1;k<=7;k++){const dt=new Date(Date.UTC(y,m-1,d-k)),v=at(D&&D.n,dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate());if(v!=null){t+=v;c++}}const v=N[d-1];J.push(v!=null&&c>=4&&v>=t/c*DAY_JUMP)}
+ const AJ=b3AdjRow(o,(DD,d)=>at(DD,y,m,d),nd);if(AJ){PS.fill(null);PN.fill(null)}
  /* 2026-11-27 사용자 '중간에 글자 겹침'(폰): 제목(왼쪽)과 급증 범례(오른쪽)를 같은 줄 y=16에 그려 좁은 폭에서 겹침 → 폭이 모자라면 범례를 둘째 줄로 내리고 그래프를 그만큼 아래로 */
- const nj=J.filter(Boolean).length,ttl=`${BT.n} · ${y}년 ${m}월 일별 공급량·야간최소`,lgT=nj?`● 야간최소 급증 ${nj}일 (앞 7일 평균 ×${DAY_JUMP} 이상)`:`야간최소 급증일 없음 (기준: 앞 7일 평균 ×${DAY_JUMP})`;
+ const nj=J.filter(Boolean).length,ttl=`${BT.n} · ${y}년 ${m}월 일별 공급량·야간최소${AJ?' · 인접블록 비교':''}`,lgT=nj?`● 야간최소 급증 ${nj}일 (앞 7일 평균 ×${DAY_JUMP} 이상)`:`야간최소 급증일 없음 (기준: 앞 7일 평균 ×${DAY_JUMP})`;
  const L=56,R=52,B=36,W=CW-L-R;g.font=`bold 12px ${FT}`;const tw0=g.measureText(ttl).width;g.font=`10.5px ${FT}`;const lw0=g.measureText(lgT).width,wrap=tw0+lw0+16>CW-L-8;
  const T=wrap?40:26,Hh=CH-T-B,bw=W/nd;
  g.fillStyle='#0f172a';g.font=`bold 12px ${FT}`;g.textAlign='left';g.fillText(ttl,L,16);
  if(![...S,...N].some(v=>v!=null)){g.fillStyle='#64748b';g.font=`13px ${FT}`;g.textAlign='center';g.fillText('이 달은 일별 자료가 없습니다 (확인 필요)',CW/2,CH/2);BT.hit=[];return}
- const sx=Math.max(1,...[...S,...PS].filter(v=>v!=null))*1.12,nx=Math.max(.1,...[...N,...PN].filter(v=>v!=null))*1.18,X=i=>L+bw*(i+.5),Ys=v=>T+Hh*(1-v/sx),Yn=v=>T+Hh*(1-v/nx);
+ const sx=Math.max(1,...[...S,...PS,...(AJ||[]).flatMap(a=>a.S)].filter(v=>v!=null))*1.12,nx=Math.max(.1,...[...N,...PN,...(AJ||[]).flatMap(a=>a.N)].filter(v=>v!=null))*1.18,X=i=>L+bw*(i+.5),Ys=v=>T+Hh*(1-v/sx),Yn=v=>T+Hh*(1-v/nx);
  g.strokeStyle='rgba(148,163,184,.35)';g.lineWidth=1;g.font=`10px ${FT}`;for(let k=0;k<=4;k++){const yy=T+Hh*k/4;g.beginPath();g.moveTo(L,yy);g.lineTo(L+W,yy);g.stroke();g.fillStyle='#1d4ed8';g.textAlign='right';g.fillText(Math.round(sx*(1-k/4)).toLocaleString(),L-4,yy+3);g.fillStyle='#b91c1c';g.textAlign='left';g.fillText((nx*(1-k/4)).toFixed(1),L+W+4,yy+3)}
  g.save();g.translate(12,T+Hh/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle='#1d4ed8';g.fillText('공급량 ㎥/일',0,0);g.restore();g.save();g.translate(CW-8,T+Hh/2);g.rotate(Math.PI/2);g.textAlign='center';g.fillStyle='#b91c1c';g.fillText('야간최소 ㎥/h',0,0);g.restore();
  /* 2026-11-27 사용자 '작년 같은 날 공급량도 막대그래프 회색으로' → 11-28 '작년 공급량 면그래프로'·'면 농도 더 흐리게'(.45→.2): 지난해 같은 날 공급량(PS)을 회색 면(채운 영역+테두리 선)으로 파란 막대 뒤에 깔고, 파란 막대는 반투명으로 덮음. 빈 날은 면을 끊음 */
@@ -3863,15 +3887,17 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
    g.beginPath();if(q.length>1)q.forEach((i,k)=>k?g.lineTo(X(i),Ys(PS[i])):g.moveTo(X(i),Ys(PS[i])));else{g.moveTo(x0,Ys(PS[q[0]]));g.lineTo(x1,Ys(PS[q[0]]))}g.strokeStyle='#6b7280';g.lineWidth=1.6;g.stroke()})}
  S.forEach((v,i)=>{if(v==null)return;const y0=Ys(v);g.fillStyle=hasP?'rgba(96,165,250,.62)':'#93c5fd';g.fillRect(X(i)-bw*.32,y0,bw*.64,T+Hh-y0)});
  const line=(A,Y,c,w,dash)=>{g.strokeStyle=c;g.lineWidth=w;g.setLineDash(dash);g.beginPath();let st=0;A.forEach((v,i)=>{if(v==null){st=0;return}st?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));st=1});g.stroke();g.setLineDash([])};
- /* 2026-11-27 사용자 '전년도 회색선 더 진하게': #9ca3af 1.4 → #4b5563 2.0 */line(PN,Yn,'#4b5563',2,[2,3]);line(N,Yn,'#dc2626',2.2,[]);
+ /* 2026-11-27 사용자 '전년도 회색선 더 진하게': #9ca3af 1.4 → #4b5563 2.0 */line(PN,Yn,'#4b5563',2,[2,3]);
+ if(AJ)AJ.forEach(a=>{line(a.S,Ys,a.c,2.2,[]);a.S.forEach((v,i)=>{if(v==null)return;g.fillStyle=a.c;g.fillRect(X(i)-2.2,Ys(v)-2.2,4.4,4.4)});line(a.N,Yn,a.c,1.8,[4,3])});
+ line(N,Yn,'#dc2626',2.2,[]);
  N.forEach((v,i)=>{if(v==null)return;g.beginPath();g.arc(X(i),Yn(v),J[i]?5:2.6,0,7);g.fillStyle=J[i]?'#dc2626':'#fff';g.fill();g.strokeStyle='#dc2626';g.lineWidth=1.4;g.stroke()});
  g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let d=1;d<=nd;d++)if(d===1||d%5===0||d===nd)g.fillText(String(d),X(d-1),T+Hh+13);g.fillText('일',L+W+12,T+Hh+13);
- {g.font=`10px ${FT}`;g.textAlign='left';let lx=L;const ly=T+Hh+28,hp2=PN.some(v=>v!=null),mk=sh=>[[hasP?'rgba(96,165,250,.62)':'#93c5fd',sh?'올해 공급':'올해 공급량',0],...(hasP?[['rgba(148,156,170,.3)',sh?'작년 같은 날 공급(면)':'지난해 같은 날 공급량(회색 면)',0]]:[]),['#dc2626','야간최소',1],...(hp2?[['#4b5563',sh?'작년 야간':'지난해 야간최소',2]]:[])],wd=A=>A.reduce((t,a)=>t+24+g.measureText(a[1]).width,0);
+ {g.font=`10px ${FT}`;g.textAlign='left';let lx=L;const ly=T+Hh+28,hp2=PN.some(v=>v!=null),mk=sh=>[[hasP?'rgba(96,165,250,.62)':'#93c5fd',AJ?BT.n+(sh?' 공급':' 공급량'):sh?'올해 공급':'올해 공급량',0],...(hasP?[['rgba(148,156,170,.3)',sh?'작년 같은 날 공급(면)':'지난해 같은 날 공급량(회색 면)',0]]:[]),['#dc2626',AJ?BT.n+' 야간':'야간최소',1],...(hp2?[['#4b5563',sh?'작년 야간':'지난해 야간최소',2]]:[]),...(AJ||[]).map(a=>[a.c,a.n+(sh?'':' 공급·야간(점선)'),1])],wd=A=>A.reduce((t,a)=>t+24+g.measureText(a[1]).width,0);
   let it=mk(0);if(wd(it)>CW-L-4)it=mk(1);if(wd(it)>CW-L-4)lx=6;
   it.forEach(([c,t,k])=>{if(k===0){g.fillStyle=c;g.fillRect(lx,ly-7,9,8)}else{g.strokeStyle=c;g.lineWidth=2;g.setLineDash(k===2?[2,2]:[]);g.beginPath();g.moveTo(lx,ly-3);g.lineTo(lx+10,ly-3);g.stroke();g.setLineDash([])}g.fillStyle='#334155';g.fillText(t,lx+13,ly);lx+=13+g.measureText(t).width+11})}
  g.font=`10.5px ${FT}`;g.fillStyle=nj?'#b91c1c':'#64748b';if(wrap){g.textAlign='left';g.fillText(lgT,L,31)}else{g.textAlign='right';g.fillText(lgT,L+W,16)}
  const f0=v=>v==null?'-':Math.round(v).toLocaleString(),f1=v=>v==null?'-':v.toFixed(1);
- BT.hit=S.map((v,i)=>({x:X(i),y:Math.min(v!=null?Ys(v):T+Hh,N[i]!=null?Yn(N[i]):T+Hh),t:`${m}/${i+1} 공급 ${f0(v)}㎥/일 · 야간 ${f1(N[i])}㎥/h${J[i]?' ⚠급증':''} (지난해 ${f0(PS[i])} · ${f1(PN[i])})`}))}
+ BT.hit=S.map((v,i)=>({x:X(i),y:Math.min(v!=null?Ys(v):T+Hh,N[i]!=null?Yn(N[i]):T+Hh),t:`${m}/${i+1} 공급 ${f0(v)}㎥/일 · 야간 ${f1(N[i])}㎥/h${J[i]?' ⚠급증':''}${AJ?(AJ.length?' | '+AJ.map(a=>`${a.n} ${f0(a.S[i])}·${f1(a.N[i])}`).join(' | '):''):` (지난해 ${f0(PS[i])} · ${f1(PN[i])})`}`}))}
 function bpDayGo(y,m){const D=BP.nrw&&BP.nrw.day;if(!D||!bpDayOf(BT.n)){BT.day={y:y||0,m:m||0,none:D?2:1};t3Draw();return false}
  if(y==null){const dt=new Date(Date.UTC(1899,11,30)+D.last*864e5);y=dt.getUTCFullYear();m=dt.getUTCMonth()+1}BT.day={y,m};t3Draw();return true}
 function bp3dClose(){if(BT.pop&&!BT.keepPop&&!BT.popBack){const w=BT.pop;BT.pop=null;try{w.close()}catch(_){}}const m=G('map');if(BT.ov&&m){m.removeLayer(BT.ov)}if(m)m.getContainer().classList.remove('b3on','b3lc');BT.ov=null;BT.n=''}
@@ -3882,7 +3908,7 @@ async function bp3dAt(n){if(typeof mkStatusOff==='function'&&mkStatusOff())retur
  const t=bpTrendOf(b.n),N=bpNrwOf(b.n),e=bpE,f1=v=>v==null||!isFinite(v)?'확인 필요':(+v).toFixed(1),ud=(v,u,good)=>v==null||!isFinite(v)?'':` <b style="color:${(good?v>=0:v<0)?'#15803d':'#b91c1c'}">${v>=0?'▲':'▼'}${Math.abs(v).toFixed(1)}${u}</b>`;
  const kp=t?`유수율 <b>${f1(t.r)}%</b>${ud(t.dr,'%p',1)} · 야간 <b>${t.n==null?'확인 필요':f1(t.n)+'㎥/h'}</b>${ud(t.dn,'%',0)} · 공급 <b>${t.s==null?'확인 필요':Math.round(t.s).toLocaleString()+'㎥/일'}</b>${ud(t.ds,'%',0)} <small>(${t.y}.${t.m}월 · 전년 같은 달 대비)</small>`:'유수율 자료 없음 (확인 필요)';
  const sm=BP.nrw&&BP.nrw.fromBill;
- const html=`<div class="b3o" role="dialog" aria-label="${e(b.n)} 소블록 3차원 추세"><div class="b3h"><b>📈 ${e(b.n)}</b><span>${kp}</span><button type="button" data-b3="x" aria-label="닫기">✕</button></div>
+ const html=`<div class="b3o" role="dialog" aria-label="${e(b.n)} 소블록 3차원 추세"><div class="b3h"><button type="button" class="b3nv" data-b3="bp" title="이전 소블록 (이름 순)" aria-label="이전 소블록">‹</button><b>📈 ${e(b.n)}</b><button type="button" class="b3nv" data-b3="bn" title="다음 소블록 (이름 순)" aria-label="다음 소블록">›</button><span>${kp}</span>${N?`<button type="button" class="b3adj${BT.adj?' on':''}" data-b3="adj" aria-pressed="${!!BT.adj}" title="인접블록 비교: 맞닿은 소블록의 날마다 공급량·야간최소를 이 소블록과 같은 그래프에 (전년도 자리에 그림)">🔀 인접<span class="lg">블록 비교</span></button>`:''}<button type="button" data-b3="x" aria-label="닫기">✕</button></div>${N?'<div class="b3n" hidden></div>':''}
 ${N?`<div class="b3d" hidden><button type="button" data-b3="dp" aria-label="이전 달">◀</button><b></b><button type="button" data-b3="dn" aria-label="다음 달">▶</button><button type="button" data-b3="din" hidden>📥 유수율 엑셀 넣기</button><button type="button" data-b3="d3">↩ 3D로</button></div><div class="b3w"><canvas aria-label="${e(b.n)} 월별 유수율 3차원 막대와 야간최소유량·공급량 선"></canvas><div class="b3tip" hidden></div></div><div class="b3l"><i style="background:linear-gradient(90deg,#16a34a,#eab308,#dc2626)"></i>막대 유수율 <i style="background:#dc2626;height:3px"></i>야간최소 <i style="background:#2563eb;height:3px"></i>공급량(오른쪽 축) <i style="background:#a8b0bc"></i>지난해(회색) <small>공급량은 오른쪽 ㎥/일 축 · 야간최소는 높낮이만(점 위 숫자 ㎥/h) · 회색 막대·점선 = 지난해(야간 긴 점선 ▫ / 공급 짧은 점선 ○) · 끌어서 돌리기 · 마우스를 올리면 값 · 막대(달)를 누르면 그 달 일별${sm?' · 야간최소는 유수율 엑셀을 넣어야 나옴(확인 필요)':''}</small></div>`
  :`<p class="b3m">이 소블록은 유수율 자료가 없습니다 (확인 필요). 📥 유수율 엑셀 '유수율(소블록별)'을 넣어 주세요.</p>`}
 <div class="b3a"><button type="button" data-b3="q">📊 현황 보기</button><button type="button" data-b3="i">ℹ 정보창</button>${N?'<button type="button" data-b3="2d" title="평면(2D) 그래프 ↔ 3D">'+(BT.d2?'🧊 3D':'📊 2D')+'</button><button type="button" data-b3="day" title="이 소블록 날마다 공급량·야간최소 (가장 최근 달). 3D 막대를 눌러도 그 달 일별">📅 일별</button><button type="button" data-b3="v" title="정면·비스듬히 바꾸기">◩ 각도</button><button type="button" data-b3="png">🖼 그림 저장</button>'+(b3PopOk()?'<button type="button" data-b3="pop" title="PC: 그래프를 새 창으로 크게 (창 크기 바꾸면 따라 커짐)">⧉ 새 창</button>':'')+'':''}</div></div>`;
@@ -3891,6 +3917,10 @@ ${N?`<div class="b3d" hidden><button type="button" data-b3="dp" aria-label="이�
  try{L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el)}catch(_){}
  el.addEventListener('click',ev=>{const x=ev.target.closest('[data-b3]');if(!x)return;const a=x.dataset.b3,nn=BT.n;
   if(a==='pop'){if(b3InPop())b3PopBack();else b3Pop();return}
+  if(a==='bp'||a==='bn'){b3Step(a==='bn'?1:-1);return}
+  if(a==='adj'){BT.adj=!BT.adj;b3AdjUi();if(BT.adj&&!BT.day)bpDayGo();else t3Draw();return}
+  if(a==='nb'){const k=x.dataset.n;BT.adjOff=BT.adjOff||new Set();BT.adjOff.has(k)?BT.adjOff.delete(k):BT.adjOff.add(k);t3Draw();return}
+  if((a==='d3'||a==='2d'||a==='v')&&BT.adj){BT.adj=false;b3AdjUi()}
   if(a==='x'){bp3dClose();return}if(a==='q'){bp3dClose();try{F('hlBlock',nn)}catch(_){}bpQuick([nn]);return}
   if(a==='i'){const ll=BT.ov.getLatLng();bp3dClose();const pl=G('polyL'),fld=bpFld();let hit=null;if(pl)pl.eachLayer(l=>{if(!hit&&l.feature&&String(l.feature.properties[fld]??'').trim()===nn)hit=l});if(hit){window.BT_SKIP=1;try{hit.openPopup(ll)}catch(_){}window.BT_SKIP=0}return}
   if(a==='2d'){BT.day=null;BT.d2=!BT.d2;x.textContent=BT.d2?'🧊 3D':'📊 2D';t3Draw();return}
