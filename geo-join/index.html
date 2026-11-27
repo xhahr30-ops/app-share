@@ -1453,19 +1453,20 @@ html.gwOn #gwMapSlot>#mapBox>h3 .hideBtn,html.gwOn #gwMapSlot>#mapBox>h3 .dwBtn{
 html.gwOn #gwMapSlot>#mapBox #map{flex:1;height:auto!important;min-height:0!important;border-radius:0}
 html.gwOn #gwMapSlot>#mapBox.mapfs{position:fixed;inset:0;z-index:10000}
 /* 2026-11-24 전체화면 왼쪽 레이어 창(fsL) + ◀▶ 손잡이(#gwFsT), 접으면 fsLc */
-#mapBox.fsL{position:relative}#mapBox.fsL>#gwLeft{position:absolute;left:0;bottom:0;top:0;width:var(--gwL,270px);z-index:1200;border-width:0 1px 0 0;box-shadow:2px 0 10px rgba(15,23,42,.12);display:flex}
+/* 2026-11-27 전체 지도 모드(mapfs: 홈 화면 앱·주소창 숨기기 끔)는 position:fixed 그대로 둬야 함 — relative로 덮으면 지도가 제자리로 돌아가 위 제목줄이 보였음 */#mapBox.fsL:not(.mapfs){position:relative}#mapBox.fsL>#gwLeft{position:absolute;left:0;bottom:0;top:0;width:var(--gwL,270px);z-index:1200;border-width:0 1px 0 0;box-shadow:2px 0 10px rgba(15,23,42,.12);display:flex}
 #mapBox.fsL>#map{margin-left:var(--gwL,270px)}#mapBox.fsL.fsLc>#gwLeft{display:none}#mapBox.fsL.fsLc>#map{margin-left:0}
-#gwFsT{display:none}#mapBox.fsL>#gwFsT{display:flex;align-items:center;justify-content:center;position:absolute;z-index:1201;left:var(--gwL,270px);width:22px;height:52px;margin-top:-26px;padding:0;border:1px solid var(--gw-bd,#cbd5e1);border-left:0;border-radius:0 8px 8px 0;background:var(--gw-pn,#fff);color:var(--gw-tx2,#475569);font-size:11px;cursor:pointer;box-shadow:2px 1px 6px rgba(15,23,42,.18)}
-#mapBox.fsL.fsLc>#gwFsT{left:0}html.chipV #mapBox.fsL>#gwFsT{left:calc(var(--gwL,270px) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLc>#gwFsT{left:var(--chw,0px)}#mapBox.fsL>#gwFsT:hover{color:#fff;background:#4f46e5;border-color:#4f46e5}
+#gwFsT{display:none}#mapBox.fsL #gwFsT{display:flex;align-items:center;justify-content:center;position:absolute;z-index:1201;left:var(--gwL,270px);width:22px;height:52px;margin-top:-26px;padding:0;border:1px solid var(--gw-bd,#cbd5e1);border-left:0;border-radius:0 8px 8px 0;background:var(--gw-pn,#fff);color:var(--gw-tx2,#475569);font-size:11px;cursor:pointer;box-shadow:2px 1px 6px rgba(15,23,42,.18)}
+#mapBox.fsL.fsLc #gwFsT{left:0}html.chipV #mapBox.fsL #gwFsT{left:calc(var(--gwL,270px) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLc #gwFsT{left:var(--chw,0px)}#mapBox.fsL #gwFsT:hover{color:#fff;background:#4f46e5;border-color:#4f46e5}
 #mapBox.fsL>#gwLeft #gwLRs{display:block}
 /* 2026-11-27 폰 전체화면: 레이어 창을 지도 위에 겹쳐 띄움(지도는 그대로 꽉 참) · 접으면 숨기고 왼쪽 가장자리 ▶ 손잡이만 */
 #mapBox.fsL.fsLn>#gwLeft{width:min(300px,82vw);z-index:1300;box-shadow:4px 0 18px rgba(15,23,42,.28);transition:transform .2s ease}
 #mapBox.fsL.fsLn>#map{margin-left:0}
 #mapBox.fsL.fsLn>#gwLeft #gwLRs{display:none}
 #mapBox.fsL.fsLn.fsLc>#gwLeft{display:flex;transform:translateX(-105%);box-shadow:none;pointer-events:none;visibility:hidden}
-#mapBox.fsL.fsLn>#gwFsT{z-index:1301;left:min(300px,82vw);width:26px;height:60px;margin-top:-30px;font-size:13px}
-#mapBox.fsL.fsLn.fsLc>#gwFsT{left:0}
-html.chipV #mapBox.fsL.fsLn>#gwFsT{left:calc(min(300px,82vw) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLn.fsLc>#gwFsT{left:var(--chw,0px)}
+#mapBox.fsL.fsLn #gwFsT{z-index:1000;left:min(300px,82vw);width:26px;height:60px;margin-top:-30px;font-size:13px}
+#mapBox.fsL.fsLn.fsLc #gwFsT{left:0}
+/* 폰: 손잡이를 지도(#map, z 0 묶음) 안에 둠 → ⚙ 설정·검색 등 지도 위 창(z 1001)이 손잡이를 덮음 */
+html.chipV #mapBox.fsL.fsLn #gwFsT{left:calc(min(300px,82vw) + var(--chw,0px))}html.chipV #mapBox.fsL.fsLn.fsLc #gwFsT{left:var(--chw,0px)}
 html.chipV #mapBox.fsL.fsLn>#gwLeft{left:var(--chw,0px)}
 /* 오른쪽 작업 창: 왼쪽 카드(자료 등록 등)를 같은 id 그대로 옮겨 띄움 */
 #gwWin{position:absolute;top:0;right:0;bottom:0;width:min(400px,100%);z-index:1200;display:flex;flex-direction:column;background:var(--gw-pn);border-left:1px solid var(--gw-bd);box-shadow:-6px 0 18px rgba(0,0,0,.14)}
@@ -2733,11 +2734,11 @@ const FSL={on:false,home:null};
 const fsLayN=()=>innerWidth<=900;
 function fsLayC(){return fsLayN()?LS.get('geo-gwFsLm')!=='1':LS.get('geo-gwFsL')==='0'}
 function fsLaySetC(c){if(fsLayN())LS.set('geo-gwFsLm',c?'':'1');else LS.set('geo-gwFsL',c?'0':'');fsLaySet()}
-function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop,z=parseFloat(getComputedStyle(l).zoom)||1;/* PC 글씨 85%(zoom) 때 창 안 px는 줄어 보임 → 나눠 맞춤 */l.style.top=(t/z)+'px';l.style.bottom='auto';l.style.height=(m.offsetHeight/z)+'px';const b=$('gwFsT');if(b){b.style.top=(t+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
+function fsLayPos(){const mb=$('mapBox'),m=$('map'),l=$('gwLeft');if(!FSL.on||!mb||!m||!l)return;const t=m.offsetTop,z=parseFloat(getComputedStyle(l).zoom)||1;/* PC 글씨 85%(zoom) 때 창 안 px는 줄어 보임 → 나눠 맞춤 */l.style.top=(t/z)+'px';l.style.bottom='auto';l.style.height=(m.offsetHeight/z)+'px';const b=$('gwFsT');if(b){const n=fsLayN(),pa=n?m:mb;if(b.parentNode!==pa)pa.appendChild(b);b.style.top=((n?0:t)+m.offsetHeight/2)+'px';const c=fsLayC();b.textContent=c?'▶':'◀';b.title=c?'레이어 창 펼치기':'레이어 창 접기';b.setAttribute('aria-label',b.title)}}
 function fsLay(){const mb=$('mapBox'),l=$('gwLeft');if(!mb||!l)return;
  const want=(S.on||fsLayN())&&document.body.classList.contains('fsOn')&&mb.contains($('map'));mb.classList.toggle('fsLn',want&&fsLayN());
  if(want&&!FSL.on){FSL.on=true;FSL.home=l.nextElementSibling;mb.insertBefore(l,$('map'));
-  let b=$('gwFsT');if(!b){b=document.createElement('button');b.type='button';b.id='gwFsT';b.className='np';b.onclick=()=>fsLaySetC(!fsLayC())}
+  let b=$('gwFsT');if(!b){b=document.createElement('button');b.type='button';b.id='gwFsT';b.className='np';b.onclick=()=>fsLaySetC(!fsLayC());try{L.DomEvent.disableClickPropagation(b)}catch(_){}}
   mb.appendChild(b);mb.classList.add('fsL');fsLaySet();if($('gwLay')&&!$('gwLay').hidden){layKey='';layRender()}}
  else if(!want&&FSL.on){FSL.on=false;mb.classList.remove('fsL','fsLc','fsLn');l.style.top=l.style.bottom=l.style.height='';const h=$('gwBody');if(FSL.home&&FSL.home.parentNode===h)h.insertBefore(l,FSL.home);else h.insertBefore(l,h.firstChild);const b=$('gwFsT');if(b)b.remove();const m=G('map');if(m)setTimeout(()=>m.invalidateSize({pan:false}),60)}
  else if(FSL.on){mb.classList.toggle('fsLc',fsLayC());fsLayPos()}}
