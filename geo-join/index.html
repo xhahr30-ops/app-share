@@ -5257,8 +5257,10 @@ function uiSave(){try{localStorage.setItem('geo-ui',JSON.stringify(UI))}catch(_)
 /* 다시 열 때 그대로: 지도 위치·확대(UI.view)·배경 지도(UI.base·UI.ovl)·지도 위 선택칸(UI.sel)
    저장된 위치가 있으면 처음 자료를 불러오는 동안은 자동 맞춤(fitBounds)을 하지 않음 → 지도를 만지거나 30초가 지나면 평소대로 */
 const V0=Array.isArray(UI.view)&&UI.view.length===3&&UI.view.every(x=>typeof x==='number'&&isFinite(x))?UI.view:null;
-let VHOLD=!!V0;function vHold(){return VHOLD}
-{const off=()=>{VHOLD=false;['pointerdown','keydown','wheel'].forEach(t=>document.removeEventListener(t,off,true))};['pointerdown','keydown','wheel'].forEach(t=>document.addEventListener(t,off,true));setTimeout(off,30000)}
+/* 2026-11-27 새로 고침 때 보던 화면 유지: 예전엔 아무 데나 누르거나(잠금·퀴즈·첫 터치) 30초가 지나면 풀려서, 그 뒤에 끝난 주소·결합 복원이나
+   공유 서버 자동 받기(기준자료)가 전체 범위로 맞춰 버림 → 이제는 사용자가 파일을 직접 넣을 때만 풀림. 자동 받기(refDown auto) 중에는 늘 맞추지 않음(VAUTO) */
+let VHOLD=!!V0,VAUTO=0;function vHold(){return VHOLD||VAUTO>0}
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.type==='file'&&t.files&&t.files.length)VHOLD=false},true);
 if(!UI.sel||typeof UI.sel!=='object')UI.sel={};
 const UI_SEL=['mColorBy','blkColor','blkView','locZoom','locPipe','tol'];
 function uiSelPut(id){const el=document.getElementById(id),v=UI.sel[id];if(!el||v==null)return;
@@ -5871,7 +5873,10 @@ function initFs(){
     (브라우저는 사용자가 누르기 전에는 전체화면을 막음) · ⚙️ 앱 설정 › 앱 시작 화면 · 작업 화면(geo-gw)·처음 쓰는 기기는 평소 화면 */
  try{const m=UI.fsStart||'auto',phone=matchMedia('(pointer:coarse)').matches;/* 폰·태블릿(터치) */
   let gw='0';try{const g=localStorage.getItem('geo-gw');gw=g==null?(!phone&&innerWidth>=900?'1':'0'):g}catch(_){}
-  if((m==='on'||(m==='auto'&&phone&&!UI_NEW))&&gw!=='1'){
+  /* 2026-11-27 새로 고침이면 방금 보던 그대로: 전체 지도 모드였는지 이 탭(sessionStorage geo-fsNow)에 남겨 두고 그대로 엶. 탭을 새로 열면 예전 규칙 */
+  let now=null;try{now=sessionStorage.getItem('geo-fsNow')}catch(_){}
+  const keepNow=()=>{try{sessionStorage.setItem('geo-fsNow',isOn()?'1':'0')}catch(_){}};window.addEventListener('pagehide',keepNow);window.addEventListener('beforeunload',keepNow);
+  if(now!=null?now==='1':(m==='on'||(m==='auto'&&phone&&!UI_NEW))&&gw!=='1'){
    want=true;box.classList.add('mapfs');sync();
    const evs=['pointerup','touchend','click','keydown'];
    const first=e=>{const t=e&&e.target;
@@ -11169,7 +11174,7 @@ async function facSync(mode,quiet){const R={got:0,sent:0,kept:0};const say=t=>{i
  catch(e){R.err=String((e&&e.message)||e)}
  finally{FSY.busy=false}return R}
 /* auto=true: 앱을 열 때. 서버가 새것인 기준자료만 받아 이 기기에 저장(이전 것은 되돌리기용 _prev로 보관)하고 지도에 바로 표시 */
-async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=[];try{
+async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;if(auto)VAUTO++;let got=[];try{
   if(typeof JSZip==='undefined')throw new Error('ZIP(JSZip) 라이브러리를 불러오지 못했습니다.');
   if(!auto)refSay('공유 서버 확인 중…');const info=(await shReq('refinfo')).ref||{},loc=await refLocal();
   for(const [n,t,cnt] of REF.L){if(n==='vids'){const r=await vidSync(true);if(r.got)got.push(`${t} ${r.got}개`);continue}
@@ -11196,7 +11201,7 @@ async function refDown(auto){if(REF.busy||!SH.on())return;REF.busy=true;let got=
   if(got.length){refSay(`✅ 공유 서버에서 받았습니다: ${got.join(' · ')}<br><small>${refState(info,loc2)}</small>`);if(typeof phToast==='function')phToast('🗺️ 공유 서버에서 새 기준자료를 받았습니다: '+got.join(' · '))}
   else refSay((Object.keys(info).length?'✅ 이 기기 기준자료가 최신입니다.':'공유 서버에 아직 올린 기준자료가 없습니다.')+'<br><small>'+refState(info,loc2)+'</small>')}
  catch(e){const m=String((e&&e.message)||e);refSay('<span class="c-rd">⚠️ 기준자료 받기 실패: '+esc(m)+'</span>'+(/알 수 없는 요청/.test(m)?'<br><small>공유 서버 Code.gs가 예전 판입니다. 관리자가 2026-10-13 판으로 다시 배포하면 받을 수 있습니다.</small>':''))}
- finally{REF.busy=false}}
+ finally{REF.busy=false;if(auto)VAUTO=Math.max(0,VAUTO-1)}}
 (function(){const a=$('shRefAuto');if(!a)return;a.checked=SH.cfg.refAuto!==false;
  a.onchange=()=>{SH.cfg.refAuto=a.checked;shSaveCfg()};
  $('shRefUp').onclick=()=>{$('shKey').dispatchEvent(new Event('change'));refUp()};
