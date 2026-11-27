@@ -3825,7 +3825,7 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
  g.save();g.translate(12,T+Hh/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle='#1d4ed8';g.fillText('공급량 ㎥/일',0,0);g.restore();g.save();g.translate(CW-8,T+Hh/2);g.rotate(Math.PI/2);g.textAlign='center';g.fillStyle='#b91c1c';g.fillText('야간최소 ㎥/h',0,0);g.restore();
  S.forEach((v,i)=>{if(v==null)return;const y0=Ys(v);g.fillStyle='#93c5fd';g.fillRect(X(i)-bw*.36,y0,bw*.72,T+Hh-y0)});
  const line=(A,Y,c,w,dash)=>{g.strokeStyle=c;g.lineWidth=w;g.setLineDash(dash);g.beginPath();let st=0;A.forEach((v,i)=>{if(v==null){st=0;return}st?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));st=1});g.stroke();g.setLineDash([])};
- line(PS,Ys,'#9ca3af',1.4,[5,3]);line(PN,Yn,'#9ca3af',1.4,[2,3]);line(N,Yn,'#dc2626',2.2,[]);
+ /* 2026-11-27 사용자 '전년도 회색선 더 진하게': #9ca3af 1.4 → #4b5563 2.0 */line(PS,Ys,'#4b5563',2,[5,3]);line(PN,Yn,'#4b5563',2,[2,3]);line(N,Yn,'#dc2626',2.2,[]);
  N.forEach((v,i)=>{if(v==null)return;g.beginPath();g.arc(X(i),Yn(v),J[i]?5:2.6,0,7);g.fillStyle=J[i]?'#dc2626':'#fff';g.fill();g.strokeStyle='#dc2626';g.lineWidth=1.4;g.stroke()});
  g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let d=1;d<=nd;d++)if(d===1||d%5===0||d===nd)g.fillText(String(d),X(d-1),T+Hh+13);g.fillText('일',L+W+12,T+Hh+13);
  g.font=`10.5px ${FT}`;g.fillStyle=nj?'#b91c1c':'#64748b';if(wrap){g.textAlign='left';g.fillText(lgT,L,31)}else{g.textAlign='right';g.fillText(lgT,L+W,16)}
