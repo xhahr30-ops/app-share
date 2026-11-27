@@ -5211,17 +5211,24 @@ function hitShow(h,k,open){if(open&&typeof STH!=='undefined'&&STH&&STH.own.size&
  hitMark(x.t==='pt'?null:x);if(x.t==='pt'&&typeof selectRow==='function')selectRow(x.i,'map')}
 /* 내용 바꾸기는 클릭 처리가 끝난 뒤에: 누른 버튼이 바로 사라지면 Leaflet이 지도 클릭으로 보고 정보창을 닫음 */
 window.hitTab=k=>{const pp=map&&map._popup,h=pp&&pp._hit;if(h&&h.H[k])setTimeout(()=>{if(pp.isOpen())hitShow(h,k)},0)};
+/* 2026-11-27 사용자 '현황보기는 연속 3번 클릭하면 보이게': 소블록 정보창(📊 현황 보기 단추)은 같은 자리를 0.7초 안에 이어서 3번 눌러야 열림.
+   한두 번 누르면 수용가·관로·시설물 정보창만(있으면) 뜨고 소블록은 빠짐. 지도 누를 때마다 preclick에서 셈 */
+const BLK3={n:0,t:0,p:null,MS:700,PX:30};
+function blk3Tap(cp){const now=Date.now();if(BLK3.p&&now-BLK3.t<=BLK3.MS&&cp&&BLK3.p.distanceTo(cp)<=BLK3.PX)BLK3.n++;else BLK3.n=1;BLK3.t=now;BLK3.p=cp||null;return BLK3.n}
+const blk3Ok=()=>BLK3.n>=3&&Date.now()-BLK3.t<=BLK3.MS+400;
 function hitInit(){if(HIT.on)return;HIT.on=true;
- map.on('preclick',e=>{const t=e.originalEvent&&e.originalEvent.target;PT.hit=-1;
+ map.on('preclick',e=>{const t=e.originalEvent&&e.originalEvent.target;PT.hit=-1;blk3Tap(e.containerPoint);
   if((typeof PH!=='undefined'&&(PH.place||(PH.ed&&PH.ed.on&&PH.ed.mode==='add')))||(typeof shutEat==='function'&&shutEat(e))||(typeof EM!=='undefined'&&EM.pick))return;
   /* 2026-11-27 '편집 중 소블록 정보창(현황 보기)이 뜸': 🛠 편집의 지도 누르기(C click)는 stopPropagation만 해서 같은 칸의 Leaflet preclick이 먼저 돌아 이 통합 정보창이 열렸음 → 🖍️ 그리기·🛠 편집·✏️ 사진 편집 중에는 열지 않음 */
   if(typeof STH!=='undefined'&&STH&&STH.own.size)return;
   if(t&&t.closest&&t.closest('.leaflet-marker-icon'))return;
   if(typeof SEL!=='undefined'&&SEL.shooting)return;/* 선택 삽도 찍는 중 */
   if(typeof selMapTap==='function'&&selMapTap(e))return;/* ☑ Shift+클릭·눌러 고르기 = 관로 더하기·빼기 *//* 사진·밸브 번호 같은 마커는 자기 팝업 */
-  const H=hitCollect(e);if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk'&&t&&t.closest&&t.closest('.leaflet-blkPane-pane'))return;/* 경계가 아래 칸이라 위 캔버스가 누름을 받으면 여기서 소블록 정보창 */
+  const H0=hitCollect(e),H=blk3Ok()?H0:H0.filter(x=>x.t!=='blk');if(!H.length)return;if(H[0].t==='pt')PT.hit=H[0].i;if(H.length===1&&H[0].t==='blk'&&t&&t.closest&&t.closest('.leaflet-blkPane-pane'))return;/* 경계가 아래 칸이라 위 캔버스가 누름을 받으면 여기서 소블록 정보창 */
   setTimeout(()=>{const h={H,cur:0,ll:e.latlng,pp:L.popup({maxWidth:320,offset:[0,-4]})};h.pp._hit=h;hitShow(h,0,true)},0)});
  map.on('popupclose',e=>{if(e.popup&&e.popup._hit)hitMark(null)});
+ /* 소블록 면을 눌러 Leaflet이 바로 연 소블록 정보창도 3번째 누름 전이면 닫음 */
+ map.on('popupopen',e=>{const pp=e.popup,src=pp&&pp._source;if(!src||typeof polyL==='undefined'||!polyL||!polyL.hasLayer(src)||blk3Ok()||window.BT_SKIP)return;/* BT_SKIP = 3D 창 ℹ 정보창 단추로 일부러 연 것 */setTimeout(()=>{try{map.closePopup(pp)}catch(_){}},0);try{map.closePopup(pp)}catch(_){}});
  map.on('resize',()=>{const pp=map._popup;if(pp&&pp._hit)setTimeout(()=>popRelayout(pp),50)})}
 
 /* ---------- 수용가 라벨: 관리번호·소블록(Y)·월평균·업종·이상유형만 (이름·주소·연락처는 선택지에 없음 → 📷 캡처에 들어가도 됨)
