@@ -1154,6 +1154,13 @@ html.chipOn.chipV .chipbar .upb .upn,.leaflet-top .upb .upn{position:absolute;to
 .trkme{position:relative}.trkse span{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:2px solid #fff;color:#fff;font-size:9px;line-height:1;box-shadow:0 1px 3px #0006}
 .trkw .trko{align-items:center}.trkw .trko label{display:flex;gap:4px;align-items:center;font-weight:700}.trkw .trko select{width:auto;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}
 .trkw .btn.rd{background:#dc2626;border-color:#dc2626;color:#fff}
+.sndw>div{width:620px}.sndw{z-index:100060}.sndw .sbd{padding:10px 14px;overflow:auto}.sndw .srow,.sndpop .srow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0}.sndw .srow label{display:flex;gap:4px;align-items:center;font-weight:700}.sndw select{width:auto;max-width:100%;font:600 12px 'Noto Sans KR',sans-serif;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink)}.sndw .btn{width:auto!important;padding:6px 12px;font-size:13px}.sndw .btn.rd{background:#dc2626;border-color:#dc2626;color:#fff}
+.sndw .smeter{display:flex;align-items:center;gap:10px;margin:6px 0}.sndw .sbar{flex:1;height:18px;border-radius:9px;background:var(--line2);overflow:hidden}.sndw .sbar i{display:block;height:100%;width:0;transition:width .08s}.sndw .smeter b{font-size:26px;min-width:44px;text-align:right}.sndw .smeter small{font-size:10.5px;line-height:1.2;color:var(--mut,#64748b)}
+.sndw canvas{display:block;width:100%;height:56px;border:1px solid var(--line2);border-radius:6px;margin-top:4px}.sndw .sax{display:flex;justify-content:space-between;font-size:10px;color:var(--mut,#64748b)}.sndw audio{width:100%;margin:6px 0}.sndw .f{display:block;font-weight:700;margin-top:6px}.sndw .f input{width:100%;padding:6px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--card);color:var(--ink);font:13px 'Noto Sans KR',sans-serif}.sndw .f .srow input{flex:1;width:auto}.sndw .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sk{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.sk span{flex:1 1 60px;text-align:center;border:1px solid var(--line2);border-radius:8px;padding:4px}.sk b{display:block;font-size:17px}.sk small{font-size:10px;color:var(--mut,#64748b)}.sjd{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:6px 0;font-weight:700}.sjd .btn{width:auto!important;padding:4px 8px;font-size:12px}.sjd .btn.on{background:var(--ind);color:#fff;border-color:var(--ind)}
+.sndmk span{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:13px;line-height:1}.sndpop{font:12px/1.5 'Noto Sans KR',sans-serif;min-width:230px}.sndpop audio{width:100%}.sndenv{display:flex;align-items:flex-end;gap:1px;height:32px;margin:4px 0}.sndenv i{flex:1;border-radius:1px}
+.sndfab{font:700 13px 'Noto Sans KR',sans-serif;padding:8px 14px;border:0;border-radius:999px;background:#ea580c;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;margin-bottom:6px!important}.trkw .sndbox{padding:6px 14px;border-bottom:1px solid var(--line2)}.trkw .sndt select{width:auto;font-size:11.5px;padding:2px}.trkw .sndt td{white-space:nowrap}.fldSnd .sfl{font-size:12px;margin:3px 0}.fldSnd .sfl .btn{width:auto!important;padding:2px 6px}
+@media (max-width:560px){.sndw .g2{grid-template-columns:1fr}.sndw .phtr>div,.sndw>div{max-height:calc(100dvh - 16px)}}
 #trkPk{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:default}#trkPk[hidden]{display:none}
 #trkPk .pkb{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:16px;max-width:92vw;transition:transform 1.5s;font-family:'Noto Sans KR',sans-serif}
 #trkPk .pkt{color:#6b7280;font:700 15px 'Noto Sans KR',sans-serif}#trkPk .pkw{color:#b45309;font-size:12.5px;line-height:1.5}#trkPk .pkw:empty{display:none}
@@ -2604,6 +2611,7 @@ const LAY=[
  {k:'ph',n:'현장 사진',s:'#7c3aed',c:()=>{const p=G('PH');return p?p.list.length:0},on:()=>selOn('phShow'),set:o=>selSet('phShow',o,'on')},
  {k:'vid',n:'동영상 위치',s:'#dc2626',c:()=>{const v=G('VID');return v&&v.list?v.list.filter(x=>!x.del).length:0},on:()=>{const u=G('UI');return !!u&&u.vid!==false},set:o=>{const u=G('UI');if(!u)return;u.vid=o;F('uiSave');F('vidDraw');const c=$('uiVid');if(c)c.checked=o}},
  {k:'fd',n:'현장 맛집',s:'#ea580c',c:()=>{const f=G('FD');return f?f.list.filter(x=>!x.del).length:0},on:()=>{const f=G('FD');return !!f&&!!f.on},set:o=>F('fdSetOn',!!o)},
+ {k:'snd',n:'청음 기록 🔊 (누수음·음도)',s:'#f97316',c:()=>{const s=G('SND');return s?s.list.filter(m=>!m.del).length:0},on:()=>{const s=G('SND');return !!s&&!!s.on},set:o=>F('sndSetOn',!!o)},
  {k:'tp',n:'팀 탐사 구간',s:'#06b6d4',c:()=>{const t=G('TP');return t?t.list.length:0},on:()=>{const t=G('TP');return !!t&&!!t.on},set:o=>F('tpSetOn',!!o)},
  /* 🖍️ 그리기(2026-11-26): 끄면 이 기기에서만 안 보임(공유·저장은 그대로), ▸ 묶음별 보이기·숨기기 = 📁 그리기 묶음 창의 👁 와 같은 값 */
  {k:'mk',n:'그리기 (선·글자·아이콘)',s:'#dc2626',c:()=>{const f=G('mkLive');return f?f().length:0},on:()=>{const m=G('MK');return !!m&&!m.off},set:o=>F('mkOffSet',!o)},
@@ -14674,13 +14682,13 @@ async function trkStart(){if(TRK.on)return;if(!navigator.geolocation){phToast('�
  const d=trkDay(Date.now());TRK.D=(await trkGet(d))||{v:1,d,segs:[]};TRK.D.segs.push([]);TRK.day=d;TRK.last=null;TRK.on=true;TRK.follow=true;TRK.gapAt=0;TRK.shown.add(d);
  try{localStorage.setItem('geo-trk-on',d)}catch(_){}
  TRK.wid=navigator.geolocation.watchPosition(trkPos,e=>{if(e&&e.code===1){phToast('위치 권한이 거부되어 탐사기록을 멈췄습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.',{ms:9000});trkStop(true)}},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
- trkWake(true);trkChip();trkDrawSoon(0);
+ trkWake(true);trkChip();trkDrawSoon(0);try{sndFab()}catch(_){}
  phToast(first?'👣 탐사기록을 시작합니다. 이 기기에만 저장되고, 화면이 켜져 있는 동안만 기록됩니다 (주머니에 넣을 때는 🌙 주머니 모드: 까만 화면+터치 잠금). 👣 칩을 누르면 기록 창이 열립니다.':'👣 탐사기록을 시작합니다.',{ms:first?12000:6000,btn:'🌙 주머니 모드',fn:()=>trkPocket(true)})}
 async function trkStop(quiet){if(!TRK.on)return;TRK.on=false;trkPocket(false);if(TRK.wid!=null)try{navigator.geolocation.clearWatch(TRK.wid)}catch(_){}TRK.wid=null;trkWake(false);
  try{localStorage.removeItem('geo-trk-on')}catch(_){}
  const D=TRK.D;if(D){D.segs=D.segs.filter(g=>g.length);try{D.pm=trkPipeCalc(D)}catch(e){console.warn('탐사 관로',e)}await trkSave();try{await tpAddDay(D)}catch(e){console.warn('팀 점검',e)}}
  if(TP.on){TP.on=false;tpCfgSave();tpDraw()}/* 2026-11-12 B안: 탐사 끝나면 팀 탐사 색도 끔 */
- {const g=TRK.dlg.get(TRK.day);if(g&&TRK.lg){TRK.lg.removeLayer(g);TRK.dlg.delete(TRK.day)}}trkChip();trkDrawSoon(0);if(quiet||!D)return;const S=trkSum(D);
+ {const g=TRK.dlg.get(TRK.day);if(g&&TRK.lg){TRK.lg.removeLayer(g);TRK.dlg.delete(TRK.day)}}trkChip();trkDrawSoon(0);try{sndFab()}catch(_){}if(quiet||!D)return;const S=trkSum(D);
  phToast(`👣 기록 끝 (팀 탐사 색도 껐습니다) · 오늘 탐사 거리 ${trkKm(S.w)} · ${trkDur(S.s)}${D.pm?` · 탐사 관로 ${trkKm(D.pm.tot)}`:''}`,{ms:10000,btn:'기록 목록',fn:()=>trkOpen()})}
 function trkToggle(){TRK.on?(confirm('👣 탐사기록을 끝낼까요?')&&trkStop()):trkStart()}
 function trkPos(p){const c=p.coords,t=p.timestamp||Date.now(),pt=[+c.latitude.toFixed(7),+c.longitude.toFixed(7),t,Math.round(c.accuracy||0)];
@@ -14769,13 +14777,14 @@ async function trkPipeOf(d){const D=await trkGet(d);if(!D)return null;
 async function trkOpen(){let w=$('trkW');await trkIdxLoad();
  if(!w){w=document.createElement('div');w.id='trkW';w.className='phtr trkw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','탐사기록');
   w.innerHTML=`<div><div class="th"><b>👣 탐사기록</b><button type="button" data-t="x" aria-label="닫기">✕</button></div>
-   <div class="tb"><button type="button" class="btn" data-t="go"></button><button type="button" class="btn ol" data-t="pk" title="까만 화면+터치 잠금. 화면은 켜 둔 채라 주머니에 넣어도 기록이 이어집니다">🌙 주머니 모드</button><button type="button" class="btn ol" data-t="all">모두 보기</button><button type="button" class="btn ol" data-t="none">모두 숨기기</button><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl" title="날짜별·소블록별 탐사 관로 m (주소·고객 정보 없음)">📋 엑셀</button></div>
+   <div class="tb"><button type="button" class="btn" data-t="go"></button><button type="button" class="btn ol" data-t="pk" title="까만 화면+터치 잠금. 화면은 켜 둔 채라 주머니에 넣어도 기록이 이어집니다">🌙 주머니 모드</button><button type="button" class="btn ol" data-t="snd" title="청음기(또는 폰 마이크) 소리를 지금 자리에서 녹음하고 음도·주파수 저장">🎧 청음 녹음</button><button type="button" class="btn ol" data-t="all">모두 보기</button><button type="button" class="btn ol" data-t="none">모두 숨기기</button><span style="flex:1"></span><button type="button" class="btn ol" data-t="xl" title="날짜별·소블록별 탐사 관로 m (주소·고객 정보 없음)">📋 엑셀</button></div>
    <div class="tb trko"><label>탐사 관로 범위 <select data-t="r" aria-label="탐사 관로 범위">${[5,10,15,20].map(v=>`<option value="${v}">탐사 선 ${v}m 안</option>`).join('')}</select></label><label>보관 <select data-t="keep" aria-label="보관 기간">${[[30,'30일'],[90,'90일'],[180,'180일'],[365,'1년']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label></div>
    <div class="tpbox"></div><p class="hint" style="margin:6px 14px 0" data-t="inf"></p><div class="tl"></div></div>`;
   w.onclick=async e=>{if(e.target===w){w.hidden=true;return}const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t,d=b.dataset.d;
    if(t==='x')w.hidden=true;
    else if(t==='go'){if(TRK.on){if(confirm('👣 탐사기록을 끝낼까요?'))await trkStop()}else{await trkStart();w.hidden=true}trkRender()}
    else if(t==='pk'){w.hidden=true;trkPocket(true)}
+   else if(t==='snd'){w.hidden=true;sndOpen()}
    else if(t==='all'){TRK.idx.forEach(x=>TRK.shown.add(x.d));trkDrawSoon(0);trkRender()}
    else if(t==='none'){TRK.shown.clear();if(TRK.on)TRK.shown.add(TRK.day);trkDrawSoon(0);trkRender()}
    else if(t==='xl')trkXlsx();
@@ -14800,14 +14809,14 @@ async function trkRender(){const w=$('trkW');if(!w||w.hidden)return;const go=w.q
  if(TRK.on&&TRK.D)await trkIdxPut(TRK.D);
  const pOk=typeof PIPE!=='undefined'&&PIPE.segs;
  w.querySelector('[data-t="inf"]').innerHTML=`이 기기에만 저장됩니다(공유 서버로 안 보냄) · ${TRK.cfg.keep}일 지나면 저절로 지움 · 회색 선 = 차량 이동(시속 7km 넘음, 거리·탐사 관로에서 뺌) · 회색 점선 = 기록이 끊긴 곳 · 보라 점선 = 끊긴 동안 관로를 따라 추정한 길(탐사 거리에 안 넣음) · 화면이 꺼지거나 앱을 내리면 기록이 멈추니 주머니에 넣을 때는 🌙 주머니 모드`+(pOk?'':' · <span class="c-am">상수관로가 없어 탐사 관로 m는 계산하지 않습니다</span>');
- tpBox();const L2=w.querySelector('.tl');if(!TRK.idx.length){L2.innerHTML='<p class="hint" style="margin:14px">아직 기록이 없습니다. 위의 ▶ 기록 시작을 누르세요.</p>';return}
+ tpBox();try{sndBox()}catch(e){console.warn('청음 칸',e)}const L2=w.querySelector('.tl');if(!TRK.idx.length){L2.innerHTML='<p class="hint" style="margin:14px">아직 기록이 없습니다. 위의 ▶ 기록 시작을 누르세요.</p>';return}
  L2.innerHTML=TRK.idx.map(x=>{const rec=TRK.on&&x.d===TRK.day;return `<div class="it trki" data-day="${x.d}"><input type="checkbox" data-t="sh" data-d="${x.d}" aria-label="${x.d} 지도에 보이기"${TRK.shown.has(x.d)?' checked':''}><span class="sw" style="background:${trkColor(x.d)}"></span>
   <div class="t"><b>${x.d}${rec?' <span class="c-rd">● 기록 중</span>':''}</b><small>탐사 거리 ${trkKm(x.w)} · ${trkDur(x.s)}${x.c>=50?` · 차량 ${trkKm(x.c)}`:''}${x.gap?` · 끊김 ${x.gap}번`:''}</small><small class="pm" data-pm="${x.d}">${pOk?'탐사 관로 계산 중…':''}</small></div>
   <div class="tbt"><button type="button" class="btn ol" data-t="fit" data-d="${x.d}" title="지도에서 이 날 길로 이동">이동</button><button type="button" class="btn ol" data-t="gpx" data-d="${x.d}" title="GPX 파일(구글 어스·QGIS)">GPX</button><button type="button" class="btn ol" data-t="del" data-d="${x.d}" title="이 날 기록 지우기" aria-label="${x.d} 기록 지우기">🗑</button></div></div>`}).join('');
  for(const x of TRK.idx){const el=L2.querySelector(`[data-pm="${x.d}"]`);if(!el)continue;const D=await trkGet(x.d);if(!D)continue;
   const ph=trkDayPhotos(D).length,ed=trkDayEdits(D).length;let pm=null;if(pOk){await sleep(0);pm=await trkPipeOf(x.d)}
   const bks=pm?Object.entries(pm.bk).sort((a,b)=>b[1].m-a[1].m):[];
-  el.innerHTML=(pm?`탐사 관로 <b>${trkKm(pm.tot)}</b> (배수 ${trkKm(pm.main)} · 급수 ${trkKm(pm.svc)})`:'')+(ph?` · 📷 사진 ${ph}장`:'')+(ed?` · 🔧 고친 시설물·관로 ${ed}건`:'')+
+  el.innerHTML=(pm?`탐사 관로 <b>${trkKm(pm.tot)}</b> (배수 ${trkKm(pm.main)} · 급수 ${trkKm(pm.svc)})`:'')+(ph?` · 📷 사진 ${ph}장`:'')+(sndDayN(x.d)?` · 🎧 청음 ${sndDayN(x.d)}건`:'')+(ed?` · 🔧 고친 시설물·관로 ${ed}건`:'')+
    (bks.length?`<details><summary>소블록별 ${bks.length}곳</summary><table class="trkbk"><tr><th>소블록</th><th>탐사 관로</th><th>배수</th><th>급수</th></tr>${bks.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${trkKm(v.m)}</td><td>${trkKm(v.main)}</td><td>${trkKm(v.svc)}</td></tr>`).join('')}</table></details>`:'')}}
 function trkGpx(d){trkGet(d).then(D=>{if(!D)return;const iso=t=>new Date(t).toISOString();
  const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="스마트 물길주소 (만든이: 구병순)" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>탐사기록 ${D.d}</name></metadata>\n<trk><name>탐사기록 ${D.d}</name>\n`+
@@ -14818,10 +14827,10 @@ async function trkXlsx(){if(typeof XLSX==='undefined'){phToast('엑셀(SheetJS) 
   A.push({'날짜':x.d,'탐사 거리(m)':Math.round(S.w),'차량 이동(m)':Math.round(S.c),'기록 시간(분)':Math.round(S.s/60),'끊긴 횟수':S.gap,'탐사 관로(m)':pm?pm.tot:'','배수관(m)':pm?pm.main:'','급수관(m)':pm?pm.svc:'','탐사 범위(m)':pm?pm.r:'','사진(장)':trkDayPhotos(D).length,'고친 시설물·관로(건)':trkDayEdits(D).length});
   if(pm)Object.entries(pm.bk).sort((a,b)=>b[1].m-a[1].m).forEach(([k,v])=>B.push({'날짜':x.d,'소블록':k,'탐사 관로(m)':v.m,'배수관(m)':v.main,'급수관(m)':v.svc,'관로 수':v.n}))}
  const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
- Promise.resolve(xlsxSave([['날짜별',A],['소블록별',B]],`탐사기록_탐사관로_${ymd}.xlsx`)).catch(err=>phToast('엑셀 만들기 실패: '+((err&&err.message)||err),{ms:5000}))}
+ const SR=sndRows();Promise.resolve(xlsxSave([['날짜별',A],['소블록별',B]].concat(SR.length?[['청음기록',SR]]:[]),`탐사기록_탐사관로_${ymd}.xlsx`)).catch(err=>phToast('엑셀 만들기 실패: '+((err&&err.message)||err),{ms:5000}))}
 /* 백업(💾 저장 항목 '👣 탐사기록') */
-async function trkSnap(){await trkIdxLoad();if(TRK.on)await trkSave();const days={};for(const x of TRK.idx){const D=await trkGet(x.d);if(D)days[x.d]=D}return{v:1,at:Date.now(),idx:TRK.idx,days}}
-async function trkMerge(o){if(!o||!o.days)return 0;await trkIdxLoad();let n=0;
+async function trkSnap(){await trkIdxLoad();if(TRK.on)await trkSave();const days={};for(const x of TRK.idx){const D=await trkGet(x.d);if(D)days[x.d]=D}let snd=null;try{snd=await sndSnap()}catch(_){}return{v:1,at:Date.now(),idx:TRK.idx,days,snd}}
+async function trkMerge(o){if(o&&o.snd)try{await sndMergeBk(o.snd)}catch(_){}if(!o||!o.days)return 0;await trkIdxLoad();let n=0;
  for(const d in o.days){const B=o.days[d];if(!B||!Array.isArray(B.segs))continue;if(TRK.on&&d===TRK.day)continue;const A=await trkGet(d),na=A?(A.segs||[]).reduce((s,g)=>s+g.length,0):0,nb=B.segs.reduce((s,g)=>s+g.length,0);
   if(nb>na){try{await IDB.set('trk:'+d,B);await trkIdxPut(B);n++}catch(_){}}}
  await trkPurge();TRK.lgV=(TRK.lgV||0)+1;trkDrawSoon(0);return n}
@@ -14958,8 +14967,198 @@ async function trkInit(){trkCfgLoad();try{await tpInit()}catch(e){console.warn('
  let od='';try{od=localStorage.getItem('geo-trk-on')||''}catch(_){}
  if(od){try{localStorage.removeItem('geo-trk-on')}catch(_){}if(od===trkDay(Date.now()))setTimeout(()=>phToast('👣 오늘 탐사기록이 앱을 닫으면서 멈췄습니다.',{ms:15000,btn:'이어서 기록',fn:()=>trkStart()}),2500)}}
 try{trkInit()}catch(e){console.warn('탐사기록',e)}
+/* ---------- 🎧 청음 기록 (2026-11-28 B안): 탐사 중 청음기(또는 폰 마이크) 소리를 지점마다 5~60초 녹음 + 음도·주파수·대역 비율 저장.
+   입력 장치 고르기(유선 이어폰 단자·USB 오디오), 실시간 음도 막대·파형·주파수 막대. 판정(🟥 누수음 맞음·🟩 아님·⬜ 모름)은 나중에 고칠 수 있고 직원끼리 같이 씀.
+   맞음·아님이 각각 SND_MIN건 넘게 쌓이면 비슷한 판정 기록(가까운 k개)으로 새 녹음의 '누수 가능성 %'를 앱 안에서 계산(AI·서버 없음, 참고값).
+   음도 = 폰이 받은 소리 크기의 상대값(0 무음 ~ 100 최대 입력, dBFS+100). 보정한 dB가 아니므로 같은 청음기·같은 연결끼리만 비교.
+   이 기기 IDB 'snd_idx'(목록)·'snd:id'(녹음), 공유 서버 sndput·sndmeta·sndlist·sndget(2026-11-28 판). 주소·고객 정보 없음 ---------- */
+const SND={list:[],byId:new Map(),since:0,on:true,days:30,lg:null,busy:false,old:0,err:'',r:null,cfg:{dur:10,dev:'',mu:'dB'},fab:null,syT:0};
+const SND_MIN=10,SND_BANDS=[50,150,300,500,800,1200,2000,3500,8000],SND_JD={y:['🟥','누수음 맞음','#dc2626'],n:['🟩','누수음 아님','#16a34a'],'':['⬜','모름','#94a3b8']};
+function sndCfgLoad(){try{const c=JSON.parse(localStorage.getItem('geo-snd')||'{}')||{};if(c.dur>=3&&c.dur<=60)SND.cfg.dur=+c.dur;if(typeof c.dev==='string')SND.cfg.dev=c.dev;if(c.mu)SND.cfg.mu=String(c.mu);if(typeof c.on==='boolean')SND.on=c.on;if(c.days>=0)SND.days=+c.days}catch(_){}}
+function sndCfgSave(){try{localStorage.setItem('geo-snd',JSON.stringify(Object.assign({},SND.cfg,{on:SND.on,days:SND.days})))}catch(_){}}
+async function sndLoad(){try{const o=await IDB.get('snd_idx');if(o&&Array.isArray(o.list)){SND.list=o.list;SND.since=o.since||0}}catch(_){}SND.byId=new Map(SND.list.map(m=>[m.id,m]))}
+async function sndIdxSave(){try{await IDB.set('snd_idx',{v:1,since:SND.since,list:SND.list})}catch(e){console.warn('청음 목록 저장',e)}}
+function sndLive(){return SND.list.filter(m=>!m.del)}
+function sndLv(rms){return rms>0?Math.max(0,Math.min(100,Math.round((20*Math.log10(rms)+100)*10)/10)):0}
+function sndCol(v){return v>=70?'#dc2626':v>=55?'#f97316':v>=40?'#eab308':'#64748b'}
+function sndTm(t){return new Date(t).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}
+function sndDay(t){return typeof trkDay==='function'?trkDay(t):new Date(t).toISOString().slice(0,10)}
+function sndMe(){return (typeof SH!=='undefined'&&SH.cfg&&SH.cfg.by)||''}
+/* ---- 소리 특징 → 누수 가능성 (판정 기록 가까운 k개, 거리 가중) ---- */
+function sndFv(m){const b=Array.isArray(m.bd)&&m.bd.length===8?m.bd:null;if(!b||m.av==null)return null;
+ return [(+m.av||0)/100,Math.max(0,(+m.pk||0)-(+m.av||0))/40,Math.log2(Math.max(50,+m.hz||50)/50)/7,...b.map(x=>(+x||0)*2),+m.st||0]}
+function sndPred(m){const f=sndFv(m);const all=sndLive().filter(x=>x.id!==m.id&&(x.jd==='y'||x.jd==='n')&&sndFv(x));
+ let L=all;const sd=m.dev?all.filter(x=>x.dev===m.dev):[];const cnt=a=>[a.filter(x=>x.jd==='y').length,a.filter(x=>x.jd==='n').length];
+ let [ny,nn]=cnt(all),same=false;{const [a,b]=cnt(sd);if(a>=SND_MIN&&b>=SND_MIN){L=sd;ny=a;nn=b;same=true}}
+ if(!f||ny<SND_MIN||nn<SND_MIN)return{need:1,ny,nn};
+ const k=Math.min(9,Math.max(3,Math.round(Math.sqrt(L.length)))),D=L.map(x=>{const g=sndFv(x);let s=0;for(let i=0;i<f.length;i++)s+=(f[i]-g[i])**2;return[Math.sqrt(s),x.jd==='y'?1:0]}).sort((a,b)=>a[0]-b[0]).slice(0,k);
+ let w=0,y=0;D.forEach(([d,v])=>{const q=1/(d+.05);w+=q;y+=q*v});return{p:Math.round(100*y/w),k,n:L.length,same,ny,nn}}
+function sndPredTx(m,short){const P=sndPred(m);if(P.need)return short?'':`📊 누수 가능성: 판정 기록이 더 쌓이면 보여 줍니다 (맞음 ${P.ny}/${SND_MIN} · 아님 ${P.nn}/${SND_MIN})`;
+ return `📊 누수 가능성 <b style="color:${P.p>=60?'#dc2626':P.p>=40?'#d97706':'#16a34a'}">${P.p}%</b>`+(short?'':` <small class="mute">(특징이 가장 비슷한 판정 ${P.k}건 기준 · 판정 ${P.n}건${P.same?' · 같은 입력 장치':''} · 참고값)</small>`)}
+/* ---- 위치: 탐사기록 중이면 마지막 GPS, 아니면 한 번 묻고, 안 되면 지도 가운데 ---- */
+function sndWhere(){return new Promise(res=>{const now=Date.now();
+ if(typeof TRK!=='undefined'&&TRK.last&&now-TRK.last[2]<30000)return res({lat:TRK.last[0],lng:TRK.last[1],acc:TRK.last[3]||0,src:'gps'});
+ const ctr=()=>{const c=map&&map.getCenter();res(c?{lat:+c.lat.toFixed(7),lng:+c.lng.toFixed(7),acc:null,src:'ctr'}:{lat:null,lng:null,acc:null,src:'ctr'})};
+ if(!navigator.geolocation||location.protocol==='file:')return ctr();let done=false;const to=setTimeout(()=>{if(!done){done=true;ctr()}},9000);
+ navigator.geolocation.getCurrentPosition(p=>{if(done)return;done=true;clearTimeout(to);const c=p.coords;if((c.accuracy||0)>80)return ctr();res({lat:+c.latitude.toFixed(7),lng:+c.longitude.toFixed(7),acc:Math.round(c.accuracy||0),src:'gps'})},()=>{if(!done){done=true;clearTimeout(to);ctr()}},{enableHighAccuracy:true,maximumAge:15000,timeout:8000})})}
+/* ---- 녹음 창 ---- */
+function sndWin(){let w=$('sndW');if(w)return w;w=document.createElement('div');w.id='sndW';w.className='phtr sndw np';w.hidden=true;w.setAttribute('role','dialog');w.setAttribute('aria-label','청음 녹음');
+ w.innerHTML=`<div><div class="th"><b>🎧 청음 녹음 (누수음·음도)</b><button type="button" data-s="x" aria-label="닫기">✕</button></div><div class="sbd">
+  <div class="srow"><label>입력 장치 <select data-s="dev" aria-label="입력 장치"></select></label><button type="button" class="btn ol" data-s="rf" title="청음기를 꽂은 뒤 누르면 목록을 다시 읽습니다">🔄</button></div>
+  <p class="hint" data-s="devh">청음기 이어폰 단자 → Y 분배 젠더 → 헤드폰 + 폰(4극 마이크 젠더 또는 USB-C 오디오 젠더). 소리가 찌그러지면 청음기 볼륨을 낮추거나 감쇠 케이블(약 -20dB)을 쓰세요.</p>
+  <div class="smeter"><div class="sbar"><i></i></div><b data-s="lv">--</b><small>음도<br>(상대)</small></div>
+  <canvas data-s="wv" width="600" height="64" aria-label="파형"></canvas><canvas data-s="sp" width="600" height="56" aria-label="주파수"></canvas>
+  <div class="sax"><span>50Hz</span><span>500</span><span>1k</span><span>2k</span><span>4kHz</span></div>
+  <div class="srow"><label>녹음 길이 <select data-s="dur" aria-label="녹음 길이">${[5,10,20,30,60].map(v=>`<option value="${v}">${v}초</option>`).join('')}</select></label><button type="button" class="btn" data-s="rec">● 녹음 시작</button></div>
+  <div data-s="res"></div><p class="hint" data-s="loc"></p></div></div>`;
+ w.onclick=e=>{if(e.target===w){sndClose();return}const b=e.target.closest('[data-s]');if(!b)return;const s=b.dataset.s;
+  if(s==='x')sndClose();else if(s==='rf')sndDevs(true);else if(s==='rec')SND.r&&SND.r.mr&&SND.r.mr.state==='recording'?sndRecStop():sndRecStart();
+  else if(s==='save')sndSaveRec();else if(s==='again'){SND.r.res=null;w.querySelector('[data-s="res"]').innerHTML='';sndRecStart()}
+  else if(s==='jd'){SND.r.jd=b.dataset.v;w.querySelectorAll('[data-s="jd"]').forEach(x=>x.classList.toggle('on',x===b))}};
+ w.onchange=e=>{const s=e.target.dataset.s;if(s==='dev'){SND.cfg.dev=e.target.value;sndCfgSave();sndStream()}else if(s==='dur'){SND.cfg.dur=+e.target.value;sndCfgSave()}};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!w.hidden)sndClose()});if(typeof L!=='undefined'&&L.DomEvent)L.DomEvent.disableClickPropagation(w);return w}
+async function sndOpen(o){o=o||{};if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){phToast('이 브라우저는 녹음 기능이 없습니다. 크롬(안드로이드)·사파리 최신판에서 여세요.',{ms:7000});return}
+ if(!/^https:$/.test(location.protocol)&&!/^(localhost|127\.)/.test(location.hostname)){phToast('녹음은 https 주소(깃허브 페이지)에서만 됩니다.',{ms:7000});return}
+ const w=sndWin(),fe=document.fullscreenElement||document.webkitFullscreenElement||document.body;if(w.parentNode!==fe)fe.appendChild(w);
+ SND.r={o,jd:'',res:null};w.querySelector('[data-s="dur"]').value=String(SND.cfg.dur);w.querySelector('[data-s="res"]').innerHTML='';w.querySelector('[data-s="loc"]').textContent='📍 위치는 녹음을 시작할 때 잡습니다'+(o.no?` · 탐사연번 ${o.no}에 붙입니다`:'');
+ const rb=w.querySelector('[data-s="rec"]');rb.textContent='● 녹음 시작';rb.classList.remove('rd');w.hidden=false;await sndStream();sndDevs(false)}
+async function sndDevs(force){const sel=$('sndW')&&$('sndW').querySelector('[data-s="dev"]');if(!sel)return;let a=[];try{a=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput')}catch(_){}
+ sel.innerHTML=`<option value="">기본 입력 (꽂은 청음기·이어폰 마이크가 있으면 그것)</option>`+a.filter(d=>d.deviceId&&d.deviceId!=='default').map((d,i)=>`<option value="${esc(d.deviceId)}">${esc(d.label||('입력 '+(i+1)))}</option>`).join('');
+ sel.value=a.some(d=>d.deviceId===SND.cfg.dev)?SND.cfg.dev:'';if(force)phToast(`🎧 입력 장치 ${a.length}개를 읽었습니다.`,{ms:2500})}
+async function sndStream(){const R=SND.r;if(!R)return;sndStop(true);
+ const c={echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1};if(SND.cfg.dev)c.deviceId={exact:SND.cfg.dev};
+ try{R.st=await navigator.mediaDevices.getUserMedia({audio:c})}catch(e){if(SND.cfg.dev){SND.cfg.dev='';sndCfgSave();return sndStream()}
+  const m=$('sndW').querySelector('[data-s="devh"]');m.innerHTML='<span class="c-rd">⚠ 마이크를 열지 못했습니다'+(e&&e.name==='NotAllowedError'?': 브라우저 설정에서 이 사이트의 마이크 권한을 허용하세요.':': '+esc((e&&e.message)||e))+'</span>';return}
+ const AC=window.AudioContext||window.webkitAudioContext;R.ac=new AC();try{await R.ac.resume()}catch(_){}R.src=R.ac.createMediaStreamSource(R.st);R.an=R.ac.createAnalyser();R.an.fftSize=4096;R.an.smoothingTimeConstant=.2;R.src.connect(R.an);
+ R.td=new Float32Array(R.an.fftSize);R.fd=new Float32Array(R.an.frequencyBinCount);const tr=R.st.getAudioTracks()[0];R.dev=tr&&tr.label||'';
+ const h=$('sndW').querySelector('[data-s="devh"]');h.dataset.k=h.dataset.k||h.innerHTML;h.innerHTML=(R.dev?`🎙 지금 입력: <b>${esc(R.dev)}</b><br>`:'')+h.dataset.k;
+ const loop=()=>{if(SND.r!==R||!R.an)return;sndTick(R);R.raf=requestAnimationFrame(loop)};R.raf=requestAnimationFrame(loop)}
+function sndStop(keepR){const R=SND.r;if(!R)return;cancelAnimationFrame(R.raf);if(R.tmr)clearInterval(R.tmr);try{R.mr&&R.mr.state!=='inactive'&&R.mr.stop()}catch(_){}try{R.st&&R.st.getTracks().forEach(t=>t.stop())}catch(_){}try{R.ac&&R.ac.close()}catch(_){}R.an=null;R.st=null;R.ac=null;if(!keepR)SND.r=null}
+function sndClose(){const w=$('sndW');if(SND.r&&SND.r.res&&!SND.r.saved&&!confirm('녹음을 저장하지 않고 닫을까요?'))return;sndStop();if(w)w.hidden=true}
+function sndTick(R){const w=$('sndW');if(!w||w.hidden)return;R.an.getFloatTimeDomainData(R.td);let s=0;for(let i=0;i<R.td.length;i++)s+=R.td[i]*R.td[i];const rms=Math.sqrt(s/R.td.length),lv=sndLv(rms);
+ w.querySelector('.sbar i').style.width=lv+'%';w.querySelector('.sbar i').style.background=sndCol(lv);w.querySelector('[data-s="lv"]').textContent=lv.toFixed(0);
+ const cv=w.querySelector('[data-s="wv"]'),g=cv.getContext('2d'),W=cv.width,H=cv.height,dark=document.documentElement.classList.contains('dark')||document.body.classList.contains('dark');
+ g.fillStyle=dark?'#0f172a':'#f8fafc';g.fillRect(0,0,W,H);g.strokeStyle='#4f46e5';g.lineWidth=1.5;g.beginPath();const st=Math.max(1,Math.floor(R.td.length/W));for(let x=0;x<W;x++){const v=R.td[x*st]||0,y=H/2-v*H/2*.95;x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke();
+ R.an.getFloatFrequencyData(R.fd);const sr=R.ac.sampleRate,bw=sr/R.an.fftSize,cs=w.querySelector('[data-s="sp"]'),q=cs.getContext('2d'),Ws=cs.width,Hs=cs.height;q.fillStyle=dark?'#0f172a':'#f8fafc';q.fillRect(0,0,Ws,Hs);
+ const lx=f=>Math.log(f/50)/Math.log(4000/50)*Ws;for(let i=Math.ceil(50/bw);i*bw<=4000;i++){const db=R.fd[i];if(!isFinite(db))continue;const h=Math.max(0,Math.min(1,(db+110)/80))*Hs;q.fillStyle='#0ea5e9';q.fillRect(lx(i*bw),Hs-h,Math.max(1,lx((i+1)*bw)-lx(i*bw)),h)}
+ if(R.mr&&R.mr.state==='recording'){R.fr.push(rms);for(let i=0;i<R.fd.length;i++){const v=R.fd[i];if(isFinite(v))R.pw[i]+=Math.pow(10,v/10)}R.nF++}}
+async function sndRecStart(){const R=SND.r;if(!R)return;if(!R.st){await sndStream();if(!R.st)return}
+ const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(_){return false}})||'';
+ try{R.mr=new MediaRecorder(R.st,Object.assign({audioBitsPerSecond:32000},mt?{mimeType:mt}:{}))}catch(_){R.mr=new MediaRecorder(R.st)}
+ R.ch=[];R.fr=[];R.pw=new Float64Array(R.an.frequencyBinCount);R.nF=0;R.t0=Date.now();R.res=null;R.saved=false;R.mr.ondataavailable=e=>{if(e.data&&e.data.size)R.ch.push(e.data)};R.mr.onstop=()=>sndRecDone(R);
+ R.pos=null;sndWhere().then(p=>{R.pos=p;const l=$('sndW').querySelector('[data-s="loc"]');l.textContent=p.lat==null?'📍 위치 없음':p.src==='gps'?`📍 GPS 위치 (오차 약 ${p.acc}m)`:'📍 GPS를 못 잡아 지금 지도 가운데 자리로 저장합니다 — 지도를 녹음한 자리로 옮긴 뒤 다시 녹음하면 정확합니다'});
+ R.mr.start(1000);const w=$('sndW'),rb=w.querySelector('[data-s="rec"]'),dur=SND.cfg.dur;rb.classList.add('rd');
+ const upd=()=>{const s=(Date.now()-R.t0)/1000;rb.textContent=`■ 멈춤 (${Math.max(0,Math.ceil(dur-s))}초)`;if(s>=dur)sndRecStop()};upd();R.tmr=setInterval(upd,250);try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}}
+function sndRecStop(){const R=SND.r;if(!R||!R.mr)return;clearInterval(R.tmr);R.tmr=0;try{R.mr.state!=='inactive'&&R.mr.stop()}catch(_){}const rb=$('sndW').querySelector('[data-s="rec"]');rb.classList.remove('rd');rb.textContent='● 녹음 시작'}
+/* 녹음 끝 → 특징 계산: 최대·평균 음도, 주된 주파수(50~4,000Hz), 대역 8칸 비율, 고름 정도(소리 크기 흔들림이 적을수록 1), 흐름 48칸 */
+function sndFeat(R){const fr=R.fr.length?R.fr:[0],lv=fr.map(sndLv),mean=fr.reduce((a,b)=>a+b,0)/fr.length,sd=Math.sqrt(fr.reduce((a,b)=>a+(b-mean)**2,0)/fr.length);
+ const sr=R.ac?R.ac.sampleRate:48000,bw=sr/(R.pw.length*2),bd=new Array(8).fill(0);let best=0,hz=0,tot=0;
+ for(let i=1;i<R.pw.length;i++){const f=i*bw,p=R.pw[i];if(f>=50&&f<=4000&&p>best){best=p;hz=f}for(let b=0;b<8;b++)if(f>=SND_BANDS[b]&&f<SND_BANDS[b+1]){bd[b]+=p;tot+=p;break}}
+ const env=[],n=48;for(let i=0;i<n;i++){const a=Math.floor(i*lv.length/n),b=Math.max(a+1,Math.floor((i+1)*lv.length/n));const s=lv.slice(a,b);env.push(s.length?Math.round(s.reduce((x,y)=>x+y,0)/s.length):0)}
+ return{pk:Math.round(Math.max(...lv)*10)/10,av:sndLv(mean),hz:Math.round(hz),bd:bd.map(v=>tot>0?Math.round(v/tot*1000)/1000:0),st:mean>0?Math.round(Math.max(0,1-Math.min(1,sd/mean))*100)/100:0,env}}
+function sndRecDone(R){if(SND.r!==R)return;const dur=Math.round((Date.now()-R.t0)/100)/10;if(!R.ch.length||dur<1){phToast('녹음이 너무 짧습니다. 다시 눌러 주세요.',{ms:3000});return}
+ const type=(R.mr&&R.mr.mimeType)||R.ch[0].type||'audio/webm',blob=new Blob(R.ch,{type});const F=sndFeat(R);R.res=Object.assign({blob,dur,mime:type,sz:blob.size},F);
+ if(R.url)URL.revokeObjectURL(R.url);R.url=URL.createObjectURL(blob);const no=R.o.no||'',tmp={...F,dev:R.dev,id:'_new'};
+ $('sndW').querySelector('[data-s="res"]').innerHTML=`<div class="sres"><audio controls src="${R.url}"></audio>
+  <div class="sk">${sndKpi(R.res)}</div><p>${sndPredTx(tmp)}</p>
+  <div class="sjd">판정 ${['y','n',''].map(k=>`<button type="button" class="btn ol${R.jd===k?' on':''}" data-s="jd" data-v="${k}">${SND_JD[k][0]} ${SND_JD[k][1]}</button>`).join('')}</div><small class="mute">지금 모르면 ⬜ 모름으로 두고, 굴착·수리로 확인한 뒤 지도 🔊 점에서 고치세요. 판정이 쌓일수록 누수 가능성이 정확해집니다.</small>
+  <div class="g2"><label class="f">청음기 표시 수치 <span class="srow"><input data-s="man" inputmode="decimal" placeholder="예: 42"><select data-s="mu" aria-label="단위">${['dB','표시값','%'].map(u=>`<option${u===SND.cfg.mu?' selected':''}>${u}</option>`).join('')}</select></span></label><label class="f">탐사연번 <input data-s="no" inputmode="numeric" value="${esc(no)}" placeholder="있으면 (예: 268)"></label></div>
+  <label class="f">메모 <input data-s="memo" placeholder="예: 제수변 옆 노면, 맨홀 위 (전화·주소는 넣지 마세요)"></label>
+  <div class="srow"><button type="button" class="btn" data-s="save">💾 저장</button><button type="button" class="btn ol" data-s="again">다시 녹음</button></div></div>`}
+function sndKpi(m){return `<span><b style="color:${sndCol(m.pk)}">${Math.round(m.pk)}</b><small>최대 음도</small></span><span><b>${Math.round(m.av)}</b><small>평균 음도</small></span><span><b>${m.hz||'-'}</b><small>주된 주파수 Hz</small></span><span><b>${Math.round((m.st||0)*100)}</b><small>고름 %</small></span><span><b>${m.dur}</b><small>초</small></span>`}
+async function sndSaveRec(){const R=SND.r;if(!R||!R.res||R.saved)return;const w=$('sndW'),v=k=>{const e=w.querySelector(`[data-s="${k}"]`);return e?e.value.trim():''};
+ let p=R.pos;if(!p)p=await sndWhere();const id='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),man=v('man');SND.cfg.mu=v('mu')||'dB';sndCfgSave();
+ let bk='';try{if(p.lat!=null)bk=blkAt(p.lng,p.lat)}catch(_){}
+ const m={id,t:R.t0,lat:p.lat,lng:p.lng,acc:p.acc,src:p.src,pk:R.res.pk,av:R.res.av,hz:R.res.hz,st:R.res.st,bd:R.res.bd,env:R.res.env,man:man===''||isNaN(+man)?'':+man,mu:SND.cfg.mu,
+  jd:R.jd||'',jby:R.jd?sndMe():'',jat:R.jd?Date.now():0,memo:v('memo').replace(/(01[016789]|0\d{1,2})[-.\s)]?\d{3,4}[-.\s]?\d{4}/g,'☎(가림)'),bk,no:v('no'),dur:R.res.dur,mime:R.res.mime,sz:R.res.sz,dev:R.dev||'',by:sndMe(),mine:1,up:0,at:Date.now()};
+ try{await IDB.set('snd:'+id,R.res.blob)}catch(e){alert('녹음을 이 기기에 저장하지 못했습니다: '+((e&&e.message)||e));return}
+ SND.list.push(m);SND.byId.set(id,m);await sndIdxSave();R.saved=true;sndDraw();sndFldRefresh();try{trkRender()}catch(_){}sndSyncSoon(2000);
+ phToast(`🎧 청음 기록을 저장했습니다 · 최대 음도 ${Math.round(m.pk)}${m.bk?' · '+m.bk:''}`,{ms:5000,btn:'하나 더',fn:()=>sndOpen(R.o)});sndStop();w.hidden=true}
+/* ---- 지도 🔊 점 ---- */
+function sndVis(){const lim=SND.days?Date.now()-SND.days*864e5:0;return sndLive().filter(m=>m.lat!=null&&m.lng!=null&&m.t>=lim)}
+function sndDraw(){if(typeof map==='undefined'||!map||typeof L==='undefined')return;if(SND.lg){map.removeLayer(SND.lg);SND.lg=null}if(!SND.on)return;
+ if(!map.getPane('sndPane')){const p=map.createPane('sndPane');p.style.zIndex=645}
+ const g=L.layerGroup();sndVis().forEach(m=>{const j=SND_JD[m.jd||''],ic=L.divIcon({className:'sndmk',html:`<span style="background:${sndCol(m.pk)};box-shadow:0 0 0 ${m.jd?3:2}px ${m.jd?j[2]:'#fff'}">🔊</span>`,iconSize:[24,24],iconAnchor:[12,12]});
+  const k=L.marker([m.lat,m.lng],{icon:ic,pane:'sndPane',title:`🎧 ${sndDay(m.t)} ${sndTm(m.t)} · 최대 음도 ${Math.round(m.pk)} · ${m.hz}Hz · ${j[1]}`});k.on('click',()=>sndPop(m.id,k));g.addLayer(k)});
+ g.addTo(map);SND.lg=g}
+function sndSetOn(o){SND.on=!!o;sndCfgSave();sndDraw()}
+function sndPopHtml(m){const j=SND_JD[m.jd||''],mine=m.mine||(m.by&&m.by===sndMe());
+ return `<div class="sndpop"><b>🎧 청음 ${sndDay(m.t)} ${sndTm(m.t)}</b>${m.bk?` · ${esc(m.bk)}`:''}${m.no?` · 탐사연번 ${esc(m.no)}`:''}<div class="sk">${sndKpi(m)}</div>
+  ${m.man!==''&&m.man!=null?`<div>청음기 표시 <b>${m.man} ${esc(m.mu||'')}</b></div>`:''}${m.memo?`<div>📝 ${esc(m.memo)}</div>`:''}
+  <div class="sndenv">${(m.env||[]).map(v=>`<i style="height:${Math.max(2,v*.3)}px;background:${sndCol(v)}"></i>`).join('')}</div>
+  <div data-snd-a="${m.id}"><button type="button" class="btn sm" onclick="sndPlay('${m.id}',this)">▶ 듣기</button></div>
+  <div class="sjd">판정 ${['y','n',''].map(k=>`<button type="button" class="btn ol sm${(m.jd||'')===k?' on':''}" onclick="sndJd('${m.id}','${k}')">${SND_JD[k][0]} ${SND_JD[k][1]}</button>`).join('')}</div>
+  ${m.jd&&m.jby?`<small class="mute">판정: ${esc(m.jby)} ${m.jat?new Date(m.jat).toLocaleDateString('ko-KR'):''}</small><br>`:''}<div>${m.jd?'':sndPredTx(m)}</div>
+  <small class="mute">${m.src==='ctr'?'📍 지도 가운데로 저장(GPS 못 잡음)':'📍 GPS'+(m.acc?' ±'+m.acc+'m':'')}${m.dev?' · 🎙 '+esc(m.dev):''}${m.by?' · '+esc(m.by):''}${m.mine&&!m.up?' · ☁ 아직 안 올림':''}</small>
+  ${mine?`<div style="margin-top:4px"><button type="button" class="btn ol sm" onclick="sndDel('${m.id}')">🗑 지우기</button></div>`:''}</div>`}
+function sndPop(id,k){const m=SND.byId.get(id);if(!m||!map)return;L.popup({maxWidth:320}).setLatLng([m.lat,m.lng]).setContent(sndPopHtml(m)).openOn(map)}
+async function sndAudio(m){let b=null;try{b=await IDB.get('snd:'+m.id)}catch(_){}if(b)return b;if(!m.up||typeof SH==='undefined'||!SH.on())return null;
+ const r=await shReq('sndget',{id:m.id}),bin=atob(r.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);b=new Blob([u],{type:r.mime||m.mime||'audio/webm'});try{await IDB.set('snd:'+m.id,b)}catch(_){}return b}
+async function sndPlay(id,btn){const m=SND.byId.get(id);if(!m)return;const box=btn&&btn.parentNode;if(btn){btn.disabled=true;btn.textContent='받는 중…'}
+ try{const b=await sndAudio(m);if(!b){if(box)box.innerHTML='<small class="c-rd">이 기기에 녹음이 없고 공유 서버에서도 받지 못했습니다.</small>';return}
+  const a=document.createElement('audio');a.controls=true;a.src=URL.createObjectURL(b);a.style.width='100%';if(box){box.innerHTML='';box.appendChild(a)}a.play().catch(()=>{})}
+ catch(e){if(box)box.innerHTML='<small class="c-rd">⚠ '+esc((e&&e.message)||e)+'</small>'}}
+async function sndJd(id,v){const m=SND.byId.get(id);if(!m)return;m.jd=v;m.jby=v?sndMe():'';m.jat=Date.now();m.dirty=1;await sndIdxSave();sndDraw();sndFldRefresh();try{trkRender()}catch(_){}
+ if(map&&map._popup&&map._popup.isOpen&&map._popup.isOpen())sndPop(id);sndSyncSoon(1500);phToast(`🎧 판정: ${SND_JD[v][0]} ${SND_JD[v][1]}`,{ms:2500})}
+async function sndDel(id){const m=SND.byId.get(id);if(!m||!confirm('이 청음 기록(녹음)을 지울까요? 공유 서버에서도 지워집니다.'))return;m.del=1;m.dirty=1;try{await IDB.del('snd:'+id)}catch(_){}
+ if(!m.up){SND.list=SND.list.filter(x=>x!==m);SND.byId.delete(id)}await sndIdxSave();if(map)map.closePopup();sndDraw();sndFldRefresh();try{trkRender()}catch(_){}sndSyncSoon(1500)}
+function sndGo(id){const m=SND.byId.get(id);if(!m||!map||m.lat==null)return;if(!SND.on)sndSetOn(true);const w=$('trkW');if(w&&innerWidth<760)w.hidden=true;map.setView([m.lat,m.lng],Math.max(map.getZoom(),18));setTimeout(()=>sndPop(id),300)}
+/* ---- 공유 서버: 먼저 받기 → 나중에 올리기 ---- */
+function sndOut(m){const o={};['id','t','lat','lng','acc','src','pk','av','hz','st','bd','env','man','mu','jd','jby','jat','memo','bk','no','dur','mime','sz','dev','del'].forEach(k=>o[k]=m[k]);return o}
+function sndSyncSoon(ms){clearTimeout(SND.syT);SND.syT=setTimeout(()=>sndSync(true),ms||3000)}
+async function sndSync(quiet){if(SND.busy||typeof SH==='undefined'||!SH.on||!SH.on())return{off:1};if(typeof shIsCF==='function'&&shIsCF(SH.cfg.url)){SND.old=1;return{old:1}}
+ SND.busy=true;let got=0,sent=0;try{const r=await shReq('sndlist',{since:SND.since||0});
+  for(const it of r.items||[]){const L0=SND.byId.get(it.id);if(!L0){if(it.del)continue;const m=Object.assign({},it,{mine:it.by&&it.by===sndMe()?1:0});SND.list.push(m);SND.byId.set(m.id,m);got++;continue}
+   if(L0.dirty&&(L0.jat||0)>(it.jat||0)){L0.up=it.up;continue}const keep={mine:L0.mine,dirty:0};Object.assign(L0,it,keep);if(it.del){try{await IDB.del('snd:'+it.id)}catch(_){}}got++}
+  SND.since=r.now||Date.now();
+  for(const m of SND.list.filter(x=>x.mine&&!x.up&&!x.del)){const b=await IDB.get('snd:'+m.id).catch(()=>null);if(!b)continue;const x=await shReq('sndput',{m:sndOut(m),data:await shB64(b)});m.up=x.up||Date.now();m.dirty=0;sent++}
+  for(const m of SND.list.filter(x=>x.dirty&&x.up)){const x=await shReq('sndmeta',{m:sndOut(m)});m.up=x.up||m.up;m.dirty=0;sent++}
+  SND.list=SND.list.filter(x=>!(x.del&&!x.dirty&&x.up));SND.byId=new Map(SND.list.map(m=>[m.id,m]));SND.old=0;SND.err='';await sndIdxSave();if(got)sndDraw();return{got,sent}}
+ catch(e){const t=String((e&&e.message)||e);if(/알 수 없는 요청/.test(t)){SND.old=1;return{old:1}}SND.err=t;if(!quiet)throw e;return{err:t}}
+ finally{SND.busy=false}}
+/* ---- 👣 탐사기록 창 안 '🎧 청음 기록' 칸 ---- */
+function sndBox(){const w=$('trkW');if(!w)return;let b=w.querySelector('.sndbox');if(!b){b=document.createElement('div');b.className='sndbox';const tp=w.querySelector('.tpbox');tp.parentNode.insertBefore(b,tp.nextSibling);
+  b.addEventListener('click',async e=>{const x=e.target.closest('[data-sb]');if(!x)return;const s=x.dataset.sb,id=x.dataset.id;
+   if(s==='rec'){w.hidden=true;sndOpen()}else if(s==='go')sndGo(id);else if(s==='xl')sndXlsx();
+   else if(s==='sync'){const m=b.querySelector('.sbmsg');m.textContent='공유 서버와 맞추는 중…';try{const r=await sndSync(false);m.textContent=r.off?'⚙️ 앱 설정에서 공유 서버 주소와 공유 키를 먼저 넣어 주세요.':r.old?'⚠️ 공유 서버 Code.gs가 예전 판입니다. 2026-11-28 판(🎧 청음 기록)으로 바꾸고 배포 관리 ✏️ 새 버전으로 배포해 주세요.':`✅ 받은 것 ${r.got||0}건 · 올린 것 ${r.sent||0}건`}catch(er){m.textContent='⚠️ 실패: '+((er&&er.message)||er)}}});
+  b.addEventListener('change',e=>{const s=e.target.dataset.sb;if(s==='on')sndSetOn(e.target.checked);else if(s==='days'){SND.days=+e.target.value;sndCfgSave();sndDraw();sndBox()}else if(s==='jd')sndJd(e.target.dataset.id,e.target.value)});
+  b.addEventListener('toggle',e=>{SND.open=e.target.open},true)}
+ const A=sndLive().sort((a,b)=>b.t-a.t),ny=A.filter(m=>m.jd==='y').length,nn=A.filter(m=>m.jd==='n').length,V=sndVis().length;
+ b.innerHTML=`<details class="tpd"${SND.open?' open':''}><summary>🎧 청음 기록 ${A.length}건 <small class="mute">(판정 맞음 ${ny} · 아님 ${nn}${ny>=SND_MIN&&nn>=SND_MIN?' · 📊 누수 가능성 켜짐':` · 📊 누수 가능성은 맞음·아님 각 ${SND_MIN}건부터`})</small></summary>
+  <div class="tpo"><button type="button" class="btn" data-sb="rec">🎧 청음 녹음</button><label class="ck"><input type="checkbox" data-sb="on"${SND.on?' checked':''}> 지도에 🔊 보이기 (${V})</label>
+   <select data-sb="days" aria-label="기간">${[[7,'7일'],[30,'30일'],[90,'90일'],[0,'전체']].map(([v,t])=>`<option value="${v}"${SND.days===v?' selected':''}>${t}</option>`).join('')}</select>
+   <button type="button" class="btn ol" data-sb="sync">☁ 맞추기</button><button type="button" class="btn ol" data-sb="xl" title="청음 기록 엑셀(주소·고객 정보 없음)">📋 엑셀</button></div>
+  <p class="hint sbmsg">${SND.old?'⚠️ 공유 서버가 예전 판이라 청음 기록은 이 기기에만 있습니다.':SND.err?'⚠️ '+esc(SND.err):'청음 기록은 공유 서버로 직원과 같이 봅니다(탐사 선은 안 올림) · 음도 = 폰이 받은 소리 크기 상대값(0~100) · 같은 청음기·같은 연결끼리 비교 · 🔊 점 색: 70↑ 빨강 · 55↑ 주황 · 40↑ 노랑 · 테두리 = 판정'}</p>
+  ${A.length?`<div class="tpt"><table class="trkbk sndt"><tr><th>시각</th><th>소블록</th><th>음도</th><th>Hz</th><th>판정</th><th></th></tr>${A.slice(0,60).map(m=>`<tr><td>${sndDay(m.t).slice(5)} ${sndTm(m.t)}</td><td>${esc(m.bk||'')}${m.no?' #'+esc(m.no):''}</td><td style="color:${sndCol(m.pk)}"><b>${Math.round(m.pk)}</b>/${Math.round(m.av)}</td><td>${m.hz||''}</td>
+   <td><select data-sb="jd" data-id="${m.id}" aria-label="판정">${['','y','n'].map(k=>`<option value="${k}"${(m.jd||'')===k?' selected':''}>${SND_JD[k][0]} ${SND_JD[k][1]}</option>`).join('')}</select>${m.jd?'':' '+sndPredTx(m,true)}</td><td><button type="button" class="btn ol" data-sb="go" data-id="${m.id}">이동</button></td></tr>`).join('')}</table></div>`:''}</details>`}
+function sndDayN(d){return sndLive().filter(m=>sndDay(m.t)===d).length}
+/* ---- 엑셀: 청음 기록 (주소·고객 정보 없음) ---- */
+function sndRows(L){return (L||sndLive()).slice().sort((a,b)=>a.t-b.t).map(m=>{const P=m.jd?null:sndPred(m);return{'날짜':sndDay(m.t),'시각':sndTm(m.t),'소블록':m.bk||'','탐사연번':m.no||'','위도':m.lat,'경도':m.lng,'위치':m.src==='ctr'?'지도 가운데':'GPS'+(m.acc?' ±'+m.acc+'m':''),
+ '최대 음도(상대)':m.pk,'평균 음도(상대)':m.av,'주된 주파수(Hz)':m.hz,'고름(%)':Math.round((m.st||0)*100),'청음기 표시 수치':m.man,'단위':m.man!==''&&m.man!=null?m.mu||'':'','판정':SND_JD[m.jd||''][1],'판정한 사람':m.jby||'',
+ '누수 가능성(%)':P&&!P.need?P.p:'','녹음 길이(초)':m.dur,'입력 장치':m.dev||'','메모':m.memo||'','기록 id':m.id}})}
+function sndXlsx(){if(typeof XLSX==='undefined'){phToast('엑셀(SheetJS) 라이브러리를 불러오지 못했습니다.',{ms:4000});return}const R=sndRows();if(!R.length){phToast('엑셀로 낼 청음 기록이 없습니다.',{ms:3000});return}
+ const d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');Promise.resolve(xlsxSave([['청음기록',R]],`탐사기록_청음_${ymd}.xlsx`)).catch(e=>phToast('엑셀 만들기 실패: '+((e&&e.message)||e),{ms:5000}))}
+/* ---- 📋 현장 일지 누수탐사 건: 같은 탐사연번이거나 같은 날 30m 안 청음 기록 ---- */
+function sndOfFld(r){const no=String(r.no||'').trim(),d=r.d||r.sd||'';return sndLive().filter(m=>no&&String(m.no||'').trim()===no||(!m.no&&r.lat&&r.lng&&m.lat!=null&&sndDay(m.t)===d&&trkHav([+r.lat,+r.lng],[m.lat,m.lng])<=30)).sort((a,b)=>a.t-b.t)}
+function sndFldList(r){const L=sndOfFld(r);return L.length?L.map(m=>`<div class="sfl"><span style="color:${sndCol(m.pk)}"><b>🔊 ${Math.round(m.pk)}</b></span> ${sndTm(m.t)} · ${m.hz}Hz${m.man!==''&&m.man!=null?` · 청음기 ${m.man}${esc(m.mu||'')}`:''} · ${SND_JD[m.jd||''][0]}${m.jd?'':' '+sndPredTx(m,true)} <button type="button" class="btn ol sm" onclick="sndGo('${m.id}')">지도</button></div>`).join(''):'<small class="mute">아직 청음 기록이 없습니다.</small>'}
+function sndFldBlock(r){const no=esc(String(r.no||'').replace(/'/g,''));return `<div class="fldPh fldSnd"><b>🎧 청음 기록</b> <small class="mute">(청음기 소리·음도, 탐사연번으로 붙음)</small><div class="sfls">${sndFldList(r)}</div>
+ <button type="button" class="btn ol sm" onclick="sndOpen({no:(document.querySelector('#fldW [data-k=&quot;no&quot;]')||{}).value||'${no}'})">🎧 청음 녹음</button></div>`}
+function sndFldRefresh(){const w=$('fldW'),el=w&&w.querySelector('.fldSnd .sfls');if(!el||typeof FLD==='undefined'||!FLD.cur)return;el.innerHTML=sndFldList(FLD.cur)}
+function sndFldAoa(T){const nos=new Set(T.map(r=>String(r.no||'').trim()).filter(Boolean)),days=new Set(T.map(r=>r.d).filter(Boolean)),L=sndLive().filter(m=>m.no&&nos.has(String(m.no).trim())||days.has(sndDay(m.t)));
+ const R=sndRows(L);return [Object.keys(R[0]||{'날짜':''})].concat(R.map(o=>Object.values(o)))}
+/* ---- 탐사기록 중 지도 왼쪽 아래 '🎧 청음' 단추 ---- */
+function sndFab(){if(typeof map==='undefined'||!map||typeof L==='undefined')return;const on=typeof TRK!=='undefined'&&TRK.on;
+ if(on&&!SND.fab){const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){const b=L.DomUtil.create('button','sndfab np');b.type='button';b.innerHTML='🎧 청음 녹음';b.title='지금 자리에서 청음기 소리 녹음·음도 저장';L.DomEvent.disableClickPropagation(b);L.DomEvent.on(b,'click',e=>{L.DomEvent.preventDefault(e);sndOpen()});return b}});SND.fab=new C();map.addControl(SND.fab)}
+ else if(!on&&SND.fab){map.removeControl(SND.fab);SND.fab=null}}
+/* ---- 백업(💾 '👣 탐사기록' 항목에 같이) ---- */
+async function sndSnap(){const au={};for(const m of sndLive().filter(x=>x.mine)){try{const b=await IDB.get('snd:'+m.id);if(b)au[m.id]=await shB64(b)}catch(_){}}return{v:1,list:sndLive(),au}}
+async function sndMergeBk(o){if(!o||!Array.isArray(o.list))return 0;let n=0;for(const it of o.list){if(!it||!it.id||SND.byId.has(it.id))continue;const m=Object.assign({},it);SND.list.push(m);SND.byId.set(m.id,m);n++;
+  const s=o.au&&o.au[it.id];if(s){try{const bin=atob(s),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);await IDB.set('snd:'+it.id,new Blob([u],{type:it.mime||'audio/webm'}))}catch(_){}}}
+ if(n){await sndIdxSave();sndDraw()}return n}
+async function sndInit(){sndCfgLoad();await sndLoad();sndDraw();setTimeout(()=>sndSync(true),9000);setInterval(()=>{if(document.visibilityState==='visible')sndSync(true)},180000)}
+try{sndInit()}catch(e){console.warn('청음 기록',e)}
 /* ---------- 📖 사용법 (2026-11-01, 웹 관망해석기 도움말과 같은 방식): 도움말 창(화면 구성 요약·자주 하는 일) + 📘 사용 매뉴얼(manual.html, 새 탭) + 🎬 사용법 영상. 머리글 📖 사용법·위쪽 칩 줄 맨 끝·F1 ---------- */
-const HLP_V='20261126a';/* 매뉴얼을 고치면 올려서 폰 캐시 대신 새 판을 엶 */
+const HLP_V='20261128a';/* 매뉴얼을 고치면 올려서 폰 캐시 대신 새 판을 엶 */
 function hlpUrl(h){const web=/^https?:$/.test(location.protocol)&&!/script\.google|googleusercontent/.test(location.hostname);
  return (web?'manual.html':'https://xhahr30-ops.github.io/app-share/geo-join/manual.html')+'?v='+HLP_V+(h?'#'+h:'')}
 function hlpOpen(){let w=$('hlpW');
@@ -18317,6 +18516,7 @@ function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id;w.
   ${inp('blk','블록명',{ph:'GPS로 자동'})}
   <div class="fldPh"><b>📷 징후 사진</b> <small class="mute">(📸 위치 캡처 = 번호.png 위치도 → 이어 찍기 번호-1 원경 · 번호-2 근경)</small><div class="fldPhS">${fldLkPh(r)}</div>
   <button type="button" class="btn ol sm" data-lkcam="1">📷 위치 캡처·원경·근경 찍기</button></div>
+  ${sndFldBlock(r)}
   <label class="f">징후 내용<textarea data-k="memo" rows="2" placeholder="예: 도로 물 고임, 맨홀 물 흐름">${esc(r.memo||'')}</textarea></label>
   <div class="fldLk2"><button type="button" class="btn ol" data-lk="no">❌ 누수 아님 (끝냄)</button><button type="button" class="btn" data-lk="ts" style="background:#059669">✅ 누수적출 확인</button></div>
   <p class="hint">탐사로 확인한 뒤 누르세요. ❌ 누수 아님 = 이 건을 끝내고 징후 사진은 휴지통으로(지도에서 지움) · ✅ 누수적출 확인 = 탐사 칸이 열리고 사진이 🎧 누수탐사 ★(미수리)로 바뀝니다.</p>`
@@ -18327,6 +18527,7 @@ function fldEdit(r0){const w=fldWin(),bd=w.querySelector('.fldBd'),isN=!r0.id;w.
   <div class="g2">${inp('pave','포장종류',{list:'fldDlPave'})}${inp('cause','누수원인',{list:'fldDlCause'})}</div>
   <div class="g2">${inp('part','누수부위',{list:'fldDlPart'})}${inp('co','공사업체',{list:'fldDlCo'})}</div>
   <label class="f">주소 <small class="mute">(이 기기에만 저장)</small><span class="fldAd"><input data-x="addr" value="${esc(r._addr??'')}" placeholder="📸 위치 캡처 때 자동으로 들어감 · 직접 고쳐도 됨"><button type="button" class="btn ol sm" data-adr="1">📍 주소 찾기</button></span><small class="c-ind">💡 📸 위치 캡처를 하면 빨간 점 자리 주소가 이 칸에 자동으로 들어갑니다(같은 탐사연번).</small></label>
+  ${sndFldBlock(r)}
   <label class="f">현장내용<textarea data-k="memo" rows="2">${esc(r.memo||'')}</textarea></label>${inp('note','비고(조치계획)')}
   ${r.res==='오탐'?'':r.cd||r.fixd||FLD.fxOpen===(r.id||'_new')?`<div class="fldFx"><b>🔧 누수수리</b>${inp('fixd','수선내용',{ph:'예: PE20mm 직관 교체'})}
   <div class="fldTm"><span>공사일자</span><input type="date" data-k="cd" value="${esc(r.cd||'')}"><button type="button" class="btn sm" data-today="cd">오늘</button></div><small class="mute">공사일자를 넣고 저장하면 수리 완료(복구결과 정탐) · 사진 ★ 파랑</small></div>`
@@ -19059,7 +19260,7 @@ function fldXl(){if(typeof XLSX==='undefined'){alert('엑셀 도구(XLSX)를 아
  const m=[['순번','접수날짜','접수번호','공사업체','접수','도착','착공','준공','대리인','현장주소','민원원인','누수관종','누수관경','누수원인','누수부위','관정비여부','현장내용','월','년']].concat(M.map((r,i)=>[i+1,r.d,nm(r.no),r.co||'',r.tA||'',r.tB||'',r.tC||'',r.tD||'','','',r.res||'',r.mat||'',nm(r.dia),r.cause||'',r.part||'',r.fix||'',r.memo||'',r.d?+r.d.slice(5,7):'',r.d?+r.d.slice(0,4):'']));
  const t=[['탐사연번','블록명','탐사일자','공사일자','복구결과','주소','도로폭','추정관경','포장종류','현장내용','구경','관종','누수원인','누수부위','수선내용','공사업체','비고(조치계획)','탐사자','공사업체']].concat(T.map(r=>[nm(r.no),r.blk||'',r.d||'',r.cd||'',r.res||'','',nm(r.road),nm(r.edia),r.pave||'',r.memo||'',nm(r.dia),r.mat||'',r.cause||'',r.part||'',r.fixd||'',r.co||'',r.note||'','',r.co||'']));
  const p=[['구분','날짜','번호','소블록','위도','경도','도착 위치','착공 위치','준공 위치']].concat(A.map(r=>[r.src,r.d,r.no||'',r.blk||'',nm(r.lat),nm(r.lng)].concat(['B','C','D'].map(k=>r.gps&&r.gps[k]?r.gps[k].join(', '):''))));
- try{const wb=XLSX.utils.book_new();[['민원(리스트 칸)',m,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['누수탐사(총괄표 칸)',t,[9,9,11,11,9,10,7,9,9,30,7,8,10,12,24,12,20,8,12]],['위치',p,[8,11,9,9,11,11,22,22,22]]].forEach(([n,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)});
+ try{const wb=XLSX.utils.book_new();[['민원(리스트 칸)',m,[6,11,9,12,7,7,7,7,8,10,9,9,9,10,12,10,36,5,6]],['누수탐사(총괄표 칸)',t,[9,9,11,11,9,10,7,9,9,30,7,8,10,12,24,12,20,8,12]],['위치',p,[8,11,9,9,11,11,22,22,22]]].concat((()=>{const a=sndFldAoa(T);return a.length>1?[['청음(음도)',a,a[0].map(()=>11)]]:[]})()).forEach(([n,a,w])=>{const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)});
   XLSX.writeFile(wb,`현장일지_대장칸_${(typeof SITE==='object'&&SITE.name)||'현장'}_${fldToday().replace(/-/g,'')}.xlsx`,{compression:true})}catch(e){alert('엑셀 만들기 실패: '+((e&&e.message)||e))}}
 
 /* ===== 🚨 긴급 점검 (2026-11-15 B안) =====
