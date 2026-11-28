@@ -2077,7 +2077,7 @@ html.qzon,html.qzon body{overflow:hidden!important}
   <label class="drop"><input type="file" id="lqPrepF" accept=".zip,.json"><div class="ic">🧮</div><b>누수 예측 준비 파일(.zip)</b><span>PC에서 관망해석 모델로 만든 소블록별 가상 누수 수압표와 수압계 추천 자리 · 한 번 올리면 이 PC에 저장</span></label>
   <p class="hint" id="lqPrepMsg"></p>
   <div class="g2"><label class="f">소블록 <small style="font-weight:400">🧮 준비 파일 · 📈 1분 자료</small><select id="lqBlk"></select></label><label class="f">수압계 수<select id="lqK"><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label></div>
-  <div class="sbtns"><button id="lqRecBtn" type="button" class="btn ol">📍 수압계 추천 자리</button><button id="lqRecCsv" type="button" class="btn ol">⬇ 추천 자리 CSV</button><button id="lqTpl" type="button" class="btn ol">📄 1분 자료 양식</button><button id="lqBvBtn" type="button" class="btn ol" title="동수두(지반고+수압)가 유입점 기준보다 높은 지점 → 둘레 경계밸브 열림 의심 순위">🔴 경계밸브 추적</button></div>
+  <div class="sbtns"><button id="lqRecBtn" type="button" class="btn ol">📍 수압계 추천 자리</button><button id="lqRecCsv" type="button" class="btn ol">⬇ 추천 자리 CSV</button><button id="lqLocBtn" type="button" class="btn ol" title="추천 자리마다 주변 관로·시설물 삽도와 지번·도로명 주소, 설치 기록 칸을 담은 위치도(PDF·한글)">🗺 추천 자리 위치도</button><button id="lqTpl" type="button" class="btn ol">📄 1분 자료 양식</button><button id="lqBvBtn" type="button" class="btn ol" title="동수두(지반고+수압)가 유입점 기준보다 높은 지점 → 둘레 경계밸브 열림 의심 순위">🔴 경계밸브 추적</button></div>
   <label class="drop"><input type="file" id="lqDataF" accept=".csv,.txt,.xlsx,.xls,.xlsm" multiple><div class="ic">📈</div><b>1분 유량·수압 파일 (.csv·.xlsx, 여러 개)</b><span>소블록 하나에 파일 하나 · 첫 열 시각, 유량(㎥/h), P1~P8 수압(m·kgf/㎠·MPa) · 파일 이름에 소블록 이름이 있으면 그 소블록, 없으면 위에서 고른 소블록 · 같은 소블록은 이어 붙임(최근 120일)</span></label>
   <p class="hint" id="lqMsg"></p>
   <div class="sbtns"><button type="button" id="lqRepBtn" class="btn">📄 분석 보고서 (A4·PDF)</button><button type="button" id="lqRepXl" class="btn ol">⬇ 보고서 엑셀</button><button type="button" id="lqRepHw" class="btn ol" title="분석 보고서를 한글 문서(.hwpx)로 저장">📝 한글(HWPX)</button></div>
@@ -17069,6 +17069,94 @@ function lqShowRec(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6,i
 function lqRecCsv(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6;if(!b){alert('준비 파일에 있는 소블록(🧮)을 고르세요.');return}
  const fx=LQ.recFix&&LQ.recFix.nm===nm&&LQ.recFix.k===k?LQ.recFix.list:null;if(!fx&&(lqFixedIdx(nm,b).length||lqHyd(b).n)){alert('먼저 📍 수압계 추천 자리를 눌러 계산한 뒤 받으세요 (이미 잰 지점·소화전 우선을 반영해 다시 고릅니다).');return}
  const rows=[['이름','설치 순서','절점번호','위도','경도','표고m','가까운 소화전'].join(',')].concat((fx||b.rec.slice(0,k)).map((r,j)=>[r.name,r.fixed?'이미 측정':j+1,b.ids[r.i],b.lat[r.i],b.lng[r.i],b.elev[r.i],'"'+String(r.hyd||'').replace(/^🧯 /,'').replace(/"/g,'""')+'"'].join(',')));dlBlob(new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv'}),`수압계추천자리_${nm}_${k}개.csv`)}
+/* ---- 🗺 수압계 추천 자리 위치도 (B안, 2026-11-28 사용자 "수압계 추천 자리를 누르면 삽도·주소를 포함한 위치도") ----
+ 1쪽 전체 배치도(소블록 경계 + 모든 자리) + 자리마다 1쪽: 주변 관로·시설물 삽도(지도에 켜진 그대로, INDEX·범례) · 지번·도로명 주소(카카오 좌표→주소) · 절점·표고·모델 수압·설치 자리 · 설치 기록 칸(설치일·수압계 번호·설치자·설치 전후 사진)
+ 고객 이름·연락처는 넣지 않음. '대수용가 인근 수용가' 자리는 그 주소가 곧 수용가 주소이므로 '내부용' 표시 */
+const LQ_LOC={z:18};
+async function lqRecList(nm,b,k){if(LQ.recFix&&LQ.recFix.nm===nm&&LQ.recFix.k===k)return LQ.recFix.list;
+ const F=lqFixedIdx(nm,b);if(F.length||lqHyd(b).n||(b.inlet&&b.inlet.length)){await lqShowRecFixed(nm,b,F,k);return LQ.recFix&&LQ.recFix.nm===nm?LQ.recFix.list:null}
+ lqShowRec();return b.rec.slice(0,k)}
+/* 그 범위 안에 보이는 관로만으로 관로 색 범례 (관로 첫 점 기준, 빠르게) */
+function lqLocPipeLeg(bd){try{if(!PIPE.feats||!PIPE.feats.length||($('pShow')&&$('pShow').value==='off'))return null;const by=$('pBy').value,cnt=new Map(),w=bd.getWest(),e=bd.getEast(),s=bd.getSouth(),n=bd.getNorth();
+ for(const f of PIPE.feats){const G=f.geometry;if(!G)continue;const c=G.type==='MultiLineString'?G.coordinates[0]&&G.coordinates[0][0]:G.coordinates[0];if(!c||c[0]<w||c[0]>e||c[1]<s||c[1]>n)continue;const k=pipeCat(attrOf(f),by);cnt.set(k,(cnt.get(k)||0)+(f._len||0))}
+ const it=pipeLegData().items.filter(([k])=>cnt.get(k)>0).map(([k,c])=>{const L=cnt.get(k);return[k,c,L>=1000?(L/1000).toFixed(2)+'km':Math.round(L).toLocaleString()+'m']});return it.length?{t:PBY_NM[by]||by,items:it}:null}catch(_){return null}}
+/* 지도 한 장 찍기: foc = 이 쪽 자리 순번(-1이면 전체 배치도) */
+async function lqLocShot(nm,b,list,foc,AR){const mc=map.getContainer(),css0=mc.style.cssText,R0=mc.getBoundingClientRect(),pg=lqRepPoly(nm),LL=list.map(r=>[b.lat[r.i],b.lng[r.i]]);
+ try{if(R0.width&&R0.height){if(R0.width/R0.height>AR)mc.style.width=Math.round(R0.height*AR)+'px';else mc.style.height=Math.round(R0.width/AR)+'px'}
+  let bd=L.latLngBounds(LL);if(foc<0&&pg){try{bd.extend(L.geoJSON(pg).getBounds())}catch(_){}}
+  const fit=()=>{map.invalidateSize({animate:false,pan:false});if(foc>=0)map.setView(LL[foc],LQ_LOC.z,{animate:false});else map.fitBounds(bd.pad(.06),{animate:false,maxZoom:18})};
+  fit();await sleep(900);fit();await sleep(1300);
+  const B=await mapShotBase([],k=>0,null,null,{}),secret=[PIPE.layer,PIPE.layerS].some(l=>l&&map.hasLayer(l)),g=B.g,k=B.k,px=(x,y)=>{const p=map.latLngToContainerPoint([y,x]);return[p.x*k,p.y*k]},vb=map.getBounds();
+  /* 소블록 경계: 배치도는 밖을 흐리게, 상세도는 점선만 */
+  const rings=[];if(pg){const G=pg.geometry;(G.type==='Polygon'?[G.coordinates]:G.type==='MultiPolygon'?G.coordinates:[]).forEach(P=>P.forEach(r=>rings.push(r.map(c=>px(c[0],c[1])))))}
+  if(rings.length){g.save();if(foc<0){g.beginPath();g.rect(0,0,B.W,B.Hm);rings.forEach(r=>{r.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()});g.fillStyle='rgba(255,255,255,.7)';g.fill('evenodd')}
+   g.beginPath();rings.forEach(r=>{r.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()});g.lineWidth=3*k;g.setLineDash([9*k,6*k]);g.strokeStyle='#4338ca';g.stroke();g.restore()}
+  g.textBaseline='middle';const F='"Noto Sans KR","Malgun Gothic",sans-serif';
+  const pin=(j,big)=>{const r=list[j],[x,y]=px(LL[j][1],LL[j][0]),c=r.fixed?'#059669':big?'#dc2626':'#2563eb';
+   if(big){g.beginPath();g.arc(x,y,22*k,0,7);g.strokeStyle='rgba(220,38,38,.9)';g.lineWidth=3*k;g.stroke();g.beginPath();g.moveTo(x-30*k,y);g.lineTo(x-12*k,y);g.moveTo(x+12*k,y);g.lineTo(x+30*k,y);g.moveTo(x,y-30*k);g.lineTo(x,y-12*k);g.moveTo(x,y+12*k);g.lineTo(x,y+30*k);g.stroke()}
+   g.beginPath();g.arc(x,y,(big?8:6.5)*k,0,7);g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=2.5*k;g.stroke();
+   const t=String(r.name);g.font=`800 ${(big?15:12)*k}px ${F}`;const tw=g.measureText(t).width+10*k,th=(big?22:18)*k,lx=x+(big?26:10)*k,ly=y-(big?36:20)*k;
+   g.fillStyle='rgba(255,255,255,.94)';g.fillRect(lx,ly,tw,th);g.strokeStyle=c;g.lineWidth=1.6*k;g.strokeRect(lx,ly,tw,th);g.fillStyle=c;g.textAlign='left';g.fillText(t,lx+5*k,ly+th/2)};
+  list.forEach((_,j)=>{if(j!==foc&&vb.contains(LL[j]))pin(j,false)});if(foc>=0)pin(foc,true);
+  /* 배치도: 줌이 정수라 남는 여백 잘라 내기 */
+  if(foc<0){const all=[];rings.forEach(r=>all.push(...r));LL.forEach(p=>all.push(px(p[1],p[0])));if(all.length>1){const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys);let w0=Math.max(120*k,(bx1-bx0)*1.1),h0=Math.max(120*k,(by1-by0)*1.1);if(w0/h0>AR)h0=w0/AR;else w0=h0*AR;const cw=Math.round(Math.min(B.W,w0)),ch=Math.round(Math.min(B.Hm,h0));
+   if(cw<B.W||ch<B.Hm){const x0=Math.max(0,Math.min(B.W-cw,Math.round((bx0+bx1)/2-cw/2))),y0=Math.max(0,Math.min(B.Hm-ch,Math.round((by0+by1)/2-ch/2))),c2=document.createElement('canvas');c2.width=cw;c2.height=ch;c2.getContext('2d').drawImage(B.cv,x0,y0,cw,ch,0,0,cw,ch);B.cv=c2;B.g=c2.getContext('2d');B.W=cw;B.Hm=ch}}}
+  mapShotDeco(B,secret);
+  const d=.0005,ring=foc>=0?[[LL[foc][1]-d,LL[foc][0]-d],[LL[foc][1]+d,LL[foc][0]-d],[LL[foc][1]+d,LL[foc][0]+d],[LL[foc][1]-d,LL[foc][0]+d],[LL[foc][1]-d,LL[foc][0]-d]]:(()=>{const xs=LL.map(p=>p[1]),ys=LL.map(p=>p[0]),a0=Math.min(...xs)-d,a1=Math.max(...xs)+d,b0=Math.min(...ys)-d,b1=Math.max(...ys)+d;return[[a0,b0],[a1,b0],[a1,b1],[a0,b1],[a0,b0]]})();
+  const leg=foc>=0?[['pin','#dc2626','이 쪽 수압계 자리'],['dot','#2563eb','다른 추천 자리'],...(list.some(r=>r.fixed)?[['dot','#059669','이미 잰 측정 지점']]:[]),['dash','#4338ca','소블록 경계'],['fill','rgba(220,38,38,.45)','INDEX: 이 자리']]:[['dot','#2563eb','수압계 추천 자리'],...(list.some(r=>r.fixed)?[['dot','#059669','이미 잰 측정 지점']]:[]),['dash','#4338ca','소블록 경계'],['fill','rgba(255,255,255,.7)','소블록 밖 (흐리게)'],['fill','rgba(220,38,38,.45)','INDEX: 자리 둘레']];
+  const cv=axcMapFrame(B.cv,{ring,fs:pg?[pg]:[],sub:foc>=0?`${nm} 안 ${list[foc].name} 자리`:`시 전체에서 ${nm} 위치`,leg,pl:lqLocPipeLeg(vb)});
+  return{url:cv.toDataURL('image/jpeg',.86),note:B.note||''}}
+ catch(e){console.warn('수압계 위치도',e);return null}
+ finally{mc.style.cssText=css0;try{map.invalidateSize({animate:false,pan:false})}catch(_){}}}
+/* 설치 전·후 사진 붙일 빈 칸 (PDF·한글 둘 다 그림으로 넣음) */
+function lqLocPhotoBox(){const W=1780,H=560,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,H);g.setLineDash([18,10]);g.strokeStyle='#94a3b8';g.lineWidth=4;
+ const bw=(W-40)/2;[['설치 전 사진',0],['설치 후 사진',bw+40]].forEach(([t,x])=>{g.strokeRect(x+2,2,bw-4,H-4);g.fillStyle='#94a3b8';g.font='700 44px "Noto Sans KR","Malgun Gothic",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x+bw/2,H/2-24);g.font='500 30px "Noto Sans KR","Malgun Gothic",sans-serif';g.fillText('(사진 붙임)',x+bw/2,H/2+30)});
+ return c.toDataURL('image/jpeg',.9)}
+async function lqLocReport(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6;if(!b){alert('준비 파일에 있는 소블록(🧮)을 고르세요.');return}if(!map||typeof mapShotBase!=='function'||typeof axcMapFrame!=='function'){alert('지도가 아직 준비되지 않았습니다.');return}
+ const btn=$('lqLocBtn'),t0=btn&&btn.textContent,set=t=>{if(btn)btn.textContent=t};if(btn)btn.disabled=true;
+ const w=window.open('','lqLocRep','width=900,height=1000');if(!w){alert('팝업이 막혀 위치도 창을 못 열었습니다. 팝업을 허용해 주세요.');if(btn){btn.disabled=false;btn.textContent=t0}return}
+ const say=t=>{try{w.document.body.innerHTML=`<p style="font-family:sans-serif;padding:20px">⏳ ${t}</p>`}catch(_){}};say('수압계 추천 자리 계산 중…');
+ const c0=map.getCenter(),z0=map.getZoom();
+ try{set('⏳ 자리 계산 중…');const list=await lqRecList(nm,b,k);if(!list||!list.length){w.close();alert('수압계 자리를 고르지 못했습니다. 📍 수압계 추천 자리를 먼저 눌러 보세요.');return}
+  try{map.closePopup()}catch(_){}lqClear();
+  /* 주소: 카카오 좌표→주소(지번·도로명). 키가 없으면 '확인 필요' */
+  const ad=[];let adErr='';for(let j=0;j<list.length;j++){set(`⏳ 주소 찾는 중 ${j+1}/${list.length}`);say(`주소 찾는 중 ${j+1}/${list.length}`);const r=list[j];try{ad.push(await lpaAddr(L.latLng(b.lat[r.i],b.lng[r.i])))}catch(e){adErr=e&&e.message||'주소 못 찾음';ad.push(null)}}
+  set('⏳ 배치도 찍는 중…');say('전체 배치도 찍는 중…');const ov=await lqLocShot(nm,b,list,-1,178/146),shots=[];
+  for(let j=0;j<list.length;j++){set(`⏳ 위치도 ${j+1}/${list.length}`);say(`자리별 위치도 찍는 중 ${j+1}/${list.length}`);shots.push(await lqLocShot(nm,b,list,j,178/100))}
+  const ph=lqLocPhotoBox(),e=esc,today=fmtD(Date.now()),SITEN=(typeof SITE!=='undefined'&&SITE.name)||'',f6=v=>isFinite(v)?(+v).toFixed(6):'-';
+  const kind=r=>{const h=String(r.hyd||'');return/유입점/.test(r.name)||/유입점/.test(h)?'소블록 유입점':/지상식/.test(h)?'지상식 소화전':/지하식/.test(h)?'지하식 소화전':/대수용가/.test(h)?'대수용가 인근 수용가':'관로 절점'};
+  const inner=r=>/대수용가/.test(String(r.hyd||''));
+  const aj=j=>ad[j]?(ad[j].j||'확인 필요'):'확인 필요',adr=j=>ad[j]?(ad[j].d||'-'):'확인 필요',mp=r=>LQ.prep.hours.map(h=>`${h}시 ${lqF(b.p0[h][r.i])}m`).join(' · ');
+  const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
+  const sec=[];
+  sec.push(`<h2>1. 수압계 자리 목록</h2>${T(['이름','설치 순서','자리 종류','지번 주소','도로명 주소','절점','표고 m'],list.map((r,j)=>`<tr><td><b>${e(r.name)}</b></td><td>${r.fixed?'이미 측정':j+1}</td><td>${kind(r)}${inner(r)?' <span class="rd">(내부용)</span>':''}</td><td>${e(aj(j))}</td><td>${e(adr(j))}</td><td>${e(b.ids[r.i])}</td><td class="r">${lqF(b.elev[r.i])}</td></tr>`))}<p class="n">주소 = 카카오 좌표→주소(자리 좌표에서 가장 가까운 지번·도로명)${adErr?` · <span class="rd">주소를 못 찾은 자리: ${e(adErr)}</span>`:''} · '내부용' = 대수용가 인근 수용가 자리라 주소가 곧 수용가 주소이므로 외부에 내지 마세요</p>`);
+  sec.push(`<h2>2. 전체 배치도</h2>${ov?`<img class="map" src="${ov.url}" data-hmm="190" alt="수압계 자리 전체 배치도">${ov.note?`<p class="n">${e(ov.note)}</p>`:''}`:'<p class="n">배치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}`);
+  list.forEach((r,j)=>{const S=shots[j];sec.push(`<div class="pgb"></div><h2>${j+3}. ${e(r.name)} 위치도 ${r.fixed?'(이미 잰 측정 지점)':`(설치 순서 ${j+1})`}</h2>${S?`<img class="map" src="${S.url}" data-hmm="138" alt="${e(r.name)} 위치도">`:'<p class="n">위치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}
+<table class="kv"><tbody><tr><th>지번 주소</th><td colspan="3"><b>${e(aj(j))}</b>${inner(r)?' <span class="rd">(내부용)</span>':''}</td></tr><tr><th>도로명 주소</th><td colspan="3">${e(adr(j))}</td></tr>
+<tr><th>자리 종류</th><td>${kind(r)}</td><th>가까운 시설물</th><td>${e(String(r.hyd||'-').replace(/^[🧯🏭🚰]\s*/u,''))}</td></tr>
+<tr><th>절점 · 표고</th><td>${e(b.ids[r.i])} · ${lqF(b.elev[r.i])}m</td><th>모델 수압</th><td>${mp(r)}</td></tr>
+<tr><th>좌표 (위도, 경도)</th><td colspan="3">${f6(b.lat[r.i])}, ${f6(b.lng[r.i])}</td></tr></tbody></table>
+<h3>설치 기록</h3><table class="rec"><tbody><tr><th>설치일</th><td></td><th>수압계 번호</th><td></td><th>설치자</th><td></td></tr><tr><th>설치 위치 확인</th><td colspan="5">□ 추천 자리 그대로 &nbsp; □ 옮김 (옮긴 곳: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) &nbsp; 1분 자료 머리글: ${e(r.name)}${r.fixed?'':'@'+e(b.ids[r.i])}</td></tr><tr><th>비고</th><td colspan="5"></td></tr></tbody></table>
+<img class="ph" src="${ph}" data-hmm="48" alt="설치 전·후 사진 칸">`)});
+  const fn=`수압계자리위치도_${nm}_${list.length}곳_${today.replace(/-/g,'')}`;
+  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>@page{size:A4 portrait;margin:10mm 12mm}*{box-sizing:border-box}body{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#0f172a;margin:0;background:#f1f5f9;font-size:11.5px}
+.pg{max-width:190mm;margin:0 auto;background:#fff;padding:0 0 8mm}header{background:linear-gradient(90deg,#4338ca,#2563eb);color:#fff;padding:12px 16px}header h1{margin:0;font-size:18px}header p{margin:4px 0 0;opacity:.9;font-size:11px}
+main{padding:2px 14px}h2{font-size:14px;color:#3730a3;border-left:4px solid #4f46e5;padding-left:7px;margin:12px 0 5px;break-after:avoid}h3{font-size:12px;color:#3730a3;margin:6px 0 3px}
+.pgb{break-before:page;page-break-before:always;height:0}
+table{border-collapse:collapse;width:100%;font-size:10.5px}th{background:#eef2ff;color:#3730a3;text-align:left;white-space:nowrap}th,td{border:1px solid #cbd5e1;padding:3px 5px;vertical-align:top}tr{break-inside:avoid}td.r{text-align:right}
+table.rec td{height:22px;width:21%}table.rec th{width:12%}.rd{color:#b91c1c}.n{color:#64748b;font-size:9.5px;margin:3px 0}img.map{width:100%;display:block;border:1px solid #e2e8f0;break-inside:avoid}img.ph{width:100%;display:block;margin-top:4px;max-height:52mm;object-fit:contain}
+footer{margin-top:12px;padding:8px 14px;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px;display:flex;justify-content:space-between}.bar{position:sticky;top:0;background:#1e293b;padding:8px;text-align:center;z-index:2}.bar button{font:inherit;font-weight:700;padding:6px 14px;border-radius:8px;border:0;background:#4f46e5;color:#fff;cursor:pointer;margin:0 4px}
+@media print{body{background:#fff}.bar{display:none}.pg{max-width:none;padding:0}header,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+<div class="bar"><button onclick="print()">🖨 인쇄 · PDF로 저장</button>${HWPX_BTN(fn+'.hwpx')}<button onclick="close()">닫기</button></div>
+<div class="pg"><header><h1>📍 수압계 설치 자리 위치도 · ${e(nm)}</h1><p>${e(SITEN)} 스마트 물길주소 ②-4 누수 예측 · 수압계 ${list.length}곳 · 작성 ${fmtDT(Date.now())} · 만든이: 구병순</p></header><main>
+${sec.map(x=>`<section>${x}</section>`).join('\n')}
+<p class="n" style="margin-top:10px">자리는 누수 예측 준비 파일(관망해석 모델)로 고른 추천이며, 현장 여건(소화전 형식·차량 통행·도로 굴착)에 따라 옮길 수 있습니다. 옮기면 설치 기록에 적고 1분 자료 머리글을 '이름@절점번호'로 써 주세요. 삽도의 관로·시설물은 앱 지도에 켜진 그대로입니다. 고객 이름·연락처는 넣지 않았습니다.</p></main>
+<footer><span>스마트 물길주소 · 서용이</span><span>만든이: 구병순</span></footer></div></body></html>`;
+  w.document.open();w.document.write(html);w.document.close()}
+ catch(err){try{w.close()}catch(_){}alert('위치도를 만들지 못했습니다: '+(err&&err.message||err))}
+ finally{try{map.setView(c0,z0,{animate:false})}catch(_){}try{if(LQ.recFix&&LQ.recFix.nm===nm)lqSensorMarks(b,0,null,LQ.recFix.list);else lqSensorMarks(b,k,null)}catch(_){}if(btn){btn.disabled=false;btn.textContent=t0}}}
 /* 이미 잰 측정 지점(1분 자료 머리글 'P순번@절점' 등)을 고정하고 수압계를 더 놓을 자리 고르기 — PC 계산 도구(recommend)와 같은 방식을 앱에서 */
 function lqFixedIdx(nm,b){const d=LQ.data.get(nm);if(!d||!d.P)return[];const ks=Object.keys(d.P).filter(k=>/@/.test(k));const ix=lqSensorIdx(b,ks);return[...new Set(ix.filter(i=>i>=0))].map((i,j)=>({i,name:ks[ix.indexOf(i)]}))}
 /* 수압계는 소화전에 우선 설치(사용자 기준) — 절점마다 가장 가까운 소화전(시설물 SA119 등 sym 'hyd')과 거리 */
@@ -17185,7 +17273,7 @@ async function lqInit(){if(!$('lqSec'))return;lqCfgUi();try{await lrInit()}catch
  lqPrepShow();lqBlkOpts();lqRenderTbl();
  $('lqPrepF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)lqPrepLoad(f)};
  $('lqDataF').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)lqDataLoad(fs)};
- $('lqRecBtn').onclick=lqShowRec;$('lqcAdd').onclick=lqcAdd;$('lqcD').value=fmtD(Date.now());$('lqcBox').addEventListener('toggle',e=>{if(e.target.open)lqcRender()});$('lqBvBtn').onclick=async()=>{const nm=$('lqBlk').value;if(nm&&lqPB(nm)&&!lqPB(nm).S)await lqEnsureS(nm);lqBvShow(nm)};$('lqRecCsv').onclick=lqRecCsv;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
+ $('lqRecBtn').onclick=lqShowRec;$('lqcAdd').onclick=lqcAdd;$('lqcD').value=fmtD(Date.now());$('lqcBox').addEventListener('toggle',e=>{if(e.target.open)lqcRender()});$('lqBvBtn').onclick=async()=>{const nm=$('lqBlk').value;if(nm&&lqPB(nm)&&!lqPB(nm).S)await lqEnsureS(nm);lqBvShow(nm)};$('lqRecCsv').onclick=lqRecCsv;$('lqLocBtn').onclick=lqLocReport;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
  $('lqDel').onclick=async()=>{const nm=$('lqBlk').value;if(!nm||!LQ.data.has(nm)){alert('지울 1분 자료가 있는 소블록(📈)을 고르세요.');return}if(!confirm(nm+'의 1분 유량·수압 자료를 이 PC에서 지울까요?'))return;LQ.data.delete(nm);LQ.an.delete(nm);try{await IDB.del('lqd:'+nm);await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}lqBlkOpts();lqRenderTbl()};
  $('lqSec').addEventListener('change',e=>{const x=e.target.closest('.lqLv');if(x)lqLvSet(x)});$('lqSec').addEventListener('click',e=>{if(e.target.closest('.lqLvXl')){lqLvXl();return}const b=e.target.closest('.lqGo');if(b){lqShow(b.dataset.b);return}const f=e.target.closest('.lqFly');if(f&&map){const ft=PIPE.feats[+f.dataset.fi],m=lqMid(ft);if(m)map.setView([m[1],m[0]],Math.max(map.getZoom(),18));return}if(e.target.id==='lqXl')lqXl()});
  $('lqBlk').onchange=()=>{const nm=$('lqBlk').value;if(nm&&LQ.data.has(nm))lqShow(nm);else if(nm&&lqPB(nm))lqShowRec()}}
