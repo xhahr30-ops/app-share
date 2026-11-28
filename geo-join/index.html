@@ -2074,8 +2074,9 @@ html.qzon,html.qzon body{overflow:hidden!important}
 
  <div class="sec" id="lqSec">
   <h4>②-4 💧 누수 지점 예측 <small style="font-weight:400;color:var(--mute)">선택 · 1분 유량·수압 · 관망해석 · 파손 위험 점수</small></h4>
-  <label class="drop"><input type="file" id="lqPrepF" accept=".zip,.json"><div class="ic">🧮</div><b>누수 예측 준비 파일(.zip)</b><span>PC에서 관망해석 모델로 만든 소블록별 가상 누수 수압표와 수압계 추천 자리 · 한 번 올리면 이 PC에 저장</span></label>
+  <label class="drop"><input type="file" id="lqPrepF" accept=".zip,.json"><div class="ic">🧮</div><b>누수 예측 준비 파일(.zip)</b><span>PC에서 관망해석 모델로 만든 소블록별 가상 누수 수압표와 수압계 추천 자리 · 한 번 올리면 이 PC에 저장 · 공유 서버가 있으면 직원에게도 자동 공유</span></label>
   <p class="hint" id="lqPrepMsg"></p>
+  <p class="hint" id="lqpLine"></p>
   <div class="g2"><label class="f">소블록 <small style="font-weight:400">🧮 준비 파일 · 📈 1분 자료</small><select id="lqBlk"></select></label><label class="f">수압계 수<select id="lqK"><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label></div>
   <div class="sbtns"><button id="lqRecBtn" type="button" class="btn ol">📍 수압계 추천 자리</button><button id="lqRecCsv" type="button" class="btn ol">⬇ 추천 자리 CSV</button><button id="lqLocBtn" type="button" class="btn ol" title="추천 자리마다 주변 관로·시설물 삽도와 지번·도로명 주소, 설치 기록 칸을 담은 위치도(PDF·한글)">🗺 추천 자리 위치도</button><button id="lqTpl" type="button" class="btn ol">📄 1분 자료 양식</button><button id="lqBvBtn" type="button" class="btn ol" title="동수두(지반고+수압)가 유입점 기준보다 높은 지점 → 둘레 경계밸브 열림 의심 순위">🔴 경계밸브 추적</button></div>
   <label class="drop"><input type="file" id="lqDataF" accept=".csv,.txt,.xlsx,.xls,.xlsm" multiple><div class="ic">📈</div><b>1분 유량·수압 파일 (.csv·.xlsx, 여러 개)</b><span>소블록 하나에 파일 하나 · 첫 열 시각, 유량(㎥/h), P1~P8 수압(m·kgf/㎠·MPa) · 파일 이름에 소블록 이름이 있으면 그 소블록, 없으면 위에서 고른 소블록 · 같은 소블록은 이어 붙임(최근 120일)</span></label>
@@ -16671,13 +16672,56 @@ async function lqPrepPut(meta,d){/* 소블록마다 수압표는 따로 저장, 
  return meta}
 async function lqEnsureS(nm){const b=lqPB(nm);if(!b||b.S)return b;let S=null;try{S=await IDB.get('lqS:'+nm)}catch(_){}
  if(S){LQ.prep.blocks.forEach(x=>{if(x!==b&&x.S)x.S=null});[...LQ.S.keys()].forEach(k=>{if(!k.startsWith(nm+'|'))LQ.S.delete(k)});b.S=S}return b}
-async function lqPrepLoad(f){const m=$('lqPrepMsg');m.textContent=f.name+' 읽는 중…';
+async function lqPrepLoad(f,opt){opt=opt||{};const m=$('lqPrepMsg');m.textContent=f.name+' 읽는 중…';
  try{let meta=LQ.prep?{...LQ.prep,blocks:LQ.prep.blocks.map(b=>{const x={...b};delete x.S;return x})}:null,n=0;
   await lqPrepRead(f,async(d,i,N)=>{if(meta&&String(meta.hours)!==String(d.hours))throw new Error('시점이 다른 준비 파일입니다 ('+d.hours+'시). 같은 계산 도구로 만든 파일을 넣으세요.');meta=await lqPrepPut(meta,d);n+=d.blocks.length;m.textContent=`${f.name} 넣는 중… ${i+1}/${N} (${d.blocks.map(b=>b.name).join(', ')})`});
-  meta.name=f.name;meta.at=Date.now();await IDB.set('leak_prep',meta);LQ.prep=meta;LQ.S.clear();LQ.an.clear();lqBlkOpts();lqPrepShow();lqRenderTbl();m.innerHTML=`✅ 소블록 ${n}개를 넣었습니다 (모두 ${meta.blocks.length}개). `+m.innerHTML}
+  meta.name=f.name;meta.at=opt.at||Date.now();if(opt.at)meta.shv=opt.at;else delete meta.shv;await IDB.set('leak_prep',meta);LQ.prep=meta;LQ.S.clear();LQ.an.clear();lqBlkOpts();lqPrepShow();lqRenderTbl();m.innerHTML=`✅ 소블록 ${n}개를 ${opt.at?'공유 서버에서 받았습니다':'넣었습니다'} (모두 ${meta.blocks.length}개). `+m.innerHTML;
+  if(!opt.at&&typeof SH==='object'&&SH.on&&SH.on())setTimeout(()=>lqpUp(true),500)}
  catch(e){m.textContent='준비 파일 읽기 실패: '+((e&&e.message)||e)}}
-function lqPrepShow(){const m=$('lqPrepMsg');if(!m)return;const d=LQ.prep;if(!d){m.innerHTML='준비 파일이 없습니다. 위치 계산(L2)과 수압계 추천 자리에 필요합니다. 야간최소유량·파손 의심·관로 점검 순서(L1)는 없어도 됩니다.';return}
+function lqPrepShow(){const m=$('lqPrepMsg');if(!m)return;const d=LQ.prep;lqpLine();if(!d){m.innerHTML='준비 파일이 없습니다. 위치 계산(L2)과 수압계 추천 자리에 필요합니다. 야간최소유량·파손 의심·관로 점검 순서(L1)는 없어도 됩니다.';return}
  const nb=d.blocks.length;m.innerHTML=`준비 파일: <b>${esc(d.name||'')}</b> · ${esc(d.made||'')} · 소블록 ${nb}개${nb>8?' ('+d.blocks.slice(0,8).map(b=>esc(b.name)).join(', ')+' …)':': '+d.blocks.map(b=>`${esc(b.name)}(절점 ${b.ids.length})`).join(', ')}<br><small>${esc(d.src||'')} · 시점 ${d.hours.map(h=>h+'시').join('·')} · 가상 누수 ${d.leakCmh}㎥/h · 모델 계산 참고값</small>`}
+/* ☁ 누수 예측 준비 파일 직원 공유 (B안, 2026-11-28): 공유 서버 기준자료 'lqp'(공유 키 필요, 공개 저장소에 안 둠).
+   이 기기에서 준비 파일을 넣으면 소블록별 json을 zip으로 다시 묶어 3MB 조각으로 올림(서버가 같거나 새것이면 안 올림).
+   직원 기기는 앱을 열 때 받지 않고(34MB), ②-4가 확인해서 준비 파일이 없으면 PC는 저절로·폰은 ⬇ 받기 단추로 받음.
+   버전 = leak_prep.at (받은 것은 서버 v 그대로) */
+const LQP={info:null,busy:false,msg:''};
+const lqpPhone=()=>{try{return matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<760}catch(_){return false}};
+function lqpLine(){const el=$('lqpLine');if(!el)return;if(typeof SH!=='object'||!SH.on||!SH.on()){el.innerHTML='<small>☁ 공유 서버 주소·공유 키를 넣으면 준비 파일을 직원과 같이 쓸 수 있습니다 (⚙️ 설정 › 🔑 앱 설정).</small>';return}
+ const s=LQP.info,d=LQ.prep,lv=d&&d.at||0;let t='';
+ if(LQP.msg)t=LQP.msg;
+ else if(!s)t=d?'☁ 공유 서버에 준비 파일이 없습니다. <button type="button" class="btn ol" data-lqp="up">⏫ 직원과 공유(올리기)</button>':'☁ 공유 서버 확인 전 · <button type="button" class="btn ol" data-lqp="dn">⬇ 공유 서버에서 받기</button>';
+ else{const who=`소블록 ${s.cnt}개 · ${refMB(s.size)} · ${fmtDT(s.v)}${s.by?' · '+esc(s.by):''}`;
+  t=lv&&lv===s.v?`☁ 공유 서버와 같은 준비 파일입니다 (${who}).`:lv>s.v?`☁ 이 기기 준비 파일이 더 새것입니다 (서버 ${who}). <button type="button" class="btn ol" data-lqp="up">⏫ 직원과 공유(올리기)</button>`:`☁ 공유 서버에 ${d?'새 ':''}준비 파일이 있습니다 (${who}). <button type="button" class="btn ol" data-lqp="dn">⬇ 받기</button>`}
+ el.innerHTML='<small>'+t+'</small>'}
+async function lqpWait(){for(let i=0;REF.busy&&i<90;i++)await new Promise(r=>setTimeout(r,1000));return !REF.busy}
+async function lqpInfo(){const r=(await shReq('refinfo')).ref||{};LQP.info=r.lqp||null;return LQP.info}
+/* 열 때 한 번(auto): 서버 상태만 보고, 준비 파일이 없는 PC면 저절로 받음 */
+async function lqpCheck(auto){if(typeof SH!=='object'||!SH.on||!SH.on()){lqpLine();return}try{const s=await lqpInfo();lqpLine();
+  if(auto&&s&&s.parts&&!LQ.prep&&!lqpPhone())lqpDown(true)}catch(_){}}
+async function lqpDown(auto){if(LQP.busy)return;if(typeof SH!=='object'||!SH.on()){lqpLine();return}if(typeof JSZip==='undefined'){LQP.msg='⚠️ ZIP 라이브러리를 불러오지 못했습니다 (인터넷 확인).';lqpLine();LQP.msg='';return}
+ LQP.busy=true;const say=t=>{LQP.msg=t;lqpLine()};try{if(!await lqpWait())throw new Error('다른 공유 작업 중입니다. 잠시 뒤 다시 눌러 주세요.');REF.busy=true;
+  const s=await lqpInfo();if(!s||!s.parts)throw new Error('공유 서버에 준비 파일이 없습니다.');if(LQ.prep&&(LQ.prep.at||0)>=s.v){LQP.msg='';lqpLine();return}
+  const bufs=[];for(let p=0;p<s.parts;p++){say(`⬇️ 누수 예측 준비 파일 받는 중… ${p+1}/${s.parts} (${refMB(s.size)})`);const r=await shReq('refget',{name:'lqp',v:s.v,part:p});bufs.push(shBlob(r.data))}
+  REF.busy=false;say('🧮 준비 파일 넣는 중…');
+  await lqPrepLoad(new File([new Blob(bufs)],'공유 서버 준비 파일.zip'),{at:s.v});
+  if(!LQ.prep||LQ.prep.at!==s.v)throw new Error($('lqPrepMsg').textContent||'준비 파일을 넣지 못했습니다.');
+  LQP.msg='';lqpLine();if(typeof phToast==='function')phToast(`🧮 공유 서버에서 누수 예측 준비 파일(소블록 ${s.cnt}개)을 받았습니다.`)}
+ catch(e){say('<span class="c-rd">⚠️ 준비 파일 받기 실패: '+esc((e&&e.message)||e)+'</span> <button type="button" class="btn ol" data-lqp="dn">⬇ 다시 받기</button>');LQP.msg=''}
+ finally{REF.busy=false;LQP.busy=false}}
+async function lqpUp(auto){if(LQP.busy)return;if(typeof SH!=='object'||!SH.on()){lqpLine();return}const d=LQ.prep;if(!d||!d.blocks.length){LQP.msg='이 기기에 준비 파일이 없습니다 — 먼저 위 칸에 .zip을 넣어 주세요.';lqpLine();LQP.msg='';return}
+ if(typeof JSZip==='undefined'){LQP.msg='⚠️ ZIP 라이브러리를 불러오지 못했습니다 (인터넷 확인).';lqpLine();LQP.msg='';return}
+ LQP.busy=true;const say=t=>{LQP.msg=t;lqpLine()};try{if(!await lqpWait())throw new Error('다른 공유 작업 중입니다. 잠시 뒤 다시 눌러 주세요.');REF.busy=true;
+  const s=await lqpInfo();if(s&&s.v>=d.at){LQP.msg='';lqpLine();return}
+  const head={...d};delete head.blocks;delete head.name;delete head.shv;const z=new JSZip();let n=0;
+  for(const b of d.blocks){let S=null;try{S=await IDB.get('lqS:'+b.name)}catch(_){}if(!S)continue;say(`🧮 준비 파일 묶는 중… ${++n}/${d.blocks.length} (${esc(b.name)})`);z.file(String(b.name).replace(/[\\/:*?"<>|]/g,'_')+'.json',JSON.stringify({...head,blocks:[{...b,S}]}))}
+  if(!n)throw new Error('이 기기에 저장된 수압표가 없습니다. 준비 파일을 다시 넣어 주세요.');
+  say('🧮 준비 파일 압축 중…');const u8=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),parts=Math.ceil(u8.length/REF.PART);
+  if(parts>40)throw new Error(`준비 파일이 너무 큽니다 (${refMB(u8.length)}, 120MB까지).`);
+  for(let p=0;p<parts;p++){say(`⏫ 누수 예측 준비 파일 올리는 중… ${p+1}/${parts} (${refMB(u8.length)})`);await shReq('refput',{name:'lqp',v:d.at,part:p,parts,size:u8.length,cnt:n,data:await shB64(new Blob([u8.subarray(p*REF.PART,(p+1)*REF.PART)]))})}
+  d.shv=d.at;try{await IDB.set('leak_prep',d)}catch(_){}await lqpInfo();LQP.msg='';lqpLine();
+  if(typeof phToast==='function')phToast(`☁️ 누수 예측 준비 파일(소블록 ${n}개)을 공유 서버에 올렸습니다 — 직원 PC는 ②-4에서 저절로 받습니다.`)}
+ catch(e){const m=String((e&&e.message)||e);say('<span class="c-rd">⚠️ 준비 파일 공유 실패: '+esc(/알 수 없는 기준자료/.test(m)?'공유 서버 Code.gs를 2026-11-28 판 ②로 바꾸고 새 버전으로 배포해 주세요.':m)+'</span> <button type="button" class="btn ol" data-lqp="up">⏫ 다시 올리기</button>');LQP.msg=''}
+ finally{REF.busy=false;LQP.busy=false}}
 /* ---- 1분 자료 읽기 (CSV는 Web Worker) ---- */
 const LQ_WK=`function tp(v){if(v==null||v==='')return NaN;if(typeof v==='number'){if(v>20000&&v<90000){var d=new Date(Math.round((v-25569)*864e5));return d.getTime()+d.getTimezoneOffset()*6e4}return NaN}
 var s=String(v).trim(),m=/^(\\d{4})[-.\\/](\\d{1,2})[-.\\/](\\d{1,2})[ T]+(\\d{1,2}):(\\d{2})(?::(\\d{2}))?/.exec(s);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)).getTime();
@@ -17300,6 +17344,8 @@ async function lqInit(){if(!$('lqSec'))return;lqCfgUi();try{await lrInit()}catch
  try{LQ.prep=await IDB.get('leak_prep')||null;if(LQ.prep&&LQ.prep.blocks.some(b=>b.S)){const d=LQ.prep;LQ.prep=await lqPrepPut(null,d);LQ.prep.name=d.name;LQ.prep.at=d.at;await IDB.set('leak_prep',LQ.prep)}}catch(_){}try{const ls=await IDB.get('lqd_list')||[];for(const k of ls){const v=await IDB.get('lqd:'+k);if(v&&v.t)LQ.data.set(k,v)}}catch(_){}
  lqPrepShow();lqBlkOpts();lqRenderTbl();
  $('lqPrepF').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)lqPrepLoad(f)};
+ $('lqpLine').addEventListener('click',e=>{const b=e.target.closest('[data-lqp]');if(!b)return;if(b.dataset.lqp==='dn')lqpDown(false);else lqpUp(false)});
+ setTimeout(()=>lqpCheck(true),8000);
  $('lqDataF').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)lqDataLoad(fs)};
  $('lqRecBtn').onclick=lqShowRec;$('lqcAdd').onclick=lqcAdd;$('lqcD').value=fmtD(Date.now());$('lqcBox').addEventListener('toggle',e=>{if(e.target.open)lqcRender()});$('lqBvBtn').onclick=async()=>{const nm=$('lqBlk').value;if(nm&&lqPB(nm)&&!lqPB(nm).S)await lqEnsureS(nm);lqBvShow(nm)};$('lqRecCsv').onclick=lqRecCsv;$('lqLocBtn').onclick=lqLocReport;$('lqTpl').onclick=lqTpl;$('lqOff').onclick=()=>{lqClear();$('lqCand').innerHTML=''};
  $('lqDel').onclick=async()=>{const nm=$('lqBlk').value;if(!nm||!LQ.data.has(nm)){alert('지울 1분 자료가 있는 소블록(📈)을 고르세요.');return}if(!confirm(nm+'의 1분 유량·수압 자료를 이 PC에서 지울까요?'))return;LQ.data.delete(nm);LQ.an.delete(nm);try{await IDB.del('lqd:'+nm);await IDB.set('lqd_list',[...LQ.data.keys()])}catch(_){}lqBlkOpts();lqRenderTbl()};
@@ -21141,7 +21187,7 @@ function meta(items, by) {
 // ---------- 기준자료 공유 (소블록 경계·상수관로·상수관로 현장 수정·상수도 시설물·표고·사진 기준 위치) ----------
 // 앱이 압축(zip)한 기준자료를 3MB 조각으로 나눠 올리면 드라이브 '기준자료' 폴더에 조각 파일로 저장하고,
 // 마지막 조각이 들어오면 스크립트 속성 REF(목록)를 새 버전으로 바꾼 뒤 이전 버전 조각은 휴지통으로 보냅니다.
-const REF_NAMES = ['blocks', 'pipes', 'pipes2', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp', 'kb', 'food', 'ldg', 'nrw'];
+const REF_NAMES = ['blocks', 'pipes', 'pipes2', 'pedit', 'facs', 'elev', 'phref', 'vids', 'marks', 'trkp', 'kb', 'food', 'ldg', 'nrw', 'lqp'];
 function refFolder() { const fd = folder(), it = fd.getFoldersByName('기준자료'); return it.hasNext() ? it.next() : fd.createFolder('기준자료'); }
 function refMan() { try { return JSON.parse(P().getProperty('REF') || '{}') || {}; } catch (_) { return {}; } }
 function refTrash(id) { if (id) { try { DriveApp.getFileById(id).setTrashed(true); } catch (_) {} } }
