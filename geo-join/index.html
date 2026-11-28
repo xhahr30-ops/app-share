@@ -17069,6 +17069,8 @@ function lqShowRec(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6,i
 function lqRecCsv(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').value||6;if(!b){alert('준비 파일에 있는 소블록(🧮)을 고르세요.');return}
  const fx=LQ.recFix&&LQ.recFix.nm===nm&&LQ.recFix.k===k?LQ.recFix.list:null;if(!fx&&(lqFixedIdx(nm,b).length||lqHyd(b).n)){alert('먼저 📍 수압계 추천 자리를 눌러 계산한 뒤 받으세요 (이미 잰 지점·소화전 우선을 반영해 다시 고릅니다).');return}
  const rows=[['이름','설치 순서','절점번호','위도','경도','표고m','가까운 소화전'].join(',')].concat((fx||b.rec.slice(0,k)).map((r,j)=>[r.name,r.fixed?'이미 측정':j+1,b.ids[r.i],b.lat[r.i],b.lng[r.i],b.elev[r.i],'"'+String(r.hyd||'').replace(/^🧯 /,'').replace(/"/g,'""')+'"'].join(',')));dlBlob(new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv'}),`수압계추천자리_${nm}_${k}개.csv`)}
+/* 2026-11-28 '밀림 수정해'(YD20 5곳 한글): 한글 본문 높이 247mm(A4−위아래 여백 15mm·머리말/꼬리말 10mm)에 비해 1쪽 = 제목+목록표+배치도 183mm, 자리 쪽 = 제목+삽도 138mm+표 2개+사진 칸 48mm로 260mm 넘어 다음 쪽으로 밀림 →
+   한글 그림 높이(data-hmm): 배치도 175−9×자리 수(최소 90), 자리 삽도 112, 사진 칸 38 (PDF 화면 크기는 그대로) */
 /* ---- 🗺 수압계 추천 자리 위치도 (B안, 2026-11-28 사용자 "수압계 추천 자리를 누르면 삽도·주소를 포함한 위치도") ----
  1쪽 전체 배치도(소블록 경계 + 모든 자리) + 자리마다 1쪽: 주변 관로·시설물 삽도(지도에 켜진 그대로, INDEX·범례) · 지번·도로명 주소(카카오 좌표→주소) · 절점·표고·모델 수압·설치 자리 · 설치 기록 칸(설치일·수압계 번호·설치자·설치 전후 사진)
  고객 이름·연락처는 넣지 않음. '대수용가 인근 수용가' 자리는 그 주소가 곧 수용가 주소이므로 '내부용' 표시 */
@@ -17130,14 +17132,14 @@ async function lqLocReport(){const nm=$('lqBlk').value,b=lqPB(nm),k=+$('lqK').va
   const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
   const sec=[];
   sec.push(`<h2>1. 수압계 자리 목록</h2>${T(['이름','설치 순서','자리 종류','지번 주소','도로명 주소','절점','표고 m'],list.map((r,j)=>`<tr><td><b>${e(r.name)}</b></td><td>${r.fixed?'이미 측정':j+1}</td><td>${kind(r)}${inner(r)?' <span class="rd">(내부용)</span>':''}</td><td>${e(aj(j))}</td><td>${e(adr(j))}</td><td>${e(b.ids[r.i])}</td><td class="r">${lqF(b.elev[r.i])}</td></tr>`))}<p class="n">주소 = 카카오 좌표→주소(자리 좌표에서 가장 가까운 지번·도로명)${adErr?` · <span class="rd">주소를 못 찾은 자리: ${e(adErr)}</span>`:''} · '내부용' = 대수용가 인근 수용가 자리라 주소가 곧 수용가 주소이므로 외부에 내지 마세요</p>`);
-  sec.push(`<h2>2. 전체 배치도</h2>${ov?`<img class="map" src="${ov.url}" data-hmm="190" alt="수압계 자리 전체 배치도">${ov.note?`<p class="n">${e(ov.note)}</p>`:''}`:'<p class="n">배치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}`);
-  list.forEach((r,j)=>{const S=shots[j];sec.push(`<div class="pgb"></div><h2>${j+3}. ${e(r.name)} 위치도 ${r.fixed?'(이미 잰 측정 지점)':`(설치 순서 ${j+1})`}</h2>${S?`<img class="map" src="${S.url}" data-hmm="138" alt="${e(r.name)} 위치도">`:'<p class="n">위치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}
+  sec.push(`<h2>2. 전체 배치도</h2>${ov?`<img class="map" src="${ov.url}" data-hmm="${Math.max(90,175-9*list.length)}" alt="수압계 자리 전체 배치도">${ov.note?`<p class="n">${e(ov.note)}</p>`:''}`:'<p class="n">배치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}`);
+  list.forEach((r,j)=>{const S=shots[j];sec.push(`<div class="pgb"></div><h2>${j+3}. ${e(r.name)} 위치도 ${r.fixed?'(이미 잰 측정 지점)':`(설치 순서 ${j+1})`}</h2>${S?`<img class="map" src="${S.url}" data-hmm="112" alt="${e(r.name)} 위치도">`:'<p class="n">위치도를 만들지 못했습니다 (지도·배경 확인 필요)</p>'}
 <table class="kv"><tbody><tr><th>지번 주소</th><td colspan="3"><b>${e(aj(j))}</b>${inner(r)?' <span class="rd">(내부용)</span>':''}</td></tr><tr><th>도로명 주소</th><td colspan="3">${e(adr(j))}</td></tr>
 <tr><th>자리 종류</th><td>${kind(r)}</td><th>가까운 시설물</th><td>${e(String(r.hyd||'-').replace(/^[🧯🏭🚰]\s*/u,''))}</td></tr>
 <tr><th>절점 · 표고</th><td>${e(b.ids[r.i])} · ${lqF(b.elev[r.i])}m</td><th>모델 수압</th><td>${mp(r)}</td></tr>
 <tr><th>좌표 (위도, 경도)</th><td colspan="3">${f6(b.lat[r.i])}, ${f6(b.lng[r.i])}</td></tr></tbody></table>
 <h3>설치 기록</h3><table class="rec"><tbody><tr><th>설치일</th><td></td><th>수압계 번호</th><td></td><th>설치자</th><td></td></tr><tr><th>설치 위치 확인</th><td colspan="5">□ 추천 자리 그대로 &nbsp; □ 옮김 (옮긴 곳: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) &nbsp; 1분 자료 머리글: ${e(r.name)}${r.fixed?'':'@'+e(b.ids[r.i])}</td></tr><tr><th>비고</th><td colspan="5"></td></tr></tbody></table>
-<img class="ph" src="${ph}" data-hmm="48" alt="설치 전·후 사진 칸">`)});
+<img class="ph" src="${ph}" data-hmm="38" alt="설치 전·후 사진 칸">`)});
   const fn=`수압계자리위치도_${nm}_${list.length}곳_${today.replace(/-/g,'')}`;
   const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${e(fn)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
