@@ -3557,7 +3557,7 @@ async function bpOut(kind){if(BP.busy)return;const list=bpBlocks().filter(b=>BP.
     if(!(S.leg||[]).some(x=>/경계밸브/.test(x.t||'')))nd('bnd','⑥ 시설물에 경계밸브 표시(밸브 정보창) 또는 닫힌 제수밸브 → 경계밸브')}masked+=S.B.masked||0;if(S.B.note)note=S.B.note;const no=(+BP.o.no||1)+done,cv=bpCompose(b,S,info,no,M,dpm);
    if(kind==='pdf'){const bl=await new Promise(r=>cv.toBlob(r,'image/jpeg',.9));pages.push(URL.createObjectURL(bl))}
    else if(kind==='png'){const bl=await new Promise(r=>cv.toBlob(r,'image/png'));zip.file(`${String(no).padStart(3,'0')}_${b.n.replace(/[\\/:*?"<>|]/g,'_')}_현황도.png`,bl)}
-   else if(kind==='hwpx'){const u=cv.toDataURL('image/jpeg',.9),bb=F('hwpxB64',u);if(!bb)throw new Error('그림 변환 실패');if(done){D.xs.push(`<hp:p id="${D.id++}" paraPrIDRef="20" styleIDRef="0" pageBreak="1" columnBreak="0" merged="0"><hp:run charPrIDRef="7"><hp:t></hp:t></hp:run></hp:p>`)}
+   else if(kind==='hwpx'){const u=cv.toDataURL('image/jpeg',.9),bb=F('hwpxB64',u);if(!bb)throw new Error('그림 변환 실패');if(done)D.pb=1;/* 빈 줄 대신 제목 문단에서 쪽 나눔(빈 줄 몫만큼 그림이 밀리지 않게) */
     if(!done)F('hwpxTitle',D,`${b.n} 블록 현황도`);else F('hwpxP',D,`${b.n} 블록 현황도`,{c:9,pp:21});F('hwpxImg',D,bb.bytes,'jpg',cv.width,cv.height,170)}
    done++}catch(err){console.error('현황도',b.n,err);fail.push(`${b.n}: ${(err&&err.message)||err}`)}}
   if(!done)throw new Error(fail.length?'모두 실패 — '+fail.join(' / '):'멈췄습니다');const extra=(BP.stop?` · 멈춤(${done}/${list.length}장까지)`:'')+(fail.length?` · ⚠ 못 만든 소블록 ${fail.length}개(${fail.join(' / ')})`:'')+(masked?` · 고객 정보 ${masked}곳 가림`:'')+(note?' · '+note:'');
@@ -3688,7 +3688,7 @@ async function bpReport(n,mode){const b=bpFind(n);if(!b){msg('이 이름의 소�
   const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${h.length}">자료 없음 (확인 필요)</td></tr>`}</tbody></table>`;
   const sec=[];
   /* 2026-11-26 중복 정리(B안): 요약 숫자·블록 현황·월별 표·그래프·수용가 현황은 현황도 한 장에만 둠(예전 1장 숫자 카드·3장 그림 뺌) */
-  sec.push(`<h2>1. 소블록 현황도</h2><img src="${img}" alt="${e(b.n)} 현황도" data-hmm="225" style="display:block;width:100%;max-height:225mm;object-fit:contain"><p class="n">요약 숫자·블록 현황·월별 공급/부과량·수용가 현황은 이 한 장에 있습니다. 소블록 밖은 흐리게, 위치는 INDEX에 표시. 관로가 보이는 그림은 대외비입니다(외부 반출 금지).<br>${[b.big||(bs&&bs.b2)?'대블록 '+e(b.big||bs.b2):'',b.mid?'중블록 '+e(b.mid):''].filter(Boolean).map(x=>x+' · ').join('')}유수율 판정 기준: 양호 ${g1}% 이상, 주의 ${g2}~${g1}%, 심각 ${g2}% 미만 (현황도 출력 창 설정값)</p>`);
+  sec.push(`<h2>1. 소블록 현황도</h2><img src="${img}" alt="${e(b.n)} 현황도" data-hmm="225" data-hwmm="195" style="display:block;width:100%;max-height:225mm;object-fit:contain"><p class="n">요약 숫자·블록 현황·월별 공급/부과량·수용가 현황은 이 한 장에 있습니다. 소블록 밖은 흐리게, 위치는 INDEX에 표시. 관로가 보이는 그림은 대외비입니다(외부 반출 금지).<br>${[b.big||(bs&&bs.b2)?'대블록 '+e(b.big||bs.b2):'',b.mid?'중블록 '+e(b.mid):''].filter(Boolean).map(x=>x+' · ').join('')}유수율 판정 기준: 양호 ${g1}% 이상, 주의 ${g2}~${g1}%, 심각 ${g2}% 미만 (현황도 출력 창 설정값)</p>`);
   const rows=[];const R=(a,v,s)=>rows.push(`<tr><td>${a}</td><td class="r">${v}</td><td>${s||''}</td></tr>`);
   if(ns){R(`유수율 ${ns.y}.${ns.m}월`,f1(ns.r)+'%',ns.rPy!=null?`전년 같은 달 ${f1(ns.rPy)}% (${ns.r-ns.rPy>=0?'▲':'▼'}${f1(Math.abs(ns.r-ns.rPy))}%p)`:'');R(`유수율 ${ns.y} 평균`,f1(ns.rAvg)+'%',ns.rAvgPy!=null?`${ns.py} 평균 ${f1(ns.rAvgPy)}%`:'');
    R('공급량 / 부과량 (㎥/일)',`${f0(ns.s)} / ${f0(ns.b)}`,`${ns.y}.${ns.m}월`);R('야간최소유량 (㎥/h)',ns.n!=null?f1(ns.n):'확인 필요',mnf!=null?`일 공급량 대비 ${f1(mnf)}% (야간최소×24÷일공급)${mnfD!=null?` · 전년 같은 달 대비 ${mnfD>=0?'▲':'▼'}${f1(Math.abs(mnfD))}%`:''}`:'');
@@ -13443,7 +13443,7 @@ $('axcRpBox').addEventListener('change',axcRpRead);$('axcXl').onclick=axcXl;$('a
    글자 7 본문 10pt · 8 굵게 · 9 제목 17pt · 10 소제목 12pt · 11 작은 글 8.5pt · 12 표 9pt · 13 표 머리 · 14 표 굵게 (모두 함초롬돋움)
    문단 20 왼 · 21 가운데 · 22 오른 · 23~25 표 안(왼·가운데·오른) · 26 소제목(위 여백) · 테두리 3 칸 · 4 머리 칸 · 5 합계 칸 · 6 요약 칸
    쓰는 곳: 💰 개략공사비 보고서 · ②-4 누수 예측 보고서 · 💧 단수 안내 공고문 (보고서 창 위 단추로도) */
-const HWPX={W:48190,MM:283.465};
+const HWPX={W:48190,H:70012,MM:283.465};/* W 본문 폭 170mm · H 본문 높이 247mm(A4 297 − 위아래 여백 15·15 − 머리말·꼬리말 10·10) */
 const hwX=s=>String(s??'').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function hwpxNew(title){return{title:title||'',xs:[],bins:[],first:null,id:1,txt:[]}}
 /* 그림 글자(이모지)는 한글 글꼴에 없어 네모로 보이므로 뺌 */
@@ -13458,12 +13458,12 @@ function hwpxH2(D,t){hwpxP(D,t,{c:10,pp:26})}
 /* 2026-11-15 쪽 넘음: 글자처럼 취급(treatAsChar=1)한 표는 한글에서 쪽을 못 나눠 아래로 넘침 → 12줄 넘는 표(또는 o.split)는 본문 표(treatAsChar=0)로 두어 쪽마다 나뉘고 머리 줄이 되풀이됨 */
 function hwpxTable(D,rows,o){o=o||{};rows=rows.filter(r=>r&&r.length);if(!rows.length)return;const head=o.head||0;
  const nc=Math.max(...rows.map(r=>r.reduce((s,x)=>s+((x&&x.span)||1),0)));
- const tw=o.width||HWPX.W;let cw;
+ const tw=o.width||HWPX.W;let cw;const cwd=t=>[...String(t)].reduce((a,ch)=>{const c=ch.charCodeAt(0);return a+(c>0x2000?920:ch===' '?280:/[mwMW%@]/.test(ch)?760:/[A-Z]/.test(ch)?640:/[.,:;'|!il]/.test(ch)?300:545)},0);
  if(o.w&&o.w.length===nc){const w=o.w,sw=w.reduce((a,b)=>a+b,0);cw=w.map(v=>Math.floor(tw*v/sw))}
  else{/* 칸 폭(2026-11-15 사용자 '한글표도 안 밀리게'): 9pt 글자의 실제 폭(한글 ≈920, 숫자·영문 ≈520~620, 띄어쓰기 ≈280)으로 칸마다
     '줄 안 바꿈 폭'을 재고, 긴 설명 칸(한 줄 6,000 넘음)만 낱말 단위로 줄을 바꿀 수 있게 함 → 숫자·짧은 칸은 줄이 안 바뀜.
     모자라면 긴 설명 칸부터 줄이고, 그래도 넘칠 때만 전체를 비율로 줄임 */
-  const cwd=t=>[...String(t)].reduce((a,ch)=>{const c=ch.charCodeAt(0);return a+(c>0x2000?920:ch===' '?280:/[mwMW%@]/.test(ch)?760:/[A-Z]/.test(ch)?640:/[.,:;'|!il]/.test(ch)?300:545)},0),PAD=1020+300;
+  const PAD=1020+300;
   const full=Array(nc).fill(0),word=Array(nc).fill(0);
   rows.forEach(r=>{let ci=0;r.forEach(x=>{const sp=(x&&x.span)||1;if(sp===1){const t=typeof x==='object'&&x?(x.t??(x.ps||[]).map(p=>p.t).join('\n')):String(x??'');
    String(t).split('\n').forEach(l=>{full[ci]=Math.max(full[ci],cwd(l));l.split(/\s+/).forEach(wd=>{word[ci]=Math.max(word[ci],cwd(wd))})})}ci+=sp})});
@@ -13472,7 +13472,12 @@ function hwpxTable(D,rows,o){o=o||{};rows=rows.filter(r=>r&&r.length);if(!rows.l
   else if(sn<=tw){const room=tw-sn,gap=want.map((v,i)=>wrap[i]?v-need[i]:0),sg=gap.reduce((a,b)=>a+b,0)||1;cw=need.map((v,i)=>Math.floor(v+room*gap[i]/sg))}
   else cw=need.map(v=>Math.floor(tw*v/sn))}
  cw[nc-1]+=tw-cw.reduce((a,b)=>a+b,0);
- const tid=1e8+Math.floor(Math.random()*9e8);let x=`<hp:tbl id="${tid}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="${head?1:0}" rowCnt="${rows.length}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${rows.length*282}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="${(o.split??rows.length>12)?0:1}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
+ /* 2026-11-28 '보고서 밀림': 줄 수는 적어도 칸 안 글이 길어 키가 큰 표(검토 의견 표 등)도 글자처럼 두면 한 덩어리로 다음 쪽에 밀려 앞쪽이 비므로,
+    칸 폭으로 줄 바뀜을 어림해 표 키가 본문 높이 1/4(약 62mm)을 넘으면 쪽 나눔 표로 둠 */
+ let estH=0;rows.forEach(r=>{let ci=0,mx=1;r.forEach(x=>{const sp=Math.min((x&&x.span)||1,nc-ci);let wd=0;for(let k=ci;k<ci+sp;k++)wd+=cw[k];const inw=Math.max(1000,wd-1020),
+   t=typeof x==='object'&&x?(x.t??(x.ps||[]).map(p=>p.t).join('\n')):String(x??'');mx=Math.max(mx,String(t).split('\n').reduce((a,l)=>a+Math.max(1,Math.ceil(cwd(l)/inw)),0));ci+=sp});estH+=mx*1170+282});
+ const split=o.split??(rows.length>12||estH>HWPX.H/4);
+ const tid=1e8+Math.floor(Math.random()*9e8);let x=`<hp:tbl id="${tid}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="${head?1:0}" rowCnt="${rows.length}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${tw}" widthRelTo="ABSOLUTE" height="${rows.length*282}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="${split?0:1}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
  rows.forEach((r,ri)=>{x+='<hp:tr>';let ci=0;r.forEach(cell=>{const C=cell!=null&&typeof cell==='object'?cell:{t:cell};const sp=Math.min(C.span||1,nc-ci),hd=ri<head;
   const ps=C.ps||[{t:C.t??'',c:C.c??(hd?13:12),pp:C.pp??(hd?24:23)}],bf=C.bf??(hd?4:3);let wd=0;for(let k=ci;k<ci+sp;k++)wd+=cw[k];
   const inner=ps.flatMap(p=>String(p.t??'').split('\n').map(l=>hwPx(D,hwR(l,p.c??12),p.pp??23))).join('');
@@ -13481,7 +13486,9 @@ function hwpxTable(D,rows,o){o=o||{};rows=rows.filter(r=>r&&r.length);if(!rows.l
   x+='</hp:tr>'});
  x+='</hp:tbl>';D.xs.push(hwPx(D,`<hp:run charPrIDRef="12">${x}</hp:run>`,20));rows.forEach(r=>D.txt.push(r.map(c=>c&&typeof c==='object'?(c.t??(c.ps||[]).map(p=>p.t).join(' ')):c).join(' | ')))}
 /* 그림: bytes(Uint8Array)·확장자·픽셀 크기 → 가운데 정렬, 너비 mm(기본 본문 폭) */
-function hwpxImg(D,bytes,ext,pw,ph,mm){const n=D.bins.length+1,id='BIN'+String(n).padStart(4,'0'),W=Math.round(Math.min(mm?mm*HWPX.MM:HWPX.W,HWPX.W)),H=Math.round(W*(ph||3)/(pw||4)),iid=1e8+Math.floor(Math.random()*9e8);
+/* 2026-11-28 '보고서 밀림': 세로 A4 그림(225~240mm)은 제목 줄과 함께 한 쪽(본문 247mm)에 안 들어가 그림이 다음 쪽으로 밀리고 앞쪽엔 제목만 남음
+   → 높이를 hmm(기본 215mm, 본문 247mm − 제목·소제목 몫)로 막고 넘으면 너비를 같은 비율로 줄임 */
+function hwpxImg(D,bytes,ext,pw,ph,mm,hmm){const n=D.bins.length+1,id='BIN'+String(n).padStart(4,'0'),r=(ph||3)/(pw||4),Hx=Math.round(Math.min(hmm||215,247)*HWPX.MM);let W=Math.round(Math.min(mm?mm*HWPX.MM:HWPX.W,HWPX.W)),H=Math.round(W*r);if(H>Hx){H=Hx;W=Math.round(H/r)}const iid=1e8+Math.floor(Math.random()*9e8);
  D.bins.push({id,ext,bytes,name:id+'.'+ext});
  const pic=`<hp:pic textWrap="SQUARE" textFlow="BOTH_SIDES" reverse="0" id="${iid}" zOrder="0" numberingType="PICTURE" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="${iid}"><hp:offset x="0" y="0"/><hp:orgSz width="${W}" height="${H}"/><hp:curSz width="${W}" height="${H}"/><hp:flip horizontal="0" vertical="0"/><hp:rotationInfo angle="0" centerX="${W>>1}" centerY="${H>>1}" rotateimage="1"/><hp:renderingInfo><hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:scaMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/></hp:renderingInfo><hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="${W}" y="0"/><hc:pt2 x="${W}" y="${H}"/><hc:pt3 x="0" y="${H}"/></hp:imgRect><hp:imgClip left="0" right="${W}" top="0" bottom="${H}"/><hp:inMargin left="0" right="0" top="0" bottom="0"/><hp:imgDim dimwidth="${W}" dimheight="${H}"/><hc:img binaryItemIDRef="${id}" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/><hp:effects/><hp:sz width="${W}" height="${H}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:shapeComment/></hp:pic>`;
  D.xs.push(hwPx(D,`<hp:run charPrIDRef="7">${pic}</hp:run>`,21))}
@@ -13523,7 +13530,7 @@ async function hwpxFromDoc(doc,fname){const root=doc.querySelector('.pg')||doc.b
     R.push([...tr.children].map(td=>{const th=td.tagName==='TH'||inH,al=td.classList.contains('r')||td.style.textAlign==='right'?'r':th?'c':'l';
      return{t:hwpxTx(td),span:+td.getAttribute('colspan')||1,c:th?13:tot?14:12,pp:al==='r'?25:al==='c'?24:23,bf:th?4:tot?5:3}}))});
    hwpxTable(D,R,{head:hn});continue}
-  if(t==='IMG'){const src=el.getAttribute('src')||'',b=hwpxB64(src);if(b){const [w,h]=await hwpxDim(src),hm=+el.getAttribute('data-hmm')||0;hwpxImg(D,b.bytes,b.ext,w,h,hm&&w&&h?Math.min(170,hm*w/h):0)}continue}
+  if(t==='IMG'){const src=el.getAttribute('src')||'',b=hwpxB64(src);if(b){const [w,h]=await hwpxDim(src),hm=+el.getAttribute('data-hmm')||0,hh=+el.getAttribute('data-hwmm')||0;hwpxImg(D,b.bytes,b.ext,w,h,hm&&w&&h?Math.min(170,hm*w/h):0,hh)}continue}
   if(cl.contains('kp')){const ks=[...el.children].map(k=>{const ps=[];const sm=k.querySelector('small'),b=k.querySelector('b'),i=k.querySelector('i');if(sm)ps.push({t:hwpxTx(sm),c:11,pp:24});if(b)ps.push({t:hwpxTx(b),c:b.classList.contains('tot')||b.classList.contains('rd')?13:8,pp:24});if(i)ps.push({t:hwpxTx(i),c:11,pp:24});return{ps:ps.length?ps:[{t:hwpxTx(k),c:12,pp:24}],bf:6}});
    const R=[];for(let i=0;i<ks.length;i+=5)R.push(ks.slice(i,i+5));hwpxTable(D,R,{w:Array(Math.min(5,ks.length)).fill(1)});continue}
   if(t==='svg'||t==='SVG'){if(!shot++)hwpxP(D,'(그래프는 PDF 보고서를 참고하세요)',{c:11,pp:20});continue}
