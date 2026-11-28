@@ -3881,25 +3881,28 @@ function dayDraw(){const o=BT.ov&&BT.ov.getElement&&BT.ov.getElement();if(!o)ret
  const AJ=b3AdjRow(o,(DD,d)=>at(DD,y,m,d),nd);if(AJ){PS.fill(null);PN.fill(null)}
  /* 2026-11-27 사용자 '중간에 글자 겹침'(폰): 제목(왼쪽)과 급증 범례(오른쪽)를 같은 줄 y=16에 그려 좁은 폭에서 겹침 → 폭이 모자라면 범례를 둘째 줄로 내리고 그래프를 그만큼 아래로 */
  const nj=J.filter(Boolean).length,ttl=`${BT.n} · ${y}년 ${m}월 일별 공급량·야간최소${AJ?' · 인접블록 비교':''}`,lgT=nj?`● 야간최소 급증 ${nj}일 (앞 7일 평균 ×${DAY_JUMP} 이상)`:`야간최소 급증일 없음 (기준: 앞 7일 평균 ×${DAY_JUMP})`;
- const L=56,R=52,B=36,W=CW-L-R;g.font=`bold 12px ${FT}`;const tw0=g.measureText(ttl).width;g.font=`10.5px ${FT}`;const lw0=g.measureText(lgT).width,wrap=tw0+lw0+16>CW-L-8;
+ const L=56,R=22,B=36,W=CW-L-R;g.font=`bold 12px ${FT}`;const tw0=g.measureText(ttl).width;g.font=`10.5px ${FT}`;const lw0=g.measureText(lgT).width,wrap=tw0+lw0+16>CW-L-8;
  const T=wrap?40:26,Hh=CH-T-B,bw=W/nd;
  g.fillStyle='#0f172a';g.font=`bold 12px ${FT}`;g.textAlign='left';g.fillText(ttl,L,16);
  if(![...S,...N].some(v=>v!=null)){g.fillStyle='#64748b';g.font=`13px ${FT}`;g.textAlign='center';g.fillText('이 달은 일별 자료가 없습니다 (확인 필요)',CW/2,CH/2);BT.hit=[];return}
- const sx=Math.max(1,...[...S,...PS,...(AJ||[]).flatMap(a=>a.S)].filter(v=>v!=null))*1.12,nx=Math.max(.1,...[...N,...PN,...(AJ||[]).flatMap(a=>a.N)].filter(v=>v!=null))*1.18,X=i=>L+bw*(i+.5),Ys=v=>T+Hh*(1-v/sx),Yn=v=>T+Hh*(1-v/nx);
- g.strokeStyle='rgba(148,163,184,.35)';g.lineWidth=1;g.font=`10px ${FT}`;for(let k=0;k<=4;k++){const yy=T+Hh*k/4;g.beginPath();g.moveTo(L,yy);g.lineTo(L+W,yy);g.stroke();g.fillStyle='#1d4ed8';g.textAlign='right';g.fillText(Math.round(sx*(1-k/4)).toLocaleString(),L-4,yy+3);g.fillStyle='#b91c1c';g.textAlign='left';g.fillText((nx*(1-k/4)).toFixed(1),L+W+4,yy+3)}
- g.save();g.translate(12,T+Hh/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle='#1d4ed8';g.fillText('공급량 ㎥/일',0,0);g.restore();g.save();g.translate(CW-8,T+Hh/2);g.rotate(Math.PI/2);g.textAlign='center';g.fillStyle='#b91c1c';g.fillText('야간최소 ㎥/h',0,0);g.restore();
+ const sx=Math.max(1,...[...S,...PS,...(AJ||[]).flatMap(a=>a.S)].filter(v=>v!=null))*1.12,nx=Math.max(.1,...[...N,...PN,...(AJ||[]).flatMap(a=>a.N)].filter(v=>v!=null))*1.18;/* 2026-11-28 사용자 '야간 최소 유량은 그래프 아래쪽에 보여져. 지금 그래프가 많이 겹쳐': 한 칸에 두 축을 겹치던 것 → 위 칸 공급량(60%)·아래 칸 야간최소(40%) 따로, 날짜 축은 같이 */
+ const GP=16,H1=Math.round((Hh-GP)*.6),H2=Hh-GP-H1,T2=T+H1+GP;
+ const X=i=>L+bw*(i+.5),Ys=v=>T+H1*(1-v/sx),Yn=v=>T2+H2*(1-v/nx);
+ g.lineWidth=1;g.font=`10px ${FT}`;for(let k=0;k<=4;k++){const yy=T+H1*k/4;g.strokeStyle=k===4?'rgba(100,116,139,.6)':'rgba(148,163,184,.35)';g.beginPath();g.moveTo(L,yy);g.lineTo(L+W,yy);g.stroke();g.fillStyle='#1d4ed8';g.textAlign='right';g.fillText(Math.round(sx*(1-k/4)).toLocaleString(),L-4,yy+3)}
+ g.fillStyle='rgba(254,242,242,.55)';g.fillRect(L,T2,W,H2);for(let k=0;k<=2;k++){const yy=T2+H2*k/2;g.strokeStyle='rgba(248,113,113,.3)';g.beginPath();g.moveTo(L,yy);g.lineTo(L+W,yy);g.stroke();g.fillStyle='#b91c1c';g.textAlign='right';g.fillText((nx*(1-k/2)).toFixed(1),L-4,yy+3)}
+ g.save();g.translate(12,T+H1/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle='#1d4ed8';g.fillText('공급량 ㎥/일',0,0);g.restore();g.save();g.translate(12,T2+H2/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle='#b91c1c';g.fillText('야간 ㎥/h',0,0);g.restore();
  /* 2026-11-27 사용자 '작년 같은 날 공급량도 막대그래프 회색으로' → 11-28 '작년 공급량 면그래프로'·'면 농도 더 흐리게'(.45→.2): 지난해 같은 날 공급량(PS)을 회색 면(채운 영역+테두리 선)으로 파란 막대 뒤에 깔고, 파란 막대는 반투명으로 덮음. 빈 날은 면을 끊음 */
  const hasP=PS.some(v=>v!=null);
- if(hasP){const seg=[];let cur=null;PS.forEach((v,i)=>{if(v==null){cur=null;return}if(!cur){cur=[];seg.push(cur)}cur.push(i)});const yb=T+Hh;
+ if(hasP){const seg=[];let cur=null;PS.forEach((v,i)=>{if(v==null){cur=null;return}if(!cur){cur=[];seg.push(cur)}cur.push(i)});const yb=T+H1;
   seg.forEach(q=>{const x0=q.length>1?X(q[0]):X(q[0])-bw*.4,x1=q.length>1?X(q[q.length-1]):X(q[0])+bw*.4;g.beginPath();g.moveTo(x0,yb);if(q.length>1)q.forEach(i=>g.lineTo(X(i),Ys(PS[i])));else{g.lineTo(x0,Ys(PS[q[0]]));g.lineTo(x1,Ys(PS[q[0]]))}g.lineTo(x1,yb);g.closePath();g.fillStyle='rgba(148,156,170,.2)';g.fill();
    g.beginPath();if(q.length>1)q.forEach((i,k)=>k?g.lineTo(X(i),Ys(PS[i])):g.moveTo(X(i),Ys(PS[i])));else{g.moveTo(x0,Ys(PS[q[0]]));g.lineTo(x1,Ys(PS[q[0]]))}g.strokeStyle='#6b7280';g.lineWidth=1.6;g.stroke()})}
- S.forEach((v,i)=>{if(v==null)return;const y0=Ys(v);g.fillStyle=hasP?'rgba(96,165,250,.62)':'#93c5fd';g.fillRect(X(i)-bw*.32,y0,bw*.64,T+Hh-y0)});
+ S.forEach((v,i)=>{if(v==null)return;const y0=Ys(v);g.fillStyle=hasP?'rgba(96,165,250,.62)':'#93c5fd';g.fillRect(X(i)-bw*.32,y0,bw*.64,T+H1-y0)});
  const line=(A,Y,c,w,dash)=>{g.strokeStyle=c;g.lineWidth=w;g.setLineDash(dash);g.beginPath();let st=0;A.forEach((v,i)=>{if(v==null){st=0;return}st?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));st=1});g.stroke();g.setLineDash([])};
  /* 2026-11-27 사용자 '전년도 회색선 더 진하게': #9ca3af 1.4 → #4b5563 2.0 */line(PN,Yn,'#4b5563',2,[2,3]);
  if(AJ)AJ.forEach(a=>{line(a.S,Ys,a.c,2.2,[]);a.S.forEach((v,i)=>{if(v==null)return;g.fillStyle=a.c;g.fillRect(X(i)-2.2,Ys(v)-2.2,4.4,4.4)});line(a.N,Yn,a.c,1.8,[4,3])});
  line(N,Yn,'#dc2626',2.2,[]);
  N.forEach((v,i)=>{if(v==null)return;g.beginPath();g.arc(X(i),Yn(v),J[i]?5:2.6,0,7);g.fillStyle=J[i]?'#dc2626':'#fff';g.fill();g.strokeStyle='#dc2626';g.lineWidth=1.4;g.stroke()});
- g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let d=1;d<=nd;d++)if(d===1||d%5===0||d===nd)g.fillText(String(d),X(d-1),T+Hh+13);g.fillText('일',L+W+12,T+Hh+13);
+ g.fillStyle='#334155';g.font=`10px ${FT}`;g.textAlign='center';for(let d=1;d<=nd;d++)if(d===1||d%5===0||d===nd)g.fillText(String(d),X(d-1),T+Hh+13);g.fillText('일',L+W+11,T+Hh+13);
  {g.font=`10px ${FT}`;g.textAlign='left';let lx=L;const ly=T+Hh+28,hp2=PN.some(v=>v!=null),mk=sh=>[[hasP?'rgba(96,165,250,.62)':'#93c5fd',AJ?BT.n+(sh?' 공급':' 공급량'):sh?'올해 공급':'올해 공급량',0],...(hasP?[['rgba(148,156,170,.3)',sh?'작년 같은 날 공급(면)':'지난해 같은 날 공급량(회색 면)',0]]:[]),['#dc2626',AJ?BT.n+' 야간':'야간최소',1],...(hp2?[['#4b5563',sh?'작년 야간':'지난해 야간최소',2]]:[]),...(AJ||[]).map(a=>[a.c,a.n+(sh?'':' 공급·야간(점선)'),1])],wd=A=>A.reduce((t,a)=>t+24+g.measureText(a[1]).width,0);
   let it=mk(0);if(wd(it)>CW-L-4)it=mk(1);if(wd(it)>CW-L-4)lx=6;
   it.forEach(([c,t,k])=>{if(k===0){g.fillStyle=c;g.fillRect(lx,ly-7,9,8)}else{g.strokeStyle=c;g.lineWidth=2;g.setLineDash(k===2?[2,2]:[]);g.beginPath();g.moveTo(lx,ly-3);g.lineTo(lx+10,ly-3);g.stroke();g.setLineDash([])}g.fillStyle='#334155';g.fillText(t,lx+13,ly);lx+=13+g.measureText(t).width+11})}
